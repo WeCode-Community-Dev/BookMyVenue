@@ -1,0 +1,13 @@
+# Environment files
+.env
+
+# Documentation
+project_doc.txt
+api_documentation.md
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
