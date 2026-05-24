@@ -2,6 +2,7 @@ package http
 
 import (
 	"auth-service/internal/auth"
+	"auth-service/internal/pkg/jsonutil"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -9,6 +10,15 @@ import (
 
 type AuthHandler struct {
 	Service auth.AuthService
+}
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	Token string `json:"token"`
 }
 
 func NewAuthHandler(mux *http.ServeMux, svc auth.AuthService) {
@@ -19,49 +29,44 @@ func NewAuthHandler(mux *http.ServeMux, svc auth.AuthService) {
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		jsonutil.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
-	var req struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-
+	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Malformed request", http.StatusBadRequest)
+		jsonutil.WriteError(w, http.StatusBadRequest, "Malformed request")
 		return
 	}
 
 	token, err := h.Service.Login(req.Username, req.Password)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		jsonutil.WriteError(w, http.StatusUnauthorized, "Invalid Credentials")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
+	res := LoginResponse{Token: token}
+	jsonutil.Write(w, http.StatusOK, res)
 }
 
 func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		jsonutil.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
 
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-		http.Error(w, "Missing or malformed token", http.StatusUnauthorized)
+		jsonutil.WriteError(w, http.StatusUnauthorized, "Missing or malformed token")
 		return
 	}
 	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 
 	claims, err := h.Service.Verify(tokenStr)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		jsonutil.WriteError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(claims)
+	jsonutil.Write(w, http.StatusOK, claims)
 }
