@@ -62,3 +62,5 @@ git checkout -b feat/<branch-name>
 If you're stuck or have questions about where to start, feel free to open an Issue and ask the community. We're here to help!
 
 Happy Coding! 🎉
+---
+My first GitHub contribution test
