@@ -2,14 +2,31 @@ package http
 
 import (
 	"auth-service/internal/auth"
+	"auth-service/internal/domain"
 	"auth-service/internal/pkg/jsonutil"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 )
 
 type AuthHandler struct {
 	Service auth.AuthService
+}
+
+type RegisterRequest struct {
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
+}
+
+type RegisterResponse struct {
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Role     string `json:"role"`
 }
 
 type LoginRequest struct {
@@ -24,6 +41,7 @@ type LoginResponse struct {
 func NewAuthHandler(mux *http.ServeMux, svc auth.AuthService) {
 	h := &AuthHandler{Service: svc}
 	mux.HandleFunc("/login", h.Login)
+	mux.HandleFunc("/register", h.Register)
 	mux.HandleFunc("/verify", h.Verify)
 }
 
@@ -47,6 +65,36 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	res := LoginResponse{Token: token}
 	jsonutil.Write(w, http.StatusOK, res)
+}
+
+func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		jsonutil.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	var req RegisterRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		jsonutil.WriteError(w, http.StatusBadRequest, "Malformed request")
+		return
+	}
+
+	if req.Username == "" || req.Password == "" {
+		jsonutil.WriteError(w, http.StatusBadRequest, "Username and password are required")
+		return
+	}
+
+	user, err := h.Service.Register(req.Name, req.Username, req.Email, req.Role, req.Password)
+	if err != nil {
+		if errors.Is(err, domain.ErrDuplicateUsername) {
+			jsonutil.WriteError(w, http.StatusConflict, err.Error())
+			return
+		}
+		jsonutil.WriteError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
+	jsonutil.Write(w, http.StatusCreated, user)
+
 }
 
 func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
