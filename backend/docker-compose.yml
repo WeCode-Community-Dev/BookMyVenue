@@ -1,0 +1,8 @@
+services:
+  api:
+    build: .
+    container_name: book_my_venue_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
