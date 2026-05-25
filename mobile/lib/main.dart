@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'feature/auth/presentation/pages/signin_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,12 +20,12 @@ class MyApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
       builder: (_, ThemeMode mode, _) {
-        return MaterialApp(
+        return MaterialApp.router(
           title: 'Book my venue',
           themeMode: mode,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          home: const MyHomePage(title: 'Flutter Demo Home Page'),
+          routerConfig: AppRouter.router,
         );
       },
     );
