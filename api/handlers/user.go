@@ -46,3 +46,32 @@ func (h *UserHandler) Signup(c *gin.Context) {
 
 	utils.WriteSuccessResponse(c, http.StatusCreated, "User created successfully", nil)
 }
+
+func (h *UserHandler) Login(c *gin.Context) {
+	var req dtos.UserLoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
+	}
+
+	accessToken, refreshToken, err := h.userService.Login(req.Email, req.Password)
+	if err != nil {
+		if errors.Is(err, service_errors.UserErrEmptyCredentials) {
+			utils.WriteFailedResponse(c, http.StatusBadRequest, "Email and password are required", nil)
+			return
+		} else if errors.Is(err, service_errors.UserErrInvalidEmailFormat) {
+			utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid email format", nil)
+			return
+		} else if errors.Is(err, service_errors.UserErrInvalidCredentials) {
+			utils.WriteFailedResponse(c, http.StatusUnauthorized, "Invalid email or password", nil)
+			return
+		}
+		utils.WriteFailedResponse(c, http.StatusInternalServerError, "Failed to login", err)
+		return
+	}
+
+	utils.WriteSuccessResponse(c, http.StatusOK, "Login successful", gin.H{
+		"access-token": accessToken,
+		"refresh-token": refreshToken,
+	})
+}
