@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/WeCode-Community-Dev/BookMyVenue/api/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -28,6 +29,9 @@ func main() {
 	if port == "" {
 		port = "8080" // Default port if not specified
 	}
+
+	// Register api routes
+	routes.RegisterUserRoutes(server.Group("/api"))
 
 	// Run the server on the specified/Default port
 	server.Run(":" + port)
