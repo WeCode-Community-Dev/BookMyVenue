@@ -11,3 +11,11 @@ type UserLoginRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
+
+type RotateRefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+type RevokeRefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}

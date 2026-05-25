@@ -16,6 +16,8 @@ import (
 type UserService interface {
 	Signup(name string, email string, mobileNumber string, password string) error
 	Login(email string, password string) (accessToken string, refreshToken string, err error)
+	RotateRefreshToken(oldToken string, userID uint) (newAccessToken string, newRefreshToken string, err error)
+	RevokeRefreshToken(token string, userID uint) error
 }
 
 type userService struct {
@@ -111,6 +113,55 @@ func (s *userService) Login(email string, password string) (accessToken string, 
 	}
 
 	return accessToken, rt.Token, nil
+}
+
+func (s *userService) RotateRefreshToken(oldToken string, userID uint) (newAccessToken string, newRefreshToken string, err error) {
+	rt, err := s.refreshTokenRepo.FindValidTokenByTokenStringAndUserID(oldToken, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", "", service_errors.UserErrInvalidRefreshToken
+		}
+		return "", "", err
+	}
+
+	err = s.refreshTokenRepo.RevokeTokenByIDAndUserID(rt.ID, userID)
+	if err != nil {
+		return "", "", err
+	}
+
+	newRT := &models.RefreshToken{
+		Token:  uuid.NewString(),
+		UserID: userID,
+	}
+
+	err = s.refreshTokenRepo.Create(newRT)
+	if err != nil {
+		return "", "", err
+	}
+
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return "", "", err
+	}
+
+	newAccessToken, err = utils.GenerateLoginToken(user.ID, user.Email, user.Name)
+	if err != nil {
+		return "", "", err
+	}
+
+	return newAccessToken, newRT.Token, nil
+}
+
+func (s *userService) RevokeRefreshToken(token string, userID uint) error {
+	rt, err := s.refreshTokenRepo.FindValidTokenByTokenStringAndUserID(token, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return service_errors.UserErrInvalidRefreshToken
+		}
+		return err
+	}
+
+	return s.refreshTokenRepo.RevokeTokenByIDAndUserID(rt.ID, userID)
 }
 
 func (s *userService) isValidEmail(email string) bool {

@@ -10,5 +10,8 @@ func RegisterUserRoutes(routes *gin.RouterGroup) {
 	v1 := routes.Group("/v1/users")
 	{
 		v1.POST("/signup", userHandler.Signup)
+		v1.POST("/login", userHandler.Login)
+		v1.POST("/refresh-token", userHandler.RotateRefreshToken)
+		v1.POST("/revoke-token", userHandler.RevokeRefreshToken)
 	}
 }

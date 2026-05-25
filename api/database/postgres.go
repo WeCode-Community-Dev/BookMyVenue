@@ -40,6 +40,7 @@ func MigrateModels() {
 	db := ConnectPostgres()
 	err := db.AutoMigrate(
 		&models.User{},
+		&models.RefreshToken{},
 	)
 	if err != nil {
 		log.Fatalf("failed to migrate database: %v", err)

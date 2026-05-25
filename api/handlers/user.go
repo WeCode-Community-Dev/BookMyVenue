@@ -71,7 +71,62 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 
 	utils.WriteSuccessResponse(c, http.StatusOK, "Login successful", gin.H{
-		"access-token": accessToken,
+		"access-token":  accessToken,
 		"refresh-token": refreshToken,
 	})
+}
+
+func (h *UserHandler) RotateRefreshToken(c *gin.Context) {
+	var req dtos.RotateRefreshTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
+	}
+
+	userID, exists := utils.GetUserIDFromContext(c)
+	if !exists {
+		utils.WriteFailedResponse(c, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+
+	newAccessToken, newRefreshToken, err := h.userService.RotateRefreshToken(req.RefreshToken, userID)
+	if err != nil {
+		if errors.Is(err, service_errors.UserErrInvalidRefreshToken) {
+			utils.WriteFailedResponse(c, http.StatusUnauthorized, "Invalid refresh token", nil)
+			return
+		}
+		utils.WriteFailedResponse(c, http.StatusInternalServerError, "Failed to rotate refresh token", err)
+		return
+	}
+
+	utils.WriteSuccessResponse(c, http.StatusOK, "Refresh token rotated successfully", gin.H{
+		"access-token":  newAccessToken,
+		"refresh-token": newRefreshToken,
+	})
+}
+
+func (h *UserHandler) RevokeRefreshToken(c *gin.Context) {
+	var req dtos.RevokeRefreshTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
+	}
+
+	userID, exists := utils.GetUserIDFromContext(c)
+	if !exists {
+		utils.WriteFailedResponse(c, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+
+	err := h.userService.RevokeRefreshToken(req.RefreshToken, userID)
+	if err != nil {
+		if errors.Is(err, service_errors.UserErrInvalidRefreshToken) {
+			utils.WriteFailedResponse(c, http.StatusUnauthorized, "Invalid refresh token", nil)
+			return
+		}
+		utils.WriteFailedResponse(c, http.StatusInternalServerError, "Failed to revoke refresh token", err)
+		return
+	}
+
+	utils.WriteSuccessResponse(c, http.StatusOK, "Refresh token revoked successfully", nil)
 }
