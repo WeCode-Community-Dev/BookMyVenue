@@ -23,7 +23,7 @@ func NewUserHandler() *UserHandler {
 }
 
 func (h *UserHandler) Signup(c *gin.Context) {
-	var req dtos.UserSignupRequest
+	var req dtos.UserDataRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid request data", err)
 		return
@@ -199,3 +199,88 @@ func (h *UserHandler) ForgetPasswordStep2(c *gin.Context) {
 
 	utils.WriteSuccessResponse(c, http.StatusOK, "Password reset successfully", nil)
 }
+
+func (h *UserHandler) ChangePassword(c *gin.Context) {
+	var req dtos.ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
+	}
+
+	userID, exists := utils.GetUserIDFromContext(c)
+	if !exists {
+		utils.WriteFailedResponse(c, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+
+	err := h.userService.ChangePassword(userID, req.OldPassword, req.NewPassword)
+	if err != nil {
+		if errors.Is(err, service_errors.UserErrInvalidOldPassword) {
+			utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid old password", nil)
+			return
+		}
+		utils.WriteFailedResponse(c, http.StatusInternalServerError, "Failed to change password", err)
+		return
+	}
+
+	utils.WriteSuccessResponse(c, http.StatusOK, "Password changed successfully", nil)
+}
+
+func (s *UserHandler) UpdateProfile(c *gin.Context) {
+	var req dtos.UserDataRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
+	}
+
+	userID, exists := utils.GetUserIDFromContext(c)
+	if !exists {
+		utils.WriteFailedResponse(c, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+
+	err := s.userService.UpdateUserByID(userID, req.Name, req.Email, req.MobileNumber)
+	if err != nil {
+		if errors.Is(err, service_errors.UserErrAllFieldsRequired) {
+			utils.WriteFailedResponse(c, http.StatusBadRequest, "At least one field (name, email or mobile number) is required to update profile", nil)
+			return
+		} else if errors.Is(err, service_errors.UserErrInvalidEmailFormat) {
+			utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid email format", nil)
+			return
+		} else if errors.Is(err, service_errors.UserErrNotFound) {
+			utils.WriteFailedResponse(c, http.StatusNotFound, "User not found", nil)
+			return
+		} else if errors.Is(err, service_errors.UserErrEmailAlreadyExists) {
+			utils.WriteFailedResponse(c, http.StatusConflict, "Email already exists", nil)
+			return
+		} else if errors.Is(err, service_errors.UserErrMobileNumberAlreadyExists) {
+			utils.WriteFailedResponse(c, http.StatusConflict, "Mobile number already exists", nil)
+			return
+		}
+		utils.WriteFailedResponse(c, http.StatusInternalServerError, "Failed to update profile", err)
+		return
+	}
+
+	utils.WriteSuccessResponse(c, http.StatusOK, "Profile updated successfully", nil)
+}
+
+func (s *UserHandler) GetProfile(c *gin.Context) {
+	userID, exists := utils.GetUserIDFromContext(c)
+	if !exists {
+		utils.WriteFailedResponse(c, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
+
+	user, err := s.userService.GetUserByID(userID)
+	if err != nil {
+		if errors.Is(err, service_errors.UserErrNotFound) {
+			utils.WriteFailedResponse(c, http.StatusNotFound, "User not found", nil)
+			return
+		}
+		utils.WriteFailedResponse(c, http.StatusInternalServerError, "Failed to retrieve user profile", err)
+		return
+	}
+
+	utils.WriteSuccessResponse(c, http.StatusOK, "User profile retrieved successfully", gin.H{"user": user})
+}
+

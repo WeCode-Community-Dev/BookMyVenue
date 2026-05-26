@@ -16,5 +16,6 @@ var (
 
 	UserErrInvalidRefreshToken error = errors.New("invalid refresh token")
 
-	UserErrInvalidOTP error = errors.New("invalid OTP")
+	UserErrInvalidOTP         error = errors.New("invalid OTP")
+	UserErrInvalidOldPassword error = errors.New("invalid old password")
 )

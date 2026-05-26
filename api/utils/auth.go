@@ -3,7 +3,7 @@ package utils
 import "github.com/gin-gonic/gin"
 
 func GetUserIDFromContext(c *gin.Context) (uint, bool) {
-	userIDVal, exists := c.Get("user_id")
+	userIDVal, exists := c.Get("userID")
 	if !exists {
 		return 0, false
 	}

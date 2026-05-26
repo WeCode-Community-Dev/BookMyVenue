@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/api/models"
 	"github.com/WeCode-Community-Dev/BookMyVenue/api/repositories"
@@ -21,6 +22,9 @@ type UserService interface {
 	RevokeRefreshToken(token string, userID uint) error
 	ForgetPasswordStep1(email string, channel models.OTPChannel) error
 	ForgetPasswordStep2(email string, otp string, newPassword string) error
+	ChangePassword(userID uint, oldPassword string, newPassword string) error
+	UpdateUserByID(userID uint, name string, email string, mobileNumber string) error
+	GetUserByID(userID uint) (*models.User, error)
 }
 
 type userService struct {
@@ -229,6 +233,83 @@ func (s *userService) ForgetPasswordStep2(email string, otp string, newPassword 
 
 	user.PasswordHash = string(passwordHash)
 	return s.userRepo.UpdateByID(user.ID, user)
+}
+
+func (s *userService) ChangePassword(userID uint, oldPassword string, newPassword string) error {
+	if oldPassword == "" || newPassword == "" {
+		return service_errors.UserErrAllFieldsRequired
+	}
+
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return service_errors.UserErrNotFound
+		}
+		return err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(oldPassword))
+	if err != nil {
+		return service_errors.UserErrInvalidOldPassword
+	}
+
+	newPasswordHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	user.PasswordHash = string(newPasswordHash)
+	return s.userRepo.UpdateByID(user.ID, user)
+}
+
+func (s *userService) UpdateUserByID(userID uint, name string, email string, mobileNumber string) error {
+	if strings.TrimSpace(name) == "" && strings.TrimSpace(email) == "" && strings.TrimSpace(mobileNumber) == "" {
+		return service_errors.UserErrAllFieldsRequired
+	}
+
+	if !s.isValidEmail(email) {
+		return service_errors.UserErrInvalidEmailFormat
+	}
+
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return service_errors.UserErrNotFound
+		}
+		return err
+	}
+
+	if name != "" {
+		user.Name = name
+	}
+
+	if email != "" && email != user.Email {
+		// Check if email already exists
+		_, err := s.userRepo.FindByEmail(email)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		} else if err == nil {
+			return service_errors.UserErrEmailAlreadyExists
+		}
+		user.Email = email
+	}
+
+	if mobileNumber != "" && mobileNumber != user.MobileNumber {
+		// Check if mobile number already exists
+		_, err := s.userRepo.FindByMobileNumber(mobileNumber)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		} else if err == nil {
+			return service_errors.UserErrMobileNumberAlreadyExists
+		}
+		user.MobileNumber = mobileNumber
+	}
+
+	return s.userRepo.UpdateByID(user.ID, user)
+}
+
+func (s *userService) GetUserByID(userID uint) (*models.User, error) {
+	return s.userRepo.FindByID(userID)
 }
 
 func (s *userService) isValidEmail(email string) bool {
