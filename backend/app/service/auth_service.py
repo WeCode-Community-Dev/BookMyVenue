@@ -1,6 +1,22 @@
-from fastapi import HTTPException
-from app.schema.auth_schema import AdminAuthRequest, AdminAuthResponse
+import secrets
+
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.schema.auth_schema import (
+    AdminAuthRequest,
+    AdminAuthResponse,
+    OTPResponse,
+    OTPVerifyRequest,
+    TokenResponse,
+    UserResponse,
+)
+from app.config.security import create_access_token, create_refresh_token, verify_token
 from app.config.constant import ADMIN_EMAIL, ADMIN_PASSWORD
+from app.config.redis import redis_client
+from app.core.config import settings
+from app.service.user_service import user_service
+from app.service.sms_service import sms_service
 
 
 ## Admin Auth API Service
@@ -26,4 +42,139 @@ async def authenticate_admin_service(data: AdminAuthRequest):
 
 ## Venue owner Auth API Service
 
+
 ## User/Customer Auth API Service
+class AuthService:
+    """
+    Service containing the authentication business logic.
+    """
+
+    def _generate_otp_code(self) -> str:
+        """
+        Generates a secure random numeric OTP code of specified length.
+        """
+        # Cryptographically secure random digit generator
+        try:
+            return "".join(
+                secrets.choice("0123456789") for _ in range(settings.OTP_LENGTH)
+            )
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    def request_otp(self, mobile_number: str) -> OTPResponse:
+        """
+        Generates an OTP, stores it in cache with TTL, and dispatches it via SMS.
+        Returns the OTP for testing purposes.
+        """
+        otp = self._generate_otp_code()
+        cache_key = f"otp:{mobile_number}"
+
+        # Cache standard key-value with TTL
+        redis_client.setex(cache_key, settings.OTP_EXPIRE_SECONDS, otp)
+
+        # Dispatch message
+        sms_service.send_otp(mobile_number, otp)
+
+        return OTPResponse(
+            mobile_number=mobile_number,
+            otp=otp,
+            expires_in_seconds=settings.OTP_EXPIRE_SECONDS,
+            message="OTP Generates Successfully",
+        )
+
+    def verify_otp(self, db: Session, data: OTPVerifyRequest) -> TokenResponse:
+        try:
+            """
+            Validates OTP, deletes it if correct to prevent reuse, registers or retrieves
+            the User, and generates standard Bearer tokens.
+            """
+            cache_key = f"otp:{data.mobile_number}"
+            cached_otp = redis_client.get(cache_key)
+
+            # 1. Validate expiration or non-existence
+            if not cached_otp:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="OTP has expired or was never requested.",
+                )
+
+            # 2. Match verification code
+            if cached_otp != data.otp:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid OTP code."
+                )
+
+            # 3. Clean up cache key immediately to block replay attacks (OTP = One Time Password)
+            redis_client.delete(cache_key)
+
+            # 4. Check/Register User
+            user = user_service.get_user_by_mobile_number(db, data.mobile_number)
+            if not user:
+                user = user_service.create_user(db, data.mobile_number)
+
+            # 5. Generate secure JWT pair
+            access_token = create_access_token(subject=user.id)
+            refresh_token = create_refresh_token(subject=user.id)
+
+            # Return full serialized profile + token payload
+            return TokenResponse(
+                access_token=access_token,
+                refresh_token=refresh_token,
+                user=UserResponse.model_validate(user),
+            )
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    def refresh_token(self, db: Session, refresh_token: str) -> TokenResponse:
+        """
+        Verifies a refresh token and generates a new access/refresh pair.
+        """
+        # Decode and assert token type is 'refresh'
+        user_id_str = verify_token(refresh_token, expected_type="refresh")
+        if not user_id_str:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired refresh token.",
+            )
+
+        try:
+            user_id = int(user_id_str)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Malformed token identity payload.",
+            )
+
+        # Resolve user
+        user = user_service.get_user_by_id(db, user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User associated with token no longer exists.",
+            )
+
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is deactivated.",
+            )
+
+        # Generate new JWT pair for continuous authentication
+        access_token = create_access_token(subject=user.id)
+        new_refresh_token = create_refresh_token(subject=user.id)
+
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=new_refresh_token,
+            user=UserResponse.model_validate(user),
+        )
+
+
+# Singleton instance
+auth_service = AuthService()

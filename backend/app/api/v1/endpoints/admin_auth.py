@@ -18,9 +18,3 @@ router = APIRouter()
 async def authenticate_admin(data: AdminAuthRequest):
     result = await authenticate_admin_service(data=data)
     return SuccessResponse(message="Admin Logged in Successfully", data=result)
-
-
-## Venue owner Auth Endpoint
-
-
-## User/Customer Auth Endpoint

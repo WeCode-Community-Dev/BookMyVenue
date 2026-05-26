@@ -3,33 +3,26 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.v1.router import api_router
+from app.core.config import settings
+from app.config.database import Base, engine
 
 app = FastAPI(
-    title="Book my venue API",
-    description="Backend API for Book my venue",
+    title=settings.PROJECT_NAME,
+    description=settings.PROJECT_DESCRIPTION,
     version="1.0.0",
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
 
-
-# Allowed origins
-origins = [
-    "http://localhost",
-    "http://localhost:3000",  # React or frontend running locally
-    "http://localhost:5000",  # Flutter web URL
-    "http://localhost:4200",  # Angular frontend
-    "http://127.0.0.1:5500",  # Example: local HTML/JS testing
-    # "https://yourdomain.com",  # Production frontend
-    "*",  # (not recommended for production, allows all origins)
-]
 
 # Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,  # List of allowed origins
-    allow_credentials=True,  # Allow cookies/auth headers
-    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allow all headers
-)
+if settings.BACKEND_CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 @app.exception_handler(HTTPException)
@@ -41,4 +34,21 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 
-app.include_router(api_router, prefix="/api/v1")
+# Attach routes
+app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+@app.get("/", tags=["Health Check"], summary="General system status indicator")
+def system_health() -> dict:
+    """
+    Returns general system metrics indicating application health and instructions.
+    """
+    return {
+        "status": "healthy",
+        "service": settings.PROJECT_NAME,
+        "interactive_docs": "/docs",
+        "alternative_docs": "/redoc",
+    }
+
+
+Base.metadata.create_all(engine)

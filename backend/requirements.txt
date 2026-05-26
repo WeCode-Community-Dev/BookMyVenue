@@ -1,2 +1,11 @@
 fastapi
 uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy
+pyjwt[crypto]
+redis
+pytest
+httpx
+python-multipart
+psycopg2-binary
