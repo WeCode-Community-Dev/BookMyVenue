@@ -15,4 +15,6 @@ var (
 	UserErrInvalidCredentials error = errors.New("invalid email or password")
 
 	UserErrInvalidRefreshToken error = errors.New("invalid refresh token")
+
+	UserErrInvalidOTP error = errors.New("invalid OTP")
 )

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/api/dtos"
+	"github.com/WeCode-Community-Dev/BookMyVenue/api/models"
 	"github.com/WeCode-Community-Dev/BookMyVenue/api/service_errors"
 	"github.com/WeCode-Community-Dev/BookMyVenue/api/services"
 	"github.com/WeCode-Community-Dev/BookMyVenue/api/utils"
@@ -129,4 +130,72 @@ func (h *UserHandler) RevokeRefreshToken(c *gin.Context) {
 	}
 
 	utils.WriteSuccessResponse(c, http.StatusOK, "Refresh token revoked successfully", nil)
+}
+
+func (h *UserHandler) ForgetPasswordStep1(c *gin.Context) {
+	var req dtos.ForgetPasswordStep1Request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
+	}
+
+	var channel models.OTPChannel
+	switch req.Channel {
+	case "email":
+		channel = models.EmailOTPChannel
+	case "sms":
+		channel = models.SMSOTPChannel
+	case "whatsapp":
+		channel = models.WhatsappOTPChannel
+	default:
+		utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid channel. Must be one of: email, sms, whatsapp", nil)
+		return
+	}
+
+	err := h.userService.ForgetPasswordStep1(req.Email, channel)
+	if err != nil {
+		if errors.Is(err, service_errors.UserErrEmptyEmail) {
+			utils.WriteFailedResponse(c, http.StatusBadRequest, "Email is required", nil)
+			return
+		} else if errors.Is(err, service_errors.UserErrInvalidEmailFormat) {
+			utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid email format", nil)
+			return
+		} else if errors.Is(err, service_errors.UserErrNotFound) {
+			utils.WriteFailedResponse(c, http.StatusNotFound, "User with the given email not found", nil)
+			return
+		}
+		utils.WriteFailedResponse(c, http.StatusInternalServerError, "Failed to process forget password request", err)
+		return
+	}
+
+	utils.WriteSuccessResponse(c, http.StatusOK, "OTP sent successfully to the user via the specified channel", nil)
+}
+
+func (h *UserHandler) ForgetPasswordStep2(c *gin.Context) {
+	var req dtos.ForgetPasswordStep2Request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
+	}
+
+	err := h.userService.ForgetPasswordStep2(req.Email, req.OTP, req.NewPassword)
+	if err != nil {
+		if errors.Is(err, service_errors.UserErrEmptyEmail) {
+			utils.WriteFailedResponse(c, http.StatusBadRequest, "Email is required", nil)
+			return
+		} else if errors.Is(err, service_errors.UserErrInvalidEmailFormat) {
+			utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid email format", nil)
+			return
+		} else if errors.Is(err, service_errors.UserErrNotFound) {
+			utils.WriteFailedResponse(c, http.StatusNotFound, "User with the given email not found", nil)
+			return
+		} else if errors.Is(err, service_errors.UserErrInvalidOTP) {
+			utils.WriteFailedResponse(c, http.StatusBadRequest, "Invalid OTP", nil)
+			return
+		}
+		utils.WriteFailedResponse(c, http.StatusInternalServerError, "Failed to reset password", err)
+		return
+	}
+
+	utils.WriteSuccessResponse(c, http.StatusOK, "Password reset successfully", nil)
 }

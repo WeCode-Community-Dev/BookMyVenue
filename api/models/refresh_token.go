@@ -17,6 +17,7 @@ type RefreshToken struct {
 	gorm.Model
 	Token     string             `json:"token" gorm:"not null"`
 	UserID    uint               `json:"user_id" gorm:"not null"`
+	User      User               `json:"-" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ExpiredAt time.Time          `json:"expired_at" gorm:"not null"`
 	Status    RefreshTokenStatus `json:"status" gorm:"not null;default:1"`
 }

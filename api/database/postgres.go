@@ -41,6 +41,7 @@ func MigrateModels() {
 	err := db.AutoMigrate(
 		&models.User{},
 		&models.RefreshToken{},
+		&models.OTP{},
 	)
 	if err != nil {
 		log.Fatalf("failed to migrate database: %v", err)

@@ -19,3 +19,14 @@ type RotateRefreshTokenRequest struct {
 type RevokeRefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
+
+type ForgetPasswordStep1Request struct {
+	Email   string `json:"email" binding:"required,email"`
+	Channel string `json:"channel" binding:"required,oneof=email sms whatsapp"`
+}
+
+type ForgetPasswordStep2Request struct {
+	Email       string `json:"email" binding:"required,email"`
+	OTP         string `json:"otp" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=6"`
+}

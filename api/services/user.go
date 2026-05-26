@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"log"
 	"regexp"
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/api/models"
@@ -18,17 +19,21 @@ type UserService interface {
 	Login(email string, password string) (accessToken string, refreshToken string, err error)
 	RotateRefreshToken(oldToken string, userID uint) (newAccessToken string, newRefreshToken string, err error)
 	RevokeRefreshToken(token string, userID uint) error
+	ForgetPasswordStep1(email string, channel models.OTPChannel) error
+	ForgetPasswordStep2(email string, otp string, newPassword string) error
 }
 
 type userService struct {
 	userRepo         repositories.UserRepository
 	refreshTokenRepo repositories.RefreshTokenRepository
+	otpRepo          repositories.OTPRepository
 }
 
 func NewUserService() UserService {
 	return &userService{
 		userRepo:         repositories.NewUserRepository(),
 		refreshTokenRepo: repositories.NewRefreshTokenRepository(),
+		otpRepo:          repositories.NewOTPRepository(),
 	}
 }
 
@@ -162,6 +167,68 @@ func (s *userService) RevokeRefreshToken(token string, userID uint) error {
 	}
 
 	return s.refreshTokenRepo.RevokeTokenByIDAndUserID(rt.ID, userID)
+}
+
+func (s *userService) ForgetPasswordStep1(email string, channel models.OTPChannel) error {
+	if email == "" {
+		return service_errors.UserErrEmptyEmail
+	}
+
+	if !s.isValidEmail(email) {
+		return service_errors.UserErrInvalidEmailFormat
+	}
+
+	user, err := s.userRepo.FindByEmail(email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return service_errors.UserErrEmailNotFound
+		}
+		return err
+	}
+
+	otpStr, err := s.otpRepo.GenerateOTP(user.ID, models.ForgetPasswordOTPType, channel)
+	if err != nil {
+		return err
+	}
+
+	// TODO -> Send OTP to user via the specified channel (email or SMS or WhatsApp)
+	log.Printf("Generated OTP for user %d: %s", user.ID, otpStr) // For testing purposes, log the OTP. In production, this should be sent securely to the user.
+
+	return nil
+}
+
+func (s *userService) ForgetPasswordStep2(email string, otp string, newPassword string) error {
+	if email == "" || otp == "" || newPassword == "" {
+		return service_errors.UserErrAllFieldsRequired
+	}
+
+	if !s.isValidEmail(email) {
+		return service_errors.UserErrInvalidEmailFormat
+	}
+
+	user, err := s.userRepo.FindByEmail(email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return service_errors.UserErrEmailNotFound
+		}
+		return err
+	}
+
+	valid, err := s.otpRepo.ValidateOTP(user.ID, models.ForgetPasswordOTPType, otp)
+	if err != nil {
+		return err
+	}
+	if !valid {
+		return service_errors.UserErrInvalidOTP
+	}
+
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	user.PasswordHash = string(passwordHash)
+	return s.userRepo.UpdateByID(user.ID, user)
 }
 
 func (s *userService) isValidEmail(email string) bool {

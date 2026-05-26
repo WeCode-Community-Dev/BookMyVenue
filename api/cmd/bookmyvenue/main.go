@@ -10,14 +10,14 @@ import (
 )
 
 func main() {
-	// Create a new Gin server instance
-	server := gin.Default()
-
 	// Load environment variables from .env file
 	err := godotenv.Load()
 	if err != nil {
 		log.Printf("Error loading .env file: %v", err)
 	}
+	
+	// Create a new Gin server instance
+	server := gin.Default()
 
 	// Set Gin mode based on environment variable
 	if os.Getenv("GIN_MODE") == "release" {
