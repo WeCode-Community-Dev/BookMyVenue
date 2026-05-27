@@ -1,14 +1,14 @@
-package com.example.bookMyVenue.Model;
+package com.example.bookMyVenue.Venue.Model;
 
 import com.example.bookMyVenue.Enums.VenueActiveStatus;
 import com.example.bookMyVenue.Enums.VenueVerificationStatus;
+import com.example.bookMyVenue.Payment.Model.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Getter
@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "bmv_venues")
+@Builder
 public class Venue {
 
     @Id
@@ -39,4 +40,6 @@ public class Venue {
     private VenueActiveStatus status;
 
     private LocalDateTime createdAt;
+
+    private List<MultipartFile> imageFiles;
 }

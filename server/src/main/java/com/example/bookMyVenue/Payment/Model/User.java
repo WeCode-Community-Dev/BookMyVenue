@@ -1,4 +1,4 @@
-package com.example.bookMyVenue.Model;
+package com.example.bookMyVenue.Payment.Model;
 
 import com.example.bookMyVenue.Enums.Role;
 import com.example.bookMyVenue.Enums.UserStatus;

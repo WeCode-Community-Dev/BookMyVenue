@@ -1,7 +1,10 @@
-package com.example.bookMyVenue.Model;
+package com.example.bookMyVenue.Booking.Model;
 
 import com.example.bookMyVenue.Enums.BookingPaymentStatus;
 import com.example.bookMyVenue.Enums.BookingStatus;
+import com.example.bookMyVenue.Auth.Model.PaymentDetail;
+import com.example.bookMyVenue.Payment.Model.User;
+import com.example.bookMyVenue.Venue.Model.Venue;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

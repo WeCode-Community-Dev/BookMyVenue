@@ -1,4 +1,4 @@
-package com.example.bookMyVenue.Model;
+package com.example.bookMyVenue.Venue.Model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.DayOfWeek;
-import java.time.Duration;
 import java.time.LocalTime;
 
 @Entity

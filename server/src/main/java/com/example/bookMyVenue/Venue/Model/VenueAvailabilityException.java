@@ -1,4 +1,4 @@
-package com.example.bookMyVenue.Model;
+package com.example.bookMyVenue.Venue.Model;
 
 import com.example.bookMyVenue.Enums.Exceptionstatus;
 import com.example.bookMyVenue.Enums.VenueExceptionType;

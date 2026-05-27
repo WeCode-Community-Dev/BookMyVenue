@@ -1,4 +1,4 @@
-package com.example.bookMyVenue.Model;
+package com.example.bookMyVenue.Auth.Model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
