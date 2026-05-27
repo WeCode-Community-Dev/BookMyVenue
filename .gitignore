@@ -1,4 +1,6 @@
+# =========================
 # Logs
+# =========================
 logs
 *.log
 npm-debug.log*
@@ -7,28 +9,79 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# =========================
+# Node / React
+# =========================
+node_modules/
+dist/
+dist-ssr/
+coverage/
+.cache/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
 
-#env files
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Python build files
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# =========================
+# Environment files
+# =========================
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+*.local
 
-#linting and caching
+# =========================
+# Editor / IDE
+# =========================
+.vscode/*
+!.vscode/extensions.json
+
+.idea/
+.DS_Store
+
+# Visual Studio
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Vim
+*.sw?
+
+# =========================
+# Lint / Cache
+# =========================
 .eslintcache
+.pytest_cache/
+.mypy_cache/
+
+# =========================
+# OS generated
+# =========================
+Thumbs.db
