@@ -1,19 +1,11 @@
 package com.example.bookMyVenue.Venue.DTO;
 
-import com.example.bookMyVenue.Enums.VenueActiveStatus;
-import com.example.bookMyVenue.Enums.VenueVerificationStatus;
-import com.example.bookMyVenue.Payment.Model.User;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter

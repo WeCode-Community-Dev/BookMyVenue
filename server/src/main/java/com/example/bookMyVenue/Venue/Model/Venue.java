@@ -2,7 +2,7 @@ package com.example.bookMyVenue.Venue.Model;
 
 import com.example.bookMyVenue.Enums.VenueActiveStatus;
 import com.example.bookMyVenue.Enums.VenueVerificationStatus;
-import com.example.bookMyVenue.Payment.Model.User;
+import com.example.bookMyVenue.Auth.Model.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
