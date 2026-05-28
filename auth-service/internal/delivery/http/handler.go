@@ -43,6 +43,7 @@ func NewAuthHandler(mux *http.ServeMux, svc auth.AuthService) {
 	mux.HandleFunc("/login", h.Login)
 	mux.HandleFunc("/register", h.Register)
 	mux.HandleFunc("/verify", h.Verify)
+	mux.HandleFunc("/list", h.List)
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -84,9 +85,9 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.Service.Register(req.Name, req.Username, req.Email, req.Role, req.Password)
+	user, err := h.Service.Register(req.Name, req.Email, req.Role, req.Password)
 	if err != nil {
-		if errors.Is(err, domain.ErrDuplicateUsername) {
+		if errors.Is(err, domain.ErrDuplicateEmail) {
 			jsonutil.WriteError(w, http.StatusConflict, err.Error())
 			return
 		}
@@ -117,4 +118,19 @@ func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonutil.Write(w, http.StatusOK, claims)
+}
+
+func (h *AuthHandler) List(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		jsonutil.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	users, err := h.Service.List()
+	if err != nil {
+		jsonutil.WriteError(w, http.StatusInternalServerError, "Internal Server Error")
+		return
+	}
+	jsonutil.Write(w, http.StatusOK, users)
+
 }

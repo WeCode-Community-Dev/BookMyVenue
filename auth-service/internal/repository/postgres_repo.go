@@ -21,13 +21,13 @@ func NewPostgresUserRepository(db *pgxpool.Pool) domain.UserRepository {
 
 func (r *PostgresUserRepository) Create(user *domain.User) error {
 	ctx := context.Background()
-	query := `INSERT INTO users (id, name, username, email, password_hash, role) VALUES ($1, $2, $3, $4, $5, $6)`
+	query := `INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4)`
 
-	_, err := r.db.Exec(ctx, query, user.ID, user.Name, user.Username, user.Email, user.PasswordHash, user.Role)
+	_, err := r.db.Exec(ctx, query, user.Name, user.Email, user.PasswordHash, user.Role)
 	if err != nil {
 		//NOTE: parse unique constraint violations here if needed
 		log.Println(err)
-		return domain.ErrDuplicateUsername
+		return domain.ErrDuplicateEmail
 		// return err
 	}
 	return nil
@@ -35,14 +35,14 @@ func (r *PostgresUserRepository) Create(user *domain.User) error {
 
 func (r *PostgresUserRepository) GetByID(id string) (*domain.User, error) {
 	ctx := context.Background()
-	query := `SELECT id, name,username, email FROM users WHERE id = $1`
+	query := `SELECT id, name, email, role FROM users WHERE id = $1`
 
 	var user domain.User
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&user.ID,
 		&user.Name,
-		&user.Username,
 		&user.Email,
+		&user.Role,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -54,15 +54,14 @@ func (r *PostgresUserRepository) GetByID(id string) (*domain.User, error) {
 	return &user, nil
 }
 
-func (r *PostgresUserRepository) GetByUsername(username string) (*domain.User, error) {
+func (r *PostgresUserRepository) GetByEmail(email string) (*domain.User, error) {
 	ctx := context.Background()
-	query := `SELECT id, name, username, email, password_hash, role FROM users WHERE username = $1`
+	query := `SELECT id, name, email, password_hash, role FROM users WHERE email = $1`
 
 	var user domain.User
-	err := r.db.QueryRow(ctx, query, username).Scan(
+	err := r.db.QueryRow(ctx, query, email).Scan(
 		&user.ID,
 		&user.Name,
-		&user.Username,
 		&user.Email,
 		&user.PasswordHash,
 		&user.Role,
@@ -76,4 +75,38 @@ func (r *PostgresUserRepository) GetByUsername(username string) (*domain.User, e
 	}
 
 	return &user, nil
+}
+
+func (r *PostgresUserRepository) ListUsers() ([]domain.User, error) {
+	ctx := context.Background()
+	query := `SELECT id, name, email, password_hash, role FROM users`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var users []domain.User
+	for rows.Next() {
+		var user domain.User
+
+		err := rows.Scan(
+			&user.ID,
+			&user.Name,
+			&user.Email,
+			&user.PasswordHash,
+			&user.Role,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }

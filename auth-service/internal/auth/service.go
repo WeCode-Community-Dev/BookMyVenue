@@ -1,9 +1,7 @@
 package auth
 
 import (
-	"crypto/rand"
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -17,7 +15,8 @@ import (
 type AuthService interface {
 	Login(username, password string) (string, error)
 	Verify(token string) (jwt.MapClaims, error)
-	Register(name, username, email, role, password string) (*domain.User, error)
+	Register(name, email, role, password string) (*domain.User, error)
+	List() ([]domain.User, error)
 }
 
 type authService struct {
@@ -29,8 +28,8 @@ func NewAuthService(repo domain.UserRepository, jwt *JWTManager) AuthService {
 	return &authService{jwtManager: jwt, repo: repo}
 }
 
-func (s *authService) Login(username, password string) (string, error) {
-	user, err := s.repo.GetByUsername(username)
+func (s *authService) Login(email, password string) (string, error) {
+	user, err := s.repo.GetByEmail(email)
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			log.Printf("user not found")
@@ -49,22 +48,17 @@ func (s *authService) Login(username, password string) (string, error) {
 	return s.jwtManager.GenerateToken(user.ID, user.Role, time.Hour)
 }
 
-func (s *authService) Register(name, username, email, role, password string) (*domain.User, error) {
+func (s *authService) Register(name, email, role, password string) (*domain.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("Error hashing")
 		return nil, err
 	}
 
-	b := make([]byte, 8)
-	rand.Read(b)
-	userID := fmt.Sprintf("usr_%x", b)
 	if role == "" {
 		role = "user"
 	}
 	newUser := &domain.User{
-		ID:           userID,
-		Username:     username,
 		Name:         name,
 		Email:        email,
 		PasswordHash: string(hashedPassword),
@@ -79,4 +73,12 @@ func (s *authService) Register(name, username, email, role, password string) (*d
 
 func (s *authService) Verify(token string) (jwt.MapClaims, error) {
 	return s.jwtManager.VerifyToken(token)
+}
+
+func (s *authService) List() ([]domain.User, error) {
+	users, err := s.repo.ListUsers()
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }

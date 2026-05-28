@@ -3,11 +3,10 @@ package domain
 import "errors"
 
 var ErrUserNotFound = errors.New("user not found")
-var ErrDuplicateUsername = errors.New("user already exists")
+var ErrDuplicateEmail = errors.New("user already exists")
 
 type User struct {
 	ID           string `json:"id"`
-	Username     string `json:"username"`
 	Name         string `json:"name"`
 	Email        string `json:"email"`
 	PasswordHash string `json:"-"` //NOTE: Hidden from JSON outputs
@@ -15,6 +14,7 @@ type User struct {
 }
 
 type UserRepository interface {
-	GetByUsername(username string) (*User, error)
+	GetByEmail(email string) (*User, error)
 	Create(user *User) error
+	ListUsers() ([]User, error)
 }
