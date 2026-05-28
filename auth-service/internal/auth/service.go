@@ -37,7 +37,6 @@ func (s *authService) Login(email, password string) (string, error) {
 		}
 		return "", err
 	}
-	log.Printf("%v", user)
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
@@ -55,9 +54,16 @@ func (s *authService) Register(name, email, role, password string) (*domain.User
 		return nil, err
 	}
 
-	if role == "" {
-		role = "user"
+	// Default empty role to 'user'; block self-registration as admin.
+	switch role {
+	case "":
+		role = domain.RoleUser
+	case domain.RoleUser, domain.RoleOwner:
+		// allowed
+	default:
+		return nil, domain.ErrInvalidRole
 	}
+
 	newUser := &domain.User{
 		Name:         name,
 		Email:        email,
@@ -65,7 +71,7 @@ func (s *authService) Register(name, email, role, password string) (*domain.User
 		Role:         role,
 	}
 	if err := s.repo.Create(newUser); err != nil {
-		return nil, err // Will pass up domain.ErrDuplicateUsername cleanly
+		return nil, err // Will pass up domain.ErrDuplicateEmail cleanly
 	}
 
 	return newUser, nil

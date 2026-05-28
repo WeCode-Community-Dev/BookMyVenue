@@ -3,11 +3,11 @@ package http
 import (
 	"auth-service/internal/auth"
 	"auth-service/internal/domain"
-	"auth-service/internal/pkg/jsonutil"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type AuthHandler struct {
@@ -30,7 +30,7 @@ type RegisterResponse struct {
 }
 
 type LoginRequest struct {
-	Username string `json:"username"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -38,99 +38,81 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
-func NewAuthHandler(mux *http.ServeMux, svc auth.AuthService) {
+// NewAuthHandler registers all auth routes on the provided Gin router group.
+func NewAuthHandler(rg *gin.RouterGroup, svc auth.AuthService) {
 	h := &AuthHandler{Service: svc}
-	mux.HandleFunc("/login", h.Login)
-	mux.HandleFunc("/register", h.Register)
-	mux.HandleFunc("/verify", h.Verify)
-	mux.HandleFunc("/list", h.List)
+	rg.POST("/login", h.Login)
+	rg.POST("/register", h.Register)
+	rg.POST("/verify", h.Verify)
+	rg.GET("/list", h.List)
 }
 
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		jsonutil.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
+func (h *AuthHandler) Login(c *gin.Context) {
 	var req LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonutil.WriteError(w, http.StatusBadRequest, "Malformed request")
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Malformed request"})
 		return
 	}
 
-	token, err := h.Service.Login(req.Username, req.Password)
+	token, err := h.Service.Login(req.Email, req.Password)
 	if err != nil {
-		jsonutil.WriteError(w, http.StatusUnauthorized, "Invalid Credentials")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Credentials"})
 		return
 	}
 
-	res := LoginResponse{Token: token}
-	jsonutil.Write(w, http.StatusOK, res)
+	c.JSON(http.StatusOK, LoginResponse{Token: token})
 }
 
-func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		jsonutil.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
+func (h *AuthHandler) Register(c *gin.Context) {
 	var req RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonutil.WriteError(w, http.StatusBadRequest, "Malformed request")
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Malformed request"})
 		return
 	}
 
 	if req.Username == "" || req.Password == "" {
-		jsonutil.WriteError(w, http.StatusBadRequest, "Username and password are required")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Username and password are required"})
 		return
 	}
 
 	user, err := h.Service.Register(req.Name, req.Email, req.Role, req.Password)
 	if err != nil {
-		if errors.Is(err, domain.ErrDuplicateEmail) {
-			jsonutil.WriteError(w, http.StatusConflict, err.Error())
-			return
+		switch {
+		case errors.Is(err, domain.ErrDuplicateEmail):
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		case errors.Is(err, domain.ErrInvalidRole):
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		}
-		jsonutil.WriteError(w, http.StatusInternalServerError, "Internal server error")
 		return
 	}
-	jsonutil.Write(w, http.StatusCreated, user)
 
+	c.JSON(http.StatusCreated, user)
 }
 
-func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		jsonutil.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
-	authHeader := r.Header.Get("Authorization")
+func (h *AuthHandler) Verify(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-		jsonutil.WriteError(w, http.StatusUnauthorized, "Missing or malformed token")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing or malformed token"})
 		return
 	}
 	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 
 	claims, err := h.Service.Verify(tokenStr)
 	if err != nil {
-		jsonutil.WriteError(w, http.StatusUnauthorized, err.Error())
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	jsonutil.Write(w, http.StatusOK, claims)
+	c.JSON(http.StatusOK, claims)
 }
 
-func (h *AuthHandler) List(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		jsonutil.WriteError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return
-	}
-
+func (h *AuthHandler) List(c *gin.Context) {
 	users, err := h.Service.List()
 	if err != nil {
-		jsonutil.WriteError(w, http.StatusInternalServerError, "Internal Server Error")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
-	jsonutil.Write(w, http.StatusOK, users)
-
+	c.JSON(http.StatusOK, users)
 }

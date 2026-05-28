@@ -2,8 +2,18 @@ package domain
 
 import "errors"
 
-var ErrUserNotFound = errors.New("user not found")
-var ErrDuplicateEmail = errors.New("user already exists")
+// Role constants — the single source of truth for role strings across services.
+const (
+	RoleUser  = "user"
+	RoleOwner = "owner"
+	RoleAdmin = "admin"
+)
+
+var (
+	ErrUserNotFound  = errors.New("user not found")
+	ErrDuplicateEmail = errors.New("user already exists")
+	ErrInvalidRole   = errors.New("invalid role: must be 'user' or 'owner'")
+)
 
 type User struct {
 	ID           string `json:"id"`
