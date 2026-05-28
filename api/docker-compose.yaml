@@ -1,0 +1,29 @@
+name: bookmyvenue
+version: '3.8'
+
+services:
+	db:
+		image: postgres:15
+		container_name: bookmyvenue_db
+		restart: unless-stopped
+		environment:
+			POSTGRES_USER: bookmyvenue_user
+			POSTGRES_PASSWORD: strongpassword
+			POSTGRES_DB: bookmyvenue_db
+		volumes:
+			- db_data:/var/lib/postgresql/data
+		ports:
+			- "5432:5432"
+		healthcheck:
+			test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+			interval: 10s
+			timeout: 5s
+			retries: 5
+
+volumes:
+	db_data:
+		driver: local
+
+# Example usage:
+#   docker compose up -d
+# Connect: postgres://bookmyvenue_user:strongpassword@localhost:5432/bookmyvenue_db

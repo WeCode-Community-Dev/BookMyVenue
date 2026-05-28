@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/WeCode-Community-Dev/BookMyVenue/api/database"
 	"github.com/WeCode-Community-Dev/BookMyVenue/api/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -11,11 +12,13 @@ import (
 
 func main() {
 	// Load environment variables from .env file
-	err := godotenv.Load()
+	err := godotenv.Load(".env")
 	if err != nil {
 		log.Printf("Error loading .env file: %v", err)
 	}
-	
+	database.ConnectPostgres()
+	database.MigrateModels()
+
 	// Create a new Gin server instance
 	server := gin.Default()
 
