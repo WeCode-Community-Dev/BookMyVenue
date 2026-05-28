@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: bookmyvenue_bookings
+    ports:
+      - "5433:5432"
+    volumes:
+      - booking_pg_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+volumes:
+  booking_pg_data:
