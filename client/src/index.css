@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  /* Clean Premium Matte Colors */
+  --color-primary: #8B5CF6;
+  --color-primary-light: #A78BFA;
+  --color-primary-dark: #7C3AED;
+  --color-secondary: #06B6D4;
+  --color-secondary-light: #22D3EE;
+  
+  /* Trust-Focused Neutrals */
+  --color-bg-primary: #0B0B12;
+  --color-bg-secondary: #12121E;
+  --color-bg-card: #151522;
+  --color-bg-elevated: #1E1E2F;
+  
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-text-muted: #A1A1AA;
+}
+
+/* Global Custom Styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    background-color: #0B0B12;
+    /* Clean single top-left subtle violet glow */
+    background-image: radial-gradient(
+      circle at 0% 0%,
+      rgba(139, 92, 246, 0.12) 0%,
+      rgba(11, 11, 18, 0) 50%
+    );
+    background-attachment: fixed;
+    color: #FFFFFF;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  /* Custom Clean Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0B0B12;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1E1E2F;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #8B5CF6;
+  }
+}
+
+/* Professional SaaS Clean Components */
+@layer utilities {
+  .matte-card {
+    background: #151522;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .matte-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .form-control {
+    background: #151522;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    color: #FFFFFF;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-control:focus {
+    border-color: #8B5CF6;
+    outline: none;
+  }
+}
