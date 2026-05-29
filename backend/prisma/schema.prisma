@@ -128,8 +128,6 @@ model User {
 
   // Relations
   profile            UserProfile?
-  preferences        UserPreference?
-  socialAccounts     SocialAccount[]
   passwordResets     PasswordReset[]
   emailVerifications EmailVerification[]
   ownedVenues        Venue[]             @relation("VenueOwner")
@@ -141,9 +139,6 @@ model User {
   calendarEvents     CalendarEvent[]
   couponsCreated     Coupon[]            @relation("CouponOwner")
   venueViewLogs      VenueViewLog[]
-  searchAnalytics    SearchAnalytics[]
-  auditLogs          AuditLog[]
-  adminActions       AdminAction[]
 
   @@index([email])
   @@index([phone])
@@ -175,42 +170,6 @@ model UserProfile {
   @@index([city])
   @@index([state])
   @@map("user_profiles")
-}
-
-model UserPreference {
-  id                  String   @id @default(uuid())
-  userId              String   @unique @map("user_id")
-  preferredCity       String?  @map("preferred_city")
-  preferredState      String?  @map("preferred_state")
-  preferredCategories String[] @map("preferred_categories")
-  notifyEmail         Boolean  @default(true) @map("notify_email")
-  notifyPush          Boolean  @default(true) @map("notify_push")
-  notifySms           Boolean  @default(false) @map("notify_sms")
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("user_preferences")
-}
-
-model SocialAccount {
-  id           String         @id @default(uuid())
-  userId       String         @map("user_id")
-  provider     SocialProvider
-  providerId   String         @map("provider_id")
-  accessToken  String?        @map("access_token")
-  refreshToken String?        @map("refresh_token")
-  expiresAt    DateTime?      @map("expires_at")
-  createdAt    DateTime       @default(now()) @map("created_at")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerId])
-  @@index([userId])
-  @@map("social_accounts")
 }
 
 model PasswordReset {
@@ -264,7 +223,6 @@ model VenueCategory {
 
   // Relations
   venues          Venue[]
-  searchAnalytics SearchAnalytics[]
 
   @@index([parentId])
   @@index([slug])
@@ -313,10 +271,8 @@ model Venue {
   availability     VenueAvailability[]
   bookings         Booking[]
   reviews          Review[]
-  coupons          Coupon[]
   savedByUsers     SavedVenue[]
   notifications    Notification[]
-  analytics        VenueAnalytics[]
   viewLogs         VenueViewLog[]
   pastEventGallery PastEventGallery[]
   personalities    VenuePersonality[]
@@ -338,7 +294,7 @@ model VenueImage {
   imageUrl  String   @map("image_url")
   caption   String?
   sortOrder Int      @default(0) @map("sort_order")
-  isPrimary Boolean  @default(false) @map("is_primary")
+  isPrimary Boolean  @default(false) @map("is_primary") // TODO: what is this for ?
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
@@ -393,6 +349,7 @@ model VenueAmenity {
 // AVAILABILITY & BOOKING DOMAIN
 // ============================================
 
+// TODO: how to plan tickets for different tier ?
 model VenueAvailability {
   id             String   @id @default(uuid())
   venueId        String   @map("venue_id")
@@ -499,6 +456,7 @@ model Payment {
   @@map("payments")
 }
 
+// TODO: how to plan coupons for different tier ? and implement on final polishing stage
 model Coupon {
   id             String       @id @default(uuid())
   venueId        String?      @map("venue_id")
@@ -599,7 +557,7 @@ model Review {
   reviewText   String?   @map("review_text")
   isVerified   Boolean   @default(false) @map("is_verified")
   isApproved   Boolean   @default(false) @map("is_approved")
-  helpfulCount Int       @default(0) @map("helpful_count")
+  helpfulCount Int       @default(0) @map("helpful_count") // TODO: ?
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
@@ -618,6 +576,7 @@ model Review {
   @@map("reviews")
 }
 
+// TODO: should we implement this, or just text only review, should we implement i polishing stage ?
 model ReviewImage {
   id        String   @id @default(uuid())
   reviewId  String   @map("review_id")
@@ -664,6 +623,7 @@ model SavedVenue {
   @@map("saved_venues")
 }
 
+// TODO: need to implement onesignal
 model Notification {
   id        String           @id @default(uuid())
   userId    String           @map("user_id")
@@ -687,6 +647,8 @@ model Notification {
   @@map("notifications")
 }
 
+
+// TODO: do we need to implement calendar events, or just rely on google calendar links for now, can implement in polishing stage if needed
 model CalendarEvent {
   id             String    @id @default(uuid())
   userId         String    @map("user_id")
@@ -709,30 +671,6 @@ model CalendarEvent {
 // ANALYTICS & HISTORICAL DOMAIN
 // ============================================
 
-model VenueAnalytics {
-  id             String   @id @default(uuid())
-  venueId        String   @map("venue_id")
-  recordedDate   DateTime @map("recorded_date") @db.Date
-  views          Int      @default(0)
-  uniqueViews    Int      @default(0) @map("unique_views")
-  clicks         Int      @default(0)
-  searchAppears  Int      @default(0) @map("search_appears")
-  bookings       Int      @default(0)
-  cancellations  Int      @default(0)
-  revenue        Decimal  @default(0) @db.Decimal(12, 2)
-  currency       String   @default("INR") @db.VarChar(3)
-  avgTicketPrice Decimal  @default(0) @map("avg_ticket_price") @db.Decimal(12, 2)
-  createdAt      DateTime @default(now()) @map("created_at")
-
-  // Relations
-  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
-
-  @@unique([venueId, recordedDate])
-  @@index([venueId])
-  @@index([recordedDate])
-  @@map("venue_analytics")
-}
-
 model VenueViewLog {
   id        String   @id @default(uuid())
   venueId   String   @map("venue_id")
@@ -752,27 +690,6 @@ model VenueViewLog {
   @@index([sessionId])
   @@index([viewedAt])
   @@map("venue_view_logs")
-}
-
-model SearchAnalytics {
-  id           String   @id @default(uuid())
-  searchTerm   String?  @map("search_term")
-  city         String?
-  categoryId   String?  @map("category_id")
-  resultsCount Int      @default(0) @map("results_count")
-  userId       String?  @map("user_id")
-  sessionId    String?  @map("session_id")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  // Relations
-  category VenueCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  user     User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([searchTerm])
-  @@index([city])
-  @@index([categoryId])
-  @@index([createdAt])
-  @@map("search_analytics")
 }
 
 model PastEventGallery {
@@ -811,50 +728,4 @@ model GalleryMedia {
 
   @@index([galleryId])
   @@map("gallery_media")
-}
-
-// ============================================
-// AUDIT DOMAIN
-// ============================================
-
-model AuditLog {
-  id         String   @id @default(uuid())
-  userId     String?  @map("user_id")
-  entityType String   @map("entity_type")
-  entityId   String   @map("entity_id")
-  action     String
-  oldValues  Json?    @map("old_values")
-  newValues  Json?    @map("new_values")
-  ipAddress  String?  @map("ip_address") @db.VarChar(45)
-  userAgent  String?  @map("user_agent")
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  // Relations
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([entityType, entityId])
-  @@index([action])
-  @@index([createdAt])
-  @@map("audit_logs")
-}
-
-model AdminAction {
-  id         String   @id @default(uuid())
-  adminId    String   @map("admin_id")
-  action     String
-  entityType String   @map("entity_type")
-  entityId   String   @map("entity_id")
-  reason     String?
-  metadata   Json?
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  // Relations
-  admin User @relation(fields: [adminId], references: [id])
-
-  @@index([adminId])
-  @@index([entityType, entityId])
-  @@index([action])
-  @@index([createdAt])
-  @@map("admin_actions")
 }
