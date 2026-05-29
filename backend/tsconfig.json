@@ -16,11 +16,11 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@domain/*": ["src/domain/*"],
-      "@application/*": ["src/application/*"],
-      "@infrastructure/*": ["src/infrastructure/*"],
-      "@interfaces/*": ["src/interfaces/*"],
-      "@shared/*": ["src/shared/*"]
+      "#domain/*": ["src/domain/*"],
+      "#application/*": ["src/application/*"],
+      "#infrastructure/*": ["src/infrastructure/*"],
+      "#interfaces/*": ["src/interfaces/*"],
+      "#shared/*": ["src/shared/*"]
     }
   },
   "include": ["src/**/*", "prisma/seed.ts"],

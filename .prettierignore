@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Coverage
+coverage/
+
+# Prisma migrations
+prisma/migrations/
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Generated files
+*.min.js
+*.min.css
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -16,7 +16,13 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@/*": ["src/*"]
+      "#/*": ["./src/*"],
+      "#components/*": ["./src/components/*"],
+      "#hooks/*": ["./src/hooks/*"],
+      "#utils/*": ["./src/utils/*"],
+      "#services/*": ["./src/services/*"],
+      "#store/*": ["./src/store/*"],
+      "#types/*": ["./src/types/*"]
     }
   },
   "include": ["src"],
