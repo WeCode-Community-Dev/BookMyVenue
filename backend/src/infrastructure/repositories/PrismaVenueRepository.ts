@@ -1,6 +1,7 @@
-import { PrismaClient, Prisma } from "@prisma/client";
 import { Venue } from "../../domain/entities/Venue.js";
-import { VenueRepository, VenueFilters } from "../../domain/repositories/VenueRepository.js";
+
+import type { VenueRepository, VenueFilters } from "../../domain/repositories/VenueRepository.js";
+import type { PrismaClient, Prisma } from "@prisma/client";
 
 export class PrismaVenueRepository implements VenueRepository {
   constructor(private readonly prisma: PrismaClient) {}

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
-import { TokenService, TokenPayload } from "../../application/ports/TokenService.js";
+
+import type { TokenService, TokenPayload } from "../../application/ports/TokenService.js";
 
 export class JwtTokenService implements TokenService {
   private readonly secret: string;

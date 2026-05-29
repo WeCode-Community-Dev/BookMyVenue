@@ -1,5 +1,5 @@
-import Redis from "ioredis";
-import { CacheService } from "../../application/ports/CacheService.js";
+import type { CacheService } from "../../application/ports/CacheService.js";
+import type Redis from "ioredis";
 
 export class RedisCacheService implements CacheService {
   constructor(private readonly redis: Redis) {}

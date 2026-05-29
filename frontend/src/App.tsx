@@ -1,12 +1,13 @@
 import { Routes, Route } from "react-router-dom";
+
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Layout from "./components/layout/Layout";
+import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
-import VenuesPage from "./pages/VenuesPage";
-import VenueDetailPage from "./pages/VenueDetailPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import DashboardPage from "./pages/DashboardPage";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import VenueDetailPage from "./pages/VenueDetailPage";
+import VenuesPage from "./pages/VenuesPage";
 
 function App() {
   return (

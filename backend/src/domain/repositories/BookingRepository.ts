@@ -1,4 +1,4 @@
-import { Booking, BookingStatus } from "../entities/Booking.js";
+import type { Booking, BookingStatus } from "../entities/Booking.js";
 
 export interface BookingFilters {
   userId?: string;

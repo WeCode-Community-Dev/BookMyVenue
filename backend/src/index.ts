@@ -1,7 +1,8 @@
 import "dotenv/config";
-import { createServer } from "./infrastructure/http/server.js";
 import { PrismaClient } from "@prisma/client";
+
 import { createRedisClient } from "./infrastructure/cache/redis.js";
+import { createServer } from "./infrastructure/http/server.js";
 
 const PORT = process.env.PORT || 3001;
 

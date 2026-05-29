@@ -1,6 +1,10 @@
-import { PrismaClient, Prisma } from "@prisma/client";
 import { Booking, BookingStatus } from "../../domain/entities/Booking.js";
-import { BookingRepository, BookingFilters } from "../../domain/repositories/BookingRepository.js";
+
+import type {
+  BookingRepository,
+  BookingFilters,
+} from "../../domain/repositories/BookingRepository.js";
+import type { PrismaClient, Prisma } from "@prisma/client";
 
 export class PrismaBookingRepository implements BookingRepository {
   constructor(private readonly prisma: PrismaClient) {}

@@ -1,13 +1,15 @@
 import { Router } from "express";
 import { z } from "zod";
-import { VenueRepository } from "../../../domain/repositories/VenueRepository.js";
-import { CacheService } from "../../../application/ports/CacheService.js";
-import { TokenService } from "../../../application/ports/TokenService.js";
+
 import { CreateVenue } from "../../../application/use-cases/venue/CreateVenue.js";
-import { GetVenues } from "../../../application/use-cases/venue/GetVenues.js";
 import { GetVenueById } from "../../../application/use-cases/venue/GetVenueById.js";
+import { GetVenues } from "../../../application/use-cases/venue/GetVenues.js";
 import { createAuthMiddleware } from "../middleware/authMiddleware.js";
 import { validateRequest } from "../middleware/validateRequest.js";
+
+import type { CacheService } from "../../../application/ports/CacheService.js";
+import type { TokenService } from "../../../application/ports/TokenService.js";
+import type { VenueRepository } from "../../../domain/repositories/VenueRepository.js";
 
 const createVenueSchema = z.object({
   name: z.string().min(1, "Name is required"),

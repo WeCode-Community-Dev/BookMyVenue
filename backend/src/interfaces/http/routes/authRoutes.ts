@@ -1,11 +1,13 @@
 import { Router } from "express";
 import { z } from "zod";
-import { UserRepository } from "../../../domain/repositories/UserRepository.js";
-import { HashingService } from "../../../application/ports/HashingService.js";
-import { TokenService } from "../../../application/ports/TokenService.js";
-import { RegisterUser } from "../../../application/use-cases/auth/RegisterUser.js";
+
 import { LoginUser } from "../../../application/use-cases/auth/LoginUser.js";
+import { RegisterUser } from "../../../application/use-cases/auth/RegisterUser.js";
 import { validateRequest } from "../middleware/validateRequest.js";
+
+import type { HashingService } from "../../../application/ports/HashingService.js";
+import type { TokenService } from "../../../application/ports/TokenService.js";
+import type { UserRepository } from "../../../domain/repositories/UserRepository.js";
 
 const registerSchema = z.object({
   email: z.string().email("Invalid email format"),

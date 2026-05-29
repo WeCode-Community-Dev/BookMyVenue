@@ -1,9 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+
 import App from "./App";
 import "./index.css";
 
-const queryClient = new QueryClient({
+// TODO: Wrap App with QueryClientProvider when implementing React Query
+const _queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5,

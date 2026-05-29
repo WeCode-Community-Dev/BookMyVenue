@@ -1,4 +1,4 @@
-import { Venue } from "../entities/Venue.js";
+import type { Venue } from "../entities/Venue.js";
 
 export interface VenueFilters {
   city?: string;

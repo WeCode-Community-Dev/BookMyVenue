@@ -1,14 +1,16 @@
 import { Router } from "express";
 import { z } from "zod";
-import { BookingRepository } from "../../../domain/repositories/BookingRepository.js";
-import { VenueRepository } from "../../../domain/repositories/VenueRepository.js";
-import { CacheService } from "../../../application/ports/CacheService.js";
-import { TokenService } from "../../../application/ports/TokenService.js";
+
+import { CancelBooking } from "../../../application/use-cases/booking/CancelBooking.js";
 import { CreateBooking } from "../../../application/use-cases/booking/CreateBooking.js";
 import { GetUserBookings } from "../../../application/use-cases/booking/GetUserBookings.js";
-import { CancelBooking } from "../../../application/use-cases/booking/CancelBooking.js";
 import { createAuthMiddleware } from "../middleware/authMiddleware.js";
 import { validateRequest } from "../middleware/validateRequest.js";
+
+import type { CacheService } from "../../../application/ports/CacheService.js";
+import type { TokenService } from "../../../application/ports/TokenService.js";
+import type { BookingRepository } from "../../../domain/repositories/BookingRepository.js";
+import type { VenueRepository } from "../../../domain/repositories/VenueRepository.js";
 
 const createBookingSchema = z.object({
   venueId: z.string().uuid("Invalid venue ID"),
