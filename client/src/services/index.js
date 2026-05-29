@@ -8,6 +8,12 @@ export const authService = {
   resetPassword: (token, newPassword) => api.post('/auth/reset-password', { token, newPassword }),
 };
 
+export const userService = {
+  getMe: () => api.get('/users/me'),
+  updateProfile: (data) => api.patch('/users/me', data),
+  updatePassword: (currentPassword, newPassword) => api.patch('/users/me/password', { currentPassword, newPassword }),
+};
+
 export const venueService = {
   getAll: (params) => api.get('/venues', { params }),
   getNearby: (lat, lng, radius) => api.get('/venues/nearby', { params: { latitude: lat, longitude: lng, radius } }),
@@ -19,6 +25,7 @@ export const venueService = {
   getBlockedDates: (id) => api.get(`/venues/${id}/blocked-dates`),
   addBlockedDate: (id, data) => api.post(`/venues/${id}/blocked-dates`, data),
   removeBlockedDate: (id) => api.delete(`/venues/blocked-dates/${id}`),
+  geocode: (query) => api.get('/venues/geocode', { params: { q: query } }),
 };
 
 export const bookingService = {
@@ -40,7 +47,7 @@ export const reviewService = {
 
 export const adminService = {
   getUsers: (params) => api.get('/admin/users', { params }),
-  updateUserStatus: (id, status) => api.patch(`/admin/users/${id}/status`, { status }),
+  updateUserStatus: (id, status, reason) => api.patch(`/admin/users/${id}/status`, { status, reason }),
   getVenueOwners: (params) => api.get('/admin/venue-owners', { params }),
   getVenues: (params) => api.get('/admin/venues', { params }),
   updateVenueStatus: (id, status) => api.patch(`/admin/venues/${id}/status`, { status }),

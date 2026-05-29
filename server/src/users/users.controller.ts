@@ -48,4 +48,28 @@ export class UsersController {
   ) {
     return this.usersService.updateProfile(user.id, updates);
   }
+
+  @Patch('me/password')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Change current user password' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid current password' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        currentPassword: { type: 'string', example: 'OldPassword123' },
+        newPassword: { type: 'string', example: 'NewPassword123' },
+      },
+      required: ['currentPassword', 'newPassword'],
+    },
+  })
+  async updatePassword(
+    @CurrentUser() user: User,
+    @Body() body: { currentPassword: string; newPassword: string },
+  ) {
+    return this.usersService.updatePassword(user.id, body.currentPassword, body.newPassword);
+  }
 }

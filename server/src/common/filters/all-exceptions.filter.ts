@@ -24,6 +24,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         typeof exceptionResponse === 'string'
           ? exceptionResponse
           : (exceptionResponse as any).message || message;
+    } else {
+      console.error('Unhandled Exception:', exception);
     }
 
     response.status(status).json({

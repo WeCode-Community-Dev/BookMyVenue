@@ -36,9 +36,12 @@ export class AdminController {
   @ApiOperation({ summary: 'Block/unblock user' })
   @ApiResponse({ status: 200, description: 'Status updated' })
   @ApiParam({ name: 'id', description: 'User UUID' })
-  @ApiBody({ schema: { type: 'object', properties: { status: { type: 'string', enum: Object.values(UserStatus) } } } })
-  async updateUserStatus(@Param('id') id: string, @Body('status') status: UserStatus) {
-    return this.adminService.updateUserStatus(id, status);
+  @ApiBody({ schema: { type: 'object', properties: { status: { type: 'string', enum: Object.values(UserStatus) }, reason: { type: 'string', nullable: true } } } })
+  async updateUserStatus(
+    @Param('id') id: string,
+    @Body() body: { status: UserStatus; reason?: string },
+  ) {
+    return this.adminService.updateUserStatus(id, body.status, body.reason);
   }
 
   @Get('venue-owners')

@@ -34,10 +34,13 @@ export class AdminService {
     return { users, total, page, totalPages: Math.ceil(total / limit) };
   }
 
-  async updateUserStatus(id: string, status: UserStatus) {
+  async updateUserStatus(id: string, status: UserStatus, reason?: string) {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
     user.status = status;
+    if (reason !== undefined) {
+      user.blockReason = reason;
+    }
     return this.usersRepository.save(user);
   }
 

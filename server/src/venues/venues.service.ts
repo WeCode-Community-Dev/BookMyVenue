@@ -4,10 +4,12 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import * as https from 'https';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In, MoreThanOrEqual } from 'typeorm';
 import { Venue, VenueStatus, VenueType } from './entities/venue.entity';
 import { VenueBlockedDate } from './entities/venue-blocked-date.entity';
+import { Booking, BookingStatus } from '../bookings/entities/booking.entity';
 import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
 import { User, UserRole } from '../users/entities/user.entity';
@@ -19,13 +21,15 @@ export class VenuesService {
     private venuesRepository: Repository<Venue>,
     @InjectRepository(VenueBlockedDate)
     private blockedDatesRepository: Repository<VenueBlockedDate>,
+    @InjectRepository(Booking)
+    private bookingsRepository: Repository<Booking>,
   ) {}
 
   async create(createVenueDto: CreateVenueDto, ownerId: string) {
     const venue = this.venuesRepository.create({
       ...createVenueDto,
       ownerId,
-      status: VenueStatus.PENDING,
+      status: VenueStatus.APPROVED,
     });
 
     return this.venuesRepository.save(venue);
@@ -86,7 +90,7 @@ export class VenuesService {
 
     if (search) {
       qb.andWhere(
-        '(LOWER(venue.venueName) LIKE LOWER(:search) OR LOWER(venue.address) LIKE LOWER(:search))',
+        '(LOWER(venue.venueName) LIKE LOWER(:search) OR LOWER(venue.address) LIKE LOWER(:search) OR LOWER(venue.description) LIKE LOWER(:search) OR LOWER(venue.venueType) LIKE LOWER(:search))',
         { search: `%${search}%` },
       );
     }
@@ -161,6 +165,22 @@ export class VenuesService {
       throw new ForbiddenException('You can only delete your own venues');
     }
 
+    // Check if the venue is currently being used by future or current bookings
+    const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const activeBookingCount = await this.bookingsRepository.count({
+      where: {
+        venueId: id,
+        bookingStatus: In([BookingStatus.PENDING, BookingStatus.CONFIRMED]),
+        bookingDate: MoreThanOrEqual(todayStr),
+      },
+    });
+
+    if (activeBookingCount > 0) {
+      throw new BadRequestException(
+        'Cannot delete this space because it is currently in use or has pending/confirmed bookings reservations scheduled for today or in the future.',
+      );
+    }
+
     await this.venuesRepository.remove(venue);
     return { message: 'Venue deleted successfully' };
   }
@@ -224,5 +244,62 @@ export class VenuesService {
     });
 
     return { venues, total, page, totalPages: Math.ceil(total / limit) };
+  }
+
+  async geocode(query: string): Promise<any[]> {
+    return new Promise((resolve) => {
+      if (!query || query.trim().length < 3) {
+        return resolve([]);
+      }
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=10`;
+      
+      const options = {
+        headers: {
+          'User-Agent': 'BookMyVenue/1.0',
+        },
+      };
+
+      https.get(url, options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            const features = parsed.features || [];
+            
+            const results = features.map((feature: any) => {
+              const props = feature.properties || {};
+              const name = props.name || '';
+              const street = props.street ? `${props.street}, ` : '';
+              const city = props.city ? `${props.city}, ` : '';
+              const county = props.county ? `${props.county}, ` : '';
+              const state = props.state ? `${props.state}, ` : '';
+              const country = props.country || '';
+
+              let displayName = `${street}${name}, ${city}${county}${state}${country}`
+                .replace(/,\s*,/g, ',')
+                .replace(/^,\s*/, '')
+                .replace(/,\s*$/, '')
+                .trim();
+
+              return {
+                display_name: displayName,
+                lat: feature.geometry?.coordinates?.[1] || 13.0827,
+                lon: feature.geometry?.coordinates?.[0] || 80.2707,
+              };
+            });
+
+            resolve(results);
+          } catch (e) {
+            resolve([]);
+          }
+        });
+      }).on('error', () => {
+        resolve([]);
+      });
+    });
   }
 }

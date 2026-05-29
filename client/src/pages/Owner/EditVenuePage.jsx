@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { venueService } from '../../services';
 import toast from 'react-hot-toast';
 
-export default function CreateVenuePage() {
+export default function EditVenuePage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     venueName: '',
     venueType: 'banquet_hall',
@@ -13,45 +16,42 @@ export default function CreateVenuePage() {
     longitude: 80.2707,
     capacity: 100,
     pricePerHour: 1000,
-    openingTime: '09:00',
-    closingTime: '22:00',
   });
 
   const [selectedAmenities, setSelectedAmenities] = useState({
-    ac: true,
+    ac: false,
     nonAc: false,
-    parking: true,
-    soundSystem: true,
+    parking: false,
+    soundSystem: false,
     powerBackup: false,
-    wifi: true,
+    wifi: false,
     catering: false,
   });
 
   // Operational schedule with custom daily times
   const [selectedDays, setSelectedDays] = useState({
-    monday: { active: true, start: '09:00', end: '22:00' },
-    tuesday: { active: true, start: '09:00', end: '22:00' },
-    wednesday: { active: true, start: '09:00', end: '22:00' },
-    thursday: { active: true, start: '09:00', end: '22:00' },
-    friday: { active: true, start: '09:00', end: '22:00' },
-    saturday: { active: true, start: '10:00', end: '23:00' },
+    monday: { active: false, start: '09:00', end: '22:00' },
+    tuesday: { active: false, start: '09:00', end: '22:00' },
+    wednesday: { active: false, start: '09:00', end: '22:00' },
+    thursday: { active: false, start: '09:00', end: '22:00' },
+    friday: { active: false, start: '09:00', end: '22:00' },
+    saturday: { active: false, start: '10:00', end: '23:00' },
     sunday: { active: false, start: '10:00', end: '21:00' },
   });
 
   const [uploadedImages, setUploadedImages] = useState([]);
-
   const [locationSearch, setLocationSearch] = useState('');
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [customLocationFallback, setCustomLocationFallback] = useState(false);
-  const [loading, setLoading] = useState(false);
+  
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [searchingNetwork, setSearchingNetwork] = useState(false);
   
   // Map and Leaflet integration states
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
-  
-  const navigate = useNavigate();
 
   // Preset default location recommendations when input is empty
   const locationPresets = [
@@ -87,9 +87,82 @@ export default function CreateVenuePage() {
     };
   }, []);
 
+  // Fetch existing space details on mount
+  useEffect(() => {
+    if (!id) return;
+    
+    const fetchVenueData = async () => {
+      try {
+        setLoading(true);
+        const res = await venueService.getById(id);
+        const venue = res.data;
+
+        setForm({
+          venueName: venue.venueName || '',
+          venueType: venue.venueType || 'banquet_hall',
+          description: venue.description || '',
+          address: venue.address || '',
+          latitude: Number(venue.latitude) || 13.0827,
+          longitude: Number(venue.longitude) || 80.2707,
+          capacity: Number(venue.capacity) || 100,
+          pricePerHour: Number(venue.pricePerHour) || 1000,
+        });
+
+        setLocationSearch(venue.address ? venue.address.split(',')[0] : '');
+
+        // Map Amenities Checklist Checkboxes
+        if (Array.isArray(venue.amenities)) {
+          const amObj = {
+            ac: venue.amenities.includes('AC'),
+            nonAc: venue.amenities.includes('Non-AC'),
+            parking: venue.amenities.includes('Parking Space'),
+            soundSystem: venue.amenities.includes('Sound System'),
+            powerBackup: venue.amenities.includes('Power Backup'),
+            wifi: venue.amenities.includes('WiFi'),
+            catering: venue.amenities.includes('Catering Service') || venue.amenities.includes('Catering'),
+          };
+          setSelectedAmenities(amObj);
+        }
+
+        // Map Daily operational schedules
+        if (Array.isArray(venue.workingDays)) {
+          const daysObj = {
+            monday: { active: false, start: '09:00', end: '22:00' },
+            tuesday: { active: false, start: '09:00', end: '22:00' },
+            wednesday: { active: false, start: '09:00', end: '22:00' },
+            thursday: { active: false, start: '09:00', end: '22:00' },
+            friday: { active: false, start: '09:00', end: '22:00' },
+            saturday: { active: false, start: '10:00', end: '23:00' },
+            sunday: { active: false, start: '10:00', end: '21:00' },
+          };
+
+          venue.workingDays.forEach(cfg => {
+            if (cfg && cfg.day && daysObj[cfg.day.toLowerCase()]) {
+              daysObj[cfg.day.toLowerCase()] = {
+                active: true,
+                start: cfg.start || '09:00',
+                end: cfg.end || '22:00'
+              };
+            }
+          });
+          setSelectedDays(daysObj);
+        }
+
+        setUploadedImages(venue.images || []);
+      } catch (err) {
+        toast.error('Failed to load venue details');
+        navigate('/owner/dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVenueData();
+  }, [id, navigate]);
+
   // Update or Initialize Leaflet map
   useEffect(() => {
-    if (!leafletLoaded || !window.L) return;
+    if (loading || !leafletLoaded || !window.L) return;
 
     const lat = Number(form.latitude);
     const lng = Number(form.longitude);
@@ -138,7 +211,7 @@ export default function CreateVenuePage() {
       markerRef.current.setLatLng(position);
     });
 
-  }, [leafletLoaded, form.latitude, form.longitude]);
+  }, [loading, leafletLoaded, form.latitude, form.longitude]);
 
   // Handle Preset or dynamic select
   const handleSelectPreset = (preset) => {
@@ -287,7 +360,7 @@ export default function CreateVenuePage() {
         end: conf.end,
       }));
 
-    setLoading(true);
+    setSaving(true);
     try {
       const payload = {
         ...form,
@@ -300,21 +373,42 @@ export default function CreateVenuePage() {
         images: uploadedImages,
       };
 
-      await venueService.create(payload);
-      toast.success('Venue listing created successfully! Your venue is live.');
-      navigate('/owner/dashboard');
+      await venueService.update(id, payload);
+      toast.success('Venue listing updated successfully!');
+      navigate('/owner/dashboard?tab=venues');
     } catch {
-      toast.error('Failed to create venue');
+      toast.error('Failed to update venue');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center pt-28">
+        <div className="flex flex-col items-center gap-3">
+          <span className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+          <span className="text-xs font-semibold text-slate-400">Loading Listing details...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 pt-28 pb-16">
       <div className="container mx-auto px-6 max-w-2xl">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">List a Venue</h1>
-        <p className="text-slate-500 text-sm mb-8">Add a new event venue space, conference room, or hall to BookMyVenue</p>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Edit Venue listing</h1>
+            <p className="text-slate-500 text-sm">Update property settings, operational schedules, pricing, and locations.</p>
+          </div>
+          <button
+            onClick={() => navigate('/owner/dashboard?tab=venues')}
+            className="py-2 px-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all"
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className="bg-white p-8 rounded-3xl border border-slate-200/80 flex flex-col gap-6 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.08)]">
           {/* Venue Name */}
@@ -384,7 +478,7 @@ export default function CreateVenuePage() {
               )}
             </div>
 
-            {/* Simulated Google Map autocomplete dropdown */}
+            {/* Autocomplete Dropdown */}
             {showLocationDropdown && (
               <div className="absolute top-[75px] left-0 right-0 bg-white border border-slate-200 rounded-2xl shadow-xl z-20 max-h-64 overflow-y-auto">
                 <div className="p-2 bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
@@ -567,7 +661,7 @@ export default function CreateVenuePage() {
           <div className="flex flex-col gap-2">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Venue Images *</label>
             
-            {/* Drag & Drop uploader card */}
+            {/* Drag & Drop card */}
             <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-300 hover:border-primary/60 hover:bg-slate-50/50 rounded-2xl cursor-pointer select-none transition-all duration-200 group">
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
                 <svg className="w-10 h-10 mb-3 text-slate-400 group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -585,7 +679,7 @@ export default function CreateVenuePage() {
               />
             </label>
 
-            {/* Uploaded images gallery previews */}
+            {/* Gallery Previews */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 mt-2">
               {uploadedImages.map((image, idx) => (
                 <div key={idx} className="relative group aspect-[4/3] rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100">
@@ -594,7 +688,7 @@ export default function CreateVenuePage() {
                     alt={`Venue upload ${idx + 1}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  {/* Delete button overlay on hover */}
+                  {/* Delete overlay */}
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(idx)}
@@ -617,9 +711,9 @@ export default function CreateVenuePage() {
           <button
             type="submit"
             className="w-full py-4 mt-2 font-bold rounded-xl bg-primary hover:bg-primary-dark active:scale-[0.99] text-white shadow-sm hover:shadow transition-all duration-200 cursor-pointer"
-            disabled={loading}
+            disabled={saving}
           >
-            {loading ? 'Submitting...' : 'Submit Venue Listing'}
+            {saving ? 'Saving changes...' : 'Save Venue Changes'}
           </button>
         </form>
       </div>

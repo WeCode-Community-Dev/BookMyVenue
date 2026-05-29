@@ -16,6 +16,7 @@ import VenueDetailPage from './pages/Venues/VenueDetailPage';
 import BookingsPage from './pages/Bookings/BookingsPage';
 import OwnerDashboard from './pages/Owner/OwnerDashboard';
 import CreateVenuePage from './pages/Owner/CreateVenuePage';
+import EditVenuePage from './pages/Owner/EditVenuePage';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 
 // Route Guards
@@ -75,6 +76,14 @@ export default function App() {
                 element={
                   <RoleRoute allowedRoles={['venue_owner']}>
                     <CreateVenuePage />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/owner/venues/edit/:id"
+                element={
+                  <RoleRoute allowedRoles={['venue_owner']}>
+                    <EditVenuePage />
                   </RoleRoute>
                 }
               />

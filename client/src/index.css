@@ -1,21 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  /* Clean Premium Matte Colors */
+  /* Clean Premium Purple/Indigo Theme */
   --color-primary: #8B5CF6;
   --color-primary-light: #A78BFA;
   --color-primary-dark: #7C3AED;
   --color-secondary: #06B6D4;
   --color-secondary-light: #22D3EE;
   
-  /* Trust-Focused Neutrals */
-  --color-bg-primary: #0B0B12;
-  --color-bg-secondary: #12121E;
-  --color-bg-card: #151522;
-  --color-bg-elevated: #1E1E2F;
+  /* Modern Professional Light Neutrals */
+  --color-bg-primary: #FAFAFB;
+  --color-bg-secondary: #F3F4F6;
+  --color-bg-card: #FFFFFF;
+  --color-bg-elevated: #FFFFFF;
   
-  --color-border-subtle: rgba(255, 255, 255, 0.08);
-  --color-text-muted: #A1A1AA;
+  --color-border-subtle: #E2E8F0;
+  --color-text-muted: #64748B;
 }
 
 /* Global Custom Styles */
@@ -25,15 +25,15 @@
   }
   
   body {
-    background-color: #0B0B12;
-    /* Clean single top-left subtle violet glow */
+    background-color: #FAFAFB;
+    /* Soft light violet radial gradient accent */
     background-image: radial-gradient(
       circle at 0% 0%,
-      rgba(139, 92, 246, 0.12) 0%,
-      rgba(11, 11, 18, 0) 50%
+      rgba(139, 92, 246, 0.04) 0%,
+      rgba(250, 250, 251, 0) 50%
     );
     background-attachment: fixed;
-    color: #FFFFFF;
+    color: #0F172A;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
@@ -42,10 +42,10 @@
     width: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #0B0B12;
+    background: #FAFAFB;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1E1E2F;
+    background: #E2E8F0;
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
@@ -56,22 +56,24 @@
 /* Professional SaaS Clean Components */
 @layer utilities {
   .matte-card {
-    background: #151522;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
     border-radius: 16px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 8px -1px rgba(15, 23, 42, 0.03);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .matte-card:hover {
-    border-color: rgba(255, 255, 255, 0.15);
+    border-color: #CBD5E1;
     transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 10px 10px -5px rgba(15, 23, 42, 0.03);
   }
 
   .form-control {
-    background: #151522;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #FFFFFF;
+    border: 1px solid #CBD5E1;
     border-radius: 12px;
-    color: #FFFFFF;
+    color: #0F172A;
     transition: border-color 0.2s ease;
   }
 

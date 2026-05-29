@@ -102,24 +102,24 @@ export default function VenuesPage() {
           
           {/* Filters Sidebar */}
           <aside className="w-full lg:w-64 flex-shrink-0">
-            <div className="bg-bg-card p-6 rounded-xl border border-white/8 sticky top-28">
+            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 sticky top-28 shadow-sm">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                  <MdTune className="text-primary" /> Filters
+                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <MdTune className="text-primary text-base" /> Filters
                 </h2>
-                <button onClick={handleClearFilters} className="text-xs font-semibold text-primary hover:text-white transition-colors">
+                <button onClick={handleClearFilters} className="text-xs font-bold text-primary hover:text-primary-dark transition-colors">
                   Clear All
                 </button>
               </div>
 
               <form onSubmit={handleApplyFilters} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Search</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Search</label>
                   <div className="relative">
-                    <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                    <MdSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
-                      className="w-full py-2 pl-9 pr-3 bg-white/5 border border-white/8 rounded-lg text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-primary"
+                      className="w-full py-2 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:border-primary focus:bg-white transition-colors"
                       placeholder="e.g. Banquet, Chennai..."
                       value={search}
                       onChange={e => setSearch(e.target.value)}
@@ -128,25 +128,25 @@ export default function VenuesPage() {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Venue Type</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Venue Type</label>
                   <select
-                    className="w-full py-2 px-3 bg-white/5 border border-white/8 rounded-lg text-white text-xs focus:outline-none focus:border-primary"
+                    className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors"
                     value={venueType}
                     onChange={e => setVenueType(e.target.value)}
                   >
-                    <option value="" className="bg-bg-card">All Types</option>
-                    <option value="banquet_hall" className="bg-bg-card">Banquet Hall</option>
-                    <option value="conference_room" className="bg-bg-card">Conference Room</option>
-                    <option value="resort_hotel" className="bg-bg-card">Resort/Hotel</option>
-                    <option value="meetup_space" className="bg-bg-card">Meetup Space</option>
+                    <option value="">All Types</option>
+                    <option value="banquet_hall">Banquet Hall</option>
+                    <option value="conference_room">Conference Room</option>
+                    <option value="resort_hotel">Resort/Hotel</option>
+                    <option value="meetup_space">Meetup Space</option>
                   </select>
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Min Capacity</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Min Capacity</label>
                   <input
                     type="number"
-                    className="w-full py-2 px-3 bg-white/5 border border-white/8 rounded-lg text-white text-xs focus:outline-none focus:border-primary"
+                    className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors"
                     placeholder="e.g. 50"
                     value={minCapacity}
                     onChange={e => setMinCapacity(e.target.value)}
@@ -154,28 +154,28 @@ export default function VenuesPage() {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Max Price/hr (₹)</label>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Max Price/hr (₹)</label>
                   <input
                     type="number"
-                    className="w-full py-2 px-3 bg-white/5 border border-white/8 rounded-lg text-white text-xs focus:outline-none focus:border-primary"
+                    className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors"
                     placeholder="e.g. 2000"
                     value={maxPrice}
                     onChange={e => setMaxPrice(e.target.value)}
                   />
                 </div>
 
-                <button type="submit" className="w-full py-2.5 mt-2 font-bold rounded-lg bg-primary hover:bg-primary-dark text-white text-xs transition-colors">
+                <button type="submit" className="w-full py-2.5 mt-2 font-bold rounded-xl bg-primary hover:bg-primary-dark text-white text-xs transition-colors shadow-sm shadow-primary/10 cursor-pointer">
                   Apply Filters
                 </button>
               </form>
 
-              <div className="border-t border-white/8 mt-5 pt-5">
+              <div className="border-t border-slate-100 mt-5 pt-5">
                 <button
                   onClick={handleGeoDiscovery}
-                  className={`w-full py-2.5 font-bold rounded-lg flex items-center justify-center gap-1.5 border text-xs transition-colors ${
+                  className={`w-full py-2.5 font-bold rounded-xl flex items-center justify-center gap-1.5 border text-xs transition-colors cursor-pointer ${
                     useGeo
-                      ? 'bg-primary/20 border-primary text-primary-light'
-                      : 'bg-white/5 border-white/8 text-zinc-300 hover:border-primary'
+                      ? 'bg-primary/10 border-primary text-primary'
+                      : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-primary'
                   }`}
                 >
                   <MdMyLocation className="text-sm" /> Discover Nearby
@@ -187,24 +187,24 @@ export default function VenuesPage() {
           {/* Listings */}
           <main className="flex-grow">
             <div className="mb-6">
-              <h1 className="text-xl font-bold text-white">Available Spaces</h1>
-              <p className="text-zinc-400 text-xs mt-1">{total} event spaces found</p>
+              <h1 className="text-2xl font-black text-slate-950 tracking-tight">Available Spaces</h1>
+              <p className="text-slate-500 text-xs mt-1 font-medium">{total} event spaces found</p>
             </div>
 
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="matte-card h-80 animate-pulse" />
+                  <div key={i} className="matte-card h-80 animate-pulse bg-slate-100 border border-slate-200" />
                 ))}
               </div>
             ) : venues.length === 0 ? (
-              <div className="matte-card p-12 text-center">
+              <div className="matte-card p-12 text-center bg-white border border-slate-200">
                 <span className="text-3xl mb-3 inline-block">🔍</span>
-                <h3 className="text-sm font-bold text-white mb-1">No spaces found</h3>
-                <p className="text-zinc-400 text-xs max-w-xs mx-auto mb-5">
+                <h3 className="text-sm font-bold text-slate-900 mb-1">No spaces found</h3>
+                <p className="text-slate-500 text-xs max-w-xs mx-auto mb-5">
                   Try widening search criteria or resetting filters.
                 </p>
-                <button onClick={handleClearFilters} className="px-4 py-2 text-xs font-semibold rounded-lg bg-white/5 border border-white/8 text-white">
+                <button onClick={handleClearFilters} className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100 cursor-pointer">
                   Reset Search
                 </button>
               </div>
@@ -214,9 +214,9 @@ export default function VenuesPage() {
                   <Link
                     key={venue.id}
                     to={`/venues/${venue.id}`}
-                    className="matte-card overflow-hidden flex flex-col group"
+                    className="matte-card overflow-hidden flex flex-col group bg-white border border-slate-200 rounded-2xl"
                   >
-                    <div className="h-44 overflow-hidden relative bg-zinc-900">
+                    <div className="h-44 overflow-hidden relative bg-slate-100">
                       {venue.images?.[0] ? (
                         <img
                           src={venue.images[0]}
@@ -224,7 +224,7 @@ export default function VenuesPage() {
                           className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-3xl bg-bg-card">
+                        <div className="w-full h-full flex items-center justify-center text-3xl">
                           🏢
                         </div>
                       )}
@@ -238,7 +238,7 @@ export default function VenuesPage() {
                     <div className="p-5 flex-1 flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-1.5">
-                          <h3 className="font-bold text-white text-sm tracking-tight truncate group-hover:text-primary-light transition-colors">
+                          <h3 className="font-bold text-slate-900 text-sm tracking-tight truncate group-hover:text-primary transition-colors">
                             {venue.venueName}
                           </h3>
                           <div className="flex items-center gap-0.5 text-yellow-500 text-xs font-semibold shrink-0">
@@ -246,19 +246,19 @@ export default function VenuesPage() {
                           </div>
                         </div>
 
-                        <p className="text-zinc-400 text-xs truncate mb-4">
+                        <p className="text-slate-500 text-xs truncate mb-4">
                           {venue.address}
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4 pt-3.5 border-t border-white/8">
+                      <div className="grid grid-cols-2 gap-4 pt-3.5 border-t border-slate-100">
                         <div className="flex flex-col">
-                          <span className="text-[9px] uppercase font-bold text-zinc-500">Seating</span>
-                          <span className="text-xs font-semibold text-zinc-200">{venue.capacity} guests</span>
+                          <span className="text-[9px] uppercase font-bold text-slate-400">Seating</span>
+                          <span className="text-xs font-bold text-slate-700">{venue.capacity} guests</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[9px] uppercase font-bold text-zinc-500">Price/Hour</span>
-                          <span className="text-xs font-semibold text-zinc-200">₹{Number(venue.pricePerHour).toLocaleString('en-IN')}</span>
+                          <span className="text-[9px] uppercase font-bold text-slate-400">Price/Hour</span>
+                          <span className="text-xs font-bold text-slate-700">₹{Number(venue.pricePerHour).toLocaleString('en-IN')}</span>
                         </div>
                       </div>
                     </div>
@@ -273,17 +273,17 @@ export default function VenuesPage() {
                 <button
                   onClick={() => setPage(p => Math.max(p - 1, 1))}
                   disabled={page === 1}
-                  className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white/5 border border-white/8 hover:bg-white/10 text-white disabled:opacity-40"
+                  className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 disabled:opacity-40 cursor-pointer shadow-sm"
                 >
                   Previous
                 </button>
-                <span className="text-xs text-zinc-400 px-3">
+                <span className="text-xs text-slate-500 px-3 font-semibold">
                   Page {page} of {totalPages}
                 </span>
                 <button
                   onClick={() => setPage(p => Math.min(p + 1, totalPages))}
                   disabled={page === totalPages}
-                  className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white/5 border border-white/8 hover:bg-white/10 text-white disabled:opacity-40"
+                  className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 disabled:opacity-40 cursor-pointer shadow-sm"
                 >
                   Next
                 </button>

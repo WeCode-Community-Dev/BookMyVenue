@@ -55,6 +55,9 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   resetPasswordExpires: Date;
 
+  @Column({ nullable: true })
+  blockReason: string;
+
   @OneToMany(() => Venue, (venue) => venue.owner)
   venues: Venue[];
 

@@ -80,4 +80,13 @@ export class CreateVenueDto {
   @IsString()
   @IsOptional()
   closingTime?: string;
+
+  @ApiPropertyOptional({
+    example: ['monday', 'tuesday', 'wednesday'],
+    description: 'Working days of the week',
+    type: [String],
+  })
+  @IsArray()
+  @IsOptional()
+  workingDays?: string[];
 }

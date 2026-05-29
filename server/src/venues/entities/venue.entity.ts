@@ -82,8 +82,11 @@ export class Venue {
   @Column({ type: 'int', default: 0 })
   reviewCount: number;
 
-  @Column({ type: 'enum', enum: VenueStatus, default: VenueStatus.PENDING })
+  @Column({ type: 'enum', enum: VenueStatus, default: VenueStatus.APPROVED })
   status: VenueStatus;
+
+  @Column({ type: 'jsonb', default: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] })
+  workingDays: string[];
 
   @Column({ type: 'time', nullable: true })
   openingTime: string;

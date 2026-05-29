@@ -106,6 +106,13 @@ export class VenuesController {
     return this.venuesService.findByOwner(user.id, page ? +page : 1, limit ? +limit : 10);
   }
 
+  @Get('geocode')
+  @ApiOperation({ summary: 'Geocode an address', description: 'Safely geocode address string via backend proxy' })
+  @ApiQuery({ name: 'q', required: true, type: String })
+  async geocode(@Query('q') query: string) {
+    return this.venuesService.geocode(query);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get venue details', description: 'Returns full details of a single venue' })
   @ApiResponse({ status: 200, description: 'Venue details' })

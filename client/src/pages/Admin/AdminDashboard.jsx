@@ -1,157 +1,1036 @@
 import { useState, useEffect } from 'react';
-import { adminService } from '../../services';
-import { MdVerified, MdPeople, MdAttachMoney, MdOutlineSecurity, MdOutlineThumbUp, MdOutlineThumbDown } from 'react-icons/md';
+import { useLocation } from 'react-router-dom';
+import { adminService, userService } from '../../services';
+import { 
+  MdOutlineSecurity, 
+  MdDashboard, 
+  MdPeople, 
+  MdStorefront, 
+  MdEventNote, 
+  MdOutlineMapsHomeWork, 
+  MdOutlinePayments,
+  MdBlock,
+  MdCheckCircle,
+  MdSearch,
+  MdNavigateBefore,
+  MdNavigateNext,
+  MdPerson,
+  MdVpnKey,
+  MdTrendingUp
+} from 'react-icons/md';
 import toast from 'react-hot-toast';
 
 export default function AdminDashboard() {
-  const [analytics, setAnalytics] = useState(null);
-  const [pendingVenues, setPendingVenues] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const [activeTab, setActiveTab] = useState(queryParams.get('tab') || 'overview');
 
   useEffect(() => {
-    fetchAdminData();
+    const tab = new URLSearchParams(location.search).get('tab');
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
+
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Users Tab Pagination & Search State
+  const [users, setUsers] = useState([]);
+  const [userPage, setUserPage] = useState(1);
+  const [userTotalPages, setUserTotalPages] = useState(1);
+  const [userSearch, setUserSearch] = useState('');
+
+  // Owners Tab Pagination & Search State
+  const [owners, setOwners] = useState([]);
+  const [ownerPage, setOwnerPage] = useState(1);
+  const [ownerTotalPages, setOwnerTotalPages] = useState(1);
+  const [ownerSearch, setOwnerSearch] = useState('');
+
+  // Bookings State
+  const [bookings, setBookings] = useState([]);
+  const [bookingPage, setBookingPage] = useState(1);
+  const [bookingTotalPages, setBookingTotalPages] = useState(1);
+
+  // Venues State
+  const [venues, setVenues] = useState([]);
+  const [venuePage, setVenuePage] = useState(1);
+  const [venueTotalPages, setVenueTotalPages] = useState(1);
+
+  // Modal Block states
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [selectedUserToBlock, setSelectedUserToBlock] = useState(null);
+  const [blockReason, setBlockReason] = useState('');
+
+  // Profile Form States
+  const [profileForm, setProfileForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  });
+
+  // Password Change States
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  useEffect(() => {
+    fetchOverviewData();
   }, []);
 
-  const fetchAdminData = async () => {
+  useEffect(() => {
+    if (activeTab === 'users') fetchUsers();
+    if (activeTab === 'owners') fetchOwners();
+    if (activeTab === 'venues') fetchVenues();
+    if (activeTab === 'bookings' || activeTab === 'payments') fetchBookings();
+    if (activeTab === 'profile') fetchProfileData();
+  }, [activeTab, userPage, ownerPage, venuePage, bookingPage, userSearch, ownerSearch]);
+
+  const fetchOverviewData = async () => {
     try {
-      const aRes = await adminService.getAnalytics();
-      setAnalytics(aRes.data);
-      const vRes = await adminService.getVenues({ status: 'pending' });
-      setPendingVenues(vRes.data.venues?.filter(v => v.status === 'pending') || []);
+      setLoading(true);
+      const res = await adminService.getAnalytics();
+      setAnalytics(res.data);
     } catch {
-      toast.error('Failed to load admin dashboard data');
+      toast.error('Failed to load system analytics');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApproveVenue = async (id, status) => {
+  const fetchProfileData = async () => {
     try {
-      await adminService.updateVenueStatus(id, status);
-      toast.success(`Venue ${status} successfully!`);
-      fetchAdminData();
+      const res = await userService.getMe();
+      setProfileForm({
+        name: res.data.name || '',
+        email: res.data.email || '',
+        phone: res.data.phone || '',
+      });
     } catch {
-      toast.error('Failed to update venue status.');
+      toast.error('Failed to load profile details');
     }
   };
 
-  if (loading) {
+  const fetchUsers = async () => {
+    try {
+      const res = await adminService.getUsers({
+        page: userPage,
+        limit: 10,
+        role: 'user',
+        search: userSearch,
+      });
+      setUsers(res.data.users || []);
+      setUserTotalPages(res.data.totalPages || 1);
+    } catch {
+      toast.error('Failed to load guests');
+    }
+  };
+
+  const fetchOwners = async () => {
+    try {
+      const res = await adminService.getVenueOwners({
+        page: ownerPage,
+        limit: 10,
+        search: ownerSearch,
+      });
+      setOwners(res.data.owners || []);
+      setOwnerTotalPages(res.data.totalPages || 1);
+    } catch {
+      toast.error('Failed to load venue owners');
+    }
+  };
+
+  const fetchVenues = async () => {
+    try {
+      const res = await adminService.getVenues({
+        page: venuePage,
+        limit: 10,
+      });
+      setVenues(res.data.venues || []);
+      setVenueTotalPages(res.data.totalPages || 1);
+    } catch {
+      toast.error('Failed to load venues');
+    }
+  };
+
+  const fetchBookings = async () => {
+    try {
+      const res = await adminService.getBookings({
+        page: bookingPage,
+        limit: 10,
+      });
+      setBookings(res.data.bookings || []);
+      setBookingTotalPages(res.data.totalPages || 1);
+    } catch {
+      toast.error('Failed to load reservations');
+    }
+  };
+
+  const handleOpenBlockModal = (user) => {
+    setSelectedUserToBlock(user);
+    setBlockReason('');
+    setShowBlockModal(true);
+  };
+
+  const handleConfirmBlock = async () => {
+    if (!blockReason.trim()) {
+      return toast.error('Please enter a reason for blocking');
+    }
+    try {
+      await adminService.updateUserStatus(selectedUserToBlock.id, 'blocked', blockReason);
+      toast.success(`${selectedUserToBlock.name} has been blocked successfully.`);
+      setShowBlockModal(false);
+      if (activeTab === 'users') fetchUsers();
+      if (activeTab === 'owners') fetchOwners();
+      fetchOverviewData();
+    } catch {
+      toast.error('Failed to block account');
+    }
+  };
+
+  const handleUnblock = async (user) => {
+    try {
+      await adminService.updateUserStatus(user.id, 'active', '');
+      toast.success(`${user.name} has been unblocked successfully.`);
+      if (activeTab === 'users') fetchUsers();
+      if (activeTab === 'owners') fetchOwners();
+      fetchOverviewData();
+    } catch {
+      toast.error('Failed to unblock account');
+    }
+  };
+
+  const toggleVenueListingStatus = async (venue, newStatus) => {
+    try {
+      await adminService.updateVenueStatus(venue.id, newStatus);
+      toast.success(`Venue listing status updated to ${newStatus}`);
+      fetchVenues();
+    } catch {
+      toast.error('Failed to update venue listing status');
+    }
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    try {
+      await userService.updateProfile({
+        name: profileForm.name,
+        phone: profileForm.phone,
+      });
+      toast.success('Contact info updated successfully.');
+      fetchProfileData();
+    } catch {
+      toast.error('Failed to save profile settings');
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return toast.error('Please fill in password fields');
+    }
+    if (newPassword !== confirmPassword) {
+      return toast.error('Passwords do not match');
+    }
+    try {
+      await userService.updatePassword(currentPassword, newPassword);
+      toast.success('Admin password updated successfully.');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to change password');
+    }
+  };
+
+  const checkPasswordStrength = (pwd) => {
+    if (!pwd) return { score: 0, label: 'None', color: 'bg-slate-200 w-0' };
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+    if (score <= 1) return { score, label: 'Weak', color: 'bg-rose-500 w-1/3' };
+    if (score === 2 || score === 3) return { score, label: 'Medium', color: 'bg-amber-500 w-2/3' };
+    return { score, label: 'Strong', color: 'bg-emerald-500 w-full' };
+  };
+
+  const strength = checkPasswordStrength(newPassword);
+
+  if (loading && activeTab === 'overview') {
     return (
-      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
-        <span className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <span className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
 
+  const globalTurnover = analytics?.totalRevenue || 0;
+  const adminPlatformCommissions = globalTurnover * 0.15;
+
   return (
-    <div className="min-h-screen bg-bg-primary pt-24 pb-16">
-      <div className="container mx-auto px-6">
-        
-        {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-2">
-            <MdOutlineSecurity className="text-primary-light" /> Admin Panel
-          </h1>
-          <p className="text-slate-400 text-sm mt-1">Platform analytics, user management, and venue verification audits</p>
+    <div className="min-h-screen bg-slate-50 pt-20 flex">
+      {/* 1. Left Essential Admin Sidebar */}
+      <aside className="w-64 bg-white border-r border-slate-200/80 hidden md:flex flex-col shrink-0 fixed bottom-0 top-20 left-0 z-10">
+        <div className="p-6 border-b border-slate-100 flex items-center gap-2.5">
+          <div className="p-2 bg-primary/10 text-primary rounded-xl">
+            <MdOutlineSecurity className="text-xl" />
+          </div>
+          <div>
+            <h2 className="text-sm font-black text-slate-900 tracking-tight">Admin Console</h2>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Platform Core</span>
+          </div>
         </div>
 
-        {/* Analytics Card grid */}
-        {analytics && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-            <div className="glass p-6 rounded-2xl border border-white/8">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Total Users</span>
-              <span className="text-2xl font-black text-white">{analytics.users?.total || 0}</span>
-              <span className="text-xs text-slate-400 block mt-1">Active: {analytics.users?.active || 0}</span>
+        <nav className="flex-1 p-4 flex flex-col gap-1.5 overflow-y-auto">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`w-full py-3 px-4 rounded-xl font-semibold text-xs flex items-center gap-3 transition-colors ${
+              activeTab === 'overview' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <MdDashboard className="text-lg shrink-0" />
+            Overview Dashboard
+          </button>
+
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`w-full py-3 px-4 rounded-xl font-semibold text-xs flex items-center gap-3 transition-colors ${
+              activeTab === 'users' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <MdPeople className="text-lg shrink-0" />
+            Guest Users
+          </button>
+
+          <button
+            onClick={() => setActiveTab('owners')}
+            className={`w-full py-3 px-4 rounded-xl font-semibold text-xs flex items-center gap-3 transition-colors ${
+              activeTab === 'owners' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <MdStorefront className="text-lg shrink-0" />
+            Venue Owners
+          </button>
+
+          <button
+            onClick={() => setActiveTab('venues')}
+            className={`w-full py-3 px-4 rounded-xl font-semibold text-xs flex items-center gap-3 transition-colors ${
+              activeTab === 'venues' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <MdOutlineMapsHomeWork className="text-lg shrink-0" />
+            Venue Listings
+          </button>
+
+          <button
+            onClick={() => setActiveTab('bookings')}
+            className={`w-full py-3 px-4 rounded-xl font-semibold text-xs flex items-center gap-3 transition-colors ${
+              activeTab === 'bookings' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <MdEventNote className="text-lg shrink-0" />
+            Booking Reservations
+          </button>
+
+          <button
+            onClick={() => setActiveTab('payments')}
+            className={`w-full py-3 px-4 rounded-xl font-semibold text-xs flex items-center gap-3 transition-colors ${
+              activeTab === 'payments' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <MdOutlinePayments className="text-lg shrink-0" />
+            Platform Payments
+          </button>
+        </nav>
+      </aside>
+
+      {/* 2. Main Content Window */}
+      <main className="flex-grow md:ml-64 p-6 sm:p-10 overflow-x-hidden">
+        
+        {/* Tab 1: Dashboard Overview */}
+        {activeTab === 'overview' && analytics && (
+          <div className="flex flex-col gap-8 animate-fade-in">
+            <div>
+              <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                Welcome Back, Admin
+              </h1>
+              <p className="text-slate-500 text-sm mt-1">Here is a platform summary of all user activities, booking performance, and cumulative turnovers.</p>
             </div>
-            <div className="glass p-6 rounded-2xl border border-white/8">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Venue Listings</span>
-              <span className="text-2xl font-black text-white">{analytics.venues?.total || 0}</span>
-              <span className="text-xs text-slate-400 block mt-1">Approved: {analytics.venues?.approved || 0}</span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Total System Users</span>
+                <span className="text-3xl font-black text-slate-900">{analytics.users?.total || 0}</span>
+                <span className="text-xs text-slate-500 mt-2">Active accounts: {analytics.users?.active || 0}</span>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Registered Hosts</span>
+                <span className="text-3xl font-black text-slate-900">{analytics.users?.venueOwners || 0}</span>
+                <span className="text-xs text-slate-500 mt-2">Managing venue spaces</span>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Confirmed Bookings</span>
+                <span className="text-3xl font-black text-slate-900">{analytics.bookings?.total || 0}</span>
+                <span className="text-xs text-slate-500 mt-2">Successful: {analytics.bookings?.confirmed || 0}</span>
+              </div>
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between bg-primary/5 border-primary/10">
+                <span className="text-[10px] uppercase font-bold text-primary block mb-1">Gross Turnover</span>
+                <span className="text-3xl font-black text-slate-900">₹{globalTurnover.toLocaleString('en-IN')}</span>
+                <span className="text-xs text-primary font-semibold mt-2">Platform gross revenues</span>
+              </div>
             </div>
-            <div className="glass p-6 rounded-2xl border border-white/8">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Total Bookings</span>
-              <span className="text-2xl font-black text-white">{analytics.bookings?.total || 0}</span>
-              <span className="text-xs text-slate-400 block mt-1">Confirmed: {analytics.bookings?.confirmed || 0}</span>
-            </div>
-            <div className="glass p-6 rounded-2xl border border-white/8">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Cumulative Revenues</span>
-              <span className="text-2xl font-black text-white">₹{(analytics.totalRevenue || 0).toLocaleString('en-IN')}</span>
-              <span className="text-xs text-green-400 block mt-1">Platform gross</span>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Operations Shortcuts</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => setActiveTab('users')} 
+                    className="p-5 text-left border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors flex flex-col justify-between h-32"
+                  >
+                    <span className="p-2.5 bg-slate-100 rounded-xl text-slate-700 w-fit"><MdPeople className="text-lg" /></span>
+                    <div>
+                      <span className="font-bold text-sm text-slate-950 block">Audit Guest List</span>
+                      <span className="text-xs text-slate-500">Block or unblock user accounts</span>
+                    </div>
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('owners')} 
+                    className="p-5 text-left border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors flex flex-col justify-between h-32"
+                  >
+                    <span className="p-2.5 bg-slate-100 rounded-xl text-slate-700 w-fit"><MdStorefront className="text-lg" /></span>
+                    <div>
+                      <span className="font-bold text-sm text-slate-950 block">Audit Venue Hosts</span>
+                      <span className="text-xs text-slate-500">Control active property host listings</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Top Rated Spaces</h3>
+                {analytics.popularVenues && analytics.popularVenues.length > 0 ? (
+                  <div className="flex flex-col gap-4">
+                    {analytics.popularVenues.map((pop, idx) => (
+                      <div key={idx} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-900 text-sm">{pop.venueName}</span>
+                          <span className="text-[10px] text-slate-400 font-bold uppercase">Rank #{idx+1}</span>
+                        </div>
+                        <span className="px-2.5 py-1 rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                          {pop.bookingCount} bookings
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-xs text-slate-400 italic">No bookings registered on database yet.</span>
+                )}
+              </div>
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Pending verification list */}
-          <div className="lg:col-span-2 flex flex-col gap-6">
-            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-              <MdVerified className="text-primary-light" /> Pending Venue Verifications
-            </h2>
-
-            {pendingVenues.length === 0 ? (
-              <div className="glass p-8 rounded-2xl border border-white/8 text-center text-slate-400">
-                🎉 No pending venue listing audits. All listings have been reviewed!
+        {/* Tab 2: Users List */}
+        {activeTab === 'users' && (
+          <div className="flex flex-col gap-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900">Guest Users Registry</h2>
+                <p className="text-slate-500 text-sm mt-0.5">Audit and block registered platform user accounts.</p>
               </div>
-            ) : (
-              pendingVenues.map((venue) => (
-                <div key={venue.id} className="glass bg-bg-card/25 border border-white/8 rounded-2xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                  <div>
-                    <h3 className="font-extrabold text-white text-lg tracking-tight mb-1">{venue.venueName}</h3>
-                    <p className="text-xs text-slate-400">📍 {venue.address}</p>
-                    <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-400">
-                      <span>Owner: <span className="text-white font-medium">{venue.owner?.name}</span></span>
-                      <span>Seating: <span className="text-white font-medium">{venue.capacity} guests</span></span>
-                      <span>Hourly: <span className="text-white font-medium">₹{venue.pricePerHour}</span></span>
-                    </div>
-                  </div>
 
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <button
-                      onClick={() => handleApproveVenue(venue.id, 'approved')}
-                      className="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl bg-success text-white font-semibold text-xs hover:brightness-110 active:scale-95 transition-transform flex items-center gap-1 justify-center"
-                    >
-                      <MdOutlineThumbUp className="text-sm" /> Approve
-                    </button>
-                    <button
-                      onClick={() => handleApproveVenue(venue.id, 'rejected')}
-                      className="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl bg-error text-white font-semibold text-xs hover:brightness-110 active:scale-95 transition-transform flex items-center gap-1 justify-center"
-                    >
-                      <MdOutlineThumbDown className="text-sm" /> Reject
-                    </button>
-                  </div>
-                </div>
-              ))
+              <div className="relative max-w-sm w-full">
+                <MdSearch className="absolute left-3 top-3.5 text-slate-400 text-lg" />
+                <input
+                  type="text"
+                  placeholder="Search by name or email..."
+                  value={userSearch}
+                  onChange={e => { setUserSearch(e.target.value); setUserPage(1); }}
+                  className="w-full py-2.5 pl-10 pr-4 bg-white border border-slate-200/80 rounded-xl text-slate-900 text-xs focus:outline-none focus:border-primary shadow-sm"
+                />
+              </div>
+            </div>
+
+            <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-200/60">
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">User details</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Block Reason</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Joined Date</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {users.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-slate-400 text-xs italic">
+                        No registered users found.
+                      </td>
+                    </tr>
+                  ) : (
+                    users.map((u) => (
+                      <tr key={u.id} className="hover:bg-slate-50/40">
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-slate-900 text-sm">{u.name}</span>
+                            <span className="text-xs text-slate-500">{u.email}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${
+                            u.status === 'blocked'
+                              ? 'bg-rose-50 text-rose-600 border border-rose-100'
+                              : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                          }`}>
+                            {u.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-500 italic max-w-xs truncate">
+                          {u.status === 'blocked' ? (u.blockReason || 'No reason specified') : '-'}
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-500">
+                          {new Date(u.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          {u.status === 'blocked' ? (
+                            <button
+                              onClick={() => handleUnblock(u)}
+                              className="py-1.5 px-3 rounded-lg border border-emerald-200 text-emerald-600 font-semibold text-xs hover:bg-emerald-50 transition-colors"
+                            >
+                              Unblock Account
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleOpenBlockModal(u)}
+                              className="py-1.5 px-3 rounded-lg border border-rose-200 text-rose-600 font-semibold text-xs hover:bg-rose-50 transition-colors inline-flex items-center gap-1"
+                            >
+                              <MdBlock /> Block
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {userTotalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-2">
+                <button
+                  disabled={userPage === 1}
+                  onClick={() => setUserPage(p => p - 1)}
+                  className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                >
+                  <MdNavigateBefore className="text-lg" />
+                </button>
+                <span className="text-xs font-bold text-slate-700">
+                  Page {userPage} of {userTotalPages}
+                </span>
+                <button
+                  disabled={userPage === userTotalPages}
+                  onClick={() => setUserPage(p => p + 1)}
+                  className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                >
+                  <MdNavigateNext className="text-lg" />
+                </button>
+              </div>
             )}
           </div>
+        )}
 
-          {/* Popular spaces table */}
-          <div>
-            <div className="glass p-6 rounded-3xl border border-white/8">
-              <h2 className="text-lg font-bold text-white mb-6">Popular Spaces</h2>
-              {analytics?.popularVenues && analytics.popularVenues.length > 0 ? (
-                <div className="flex flex-col gap-4">
-                  {analytics.popularVenues.map((pop, idx) => (
-                    <div key={idx} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-white text-sm">{pop.venueName}</span>
-                        <span className="text-[10px] text-slate-500 font-bold uppercase">Rank #{idx+1}</span>
-                      </div>
-                      <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary-light">
-                        {pop.bookingCount} bookings
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <span className="text-xs text-slate-500">Waiting for booking metadata</span>
-              )}
+        {/* Tab 3: Venue Owners List */}
+        {activeTab === 'owners' && (
+          <div className="flex flex-col gap-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900">Venue Owners Registry</h2>
+                <p className="text-slate-500 text-sm mt-0.5">Audit, review, and block hosting merchant accounts.</p>
+              </div>
+
+              <div className="relative max-w-sm w-full">
+                <MdSearch className="absolute left-3 top-3.5 text-slate-400 text-lg" />
+                <input
+                  type="text"
+                  placeholder="Search by owner name..."
+                  value={ownerSearch}
+                  onChange={e => { setOwnerSearch(e.target.value); setOwnerPage(1); }}
+                  className="w-full py-2.5 pl-10 pr-4 bg-white border border-slate-200/80 rounded-xl text-slate-900 text-xs focus:outline-none focus:border-primary shadow-sm"
+                />
+              </div>
+            </div>
+
+            <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-200/60">
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Owner Name</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Active Status</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Block Reason</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {owners.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-slate-400 text-xs italic">
+                        No venue owners found.
+                      </td>
+                    </tr>
+                  ) : (
+                    owners.map((o) => (
+                      <tr key={o.id} className="hover:bg-slate-50/40">
+                        <td className="px-6 py-4">
+                          <span className="font-bold text-slate-900 text-sm">{o.name}</span>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-600">
+                          {o.email}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${
+                            o.status === 'blocked'
+                              ? 'bg-rose-50 text-rose-600 border border-rose-100'
+                              : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                          }`}>
+                            {o.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-500 italic max-w-xs truncate">
+                          {o.status === 'blocked' ? (o.blockReason || 'No reason specified') : '-'}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          {o.status === 'blocked' ? (
+                            <button
+                              onClick={() => handleUnblock(o)}
+                              className="py-1.5 px-3 rounded-lg border border-emerald-200 text-emerald-600 font-semibold text-xs hover:bg-emerald-50 transition-colors"
+                            >
+                              Unblock Account
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleOpenBlockModal(o)}
+                              className="py-1.5 px-3 rounded-lg border border-rose-200 text-rose-600 font-semibold text-xs hover:bg-rose-50 transition-colors inline-flex items-center gap-1"
+                            >
+                              <MdBlock /> Block Owner
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {ownerTotalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-2">
+                <button
+                  disabled={ownerPage === 1}
+                  onClick={() => setOwnerPage(p => p - 1)}
+                  className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                >
+                  <MdNavigateBefore className="text-lg" />
+                </button>
+                <span className="text-xs font-bold text-slate-700">
+                  Page {ownerPage} of {ownerTotalPages}
+                </span>
+                <button
+                  disabled={ownerPage === ownerTotalPages}
+                  onClick={() => setOwnerPage(p => p + 1)}
+                  className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-40 transition-colors"
+                >
+                  <MdNavigateNext className="text-lg" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 4: Venue Listings List */}
+        {activeTab === 'venues' && (
+          <div className="flex flex-col gap-6 animate-fade-in">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">Active Venue Directory</h2>
+              <p className="text-slate-500 text-sm mt-0.5">List of registered event spaces. Listings are approved automatically and do not require admin actions.</p>
+            </div>
+
+            <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-200/60">
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Venue Name</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Price / Hour</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Capacity</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Platform Status</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Emergency Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {venues.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center text-slate-400 text-xs italic">
+                        No venues registered yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    venues.map((v) => (
+                      <tr key={v.id} className="hover:bg-slate-50/40">
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-slate-900 text-sm">{v.venueName}</span>
+                            <span className="text-xs text-slate-500 max-w-xs truncate">{v.address}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-600 font-semibold uppercase tracking-wider">
+                          {v.venueType.replace('_', ' ')}
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-900 font-bold">
+                          ₹{v.pricePerHour}
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-600">
+                          {v.capacity} pax
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100`}>
+                            {v.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          {v.status === 'suspended' ? (
+                            <button
+                              onClick={() => toggleVenueListingStatus(v, 'approved')}
+                              className="py-1 px-2.5 rounded-lg border border-emerald-200 text-emerald-600 font-semibold text-[11px] hover:bg-emerald-50 transition-colors"
+                            >
+                              Activate Listing
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => toggleVenueListingStatus(v, 'suspended')}
+                              className="py-1 px-2.5 rounded-lg border border-rose-200 text-rose-600 font-semibold text-[11px] hover:bg-rose-50 transition-colors inline-flex items-center gap-1"
+                            >
+                              <MdBlock /> Suspend Listing
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
+        )}
 
+        {/* Tab 5: Booking Reservations List */}
+        {activeTab === 'bookings' && (
+          <div className="flex flex-col gap-6 animate-fade-in">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">Reservations Auditor</h2>
+              <p className="text-slate-500 text-sm mt-0.5">Review, verify, and resolve scheduling conflicts for all platform bookings.</p>
+            </div>
+
+            <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-200/60">
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Booking code</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Property Details</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Guest details</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Event Schedule</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Gross Cost</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {bookings.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center text-slate-400 text-xs italic">
+                        No bookings found.
+                      </td>
+                    </tr>
+                  ) : (
+                    bookings.map((b) => (
+                      <tr key={b.id} className="hover:bg-slate-50/40">
+                        <td className="px-6 py-4 text-xs font-mono font-bold text-slate-900">
+                          {b.bookingCode || b.id.substring(0, 8).toUpperCase()}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="font-bold text-slate-950 text-sm block">{b.venue?.venueName}</span>
+                          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{b.venue?.venueType?.replace('_', ' ')}</span>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-700">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-slate-900">{b.user?.name}</span>
+                            <span className="text-slate-400">{b.user?.email}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-600">
+                          <div className="flex flex-col">
+                            <span>{new Date(b.bookingDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase">{b.startTime} - {b.endTime}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-slate-900 font-extrabold">
+                          ₹{Number(b.totalAmount).toLocaleString('en-IN')}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2.5 py-1 text-[9px] font-bold rounded-full uppercase tracking-wider ${
+                            b.bookingStatus === 'confirmed' || b.bookingStatus === 'completed'
+                              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                              : b.bookingStatus === 'rejected' || b.bookingStatus === 'cancelled'
+                              ? 'bg-rose-50 text-rose-600 border border-rose-100'
+                              : 'bg-amber-50 text-amber-600 border border-amber-100'
+                          }`}>
+                            {b.bookingStatus}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 6: Payments & Settlements List */}
+        {activeTab === 'payments' && (
+          <div className="flex flex-col gap-6 animate-fade-in">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">Payments & Commission settlements</h2>
+              <p className="text-slate-500 text-sm mt-0.5">Cumulative transaction distributions showing automatic intermediate breakdowns (85% Owner / 15% Platform Commission).</p>
+            </div>
+
+            <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-200/60">
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Transaction Code</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Property</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Total Paid</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Host Share (85%)</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">BMV commission (15%)</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Settlement</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {bookings.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center text-slate-400 text-xs italic">
+                        No transactions registered yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    bookings.map((b) => {
+                      const total = Number(b.totalAmount);
+                      const hostShare = total * 0.85;
+                      const platformCommission = total * 0.15;
+                      return (
+                        <tr key={b.id} className="hover:bg-slate-50/40">
+                          <td className="px-6 py-4 text-xs font-mono font-bold text-slate-900">
+                            TXN-{b.bookingCode || b.id.substring(0, 8).toUpperCase()}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="font-bold text-slate-950 text-sm block">{b.venue?.venueName}</span>
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{b.venue?.venueType?.replace('_', ' ')}</span>
+                          </td>
+                          <td className="px-6 py-4 text-xs text-slate-900 font-bold">
+                            ₹{total.toLocaleString('en-IN')}
+                          </td>
+                          <td className="px-6 py-4 text-xs text-slate-600">
+                            ₹{hostShare.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-6 py-4 text-xs text-primary font-bold">
+                            ₹{platformCommission.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2.5 py-1 text-[9px] font-bold rounded-full uppercase tracking-wider ${
+                              b.bookingStatus === 'confirmed' || b.bookingStatus === 'completed'
+                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                                : 'bg-amber-50 text-amber-600 border border-amber-100'
+                            }`}>
+                              {b.bookingStatus === 'confirmed' || b.bookingStatus === 'completed' ? 'Paid out' : 'Pending'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 7: Profile & Security settings for admin */}
+        {activeTab === 'profile' && (
+          <div className="flex flex-col gap-8 animate-fade-in max-w-xl">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">Admin Profile & Settings</h2>
+              <p className="text-slate-500 text-sm mt-0.5">Manage administrative contact details and update auth passwords.</p>
+            </div>
+
+            {/* Profits breakdown card for Admin (15% commissions) */}
+            <div className="bg-white p-6 rounded-2xl border border-primary/10 shadow-sm flex flex-col justify-between bg-primary/5">
+              <span className="text-[10px] uppercase font-bold text-primary block mb-1">BMV Platform Commissions Net Profit (15% Cut)</span>
+              <span className="text-3xl font-black text-slate-900">₹{adminPlatformCommissions.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</span>
+              <span className="text-xs text-slate-500 mt-2">Cumulative administrative cut generated platform-wide</span>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="bg-white p-6 border border-slate-100 rounded-2xl shadow-sm flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Admin display name</label>
+                <input
+                  type="text"
+                  className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none"
+                  value={profileForm.name}
+                  onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email (Locked)</label>
+                <input
+                  type="email"
+                  className="w-full py-2.5 px-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm focus:outline-none cursor-not-allowed"
+                  value={profileForm.email}
+                  disabled
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Phone number</label>
+                <input
+                  type="text"
+                  className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none"
+                  value={profileForm.phone}
+                  onChange={e => setProfileForm({ ...profileForm, phone: e.target.value })}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-primary hover:bg-primary-dark font-bold text-white text-xs rounded-xl shadow-sm transition-colors"
+              >
+                Save Contact Info
+              </button>
+            </form>
+
+            {/* Change Password with Password strength progress bar */}
+            <form onSubmit={handleChangePassword} className="bg-white p-6 border border-slate-100 rounded-2xl shadow-sm flex flex-col gap-4">
+              <h3 className="text-base font-bold text-slate-900">Change Admin Password</h3>
+              
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Current Password</label>
+                <input
+                  type="password"
+                  className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none"
+                  placeholder="••••••••"
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">New Password</label>
+                <input
+                  type="password"
+                  className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  required
+                />
+                
+                {/* Dynamic Password Strength Progress Bar */}
+                {newPassword && (
+                  <div className="mt-2.5 flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+                      <span>Password Strength:</span>
+                      <span className={`${
+                        strength.label === 'Strong' ? 'text-emerald-600' :
+                        strength.label === 'Medium' ? 'text-amber-500' : 'text-rose-500'
+                      }`}>{strength.label}</span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/50">
+                      <div className={`h-full transition-all duration-300 ${strength.color}`} />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Confirm New Password</label>
+                <input
+                  type="password"
+                  className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-primary hover:bg-primary-dark font-bold text-white text-xs rounded-xl shadow-sm transition-colors"
+              >
+                Change Admin Password
+              </button>
+            </form>
+          </div>
+        )}
+
+      </main>
+
+      {/* 3. Pop-up Interactive Block Account Modal */}
+      {showBlockModal && selectedUserToBlock && (
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 flex flex-col gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-slate-950 tracking-tight">Block Account</h3>
+              <p className="text-slate-500 text-xs mt-1">Please write a specific reason for blocking the account of <span className="font-bold text-slate-900">{selectedUserToBlock.name}</span>. This reason will be logged for administrative history.</p>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Reason for Blocking *</label>
+              <textarea
+                value={blockReason}
+                onChange={e => setBlockReason(e.target.value)}
+                placeholder="e.g. Terms of Service violation / Fraudulent booking behaviors..."
+                className="w-full py-2.5 px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-rose-500 h-24 resize-none transition-colors"
+                required
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end mt-2">
+              <button
+                type="button"
+                onClick={() => setShowBlockModal(false)}
+                className="py-2 px-4 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmBlock}
+                className="py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow transition-colors"
+              >
+                Confirm Block
+              </button>
+            </div>
+          </div>
         </div>
-
-      </div>
+      )}
     </div>
   );
 }
