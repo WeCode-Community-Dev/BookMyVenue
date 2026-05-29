@@ -2,6 +2,7 @@
   "name": "bookmyvenue",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "BookMyVenue - Venue booking platform monorepo",
   "workspaces": [
     "frontend",
@@ -14,10 +15,11 @@
     "build": "npm run build --workspaces --if-present",
     "build:frontend": "npm run build -w frontend",
     "build:backend": "npm run build -w backend",
-    "lint": "npm run lint --workspaces --if-present",
-    "lint:fix": "npm run lint:fix --workspaces --if-present",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "typecheck": "npm run typecheck --workspaces --if-present",
     "db:generate": "npm run db:generate -w backend",
     "db:migrate": "npm run db:migrate -w backend",
     "db:push": "npm run db:push -w backend",
@@ -27,15 +29,22 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/js": "^8.57.1",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.2.0",
+    "eslint-plugin-security": "^3.0.1",
     "husky": "^9.1.0",
     "lint-staged": "^15.2.0",
     "prettier": "^3.3.0",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.60.0"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
