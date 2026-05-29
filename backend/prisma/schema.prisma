@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,12 +10,851 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================
+// ENUM DEFINITIONS
+// ============================================
+
+enum UserRole {
+  CUSTOMER
+  VENUE_OWNER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum VenueType {
+  OFFLINE
+  ONLINE
+  HYBRID
+}
+
+enum IndoorOutdoorType {
+  INDOOR
+  OUTDOOR
+  BOTH
+}
+
+enum VenueStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  PUBLISHED
+  SUSPENDED
+  ARCHIVED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  REFUNDED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentGateway {
+  RAZORPAY
+  STRIPE
+  PAYPAL
+  CASH
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  UPI
+  NET_BANKING
+  WALLET
+  CASH
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  PAYMENT_RECEIVED
+  REMINDER
+  PROMO
+  SYSTEM
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum SocialProvider {
+  GOOGLE
+  FACEBOOK
+  APPLE
+  TWITTER
+}
+
+// ============================================
+// USER DOMAIN
+// ============================================
+
 model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  phone        String?   @unique
+  passwordHash String?   @map("password_hash")
+  role         UserRole  @default(CUSTOMER)
+  isVerified   Boolean   @default(false) @map("is_verified")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  // Relations
+  profile            UserProfile?
+  preferences        UserPreference?
+  socialAccounts     SocialAccount[]
+  passwordResets     PasswordReset[]
+  emailVerifications EmailVerification[]
+  ownedVenues        Venue[]             @relation("VenueOwner")
+  bookings           Booking[]
+  reviews            Review[]
+  reviewResponses    ReviewResponse[]
+  savedVenues        SavedVenue[]
+  notifications      Notification[]
+  calendarEvents     CalendarEvent[]
+  couponsCreated     Coupon[]            @relation("CouponOwner")
+  venueViewLogs      VenueViewLog[]
+  searchAnalytics    SearchAnalytics[]
+  auditLogs          AuditLog[]
+  adminActions       AdminAction[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([role])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model UserProfile {
+  id          String    @id @default(uuid())
+  userId      String    @unique @map("user_id")
+  firstName   String?   @map("first_name")
+  lastName    String?   @map("last_name")
+  bio         String?
+  dateOfBirth DateTime? @map("date_of_birth") @db.Date
+  gender      Gender?
+  address     String?
+  city        String?
+  state       String?
+  country     String?
+  pincode     String?
+  avatarUrl   String?   @map("avatar_url")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([city])
+  @@index([state])
+  @@map("user_profiles")
+}
+
+model UserPreference {
+  id                  String   @id @default(uuid())
+  userId              String   @unique @map("user_id")
+  preferredCity       String?  @map("preferred_city")
+  preferredState      String?  @map("preferred_state")
+  preferredCategories String[] @map("preferred_categories")
+  notifyEmail         Boolean  @default(true) @map("notify_email")
+  notifyPush          Boolean  @default(true) @map("notify_push")
+  notifySms           Boolean  @default(false) @map("notify_sms")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model SocialAccount {
+  id           String         @id @default(uuid())
+  userId       String         @map("user_id")
+  provider     SocialProvider
+  providerId   String         @map("provider_id")
+  accessToken  String?        @map("access_token")
+  refreshToken String?        @map("refresh_token")
+  expiresAt    DateTime?      @map("expires_at")
+  createdAt    DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@index([userId])
+  @@map("social_accounts")
+}
+
+model PasswordReset {
   id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  firstName String
-  lastName  String
-  role      String   @default("CUSTOMER")
-  createdAt DateTime @default(now())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_resets")
+}
+
+model EmailVerification {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  token      String    @unique
+  expiresAt  DateTime  @map("expires_at")
+  verifiedAt DateTime? @map("verified_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("email_verifications")
+}
+
+// ============================================
+// VENUE DOMAIN
+// ============================================
+
+model VenueCategory {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  iconUrl   String?  @map("icon_url")
+  parentId  String?  @map("parent_id")
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Self-referential relation for hierarchical categories
+  parent   VenueCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children VenueCategory[] @relation("CategoryHierarchy")
+
+  // Relations
+  venues          Venue[]
+  searchAnalytics SearchAnalytics[]
+
+  @@index([parentId])
+  @@index([slug])
+  @@map("venue_categories")
+}
+
+model Venue {
+  id               String            @id @default(uuid())
+  ownerId          String            @map("owner_id")
+  categoryId       String            @map("category_id")
+  title            String
+  slug             String            @unique
+  description      String?
+  venueType        VenueType         @default(OFFLINE) @map("venue_type")
+  indoorOutdoor    IndoorOutdoorType @default(INDOOR) @map("indoor_outdoor")
+  acAvailable      Boolean           @default(false) @map("ac_available")
+  parkingAvailable Boolean           @default(false) @map("parking_available")
+  addressLine1     String?           @map("address_line1")
+  addressLine2     String?           @map("address_line2")
+  city             String?
+  state            String?
+  country          String?
+  pincode          String?
+  latitude         Float?
+  longitude        Float?
+  startDate        DateTime?         @map("start_date") @db.Date
+  endDate          DateTime?         @map("end_date") @db.Date
+  bannerImageUrl   String?           @map("banner_image_url")
+  status           VenueStatus       @default(DRAFT)
+  averageRating    Decimal           @default(0) @map("average_rating") @db.Decimal(3, 2)
+  totalReviews     Int               @default(0) @map("total_reviews")
+  totalBookings    Int               @default(0) @map("total_bookings")
+  isFeatured       Boolean           @default(false) @map("is_featured")
+  expiredAt        DateTime?         @map("expired_at")
+  archivedAt       DateTime?         @map("archived_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  deletedAt        DateTime?         @map("deleted_at")
+
+  // Relations
+  owner            User                @relation("VenueOwner", fields: [ownerId], references: [id])
+  category         VenueCategory       @relation(fields: [categoryId], references: [id])
+  images           VenueImage[]
+  videos           VenueVideo[]
+  amenities        VenueAmenity[]
+  availability     VenueAvailability[]
+  bookings         Booking[]
+  reviews          Review[]
+  coupons          Coupon[]
+  savedByUsers     SavedVenue[]
+  notifications    Notification[]
+  analytics        VenueAnalytics[]
+  viewLogs         VenueViewLog[]
+  pastEventGallery PastEventGallery[]
+  personalities    VenuePersonality[]
+
+  @@index([ownerId])
+  @@index([categoryId])
+  @@index([city])
+  @@index([state])
+  @@index([status])
+  @@index([latitude, longitude])
+  @@index([createdAt])
+  @@index([isFeatured])
+  @@map("venues")
+}
+
+model VenueImage {
+  id        String   @id @default(uuid())
+  venueId   String   @map("venue_id")
+  imageUrl  String   @map("image_url")
+  caption   String?
+  sortOrder Int      @default(0) @map("sort_order")
+  isPrimary Boolean  @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@map("venue_images")
+}
+
+model VenueVideo {
+  id              String   @id @default(uuid())
+  venueId         String   @map("venue_id")
+  videoUrl        String   @map("video_url")
+  thumbnailUrl    String?  @map("thumbnail_url")
+  durationSeconds Int?     @map("duration_seconds")
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@map("venue_videos")
+}
+
+model Amenity {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  iconUrl   String?  @map("icon_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  venues VenueAmenity[]
+
+  @@map("amenities")
+}
+
+model VenueAmenity {
+  venueId   String   @map("venue_id")
+  amenityId String   @map("amenity_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  venue   Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  amenity Amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([venueId, amenityId])
+  @@map("venue_amenities")
+}
+
+// ============================================
+// AVAILABILITY & BOOKING DOMAIN
+// ============================================
+
+model VenueAvailability {
+  id             String   @id @default(uuid())
+  venueId        String   @map("venue_id")
+  availableDate  DateTime @map("available_date") @db.Date
+  startTime      DateTime @map("start_time") @db.Time()
+  endTime        DateTime @map("end_time") @db.Time()
+  totalCapacity  Int      @map("total_capacity")
+  bookedCapacity Int      @default(0) @map("booked_capacity")
+  pricePerTicket Decimal  @map("price_per_ticket") @db.Decimal(12, 2)
+  currency       String   @default("INR") @db.VarChar(3)
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  venue    Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@unique([venueId, availableDate, startTime, endTime])
+  @@index([venueId])
+  @@index([availableDate])
+  @@index([isActive])
+  @@map("venue_availability")
+}
+
+model Booking {
+  id               String        @id @default(uuid())
+  userId           String        @map("user_id")
+  venueId          String        @map("venue_id")
+  availabilityId   String        @map("availability_id")
+  couponId         String?       @map("coupon_id")
+  bookingReference String        @unique @map("booking_reference")
+  numberOfTickets  Int           @map("number_of_tickets")
+  subtotal         Decimal       @db.Decimal(12, 2)
+  discountAmount   Decimal       @default(0) @map("discount_amount") @db.Decimal(12, 2)
+  taxAmount        Decimal       @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  totalAmount      Decimal       @map("total_amount") @db.Decimal(12, 2)
+  currency         String        @default("INR") @db.VarChar(3)
+  bookingStatus    BookingStatus @default(PENDING) @map("booking_status")
+  paymentStatus    PaymentStatus @default(PENDING) @map("payment_status")
+  qrCodeUrl        String?       @map("qr_code_url")
+  bookedAt         DateTime?     @map("booked_at")
+  cancelledAt      DateTime?     @map("cancelled_at")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  deletedAt        DateTime?     @map("deleted_at")
+
+  // Relations
+  user          User              @relation(fields: [userId], references: [id])
+  venue         Venue             @relation(fields: [venueId], references: [id])
+  availability  VenueAvailability @relation(fields: [availabilityId], references: [id])
+  coupon        Coupon?           @relation(fields: [couponId], references: [id])
+  payment       Payment?
+  tickets       BookingTicket[]
+  review        Review?
+  calendarEvent CalendarEvent?
+
+  @@index([userId])
+  @@index([venueId])
+  @@index([bookingReference])
+  @@index([bookingStatus])
+  @@index([createdAt])
+  @@map("bookings")
+}
+
+model BookingTicket {
+  id            String    @id @default(uuid())
+  bookingId     String    @map("booking_id")
+  ticketNumber  String    @unique @map("ticket_number")
+  attendeeName  String?   @map("attendee_name")
+  attendeeEmail String?   @map("attendee_email")
+  qrCodeUrl     String?   @map("qr_code_url")
+  checkedInAt   DateTime? @map("checked_in_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([ticketNumber])
+  @@map("booking_tickets")
+}
+
+model Payment {
+  id              String         @id @default(uuid())
+  bookingId       String         @unique @map("booking_id")
+  paymentGateway  PaymentGateway @map("payment_gateway")
+  transactionId   String?        @unique @map("transaction_id")
+  paymentMethod   PaymentMethod? @map("payment_method")
+  amount          Decimal        @db.Decimal(12, 2)
+  currency        String         @default("INR") @db.VarChar(3)
+  paymentStatus   PaymentStatus  @default(PENDING) @map("payment_status")
+  gatewayResponse Json?          @map("gateway_response")
+  paidAt          DateTime?      @map("paid_at")
+  refundedAt      DateTime?      @map("refunded_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([paymentStatus])
+  @@index([transactionId])
+  @@map("payments")
+}
+
+model Coupon {
+  id             String       @id @default(uuid())
+  venueId        String?      @map("venue_id")
+  ownerId        String       @map("owner_id")
+  code           String       @unique
+  discountType   DiscountType @map("discount_type")
+  discountValue  Decimal      @map("discount_value") @db.Decimal(12, 2)
+  minOrderAmount Decimal?     @map("min_order_amount") @db.Decimal(12, 2)
+  maxDiscount    Decimal?     @map("max_discount") @db.Decimal(12, 2)
+  maxUsage       Int?         @map("max_usage")
+  usedCount      Int          @default(0) @map("used_count")
+  validFrom      DateTime     @map("valid_from")
+  expiresAt      DateTime     @map("expires_at")
+  isActive       Boolean      @default(true) @map("is_active")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  venue    Venue?    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  owner    User      @relation("CouponOwner", fields: [ownerId], references: [id])
+  bookings Booking[]
+
+  @@index([code])
+  @@index([venueId])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("coupons")
+}
+
+// ============================================
+// PERSONALITY & SPEAKER DOMAIN
+// ============================================
+
+model Personality {
+  id           String   @id @default(uuid())
+  name         String
+  slug         String   @unique
+  bio          String?
+  imageUrl     String?  @map("image_url")
+  designation  String?
+  company      String?
+  websiteUrl   String?  @map("website_url")
+  linkedinUrl  String?  @map("linkedin_url")
+  twitterUrl   String?  @map("twitter_url")
+  instagramUrl String?  @map("instagram_url")
+  isFeatured   Boolean  @default(false) @map("is_featured")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  venues  VenuePersonality[]
+  socials PersonalitySocial[]
+
+  @@index([slug])
+  @@map("personalities")
+}
+
+model VenuePersonality {
+  venueId       String   @map("venue_id")
+  personalityId String   @map("personality_id")
+  role          String?
+  sortOrder     Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  venue       Venue       @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  personality Personality @relation(fields: [personalityId], references: [id], onDelete: Cascade)
+
+  @@id([venueId, personalityId])
+  @@map("venue_personalities")
+}
+
+model PersonalitySocial {
+  id            String   @id @default(uuid())
+  personalityId String   @map("personality_id")
+  platform      String
+  url           String
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  personality Personality @relation(fields: [personalityId], references: [id], onDelete: Cascade)
+
+  @@index([personalityId])
+  @@map("personality_socials")
+}
+
+// ============================================
+// REVIEW & ENGAGEMENT DOMAIN
+// ============================================
+
+model Review {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  venueId      String    @map("venue_id")
+  bookingId    String?   @unique @map("booking_id")
+  rating       Int
+  title        String?
+  reviewText   String?   @map("review_text")
+  isVerified   Boolean   @default(false) @map("is_verified")
+  isApproved   Boolean   @default(false) @map("is_approved")
+  helpfulCount Int       @default(0) @map("helpful_count")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  // Relations
+  user     User            @relation(fields: [userId], references: [id])
+  venue    Venue           @relation(fields: [venueId], references: [id])
+  booking  Booking?        @relation(fields: [bookingId], references: [id])
+  images   ReviewImage[]
+  response ReviewResponse?
+
+  @@index([userId])
+  @@index([venueId])
+  @@index([rating])
+  @@index([createdAt])
+  @@map("reviews")
+}
+
+model ReviewImage {
+  id        String   @id @default(uuid())
+  reviewId  String   @map("review_id")
+  imageUrl  String   @map("image_url")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@map("review_images")
+}
+
+model ReviewResponse {
+  id           String   @id @default(uuid())
+  reviewId     String   @unique @map("review_id")
+  ownerId      String   @map("owner_id")
+  responseText String   @map("response_text")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  owner  User   @relation(fields: [ownerId], references: [id])
+
+  @@index([ownerId])
+  @@map("review_responses")
+}
+
+model SavedVenue {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  venueId   String   @map("venue_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, venueId])
+  @@index([userId])
+  @@index([venueId])
+  @@map("saved_venues")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  venueId   String?          @map("venue_id")
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  readAt    DateTime?        @map("read_at")
+  sentAt    DateTime?        @map("sent_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  // Relations
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue Venue? @relation(fields: [venueId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([type])
+  @@index([readAt])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model CalendarEvent {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  bookingId      String    @unique @map("booking_id")
+  googleEventId  String?   @map("google_event_id")
+  icalUid        String?   @map("ical_uid")
+  reminderSentAt DateTime? @map("reminder_sent_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([googleEventId])
+  @@map("calendar_events")
+}
+
+// ============================================
+// ANALYTICS & HISTORICAL DOMAIN
+// ============================================
+
+model VenueAnalytics {
+  id             String   @id @default(uuid())
+  venueId        String   @map("venue_id")
+  recordedDate   DateTime @map("recorded_date") @db.Date
+  views          Int      @default(0)
+  uniqueViews    Int      @default(0) @map("unique_views")
+  clicks         Int      @default(0)
+  searchAppears  Int      @default(0) @map("search_appears")
+  bookings       Int      @default(0)
+  cancellations  Int      @default(0)
+  revenue        Decimal  @default(0) @db.Decimal(12, 2)
+  currency       String   @default("INR") @db.VarChar(3)
+  avgTicketPrice Decimal  @default(0) @map("avg_ticket_price") @db.Decimal(12, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([venueId, recordedDate])
+  @@index([venueId])
+  @@index([recordedDate])
+  @@map("venue_analytics")
+}
+
+model VenueViewLog {
+  id        String   @id @default(uuid())
+  venueId   String   @map("venue_id")
+  userId    String?  @map("user_id")
+  sessionId String?  @map("session_id")
+  ipAddress String?  @map("ip_address") @db.VarChar(45)
+  userAgent String?  @map("user_agent")
+  referrer  String?
+  viewedAt  DateTime @default(now()) @map("viewed_at")
+
+  // Relations
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([venueId])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([viewedAt])
+  @@map("venue_view_logs")
+}
+
+model SearchAnalytics {
+  id           String   @id @default(uuid())
+  searchTerm   String?  @map("search_term")
+  city         String?
+  categoryId   String?  @map("category_id")
+  resultsCount Int      @default(0) @map("results_count")
+  userId       String?  @map("user_id")
+  sessionId    String?  @map("session_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  category VenueCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  user     User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([searchTerm])
+  @@index([city])
+  @@index([categoryId])
+  @@index([createdAt])
+  @@map("search_analytics")
+}
+
+model PastEventGallery {
+  id            String   @id @default(uuid())
+  venueId       String   @map("venue_id")
+  title         String
+  description   String?
+  eventDate     DateTime @map("event_date") @db.Date
+  coverImageUrl String?  @map("cover_image_url")
+  attendeeCount Int?     @map("attendee_count")
+  isPublished   Boolean  @default(false) @map("is_published")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  venue Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  media GalleryMedia[]
+
+  @@index([venueId])
+  @@index([eventDate])
+  @@map("past_event_gallery")
+}
+
+model GalleryMedia {
+  id           String    @id @default(uuid())
+  galleryId    String    @map("gallery_id")
+  mediaType    MediaType @map("media_type")
+  url          String
+  thumbnailUrl String?   @map("thumbnail_url")
+  caption      String?
+  sortOrder    Int       @default(0) @map("sort_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  gallery PastEventGallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  @@index([galleryId])
+  @@map("gallery_media")
+}
+
+// ============================================
+// AUDIT DOMAIN
+// ============================================
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  action     String
+  oldValues  Json?    @map("old_values")
+  newValues  Json?    @map("new_values")
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model AdminAction {
+  id         String   @id @default(uuid())
+  adminId    String   @map("admin_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  reason     String?
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  admin User @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("admin_actions")
 }
