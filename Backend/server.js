@@ -3,8 +3,15 @@ const dbConnect = require('./config/dbConnect')
 const app = express();
 require('dotenv').config()
 
+//routes
+const venueRouter = require('./Routes/venueRoutes')
+
 dbConnect()
+
 const port = process.env.PORT
+
+app.use('/api/venue', venueRouter)
+
 app.get('/', (req, res) => {
     res.send('Hello World!');
 });
