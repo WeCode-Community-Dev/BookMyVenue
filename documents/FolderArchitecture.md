@@ -4,52 +4,55 @@
 bookmyvenue/
 │
 ├── app/
-│   ├── main.py                # Entry point of FastAPI app
+│   ├── main.py #entry points starts from here
 │
-│   ├── core/                 # App configuration
-│   │   ├── config.py         # Settings (DB URL, secrets)
-│   │   ├── security.py       # JWT auth logic
+│   ├── core/                  # Global config
+│   │   ├── config.py
+│   │   ├── security.py
 │
-│   ├── db/                   # Database connection
-│   │   ├── session.py        # DB connection setup
-│   │   ├── base.py           # Base model (SQLAlchemy)
+│   ├── db/
+│   │   ├── session.py
+│   │   ├── base.py
 │
-│   ├── models/               # Database models
-│   │   ├── user.py
-│   │   ├── venue.py
-│   │   ├── booking.py
-│   │   ├── amenity.py
-│
-│   ├── schemas/              # Request / Response (Pydantic)
-│   │   ├── user.py
-│   │   ├── venue.py
-│   │   ├── booking.py
-│
-│   ├── api/                  # API routes (controllers)
-│   │   ├── deps.py           # common dependencies (auth check)
+│   ├── modules/               # Feature-based modules
 │   │
-│   │   ├── auth.py           # login, register
-│   │   ├── users.py
-│   │   ├── venues.py
-│   │   ├── bookings.py
-│   │   ├── admin.py
-│
-│   ├── services/             # Business logic (IMPORTANT)
-│   │   ├── auth_service.py
-│   │   ├── user_service.py
-│   │   ├── venue_service.py
-│   │   ├── booking_service.py
+│   │   ├── auth/              # Authentication module
+│   │   │   ├── routes.py
+│   │   │   ├── schemas.py
+│   │   │   ├── service.py
+│   │   │   ├── models.py
 │   │
-│   ├── utils/                # Helper functions
+│   │   ├── users/             # User management
+│   │   │   ├── routes.py
+│   │   │   ├── schemas.py
+│   │   │   ├── service.py
+│   │   │   ├── models.py
+│   │
+│   │   ├── venues/            # Venue system (owner + admin)
+│   │   │   ├── routes.py
+│   │   │   ├── schemas.py
+│   │   │   ├── service.py
+│   │   │   ├── models.py
+│   │
+│   │   ├── bookings/          # Booking system
+│   │   │   ├── routes.py
+│   │   │   ├── schemas.py
+│   │   │   ├── service.py
+│   │   │   ├── models.py
+│   │
+│   │   ├── admin/             # Admin-only actions
+│   │   │   ├── routes.py
+│   │   │   ├── service.py
+│   │
+│   │
+│   ├── utils/
 │   │   ├── helpers.py
 │
 │
-├── migrations/               # Alembic migrations
-│
-├── tests/                    # Test cases
-│
-├── .env                      # Environment variables
-├── requirements.txt          # Dependencies
+├── migrations/
+├── tests/
+├── .env
+├── requirements.txt
 ├── README.md
 ```
 
