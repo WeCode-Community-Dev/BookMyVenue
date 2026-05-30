@@ -26,9 +26,6 @@ app.include_router(users_router, prefix="/api/users", tags=["Users"])
 def startup():
     init_db()
 
-
-
-
 # health status check
 @app.get("/")
 async def root():
