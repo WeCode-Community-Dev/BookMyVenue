@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../feature/auth/presentation/bloc/auth_bloc.dart';
 import '../../feature/auth/presentation/pages/signin_page.dart';
 import '../auth/auth_session.dart';
+import '../di/injection.dart';
 import 'route_name.dart';
 
 class AppRouter {
@@ -23,7 +26,10 @@ class AppRouter {
         path: '/login',
         name: AppRouteNames.signin,
         builder: (BuildContext context, GoRouterState state) =>
-            const SigninPage(),
+            BlocProvider<AuthBloc>(
+              create: (BuildContext context) => sl<AuthBloc>(),
+              child: const SigninPage(),
+            ),
       ),
       // GoRoute(
       //   path: '/signup1',

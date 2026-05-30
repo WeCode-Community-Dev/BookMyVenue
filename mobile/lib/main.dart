@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'core/di/injection.dart';
+import 'core/environment/app_env.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'feature/auth/presentation/pages/signin_page.dart';
 
-void main() {
+Future<void> main() async {
+  Environment.init(AppEnvironment.dev);
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await setupInjector();
   runApp(const MyApp());
 }
 
