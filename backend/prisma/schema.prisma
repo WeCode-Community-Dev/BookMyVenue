@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ============================================
@@ -222,7 +221,7 @@ model VenueCategory {
   children VenueCategory[] @relation("CategoryHierarchy")
 
   // Relations
-  venues          Venue[]
+  venues Venue[]
 
   @@index([parentId])
   @@index([slug])
@@ -276,6 +275,7 @@ model Venue {
   viewLogs         VenueViewLog[]
   pastEventGallery PastEventGallery[]
   personalities    VenuePersonality[]
+  coupons          Coupon[]
 
   @@index([ownerId])
   @@index([categoryId])
@@ -646,7 +646,6 @@ model Notification {
   @@index([createdAt])
   @@map("notifications")
 }
-
 
 // TODO: do we need to implement calendar events, or just rely on google calendar links for now, can implement in polishing stage if needed
 model CalendarEvent {

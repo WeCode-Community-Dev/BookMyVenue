@@ -17,7 +17,8 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.0.0",
+    "@prisma/adapter-pg": "^7.0.0",
+    "@prisma/client": "^7.0.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -25,6 +26,7 @@
     "helmet": "^8.0.0",
     "ioredis": "^5.4.1",
     "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.0",
     "uuid": "^10.0.0",
     "zod": "^3.23.8"
   },
@@ -34,8 +36,9 @@
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
     "@types/uuid": "^10.0.0",
-    "prisma": "^6.0.0",
+    "prisma": "^7.0.0",
     "tsx": "^4.19.0"
   }
 }
