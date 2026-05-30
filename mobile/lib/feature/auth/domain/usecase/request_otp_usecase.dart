@@ -5,12 +5,12 @@ import '../params/otp_param.dart';
 import '../repository/i_auth_repository.dart';
 
 class RequestOtpUseCase
-    implements UseCase<ResultFuture<AuthResult>, OtpParams> {
+    implements UseCase<ResultFuture<OtpResponseResult>, OtpRequestParams> {
   RequestOtpUseCase({required this.repository});
   final IAuthRepository repository;
 
   @override
-  ResultFuture<AuthResult> call(OtpParams params) {
+  ResultFuture<OtpResponseResult> call(OtpRequestParams params) {
     return repository.requestOtp(params: params);
   }
 }

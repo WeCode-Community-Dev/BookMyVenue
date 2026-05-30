@@ -3,5 +3,10 @@ import '../entity/user_entity.dart';
 import '../params/otp_param.dart';
 
 abstract interface class IAuthRepository {
-  ResultFuture<AuthResult> requestOtp({required OtpParams params});
+  ResultFuture<OtpResponseResult> requestOtp({
+    required OtpRequestParams params,
+  });
+  ResultFuture<VerifyOtpRequestResult> verifyOtp({
+    required VerifyOtpRequestParams params,
+  });
 }

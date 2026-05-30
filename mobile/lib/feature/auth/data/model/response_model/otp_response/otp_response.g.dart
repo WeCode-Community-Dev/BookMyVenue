@@ -9,7 +9,7 @@ part of 'otp_response.dart';
 _OtpResponse _$OtpResponseFromJson(Map<String, dynamic> json) => _OtpResponse(
   mobileNumber: json['mobile_number'] as String,
   otp: json['otp'] as String,
-  expiresInSeconds: json['expires_in_seconds'] as String,
+  expiresInSeconds: (json['expires_in_seconds'] as num).toInt(),
   message: json['message'] as String,
 );
 

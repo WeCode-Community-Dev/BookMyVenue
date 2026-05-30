@@ -4,7 +4,7 @@ part 'otp_request.freezed.dart';
 part 'otp_request.g.dart';
 
 @freezed
-abstract class OtpRequest with _$OtpRequest {
+sealed class OtpRequest with _$OtpRequest {
   const factory OtpRequest({
     @JsonKey(name: 'mobile_number') required String mobileNumber,
   }) = _OtpRequest;

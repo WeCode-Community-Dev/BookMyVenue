@@ -30,7 +30,7 @@ def request_otp(data: OTPRequest):
 
 # Verify OTP
 @router.post(
-    "/verify_otp",
+    "/verify-otp",
     response_model=SuccessResponse[TokenResponse],
     status_code=status.HTTP_200_OK,
     summary="Submit and verify mobile OTP code",

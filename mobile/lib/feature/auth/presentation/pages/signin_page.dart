@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 
+import '../../../../core/logger/app_logger.dart';
 import '../../../../core/router/route_name.dart';
+import '../../../../core/utils/ui/snackbar_command.dart';
 import '../../../../core/validation/app_validation.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
@@ -43,7 +45,14 @@ class _SigninPageState extends State<SigninPage> {
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: BlocConsumer<AuthBloc, AuthState>(
-          listener: (BuildContext context, AuthState state) {},
+          listener: (BuildContext context, AuthState state) {
+            if (state.successMessage != null) {
+              SnackbarCommand.show(
+                type: ToastType.success,
+                title: state.successMessage!,
+              );
+            }
+          },
           builder: (BuildContext context, AuthState state) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -72,12 +81,12 @@ class _SigninPageState extends State<SigninPage> {
                       validator: AppValidation.validateMobile,
                     ),
                     const SizedBox(height: 16),
-                    if (!isOtpReceived)
+                    if (state.successMessage == null)
                       AppButton(
                         isLoading: state.isLoading,
                         label: 'Get OTP',
                         onPressed: () {
-                          final OtpParams param = OtpParams(
+                          final OtpRequestParams param = OtpRequestParams(
                             mobileNumber: '+91${_mobileController.text.trim()}',
                           );
                           context.read<AuthBloc>().add(
@@ -100,7 +109,20 @@ class _SigninPageState extends State<SigninPage> {
 
                     // Main Action Button (using our new AppButton)
                     if (isValidOtp)
-                      AppButton(label: 'Sign In', onPressed: () {}),
+                      AppButton(
+                        label: 'Sign In',
+                        onPressed: () {
+                          final VerifyOtpRequestParams param =
+                              VerifyOtpRequestParams(
+                                mobileNumber:
+                                    '+91${_mobileController.text.trim()}',
+                                otp: _otpController.text.trim(),
+                              );
+                          context.read<AuthBloc>().add(
+                            AuthEvent.verifyOtp(requestParam: param),
+                          );
+                        },
+                      ),
 
                     const SizedBox(height: 24),
 
@@ -144,6 +166,7 @@ class OtpFieldWidget extends StatelessWidget {
     final PinTheme defaultPinTheme = PinTheme(
       width: 60,
       height: 60,
+
       textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
@@ -153,13 +176,14 @@ class OtpFieldWidget extends StatelessWidget {
 
     return Pinput(
       controller: controller,
+      length: 6,
       inputFormatters: <TextInputFormatter>[
         FilteringTextInputFormatter.digitsOnly,
       ],
       defaultPinTheme: defaultPinTheme,
 
       validator: (String? value) {
-        if (value == null || value.length != 4) {
+        if (value == null || value.length != 6) {
           return 'Enter valid OTP';
         }
         return null;

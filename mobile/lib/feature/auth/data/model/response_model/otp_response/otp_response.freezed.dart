@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OtpResponse {
 
-@JsonKey(name: 'mobile_number') String get mobileNumber; String get otp;@JsonKey(name: 'expires_in_seconds') String get expiresInSeconds; String get message;
+@JsonKey(name: 'mobile_number') String get mobileNumber; String get otp;@JsonKey(name: 'expires_in_seconds') int get expiresInSeconds; String get message;
 /// Create a copy of OtpResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $OtpResponseCopyWith<$Res>  {
   factory $OtpResponseCopyWith(OtpResponse value, $Res Function(OtpResponse) _then) = _$OtpResponseCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'mobile_number') String mobileNumber, String otp,@JsonKey(name: 'expires_in_seconds') String expiresInSeconds, String message
+@JsonKey(name: 'mobile_number') String mobileNumber, String otp,@JsonKey(name: 'expires_in_seconds') int expiresInSeconds, String message
 });
 
 
@@ -70,7 +70,7 @@ class _$OtpResponseCopyWithImpl<$Res>
 mobileNumber: null == mobileNumber ? _self.mobileNumber : mobileNumber // ignore: cast_nullable_to_non_nullable
 as String,otp: null == otp ? _self.otp : otp // ignore: cast_nullable_to_non_nullable
 as String,expiresInSeconds: null == expiresInSeconds ? _self.expiresInSeconds : expiresInSeconds // ignore: cast_nullable_to_non_nullable
-as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as int,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -118,10 +118,7 @@ return $default(_that);case _:
 final _that = this;
 switch (_that) {
 case _OtpResponse():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
+return $default(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -156,7 +153,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  String expiresInSeconds,  String message)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  int expiresInSeconds,  String message)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OtpResponse() when $default != null:
 return $default(_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.message);case _:
@@ -177,13 +174,10 @@ return $default(_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.messag
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  String expiresInSeconds,  String message)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  int expiresInSeconds,  String message)  $default,) {final _that = this;
 switch (_that) {
 case _OtpResponse():
-return $default(_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.message);case _:
-  throw StateError('Unexpected subclass');
-
-}
+return $default(_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.message);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -197,7 +191,7 @@ return $default(_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.messag
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  String expiresInSeconds,  String message)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  int expiresInSeconds,  String message)?  $default,) {final _that = this;
 switch (_that) {
 case _OtpResponse() when $default != null:
 return $default(_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.message);case _:
@@ -217,7 +211,7 @@ class _OtpResponse implements OtpResponse {
 
 @override@JsonKey(name: 'mobile_number') final  String mobileNumber;
 @override final  String otp;
-@override@JsonKey(name: 'expires_in_seconds') final  String expiresInSeconds;
+@override@JsonKey(name: 'expires_in_seconds') final  int expiresInSeconds;
 @override final  String message;
 
 /// Create a copy of OtpResponse
@@ -253,7 +247,7 @@ abstract mixin class _$OtpResponseCopyWith<$Res> implements $OtpResponseCopyWith
   factory _$OtpResponseCopyWith(_OtpResponse value, $Res Function(_OtpResponse) _then) = __$OtpResponseCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'mobile_number') String mobileNumber, String otp,@JsonKey(name: 'expires_in_seconds') String expiresInSeconds, String message
+@JsonKey(name: 'mobile_number') String mobileNumber, String otp,@JsonKey(name: 'expires_in_seconds') int expiresInSeconds, String message
 });
 
 
@@ -275,7 +269,7 @@ class __$OtpResponseCopyWithImpl<$Res>
 mobileNumber: null == mobileNumber ? _self.mobileNumber : mobileNumber // ignore: cast_nullable_to_non_nullable
 as String,otp: null == otp ? _self.otp : otp // ignore: cast_nullable_to_non_nullable
 as String,expiresInSeconds: null == expiresInSeconds ? _self.expiresInSeconds : expiresInSeconds // ignore: cast_nullable_to_non_nullable
-as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as int,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }

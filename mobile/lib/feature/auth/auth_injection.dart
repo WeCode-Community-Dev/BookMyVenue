@@ -6,6 +6,7 @@ import 'data/datasource/i_auth_remote_datasource.dart';
 import 'data/repository/auth_repository_impl.dart';
 import 'domain/repository/i_auth_repository.dart';
 import 'domain/usecase/request_otp_usecase.dart';
+import 'domain/usecase/verify_otp_usecase.dart';
 import 'presentation/bloc/auth_bloc.dart';
 
 Future<void> registerAuthDependencies() async {
@@ -27,9 +28,15 @@ Future<void> registerAuthDependencies() async {
   sl.registerLazySingleton(
     () => RequestOtpUseCase(repository: sl<IAuthRepository>()),
   );
+  sl.registerLazySingleton(
+    () => VerifyOtpUseCase(repository: sl<IAuthRepository>()),
+  );
 
   /// Bloc
   sl.registerFactory(
-    () => AuthBloc(requestOtpUseCase: sl<RequestOtpUseCase>()),
+    () => AuthBloc(
+      requestOtpUseCase: sl<RequestOtpUseCase>(),
+      verifyOtpUseCase: sl<VerifyOtpUseCase>(),
+    ),
   );
 }
