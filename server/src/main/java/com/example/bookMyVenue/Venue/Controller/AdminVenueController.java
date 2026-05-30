@@ -1,17 +1,19 @@
 package com.example.bookMyVenue.Venue.Controller;
 
-import lombok.Getter;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/venue")
-public class VenueController {
-
+@RequestMapping("api/admin/venue")
+public class AdminVenueController {
     @GetMapping
-    public ResponseEntity<?> getAllVenues(){
+    public ResponseBody<?> showPendingVenueRequest(){
+
+    }
+
+    public ResponseBody<?> showApprovedVenueRequest(){
 
     }
 }

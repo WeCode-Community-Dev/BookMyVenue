@@ -1,5 +1,5 @@
 package com.example.bookMyVenue.Enums;
 
 public enum VenueActiveStatus {
-    ACTIVE,INACTIVE,BLOCKED
+    DRAFT,SUBMIT,ACTIVE,INACTIVE,BLOCKED
 }
