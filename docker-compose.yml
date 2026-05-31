@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   # Relational Database Engine with Spatial Extensions
-  bmv-spatial-db:
+  bmv_db:
     image: postgis/postgis:15-3.3
     environment:
       POSTGRES_USER: bmv_dev_user
