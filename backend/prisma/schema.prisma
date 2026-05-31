@@ -260,6 +260,9 @@ model Venue {
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
   deletedAt        DateTime?         @map("deleted_at")
+  cleanUpBufferMinutes Int           @default(0) @map("cleanup_buffer_minutes")
+  advancePaymentAllowed Boolean      @default(false) @map("advance_payment_allowed")
+  minDepositPercentage  Decimal      @default(100.00) @map("min_deposit_percentage") @db.Decimal(5, 2)
 
   // Relations
   owner            User                @relation("VenueOwner", fields: [ownerId], references: [id])
@@ -365,8 +368,9 @@ model VenueAvailability {
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   // Relations
-  venue    Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  bookings Booking[]
+  venue       Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  bookings    Booking[]
+  ticketTiers TicketTier[]
 
   @@unique([venueId, availableDate, startTime, endTime])
   @@index([venueId])
@@ -374,6 +378,25 @@ model VenueAvailability {
   @@index([isActive])
   @@map("venue_availability")
 }
+
+model TicketTier {
+  id             String            @id @default(uuid())
+  availabilityId String            @map("availability_id")
+  name           String
+  price          Decimal           @db.Decimal(12, 2)
+  capacity       Int
+  bookedCount    Int               @default(0) @map("booked_count")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  updatedAt      DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  availability   VenueAvailability @relation(fields: [availabilityId], references: [id], onDelete: Cascade)
+  tickets        BookingTicket[]
+
+  @@unique([availabilityId, name])
+  @@map("ticket_tiers")
+}
+
 
 model Booking {
   id               String        @id @default(uuid())
@@ -387,6 +410,7 @@ model Booking {
   discountAmount   Decimal       @default(0) @map("discount_amount") @db.Decimal(12, 2)
   taxAmount        Decimal       @default(0) @map("tax_amount") @db.Decimal(12, 2)
   totalAmount      Decimal       @map("total_amount") @db.Decimal(12, 2)
+  amountPaid       Decimal       @default(0) @map("amount_paid") @db.Decimal(12, 2)
   currency         String        @default("INR") @db.VarChar(3)
   bookingStatus    BookingStatus @default(PENDING) @map("booking_status")
   paymentStatus    PaymentStatus @default(PENDING) @map("payment_status")
@@ -402,7 +426,7 @@ model Booking {
   venue         Venue             @relation(fields: [venueId], references: [id])
   availability  VenueAvailability @relation(fields: [availabilityId], references: [id])
   coupon        Coupon?           @relation(fields: [couponId], references: [id])
-  payment       Payment?
+  payments      Payment[]
   tickets       BookingTicket[]
   review        Review?
   calendarEvent CalendarEvent?
@@ -418,6 +442,7 @@ model Booking {
 model BookingTicket {
   id            String    @id @default(uuid())
   bookingId     String    @map("booking_id")
+  ticketTierId  String?   @map("ticket_tier_id")
   ticketNumber  String    @unique @map("ticket_number")
   attendeeName  String?   @map("attendee_name")
   attendeeEmail String?   @map("attendee_email")
@@ -426,16 +451,18 @@ model BookingTicket {
   createdAt     DateTime  @default(now()) @map("created_at")
 
   // Relations
-  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  booking    Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  ticketTier TicketTier? @relation(fields: [ticketTierId], references: [id], onDelete: SetNull)
 
   @@index([bookingId])
+  @@index([ticketTierId])
   @@index([ticketNumber])
   @@map("booking_tickets")
 }
 
 model Payment {
   id              String         @id @default(uuid())
-  bookingId       String         @unique @map("booking_id")
+  bookingId       String         @map("booking_id")
   paymentGateway  PaymentGateway @map("payment_gateway")
   transactionId   String?        @unique @map("transaction_id")
   paymentMethod   PaymentMethod? @map("payment_method")
@@ -451,6 +478,7 @@ model Payment {
   // Relations
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
+  @@index([bookingId])
   @@index([paymentStatus])
   @@index([transactionId])
   @@map("payments")
