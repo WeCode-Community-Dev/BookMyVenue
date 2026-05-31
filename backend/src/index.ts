@@ -1,5 +1,7 @@
 import "dotenv/config";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
+import { Pool } from "pg";
 
 import { createRedisClient } from "./infrastructure/cache/redis.js";
 import { createServer } from "./infrastructure/http/server.js";
@@ -7,7 +9,9 @@ import { createServer } from "./infrastructure/http/server.js";
 const PORT = process.env.PORT || 3001;
 
 async function bootstrap() {
-  const prisma = new PrismaClient();
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool);
+  const prisma = new PrismaClient({ adapter });
   const redis = createRedisClient();
 
   try {
