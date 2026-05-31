@@ -1,0 +1,25 @@
+{
+  "name": "BookMyVenue",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter api start:dev\" \"pnpm --filter web dev\"",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "concurrently": "^8",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.6"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.17.1"
+}
