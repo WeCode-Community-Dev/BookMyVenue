@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// How are we reaching them?
+enum NotificationType {
+  EMAIL
+  SMS
+  PUSH
+}
+
+// What is the current state of the alert?
+enum DeliveryStatus {
+  QUEUED // Sitting in the RabbitMQ queue, waiting to be processed
+  SENT // Successfully accepted by the 3rd party provider (SendGrid/Twilio)
+  FAILED // Provider rejected it or network dropped
+}
+
+model NotificationLog {
+  id Int @id @default(autoincrement())
+
+  // Logical Reference (No physical foreign key because Auth DB is separate)
+  userId Int
+
+  // The payload
+  type      NotificationType
+  recipient String           @db.VarChar(255)
+  subject   String           @db.VarChar(255) // Email subject or Push Title
+  body      String           @db.Text // The actual message content
+
+  status DeliveryStatus @default(QUEUED)
+
+  // If it fails, why did it fail? (Crucial for debugging production errors)
+  errorMessage String? @db.Text
+
+  // Tracking
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt // Updated when status shifts from QUEUED to SENT/FAILED
+
+  @@index([userId])
+  @@index([status]) // Indexing status allows fast cron-job queries for retrying FAILED messages
+  @@map("notification_logs")
+}

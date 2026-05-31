@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum VenueStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PricingType {
+  PER_HOUR
+  PER_SESSION
+}
+
+enum ClosureType {
+  MAINTENANCE
+  HOLIDAY
+  PRIVATE_EVENT
+}
+
+model Venue {
+  id                Int         @id @default(autoincrement())
+  ownerId           Int // Logical FK to Auth User ID
+  title             String      @db.VarChar(255)
+  description       String?     @db.Text
+  category          String // e.g., 'auditorium', 'wedding_hall', 'cafe'
+  basePrice         Decimal     @db.Decimal(12, 2)
+  pricingType       PricingType @default(PER_HOUR)
+  bufferTimeMinutes Int         @default(60) // Crucial for turnaround gaps
+  status            VenueStatus @default(PENDING)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // Relational Matrix
+  amenities  VenueAmenity[]
+  capacities VenueCapacity[]
+  sessions   VenueSession[]
+  closures   VenueClosure[]
+
+  @@map("venues")
+}
+
+//  Amenity Configuration Table
+model Amenity {
+  id      Int            @id @default(autoincrement())
+  name    String         @unique
+  iconKey String? // For frontend rendering icons
+  venues  VenueAmenity[]
+
+  @@map("amenities")
+}
+
+// Junction table linking Venues to Amenities
+model VenueAmenity {
+  venueId   Int
+  amenityId Int
+  venue     Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  amenity   Amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([venueId, amenityId])
+  @@map("venue_amenities")
+}
+
+// Dynamic Capacity Profiles
+model VenueCapacity {
+  id         Int     @id @default(autoincrement())
+  venueId    Int
+  type       String // "SEATING", "DINING", "FLOATING"
+  maxPeople  Int
+  isSeparate Boolean @default(false)
+  venue      Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@map("venue_capacities")
+}
+
+// Session-Based Pricing & Availability
+model VenueSession {
+  id           Int     @id @default(autoincrement())
+  venueId      Int
+  name         String // "Morning", "Evening"
+  startTime    String // "08:00 AM" or "08:00"
+  endTime      String // "13:00"
+  sessionPrice Decimal @db.Decimal(12, 2)
+  venue        Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@map("venue_sessions")
+}
+
+//  Operational Blackouts (Maintenance, Holidays)
+model VenueClosure {
+  id          Int         @id @default(autoincrement())
+  venueId     Int
+  type        ClosureType @default(MAINTENANCE)
+  startTime   DateTime
+  endTime     DateTime
+  description String?
+  venue       Venue       @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId, startTime, endTime])
+  @@map("venue_closures")
+}

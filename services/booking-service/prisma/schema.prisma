@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum BookingType {
+  HOURLY
+  SESSION
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT // Holds the slot while user is at checkout
+  CONFIRMED // Payment cleared, locked in stone
+  CANCELLED // Refunded by admin/owner
+  FAILED // Payment gateway timed out; slot released
+}
+
+model Booking {
+  id      Int @id @default(autoincrement())
+  venueId Int // Logical FK to Venue DB
+  userId  Int // Logical FK to Auth DB
+
+  // Booking Architecture
+  type           BookingType @default(HOURLY)
+  venueSessionId Int? // If type is SESSION, references the specific VenueSession ID
+  sessionName    String? // Snapshot string to preserve receipt history if owner alters session name later
+
+  // Temporal Anchors (UTC)
+  bookingDate DateTime @db.Date
+  startTime   DateTime
+  endTime     DateTime
+
+  // Financial & State Engine
+  totalPrice Decimal       @db.Decimal(12, 2)
+  status     BookingStatus @default(PENDING_PAYMENT)
+
+  // Payment Gateway Hooks
+  paymentId       String? @unique
+  paymentMetadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([venueId, bookingDate])
+  @@index([userId])
+  @@map("bookings")
+}
