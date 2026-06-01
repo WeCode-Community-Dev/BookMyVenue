@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { venueService, bookingService, reviewService } from '../../services';
-import { MdStar, MdPeople, MdAttachMoney, MdLock, MdTimer, MdCalendarToday, MdOutlineAccessTime, MdSend, MdLocationOn } from 'react-icons/md';
+import { MdStar, MdPeople, MdCurrencyRupee, MdLock, MdTimer, MdCalendarToday, MdOutlineAccessTime, MdSend, MdLocationOn } from 'react-icons/md';
 import toast from 'react-hot-toast';
 
 export default function VenueDetailPage() {
@@ -13,6 +13,7 @@ export default function VenueDetailPage() {
   const [venue, setVenue] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [blockedDates, setBlockedDates] = useState([]);
 
   // Booking / Locking States
   const [bookingDate, setBookingDate] = useState('');
@@ -24,6 +25,24 @@ export default function VenueDetailPage() {
   const [lockTimeLeft, setLockTimeLeft] = useState(0); // in seconds
   const [completingBooking, setCompletingBooking] = useState(false);
   const timerRef = useRef(null);
+
+  // Custom Interactive Calendar dropdown states & refs
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const calendarRef = useRef(null);
+
+  // Click outside custom calendar listener
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+        setCalendarOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Map and Leaflet integration states
   const [leafletLoaded, setLeafletLoaded] = useState(false);
@@ -103,6 +122,8 @@ export default function VenueDetailPage() {
       setVenue(vRes.data);
       const rRes = await reviewService.getByVenue(id);
       setReviews(rRes.data.reviews || []);
+      const bDatesRes = await venueService.getBlockedDates(id);
+      setBlockedDates(bDatesRes.data || []);
     } catch {
       toast.error('Failed to load venue details');
     } finally {
@@ -141,6 +162,165 @@ export default function VenueDetailPage() {
     timerRef.current = setInterval(calculateTimeLeft, 1000);
   };
 
+  const isDateFullyBooked = (dayDate) => {
+    if (!venue || !venue.bookings || venue.bookings.length === 0) return false;
+    const year = dayDate.getFullYear();
+    const month = String(dayDate.getMonth() + 1).padStart(2, '0');
+    const day = String(dayDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
+    // Get all confirmed bookings on this date
+    const dateBookings = venue.bookings.filter(
+      b => b.bookingDate === dateStr && b.bookingStatus === 'confirmed'
+    );
+
+    if (dateBookings.length === 0) return false;
+
+    const openingStr = venue.openingTime || '09:00';
+    const closingStr = venue.closingTime || '22:00';
+
+    const parseTimeToDecimal = (timeStr) => {
+      if (!timeStr) return 0;
+      const [h, m] = timeStr.split(':').map(Number);
+      return h + (m || 0) / 60;
+    };
+
+    const opening = parseTimeToDecimal(openingStr);
+    const closing = parseTimeToDecimal(closingStr);
+    const totalOperatingHours = closing - opening;
+
+    let bookedHours = 0;
+    dateBookings.forEach(b => {
+      const bStart = parseTimeToDecimal(b.startTime);
+      const bEnd = parseTimeToDecimal(b.endTime);
+      bookedHours += (bEnd - bStart);
+    });
+
+    return bookedHours >= (totalOperatingHours - 0.5);
+  };
+
+  const isDateOperational = (date) => {
+    if (!date) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+    
+    if (checkDate < today) return false;
+    if (isDateFullyBooked(checkDate)) return false;
+
+    // Check if date is blocked
+    const yearStr = checkDate.getFullYear();
+    const monthStr = String(checkDate.getMonth() + 1).padStart(2, '0');
+    const dayStr = String(checkDate.getDate()).padStart(2, '0');
+    const checkDateStr = `${yearStr}-${monthStr}-${dayStr}`;
+
+    const isBlocked = blockedDates.some(bd => bd.blockedDate === checkDateStr);
+    if (isBlocked) return false;
+
+    const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    return venue?.workingDays?.some(d => {
+      if (typeof d === 'string') return d.toLowerCase() === dayName;
+      if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
+      return false;
+    });
+  };
+
+  const generateTimeOptions = (minTimeStr, maxTimeStr) => {
+    if (!minTimeStr || !maxTimeStr) return [];
+    const minH = parseInt(minTimeStr.split(':')[0], 10);
+    const maxH = parseInt(maxTimeStr.split(':')[0], 10);
+    const options = [];
+    for (let h = minH; h <= maxH; h++) {
+      const displayH = h % 12 === 0 ? 12 : h % 12;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const valueStr = `${String(h).padStart(2, '0')}:00`;
+      options.push({
+        value: valueStr,
+        label: `${displayH}:00 ${ampm}`
+      });
+    }
+    return options;
+  };
+
+  const getDaysInMonth = (monthDate) => {
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    const firstDayIndex = new Date(year, month, 1).getDay(); // 0 = Sunday, 1 = Monday...
+    const totalDays = new Date(year, month + 1, 0).getDate();
+
+    const days = [];
+    // Pad previous month's days
+    for (let i = 0; i < firstDayIndex; i++) {
+      days.push(null);
+    }
+    // Current month's days
+    for (let i = 1; i <= totalDays; i++) {
+      days.push(new Date(year, month, i));
+    }
+    return days;
+  };
+
+  const formatSelectedDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const handleDateChange = (val) => {
+    if (!val) {
+      setBookingDate('');
+      return;
+    }
+
+    const d = new Date();
+    const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (val < todayStr) {
+      toast.error('Cannot book a date in the past');
+      setBookingDate('');
+      return;
+    }
+
+    // Determine day of the week
+    const dateObj = new Date(val);
+    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
+    // Check if venue is open on this day
+    const isWorkingDay = venue?.workingDays?.some(d => {
+      if (typeof d === 'string') return d.toLowerCase() === dayName;
+      if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
+      return false;
+    });
+
+    if (!isWorkingDay) {
+      const openDaysList = venue?.workingDays?.map(d => {
+        const name = typeof d === 'string' ? d : d?.day;
+        return name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
+      }).filter(Boolean).join(', ');
+
+      toast.error(`This venue is closed on ${dayName.charAt(0).toUpperCase() + dayName.slice(1)}s. Operational days: ${openDaysList || 'None'}`);
+      setBookingDate('');
+      return;
+    }
+
+    // Pre-populate time inputs based on venue operating hours for this specific day
+    const dayConfig = venue?.workingDays?.find(d => {
+      if (typeof d === 'string') return d.toLowerCase() === dayName;
+      if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
+      return false;
+    });
+
+    if (typeof dayConfig === 'object' && dayConfig !== null && dayConfig.start && dayConfig.end) {
+      setStartTime(dayConfig.start);
+      setEndTime(dayConfig.end);
+    } else {
+      setStartTime('09:00');
+      setEndTime('22:00');
+    }
+
+    setBookingDate(val);
+  };
+
   const handleAcquireLock = async () => {
     if (!isAuthenticated) {
       toast.error('Please login to book venues');
@@ -148,6 +328,52 @@ export default function VenueDetailPage() {
     }
     if (!bookingDate) return toast.error('Please choose a date first');
     if (!startTime || !endTime) return toast.error('Please choose time slots');
+
+    if (startTime >= endTime) {
+      return toast.error('Start time must be before end time');
+    }
+
+    // Verify date is not blocked
+    const isBlocked = blockedDates.some(bd => bd.blockedDate === bookingDate);
+    if (isBlocked) {
+      return toast.error('This date is temporarily blocked by the venue owner.');
+    }
+
+    // Retrieve allowed timings for the selected date
+    const dateObj = new Date(bookingDate);
+    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    
+    const dayConfig = venue?.workingDays?.find(d => {
+      if (typeof d === 'string') return d.toLowerCase() === dayName;
+      if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
+      return false;
+    });
+
+    let allowedStart = '09:00';
+    let allowedEnd = '22:00';
+
+    if (dayConfig && typeof dayConfig === 'object' && dayConfig !== null) {
+      allowedStart = dayConfig.start || allowedStart;
+      allowedEnd = dayConfig.end || allowedEnd;
+    } else {
+      allowedStart = venue?.openingTime || allowedStart;
+      allowedEnd = venue?.closingTime || allowedEnd;
+    }
+
+    if (startTime < allowedStart || endTime > allowedEnd) {
+      const formatTime12 = (timeStr) => {
+        if (!timeStr) return '';
+        const [hStr, mStr] = timeStr.split(':');
+        const h = parseInt(hStr, 10);
+        const ampm = h >= 12 ? 'pm' : 'am';
+        const displayH = h % 12 === 0 ? 12 : h % 12;
+        return `${displayH}:${mStr} ${ampm}`;
+      };
+
+      return toast.error(
+        `Selected timings must be within operational hours: ${formatTime12(allowedStart)} to ${formatTime12(allowedEnd)}`
+      );
+    }
 
     try {
       const res = await bookingService.lockSlot({
@@ -232,6 +458,47 @@ export default function VenueDetailPage() {
     );
   }
 
+  const getActiveDayTimings = () => {
+    if (!bookingDate) return { min: '00:00', max: '23:59' };
+    const dateObj = new Date(bookingDate);
+    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    
+    const dayConfig = venue?.workingDays?.find(d => {
+      if (typeof d === 'string') return d.toLowerCase() === dayName;
+      if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
+      return false;
+    });
+
+    let min = '09:00';
+    let max = '22:00';
+
+    if (dayConfig && typeof dayConfig === 'object' && dayConfig !== null) {
+      min = dayConfig.start || min;
+      max = dayConfig.end || max;
+    } else {
+      min = venue?.openingTime || min;
+      max = venue?.closingTime || max;
+    }
+
+    return { min, max };
+  };
+
+  const { min: allowedMinTime, max: allowedMaxTime } = getActiveDayTimings();
+
+  // Calculate dynamic hour estimation and total price
+  let estimatedHours = 0;
+  let estimatedPrice = 0;
+  if (startTime && endTime) {
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+    const startDec = startH + (startM || 0) / 60;
+    const endDec = endH + (endM || 0) / 60;
+    if (endDec > startDec) {
+      estimatedHours = endDec - startDec;
+      estimatedPrice = estimatedHours * (venue?.pricePerHour || 0);
+    }
+  }
+
   const progressPercent = activeLock ? (lockTimeLeft / 300) * 100 : 0;
 
   return (
@@ -269,7 +536,7 @@ export default function VenueDetailPage() {
                 <span className="text-sm font-bold text-slate-900">{venue.capacity} guests</span>
               </div>
               <div className="matte-card p-5 text-center bg-white border border-slate-200">
-                <MdAttachMoney className="text-xl text-primary mx-auto mb-1.5" />
+                <MdCurrencyRupee className="text-xl text-primary mx-auto mb-1.5" />
                 <span className="text-[9px] uppercase font-bold text-slate-400 block">Price</span>
                 <span className="text-sm font-bold text-slate-900">₹{venue.pricePerHour}/hr</span>
               </div>
@@ -403,45 +670,149 @@ export default function VenueDetailPage() {
 
               {!activeLock ? (
                 <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 relative" ref={calendarRef}>
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Booking Date</label>
-                    <div className="relative">
+                    <div 
+                      className="relative cursor-pointer select-none"
+                      onClick={() => setCalendarOpen(!calendarOpen)}
+                    >
                       <MdCalendarToday className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
-                      <input
-                        type="date"
-                        className="w-full py-2.5 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors"
-                        value={bookingDate}
-                        onChange={e => setBookingDate(e.target.value)}
-                      />
+                      <div className="w-full py-2.5 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-all duration-200 min-h-[38px] flex items-center">
+                        {bookingDate ? formatSelectedDate(bookingDate) : <span className="text-slate-400">Choose booking date...</span>}
+                      </div>
                     </div>
+
+                    {/* Custom Calendar Dropdown Card */}
+                    {calendarOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-4 select-none animate-in fade-in slide-in-from-top-1 duration-200">
+                        
+                        {/* Month Header Nav */}
+                        <div className="flex justify-between items-center mb-3">
+                          <button
+                            type="button"
+                            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 font-bold transition-colors cursor-pointer text-xs"
+                            onClick={() => {
+                              const prev = new Date(currentMonth);
+                              prev.setMonth(prev.getMonth() - 1);
+                              setCurrentMonth(prev);
+                            }}
+                          >
+                            ←
+                          </button>
+                          <span className="text-xs font-bold text-slate-800">
+                            {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                          </span>
+                          <button
+                            type="button"
+                            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 font-bold transition-colors cursor-pointer text-xs"
+                            onClick={() => {
+                              const next = new Date(currentMonth);
+                              next.setMonth(next.getMonth() + 1);
+                              setCurrentMonth(next);
+                            }}
+                          >
+                            →
+                          </button>
+                        </div>
+
+                        {/* Weekday headers */}
+                        <div className="grid grid-cols-7 text-center gap-1.5 mb-2">
+                          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d, i) => (
+                            <span key={i} className="text-[10px] font-bold text-slate-400">{d}</span>
+                          ))}
+                        </div>
+
+                        {/* Grid Days */}
+                        <div className="grid grid-cols-7 gap-1 text-center">
+                          {getDaysInMonth(currentMonth).map((dayDate, idx) => {
+                            if (!dayDate) return <div key={idx} />;
+
+                            const isOperational = isDateOperational(dayDate);
+                            const yearStr = dayDate.getFullYear();
+                            const monthStr = String(dayDate.getMonth() + 1).padStart(2, '0');
+                            const dayStrNum = String(dayDate.getDate()).padStart(2, '0');
+                            const dateStr = `${yearStr}-${monthStr}-${dayStrNum}`;
+                            const isSelected = bookingDate === dateStr;
+
+                            return (
+                              <button
+                                key={idx}
+                                type="button"
+                                disabled={!isOperational}
+                                className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
+                                  isSelected 
+                                    ? 'bg-primary text-white font-bold shadow-md shadow-primary/20 scale-105' 
+                                    : isOperational
+                                      ? 'hover:bg-slate-100 text-slate-800 hover:scale-105'
+                                      : 'opacity-15 text-slate-400 pointer-events-none bg-slate-50/50'
+                                }`}
+                                onClick={() => {
+                                  handleDateChange(dateStr);
+                                  setCalendarOpen(false);
+                                }}
+                              >
+                                {dayDate.getDate()}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Start Time</label>
                       <div className="relative">
-                        <MdOutlineAccessTime className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
-                        <input
-                          type="time"
-                          className="w-full py-2.5 pl-9 pr-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors"
+                        <MdOutlineAccessTime className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none z-10" />
+                        <select
+                          className="w-full py-2.5 pl-9 pr-6 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors appearance-none cursor-pointer"
                           value={startTime}
                           onChange={e => setStartTime(e.target.value)}
-                        />
+                        >
+                          <option value="">Select start</option>
+                          {generateTimeOptions(allowedMinTime, allowedMaxTime).map(opt => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[9px]">▼</div>
                       </div>
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">End Time</label>
                       <div className="relative">
-                        <MdOutlineAccessTime className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
-                        <input
-                          type="time"
-                          className="w-full py-2.5 pl-9 pr-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors"
+                        <MdOutlineAccessTime className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none z-10" />
+                        <select
+                          className="w-full py-2.5 pl-9 pr-6 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors appearance-none cursor-pointer"
                           value={endTime}
                           onChange={e => setEndTime(e.target.value)}
-                        />
+                        >
+                          <option value="">Select end</option>
+                          {generateTimeOptions(allowedMinTime, allowedMaxTime).map(opt => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[9px]">▼</div>
                       </div>
                     </div>
                   </div>
+
+                  {estimatedHours > 0 && (
+                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex justify-between items-center text-xs animate-in fade-in duration-200 mt-1 mb-2 shadow-sm">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold block uppercase leading-none mb-1">Pricing Breakdown</span>
+                        <span className="text-slate-600 font-semibold">{estimatedHours.toFixed(1)} hrs @ ₹{Number(venue?.pricePerHour).toLocaleString('en-IN')}/hr</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 font-bold block uppercase leading-none mb-1">Estimated Total</span>
+                        <span className="text-sm font-black text-primary">₹{Math.round(estimatedPrice).toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+                  )}
 
                   <button
                     onClick={handleAcquireLock}

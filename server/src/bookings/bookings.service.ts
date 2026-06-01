@@ -31,8 +31,12 @@ export class BookingsService {
     const venue = await this.venuesRepository.findOne({ where: { id: venueId } });
     if (!venue) throw new NotFoundException('Venue not found');
 
-    const overlap = await this.checkOverlap(venueId, bookingDate, startTime, endTime);
-    if (overlap) throw new ConflictException('This time slot is already booked');
+    const overlapBooking = await this.getConflictingBooking(venueId, bookingDate, startTime, endTime);
+    if (overlapBooking) {
+      const formattedStart = this.formatTime12Hour(overlapBooking.startTime);
+      const formattedEnd = this.formatTime12Hour(overlapBooking.endTime);
+      throw new ConflictException(`This slot is already booked from ${formattedStart} to ${formattedEnd}`);
+    }
 
     if (lockId) {
       const lock = await this.locksRepository.findOne({
@@ -59,7 +63,7 @@ export class BookingsService {
       endTime,
       guestCount: guestCount || 1,
       totalAmount,
-      bookingStatus: BookingStatus.PENDING,
+      bookingStatus: BookingStatus.CONFIRMED,
     });
 
     return this.bookingsRepository.save(booking);
@@ -178,7 +182,7 @@ export class BookingsService {
     return { bookedSlots: bookings, date: bookingDate };
   }
 
-  private async checkOverlap(venueId: string, bookingDate: string, startTime: string, endTime: string, excludeId?: string): Promise<boolean> {
+  private async getConflictingBooking(venueId: string, bookingDate: string, startTime: string, endTime: string, excludeId?: string): Promise<Booking | null> {
     const qb = this.bookingsRepository.createQueryBuilder('booking')
       .where('booking.venueId = :venueId', { venueId })
       .andWhere('booking.bookingDate = :bookingDate', { bookingDate })
@@ -186,8 +190,19 @@ export class BookingsService {
       .andWhere('(booking.startTime < :endTime AND booking.endTime > :startTime)', { startTime, endTime });
 
     if (excludeId) qb.andWhere('booking.id != :excludeId', { excludeId });
-    const count = await qb.getCount();
-    return count > 0;
+    return qb.getOne();
+  }
+
+  private formatTime12Hour(timeStr: string): string {
+    if (!timeStr) return '';
+    const [hStr, mStr] = timeStr.split(':');
+    let h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    const ampm = h >= 12 ? 'pm' : 'am';
+    h = h % 12;
+    h = h ? h : 12;
+    const minStr = m > 0 ? `:${String(m).padStart(2, '0')}` : '';
+    return `${h}${minStr}${ampm}`;
   }
 
   private parseTime(time: string): number {

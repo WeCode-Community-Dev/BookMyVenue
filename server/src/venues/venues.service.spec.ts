@@ -5,6 +5,7 @@ import { VenuesService } from './venues.service';
 import { Venue, VenueStatus, VenueType } from './entities/venue.entity';
 import { VenueBlockedDate } from './entities/venue-blocked-date.entity';
 import { UserRole } from '../users/entities/user.entity';
+import { Booking } from '../bookings/entities/booking.entity';
 
 const mockQueryBuilder = {
   where: jest.fn().mockReturnThis(),
@@ -39,6 +40,10 @@ const mockBlockedDatesRepo = {
   remove: jest.fn(),
 };
 
+const mockBookingRepo = {
+  count: jest.fn(),
+};
+
 describe('VenuesService', () => {
   let service: VenuesService;
 
@@ -48,6 +53,7 @@ describe('VenuesService', () => {
         VenuesService,
         { provide: getRepositoryToken(Venue), useValue: mockVenueRepo },
         { provide: getRepositoryToken(VenueBlockedDate), useValue: mockBlockedDatesRepo },
+        { provide: getRepositoryToken(Booking), useValue: mockBookingRepo },
       ],
     }).compile();
 
@@ -128,6 +134,26 @@ describe('VenuesService', () => {
       mockVenueRepo.findOne.mockResolvedValue(venue);
       const user = { id: 'other', role: UserRole.USER } as any;
       await expect(service.remove('uuid-1', user)).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should allow owner to delete if there are no active bookings', async () => {
+      const venue = { id: 'uuid-1', ownerId: 'owner-1' };
+      mockVenueRepo.findOne.mockResolvedValue(venue);
+      mockBookingRepo.count.mockResolvedValue(0);
+      mockVenueRepo.remove.mockResolvedValue(venue);
+
+      const user = { id: 'owner-1', role: UserRole.VENUE_OWNER } as any;
+      const result = await service.remove('uuid-1', user);
+      expect(result.message).toBe('Venue deleted successfully');
+    });
+
+    it('should throw BadRequestException if there are active bookings', async () => {
+      const venue = { id: 'uuid-1', ownerId: 'owner-1' };
+      mockVenueRepo.findOne.mockResolvedValue(venue);
+      mockBookingRepo.count.mockResolvedValue(5);
+
+      const user = { id: 'owner-1', role: UserRole.VENUE_OWNER } as any;
+      await expect(service.remove('uuid-1', user)).rejects.toThrow();
     });
   });
 

@@ -90,7 +90,7 @@ export class VenuesService {
 
     if (search) {
       qb.andWhere(
-        '(LOWER(venue.venueName) LIKE LOWER(:search) OR LOWER(venue.address) LIKE LOWER(:search) OR LOWER(venue.description) LIKE LOWER(:search) OR LOWER(venue.venueType) LIKE LOWER(:search))',
+        '(LOWER(venue.venueName) LIKE LOWER(:search) OR LOWER(venue.address) LIKE LOWER(:search) OR LOWER(venue.description) LIKE LOWER(:search) OR LOWER(CAST(venue.venueType AS text)) LIKE LOWER(:search))',
         { search: `%${search}%` },
       );
     }
@@ -121,8 +121,11 @@ export class VenuesService {
     );
 
     qb.where('venue.status = :status', { status: VenueStatus.APPROVED })
+      .andWhere(
+        `(6371 * acos(cos(radians(:lat)) * cos(radians(venue.latitude)) * cos(radians(venue.longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(venue.latitude)))) <= :radius`,
+        { radius: radiusKm },
+      )
       .setParameters({ lat: latitude, lng: longitude })
-      .having('distance <= :radius', { radius: radiusKm })
       .orderBy('distance', 'ASC')
       .limit(limit);
 
@@ -137,7 +140,7 @@ export class VenuesService {
   async findOne(id: string) {
     const venue = await this.venuesRepository.findOne({
       where: { id },
-      relations: { owner: true },
+      relations: { owner: true, bookings: true },
     });
 
     if (!venue) {

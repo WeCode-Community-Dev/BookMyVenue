@@ -4,7 +4,7 @@ import { bookingService, userService } from '../../services';
 import { 
   MdCalendarToday, 
   MdOutlineAccessTime, 
-  MdAttachMoney, 
+  MdCurrencyRupee, 
   MdQrCode, 
   MdPerson, 
   MdVpnKey, 
@@ -12,6 +12,18 @@ import {
   MdTrendingUp
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
+
+const formatTime12Hour = (timeStr) => {
+  if (!timeStr) return '';
+  const parts = timeStr.split(':');
+  let h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12;
+  const minStr = m > 0 ? `:${String(m).padStart(2, '0')}` : ':00';
+  return `${h}${minStr} ${ampm}`;
+};
 
 export default function BookingsPage() {
   const location = useLocation();
@@ -152,8 +164,8 @@ export default function BookingsPage() {
         
         {/* Header Title Grid */}
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Guest Space Center</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Manage your reservations, view spending metrics, and update security passwords.</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">User Space Center</h1>
+          <p className="text-slate-500 text-sm mt-0.5">Manage your reservations and view spending metrics.</p>
         </div>
 
         {/* Tab Selection Row */}
@@ -180,27 +192,7 @@ export default function BookingsPage() {
             <span className="flex items-center gap-1.5"><MdTrendingUp /> Spending Insights</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`py-3 px-4 text-xs font-bold border-b-2 transition-all shrink-0 ${
-              activeTab === 'profile'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <span className="flex items-center gap-1.5"><MdPerson /> Profile Details</span>
-          </button>
 
-          <button
-            onClick={() => setActiveTab('security')}
-            className={`py-3 px-4 text-xs font-bold border-b-2 transition-all shrink-0 ${
-              activeTab === 'security'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <span className="flex items-center gap-1.5"><MdVpnKey /> Change Password</span>
-          </button>
         </div>
 
         {/* Tab content 1: Bookings */}
@@ -216,35 +208,47 @@ export default function BookingsPage() {
               <div className="flex flex-col gap-5">
                 {bookings.map((booking) => (
                   <div key={booking.id} className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2.5">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusClass(booking.bookingStatus)}`}>
-                          {booking.bookingStatus}
-                        </span>
-                        <span className="text-xs text-slate-400 font-bold flex items-center gap-1">
-                          <MdQrCode /> {booking.bookingCode}
-                        </span>
-                      </div>
+                    {(() => {
+                      const todayStr = new Date().toLocaleDateString('en-CA');
+                      const isPast = booking.bookingDate < todayStr;
+                      const displayStatus = isPast && (booking.bookingStatus === 'confirmed' || booking.bookingStatus === 'pending')
+                        ? 'completed'
+                        : booking.bookingStatus;
 
-                      <h3 className="text-lg font-black text-slate-900 mb-3">{booking.venue?.venueName}</h3>
+                      return (
+                        <>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2.5">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusClass(displayStatus)}`}>
+                                {displayStatus}
+                              </span>
+                              <span className="text-xs text-slate-400 font-bold flex items-center gap-1">
+                                <MdQrCode /> {booking.bookingCode}
+                              </span>
+                            </div>
 
-                      <div className="flex flex-wrap gap-4 text-xs text-slate-500">
-                        <span className="flex items-center gap-1.5"><MdCalendarToday className="text-primary" /> {booking.bookingDate}</span>
-                        <span className="flex items-center gap-1.5"><MdOutlineAccessTime className="text-secondary" /> {booking.startTime} - {booking.endTime}</span>
-                        <span className="flex items-center gap-1.5"><MdAttachMoney className="text-emerald-600 font-bold" /> ₹{Number(booking.totalAmount).toLocaleString('en-IN')}</span>
-                      </div>
-                    </div>
+                            <h3 className="text-lg font-black text-slate-900 mb-3">{booking.venue?.venueName}</h3>
 
-                    <div className="w-full md:w-auto flex flex-row md:flex-col gap-2 self-stretch justify-end">
-                      {booking.bookingStatus === 'pending' && (
-                        <button
-                          onClick={() => handleCancelBooking(booking.id)}
-                          className="px-5 py-2.5 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition-colors w-full md:w-auto"
-                        >
-                          Cancel Booking
-                        </button>
-                      )}
-                    </div>
+                            <div className="flex flex-wrap gap-4 text-xs text-slate-500">
+                              <span className="flex items-center gap-1.5"><MdCalendarToday className="text-primary" /> {booking.bookingDate}</span>
+                              <span className="flex items-center gap-1.5"><MdOutlineAccessTime className="text-secondary" /> {formatTime12Hour(booking.startTime)} - {formatTime12Hour(booking.endTime)}</span>
+                              <span className="flex items-center gap-1.5"><MdCurrencyRupee className="text-emerald-600 font-bold text-sm" />{Number(booking.totalAmount).toLocaleString('en-IN')}</span>
+                            </div>
+                          </div>
+
+                          <div className="w-full md:w-auto flex flex-row md:flex-col gap-2 self-stretch justify-end">
+                            {!isPast && (booking.bookingStatus === 'pending' || booking.bookingStatus === 'confirmed') && (
+                              <button
+                                onClick={() => handleCancelBooking(booking.id)}
+                                className="px-5 py-2.5 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition-colors w-full md:w-auto"
+                              >
+                                Cancel Booking
+                              </button>
+                            )}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
@@ -289,7 +293,7 @@ export default function BookingsPage() {
                           {b.bookingDate}
                         </td>
                         <td className="px-6 py-4 text-xs text-slate-400 font-mono">
-                          {b.startTime} - {b.endTime}
+                          {formatTime12Hour(b.startTime)} - {formatTime12Hour(b.endTime)}
                         </td>
                         <td className="px-6 py-4 text-xs text-slate-900 font-bold">
                           ₹{Number(b.totalAmount).toLocaleString('en-IN')}
@@ -303,117 +307,6 @@ export default function BookingsPage() {
                 </tbody>
               </table>
             </div>
-          </div>
-        )}
-
-        {/* Tab 3: Profile settings */}
-        {activeTab === 'profile' && (
-          <div className="flex flex-col gap-6 animate-fade-in max-w-xl">
-            <form onSubmit={handleSaveProfile} className="bg-white p-6 border border-slate-100 rounded-2xl shadow-sm flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">My Name</label>
-                <input
-                  type="text"
-                  className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none"
-                  value={profileForm.name}
-                  onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email (Locked)</label>
-                <input
-                  type="email"
-                  className="w-full py-2.5 px-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-400 text-sm focus:outline-none cursor-not-allowed"
-                  value={profileForm.email}
-                  disabled
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Phone number</label>
-                <input
-                  type="text"
-                  className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none"
-                  value={profileForm.phone}
-                  onChange={e => setProfileForm({ ...profileForm, phone: e.target.value })}
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-primary hover:bg-primary-dark font-bold text-white text-xs rounded-xl shadow-sm transition-colors"
-              >
-                Save Profile settings
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Tab 4: Change password & security settings */}
-        {activeTab === 'security' && (
-          <div className="flex flex-col gap-6 animate-fade-in max-w-xl">
-            <form onSubmit={handleChangePassword} className="bg-white p-6 border border-slate-100 rounded-2xl shadow-sm flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Current Password</label>
-                <input
-                  type="password"
-                  className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none"
-                  placeholder="••••••••"
-                  value={currentPassword}
-                  onChange={e => setCurrentPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">New Password</label>
-                <input
-                  type="password"
-                  className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none"
-                  placeholder="••••••••"
-                  value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
-                  required
-                />
-                
-                {/* Dynamic Password Strength Progress Bar */}
-                {newPassword && (
-                  <div className="mt-2.5 flex flex-col gap-1.5">
-                    <div className="flex justify-between items-center text-[10px] font-bold uppercase text-slate-500 tracking-wider">
-                      <span>Password Strength:</span>
-                      <span className={`${
-                        strength.label === 'Strong' ? 'text-emerald-600' :
-                        strength.label === 'Medium' ? 'text-amber-500' : 'text-rose-500'
-                      }`}>{strength.label}</span>
-                    </div>
-                    <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200/50">
-                      <div className={`h-full transition-all duration-300 ${strength.color}`} />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Confirm New Password</label>
-                <input
-                  type="password"
-                  className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-primary hover:bg-primary-dark font-bold text-white text-xs rounded-xl shadow-sm transition-colors"
-              >
-                Change password
-              </button>
-            </form>
           </div>
         )}
 

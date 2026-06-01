@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { venueService } from '../../services';
-import { MdSearch, MdLocationOn, MdStar, MdPeople, MdAttachMoney, MdTune, MdMyLocation } from 'react-icons/md';
+import { MdSearch, MdLocationOn, MdStar, MdPeople, MdTune, MdMyLocation } from 'react-icons/md';
 import toast from 'react-hot-toast';
 
 export default function VenuesPage() {
@@ -21,6 +21,11 @@ export default function VenuesPage() {
   const [useGeo, setUseGeo] = useState(false);
   const [geoLoc, setGeoLoc] = useState({ lat: null, lng: null });
 
+  // Geocoding and Location Suggestion State
+  const [locationSearch, setLocationSearch] = useState('');
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [selectedLocationName, setSelectedLocationName] = useState('');
+
   useEffect(() => {
     fetchVenues();
   }, [searchParams, page, useGeo, geoLoc]);
@@ -30,7 +35,7 @@ export default function VenuesPage() {
     try {
       let res;
       if (useGeo && geoLoc.lat && geoLoc.lng) {
-        res = await venueService.getNearby(geoLoc.lat, geoLoc.lng, 25);
+        res = await venueService.getNearby(geoLoc.lat, geoLoc.lng, 50);
         setVenues(res.data || []);
         setTotal(res.data?.length || 0);
         setTotalPages(1);
@@ -69,6 +74,41 @@ export default function VenuesPage() {
     setUseGeo(false);
   };
 
+  const handleLocationSearchChange = async (val) => {
+    setLocationSearch(val);
+    if (val.trim().length < 3) {
+      setLocationSuggestions([]);
+      return;
+    }
+    try {
+      const res = await venueService.geocode(val);
+      setLocationSuggestions(res.data || []);
+    } catch (err) {
+      console.error('Failed to geocode location:', err);
+    }
+  };
+
+  const handleSelectSuggestion = (suggestion) => {
+    const lat = parseFloat(suggestion.lat);
+    const lng = parseFloat(suggestion.lon);
+    setGeoLoc({ lat, lng });
+    const displayNameShort = suggestion.display_name.split(',')[0];
+    setSelectedLocationName(suggestion.display_name);
+    setLocationSearch(displayNameShort);
+    setLocationSuggestions([]);
+    setUseGeo(true);
+    setPage(1);
+    toast.success(`Showing spaces near ${displayNameShort} (50km)`);
+  };
+
+  const handleClearLocation = () => {
+    setGeoLoc({ lat: null, lng: null });
+    setSelectedLocationName('');
+    setLocationSearch('');
+    setLocationSuggestions([]);
+    setUseGeo(false);
+  };
+
   const handleGeoDiscovery = () => {
     if (!navigator.geolocation) return toast.error('Geolocation is not supported by your browser');
     toast.loading('Fetching your location...', { id: 'geo' });
@@ -76,10 +116,18 @@ export default function VenuesPage() {
       (pos) => {
         setGeoLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setUseGeo(true);
-        toast.success('Found location! Listing spaces within 25km.', { id: 'geo' });
+        setLocationSearch('My Location');
+        setSelectedLocationName('My Location');
+        toast.success('Found location! Listing spaces within 50km.', { id: 'geo' });
       },
-      () => {
-        toast.error('Location permission denied.', { id: 'geo' });
+      (err) => {
+        console.warn('Geolocation error:', err);
+        toast.error(err.code === 1 ? 'Location permission denied.' : 'Failed to retrieve precise location.', { id: 'geo' });
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000,
       }
     );
   };
@@ -91,6 +139,10 @@ export default function VenuesPage() {
     setMaxPrice('');
     setMinRating('');
     setUseGeo(false);
+    setGeoLoc({ lat: null, lng: null });
+    setSelectedLocationName('');
+    setLocationSearch('');
+    setLocationSuggestions([]);
     setSearchParams({});
     setPage(1);
   };
@@ -125,6 +177,45 @@ export default function VenuesPage() {
                       onChange={e => setSearch(e.target.value)}
                     />
                   </div>
+                </div>
+
+                <div className="flex flex-col gap-1 relative">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Nearby Location</label>
+                  <div className="relative">
+                    <MdLocationOn className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      className="w-full py-2 pl-9 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:border-primary focus:bg-white transition-colors"
+                      placeholder="e.g. Manimala, Charuvely..."
+                      value={locationSearch}
+                      onChange={e => handleLocationSearchChange(e.target.value)}
+                    />
+                    {locationSearch && (
+                      <button
+                        type="button"
+                        onClick={handleClearLocation}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-xs"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Location suggestions dropdown */}
+                  {locationSuggestions.length > 0 && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                      {locationSuggestions.map((item, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleSelectSuggestion(item)}
+                          className="w-full px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-50 border-b border-slate-100 last:border-0 truncate block cursor-pointer"
+                        >
+                          {item.display_name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-1">
@@ -188,7 +279,15 @@ export default function VenuesPage() {
           <main className="flex-grow">
             <div className="mb-6">
               <h1 className="text-2xl font-black text-slate-950 tracking-tight">Available Spaces</h1>
-              <p className="text-slate-500 text-xs mt-1 font-medium">{total} event spaces found</p>
+              <p className="text-slate-500 text-xs mt-1 font-medium">
+                {selectedLocationName ? (
+                  <span>Showing spaces within 50km of <strong className="text-primary">{selectedLocationName.split(',')[0]}</strong> ({total} found)</span>
+                ) : useGeo ? (
+                  <span>Showing spaces within 50km of <strong className="text-primary">Detected Location</strong> ({total} found)</span>
+                ) : (
+                  <span>{total} event spaces found</span>
+                )}
+              </p>
             </div>
 
             {loading ? (

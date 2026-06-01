@@ -10,13 +10,25 @@ import {
   MdBlock, 
   MdTrendingUp, 
   MdEvent, 
-  MdAttachMoney, 
+  MdCurrencyRupee, 
   MdCheck, 
   MdClose,
   MdAdd
 } from 'react-icons/md';
 import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
+
+const formatTime12Hour = (timeStr) => {
+  if (!timeStr) return '';
+  const parts = timeStr.split(':');
+  let h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12;
+  h = h ? h : 12;
+  const minStr = m > 0 ? `:${String(m).padStart(2, '0')}` : ':00';
+  return `${h}${minStr} ${ampm}`;
+};
 
 export default function OwnerDashboard() {
   const navigate = useNavigate();
@@ -51,6 +63,7 @@ export default function OwnerDashboard() {
   const [blockVenueId, setBlockVenueId] = useState('');
   const [blockDate, setBlockDate] = useState('');
   const [blockReason, setBlockReason] = useState('Maintenance');
+  const [blockedDatesList, setBlockedDatesList] = useState([]);
 
   useEffect(() => {
     fetchOwnerData();
@@ -99,9 +112,108 @@ export default function OwnerDashboard() {
     }
   };
 
+  const fetchBlockedDates = async (venueId) => {
+    if (!venueId) {
+      setBlockedDatesList([]);
+      return;
+    }
+    try {
+      const res = await venueService.getBlockedDates(venueId);
+      setBlockedDatesList(res.data || []);
+    } catch {
+      toast.error('Failed to load blocked dates');
+    }
+  };
+
+  const handleUnblockDate = async (blockedDateId) => {
+    if (!window.confirm('Are you sure you want to unblock this date?')) return;
+    try {
+      await venueService.removeBlockedDate(blockedDateId);
+      toast.success('Date unblocked successfully.');
+      fetchBlockedDates(blockVenueId);
+    } catch {
+      toast.error('Failed to unblock date.');
+    }
+  };
+
+  const handleDateChange = (dateVal) => {
+    setBlockDate(dateVal);
+    if (!blockVenueId || !dateVal) return;
+    const venueObj = venues.find(v => v.id === blockVenueId);
+    if (!venueObj) return;
+
+    // Check operating day
+    const parts = dateVal.split('-');
+    const checkDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    
+    const isOperational = venueObj.workingDays?.some(d => {
+      if (typeof d === 'string') return d.toLowerCase() === dayName;
+      if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
+      return false;
+    });
+
+    if (!isOperational) {
+      const daysFormatted = venueObj.workingDays?.map(d => {
+        if (typeof d === 'string') return d;
+        if (typeof d === 'object' && d !== null) return d.day;
+        return '';
+      }).filter(Boolean).join(', ');
+      setBlockDate('');
+      return toast.error(`You can only block operational days (${daysFormatted}) for ${venueObj.venueName}.`);
+    }
+
+    // Check booked status
+    const hasBooking = bookings.some(b => 
+      b.venueId === blockVenueId && 
+      b.bookingDate === dateVal && 
+      (b.bookingStatus === 'confirmed' || b.bookingStatus === 'pending')
+    );
+
+    if (hasBooking) {
+      setBlockDate('');
+      return toast.error(`Cannot block this date because there is an active reservation scheduled on ${dateVal} for ${venueObj.venueName}.`);
+    }
+  };
+
   const handleBlockDate = async (e) => {
     e.preventDefault();
     if (!blockVenueId || !blockDate) return toast.error('Please choose venue and date');
+    
+    const venueObj = venues.find(v => v.id === blockVenueId);
+    if (!venueObj) return toast.error('Selected space listing not found.');
+
+    // Double-verify operating day
+    const parts = blockDate.split('-');
+    const checkDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    const dayName = checkDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    
+    const isOperational = venueObj.workingDays?.some(d => {
+      if (typeof d === 'string') return d.toLowerCase() === dayName;
+      if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
+      return false;
+    });
+
+    if (!isOperational) {
+      const daysFormatted = venueObj.workingDays?.map(d => {
+        if (typeof d === 'string') return d;
+        if (typeof d === 'object' && d !== null) return d.day;
+        return '';
+      }).filter(Boolean).join(', ');
+      return toast.error(`You can only block operational days (${daysFormatted}) for ${venueObj.venueName}.`);
+    }
+
+    // Double-verify booked status
+    const hasBooking = bookings.some(b => 
+      b.venueId === blockVenueId && 
+      b.bookingDate === blockDate && 
+      (b.bookingStatus === 'confirmed' || b.bookingStatus === 'pending')
+    );
+
+    if (hasBooking) {
+      return toast.error(`Cannot block this date because there is an active reservation scheduled on ${blockDate} for ${venueObj.venueName}.`);
+    }
+
     try {
       await venueService.addBlockedDate(blockVenueId, {
         blockedDate: blockDate,
@@ -109,7 +221,7 @@ export default function OwnerDashboard() {
       });
       toast.success('Date blocked successfully.');
       setBlockDate('');
-      setBlockVenueId('');
+      fetchBlockedDates(blockVenueId);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to block date');
     }
@@ -179,9 +291,9 @@ export default function OwnerDashboard() {
 
   // Filter bookings for ongoing, upcoming, and past categories
   const todayStr = new Date().toISOString().split('T')[0];
-  const ongoingBookings = bookings.filter(b => b.bookingDate === todayStr);
-  const upcomingBookings = bookings.filter(b => b.bookingDate > todayStr);
-  const pastBookings = bookings.filter(b => b.bookingDate < todayStr);
+  const ongoingBookings = confirmedBookings.filter(b => b.bookingDate === todayStr);
+  const upcomingBookings = confirmedBookings.filter(b => b.bookingDate > todayStr);
+  const pastBookings = confirmedBookings.filter(b => b.bookingDate < todayStr);
 
   return (
     <div className="min-h-screen bg-slate-50 pt-20 flex">
@@ -255,7 +367,7 @@ export default function OwnerDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-5">
                 <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center text-2xl">
-                  <MdAttachMoney />
+                  <MdCurrencyRupee />
                 </div>
                 <div>
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">My Net Profit (85%)</span>
@@ -276,50 +388,48 @@ export default function OwnerDashboard() {
                   <MdEvent />
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Pending Requests</span>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Bookings</span>
                   <span className="text-2xl font-black text-slate-900">
-                    {bookings.filter(b => b.bookingStatus === 'pending').length} bookings
+                    {bookings.length} bookings
                   </span>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Quick pending approval bookings list */}
+              {/* Confirmed bookings list */}
               <div className="lg:col-span-2 flex flex-col gap-4">
-                <h3 className="text-lg font-bold text-slate-900 mb-2">Needs Your Attention</h3>
-                {bookings.filter(b => b.bookingStatus === 'pending').length === 0 ? (
+                <h3 className="text-lg font-bold text-slate-900 mb-2">Confirmed Reservations</h3>
+                {bookings.filter(b => b.bookingStatus === 'confirmed').length === 0 ? (
                   <div className="bg-white border border-slate-100 p-8 rounded-2xl text-center text-slate-400 text-xs italic">
-                    🎉 Excellent! You have answered all pending booking queries.
+                    📅 No active reservations scheduled yet.
                   </div>
                 ) : (
-                  bookings.filter(b => b.bookingStatus === 'pending').map((b) => (
-                    <div key={b.id} className="bg-white border border-slate-100 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="px-2 py-0.5 rounded bg-amber-50 border border-amber-100 text-amber-600 text-[10px] font-bold uppercase">Pending</span>
-                          <span className="text-xs text-slate-500 font-bold">{b.bookingCode}</span>
-                        </div>
+                  bookings.filter(b => b.bookingStatus === 'confirmed').map((b) => {
+                    const todayStr = new Date().toLocaleDateString('en-CA');
+                    const isPast = b.bookingDate < todayStr;
+
+                    return (
+                      <div key={b.id} className="bg-white border border-slate-100 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm animate-in fade-in-50 duration-200">
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            {isPast ? (
+                              <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-100 text-blue-600 text-[10px] font-bold uppercase">Completed</span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-100 text-emerald-600 text-[10px] font-bold uppercase">Confirmed</span>
+                            )}
+                            <span className="text-xs text-slate-500 font-bold">{b.bookingCode}</span>
+                          </div>
                         <h4 className="font-bold text-slate-900 text-sm leading-tight mb-1">{b.venue?.venueName}</h4>
                         <p className="text-xs text-slate-500">Guest: <span className="font-semibold text-slate-700">{b.user?.name}</span> ({b.guestCount} pax)</p>
-                        <p className="text-xs text-slate-500">Date: <span className="font-semibold text-slate-700">{b.bookingDate}</span> ({b.startTime} - {b.endTime})</p>
+                        <p className="text-xs text-slate-500">Date: <span className="font-semibold text-slate-700">{b.bookingDate}</span> ({formatTime12Hour(b.startTime)} - {formatTime12Hour(b.endTime)})</p>
                       </div>
-                      <div className="flex gap-2 w-full sm:w-auto">
-                        <button
-                          onClick={() => handleUpdateStatus(b.id, 'confirmed')}
-                          className="flex-1 sm:flex-initial p-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center justify-center text-lg shadow-sm"
-                        >
-                          <MdCheck />
-                        </button>
-                        <button
-                          onClick={() => handleUpdateStatus(b.id, 'cancelled')}
-                          className="flex-1 sm:flex-initial p-2 rounded-xl bg-rose-600 text-white hover:bg-rose-700 transition-colors flex items-center justify-center text-lg shadow-sm"
-                        >
-                          <MdClose />
-                        </button>
+                      <div className="text-right">
+                        <span className="text-xs font-black text-slate-950 block">₹{Number(b.totalAmount).toLocaleString('en-IN')}</span>
+                        <span className="text-[10px] text-slate-400">Total Paid</span>
                       </div>
                     </div>
-                  ))
+                  );})
                 )}
               </div>
 
@@ -334,7 +444,12 @@ export default function OwnerDashboard() {
                     <select
                       className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none"
                       value={blockVenueId}
-                      onChange={e => setBlockVenueId(e.target.value)}
+                      onChange={e => {
+                        const vId = e.target.value;
+                        setBlockVenueId(vId);
+                        setBlockDate('');
+                        fetchBlockedDates(vId);
+                      }}
                     >
                       <option value="">Choose Listing</option>
                       {venues.map(v => (
@@ -348,7 +463,7 @@ export default function OwnerDashboard() {
                       type="date"
                       className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none"
                       value={blockDate}
-                      onChange={e => setBlockDate(e.target.value)}
+                      onChange={e => handleDateChange(e.target.value)}
                     />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -367,6 +482,35 @@ export default function OwnerDashboard() {
                     Block Date
                   </button>
                 </form>
+                {blockVenueId && (
+                  <div className="mt-5 pt-5 border-t border-slate-100">
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      📅 Currently Blocked Dates
+                    </h4>
+                    {blockedDatesList.length === 0 ? (
+                      <p className="text-xs text-slate-400 italic">No blocked dates scheduled for this space.</p>
+                    ) : (
+                      <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                        {blockedDatesList.map((bd) => (
+                          <div key={bd.id} className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center text-xs">
+                            <div>
+                              <span className="font-bold text-slate-900 block">{bd.blockedDate}</span>
+                              <span className="text-[10px] text-slate-500 italic font-semibold">{bd.reason || 'No reason'}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleUnblockDate(bd.id)}
+                              className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                              title="Unblock Date"
+                            >
+                              <MdClose className="text-sm font-bold" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -481,7 +625,7 @@ export default function OwnerDashboard() {
                       <div key={b.id} className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center text-xs">
                         <div>
                           <span className="font-bold text-slate-900 block">{b.venue?.venueName}</span>
-                          <span className="text-slate-500">Guest: {b.user?.name} ({b.startTime} - {b.endTime})</span>
+                          <span className="text-slate-500">Guest: {b.user?.name} ({formatTime12Hour(b.startTime)} - {formatTime12Hour(b.endTime)})</span>
                         </div>
                         <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-bold uppercase tracking-wider">Live today</span>
                       </div>
@@ -501,7 +645,7 @@ export default function OwnerDashboard() {
                       <div key={b.id} className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center text-xs">
                         <div>
                           <span className="font-bold text-slate-900 block">{b.venue?.venueName}</span>
-                          <span className="text-slate-500">Guest: {b.user?.name} | Date: {b.bookingDate} ({b.startTime} - {b.endTime})</span>
+                          <span className="text-slate-500">Guest: {b.user?.name} | Date: {b.bookingDate} ({formatTime12Hour(b.startTime)} - {formatTime12Hour(b.endTime)})</span>
                         </div>
                         <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold uppercase">Confirmed</span>
                       </div>
@@ -521,7 +665,7 @@ export default function OwnerDashboard() {
                       <div key={b.id} className="p-4 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center text-xs opacity-75">
                         <div>
                           <span className="font-bold text-slate-900 block">{b.venue?.venueName}</span>
-                          <span className="text-slate-500">Guest: {b.user?.name} | Date: {b.bookingDate} ({b.startTime} - {b.endTime})</span>
+                          <span className="text-slate-500">Guest: {b.user?.name} | Date: {b.bookingDate} ({formatTime12Hour(b.startTime)} - {formatTime12Hour(b.endTime)})</span>
                         </div>
                         <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-600 font-bold uppercase">Archived</span>
                       </div>

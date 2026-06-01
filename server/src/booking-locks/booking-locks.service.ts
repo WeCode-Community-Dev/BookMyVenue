@@ -3,6 +3,7 @@ import {
   ConflictException,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
@@ -33,6 +34,37 @@ export class BookingLocksService {
     const venue = await this.venuesRepository.findOne({ where: { id: venueId } });
     if (!venue) {
       throw new NotFoundException('Venue not found');
+    }
+
+    // Validate booking date and times against venue operational schedule
+    const dateObj = new Date(bookingDate);
+    if (!isNaN(dateObj.getTime()) && venue.workingDays && Array.isArray(venue.workingDays) && venue.workingDays.length > 0) {
+      const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
+      // Find if venue is open on this day of the week
+      const workingDay = venue.workingDays.find((d: any) => {
+        if (typeof d === 'string') return d.toLowerCase() === dayName;
+        if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
+        return false;
+      });
+
+      if (!workingDay) {
+        throw new BadRequestException(
+          `This venue is closed on ${dayName.charAt(0).toUpperCase() + dayName.slice(1)}s`,
+        );
+      }
+
+      // Check selected hours are within opening/closing hours for this working day
+      if (typeof workingDay === 'object' && workingDay !== null) {
+        const { start, end } = workingDay as any;
+        if (start && end) {
+          if (startTime < start || endTime > end) {
+            throw new BadRequestException(
+              `Selected times (${startTime} - ${endTime}) are outside the venue's operating hours for this day (${start} - ${end})`,
+            );
+          }
+        }
+      }
     }
 
     // Check for existing active locks on this slot
@@ -67,7 +99,9 @@ export class BookingLocksService {
 
     if (existingBooking) {
       if (this.timesOverlap(existingBooking.startTime, existingBooking.endTime, startTime, endTime)) {
-        throw new ConflictException('This slot is already booked');
+        const formattedStart = this.formatTime12Hour(existingBooking.startTime);
+        const formattedEnd = this.formatTime12Hour(existingBooking.endTime);
+        throw new ConflictException(`This slot is already booked from ${formattedStart} to ${formattedEnd}`);
       }
     }
 
@@ -134,5 +168,17 @@ export class BookingLocksService {
     end2: string,
   ): boolean {
     return start1 < end2 && end1 > start2;
+  }
+
+  private formatTime12Hour(timeStr: string): string {
+    if (!timeStr) return '';
+    const [hStr, mStr] = timeStr.split(':');
+    let h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    const ampm = h >= 12 ? 'pm' : 'am';
+    h = h % 12;
+    h = h ? h : 12;
+    const minStr = m > 0 ? `:${String(m).padStart(2, '0')}` : '';
+    return `${h}${minStr}${ampm}`;
   }
 }
