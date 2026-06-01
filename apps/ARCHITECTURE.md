@@ -169,7 +169,7 @@ Frontend:
 Backend:
 - Express.js
 - TypeScript
-- MongoDB
+- postgreysql
 
 Infra:
 - Docker
