@@ -19,39 +19,40 @@ export class CloudinaryService {
         api_secret: apiSecret,
       });
       this.isConfigured = true;
-      this.logger.log('Cloudinary successfully configured for venue image storage.');
+      this.logger.log(`✅ Cloudinary configured (cloud: ${cloudName})`);
     } else {
       this.logger.warn(
-        'Cloudinary credentials are not configured in your environment. Falling back to DB-backed Base64 image storage.',
+        '⚠️ Cloudinary credentials missing. Falling back to DB-backed Base64 storage.',
       );
     }
   }
 
   /**
-   * Uploads a single image to Cloudinary (or returns the base64 string as fallback).
+   * Uploads a single base64 image to Cloudinary.
+   * Returns the secure URL on success.
+   * Falls back to base64 only if Cloudinary is not configured.
    */
   async uploadImage(base64Image: string): Promise<string> {
     if (!this.isConfigured) {
       return base64Image;
     }
 
-    try {
-      // Cloudinary natively parses data:image/...;base64,... strings!
-      const uploadResult = await cloudinary.uploader.upload(base64Image, {
-        folder: 'bookmyvenue',
-        quality: 'auto',       // Automatic quality optimization (reduces file size ~40-60%)
-        format: 'auto',        // Auto-converts to WebP/AVIF for supported browsers
-        transformation: [
-          { width: 1200, crop: 'limit' }, // Cap max width at 1200px (sufficient for all views)
-        ],
-      });
-      return uploadResult.secure_url;
-    } catch (error) {
-      this.logger.error(
-        `Failed to upload image to Cloudinary: ${error.message}. Storing as base64 instead.`,
-      );
-      return base64Image;
-    }
+    // Determine resource type (image or video)
+    const isVideo = base64Image.startsWith('data:video/');
+
+    this.logger.log(
+      `Uploading ${isVideo ? 'video' : 'image'} to Cloudinary (${Math.round(base64Image.length / 1024)}KB base64)...`,
+    );
+
+    const uploadResult = await cloudinary.uploader.upload(base64Image, {
+      folder: 'bookmyvenue',
+      resource_type: isVideo ? 'video' : 'image',
+      quality: 'auto',
+      transformation: [{ width: 1200, crop: 'limit' }],
+    });
+
+    this.logger.log(`✅ Uploaded to Cloudinary: ${uploadResult.secure_url}`);
+    return uploadResult.secure_url;
   }
 
   /**
@@ -63,7 +64,7 @@ export class CloudinaryService {
     }
 
     const uploadPromises = images.map((image) => {
-      // If the image is already a Cloudinary/HTTP URL (from seed data or existing venue), skip re-uploading!
+      // Skip already-uploaded HTTP URLs
       if (image.startsWith('http://') || image.startsWith('https://')) {
         return Promise.resolve(image);
       }

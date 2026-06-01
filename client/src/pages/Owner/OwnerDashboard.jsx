@@ -591,12 +591,19 @@ export default function OwnerDashboard() {
                 {venues.map((v) => (
                   <div key={v.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
                     <div className="h-44 w-full bg-slate-100 overflow-hidden relative">
-                      <img
-                        src={thumbnailUrl(v.images?.[0]) || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3'}
-                        alt={v.venueName}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
+                      {v.images?.[0] ? (
+                        <img
+                          src={thumbnailUrl(v.images[0])}
+                          alt={v.venueName}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 text-slate-300">
+                          <span className="text-4xl mb-1">🏢</span>
+                          <span className="text-[10px] font-semibold uppercase tracking-wider">No image</span>
+                        </div>
+                      )}
                     </div>
                     <div className="p-5 flex-grow">
                       <h4 className="font-black text-slate-900 text-lg leading-tight mb-1">{v.venueName}</h4>
