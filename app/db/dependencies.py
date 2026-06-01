@@ -41,6 +41,12 @@ def get_current_user(
         .first()
     )
 
+    if not user.is_active:
+        raise HTTPException(
+            status_code=403,
+            detail="Account blocked"
+        )
+
     if not user:
         raise HTTPException(
             status_code=401,

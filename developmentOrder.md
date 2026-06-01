@@ -6,11 +6,11 @@
 ✅ 6. Auth APIs
 
 ✅ 7. Current User APIs
-    ├── GET /users/me
-    └── PUT /users/me
+    ├── GET /users/me ✅
+    └── PUT /users/me ✅
 
 🔄 8. Role-Based Access
-    ├── require_user()
+    ├── require_user() 
     ├── require_owner()
     └── require_admin()
 

@@ -5,6 +5,7 @@ from sqlalchemy import (
     Text,
     DateTime,
     CheckConstraint,
+    Boolean,
     func
 )
 from sqlalchemy.orm import (
@@ -42,6 +43,12 @@ class User(Base):
 
     password: Mapped[str] = mapped_column(
         Text,
+        nullable=False
+    )
+
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
         nullable=False
     )
 

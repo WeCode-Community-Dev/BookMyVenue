@@ -14,6 +14,7 @@ CREATE TABLE users (
     username VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     password TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE;
     role VARCHAR(20) NOT NULL CHECK (role IN ('user', 'owner', 'admin')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
