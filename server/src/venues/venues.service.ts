@@ -13,6 +13,7 @@ import { Booking, BookingStatus } from '../bookings/entities/booking.entity';
 import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
 import { User, UserRole } from '../users/entities/user.entity';
+import { CloudinaryService } from './cloudinary.service';
 
 @Injectable()
 export class VenuesService {
@@ -23,11 +24,18 @@ export class VenuesService {
     private blockedDatesRepository: Repository<VenueBlockedDate>,
     @InjectRepository(Booking)
     private bookingsRepository: Repository<Booking>,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   async create(createVenueDto: CreateVenueDto, ownerId: string) {
+    let uploadedImages: string[] = [];
+    if (createVenueDto.images && createVenueDto.images.length > 0) {
+      uploadedImages = await this.cloudinaryService.uploadImages(createVenueDto.images);
+    }
+
     const venue = this.venuesRepository.create({
       ...createVenueDto,
+      images: uploadedImages,
       ownerId,
       status: VenueStatus.APPROVED,
     });
@@ -157,7 +165,15 @@ export class VenuesService {
       throw new ForbiddenException('You can only update your own venues');
     }
 
-    Object.assign(venue, updateVenueDto);
+    let uploadedImages = venue.images;
+    if (updateVenueDto.images) {
+      uploadedImages = await this.cloudinaryService.uploadImages(updateVenueDto.images);
+    }
+
+    Object.assign(venue, {
+      ...updateVenueDto,
+      images: uploadedImages,
+    });
     return this.venuesRepository.save(venue);
   }
 

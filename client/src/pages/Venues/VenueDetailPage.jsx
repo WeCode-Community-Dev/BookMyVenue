@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { venueService, bookingService, reviewService } from '../../services';
+import { detailUrl, thumbnailUrl } from '../../utils/cloudinaryUrl';
 import { MdStar, MdPeople, MdCurrencyRupee, MdLock, MdTimer, MdCalendarToday, MdOutlineAccessTime, MdSend, MdLocationOn, MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import toast from 'react-hot-toast';
 
@@ -530,7 +531,7 @@ export default function VenueDetailPage() {
         <div className="h-96 w-full rounded-2xl overflow-hidden relative bg-slate-200 shadow-lg mb-8 group select-none">
           {venue.images && venue.images.length > 0 ? (
             <img 
-              src={venue.images[activeImageIndex]} 
+              src={detailUrl(venue.images[activeImageIndex])} 
               alt={`${venue.venueName} ${activeImageIndex + 1}`} 
               className="w-full h-full object-cover transition-all duration-500 ease-in-out" 
             />
@@ -585,7 +586,7 @@ export default function VenueDetailPage() {
                     idx === activeImageIndex ? 'border-primary scale-105 shadow-md' : 'border-transparent hover:border-white/50 opacity-80 hover:opacity-100'
                   }`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <img src={thumbnailUrl(img)} alt="" className="w-full h-full object-cover" loading="lazy" />
                 </button>
               ))}
             </div>

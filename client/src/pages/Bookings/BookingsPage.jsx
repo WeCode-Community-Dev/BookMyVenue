@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { bookingService, userService, venueService } from '../../services';
+import { thumbnailUrl } from '../../utils/cloudinaryUrl';
 import { 
   MdCalendarToday, 
   MdOutlineAccessTime, 
@@ -454,9 +455,10 @@ export default function BookingsPage() {
                   <div key={v.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
                     <div className="h-40 w-full bg-slate-100 overflow-hidden relative shrink-0">
                       <img
-                        src={v.images?.[0] || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3'}
+                        src={thumbnailUrl(v.images?.[0]) || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3'}
                         alt={v.venueName}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     </div>
                     <div className="p-5 flex-grow flex flex-col justify-between">

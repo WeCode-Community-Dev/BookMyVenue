@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { bookingService, venueService, userService } from '../../services';
+import { thumbnailUrl } from '../../utils/cloudinaryUrl';
 import { 
   MdDashboard, 
   MdOutlineMapsHomeWork, 
@@ -591,9 +592,10 @@ export default function OwnerDashboard() {
                   <div key={v.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
                     <div className="h-44 w-full bg-slate-100 overflow-hidden relative">
                       <img
-                        src={v.images?.[0] || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3'}
+                        src={thumbnailUrl(v.images?.[0]) || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3'}
                         alt={v.venueName}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     </div>
                     <div className="p-5 flex-grow">
