@@ -1,8 +1,8 @@
 1. FastAPI Setup           ✅
 2. PostgreSQL Setup        ✅
-3. SQLAlchemy Models       ✅
-4. Alembic Migration
-5. JWT Authentication
+3. SQLAlchemy Models       ✅ 
+4. Alembic Migration       ✅
+5. JWT Authentication      ✅
 6. Auth APIs
 7. User APIs
 8. Venue APIs

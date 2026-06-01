@@ -82,7 +82,6 @@ class Venue(Base):
         cascade="all, delete-orphan"
     )
 
-
 # Venue Images
 class VenueImage(Base):
     __tablename__ = "venue_images"
@@ -186,4 +185,11 @@ class OwnerProfile(Base):
     user = relationship(
         "User",
         back_populates="owner_profile"
+    )
+
+    # add booking relationship
+    bookings = relationship(
+    "Booking",
+    back_populates="venue",
+    cascade="all, delete-orphan"
     )
