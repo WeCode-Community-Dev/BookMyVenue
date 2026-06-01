@@ -14,6 +14,7 @@ import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
 import { User, UserRole } from '../users/entities/user.entity';
 import { CloudinaryService } from './cloudinary.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class VenuesService {
@@ -25,6 +26,7 @@ export class VenuesService {
     @InjectRepository(Booking)
     private bookingsRepository: Repository<Booking>,
     private cloudinaryService: CloudinaryService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async create(createVenueDto: CreateVenueDto, ownerId: string) {
@@ -40,7 +42,12 @@ export class VenuesService {
       status: VenueStatus.APPROVED,
     });
 
-    return this.venuesRepository.save(venue);
+    const savedVenue = await this.venuesRepository.save(venue);
+    
+    // Emit event asynchronously for venue listed congratulations email
+    this.eventEmitter.emit('venue.created', { venueId: savedVenue.id });
+
+    return savedVenue;
   }
 
   async findAll(query: {
@@ -174,7 +181,12 @@ export class VenuesService {
       ...updateVenueDto,
       images: uploadedImages,
     });
-    return this.venuesRepository.save(venue);
+    const savedVenue = await this.venuesRepository.save(venue);
+
+    // Emit event asynchronously for venue updated notification email
+    this.eventEmitter.emit('venue.updated', { venueId: savedVenue.id });
+
+    return savedVenue;
   }
 
   async remove(id: string, user: User) {

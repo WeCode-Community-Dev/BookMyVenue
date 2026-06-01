@@ -9,6 +9,8 @@ import { BookingsModule } from './bookings/bookings.module';
 import { BookingLocksModule } from './booking-locks/booking-locks.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { AdminModule } from './admin/admin.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -17,6 +19,9 @@ import { AdminModule } from './admin/admin.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+
+    // Event Emitter for Async decoupling
+    EventEmitterModule.forRoot(),
 
     // Database
     TypeOrmModule.forRootAsync({
@@ -46,6 +51,7 @@ import { AdminModule } from './admin/admin.module';
     BookingLocksModule,
     ReviewsModule,
     AdminModule,
+    MailModule,
   ],
 })
 export class AppModule {}

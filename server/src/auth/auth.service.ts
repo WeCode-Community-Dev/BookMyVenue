@@ -15,6 +15,7 @@ import { User, UserRole, UserStatus } from '../users/entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +24,7 @@ export class AuthService {
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -51,6 +53,9 @@ export class AuthService {
     });
 
     await this.usersRepository.save(user);
+
+    // Emit event asynchronously for welcome email
+    this.eventEmitter.emit('user.registered', user);
 
     // Generate tokens
     const tokens = await this.generateTokens(user);

@@ -13,6 +13,7 @@ import { Venue } from '../venues/entities/venue.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { User, UserRole } from '../users/entities/user.entity';
 import * as crypto from 'crypto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class BookingsService {
@@ -23,6 +24,7 @@ export class BookingsService {
     private locksRepository: Repository<BookingLock>,
     @InjectRepository(Venue)
     private venuesRepository: Repository<Venue>,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async create(createBookingDto: CreateBookingDto, userId: string) {
@@ -66,7 +68,12 @@ export class BookingsService {
       bookingStatus: BookingStatus.CONFIRMED,
     });
 
-    return this.bookingsRepository.save(booking);
+    const savedBooking = await this.bookingsRepository.save(booking);
+    
+    // Emit event asynchronously for guest confirmation and host alert emails
+    this.eventEmitter.emit('booking.created', { bookingId: savedBooking.id });
+
+    return savedBooking;
   }
 
   async findUserBookings(userId: string, status?: BookingStatus, page = 1, limit = 10) {
