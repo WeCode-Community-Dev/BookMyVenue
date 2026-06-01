@@ -142,7 +142,8 @@ export default function Navbar() {
   const strength = checkPasswordStrength(newPassword);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 py-4 bg-white/95 border-b border-slate-200/80 shadow-sm backdrop-blur-md">
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-50 py-4 bg-white/95 border-b border-slate-200/80 shadow-sm backdrop-blur-md">
       <div className="container mx-auto px-6 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 text-xl font-extrabold tracking-tight" onClick={() => setMenuOpen(false)}>
           <MdLocationOn className="text-2xl text-primary animate-pulse" />
@@ -306,6 +307,7 @@ export default function Navbar() {
           )}
         </div>
       )}
+      </nav>
 
       {/* ========================================================================= */}
       {/* 🚀 GLOBAL PROFILE POPUP MODAL */}
@@ -499,6 +501,6 @@ export default function Navbar() {
         </div>
       )}
 
-    </nav>
+    </>
   );
 }

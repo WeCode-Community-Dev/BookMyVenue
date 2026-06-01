@@ -58,6 +58,10 @@ export class User {
   @Column({ nullable: true })
   blockReason: string;
 
+  @Column({ nullable: true, select: false })
+  currentHashedRefreshToken: string;
+
+
   @OneToMany(() => Venue, (venue) => venue.owner)
   venues: Venue[];
 

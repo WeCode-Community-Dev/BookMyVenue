@@ -8,14 +8,16 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('bmv_token');
+    const token = localStorage.getItem('bmv_access_token') || localStorage.getItem('bmv_token');
     const savedUser = localStorage.getItem('bmv_user');
     
     if (token && savedUser) {
       try {
         setUser(JSON.parse(savedUser));
       } catch {
+        localStorage.removeItem('bmv_access_token');
         localStorage.removeItem('bmv_token');
+        localStorage.removeItem('bmv_refresh_token');
         localStorage.removeItem('bmv_user');
       }
     }
@@ -24,8 +26,10 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const res = await authService.login({ email, password });
-    const { user: userData, token } = res.data;
-    localStorage.setItem('bmv_token', token);
+    const { user: userData, accessToken, refreshToken } = res.data;
+    localStorage.setItem('bmv_access_token', accessToken);
+    localStorage.setItem('bmv_token', accessToken); // backward compatibility
+    localStorage.setItem('bmv_refresh_token', refreshToken);
     localStorage.setItem('bmv_user', JSON.stringify(userData));
     setUser(userData);
     return userData;
@@ -33,15 +37,24 @@ export function AuthProvider({ children }) {
 
   const register = async (data) => {
     const res = await authService.register(data);
-    const { user: userData, token } = res.data;
-    localStorage.setItem('bmv_token', token);
+    const { user: userData, accessToken, refreshToken } = res.data;
+    localStorage.setItem('bmv_access_token', accessToken);
+    localStorage.setItem('bmv_token', accessToken); // backward compatibility
+    localStorage.setItem('bmv_refresh_token', refreshToken);
     localStorage.setItem('bmv_user', JSON.stringify(userData));
     setUser(userData);
     return userData;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch (err) {
+      console.error('Failed to log out from backend', err);
+    }
+    localStorage.removeItem('bmv_access_token');
     localStorage.removeItem('bmv_token');
+    localStorage.removeItem('bmv_refresh_token');
     localStorage.removeItem('bmv_user');
     setUser(null);
   };

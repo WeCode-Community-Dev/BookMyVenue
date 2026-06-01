@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { AuthService } from './auth.service';
@@ -10,10 +11,20 @@ const mockUserRepository = {
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
+  update: jest.fn(),
 };
 
 const mockJwtService = {
   sign: jest.fn().mockReturnValue('mock-jwt-token'),
+  verifyAsync: jest.fn().mockResolvedValue({ sub: 'uuid-1', email: 'john@example.com', role: 'user' }),
+};
+
+const mockConfigService = {
+  get: jest.fn().mockImplementation((key: string) => {
+    if (key === 'JWT_ACCESS_EXPIRES_IN') return '15m';
+    if (key === 'JWT_REFRESH_EXPIRES_IN') return '7d';
+    return 'mock-secret';
+  }),
 };
 
 describe('AuthService', () => {
@@ -25,6 +36,7 @@ describe('AuthService', () => {
         AuthService,
         { provide: getRepositoryToken(User), useValue: mockUserRepository },
         { provide: JwtService, useValue: mockJwtService },
+        { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile();
 
@@ -154,6 +166,40 @@ describe('AuthService', () => {
     it('should throw BadRequestException for invalid token', async () => {
       mockUserRepository.findOne.mockResolvedValue(null);
       await expect(service.resetPassword('bad-token', 'newpass123')).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('refresh', () => {
+    it('should throw UnauthorizedException if refresh token is invalid', async () => {
+      mockJwtService.verifyAsync.mockRejectedValueOnce(new Error('Invalid token'));
+      await expect(service.refresh('invalid-token')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should successfully refresh tokens', async () => {
+      const hashedRefreshToken = await bcrypt.hash('valid-refresh-token', 10);
+      const user = {
+        id: 'uuid-1',
+        email: 'john@example.com',
+        role: UserRole.USER,
+        status: UserStatus.ACTIVE,
+        currentHashedRefreshToken: hashedRefreshToken,
+      };
+
+      mockJwtService.verifyAsync.mockResolvedValueOnce({ sub: 'uuid-1', email: 'john@example.com', role: 'user' });
+      mockUserRepository.findOne.mockResolvedValueOnce(user);
+      mockUserRepository.update.mockResolvedValueOnce({} as any);
+
+      const result = await service.refresh('valid-refresh-token');
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('refreshToken');
+    });
+  });
+
+  describe('logout', () => {
+    it('should clear refresh token', async () => {
+      mockUserRepository.update.mockResolvedValueOnce({} as any);
+      await service.logout('uuid-1');
+      expect(mockUserRepository.update).toHaveBeenCalledWith('uuid-1', { currentHashedRefreshToken: null });
     });
   });
 });
