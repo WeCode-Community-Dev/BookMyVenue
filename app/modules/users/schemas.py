@@ -1,6 +1,7 @@
 # schemas ths is for validation rules,what api accepts,returns
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 class UserCreate(BaseModel):
     name: str
@@ -20,13 +21,9 @@ class UserResponse(BaseModel):
         "from_attributes": True
     }
 
-from pydantic import BaseModel
-
-
 class OwnerProfileCreate(BaseModel):
     business_name: str
     phone: str
-
 
 class OwnerProfileResponse(BaseModel):
     id: int
@@ -36,3 +33,8 @@ class OwnerProfileResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+class UpdateUserSchema(BaseModel):
+    name: str
+    username: str
+    
