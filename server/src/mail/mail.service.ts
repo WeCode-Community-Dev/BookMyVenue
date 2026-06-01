@@ -6,7 +6,7 @@ import { Resend } from 'resend';
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private resend: Resend | null = null;
-  private fromEmail = 'BookMyVenue <support@bookmyvenue.dev>'; // Default Resend test sending domain
+  private fromEmail = 'BookMyVenue <onboarding@resend.dev>'; // Default Resend test sending domain
 
   constructor(private configService: ConfigService) {
     const apiKey = this.configService.get<string>('RESEND_API_KEY');
@@ -47,8 +47,10 @@ export class MailService {
           html: htmlContent,
         });
 
-        // Intercept unverified domain errors
-        if (error && error.message && error.message.includes('not verified')) {
+        const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+
+        // Intercept unverified domain errors (Only in development/test environments)
+        if (error && error.message && error.message.includes('not verified') && !isProduction) {
           this.logger.warn(`
 ┌────────────────────────────────────────────────────────────────────────┐
 │ 💡 RESEND DOMAIN VERIFICATION TIP                                     │
@@ -65,7 +67,7 @@ export class MailService {
 
           // Auto-retry with sandbox onboarding@resend.dev
           const retryResult = await this.resend.emails.send({
-            from: 'BookMyVenue <support@bookmyvenue.dev>',
+            from: 'BookMyVenue <onboarding@resend.dev>',
             to: recipients,
             subject: subject,
             html: htmlContent,
@@ -74,8 +76,8 @@ export class MailService {
           error = retryResult.error;
         }
 
-        // Intercept sandbox recipient restrictions
-        if (error && error.message && error.message.includes('only send testing emails')) {
+        // Intercept sandbox recipient restrictions (Only in development/test environments)
+        if (error && error.message && error.message.includes('only send testing emails') && !isProduction) {
           const match = error.message.match(/own email address \(([^)]+)\)/);
           if (match && match[1]) {
             const sandboxEmail = match[1];
@@ -92,7 +94,7 @@ export class MailService {
             `);
 
             const sandboxRetry = await this.resend.emails.send({
-              from: 'BookMyVenue <support@bookmyvenue.dev>',
+              from: 'BookMyVenue <onboarding@resend.dev>',
               to: sandboxEmail,
               subject: `[Test Redirect: ${recipients.join(', ')}] ${subject}`,
               html: htmlContent,
@@ -104,8 +106,10 @@ export class MailService {
 
         if (error) {
           this.logger.error(`Resend API Error: ${JSON.stringify(error)}`);
-          this.logger.warn('Email sending failed. Displaying local fallback console preview.');
-          this.logLocalEmail(recipients, subject, htmlContent);
+          if (!isProduction) {
+            this.logger.warn('Email sending failed. Displaying local fallback console preview.');
+            this.logLocalEmail(recipients, subject, htmlContent);
+          }
           return false;
         }
 
