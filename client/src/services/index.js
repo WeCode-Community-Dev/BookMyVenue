@@ -45,6 +45,7 @@ export const bookingService = {
 export const reviewService = {
   getByVenue: (venueId, params) => api.get(`/venues/${venueId}/reviews`, { params }),
   create: (venueId, data) => api.post(`/venues/${venueId}/reviews`, data),
+  reply: (venueId, reviewId, reply) => api.post(`/venues/${venueId}/reviews/${reviewId}/reply`, { reply }),
 };
 
 export const adminService = {

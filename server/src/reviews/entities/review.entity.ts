@@ -34,6 +34,12 @@ export class Review {
   @Column({ type: 'text', nullable: true })
   comment: string;
 
+  @Column({ type: 'text', nullable: true })
+  reply: string;
+
+  @Column({ nullable: true })
+  replyCreatedAt: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 }

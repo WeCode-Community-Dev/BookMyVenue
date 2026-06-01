@@ -1,15 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { MdSearch, MdLocationOn, MdStar, MdGroups, MdEventSeat } from 'react-icons/md';
 
 export default function HomePage() {
+  const { user, isAuthenticated, loading } = useAuth();
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && isAuthenticated && user) {
+      if (user.role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else if (user.role === 'venue_owner') {
+        navigate('/owner/dashboard', { replace: true });
+      } else {
+        navigate('/bookings', { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, loading, navigate]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (search.trim()) {
-      navigate(`/venues?search=${search.trim()}`);
+      navigate(`/bookings?search=${search.trim()}`);
     }
   };
 
@@ -19,6 +33,17 @@ export default function HomePage() {
     { name: 'Resorts & Hotels', type: 'resort_hotel', icon: '🏖️', count: '15 spaces' },
     { name: 'Meetup Spaces', type: 'meetup_space', icon: '👥', count: '6 spaces' },
   ];
+
+  if (loading || isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center pt-28">
+        <div className="flex flex-col items-center gap-3">
+          <span className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+          <span className="text-xs font-semibold text-slate-400">Loading your workspace...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-bg-primary pt-28 pb-16">

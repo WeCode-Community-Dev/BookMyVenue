@@ -25,10 +25,24 @@ export class ReviewsService {
     const venue = await this.venuesRepository.findOne({ where: { id: venueId } });
     if (!venue) throw new NotFoundException('Venue not found');
 
-    const booking = await this.bookingsRepository.findOne({
-      where: { userId, venueId, bookingStatus: BookingStatus.COMPLETED },
+    if (venue.ownerId === userId) {
+      throw new ForbiddenException('Venue owners cannot review their own venues');
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const bookings = await this.bookingsRepository.find({
+      where: { userId, venueId },
     });
-    if (!booking) throw new ForbiddenException('You can only review venues where you have completed a booking');
+
+    const hasCompletedBooking = bookings.some(b => {
+      if (b.bookingStatus === BookingStatus.COMPLETED) return true;
+      if (b.bookingStatus === BookingStatus.CONFIRMED && b.bookingDate < todayStr) return true;
+      return false;
+    });
+
+    if (!hasCompletedBooking) {
+      throw new ForbiddenException('You can only review venues where you have completed a booking');
+    }
 
     const existingReview = await this.reviewsRepository.findOne({ where: { userId, venueId } });
     if (existingReview) throw new BadRequestException('You have already reviewed this venue');
@@ -50,6 +64,26 @@ export class ReviewsService {
       order: { createdAt: 'DESC' },
     });
     return { reviews, total, page, totalPages: Math.ceil(total / limit) };
+  }
+
+  async replyToReview(reviewId: string, userId: string, reply: string) {
+    const review = await this.reviewsRepository.findOne({
+      where: { id: reviewId },
+      relations: { venue: true },
+    });
+    if (!review) throw new NotFoundException('Review not found');
+
+    if (review.venue.ownerId !== userId) {
+      throw new ForbiddenException('Only the venue owner can reply to this review');
+    }
+
+    if (!reply || reply.trim() === '') {
+      throw new BadRequestException('Reply content cannot be empty');
+    }
+
+    review.reply = reply;
+    review.replyCreatedAt = new Date();
+    return this.reviewsRepository.save(review);
   }
 
   private async updateVenueRating(venueId: string) {

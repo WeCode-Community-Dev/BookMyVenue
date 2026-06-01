@@ -274,52 +274,62 @@ export default function EditVenuePage() {
     }
   };
 
-  // Image Upload and Canvas Compression
-  const handleFileChange = (e) => {
+  // Image Upload and Canvas Compression (supports multi-image concurrent uploads)
+  const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
-    files.forEach(file => {
-      if (!file.type.startsWith('image/')) {
-        return toast.error('Only image files are supported');
-      }
+    const invalidFile = files.find(file => !file.type.startsWith('image/'));
+    if (invalidFile) {
+      return toast.error('Only image files are supported');
+    }
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          // Dynamic compression using HTML Canvas
-          const canvas = document.createElement('canvas');
-          const maxDimension = 1200; // max size in px
-          let width = img.width;
-          let height = img.height;
+    const loadAndCompressPromises = files.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            // Dynamic compression using HTML Canvas
+            const canvas = document.createElement('canvas');
+            const maxDimension = 1200; // max size in px
+            let width = img.width;
+            let height = img.height;
 
-          if (width > height) {
-            if (width > maxDimension) {
-              height *= maxDimension / width;
-              width = maxDimension;
+            if (width > height) {
+              if (width > maxDimension) {
+                height *= maxDimension / width;
+                width = maxDimension;
+              }
+            } else {
+              if (height > maxDimension) {
+                width *= maxDimension / height;
+                height = maxDimension;
+              }
             }
-          } else {
-            if (height > maxDimension) {
-              width *= maxDimension / height;
-              height = maxDimension;
-            }
-          }
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
 
-          // Convert to highly optimized JPEG Base64 (0.75 quality is extremely clear yet small!)
-          const base64Data = canvas.toDataURL('image/jpeg', 0.75);
-          setUploadedImages(prev => [...prev, base64Data]);
-          toast.success(`Image "${file.name}" uploaded successfully!`);
+            // Convert to highly optimized JPEG Base64 (0.75 quality is extremely clear yet small!)
+            const base64Data = canvas.toDataURL('image/jpeg', 0.75);
+            resolve(base64Data);
+          };
+          img.src = event.target.result;
         };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      });
     });
+
+    try {
+      const compressedImages = await Promise.all(loadAndCompressPromises);
+      setUploadedImages(prev => [...prev, ...compressedImages]);
+      toast.success(`Successfully uploaded ${files.length} image(s)!`);
+    } catch (err) {
+      toast.error('Failed to process some images');
+    }
   };
 
   const handleRemoveImage = (indexToRemove) => {

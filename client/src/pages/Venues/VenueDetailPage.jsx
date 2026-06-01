@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { venueService, bookingService, reviewService } from '../../services';
-import { MdStar, MdPeople, MdCurrencyRupee, MdLock, MdTimer, MdCalendarToday, MdOutlineAccessTime, MdSend, MdLocationOn } from 'react-icons/md';
+import { MdStar, MdPeople, MdCurrencyRupee, MdLock, MdTimer, MdCalendarToday, MdOutlineAccessTime, MdSend, MdLocationOn, MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import toast from 'react-hot-toast';
 
 export default function VenueDetailPage() {
@@ -53,6 +53,9 @@ export default function VenueDetailPage() {
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [replyTextMap, setReplyTextMap] = useState({});
+  const [submittingReplyMap, setSubmittingReplyMap] = useState({});
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
     fetchVenueDetails();
@@ -442,6 +445,24 @@ export default function VenueDetailPage() {
     }
   };
 
+  const handlePostReply = async (reviewId) => {
+    const text = replyTextMap[reviewId] || '';
+    if (!text.trim()) {
+      return toast.error('Reply content cannot be empty');
+    }
+    try {
+      setSubmittingReplyMap(prev => ({ ...prev, [reviewId]: true }));
+      await reviewService.reply(id, reviewId, text);
+      toast.success('Reply submitted successfully');
+      fetchVenueDetails();
+      setReplyTextMap(prev => ({ ...prev, [reviewId]: '' }));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit reply');
+    } finally {
+      setSubmittingReplyMap(prev => ({ ...prev, [reviewId]: false }));
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center">
@@ -505,14 +526,44 @@ export default function VenueDetailPage() {
     <div className="min-h-screen bg-bg-primary pt-28 pb-16">
       <div className="container mx-auto px-6 max-w-6xl">
         
-        {/* Banner Images */}
-        <div className="h-80 w-full rounded-2xl overflow-hidden relative bg-slate-200 shadow-lg mb-8">
-          {venue.images?.[0] ? (
-            <img src={venue.images[0]} alt={venue.venueName} className="w-full h-full object-cover" />
+        {/* Banner Images Slideshow Gallery */}
+        <div className="h-96 w-full rounded-2xl overflow-hidden relative bg-slate-200 shadow-lg mb-8 group select-none">
+          {venue.images && venue.images.length > 0 ? (
+            <img 
+              src={venue.images[activeImageIndex]} 
+              alt={`${venue.venueName} ${activeImageIndex + 1}`} 
+              className="w-full h-full object-cover transition-all duration-500 ease-in-out" 
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-6xl bg-slate-100">🏢</div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90" />
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/20 opacity-90" />
+          
+          {/* Navigation Arrows for Slideshow */}
+          {venue.images && venue.images.length > 1 && (
+            <>
+              <button 
+                type="button"
+                onClick={() => setActiveImageIndex(prev => (prev === 0 ? venue.images.length - 1 : prev - 1))}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2.5 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 z-20 cursor-pointer shadow-md backdrop-blur-sm border border-white/10"
+              >
+                <MdChevronLeft className="text-2xl" />
+              </button>
+              <button 
+                type="button"
+                onClick={() => setActiveImageIndex(prev => (prev === venue.images.length - 1 ? 0 : prev + 1))}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-2.5 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 z-20 cursor-pointer shadow-md backdrop-blur-sm border border-white/10"
+              >
+                <MdChevronRight className="text-2xl" />
+              </button>
+              
+              {/* Pagination Count Badge */}
+              <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 text-xs font-bold rounded-lg backdrop-blur-md shadow-md z-20 border border-white/10">
+                {activeImageIndex + 1} / {venue.images.length}
+              </div>
+            </>
+          )}
           
           <div className="absolute bottom-6 left-6 z-10">
             <span className="px-2.5 py-0.5 rounded bg-primary text-white text-[10px] font-bold uppercase tracking-wider mb-2 inline-block shadow-sm">
@@ -521,6 +572,24 @@ export default function VenueDetailPage() {
             <h1 className="text-3xl font-black text-white tracking-tight">{venue.venueName}</h1>
             <p className="text-slate-200 text-xs mt-1">📍 {venue.address}</p>
           </div>
+
+          {/* Mini Thumbnail Row floating on the bottom right */}
+          {venue.images && venue.images.length > 1 && (
+            <div className="absolute bottom-6 right-6 z-20 flex gap-2 p-1.5 bg-black/30 backdrop-blur-md rounded-xl border border-white/10 max-w-[80%] overflow-x-auto">
+              {venue.images.map((img, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setActiveImageIndex(idx)}
+                  className={`h-11 w-16 rounded-lg overflow-hidden border-2 transition-all cursor-pointer flex-shrink-0 ${
+                    idx === activeImageIndex ? 'border-primary scale-105 shadow-md' : 'border-transparent hover:border-white/50 opacity-80 hover:opacity-100'
+                  }`}
+                >
+                  <img src={img} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -609,8 +678,8 @@ export default function VenueDetailPage() {
             <div className="matte-card p-6 bg-white border border-slate-200">
               <h2 className="text-base font-bold text-slate-900 mb-4">Guest Reviews</h2>
               
-              {/* Write Review Form */}
-              {isAuthenticated && (
+              {/* Write Review Form (Hidden for the Venue Owner) */}
+              {isAuthenticated && venue && venue.ownerId !== user?.id && (
                 <form onSubmit={handlePostReview} className="mb-6 p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-3">
                   <h3 className="text-xs font-bold text-slate-900">Leave a review</h3>
                   <div className="flex items-center gap-3">
@@ -648,14 +717,50 @@ export default function VenueDetailPage() {
                   <p className="text-slate-500 text-xs">No reviews yet.</p>
                 ) : (
                   reviews.map((rev) => (
-                    <div key={rev.id} className="pb-3 border-b border-slate-100 last:border-0 last:pb-0">
-                      <div className="flex justify-between items-center gap-2 mb-1">
+                    <div key={rev.id} className="pb-3 border-b border-slate-100 last:border-0 last:pb-0 flex flex-col gap-1">
+                      <div className="flex justify-between items-center gap-2">
                         <span className="font-bold text-xs text-slate-900">{rev.user?.name}</span>
                         <span className="text-yellow-500 text-xs font-semibold flex items-center gap-0.5">
                           <MdStar /> {rev.rating}
                         </span>
                       </div>
                       <p className="text-slate-600 text-xs leading-relaxed">{rev.comment}</p>
+
+                      {/* Display Existing Host Response */}
+                      {rev.reply && (
+                        <div className="mt-2 ml-4 p-3 bg-slate-50 border-l-2 border-primary rounded-r-xl flex flex-col gap-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Host Response</span>
+                            {rev.replyCreatedAt && (
+                              <span className="text-[9px] text-slate-400">
+                                {new Date(rev.replyCreatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-slate-700 text-xs leading-relaxed italic">"{rev.reply}"</p>
+                        </div>
+                      )}
+
+                      {/* Write Host Response Form (Only for Venue Owner if no reply exists yet) */}
+                      {!rev.reply && isAuthenticated && user && venue && venue.ownerId === user.id && (
+                        <div className="mt-2 ml-4 flex gap-2">
+                          <input
+                            type="text"
+                            className="flex-1 py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary"
+                            placeholder="Write a response as the venue owner..."
+                            value={replyTextMap[rev.id] || ''}
+                            onChange={e => setReplyTextMap(prev => ({ ...prev, [rev.id]: e.target.value }))}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handlePostReply(rev.id)}
+                            disabled={submittingReplyMap[rev.id]}
+                            className="py-1.5 px-3 rounded-lg bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all disabled:opacity-50 cursor-pointer"
+                          >
+                            Reply
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}

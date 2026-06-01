@@ -49,4 +49,29 @@ export class ReviewsController {
   ) {
     return this.reviewsService.findByVenue(venueId, page ? +page : 1, limit ? +limit : 10);
   }
+
+  @Post(':reviewId/reply')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Reply to a review', description: 'Reply to a review (venue owners only)' })
+  @ApiResponse({ status: 200, description: 'Reply added' })
+  @ApiResponse({ status: 403, description: 'Only the venue owner can reply to this review' })
+  @ApiParam({ name: 'venueId', description: 'Venue UUID' })
+  @ApiParam({ name: 'reviewId', description: 'Review UUID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        reply: { type: 'string', example: 'Thank you for your review!' },
+      },
+      required: ['reply'],
+    },
+  })
+  async replyToReview(
+    @Param('reviewId') reviewId: string,
+    @Body() body: { reply: string },
+    @CurrentUser() user: User,
+  ) {
+    return this.reviewsService.replyToReview(reviewId, user.id, body.reply);
+  }
 }

@@ -203,6 +203,13 @@ export class VenuesService {
   async addBlockedDate(venueId: string, blockedDate: string, reason: string, userId: string) {
     const venue = await this.findOne(venueId);
 
+    const existingBlock = await this.blockedDatesRepository.findOne({
+      where: { venueId, blockedDate },
+    });
+    if (existingBlock) {
+      throw new BadRequestException('This date is already blocked for this venue.');
+    }
+
     const blocked = this.blockedDatesRepository.create({
       venueId,
       blockedDate,

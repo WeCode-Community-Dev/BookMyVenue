@@ -152,31 +152,14 @@ export default function Navbar() {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-6">
-          <Link to="/venues" className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors duration-200">
-            Discover
-          </Link>
+          {!isAuthenticated && (
+            <Link to="/bookings" className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors duration-200">
+              Discover
+            </Link>
+          )}
 
           {isAuthenticated ? (
             <>
-              {isVenueOwner && (
-                <>
-                  <Link to="/owner/venues" className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors duration-200">
-                    My Venues
-                  </Link>
-                  {/* High-priority "Create Venue" Top Right Button */}
-                  <Link 
-                    to="/owner/venues" 
-                    className="px-4 py-2 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-xs shadow-sm shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-1.5"
-                  >
-                    <MdAddCircleOutline className="text-sm" />
-                    Create Venue
-                  </Link>
-                </>
-              )}
-              
-              <Link to={isAdmin ? '/admin' : isVenueOwner ? '/owner/dashboard' : '/bookings'} className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors duration-200">
-                Dashboard
-              </Link>
               
               {/* Interactive Profile Dropdown */}
               <div className="relative pl-4 border-l border-slate-200" ref={dropdownRef}>
@@ -253,25 +236,14 @@ export default function Navbar() {
       {/* Mobile Links Dropdown */}
       {menuOpen && (
         <div className="absolute top-[65px] left-0 right-0 bg-white border-b border-slate-200 p-6 flex flex-col gap-4 md:hidden shadow-lg animate-fade-in text-slate-800">
-          <Link to="/venues" className="text-sm font-semibold text-slate-600 hover:text-primary" onClick={() => setMenuOpen(false)}>
-            Discover
-          </Link>
+          {!isAuthenticated && (
+            <Link to="/bookings" className="text-sm font-semibold text-slate-600 hover:text-primary" onClick={() => setMenuOpen(false)}>
+              Discover
+            </Link>
+          )}
 
           {isAuthenticated ? (
             <>
-              {isVenueOwner && (
-                <Link 
-                  to="/owner/venues" 
-                  className="text-sm font-semibold text-slate-600 hover:text-primary flex items-center gap-1.5"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <MdAddCircleOutline className="text-base text-primary" /> Create Venue
-                </Link>
-              )}
-              
-              <Link to={isAdmin ? '/admin' : isVenueOwner ? '/owner/dashboard' : '/bookings'} className="text-sm font-semibold text-slate-600 hover:text-primary" onClick={() => setMenuOpen(false)}>
-                Dashboard
-              </Link>
               
               {/* Profile links for mobile */}
               <div className="flex flex-col gap-2.5 pt-4 border-t border-slate-100">

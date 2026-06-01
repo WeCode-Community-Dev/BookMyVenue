@@ -49,7 +49,7 @@ export default function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/venues" element={<VenuesPage />} />
+              <Route path="/venues" element={<Navigate to="/bookings" replace />} />
               <Route path="/venues/:id" element={<VenueDetailPage />} />
 
               {/* User Protected Routes */}

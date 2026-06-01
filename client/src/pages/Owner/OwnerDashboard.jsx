@@ -64,6 +64,8 @@ export default function OwnerDashboard() {
   const [blockDate, setBlockDate] = useState('');
   const [blockReason, setBlockReason] = useState('Maintenance');
   const [blockedDatesList, setBlockedDatesList] = useState([]);
+  const [allBlockedDates, setAllBlockedDates] = useState([]);
+  const [loadingBlockedDates, setLoadingBlockedDates] = useState(false);
 
   useEffect(() => {
     fetchOwnerData();
@@ -75,13 +77,15 @@ export default function OwnerDashboard() {
       const bRes = await bookingService.getOwnerBookings();
       setBookings(bRes.data.bookings || []);
       const vRes = await venueService.getMyVenues();
-      setVenues(vRes.data.venues || []);
+      const venuesData = vRes.data.venues || [];
+      setVenues(venuesData);
       const uRes = await userService.getMe();
       setProfileForm({
         name: uRes.data.name || '',
         email: uRes.data.email || '',
         phone: uRes.data.phone || '',
       });
+      fetchAllBlockedDates(venuesData);
     } catch {
       toast.error('Failed to load dashboard data');
     } finally {
@@ -131,6 +135,43 @@ export default function OwnerDashboard() {
       await venueService.removeBlockedDate(blockedDateId);
       toast.success('Date unblocked successfully.');
       fetchBlockedDates(blockVenueId);
+    } catch {
+      toast.error('Failed to unblock date.');
+    }
+  };
+
+  const fetchAllBlockedDates = async (venuesList) => {
+    const listToUse = venuesList || venues;
+    if (!listToUse || listToUse.length === 0) return;
+    setLoadingBlockedDates(true);
+    try {
+      const promises = listToUse.map(async (v) => {
+        const res = await venueService.getBlockedDates(v.id);
+        return (res.data || []).map(bd => ({
+          ...bd,
+          venue: v
+        }));
+      });
+      const results = await Promise.all(promises);
+      const flattened = results.flat();
+      flattened.sort((a, b) => a.blockedDate.localeCompare(b.blockedDate));
+      setAllBlockedDates(flattened);
+    } catch {
+      toast.error('Failed to load all blocked dates.');
+    } finally {
+      setLoadingBlockedDates(false);
+    }
+  };
+
+  const handleUnblockFromAll = async (blockedDateId, venueId) => {
+    if (!window.confirm('Are you sure you want to unblock this date?')) return;
+    try {
+      await venueService.removeBlockedDate(blockedDateId);
+      toast.success('Date unblocked successfully.');
+      fetchAllBlockedDates();
+      if (blockVenueId === venueId) {
+        fetchBlockedDates(venueId);
+      }
     } catch {
       toast.error('Failed to unblock date.');
     }
@@ -214,6 +255,16 @@ export default function OwnerDashboard() {
       return toast.error(`Cannot block this date because there is an active reservation scheduled on ${blockDate} for ${venueObj.venueName}.`);
     }
 
+    // Verify date is not already blocked
+    const isAlreadyBlocked = allBlockedDates.some(bd => 
+      bd.venueId === blockVenueId && 
+      bd.blockedDate === blockDate
+    );
+
+    if (isAlreadyBlocked) {
+      return toast.error(`This date is already blocked for ${venueObj.venueName}.`);
+    }
+
     try {
       await venueService.addBlockedDate(blockVenueId, {
         blockedDate: blockDate,
@@ -222,6 +273,7 @@ export default function OwnerDashboard() {
       toast.success('Date blocked successfully.');
       setBlockDate('');
       fetchBlockedDates(blockVenueId);
+      fetchAllBlockedDates();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to block date');
     }
@@ -311,7 +363,7 @@ export default function OwnerDashboard() {
 
         <nav className="flex-1 p-4 flex flex-col gap-1.5 overflow-y-auto">
           <button
-            onClick={() => setActiveTab('overview')}
+            onClick={() => navigate('?tab=overview')}
             className={`w-full py-3 px-4 rounded-xl font-semibold text-xs flex items-center gap-3 transition-colors ${
               activeTab === 'overview' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
             }`}
@@ -321,7 +373,7 @@ export default function OwnerDashboard() {
           </button>
 
           <button
-            onClick={() => setActiveTab('venues')}
+            onClick={() => navigate('?tab=venues')}
             className={`w-full py-3 px-4 rounded-xl font-semibold text-xs flex items-center gap-3 transition-colors ${
               activeTab === 'venues' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
             }`}
@@ -331,7 +383,7 @@ export default function OwnerDashboard() {
           </button>
 
           <button
-            onClick={() => setActiveTab('scheduler')}
+            onClick={() => navigate('?tab=scheduler')}
             className={`w-full py-3 px-4 rounded-xl font-semibold text-xs flex items-center gap-3 transition-colors ${
               activeTab === 'scheduler' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
             }`}
@@ -341,13 +393,23 @@ export default function OwnerDashboard() {
           </button>
 
           <button
-            onClick={() => setActiveTab('profits')}
+            onClick={() => navigate('?tab=profits')}
             className={`w-full py-3 px-4 rounded-xl font-semibold text-xs flex items-center gap-3 transition-colors ${
               activeTab === 'profits' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
             }`}
           >
             <MdOutlinePayments className="text-lg shrink-0" />
             Earnings & Profits
+          </button>
+
+          <button
+            onClick={() => navigate('?tab=blocked')}
+            className={`w-full py-3 px-4 rounded-xl font-semibold text-xs flex items-center gap-3 transition-colors ${
+              activeTab === 'blocked' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <MdBlock className="text-lg shrink-0" />
+            Blocked Dates
           </button>
         </nav>
       </aside>
@@ -358,9 +420,17 @@ export default function OwnerDashboard() {
         {/* Tab 1: Overview Panel */}
         {activeTab === 'overview' && (
           <div className="flex flex-col gap-8 animate-fade-in">
-            <div>
-              <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Host Workspace Overview</h1>
-              <p className="text-slate-500 text-sm mt-0.5">Summary metrics and ongoing reservation details for your listings.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Host Workspace Overview</h1>
+                <p className="text-slate-500 text-sm mt-0.5">Summary metrics and ongoing reservation details for your listings.</p>
+              </div>
+              <button
+                onClick={() => navigate('/owner/venues')}
+                className="py-2.5 px-4 bg-primary hover:bg-primary-dark text-white font-semibold text-xs rounded-xl flex items-center gap-1.5 shadow cursor-pointer transition-all active:scale-[0.98] self-start sm:self-auto"
+              >
+                <MdAdd className="text-sm" /> List New Venue
+              </button>
             </div>
 
             {/* Metrics cards grid */}
@@ -482,35 +552,6 @@ export default function OwnerDashboard() {
                     Block Date
                   </button>
                 </form>
-                {blockVenueId && (
-                  <div className="mt-5 pt-5 border-t border-slate-100">
-                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      📅 Currently Blocked Dates
-                    </h4>
-                    {blockedDatesList.length === 0 ? (
-                      <p className="text-xs text-slate-400 italic">No blocked dates scheduled for this space.</p>
-                    ) : (
-                      <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
-                        {blockedDatesList.map((bd) => (
-                          <div key={bd.id} className="p-2.5 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center text-xs">
-                            <div>
-                              <span className="font-bold text-slate-900 block">{bd.blockedDate}</span>
-                              <span className="text-[10px] text-slate-500 italic font-semibold">{bd.reason || 'No reason'}</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleUnblockDate(bd.id)}
-                              className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                              title="Unblock Date"
-                            >
-                              <MdClose className="text-sm font-bold" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -545,7 +586,7 @@ export default function OwnerDashboard() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {venues.map((v) => (
                   <div key={v.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
                     <div className="h-44 w-full bg-slate-100 overflow-hidden relative">
@@ -554,9 +595,6 @@ export default function OwnerDashboard() {
                         alt={v.venueName}
                         className="w-full h-full object-cover"
                       />
-                      <span className="absolute top-3 right-3 py-1 px-2.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 font-bold text-[9px] uppercase">
-                        {v.status}
-                      </span>
                     </div>
                     <div className="p-5 flex-grow">
                       <h4 className="font-black text-slate-900 text-lg leading-tight mb-1">{v.venueName}</h4>
@@ -866,6 +904,121 @@ export default function OwnerDashboard() {
                 Change password
               </button>
             </form>
+          </div>
+        )}
+
+        {/* Tab 7: Blocked Dates Management Hub */}
+        {activeTab === 'blocked' && (
+          <div className="flex flex-col gap-6 animate-fade-in">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">Blocked Dates Management</h2>
+              <p className="text-slate-500 text-sm mt-0.5">Review, schedule new closures, or unblock dates across all your listed spaces.</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+              
+              {/* Left Column: List of Blocked Dates */}
+              <div className="lg:col-span-2 flex flex-col gap-4">
+                <h3 className="text-lg font-bold text-slate-900 mb-2">Active Date Closures</h3>
+                
+                {loadingBlockedDates ? (
+                  <div className="bg-white border border-slate-100 p-8 rounded-2xl text-center text-slate-400 text-xs italic">
+                    ⏳ Loading blocked dates list...
+                  </div>
+                ) : allBlockedDates.length === 0 ? (
+                  <div className="bg-white border border-slate-100 p-10 rounded-2xl text-center shadow-sm">
+                    <span className="text-4xl mb-3 block">📅</span>
+                    <h4 className="font-bold text-slate-950 text-sm mb-1">No blocked dates scheduled</h4>
+                    <p className="text-xs text-slate-500 max-w-xs mx-auto">All of your listed spaces are currently open and operational for client bookings!</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {allBlockedDates.map((bd) => (
+                      <div key={bd.id} className="bg-white border border-slate-100 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm animate-in fade-in-50 duration-200">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 font-bold shrink-0">
+                            <MdBlock className="text-lg" />
+                          </div>
+                          <div>
+                            <span className="px-2 py-0.5 rounded bg-rose-50 border border-rose-100 text-rose-600 text-[10px] font-bold uppercase tracking-wider block w-fit mb-1.5">
+                              Blocked
+                            </span>
+                            <h4 className="font-black text-slate-900 text-sm leading-tight mb-1">{bd.venue?.venueName}</h4>
+                            <p className="text-xs text-slate-500">Reason: <span className="font-semibold text-slate-700">{bd.reason || 'No reason'}</span></p>
+                          </div>
+                        </div>
+                        <div className="flex sm:flex-col items-end justify-between sm:justify-start w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-50 gap-2">
+                          <div className="text-right">
+                            <span className="text-xs font-black text-slate-950 block">{bd.blockedDate}</span>
+                            <span className="text-[10px] text-slate-400">Blocked Date</span>
+                          </div>
+                          <button
+                            onClick={() => handleUnblockFromAll(bd.id, bd.venueId)}
+                            className="py-1.5 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 font-bold text-[10px] rounded-lg transition-colors cursor-pointer"
+                          >
+                            Unblock
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column: Blocker Panel Form */}
+              <div className="bg-white p-6 border border-slate-100 rounded-2xl shadow-sm h-fit">
+                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <MdBlock className="text-rose-500" /> Block Date
+                </h3>
+                <form onSubmit={handleBlockDate} className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Select Venue</label>
+                    <select
+                      className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none"
+                      value={blockVenueId}
+                      onChange={e => {
+                        const vId = e.target.value;
+                        setBlockVenueId(vId);
+                        setBlockDate('');
+                        fetchBlockedDates(vId);
+                      }}
+                    >
+                      <option value="">Choose Listing</option>
+                      {venues.map(v => (
+                        <option key={v.id} value={v.id}>{v.venueName}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Select Date</label>
+                    <input
+                      type="date"
+                      className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none"
+                      value={blockDate}
+                      onChange={e => handleDateChange(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Reason</label>
+                    <input
+                      type="text"
+                      className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none"
+                      value={blockReason}
+                      onChange={e => setBlockReason(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full py-3 font-bold rounded-xl bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition-colors text-xs"
+                  >
+                    Block Date
+                  </button>
+                </form>
+
+
+              </div>
+
+            </div>
           </div>
         )}
 
