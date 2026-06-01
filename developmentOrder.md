@@ -9,10 +9,10 @@
     ├── GET /users/me ✅
     └── PUT /users/me ✅
 
-🔄 8. Role-Based Access
-    ├── require_user() 
-    ├── require_owner()
-    └── require_admin()
+✅ 8. Role-Based Access
+    ├── require_user()  ✅
+    ├── require_owner() ✅
+    └── require_admin() ✅
 
 🔄 9. Venue APIs
     ├── Create Venue

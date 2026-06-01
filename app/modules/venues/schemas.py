@@ -42,3 +42,8 @@ class VenueResponse(BaseModel):
         "from_attributes": True
     }
 
+class UpdateVenueSchema(BaseModel):
+    name: str | None = None
+    location: str | None = None
+    price_per_day: float | None = None
+    description: str | None = None
