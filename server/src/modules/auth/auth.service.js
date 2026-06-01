@@ -1,5 +1,8 @@
 import bcrypt from 'bcryptjs';
 import prisma from '../../shared/config/db.js';
+import { ERROR_MESSAGES } from '../../shared/constants/messages.js';
+import { STATUS_CODES } from '../../shared/constants/statusCodes.js';
+import ApiError from '../../shared/utils/apiError.js';
 
 export const signupUser = async (userData) => {
 
@@ -9,9 +12,8 @@ export const signupUser = async (userData) => {
       }
    });
 
-   if (existingUser) {
-      throw new Error('Email already registered');
-   }
+   if (existingUser)
+        throw new ApiError(STATUS_CODES.BAD_REQUEST,ERROR_MESSAGES.USER_ALREADY_EXISTS);
 
    const hashedPassword = await bcrypt.hash(
       userData.password,

@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { signupSchema } from '../validations/signup.validation';
 import { signupUser } from '../services/auth.service';
 
+import { SUCCESS_MESSAGES,ERROR_MESSAGES } from '../../../shared/constants/messages';
+
 const SignupForm = () => {
 
    const {
@@ -29,15 +31,15 @@ const SignupForm = () => {
 
          console.log(response);
 
-         alert('Signup successful');
+         alert(response.message);
 
       } catch (error) {
 
          console.error(error);
 
          alert(
-            error?.response?.data?.message ||
-            'Signup failed'
+            error.message ||
+            ERROR_MESSAGES.SIGNUP_FAILED
          );
       }
    };

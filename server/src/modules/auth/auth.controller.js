@@ -1,25 +1,35 @@
 import { signupUser } from './auth.service.js';
-
+import { STATUS_CODES } from '../../shared/constants/statusCodes.js';
+import { SUCCESS_MESSAGES } from '../../shared/constants/messages.js';
+import ApiResponse from '../../shared/utils/apiResponse.js';
 export const signupController = async (
-   req,
-   res,
-   next
+    req,
+    res,
+    next
 ) => {
-   try {
+    try {
 
-      const user = await signupUser(req.body);
+        const user = await signupUser(req.body);
 
-      res.status(201).json({
-         success: true,
-         message: 'Account created successfully',
-         data: {
-            id: user.id,
-            name: user.name,
-            email: user.email
-         }
-      });
+        res.status(STATUS_CODES.CREATED).json(new ApiResponse(
 
-   } catch (error) {
-      next(error);
-   }
+            STATUS_CODES.CREATED,
+
+            SUCCESS_MESSAGES.ACCOUNT_CREATED,
+
+            {
+
+                id: user.id,
+
+                name: user.name,
+
+                email: user.email
+
+            }
+
+        ));
+
+    } catch (error) {
+        next(error);
+    }
 };
