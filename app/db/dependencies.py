@@ -7,6 +7,8 @@ from app.core.security import (
     security,
     verify_token
 )
+from sqlalchemy.orm import Session
+from app.modules.users.models import User
  
 def get_db():
     db = SessionLocal()
@@ -18,9 +20,9 @@ def get_db():
 
 # this is for protecting the api 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    db: Session = Depends(get_db),
+    credentials=Depends(security)
 ):
-
     token = credentials.credentials
 
     payload = verify_token(token)
@@ -31,4 +33,18 @@ def get_current_user(
             detail="Invalid token"
         )
 
-    return payload
+    user_id = payload.get("sub")
+
+    user = (
+        db.query(User)
+        .filter(User.id == int(user_id))
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="User not found"
+        )
+
+    return user
