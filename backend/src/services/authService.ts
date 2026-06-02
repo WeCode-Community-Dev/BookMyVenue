@@ -61,23 +61,21 @@ export async function register(input: RegisterInput) {
 
   const passwordHash = await hashPassword(input.password);
 
-  const user = await prisma.$transaction(async (tx) =>
-    tx.user.create({
-      data: {
-        email: input.email,
-        phone: input.phone,
-        passwordHash,
-        role: input.role,
-        profile: {
-          create: {
-            firstName: input.firstName,
-            lastName: input.lastName,
-          },
+  const user = await prisma.user.create({
+    data: {
+      email: input.email,
+      phone: input.phone,
+      passwordHash,
+      role: input.role,
+      profile: {
+        create: {
+          firstName: input.firstName,
+          lastName: input.lastName,
         },
       },
-      include: { profile: true },
-    })
-  );
+    },
+    include: { profile: true },
+  });
 
   const accessToken = signAccessToken({
     sub: user.id,
@@ -94,8 +92,16 @@ export async function register(input: RegisterInput) {
 export async function login(input: LoginInput) {
   const user = await findActiveUserByEmail(input.email);
 
-  if (!user?.passwordHash || !user.isActive) {
+  if (!user?.passwordHash) {
     throw new AppError(401, "UNAUTHORIZED", "Invalid email or password");
+  }
+
+  if (!user.isActive) {
+    throw new AppError(
+      403,
+      "ACCOUNT_SUSPENDED",
+      "Your account has been suspended. Please contact support."
+    );
   }
 
   const passwordMatches = await comparePassword(input.password, user.passwordHash);
@@ -116,14 +122,22 @@ export async function login(input: LoginInput) {
   };
 }
 
-export async function getMe(userId: string) {
+export async function findUserById(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: { profile: true },
   });
 
-  if (!user || user.deletedAt || !user.isActive) {
+  if (!user || user.deletedAt) {
     throw new AppError(404, "NOT_FOUND", "User not found");
+  }
+
+  if (!user.isActive) {
+    throw new AppError(
+      403,
+      "ACCOUNT_SUSPENDED",
+      "Your account has been suspended. Please contact support."
+    );
   }
 
   return {

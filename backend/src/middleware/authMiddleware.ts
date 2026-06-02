@@ -29,8 +29,16 @@ export async function authenticate(
       where: { id: payload.sub },
     });
 
-    if (!user || user.deletedAt || !user.isActive) {
+    if (!user || user.deletedAt) {
       throw new AppError(401, "UNAUTHORIZED", "Authentication required");
+    }
+
+    if (!user.isActive) {
+      throw new AppError(
+        403,
+        "ACCOUNT_SUSPENDED",
+        "Your account has been suspended. Please contact support."
+      );
     }
 
     req.user = {
