@@ -2,6 +2,6 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div style={{ color: 'black' }}>Hellooo vishnu you are gonna get greate job well done</div>
+    <div style={{ color: 'black' }}>Home page of book my venue platform</div>
   );
 }
