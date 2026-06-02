@@ -20,13 +20,3 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
     next(error);
   }
 }
-
-export async function getMe(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const userId = req.user!.id;
-    const data = await authService.getMe(userId);
-    res.status(200).json({ success: true, data });
-  } catch (error) {
-    next(error);
-  }
-}
