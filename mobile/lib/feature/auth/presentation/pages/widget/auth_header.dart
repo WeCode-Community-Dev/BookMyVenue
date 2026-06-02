@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/widgets/app_text.dart';
+import '../../../../../core/widgets/app_text.dart';
 
 class AuthHeader extends StatelessWidget {
   const AuthHeader({super.key, required this.title, required this.subtitle});
@@ -13,7 +13,7 @@ class AuthHeader extends StatelessWidget {
       children: <Widget>[
         AppText(title, variant: TextVariant.headingLarge),
         const SizedBox(height: 8),
-        AppText(subtitle, variant: TextVariant.bodyMedium),
+        AppText(subtitle),
       ],
     );
   }

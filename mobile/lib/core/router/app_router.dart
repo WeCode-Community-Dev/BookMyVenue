@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../feature/auth/presentation/bloc/auth_bloc.dart';
-import '../../feature/auth/presentation/pages/signin_page.dart';
+import '../../feature/auth/presentation/pages/user_login/signin_page.dart';
+import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_business_profile_setup.dart';
+import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_signup_page.dart';
 import '../auth/auth_session.dart';
 import '../di/injection.dart';
 import 'route_name.dart';
@@ -23,7 +25,7 @@ class AppRouter {
     // For now, it allows path-based URL navigation
     routes: <RouteBase>[
       GoRoute(
-        path: '/login',
+        path: '/${AppRouteNames.signin}',
         name: AppRouteNames.signin,
         builder: (BuildContext context, GoRouterState state) =>
             BlocProvider<AuthBloc>(
@@ -31,12 +33,24 @@ class AppRouter {
               child: const SigninPage(),
             ),
       ),
-      // GoRoute(
-      //   path: '/signup1',
-      //   name: AppRouteNames.signup1,
-      //   builder: (BuildContext context, GoRouterState state) =>
-      //       const SignUpPage1(),
-      // ),
+      GoRoute(
+        path: '/${AppRouteNames.venueOwnerSignup}',
+        name: AppRouteNames.venueOwnerSignup,
+        builder: (BuildContext context, GoRouterState state) =>
+            BlocProvider<AuthBloc>(
+              create: (BuildContext context) => sl<AuthBloc>(),
+              child: const VenueOwnerSignupPage(),
+            ),
+      ),
+      GoRoute(
+        path: '/${AppRouteNames.ownerBusinessProfile}',
+        name: AppRouteNames.ownerBusinessProfile,
+        builder: (BuildContext context, GoRouterState state) =>
+            BlocProvider<AuthBloc>(
+              create: (BuildContext context) => sl<AuthBloc>(),
+              child: const VenueOwnerBusinessProfileSetup(),
+            ),
+      ),
       // GoRoute(
       //   path: '/signup2',
       //   name: AppRouteNames.signup2,
@@ -153,8 +167,9 @@ class AppRouter {
       final bool loggedIn = AuthSession.isLoggedIn;
 
       final bool loggingIn =
-          state.matchedLocation == '/login' ||
-          state.matchedLocation == '/signup';
+          state.matchedLocation == '/${AppRouteNames.signin}' ||
+          state.matchedLocation == '/${AppRouteNames.venueOwnerSignup}' ||
+          state.matchedLocation == '/${AppRouteNames.ownerBusinessProfile}';
 
       if (!loggedIn && !loggingIn) {
         return '/login';

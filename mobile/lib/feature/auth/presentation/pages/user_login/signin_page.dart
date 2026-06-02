@@ -4,14 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 
-import '../../../../core/logger/app_logger.dart';
-import '../../../../core/router/route_name.dart';
-import '../../../../core/utils/ui/snackbar_command.dart';
-import '../../../../core/validation/app_validation.dart';
-import '../../../../core/widgets/app_button.dart';
-import '../../../../core/widgets/custom_text_field.dart';
-import '../../domain/params/otp_param.dart';
-import '../bloc/auth_bloc.dart';
+import '../../../../../core/router/route_name.dart';
+import '../../../../../core/utils/ui/snackbar_command.dart';
+import '../../../../../core/validation/app_validation.dart';
+import '../../../../../core/widgets/app_button.dart';
+import '../../../../../core/widgets/app_text.dart';
+import '../../../../../core/widgets/custom_text_field.dart';
+import '../../../domain/params/otp_param.dart';
+import '../../bloc/auth_bloc.dart';
 import '../widget/auth_header.dart';
 
 class SigninPage extends StatefulWidget {
@@ -126,24 +126,13 @@ class _SigninPageState extends State<SigninPage> {
 
                     const SizedBox(height: 24),
 
-                    // Navigation using AppText for consistency
-                    GestureDetector(
-                      onTap: () => context.goNamed(AppRouteNames.signup1),
-                      child: RichText(
-                        text: TextSpan(
-                          style: theme.textTheme.bodyMedium,
-                          children: <InlineSpan>[
-                            const TextSpan(text: "Don't have an account? "),
-                            TextSpan(
-                              text: 'Sign Up',
-                              style: TextStyle(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    const Spacer(),
+                    const AppText('Want to host events?'),
+                    const SizedBox(height: 6),
+                    AppButton(
+                      onPressed: () =>
+                          context.goNamed(AppRouteNames.venueOwnerSignup),
+                      label: 'Become a venue owner',
                     ),
                   ],
                 ),
