@@ -1,14 +1,14 @@
+import dotenv from 'dotenv'
+dotenv.config()
+
 import express from 'express';
 import cookieParser from 'cookie-parser'
-import dotenv from 'dotenv'
 import cors from 'cors'
 import routes from './presentation/routes/index.js'
 import { connectDB } from './infrastructure/config/mongo.config.js';
+import s3Upload from "./presentation/middlewares/s3Upload.js";
 
 const app = express()
-
-dotenv.config()
-
 
 app.use(express.json())
 app.use(cookieParser())
@@ -21,6 +21,17 @@ app.use(cors({
 }))
 
 connectDB()
+
+/*app.post(
+  "/test-upload",
+  s3Upload("test").single("image"),
+  (req, res) => {
+    res.status(200).json({
+      success: true,
+      file: req.file,
+    });
+  }
+);*/
 
 app.get('/test', (req, res) => {
     res.status(200).json({
