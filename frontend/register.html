@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
+<body>
+    <form id="registerForm">
+        <table>
+            <tr>
+                <th>Your Name</th>
+                <th><input type="text" name="" id="name"></th>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <th><input type="email" name="" id="email"></th>
+            </tr>
+            <tr>
+                <th>Role</th>
+                <th><input type="text" name="" id="role"></th>
+            </tr>
+            <tr>
+                <th>Password</th>
+                <th><input type="password" name="" id="password"></th>
+            </tr>
+            <th>
+                <th>Confirm Password</th>
+                <th><input type="password" name="" id="confirm-password"></th>
+            </th>
+            <th colspan="2">
+                <th><button type="submit">Register</button></th>
+            </th>
+        </table>
+    </form>
+
+    <script>
+        document.getElementById("registerForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            let password = document.getElementById("password").value
+            let cpassword = document.getElementById("confirm-password").value
+
+            if (password != cpassword) {
+                alert("confirm password and password are not equal")
+            }
+
+            const response = await fetch("/api/v1/auth/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: document.getElementById("name").value,
+                    email: document.getElementById("email").value,
+                    password: document.getElementById("password").value,
+                    role: document.getElementById("role").value,
+                })
+            });
+
+            console.log(await response.json())
+        })
+    </script>
+</body>
+</html>
