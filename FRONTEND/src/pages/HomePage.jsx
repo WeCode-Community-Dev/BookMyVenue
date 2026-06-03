@@ -1,9 +1,11 @@
+import NavBar from "../components/Navbar";
 import Filters from "../components/Filters";
 import VenueGrid from "../components/VenueGrid";
 
 export default function HomePage() {
     return (
         <>
+            <NavBar />
             <div className="Hero-Section flex flex-col w-full h-screen bg-[#f4f4f2] bg-cover bg-center flex items-center justify-center">
                 <HeroContent />
                 <Searchbar />

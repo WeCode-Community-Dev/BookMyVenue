@@ -1,16 +1,15 @@
 import { Routes, Route } from 'react-router-dom';
-import NavBar from "./components/Navbar"
 import HomePage from "./pages/HomePage"
+import LoginPage from "./pages/LoginPage"
 
 function App() {
 
   return (
-    <div className="Main-Container">
-      <NavBar/>
-      
+    <div className="Main-Container">      
       <main>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </main>
     </div>
