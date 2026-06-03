@@ -64,12 +64,12 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (*TokenPair, erro
 		return nil, errors.New("invalid password")
 	}
 
-	accessToken, err := token.GenerateAccessToken(user)
+	accessToken, err := token.GenerateAccessToken(user.ID.String(), user.Email, user.Role)
 	if err != nil {
 		return nil, errors.New("failed to generate access token:" + err.Error())
 	}
 
-	refreshToken, err := token.GenerateRefreshToken(user)
+	refreshToken, err := token.GenerateRefreshToken(user.ID.String())
 	if err != nil {
 		return nil, errors.New("failed to generate refresh token:" + err.Error())
 	}
