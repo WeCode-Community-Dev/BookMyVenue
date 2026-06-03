@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  body { overflow-x: hidden; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { @apply bg-gray-300 rounded; }
+}
+
+@layer components {
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply bg-gray-900 text-white border-none rounded-xl px-7 py-3.5
+           text-[0.95rem] font-semibold cursor-pointer inline-flex items-center gap-1.5
+           transition-all duration-200 hover:bg-gray-700 hover:-translate-y-px;
+  }
+  .btn-outline {
+    @apply bg-transparent text-gray-900 border border-[1.5px] border-gray-200 rounded-xl
+           px-6 py-3.5 text-[0.95rem] font-semibold cursor-pointer
+           transition-all duration-200 hover:border-gray-900 hover:bg-gray-50;
+  }
+
+  /* ── Nav ── */
+  .nav-link {
+    @apply text-gray-500 text-[0.9rem] font-medium cursor-pointer no-underline
+           transition-colors duration-200 hover:text-gray-900;
+  }
+
+  /* ── Search bar  ── */
+  .search-field {
+    @apply flex flex-col flex-1 min-w-0;
+  }
+  .search-label {
+    @apply text-[0.7rem] font-bold uppercase tracking-[0.08em] text-gray-400 mb-1;
+  }
+  .search-input {
+    @apply border-none outline-none text-[0.95rem] font-medium text-gray-900
+           bg-transparent w-full placeholder:text-gray-300 placeholder:font-normal;
+  }
+
+  /* ── Cards ── */
+  .venue-card {
+    @apply bg-white border border-[1.5px] border-gray-100 rounded-[20px] overflow-hidden
+           cursor-pointer transition-all duration-300
+           hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] hover:-translate-y-1;
+  }
+  .cat-chip {
+    @apply flex items-center gap-2.5 px-[22px] py-3.5 bg-gray-50 border border-[1.5px]
+           border-gray-100 rounded-full cursor-pointer font-semibold text-[0.9rem]
+           transition-all duration-200 whitespace-nowrap
+           hover:bg-gray-900 hover:text-white hover:border-gray-900;
+  }
+  .step-card  { @apply bg-gray-50 rounded-[20px] p-8 flex-1; }
+  .testi-card { @apply bg-gray-50 rounded-[20px] p-7 flex-1; }
+}
