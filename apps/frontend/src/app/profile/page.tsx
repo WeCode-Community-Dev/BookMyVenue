@@ -11,6 +11,10 @@ Must Have
 
 ✅ Change Password
 
+✅ Settings
+
+✅ Language settings(optional)
+
 Impressive
 
 ⭐ Booking Statistics

@@ -7,7 +7,8 @@ const page = () => {
 
 This is the heart of the application.
 
-Must Have
+Must 
+✅ Catogories
 
 ✅ Venue Listing
 
