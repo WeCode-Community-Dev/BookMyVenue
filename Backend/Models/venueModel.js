@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const {Schema} = mongoose
 
 const venueSchema = new mongoose.Schema({
     name: {
@@ -11,12 +12,12 @@ const venueSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        require: true
+        //require: true
     },
     ownerId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        //required: true
     },
     price: {
         type: Number,

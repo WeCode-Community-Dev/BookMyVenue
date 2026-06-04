@@ -1,6 +1,8 @@
 
 import { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
+import { useAddVenueMutation } from '../../redux/api/venueApiSlice';
+import { toast } from 'react-toastify';
 
 
 
@@ -13,15 +15,31 @@ const AddVenue = () => {
     const [capacity, setCapacity] = useState('')
     const [phone, setPhone] = useState('')
 
+    const [addVenue,{isloading}]=useAddVenueMutation()
 
-    const handleSubmit = e => {
+    const handleSubmit = async(e) => {
         e.preventDefault()
         const newErrors = findFormErrors()
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors)
         } else {
 
-            alert('Thank you for your feedback!')
+            try {
+    //   const data = new FormData();
+    //   data.append("name", name);
+    //   data.append("description", description);
+    //   data.append("price", price);
+    //   data.append("capacity", capacity);
+    //   data.append("phone", phone);
+    const data={name,description,price,capacity,phone}
+      
+      await addVenue(data).unwrap()
+      toast.success("venue added successfully");
+     
+    } catch (error) {
+        console.log(error)
+      toast.error(error?.data?.message || `error`);
+    }
         }
     }
 
