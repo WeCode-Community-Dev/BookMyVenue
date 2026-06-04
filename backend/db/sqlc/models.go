@@ -5,8 +5,59 @@
 package sqlc
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type VenueStatus string
+
+const (
+	VenueStatusPending  VenueStatus = "pending"
+	VenueStatusApproved VenueStatus = "approved"
+	VenueStatusRejected VenueStatus = "rejected"
+)
+
+func (e *VenueStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = VenueStatus(s)
+	case string:
+		*e = VenueStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for VenueStatus: %T", src)
+	}
+	return nil
+}
+
+type NullVenueStatus struct {
+	VenueStatus VenueStatus `json:"venue_status"`
+	Valid       bool        `json:"valid"` // Valid is true if VenueStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullVenueStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.VenueStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.VenueStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullVenueStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.VenueStatus), nil
+}
+
+type Amenity struct {
+	ID   pgtype.UUID `json:"id"`
+	Name string      `json:"name"`
+}
 
 type User struct {
 	ID        pgtype.UUID      `json:"id"`
@@ -16,4 +67,33 @@ type User struct {
 	Role      string           `json:"role"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+}
+
+type Venue struct {
+	ID           pgtype.UUID      `json:"id"`
+	OwnerID      pgtype.UUID      `json:"owner_id"`
+	Name         string           `json:"name"`
+	Description  *string          `json:"description"`
+	Category     string           `json:"category"`
+	Address      string           `json:"address"`
+	City         string           `json:"city"`
+	State        string           `json:"state"`
+	Pincode      *string          `json:"pincode"`
+	Capacity     *int32           `json:"capacity"`
+	PricePerHour pgtype.Numeric   `json:"price_per_hour"`
+	PricePerDay  pgtype.Numeric   `json:"price_per_day"`
+	Status       VenueStatus      `json:"status"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
+}
+
+type VenueAmenity struct {
+	VenueID   pgtype.UUID `json:"venue_id"`
+	AmenityID pgtype.UUID `json:"amenity_id"`
+}
+
+type VenueImage struct {
+	ID       pgtype.UUID `json:"id"`
+	VenueID  pgtype.UUID `json:"venue_id"`
+	ImageUrl string      `json:"image_url"`
 }
