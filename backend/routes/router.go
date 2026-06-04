@@ -3,10 +3,18 @@ package routes
 import (
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/auth"
+	"github.com/WeCode-Community-Dev/BookMyVenue/internal/web"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
+	webHandler := web.NewHandler()
+	r.GET("/register", webHandler.RegisterPage)
+	r.GET("/login", webHandler.LoginPage)
+	r.GET("/user", webHandler.UserPage)
+	r.GET("/owner", webHandler.OwnerPage)
+	r.GET("/admin", webHandler.AdminPage)
+
 	api := r.Group("/api/v1")
 
 	// Auth routes
@@ -14,9 +22,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 	authRoutes := api.Group("/auth")
 	{
 		authRoutes.POST("/register", authHandler.Register)
-		authRoutes.GET("/register", authHandler.ServeRegister)
 		authRoutes.POST("/login", authHandler.Login)
-		authRoutes.GET("/login", authHandler.ServeLogin)
 		authRoutes.POST("/logout", authHandler.Logout)
 	}
 

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        const role = localStorage.getItem("role")
+        const token = localStorage.getItem("access_token")
+
+        if (!token || role !== "owner") {
+            window.location.href = "/login"
+        }
+    </script>
+    <title>Venue Owner Home</title>
+</head>
+<body>
+    <h1>Venue Owner Home</h1>
+</body>
+</html>

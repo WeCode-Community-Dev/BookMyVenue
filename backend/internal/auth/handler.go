@@ -55,14 +55,6 @@ func (h *Handler) Logout(c *gin.Context) {
 	})
 }
 
-func (h *Handler) ServeLogin(c *gin.Context) {
-	c.HTML(http.StatusOK, "login.html", nil)
-}
-
-func (h *Handler) ServeRegister(c *gin.Context) {
-	c.HTML(http.StatusOK, "register.html", nil)
-}
-
 type LoginRequest struct {
 	Email    string `json:"email"    binding:"required,email"`
 	Password string `json:"password" binding:"required"`

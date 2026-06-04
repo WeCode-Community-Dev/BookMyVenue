@@ -28,7 +28,30 @@
             })
         });
 
-        console.log(await response.json());
+        data = await response.json();
+
+        if (data.success) {
+            localStorage.setItem("access_token", data.data.access_token)
+            localStorage.setItem("refresh_token", data.data.refresh_token)
+            localStorage.setItem("role", data.data.role)
+
+            redirectByRole(data.data.role)
+        }
+        else {
+            alert(data.message)
+        }
+
+        function redirectByRole(role) {
+            if (role === "admin") {
+                window.location.href = "/user"
+            }
+            else if (role == "owner") {
+                window.location.href = "/owner"
+            } 
+            else {
+                window.location.href = "/admin"
+            }
+        }
     });
     </script>
 </body>

@@ -51,6 +51,7 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (*sqlc.User
 type TokenPair struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+	Role         string `json:"role"`
 }
 
 func (s *Service) Login(ctx context.Context, req LoginRequest) (*TokenPair, error) {
@@ -77,5 +78,6 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (*TokenPair, erro
 	return &TokenPair{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+		Role:         user.Role,
 	}, nil
 }

@@ -1,0 +1,33 @@
+package web
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type Handler struct{}
+
+func NewHandler() *Handler {
+	return &Handler{}
+}
+
+func (h *Handler) LoginPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "login.html", nil)
+}
+
+func (h *Handler) RegisterPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "register.html", nil)
+}
+
+func (h *Handler) UserPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "user_homepage.html", nil)
+}
+
+func (h *Handler) OwnerPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "venue_owner_homepage.html", nil)
+}
+
+func (h *Handler) AdminPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "admin_homepage.html", nil)
+}
