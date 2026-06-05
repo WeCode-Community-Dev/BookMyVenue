@@ -5,6 +5,7 @@ const Venue = require('../Models/venueModel');
 const addVenue = asyncHandler(async (req, res) => {
     const { name, description, price, capacity, phone } = req.body
 console.log(req.body)
+const files = req.files;
     if (!name) {
         res.status(StatusCode.BAD_REQUEST)
         throw new Error("Name is required");
@@ -29,9 +30,15 @@ console.log(req.body)
         res.status(StatusCode.BAD_REQUEST)
         throw new Error("Phone is required");
     }
+    if (!files || files.length === 0) {
+    res.status(StatusCode.BAD_REQUEST)
+    throw new Error("At least three images are required");
+  }
+  const imageUrls = files.map((file) => file.path);
 
     const venue = await Venue.create({
-        name, description, price, capacity, phone
+        name, description, price, capacity, phone,
+        image:imageUrls
     })
     return res.status(StatusCode.OK).json({
         status: "success",
