@@ -80,8 +80,8 @@ type Venue struct {
 	State        string           `json:"state"`
 	Pincode      *string          `json:"pincode"`
 	Capacity     *int32           `json:"capacity"`
-	PricePerHour pgtype.Numeric   `json:"price_per_hour"`
-	PricePerDay  pgtype.Numeric   `json:"price_per_day"`
+	PricePerHour float64          `json:"price_per_hour"`
+	PricePerDay  float64          `json:"price_per_day"`
 	Status       VenueStatus      `json:"status"`
 	CreatedAt    pgtype.Timestamp `json:"created_at"`
 	UpdatedAt    pgtype.Timestamp `json:"updated_at"`

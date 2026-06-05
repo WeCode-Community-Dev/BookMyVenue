@@ -78,17 +78,17 @@ RETURNING id, owner_id, name, description, category, address, city, state, pinco
 `
 
 type CreateVenueParams struct {
-	OwnerID      pgtype.UUID    `json:"owner_id"`
-	Name         string         `json:"name"`
-	Description  *string        `json:"description"`
-	Category     string         `json:"category"`
-	Address      string         `json:"address"`
-	City         string         `json:"city"`
-	State        string         `json:"state"`
-	Pincode      *string        `json:"pincode"`
-	Capacity     *int32         `json:"capacity"`
-	PricePerHour pgtype.Numeric `json:"price_per_hour"`
-	PricePerDay  pgtype.Numeric `json:"price_per_day"`
+	OwnerID      pgtype.UUID `json:"owner_id"`
+	Name         string      `json:"name"`
+	Description  *string     `json:"description"`
+	Category     string      `json:"category"`
+	Address      string      `json:"address"`
+	City         string      `json:"city"`
+	State        string      `json:"state"`
+	Pincode      *string     `json:"pincode"`
+	Capacity     *int32      `json:"capacity"`
+	PricePerHour float64     `json:"price_per_hour"`
+	PricePerDay  float64     `json:"price_per_day"`
 }
 
 func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (Venue, error) {
@@ -196,8 +196,8 @@ AND status = 'approved'
 `
 
 type FindVenuesByPriceRangeParams struct {
-	PricePerHour   pgtype.Numeric `json:"price_per_hour"`
-	PricePerHour_2 pgtype.Numeric `json:"price_per_hour_2"`
+	PricePerHour   float64 `json:"price_per_hour"`
+	PricePerHour_2 float64 `json:"price_per_hour_2"`
 }
 
 func (q *Queries) FindVenuesByPriceRange(ctx context.Context, arg FindVenuesByPriceRangeParams) ([]Venue, error) {
@@ -560,12 +560,12 @@ RETURNING id, owner_id, name, description, category, address, city, state, pinco
 `
 
 type UpdateVenueParams struct {
-	ID           pgtype.UUID    `json:"id"`
-	Name         string         `json:"name"`
-	Location     string         `json:"location"`
-	Capacity     *int32         `json:"capacity"`
-	PricePerDay  pgtype.Numeric `json:"price_per_day"`
-	PricePerHour pgtype.Numeric `json:"price_per_hour"`
+	ID           pgtype.UUID `json:"id"`
+	Name         string      `json:"name"`
+	Location     string      `json:"location"`
+	Capacity     *int32      `json:"capacity"`
+	PricePerDay  float64     `json:"price_per_day"`
+	PricePerHour float64     `json:"price_per_hour"`
 }
 
 func (q *Queries) UpdateVenue(ctx context.Context, arg UpdateVenueParams) (Venue, error) {

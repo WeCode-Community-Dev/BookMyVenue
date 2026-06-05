@@ -20,8 +20,8 @@ CREATE TABLE venues (
 
     capacity INTEGER,
 
-    price_per_hour DECIMAL(10, 2) NOT NULL,
-    price_per_day DECIMAL(10, 2) NOT NULL,
+    price_per_hour DOUBLE PRECISION NOT NULL,
+    price_per_day DOUBLE PRECISION NOT NULL,
 
     status venue_status NOT NULL DEFAULT 'pending',
 
