@@ -1,0 +1,53 @@
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+
+# Environment Variables
+.env
+
+# Logs
+*.log
+
+# Static Files (if collected)
+staticfiles/
+
+# Media Files (optional)
+media/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+
+# Coverage Reports
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Migrations (Optional)
+# Uncomment only if your team policy ignores migrations
+# */migrations/*
+# !*/migrations/__init__.py
+
+# Python Version
+.python-version
