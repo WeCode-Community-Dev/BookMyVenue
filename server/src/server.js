@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import routes from './presentation/routes/index.js'
 import { connectDB } from './infrastructure/config/mongo.config.js';
-import s3Upload from "./presentation/middlewares/s3Upload.js";
+import cloudinaryUpload from "./presentation/middlewares/cloudinaryUpload.js";
 
 const app = express()
 
@@ -22,16 +22,16 @@ app.use(cors({
 
 connectDB()
 
-/*app.post(
+app.post(
   "/test-upload",
-  s3Upload("test").single("image"),
+  cloudinaryUpload("bookmyvenue/test").single("image"),
   (req, res) => {
     res.status(200).json({
       success: true,
       file: req.file,
     });
   }
-);*/
+);
 
 app.get('/test', (req, res) => {
     res.status(200).json({
