@@ -74,7 +74,7 @@ INSERT INTO venues (
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 )
-RETURNING id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at
+RETURNING id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location
 `
 
 type CreateVenueParams struct {
@@ -122,6 +122,7 @@ func (q *Queries) CreateVenue(ctx context.Context, arg CreateVenueParams) (Venue
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Location,
 	)
 	return i, err
 }
@@ -147,7 +148,7 @@ func (q *Queries) DeleteVenueImage(ctx context.Context, id pgtype.UUID) error {
 }
 
 const findVenuesByCategory = `-- name: FindVenuesByCategory :many
-SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at FROM venues
+SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
 WHERE category = $1 AND status = 'approved'
 `
 
@@ -176,6 +177,7 @@ func (q *Queries) FindVenuesByCategory(ctx context.Context, category string) ([]
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Location,
 		); err != nil {
 			return nil, err
 		}
@@ -188,7 +190,7 @@ func (q *Queries) FindVenuesByCategory(ctx context.Context, category string) ([]
 }
 
 const findVenuesByPriceRange = `-- name: FindVenuesByPriceRange :many
-SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at FROM venues
+SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
 WHERE price_per_hour BETWEEN $1 AND $2
 AND status = 'approved'
 `
@@ -223,6 +225,7 @@ func (q *Queries) FindVenuesByPriceRange(ctx context.Context, arg FindVenuesByPr
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Location,
 		); err != nil {
 			return nil, err
 		}
@@ -235,7 +238,7 @@ func (q *Queries) FindVenuesByPriceRange(ctx context.Context, arg FindVenuesByPr
 }
 
 const findVenuesInACity = `-- name: FindVenuesInACity :many
-SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at FROM venues
+SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
 WHERE city = $1 AND status = 'approved'
 `
 
@@ -264,6 +267,7 @@ func (q *Queries) FindVenuesInACity(ctx context.Context, city string) ([]Venue, 
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Location,
 		); err != nil {
 			return nil, err
 		}
@@ -301,7 +305,7 @@ func (q *Queries) GetAllAmenities(ctx context.Context) ([]Amenity, error) {
 }
 
 const getAllVenues = `-- name: GetAllVenues :many
-SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at FROM venues
+SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
 WHERE status = 'approved'
 ORDER BY created_at DESC
 `
@@ -331,6 +335,7 @@ func (q *Queries) GetAllVenues(ctx context.Context) ([]Venue, error) {
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Location,
 		); err != nil {
 			return nil, err
 		}
@@ -371,7 +376,7 @@ func (q *Queries) GetAmenitiesForVenue(ctx context.Context, venueID pgtype.UUID)
 }
 
 const getVenueByID = `-- name: GetVenueByID :one
-SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at FROM venues
+SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
 WHERE id = $1
 `
 
@@ -394,6 +399,7 @@ func (q *Queries) GetVenueByID(ctx context.Context, id pgtype.UUID) (Venue, erro
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Location,
 	)
 	return i, err
 }
@@ -424,7 +430,7 @@ func (q *Queries) GetVenueImages(ctx context.Context, venueID pgtype.UUID) ([]Ve
 }
 
 const getVenuesByOwnerID = `-- name: GetVenuesByOwnerID :many
-SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at FROM venues
+SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
 WHERE owner_id = $1
 ORDER BY created_at DESC
 `
@@ -454,6 +460,7 @@ func (q *Queries) GetVenuesByOwnerID(ctx context.Context, ownerID pgtype.UUID) (
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Location,
 		); err != nil {
 			return nil, err
 		}
@@ -478,4 +485,110 @@ type RemoveAmenityFromVenueParams struct {
 func (q *Queries) RemoveAmenityFromVenue(ctx context.Context, arg RemoveAmenityFromVenueParams) error {
 	_, err := q.db.Exec(ctx, removeAmenityFromVenue, arg.VenueID, arg.AmenityID)
 	return err
+}
+
+const searchVenues = `-- name: SearchVenues :many
+SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
+WHERE status = 'approved'
+  AND ($1::text  = '' OR location ILIKE '%' || $1 || '%')
+  AND ($2::int   = 0  OR capacity >= $2)
+  AND ($3::numeric = 0 OR price_per_hour   >= $3)
+  AND ($4::numeric = 0 OR price_per_day   <= $4)
+ORDER BY created_at DESC
+`
+
+type SearchVenuesParams struct {
+	Column1 string         `json:"column_1"`
+	Column2 int32          `json:"column_2"`
+	Column3 pgtype.Numeric `json:"column_3"`
+	Column4 pgtype.Numeric `json:"column_4"`
+}
+
+func (q *Queries) SearchVenues(ctx context.Context, arg SearchVenuesParams) ([]Venue, error) {
+	rows, err := q.db.Query(ctx, searchVenues,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Column4,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Venue
+	for rows.Next() {
+		var i Venue
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.Name,
+			&i.Description,
+			&i.Category,
+			&i.Address,
+			&i.City,
+			&i.State,
+			&i.Pincode,
+			&i.Capacity,
+			&i.PricePerHour,
+			&i.PricePerDay,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Location,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateVenue = `-- name: UpdateVenue :one
+UPDATE venues
+SET name = $2, location = $3, capacity = $4, price_per_day = $5, price_per_hour = $6, updated_at = NOW()
+WHERE id = $1
+RETURNING id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location
+`
+
+type UpdateVenueParams struct {
+	ID           pgtype.UUID    `json:"id"`
+	Name         string         `json:"name"`
+	Location     string         `json:"location"`
+	Capacity     *int32         `json:"capacity"`
+	PricePerDay  pgtype.Numeric `json:"price_per_day"`
+	PricePerHour pgtype.Numeric `json:"price_per_hour"`
+}
+
+func (q *Queries) UpdateVenue(ctx context.Context, arg UpdateVenueParams) (Venue, error) {
+	row := q.db.QueryRow(ctx, updateVenue,
+		arg.ID,
+		arg.Name,
+		arg.Location,
+		arg.Capacity,
+		arg.PricePerDay,
+		arg.PricePerHour,
+	)
+	var i Venue
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.Name,
+		&i.Description,
+		&i.Category,
+		&i.Address,
+		&i.City,
+		&i.State,
+		&i.Pincode,
+		&i.Capacity,
+		&i.PricePerHour,
+		&i.PricePerDay,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Location,
+	)
+	return i, err
 }

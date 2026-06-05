@@ -85,6 +85,7 @@ type Venue struct {
 	Status       VenueStatus      `json:"status"`
 	CreatedAt    pgtype.Timestamp `json:"created_at"`
 	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
+	Location     string           `json:"location"`
 }
 
 type VenueAmenity struct {

@@ -31,6 +31,12 @@ SELECT * FROM venues
 WHERE status = 'approved'
 ORDER BY created_at DESC;
 
+-- name: UpdateVenue :one
+UPDATE venues
+SET name = $2, location = $3, capacity = $4, price_per_day = $5, price_per_hour = $6, updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
 -- name: DeleteVenue :exec
 DELETE FROM venues
 WHERE id = $1;
@@ -88,3 +94,12 @@ WHERE category = $1 AND status = 'approved';
 SELECT * FROM venues
 WHERE price_per_hour BETWEEN $1 AND $2
 AND status = 'approved';
+
+-- name: SearchVenues :many
+SELECT * FROM venues
+WHERE status = 'approved'
+  AND ($1::text  = '' OR location ILIKE '%' || $1 || '%')
+  AND ($2::int   = 0  OR capacity >= $2)
+  AND ($3::numeric = 0 OR price_per_hour   >= $3)
+  AND ($4::numeric = 0 OR price_per_day   <= $4)
+ORDER BY created_at DESC;
