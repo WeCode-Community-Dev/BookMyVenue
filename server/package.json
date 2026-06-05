@@ -12,10 +12,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1058.0",
     "@aws-sdk/lib-storage": "^3.1058.0",
     "aws-sdk": "^2.1693.0",
     "bcrypt": "^6.0.0",
+    "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -24,7 +24,7 @@
     "mongodb": "^7.2.0",
     "mongoose": "^9.6.3",
     "multer": "^2.1.1",
-    "multer-s3": "^3.0.1",
+    "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^8.0.8"
   },
   "devDependencies": {
