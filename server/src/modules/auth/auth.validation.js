@@ -1,11 +1,53 @@
 import { z } from 'zod';
 
 export const signupSchema = z.object({
-   name: z.string().min(3, 'Name must be at least 3 characters'),
 
-   email: z.email('Invalid email'),
+   accountType: z.enum([
+      'USER',
+      'OWNER'
+   ]),
 
-   phone: z.string().min(10, 'Phone number is invalid'),
+   name: z.string().min(3),
 
-   password: z.string().min(8, 'Password must be at least 8 characters')
+   email: z.email(),
+
+   phone: z.string(),
+
+   password: z.string().min(8),
+
+   venue: z.object({
+
+      name: z.string(),
+
+      type: z.enum([
+         'AUDITORIUM',
+         'BANQUET_HALL',
+         'CAFE',
+         'RESTAURANT',
+         'CONFERENCE_ROOM',
+         'STUDIO',
+         'OUTDOOR_SPACE',
+         'OTHER'
+      ]),
+
+      city: z.string()
+
+   }).optional()
+
+}).superRefine((data, ctx) => {
+
+   if (
+      data.accountType === 'OWNER' &&
+      !data.venue
+   ) {
+
+      ctx.addIssue({
+         code: 'custom',
+         message:
+            'Venue details are required',
+         path: ['venue']
+      });
+
+   }
+
 });
