@@ -16,31 +16,31 @@ const AddVenue = () => {
     const [phone, setPhone] = useState('')
     const [imagesState, setImagesState] = useState([]);
     const [userinfo, setUserInfo] = useState({
-        languages: [],
+        amenities: [],
         response: [],
     });
 
     const handleChange = (e) => {
         const { value, checked } = e.target;
-        const { languages } = userinfo;
+        const { amenities } = userinfo;
 
         console.log(`${value} is ${checked}`);
 
         // Case 1 : The user checks the box
         if (checked) {
             setUserInfo({
-                amenities: [...languages, value],
-                response: [...languages, value],
+                amenities: [...amenities, value],
+                response: [...amenities, value],
             });
         }
 
         // Case 2  : The user unchecks the box
         else {
             setUserInfo({
-                languages: languages.filter(
+                amenities: amenities.filter(
                     (e) => e !== value
                 ),
-                response: languages.filter(
+                response: amenities.filter(
                     (e) => e !== value
                 ),
             });
@@ -69,6 +69,8 @@ const AddVenue = () => {
                 data.append("price", price);
                 data.append("capacity", capacity);
                 data.append("phone", phone);
+                for(let i = 0; i < userinfo.response.length; i++)
+                data.append('amenities',userinfo.response[i])
                 for (let i = 0; i < imagesState.length; i++) {
                     let file = imagesState[i];
                     data.append("image", file);
@@ -93,6 +95,8 @@ const AddVenue = () => {
         if (!price || price <= 0 || price > 1000000) newErrors.price = 'Enter valid price';
         if (!capacity || capacity <= 0 || capacity > 5000) newErrors.capacity = 'Enter valid capacity';
         if (!phone || phone.length > 10) newErrors.phone = 'Add a valid phone number'
+        if(!imagesState||imagesState.length===0) newErrors.imagesState="Add image"
+         if(!userinfo.response||userinfo.response.length===0) newErrors.amenities="Add amenities"
         return newErrors
     }
 
@@ -152,6 +156,7 @@ const AddVenue = () => {
                         accept="image/*"
                         multiple="multiple"
                     />
+                     <p className="text-danger">{errors.imagesState}</p>
 
 
                         <div className="row">
@@ -160,8 +165,8 @@ const AddVenue = () => {
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        name="languages"
-                                        value="Javascript"
+                                        name="amenities"
+                                        value= "Parking"
                                         id="flexCheckDefault"
                                         onChange={
                                             handleChange
@@ -171,15 +176,15 @@ const AddVenue = () => {
                                         className="form-check-label"
                                         htmlFor="flexCheckDefault"
                                     >
-                                        &nbsp; Javascript
+                                        &nbsp; Parking
                                     </label>
                                 </div>
                                 <div className="form-check m-3">
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        name="languages"
-                                        value="Python"
+                                        name="amenities"
+                                        value='AC'
                                         id="flexCheckDefault"
                                         onChange={
                                             handleChange
@@ -189,15 +194,15 @@ const AddVenue = () => {
                                         className="form-check-label"
                                         htmlFor="flexCheckDefault"
                                     >
-                                        &nbsp; Python
+                                        &nbsp; AC
                                     </label>
                                 </div>
                                 <div className="form-check m-3">
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        name="languages"
-                                        value="Java"
+                                        name="amenities"
+                                        value="Wifi"
                                         id="flexCheckDefault"
                                         onChange={
                                             handleChange
@@ -207,15 +212,15 @@ const AddVenue = () => {
                                         className="form-check-label"
                                         htmlFor="flexCheckDefault"
                                     >
-                                        &nbsp; Java
+                                        &nbsp; Wifi
                                     </label>
                                 </div>
                                 <div className="form-check m-3">
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        name="languages"
-                                        value="PHP"
+                                        name="amenities"
+                                        value="Catering Service"
                                         id="flexCheckDefault"
                                         onChange={
                                             handleChange
@@ -225,7 +230,7 @@ const AddVenue = () => {
                                         className="form-check-label"
                                         htmlFor="flexCheckDefault"
                                     >
-                                        &nbsp; PHP
+                                        &nbsp; Catering Service
                                     </label>
                                 </div>
                             </div>
@@ -234,8 +239,8 @@ const AddVenue = () => {
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        name="languages"
-                                        value="C#"
+                                        name="amenities"
+                                        value="Stage"
                                         id="flexCheckDefault"
                                         onChange={
                                             handleChange
@@ -245,15 +250,15 @@ const AddVenue = () => {
                                         className="form-check-label"
                                         htmlFor="flexCheckDefault"
                                     >
-                                        &nbsp; C#
+                                        &nbsp; Stage
                                     </label>
                                 </div>
                                 <div className="form-check m-3">
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        name="languages"
-                                        value="C++"
+                                        name="amenities"
+                                        value="Sound System"
                                         id="flexCheckDefault"
                                         onChange={
                                             handleChange
@@ -263,15 +268,15 @@ const AddVenue = () => {
                                         className="form-check-label"
                                         htmlFor="flexCheckDefault"
                                     >
-                                        &nbsp; C++
+                                        &nbsp; Sound System
                                     </label>
                                 </div>
                                 <div className="form-check m-3">
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        name="languages"
-                                        value="C"
+                                        name="amenities"
+                                        value="Dining Area"
                                         id="flexCheckDefault"
                                         onChange={
                                             handleChange
@@ -281,15 +286,15 @@ const AddVenue = () => {
                                         className="form-check-label"
                                         htmlFor="flexCheckDefault"
                                     >
-                                        &nbsp; C
+                                        &nbsp; Dining Area
                                     </label>
                                 </div>
                                 <div className="form-check m-3">
                                     <input
                                         className="form-check-input"
                                         type="checkbox"
-                                        name="languages"
-                                        value="Typescript"
+                                        name="amenities"
+                                        value="Lift/Elevator"
                                         id="flexCheckDefault"
                                         onChange={
                                             handleChange
@@ -299,26 +304,11 @@ const AddVenue = () => {
                                         className="form-check-label"
                                         htmlFor="flexCheckDefault"
                                     >
-                                        &nbsp; Typescript
+                                        &nbsp; Lift/Elevator
                                     </label>
                                 </div>
+                                <p className="text-danger">{errors.amenities}</p>
                             </div>
-                        </div>
-
-                        <div className="form-control mt-3 mb-3 text-center">
-                            <label htmlFor="exampleFormControlTextarea1">
-                                You're proficient in the
-                                following languages :{" "}
-                            </label>
-                            <textarea
-                                className="form-control text"
-                                name="response"
-                                value={userinfo.response}
-                                placeholder="The checkbox values will be displayed here "
-                                id="floatingTextarea2"
-                                style={{ height: "150px" }}
-                                onChange={handleChange}
-                            ></textarea>
                         </div>
 
                     <Button class='bg-primary my-5 text-light' type='submit'>Submit</Button>
