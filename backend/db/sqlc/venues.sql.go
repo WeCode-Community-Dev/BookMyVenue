@@ -493,7 +493,9 @@ WHERE status = 'approved'
   AND ($1::text  = '' OR location ILIKE '%' || $1 || '%')
   AND ($2::int   = 0  OR capacity >= $2)
   AND ($3::numeric = 0 OR price_per_hour   >= $3)
-  AND ($4::numeric = 0 OR price_per_day   <= $4)
+  AND ($4::numeric = 0 OR price_per_hour   <= $4)
+  AND ($5::numeric = 0 OR price_per_day    >= $5)
+  AND ($6::numeric = 0 OR price_per_day    <= $6)
 ORDER BY created_at DESC
 `
 
@@ -502,6 +504,8 @@ type SearchVenuesParams struct {
 	Column2 int32          `json:"column_2"`
 	Column3 pgtype.Numeric `json:"column_3"`
 	Column4 pgtype.Numeric `json:"column_4"`
+	Column5 pgtype.Numeric `json:"column_5"`
+	Column6 pgtype.Numeric `json:"column_6"`
 }
 
 func (q *Queries) SearchVenues(ctx context.Context, arg SearchVenuesParams) ([]Venue, error) {
@@ -510,6 +514,8 @@ func (q *Queries) SearchVenues(ctx context.Context, arg SearchVenuesParams) ([]V
 		arg.Column2,
 		arg.Column3,
 		arg.Column4,
+		arg.Column5,
+		arg.Column6,
 	)
 	if err != nil {
 		return nil, err

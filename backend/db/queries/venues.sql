@@ -101,5 +101,7 @@ WHERE status = 'approved'
   AND ($1::text  = '' OR location ILIKE '%' || $1 || '%')
   AND ($2::int   = 0  OR capacity >= $2)
   AND ($3::numeric = 0 OR price_per_hour   >= $3)
-  AND ($4::numeric = 0 OR price_per_day   <= $4)
+  AND ($4::numeric = 0 OR price_per_hour   <= $4)
+  AND ($5::numeric = 0 OR price_per_day    >= $5)
+  AND ($6::numeric = 0 OR price_per_day    <= $6)
 ORDER BY created_at DESC;
