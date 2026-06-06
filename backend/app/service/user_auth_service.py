@@ -1,7 +1,8 @@
 import secrets
+from typing import List
 
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.schema.user_auth_schema import (
     AdminAuthRequest,
@@ -17,6 +18,7 @@ from app.config.redis import redis_client
 from app.core.config import settings
 from app.service.user_service import user_service
 from app.service.sms_service import sms_service
+from app.model.user import User, UserRole
 
 
 ## Admin Auth API Service
@@ -70,7 +72,7 @@ class UserAuthService:
         Returns the OTP for testing purposes.
         """
         try:
-           
+
             otp = self._generate_otp_code()
             cache_key = f"otp:{mobile_number}"
 
@@ -121,7 +123,7 @@ class UserAuthService:
             user = user_service.get_user_by_mobile_number(db, data.mobile_number)
             if not user:
                 user = user_service.create_user(db, data.mobile_number)
-            
+
             user.mobile_verified = True
             db.commit()
 
@@ -184,6 +186,30 @@ class UserAuthService:
             refresh_token=new_refresh_token,
             user=UserResponse.model_validate(user),
         )
+
+    def get_all_users(
+        self,
+        db: Session,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> List[User]:
+        try:
+            users = (
+                db.query(User)
+                .options(joinedload(User.owner_profile))
+                .filter(User.role == UserRole.CUSTOMER)
+                .order_by(User.created_at.desc())
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
+
+            return users
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
 
 # Singleton instance

@@ -1,10 +1,11 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, Query
 from sqlalchemy.orm import Session
 from app.schema.user_auth_schema import (
     OTPRequest,
     OTPResponse,
     OTPVerifyRequest,
     TokenResponse,
+    UserResponse,
 )
 from app.schema.base_schema import SuccessResponse
 from app.service.user_auth_service import user_auth_service
@@ -40,3 +41,27 @@ def verify_otp(
 ) -> SuccessResponse:
     result = user_auth_service.verify_otp(db=db, data=data)
     return SuccessResponse(message="OTP sent Successfully", data=result)
+
+
+# Get all user details
+@router.get(
+    "/users",
+    response_model=SuccessResponse[list[UserResponse]],
+    summary="Get all users",
+    description="Get all users details",
+)
+def get_all_venue_owners(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    venue_owners = user_auth_service.get_all_users(
+        db=db,
+        skip=skip,
+        limit=limit,
+    )
+
+    return SuccessResponse(
+        message="Users details fetched successfully",
+        data=venue_owners,
+    )

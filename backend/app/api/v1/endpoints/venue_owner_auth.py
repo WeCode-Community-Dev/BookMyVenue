@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.schema.venue_owner_auth_schema import (
@@ -6,6 +6,7 @@ from app.schema.venue_owner_auth_schema import (
     OwnerProfileResponse,
     VenueOwnerOTPRequest,
     VenueOwnerOTPResponse,
+    VenueOwnerResponse,
 )
 from app.schema.base_schema import SuccessResponse
 from app.service.venue_owner_auth_service import venue_owner_auth_service
@@ -66,3 +67,27 @@ def create_business_profile(
         db=db, data=data, user_id=current_user.id
     )
     return SuccessResponse(message="Business profile created successfully", data=result)
+
+
+# Get all Venue owner details
+@router.get(
+    "",
+    response_model=SuccessResponse[list[VenueOwnerResponse]],
+    summary="Get all venue owners",
+    description="Get all venue owners details with owner profile data",
+)
+def get_all_venue_owners(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    venue_owners = venue_owner_auth_service.get_all_venue_owners(
+        db=db,
+        skip=skip,
+        limit=limit,
+    )
+
+    return SuccessResponse(
+        message="Venue owners fetched successfully",
+        data=venue_owners,
+    )

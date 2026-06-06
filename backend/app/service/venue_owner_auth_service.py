@@ -1,7 +1,7 @@
 import secrets
 
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.schema.venue_owner_auth_schema import (
     CreateOwnerProfileRequest,
@@ -14,7 +14,7 @@ from app.config.redis import redis_client
 from app.core.config import settings
 from app.service.user_service import user_service
 from app.service.sms_service import sms_service
-from app.model.user import UserRole
+from app.model.user import User, UserRole
 from app.schema.user_auth_schema import OTPVerifyRequest, TokenResponse, UserResponse
 from app.model.owner_profile import OwnerProfile
 
@@ -155,6 +155,30 @@ class VenueOwnerAuthService:
                 created_at=owner_profile.created_at,
                 updated_at=owner_profile.updated_at,
             )
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    def get_all_venue_owners(
+        self,
+        db: Session,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> User:
+        try:
+            venue_owners = (
+                db.query(User)
+                .options(joinedload(User.owner_profile))
+                .filter(User.role == UserRole.VENUE_OWNER)
+                .order_by(User.created_at.desc())
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
+
+            return venue_owners
         except HTTPException:
             raise
 

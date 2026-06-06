@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.config.constant import PHONE_REGEX
 from app.model.owner_profile import ApprovalStatus
+from app.model.user import UserRole, UserStatus
 
 
 ## Venue owner Auth Schema
@@ -125,3 +126,25 @@ class OwnerProfileResponse(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+
+
+class VenueOwnerResponse(BaseModel):
+    id: UUID
+
+    mobile_number: str
+
+    full_name: str | None = None
+    email: str | None = None
+
+    mobile_verified: bool
+    email_verified: bool
+
+    role: UserRole
+    status: UserStatus
+
+    created_at: datetime
+    updated_at: datetime
+
+    owner_profile: OwnerProfileResponse | None = None
+
+    model_config = ConfigDict(from_attributes=True)
