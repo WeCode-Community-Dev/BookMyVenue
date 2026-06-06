@@ -14,6 +14,12 @@ const AddVenue = () => {
     const [price, setPrice] = useState('')
     const [capacity, setCapacity] = useState('')
     const [phone, setPhone] = useState('')
+    const [city, setCity] = useState('')
+    const [district, setDistrict] = useState('')
+    const [state, setState] = useState('')
+    const [zipcode, setZipcode] = useState('')
+    const [longitude, setLongitude] = useState('')
+    const [latitude, setLatitude] = useState('')
     const [imagesState, setImagesState] = useState([]);
     const [userinfo, setUserInfo] = useState({
         amenities: [],
@@ -51,7 +57,7 @@ const AddVenue = () => {
 
     const selectFilesHandler = async (e) => {
         const files = e.target.files;
-         setImagesState(Array.from(files));
+        setImagesState(Array.from(files));
     };
 
 
@@ -68,9 +74,15 @@ const AddVenue = () => {
                 data.append("description", description);
                 data.append("price", price);
                 data.append("capacity", capacity);
+                data.append("city", city);
+                data.append("state", state);
+                data.append("district", district);
+                data.append("zipcode", zipcode);
+                data.append("longitude", longitude);
+                data.append("latitude", latitude);
                 data.append("phone", phone);
-                for(let i = 0; i < userinfo.response.length; i++)
-                data.append('amenities',userinfo.response[i])
+                for (let i = 0; i < userinfo.response.length; i++)
+                    data.append('amenities', userinfo.response[i])
                 for (let i = 0; i < imagesState.length; i++) {
                     let file = imagesState[i];
                     data.append("image", file);
@@ -95,8 +107,14 @@ const AddVenue = () => {
         if (!price || price <= 0 || price > 1000000) newErrors.price = 'Enter valid price';
         if (!capacity || capacity <= 0 || capacity > 5000) newErrors.capacity = 'Enter valid capacity';
         if (!phone || phone.length > 10) newErrors.phone = 'Add a valid phone number'
-        if(!imagesState||imagesState.length===0) newErrors.imagesState="Add image"
-         if(!userinfo.response||userinfo.response.length===0) newErrors.amenities="Add amenities"
+        if (!city || city.length > 25) newErrors.city = 'Enter a valid city'
+        if (!district || district.length > 25) newErrors.district = 'Enter a valid district'
+        if (!state || state.length > 25) newErrors.state = 'Enter a valid state'
+        if (!zipcode || zipcode.length > 6) newErrors.zipcode = 'Enter a valid zipcode'
+        if (!longitude) newErrors.longitude = 'Enter a valid longitude'
+        if (!latitude) newErrors.latitude = 'Enter a valid latitude'
+        if (!imagesState || imagesState.length === 0) newErrors.imagesState = "Add image"
+        if (!userinfo.response || userinfo.response.length === 0) newErrors.amenities = "Add amenities"
         return newErrors
     }
 
@@ -156,160 +174,209 @@ const AddVenue = () => {
                         accept="image/*"
                         multiple="multiple"
                     />
-                     <p className="text-danger">{errors.imagesState}</p>
+                    <p className="text-danger">{errors.imagesState}</p>
 
 
-                        <div className="row">
-                            <div className="col-md-6">
-                                <div className="form-check m-3">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="amenities"
-                                        value= "Parking"
-                                        id="flexCheckDefault"
-                                        onChange={
-                                            handleChange
-                                        }
-                                    />
-                                    <label
-                                        className="form-check-label"
-                                        htmlFor="flexCheckDefault"
-                                    >
-                                        &nbsp; Parking
-                                    </label>
-                                </div>
-                                <div className="form-check m-3">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="amenities"
-                                        value='AC'
-                                        id="flexCheckDefault"
-                                        onChange={
-                                            handleChange
-                                        }
-                                    />
-                                    <label
-                                        className="form-check-label"
-                                        htmlFor="flexCheckDefault"
-                                    >
-                                        &nbsp; AC
-                                    </label>
-                                </div>
-                                <div className="form-check m-3">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="amenities"
-                                        value="Wifi"
-                                        id="flexCheckDefault"
-                                        onChange={
-                                            handleChange
-                                        }
-                                    />
-                                    <label
-                                        className="form-check-label"
-                                        htmlFor="flexCheckDefault"
-                                    >
-                                        &nbsp; Wifi
-                                    </label>
-                                </div>
-                                <div className="form-check m-3">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="amenities"
-                                        value="Catering Service"
-                                        id="flexCheckDefault"
-                                        onChange={
-                                            handleChange
-                                        }
-                                    />
-                                    <label
-                                        className="form-check-label"
-                                        htmlFor="flexCheckDefault"
-                                    >
-                                        &nbsp; Catering Service
-                                    </label>
-                                </div>
+                    <div className="row">
+                        <div className="col-md-6">
+                            <div className="form-check m-3">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    name="amenities"
+                                    value="Parking"
+                                    id="flexCheckDefault"
+                                    onChange={
+                                        handleChange
+                                    }
+                                />
+                                <label
+                                    className="form-check-label"
+                                    htmlFor="flexCheckDefault"
+                                >
+                                    &nbsp; Parking
+                                </label>
                             </div>
-                            <div className="col-md-6">
-                                <div className="form-check m-3">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="amenities"
-                                        value="Stage"
-                                        id="flexCheckDefault"
-                                        onChange={
-                                            handleChange
-                                        }
-                                    />
-                                    <label
-                                        className="form-check-label"
-                                        htmlFor="flexCheckDefault"
-                                    >
-                                        &nbsp; Stage
-                                    </label>
-                                </div>
-                                <div className="form-check m-3">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="amenities"
-                                        value="Sound System"
-                                        id="flexCheckDefault"
-                                        onChange={
-                                            handleChange
-                                        }
-                                    />
-                                    <label
-                                        className="form-check-label"
-                                        htmlFor="flexCheckDefault"
-                                    >
-                                        &nbsp; Sound System
-                                    </label>
-                                </div>
-                                <div className="form-check m-3">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="amenities"
-                                        value="Dining Area"
-                                        id="flexCheckDefault"
-                                        onChange={
-                                            handleChange
-                                        }
-                                    />
-                                    <label
-                                        className="form-check-label"
-                                        htmlFor="flexCheckDefault"
-                                    >
-                                        &nbsp; Dining Area
-                                    </label>
-                                </div>
-                                <div className="form-check m-3">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        name="amenities"
-                                        value="Lift/Elevator"
-                                        id="flexCheckDefault"
-                                        onChange={
-                                            handleChange
-                                        }
-                                    />
-                                    <label
-                                        className="form-check-label"
-                                        htmlFor="flexCheckDefault"
-                                    >
-                                        &nbsp; Lift/Elevator
-                                    </label>
-                                </div>
-                                <p className="text-danger">{errors.amenities}</p>
+                            <div className="form-check m-3">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    name="amenities"
+                                    value='AC'
+                                    id="flexCheckDefault"
+                                    onChange={
+                                        handleChange
+                                    }
+                                />
+                                <label
+                                    className="form-check-label"
+                                    htmlFor="flexCheckDefault"
+                                >
+                                    &nbsp; AC
+                                </label>
+                            </div>
+                            <div className="form-check m-3">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    name="amenities"
+                                    value="Wifi"
+                                    id="flexCheckDefault"
+                                    onChange={
+                                        handleChange
+                                    }
+                                />
+                                <label
+                                    className="form-check-label"
+                                    htmlFor="flexCheckDefault"
+                                >
+                                    &nbsp; Wifi
+                                </label>
+                            </div>
+                            <div className="form-check m-3">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    name="amenities"
+                                    value="Catering Service"
+                                    id="flexCheckDefault"
+                                    onChange={
+                                        handleChange
+                                    }
+                                />
+                                <label
+                                    className="form-check-label"
+                                    htmlFor="flexCheckDefault"
+                                >
+                                    &nbsp; Catering Service
+                                </label>
                             </div>
                         </div>
+                        <div className="col-md-6">
+                            <div className="form-check m-3">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    name="amenities"
+                                    value="Stage"
+                                    id="flexCheckDefault"
+                                    onChange={
+                                        handleChange
+                                    }
+                                />
+                                <label
+                                    className="form-check-label"
+                                    htmlFor="flexCheckDefault"
+                                >
+                                    &nbsp; Stage
+                                </label>
+                            </div>
+                            <div className="form-check m-3">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    name="amenities"
+                                    value="Sound System"
+                                    id="flexCheckDefault"
+                                    onChange={
+                                        handleChange
+                                    }
+                                />
+                                <label
+                                    className="form-check-label"
+                                    htmlFor="flexCheckDefault"
+                                >
+                                    &nbsp; Sound System
+                                </label>
+                            </div>
+                            <div className="form-check m-3">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    name="amenities"
+                                    value="Dining Area"
+                                    id="flexCheckDefault"
+                                    onChange={
+                                        handleChange
+                                    }
+                                />
+                                <label
+                                    className="form-check-label"
+                                    htmlFor="flexCheckDefault"
+                                >
+                                    &nbsp; Dining Area
+                                </label>
+                            </div>
+                            <div className="form-check m-3">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    name="amenities"
+                                    value="Lift/Elevator"
+                                    id="flexCheckDefault"
+                                    onChange={
+                                        handleChange
+                                    }
+                                />
+                                <label
+                                    className="form-check-label"
+                                    htmlFor="flexCheckDefault"
+                                >
+                                    &nbsp; Lift/Elevator
+                                </label>
+                            </div>
+                            <p className="text-danger">{errors.amenities}</p>
+                        </div>
+                    </div>
+
+                    <Form.Group>
+                        <Form.Label>City</Form.Label>
+                        <Form.Control type='text' value={city}
+                            onChange={(e) => setCity(e.target.value)} isInvalid={!!errors.city} />
+                        <Form.Control.Feedback type='invalid'>
+                            {errors.city}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>District</Form.Label>
+                        <Form.Control type='text' value={district}
+                            onChange={(e) => setDistrict(e.target.value)} isInvalid={!!errors.district} />
+                        <Form.Control.Feedback type='invalid'>
+                            {errors.district}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>State</Form.Label>
+                        <Form.Control type='text' value={state}
+                            onChange={(e) => setState(e.target.value)} isInvalid={!!errors.state} />
+                        <Form.Control.Feedback type='invalid'>
+                            {errors.state}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Zipcode</Form.Label>
+                        <Form.Control type='text' value={zipcode}
+                            onChange={(e) => setZipcode(e.target.value)} isInvalid={!!errors.zipcode} />
+                        <Form.Control.Feedback type='invalid'>
+                            {errors.zipcode}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Longitude</Form.Label>
+                        <Form.Control type='number' value={longitude}
+                            onChange={(e) => setLongitude(e.target.value)} isInvalid={!!errors.longitude} />
+                        <Form.Control.Feedback type='invalid'>
+                            {errors.longitude}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Label>Latitude</Form.Label>
+                        <Form.Control type='number' value={latitude}
+                            onChange={(e) => setLatitude(e.target.value)} isInvalid={!!errors.latitude} />
+                        <Form.Control.Feedback type='invalid'>
+                            {errors.latitude}
+                        </Form.Control.Feedback>
+                    </Form.Group>
 
                     <Button class='bg-primary my-5 text-light' type='submit'>Submit</Button>
                 </Form>

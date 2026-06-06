@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const {Schema} = mongoose
+const { Schema } = mongoose
 
 const venueSchema = new mongoose.Schema({
     name: {
@@ -27,14 +27,14 @@ const venueSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    amenities: 
+    amenities:
     {
-       type: [String],
-      default:[]
+        type: [String],
+        default: []
     },
     image: {
-        type:[String],
-        default:[]
+        type: [String],
+        default: []
     },
     phone: {
         type: String,
@@ -43,18 +43,31 @@ const venueSchema = new mongoose.Schema({
     rating: {
         type: Number
     },
-    location: {
-        city: String,
-        district: String,
-        state: String,
-        pincode: String,
-        coordinates: {
-            lat: Number,
-            long: Number
-        },
 
+    city: {
+        type: String,
+        required: true
+    },
+    district: {
+        type: String,
+        required: true
+    },
+    state: {
+        type: String,
+        required: true
+    },
+
+    zipcode: {
+        type: String,
+        required: true
+    },
+    location: {
+        type: { type: String, enum: ['Point'] },
+        coordinates: { type: [Number] }
     }
+
 })
+venueSchema.index({ location: '2dsphere' });
 
 const Venue = mongoose.model('Venue', venueSchema);
 module.exports = Venue
