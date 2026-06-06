@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.model.user import User, UserRole, UserStatus
@@ -16,7 +18,7 @@ class UserService:
         """
         return db.query(User).filter(User.mobile_number == mobile_number).first()
 
-    def get_user_by_id(self, db: Session, user_id: int) -> Optional[User]:
+    def get_user_by_id(self, db: Session, user_id: UUID) -> Optional[User]:
         """
         Retrieves a user record by its database integer ID.
         """

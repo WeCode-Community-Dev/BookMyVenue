@@ -13,7 +13,6 @@ from app.config.database import get_db
 router = APIRouter()
 
 
-
 ## User/Customer Auth Endpoint
 # Register mobile number and get OTP
 @router.post(
@@ -32,7 +31,7 @@ def request_otp(data: OTPRequest):
 @router.post(
     "/verify-otp",
     response_model=SuccessResponse[TokenResponse],
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_201_CREATED,
     summary="Submit and verify mobile OTP code",
     description="Submits the OTP code to verify mobile number. If verified successfully, retrieves or creates the user and issues token pairs.",
 )

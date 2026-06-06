@@ -1,9 +1,13 @@
+from datetime import datetime
 import re
+from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict,EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 from app.config.constant import PHONE_REGEX
+from app.model.owner_profile import ApprovalStatus
+
 
 ## Venue owner Auth Schema
 class VenueOwnerOTPRequest(BaseModel):
@@ -67,9 +71,7 @@ class VenueOwnerOTPRequest(BaseModel):
         cleaned = "".join(value.split())
 
         if not PHONE_REGEX.match(cleaned):
-            raise ValueError(
-                "Invalid mobile number. Format should be +919876543210."
-            )
+            raise ValueError("Invalid mobile number. Format should be +919876543210.")
 
         return cleaned
 
@@ -78,9 +80,10 @@ class VenueOwnerOTPRequest(BaseModel):
     def validate_password(cls, value: str) -> str:
         return value
 
+
 class VenueOwnerOTPResponse(BaseModel):
-    full_name:str
-    email:str
+    full_name: str
+    email: str
     mobile_number: str
     otp: str = Field(
         ...,
@@ -89,4 +92,36 @@ class VenueOwnerOTPResponse(BaseModel):
     expires_in_seconds: int
     message: str
 
+
 # ====================================================================
+
+
+class CreateOwnerProfileRequest(BaseModel):
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        extra="forbid",
+    )
+
+    business_name: str = Field(
+        ...,
+        min_length=3,
+        max_length=150,
+    )
+
+    @field_validator("business_name")
+    @classmethod
+    def validate_business_name(cls, value: str) -> str:
+        value = " ".join(value.split())
+        return value
+
+
+class OwnerProfileResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+
+    business_name: str
+
+    approval_status: ApprovalStatus
+
+    created_at: datetime
+    updated_at: datetime

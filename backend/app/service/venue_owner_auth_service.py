@@ -4,6 +4,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.schema.venue_owner_auth_schema import (
+    CreateOwnerProfileRequest,
+    OwnerProfileResponse,
     VenueOwnerOTPRequest,
     VenueOwnerOTPResponse,
 )
@@ -14,6 +16,7 @@ from app.service.user_service import user_service
 from app.service.sms_service import sms_service
 from app.model.user import UserRole
 from app.schema.user_auth_schema import OTPVerifyRequest, TokenResponse, UserResponse
+from app.model.owner_profile import OwnerProfile
 
 
 class VenueOwnerAuthService:
@@ -121,6 +124,36 @@ class VenueOwnerAuthService:
                 access_token=access_token,
                 refresh_token=refresh_token,
                 user=UserResponse.model_validate(user),
+            )
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    def create_business_profile(
+        self,
+        db: Session,
+        data: CreateOwnerProfileRequest,
+        user_id: str,
+    ) -> OwnerProfileResponse:
+        try:
+            owner_profile = OwnerProfile(
+                user_id=user_id,
+                business_name=data.business_name,
+            )
+
+            db.add(owner_profile)
+            db.commit()
+            db.refresh(owner_profile)
+
+            return OwnerProfileResponse(
+                id=owner_profile.id,
+                user_id=owner_profile.id,
+                business_name=owner_profile.business_name,
+                approval_status=owner_profile.approval_status,
+                created_at=owner_profile.created_at,
+                updated_at=owner_profile.updated_at,
             )
         except HTTPException:
             raise

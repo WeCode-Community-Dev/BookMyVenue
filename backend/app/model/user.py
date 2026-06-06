@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from sqlalchemy import Boolean, DateTime, Enum as SqlEnum, String, text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config.database import Base
 
@@ -161,4 +161,11 @@ class User(Base):
         nullable=False,
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
+    )
+
+    owner_profile = relationship(
+        "OwnerProfile",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
     )
