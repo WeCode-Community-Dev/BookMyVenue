@@ -2,6 +2,7 @@ fastapi
 uvicorn[standard]
 pydantic
 pydantic-settings
+email-validator
 sqlalchemy
 pyjwt[crypto]
 redis

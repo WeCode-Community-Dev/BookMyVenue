@@ -1,6 +1,13 @@
-from pydantic import BaseModel, Field, field_validator
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict,  Field, field_validator
 from datetime import datetime
-import re
+
+from app.config.constant import PHONE_REGEX
+from app.model.user import UserRole, UserStatus
+
+
+
 
 
 ## Admin Auth Schema
@@ -13,13 +20,15 @@ class AdminAuthResponse(BaseModel):
     email: str
     is_authenticated: bool
 
-
-## Venue owner Auth Schema
-
+# ====================================================================
 
 ## User/Customer Auth Schema
-# Strict Indian mobile number regex pattern (+91 followed by exactly 10 digits starting with 6-9)
-PHONE_REGEX = re.compile(r"^\+91[6-9]\d{9}$")
+"""
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = Field(None, max_length=100)
+    email: Optional[EmailStr] = None
+"""
+
 
 
 class OTPRequest(BaseModel):
@@ -79,19 +88,31 @@ class OTPVerifyRequest(BaseModel):
         return cleaned
 
 
+
 class UserResponse(BaseModel):
     """
-    Serialized view of the database User model.
+    Serialized view of the User model.
     """
 
-    id: int
-    mobile_number: str
-    is_active: bool
-    created_at: datetime
+    id: UUID
 
-    class Config:
-        # Enable compatibility with SQLAlchemy models (Pydantic v2 style)
-        from_attributes = True
+    mobile_number: str
+
+    full_name: str | None = None
+    email: str | None = None
+
+    mobile_verified: bool
+    email_verified: bool
+
+    role: UserRole
+    status: UserStatus
+
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )
 
 
 class TokenResponse(BaseModel):

@@ -3,7 +3,7 @@ import secrets
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.schema.auth_schema import (
+from app.schema.user_auth_schema import (
     AdminAuthRequest,
     AdminAuthResponse,
     OTPResponse,
@@ -44,9 +44,9 @@ async def authenticate_admin_service(data: AdminAuthRequest):
 
 
 ## User/Customer Auth API Service
-class AuthService:
+class UserAuthService:
     """
-    Service containing the authentication business logic.
+    Service containing the user authentication business logic.
     """
 
     def _generate_otp_code(self) -> str:
@@ -69,21 +69,28 @@ class AuthService:
         Generates an OTP, stores it in cache with TTL, and dispatches it via SMS.
         Returns the OTP for testing purposes.
         """
-        otp = self._generate_otp_code()
-        cache_key = f"otp:{mobile_number}"
+        try:
+           
+            otp = self._generate_otp_code()
+            cache_key = f"otp:{mobile_number}"
 
-        # Cache standard key-value with TTL
-        redis_client.setex(cache_key, settings.OTP_EXPIRE_SECONDS, otp)
+            # Cache standard key-value with TTL
+            redis_client.setex(cache_key, settings.OTP_EXPIRE_SECONDS, otp)
 
-        # Dispatch message
-        sms_service.send_otp(mobile_number, otp)
+            # Dispatch message
+            sms_service.send_otp(mobile_number, otp)
 
-        return OTPResponse(
-            mobile_number=mobile_number,
-            otp=otp,
-            expires_in_seconds=settings.OTP_EXPIRE_SECONDS,
-            message="OTP Generates Successfully",
-        )
+            return OTPResponse(
+                mobile_number=mobile_number,
+                otp=otp,
+                expires_in_seconds=settings.OTP_EXPIRE_SECONDS,
+                message="OTP Generates Successfully",
+            )
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
     def verify_otp(self, db: Session, data: OTPVerifyRequest) -> TokenResponse:
         try:
@@ -114,6 +121,9 @@ class AuthService:
             user = user_service.get_user_by_mobile_number(db, data.mobile_number)
             if not user:
                 user = user_service.create_user(db, data.mobile_number)
+            
+            user.mobile_verified = True
+            db.commit()
 
             # 5. Generate secure JWT pair
             access_token = create_access_token(subject=user.id)
@@ -177,4 +187,4 @@ class AuthService:
 
 
 # Singleton instance
-auth_service = AuthService()
+user_auth_service = UserAuthService()

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, status
 
-from app.schema.auth_schema import AdminAuthResponse, AdminAuthRequest
+from app.schema.user_auth_schema import AdminAuthResponse, AdminAuthRequest
 from app.schema.base_schema import SuccessResponse
-from app.service.auth_service import authenticate_admin_service
+from app.service.user_auth_service import authenticate_admin_service
 
 router = APIRouter()
 

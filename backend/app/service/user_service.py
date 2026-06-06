@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import Optional
-from app.model.user import User
+from app.model.user import User, UserRole, UserStatus
 
 
 class UserService:
@@ -22,14 +22,31 @@ class UserService:
         """
         return db.query(User).filter(User.id == user_id).first()
 
-    def create_user(self, db: Session, mobile_number: str) -> User:
+    def create_user(
+        self,
+        db: Session,
+        mobile_number: str,
+        full_name: str | None = None,
+        email: str | None = None,
+        role: UserRole = UserRole.CUSTOMER,
+    ) -> User:
         """
         Creates a new user record for the given mobile number.
         """
-        db_user = User(mobile_number=mobile_number)
+        db_user = User(
+            mobile_number=mobile_number,
+            full_name=full_name,
+            email=email,
+            role=role,
+            status=UserStatus.ACTIVE,
+            mobile_verified=False,
+            email_verified=False,
+        )
+
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
+
         return db_user
 
 

@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.config.database import Base, engine
+from app.model.user import User
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
