@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type {
   Customer,
   VenueOwner,
@@ -22,6 +22,13 @@ import {
   initialNotifications,
   defaultSettings
 } from '../data/mockStore';
+import { fetchAdminDirectoryData, hasDirectoryApiConfig } from '../api/adminApi';
+
+interface ApiResourceState {
+  loading: boolean;
+  error: string | null;
+  usingMockData: boolean;
+}
 
 interface AdminContextProps {
   customers: Customer[];
@@ -33,6 +40,10 @@ interface AdminContextProps {
   notifications: SystemNotification[];
   banners: Banner[];
   promotions: Promotion[];
+  apiState: {
+    users: ApiResourceState;
+  };
+  refreshUsers: () => Promise<void>;
   
   // Handlers for Customers
   blockCustomer: (id: string) => void;
@@ -98,6 +109,12 @@ interface AdminContextProps {
 
 const AdminContext = createContext<AdminContextProps | undefined>(undefined);
 
+const applyCommissionRate = (bookings: Booking[], commissionPercentage: number) =>
+  bookings.map((booking) => ({
+    ...booking,
+    commissionAmount: Number((booking.amount * (commissionPercentage / 100)).toFixed(2))
+  }));
+
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const [owners, setOwners] = useState<VenueOwner[]>(initialOwners);
@@ -108,16 +125,80 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [notifications, setNotifications] = useState<SystemNotification[]>(initialNotifications);
   const [banners, setBanners] = useState<Banner[]>(initialBanners);
   const [promotions, setPromotions] = useState<Promotion[]>(initialPromotions);
+  const [usersApiState, setUsersApiState] = useState<ApiResourceState>({
+    loading: hasDirectoryApiConfig,
+    error: null,
+    usingMockData: !hasDirectoryApiConfig
+  });
 
-  // Recalculate commission whenever commission percentage or bookings change
+  const refreshUsers = useCallback(async () => {
+    if (!hasDirectoryApiConfig) {
+      setUsersApiState({
+        loading: false,
+        error: null,
+        usingMockData: true
+      });
+      return;
+    }
+
+    setUsersApiState(prev => ({
+      ...prev,
+      loading: true,
+      error: null
+    }));
+
+    try {
+      const directoryData = await fetchAdminDirectoryData();
+
+      if (directoryData.customers) {
+        setCustomers(directoryData.customers);
+      }
+      if (directoryData.owners) {
+        setOwners(directoryData.owners);
+      }
+
+      setUsersApiState({
+        loading: false,
+        error: null,
+        usingMockData: false
+      });
+    } catch (error) {
+      setUsersApiState({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unable to load users from API.',
+        usingMockData: true
+      });
+    }
+  }, []);
+
   useEffect(() => {
-    setBookings((prevBookings) =>
-      prevBookings.map((b) => ({
-        ...b,
-        commissionAmount: Number((b.amount * (settings.commissionPercentage / 100)).toFixed(2))
-      }))
-    );
-  }, [settings.commissionPercentage]);
+    if (!hasDirectoryApiConfig) {
+      return;
+    }
+
+    fetchAdminDirectoryData()
+      .then((directoryData) => {
+        if (directoryData.customers) {
+          setCustomers(directoryData.customers);
+        }
+        if (directoryData.owners) {
+          setOwners(directoryData.owners);
+        }
+
+        setUsersApiState({
+          loading: false,
+          error: null,
+          usingMockData: false
+        });
+      })
+      .catch((error: unknown) => {
+        setUsersApiState({
+          loading: false,
+          error: error instanceof Error ? error.message : 'Unable to load users from API.',
+          usingMockData: true
+        });
+      });
+  }, []);
 
   // CUSTOMERS HANDLERS
   const blockCustomer = (id: string) => {
@@ -252,6 +333,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // SETTINGS HANDLERS
   const updateSettings = (newSettings: PlatformSettings) => {
     setSettings(newSettings);
+    setBookings(prevBookings => applyCommissionRate(prevBookings, newSettings.commissionPercentage));
     sendNotification('Platform Settings Updated', `Commission rates and tax rules have been modified by the admin.`, 'all', 'broadcast');
   };
 
@@ -350,6 +432,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         notifications,
         banners,
         promotions,
+        apiState: {
+          users: usersApiState
+        },
+        refreshUsers,
         blockCustomer,
         unblockCustomer,
         deleteCustomer,
@@ -384,6 +470,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAdmin = () => {
   const context = useContext(AdminContext);
   if (!context) {

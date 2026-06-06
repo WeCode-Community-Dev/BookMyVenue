@@ -10,7 +10,7 @@ import { ReportsView as Reports } from './pages/Reports';
 import { NotificationsView as Notifications } from './pages/Notifications';
 import { SettingsView as Settings } from './pages/Settings';
 import { CMSView as CMS } from './pages/CMS';
-import type { Venue, Booking } from './data/mockStore';
+import type { Booking } from './data/mockStore';
 import { CustomCursor } from './components/CustomCursor';
 
 // Lucide icons
@@ -91,7 +91,7 @@ function AppContent() {
     setMobileMenuOpen(false);
   };
 
-  const handleSelectVenueFromDashboard = (_venue: Venue) => {
+  const handleSelectVenueFromDashboard = () => {
     // Route to All Venues tab
     setCurrentSection('venues-all');
   };
@@ -116,9 +116,9 @@ function AppContent() {
       
       // USERS FOLDER
       case 'users-customers':
-        return <Users initialTab="customers" onSelectVenue={handleSelectVenueFromDashboard} onSelectBooking={handleSelectBookingFromDashboard} />;
+        return <Users key="users-customers" initialTab="customers" onSelectVenue={handleSelectVenueFromDashboard} onSelectBooking={handleSelectBookingFromDashboard} />;
       case 'users-owners':
-        return <Users initialTab="owners" onSelectVenue={handleSelectVenueFromDashboard} onSelectBooking={handleSelectBookingFromDashboard} />;
+        return <Users key="users-owners" initialTab="owners" onSelectVenue={handleSelectVenueFromDashboard} onSelectBooking={handleSelectBookingFromDashboard} />;
       
       // VENUES FOLDER
       case 'venues-all':

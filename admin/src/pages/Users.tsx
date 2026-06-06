@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import { 
   Search, ShieldAlert, CheckCircle, XCircle, Eye, 
-  Trash2, FileText, Calendar, Building, DollarSign, X
+  Trash2, FileText, Calendar, Building, DollarSign, X, RefreshCw, Database
 } from 'lucide-react';
 import type { Customer, VenueOwner, Venue, Booking } from '../data/mockStore';
 
@@ -14,12 +14,12 @@ interface UsersViewProps {
 
 export const UsersView: React.FC<UsersViewProps> = ({ initialTab = 'customers', onSelectVenue, onSelectBooking }) => {
   const { 
-    customers, owners, venues, bookings, reports,
+    customers, owners, venues, bookings, reports, apiState, refreshUsers,
     blockCustomer, unblockCustomer, deleteCustomer,
     approveOwnerKYC, rejectOwnerKYC, blockOwner, unblockOwner
   } = useAdmin();
 
-  const [activeTab, setActiveTab] = useState<'customers' | 'owners'>(initialTab);
+  const activeTab = initialTab;
   
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -75,6 +75,68 @@ export const UsersView: React.FC<UsersViewProps> = ({ initialTab = 'customers', 
     return venues.filter(v => v.ownerId === ownerId);
   };
 
+  const shimmerCell = (width = 'w-24') => (
+    <div className={`h-3 ${width} rounded-full shimmer-surface`} />
+  );
+
+  const renderCustomerSkeletonRows = () => (
+    Array.from({ length: 5 }).map((_, idx) => (
+      <tr key={`customer-loading-${idx}`}>
+        <td className="p-4">{shimmerCell('w-24')}</td>
+        <td className="p-4 space-y-2">
+          {shimmerCell('w-32')}
+          {shimmerCell('w-20')}
+        </td>
+        <td className="p-4 space-y-2">
+          {shimmerCell('w-40')}
+          {shimmerCell('w-28')}
+        </td>
+        <td className="p-4">{shimmerCell('w-24')}</td>
+        <td className="p-4">
+          <div className="flex justify-center">{shimmerCell('w-8')}</div>
+        </td>
+        <td className="p-4">{shimmerCell('w-20')}</td>
+        <td className="p-4">{shimmerCell('w-16')}</td>
+        <td className="p-4">
+          <div className="flex justify-end gap-1.5">
+            <div className="h-7 w-7 rounded shimmer-surface" />
+            <div className="h-7 w-7 rounded shimmer-surface" />
+            <div className="h-7 w-7 rounded shimmer-surface" />
+          </div>
+        </td>
+      </tr>
+    ))
+  );
+
+  const renderOwnerSkeletonRows = () => (
+    Array.from({ length: 5 }).map((_, idx) => (
+      <tr key={`owner-loading-${idx}`}>
+        <td className="p-4">{shimmerCell('w-24')}</td>
+        <td className="p-4 space-y-2">
+          {shimmerCell('w-32')}
+          {shimmerCell('w-40')}
+          {shimmerCell('w-28')}
+        </td>
+        <td className="p-4">{shimmerCell('w-36')}</td>
+        <td className="p-4">{shimmerCell('w-16')}</td>
+        <td className="p-4">
+          <div className="flex justify-center">{shimmerCell('w-8')}</div>
+        </td>
+        <td className="p-4">
+          <div className="flex justify-center">{shimmerCell('w-8')}</div>
+        </td>
+        <td className="p-4">{shimmerCell('w-20')}</td>
+        <td className="p-4">{shimmerCell('w-16')}</td>
+        <td className="p-4">
+          <div className="flex justify-end gap-1.5">
+            <div className="h-7 w-7 rounded shimmer-surface" />
+            <div className="h-7 w-7 rounded shimmer-surface" />
+          </div>
+        </td>
+      </tr>
+    ))
+  );
+
   return (
     <div className="space-y-6">
       {/* Upper header */}
@@ -84,25 +146,37 @@ export const UsersView: React.FC<UsersViewProps> = ({ initialTab = 'customers', 
           <p className="text-slate-400 mt-1">Manage event planners, customers, and commercial space owners.</p>
         </div>
 
-        {/* Tab switchers */}
-        <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-900">
-          <button
-            onClick={() => { setActiveTab('customers'); setSearchTerm(''); setStatusFilter('all'); }}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition ${
-              activeTab === 'customers' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Customers ({customers.length})
-          </button>
-          <button
-            onClick={() => { setActiveTab('owners'); setSearchTerm(''); setStatusFilter('all'); setKycFilter('all'); }}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition ${
-              activeTab === 'owners' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Venue Owners ({owners.length})
-          </button>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950/60 p-3 rounded-xl border border-slate-900">
+        <div className="flex items-start gap-2 text-xs">
+          <Database className={`w-4 h-4 mt-0.5 ${apiState.users.error ? 'text-amber-400' : 'text-primary'}`} />
+          <div>
+            <p className="font-semibold text-slate-200">
+              {apiState.users.loading
+                ? 'Loading user directory...'
+                : apiState.users.usingMockData
+                  ? 'Using local mock directory data'
+                  : 'Connected to user directory API'}
+            </p>
+            <p className="text-slate-500 mt-0.5">
+              {apiState.users.error
+                ? `API sync failed: ${apiState.users.error}`
+                : apiState.users.usingMockData
+                  ? 'Add the base URL and endpoints when ready to switch this screen to live data.'
+                  : 'Customer and venue owner lists are coming from the configured endpoints.'}
+            </p>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={() => void refreshUsers()}
+          disabled={apiState.users.loading}
+          className="inline-flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-60 disabled:hover:bg-slate-900 text-slate-300 hover:text-white border border-slate-800 font-bold text-xs px-3 py-2 rounded-lg transition"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${apiState.users.loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
       </div>
 
       {/* Filter and Search Bar */}
@@ -165,7 +239,9 @@ export const UsersView: React.FC<UsersViewProps> = ({ initialTab = 'customers', 
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-900 text-slate-300">
-                {filteredCustomers.length === 0 ? (
+                {apiState.users.loading ? (
+                  renderCustomerSkeletonRows()
+                ) : filteredCustomers.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="p-8 text-center text-slate-500">
                       No customer accounts found matching criteria.
@@ -257,7 +333,9 @@ export const UsersView: React.FC<UsersViewProps> = ({ initialTab = 'customers', 
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-900 text-slate-300">
-                {filteredOwners.length === 0 ? (
+                {apiState.users.loading ? (
+                  renderOwnerSkeletonRows()
+                ) : filteredOwners.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="p-8 text-center text-slate-500">
                       No venue owner accounts found matching criteria.

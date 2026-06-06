@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { useAdmin } from '../context/AdminContext';
+import type { SystemNotification } from '../data/mockStore';
 import { 
   Bell, Send, ShieldAlert, Calendar, CheckCircle
 } from 'lucide-react';
 
 export const NotificationsView: React.FC = () => {
   const { notifications, sendNotification } = useAdmin();
+  type NotificationTarget = SystemNotification['sentTo'];
+  type NotificationCategory = SystemNotification['type'];
   
   // Local state for sending notifications
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
-  const [targetGroup, setTargetGroup] = useState<'all' | 'owners' | 'customers'>('all');
-  const [category, setCategory] = useState<'broadcast' | 'booking' | 'approval' | 'report'>('broadcast');
+  const [targetGroup, setTargetGroup] = useState<NotificationTarget>('all');
+  const [category, setCategory] = useState<NotificationCategory>('broadcast');
 
   const [broadcasting, setBroadcasting] = useState(false);
 
@@ -55,7 +58,7 @@ export const NotificationsView: React.FC = () => {
               <label className="text-xs text-slate-400 font-semibold uppercase">Target Audience Group</label>
               <select
                 value={targetGroup}
-                onChange={(e) => setTargetGroup(e.target.value as any)}
+                onChange={(e) => setTargetGroup(e.target.value as NotificationTarget)}
                 className="w-full bg-slate-900 border border-slate-800 focus:border-primary text-slate-300 text-sm rounded-lg p-2.5 outline-none transition"
               >
                 <option value="all">Broadcast to All Users</option>
@@ -69,7 +72,7 @@ export const NotificationsView: React.FC = () => {
               <label className="text-xs text-slate-400 font-semibold uppercase">Alert Category</label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value as any)}
+                onChange={(e) => setCategory(e.target.value as NotificationCategory)}
                 className="w-full bg-slate-900 border border-slate-800 focus:border-primary text-slate-300 text-sm rounded-lg p-2.5 outline-none transition"
               >
                 <option value="broadcast">Announcement / System Notice</option>
