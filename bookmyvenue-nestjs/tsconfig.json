@@ -15,6 +15,6 @@
     "strict": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/prisma/prisma.service.ts"],
   "exclude": ["node_modules", "dist", "test"]
 }
