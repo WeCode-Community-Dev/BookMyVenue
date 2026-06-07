@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/admin/venue")
 public class AdminVenueController {
-    @GetMapping
-    public ResponseBody<?> showPendingVenueRequest(){
-
-    }
-
-    public ResponseBody<?> showApprovedVenueRequest(){
-
-    }
+//    @GetMapping
+//    public ResponseBody<?> showPendingVenueRequest(){
+//
+//    }
+//
+//    public ResponseBody<?> showApprovedVenueRequest(){
+//
+//    }
 }

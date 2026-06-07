@@ -10,11 +10,11 @@ import java.util.List;
 
 @Repository
 public interface VenueRepo extends JpaRepository<Venue,Long> {
-    public List<Venue> findAllByVenueVerificationStatusAndVenueActivationStatus(
+    public List<Venue> findAllByVenueVerificationStatusAndVenueActiveStatus(
             VenueVerificationStatus verificationStatus,
             VenueActiveStatus venueActiveStatus );
 
-    public Venue findByIdAndVenueVerificationStatusAndVenueActivationStatus(
+    public Venue findByIdAndVenueVerificationStatusAndVenueActiveStatus(
             Long id,
             VenueVerificationStatus verificationStatus,
             VenueActiveStatus venueActiveStatus

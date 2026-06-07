@@ -32,14 +32,15 @@ public class Venue {
     private String description;
     private String address;
     private String city;
+    @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL)
+    private List<VenueImages> imageFiles;
 
     @Enumerated(EnumType.STRING)
-    private VenueVerificationStatus verificationStatus;
+    private VenueVerificationStatus venueVerificationStatus;
 
     @Enumerated(EnumType.STRING)
-    private VenueActiveStatus status;
+    private VenueActiveStatus venueActiveStatus;
 
     private LocalDateTime createdAt;
 
-    private List<MultipartFile> imageFiles;
 }
