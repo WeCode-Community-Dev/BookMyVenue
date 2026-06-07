@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+:root {
+}
+
+@theme inline {
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+  }
+}
+
+@layer utilities {
+  .font-raleway {
+    font-family: var(--font-raleway);
+  }
+
+  .font-fraunces {
+    font-family: var(--font-fraunces);
+  }
+}
