@@ -591,6 +591,20 @@ export default function OwnerDashboard() {
                 {venues.map((v) => (
                   <div key={v.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
                     <div className="h-44 w-full bg-slate-100 overflow-hidden relative">
+                      {v.status === 'suspended' ? (
+                        <div className="absolute top-3 left-3 bg-rose-600 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                          ⚠️ Suspended
+                        </div>
+                      ) : v.status === 'pending' ? (
+                        <div className="absolute top-3 left-3 bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                          ⏳ Pending Approval
+                        </div>
+                      ) : v.status === 'rejected' ? (
+                        <div className="absolute top-3 left-3 bg-slate-500 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                          ❌ Rejected
+                        </div>
+                      ) : null}
+
                       {v.images?.[0] ? (
                         <img
                           src={thumbnailUrl(v.images[0])}
@@ -608,6 +622,13 @@ export default function OwnerDashboard() {
                     <div className="p-5 flex-grow">
                       <h4 className="font-black text-slate-900 text-lg leading-tight mb-1">{v.venueName}</h4>
                       <p className="text-xs text-slate-400 mb-3 truncate">📍 {v.address}</p>
+
+                      {v.status === 'suspended' && v.suspensionReason && (
+                        <div className="mb-3.5 p-3 bg-rose-50 border border-rose-100/70 rounded-xl text-left">
+                          <span className="text-[10px] uppercase font-bold text-rose-700 block mb-0.5 tracking-wider">Suspension Reason:</span>
+                          <p className="text-xs text-rose-600 font-semibold italic leading-normal">"{v.suspensionReason}"</p>
+                        </div>
+                      )}
                       
                       <div className="flex flex-wrap gap-2.5 mb-4">
                         {v.amenities?.slice(0, 3).map((am, i) => (

@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Booking, BookingStatus } from './entities/booking.entity';
 import { BookingLock, LockStatus } from '../booking-locks/entities/booking-lock.entity';
-import { Venue } from '../venues/entities/venue.entity';
+import { Venue, VenueStatus } from '../venues/entities/venue.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { User, UserRole } from '../users/entities/user.entity';
 import * as crypto from 'crypto';
@@ -32,6 +32,10 @@ export class BookingsService {
 
     const venue = await this.venuesRepository.findOne({ where: { id: venueId } });
     if (!venue) throw new NotFoundException('Venue not found');
+
+    if (venue.status === VenueStatus.SUSPENDED) {
+      throw new BadRequestException('This venue has been suspended by the platform administrator and is not accepting bookings.');
+    }
 
     const overlapBooking = await this.getConflictingBooking(venueId, bookingDate, startTime, endTime);
     if (overlapBooking) {

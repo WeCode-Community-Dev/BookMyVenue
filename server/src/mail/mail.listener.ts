@@ -354,6 +354,115 @@ export class MailListener {
     );
   }
 
+  /**
+   * Listens to 'venue.suspended' event.
+   * Sends listing suspension warning with reason to Host.
+   */
+  @OnEvent('venue.suspended')
+  async handleVenueSuspended(payload: { venueId: string }) {
+    this.logger.log(`Handling venue.suspended event for venueId: ${payload.venueId}`);
+
+    const venue = await this.venuesRepository.findOne({
+      where: { id: payload.venueId },
+      relations: { owner: true },
+    });
+
+    if (!venue) {
+      this.logger.error(`Venue with ID ${payload.venueId} not found. Aborting email send.`);
+      return;
+    }
+
+    const host = venue.owner;
+    if (!host) return;
+
+    const html = this.wrapTemplate(`
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 40px;">⚠️</span>
+        <h2 style="color: #e11d48; font-size: 24px; font-weight: 800; margin: 8px 0 4px 0;">Venue Listing Suspended</h2>
+        <p style="color: #64748b; font-size: 14px; margin: 0;">Your listing has been temporarily suspended by platform administration.</p>
+      </div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 22px;">
+        Hello <strong>${host.name}</strong>, we are writing to inform you that your listing, <strong>${venue.venueName}</strong>, has been suspended and hidden from search results.
+      </p>
+
+      <div style="background-color: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 20px; margin: 24px 0;">
+        <h4 style="margin: 0 0 8px 0; color: #9f1239; font-size: 14px; font-weight: 700;">Reason for Suspension:</h4>
+        <p style="margin: 0; color: #be123c; font-size: 14px; line-height: 20px; font-style: italic;">
+          "${venue.suspensionReason || 'No specific reason was provided by the administrator.'}"
+        </p>
+      </div>
+
+      <p style="color: #475569; font-size: 14px; line-height: 20px;">
+        <strong>Next Steps:</strong> Please log in to your host workspace to review the details. You can make adjustments and request a re-review once the issues highlighted above have been resolved.
+      </p>
+
+      <div style="text-align: center; margin: 32px 0 16px 0;">
+        <a href="http://localhost:5173/owner/dashboard?tab=venues" style="background-color: #e11d48; color: #ffffff; padding: 14px 28px; font-size: 15px; font-weight: 700; text-decoration: none; border-radius: 10px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.2);">
+          💻 Open Host Dashboard
+        </a>
+      </div>
+    `);
+
+    await this.mailService.sendMail(
+      host.email,
+      `Action Required: Suspension of listing "${venue.venueName}" ⚠️`,
+      html,
+    );
+  }
+
+  /**
+   * Listens to 'venue.activated' event.
+   * Sends listing activation confirmation to Host.
+   */
+  @OnEvent('venue.activated')
+  async handleVenueActivated(payload: { venueId: string }) {
+    this.logger.log(`Handling venue.activated event for venueId: ${payload.venueId}`);
+
+    const venue = await this.venuesRepository.findOne({
+      where: { id: payload.venueId },
+      relations: { owner: true },
+    });
+
+    if (!venue) {
+      this.logger.error(`Venue with ID ${payload.venueId} not found. Aborting email send.`);
+      return;
+    }
+
+    const host = venue.owner;
+    if (!host) return;
+
+    const html = this.wrapTemplate(`
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 40px;">✅✨</span>
+        <h2 style="color: #10b981; font-size: 24px; font-weight: 800; margin: 8px 0 4px 0;">Listing Restored!</h2>
+        <p style="color: #64748b; font-size: 14px; margin: 0;">Your space is once again approved and visible to guests.</p>
+      </div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 22px;">
+        Hello <strong>${host.name}</strong>, we are pleased to inform you that your listing, <strong>${venue.venueName}</strong>, has been successfully approved and restored by our platform administration.
+      </p>
+
+      <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 20px; margin: 24px 0;">
+        <p style="margin: 0; color: #065f46; font-size: 14px; line-height: 20px;">
+          🎉 <strong>Your venue is once again open for bookings!</strong> Guests can now search, view, and reserve slots at your property in real-time.
+        </p>
+      </div>
+
+      <div style="text-align: center; margin: 32px 0 16px 0;">
+        <a href="http://localhost:5173/owner/dashboard?tab=venues" style="background-color: #10b981; color: #ffffff; padding: 14px 28px; font-size: 15px; font-weight: 700; text-decoration: none; border-radius: 10px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);">
+          🏢 Manage Listings
+        </a>
+      </div>
+    `);
+
+    await this.mailService.sendMail(
+      host.email,
+      `Good news: Listing restored "${venue.venueName}" 🎉`,
+      html,
+    );
+  }
+
   // --- HELPER FORMATTING METHODS ---
 
   private formatDate(dateStr: string): string {

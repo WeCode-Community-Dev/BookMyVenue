@@ -106,6 +106,9 @@ export class Venue {
   @OneToMany(() => VenueBlockedDate, (blocked) => blocked.venue)
   blockedDates: VenueBlockedDate[];
 
+  @Column({ type: 'text', nullable: true })
+  suspensionReason: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

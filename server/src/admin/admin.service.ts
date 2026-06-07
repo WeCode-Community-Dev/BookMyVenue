@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In, MoreThanOrEqual } from 'typeorm';
 import { User, UserRole, UserStatus } from '../users/entities/user.entity';
 import { Venue, VenueStatus } from '../venues/entities/venue.entity';
 import { Booking, BookingStatus } from '../bookings/entities/booking.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AdminService {
@@ -14,6 +15,7 @@ export class AdminService {
     private venuesRepository: Repository<Venue>,
     @InjectRepository(Booking)
     private bookingsRepository: Repository<Booking>,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   // User Management
@@ -75,11 +77,49 @@ export class AdminService {
     return { venues, total, page, totalPages: Math.ceil(total / limit) };
   }
 
-  async updateVenueStatus(id: string, status: VenueStatus) {
-    const venue = await this.venuesRepository.findOne({ where: { id } });
+  async updateVenueStatus(id: string, status: VenueStatus, reason?: string) {
+    const venue = await this.venuesRepository.findOne({ where: { id }, relations: { owner: true } });
     if (!venue) throw new NotFoundException('Venue not found');
+
+    if (status === VenueStatus.SUSPENDED) {
+      // Calculate today's local date string (YYYY-MM-DD)
+      const today = new Date();
+      const offset = today.getTimezoneOffset();
+      const localToday = new Date(today.getTime() - offset * 60 * 1000);
+      const todayStr = localToday.toISOString().split('T')[0];
+
+      // Block suspension if there are any active (pending/confirmed) bookings today or in the future
+      const upcomingBookingsCount = await this.bookingsRepository.count({
+        where: {
+          venueId: id,
+          bookingStatus: In([BookingStatus.CONFIRMED, BookingStatus.PENDING]),
+          bookingDate: MoreThanOrEqual(todayStr) as any,
+        },
+      });
+
+      if (upcomingBookingsCount > 0) {
+        throw new BadRequestException('Cannot suspend a venue with active or upcoming bookings.');
+      }
+
+      if (reason !== undefined) {
+        venue.suspensionReason = reason;
+      }
+    } else if (status === VenueStatus.APPROVED) {
+      // If listing is restored / approved, clear previous suspension reasons
+      venue.suspensionReason = null;
+    }
+
     venue.status = status;
-    return this.venuesRepository.save(venue);
+    const savedVenue = await this.venuesRepository.save(venue);
+
+    // Emit event asynchronously to trigger Resend emails to the Host
+    if (status === VenueStatus.SUSPENDED) {
+      this.eventEmitter.emit('venue.suspended', { venueId: savedVenue.id });
+    } else if (status === VenueStatus.APPROVED) {
+      this.eventEmitter.emit('venue.activated', { venueId: savedVenue.id });
+    }
+
+    return savedVenue;
   }
 
   // Booking Management

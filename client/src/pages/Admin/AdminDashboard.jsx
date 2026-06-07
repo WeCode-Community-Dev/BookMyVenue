@@ -57,10 +57,14 @@ export default function AdminDashboard() {
   const [venuePage, setVenuePage] = useState(1);
   const [venueTotalPages, setVenueTotalPages] = useState(1);
 
-  // Modal Block states
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [selectedUserToBlock, setSelectedUserToBlock] = useState(null);
   const [blockReason, setBlockReason] = useState('');
+
+  // Modal Suspend states
+  const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [selectedVenueToSuspend, setSelectedVenueToSuspend] = useState(null);
+  const [suspendReason, setSuspendReason] = useState('');
 
   // Profile Form States
   const [profileForm, setProfileForm] = useState({
@@ -200,13 +204,33 @@ export default function AdminDashboard() {
     }
   };
 
-  const toggleVenueListingStatus = async (venue, newStatus) => {
+  const toggleVenueListingStatus = async (venue, newStatus, reason = '') => {
     try {
-      await adminService.updateVenueStatus(venue.id, newStatus);
+      await adminService.updateVenueStatus(venue.id, newStatus, reason);
       toast.success(`Venue listing status updated to ${newStatus}`);
       fetchVenues();
-    } catch {
-      toast.error('Failed to update venue listing status');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update venue listing status');
+    }
+  };
+
+  const handleOpenSuspendModal = (venue) => {
+    setSelectedVenueToSuspend(venue);
+    setSuspendReason('');
+    setShowSuspendModal(true);
+  };
+
+  const handleConfirmSuspend = async () => {
+    if (!suspendReason.trim()) {
+      return toast.error('Please enter a reason for suspension');
+    }
+    try {
+      await adminService.updateVenueStatus(selectedVenueToSuspend.id, 'suspended', suspendReason);
+      toast.success(`${selectedVenueToSuspend.venueName} has been suspended successfully.`);
+      setShowSuspendModal(false);
+      fetchVenues();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to suspend venue listing');
     }
   };
 
@@ -698,7 +722,11 @@ export default function AdminDashboard() {
                           {v.capacity} pax
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100`}>
+                          <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${
+                            v.status === 'suspended'
+                              ? 'bg-rose-50 text-rose-600 border border-rose-100'
+                              : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                          }`}>
                             {v.status}
                           </span>
                         </td>
@@ -712,7 +740,7 @@ export default function AdminDashboard() {
                             </button>
                           ) : (
                             <button
-                              onClick={() => toggleVenueListingStatus(v, 'suspended')}
+                              onClick={() => handleOpenSuspendModal(v)}
                               className="py-1 px-2.5 rounded-lg border border-rose-200 text-rose-600 font-semibold text-[11px] hover:bg-rose-50 transition-colors inline-flex items-center gap-1"
                             >
                               <MdBlock /> Suspend Listing
@@ -832,6 +860,11 @@ export default function AdminDashboard() {
                       const total = Number(b.totalAmount);
                       const hostShare = total * 0.85;
                       const platformCommission = total * 0.15;
+                      const isCancelled = b.bookingStatus === 'cancelled';
+                      const isRejected = b.bookingStatus === 'rejected';
+                      const isPending = b.bookingStatus === 'pending';
+                      const isPaidOut = b.bookingStatus === 'confirmed' || b.bookingStatus === 'completed';
+
                       return (
                         <tr key={b.id} className="hover:bg-slate-50/40">
                           <td className="px-6 py-4 text-xs font-mono font-bold text-slate-900">
@@ -841,22 +874,24 @@ export default function AdminDashboard() {
                             <span className="font-bold text-slate-950 text-sm block">{b.venue?.venueName}</span>
                             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{b.venue?.venueType?.replace('_', ' ')}</span>
                           </td>
-                          <td className="px-6 py-4 text-xs text-slate-900 font-bold">
+                          <td className={`px-6 py-4 text-xs font-bold ${isCancelled || isRejected ? 'text-slate-400 line-through font-normal' : 'text-slate-900'}`}>
                             ₹{total.toLocaleString('en-IN')}
                           </td>
-                          <td className="px-6 py-4 text-xs text-slate-600">
+                          <td className={`px-6 py-4 text-xs ${isCancelled || isRejected ? 'text-slate-400 line-through' : 'text-slate-600'}`}>
                             ₹{hostShare.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                           </td>
-                          <td className="px-6 py-4 text-xs text-primary font-bold">
+                          <td className={`px-6 py-4 text-xs font-bold ${isCancelled || isRejected ? 'text-slate-400 line-through font-normal' : 'text-primary'}`}>
                             ₹{platformCommission.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                           </td>
                           <td className="px-6 py-4">
                             <span className={`px-2.5 py-1 text-[9px] font-bold rounded-full uppercase tracking-wider ${
-                              b.bookingStatus === 'confirmed' || b.bookingStatus === 'completed'
+                              isPaidOut
                                 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                                : isCancelled || isRejected
+                                ? 'bg-rose-50 text-rose-600 border border-rose-100'
                                 : 'bg-amber-50 text-amber-600 border border-amber-100'
                             }`}>
-                              {b.bookingStatus === 'confirmed' || b.bookingStatus === 'completed' ? 'Paid out' : 'Pending'}
+                              {isPaidOut ? 'Paid out' : isCancelled ? 'Cancelled' : isRejected ? 'Rejected' : 'Pending'}
                             </span>
                           </td>
                         </tr>
@@ -1026,6 +1061,46 @@ export default function AdminDashboard() {
                 className="py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow transition-colors"
               >
                 Confirm Block
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Pop-up Interactive Suspend Listing Modal */}
+      {showSuspendModal && selectedVenueToSuspend && (
+        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 flex flex-col gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-slate-950 tracking-tight">Suspend Venue Listing</h3>
+              <p className="text-slate-500 text-xs mt-1">Please enter a reason for suspending <span className="font-bold text-slate-900">{selectedVenueToSuspend.venueName}</span>. This reason will be shared with the venue owner so they can take necessary corrective actions.</p>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Reason for Suspension *</label>
+              <textarea
+                value={suspendReason}
+                onChange={e => setSuspendReason(e.target.value)}
+                placeholder="e.g. Safety violations / Inaccurate pricing details / Poor review trends..."
+                className="w-full py-2.5 px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-rose-500 h-24 resize-none transition-colors"
+                required
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end mt-2">
+              <button
+                type="button"
+                onClick={() => setShowSuspendModal(false)}
+                className="py-2 px-4 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSuspend}
+                className="py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow transition-colors"
+              >
+                Confirm Suspension
               </button>
             </div>
           </div>

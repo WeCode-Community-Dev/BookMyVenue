@@ -71,12 +71,15 @@ export class AdminController {
   }
 
   @Patch('venues/:id/status')
-  @ApiOperation({ summary: 'Approve/reject venue' })
+  @ApiOperation({ summary: 'Approve/reject/suspend venue' })
   @ApiResponse({ status: 200, description: 'Venue status updated' })
   @ApiParam({ name: 'id', description: 'Venue UUID' })
-  @ApiBody({ schema: { type: 'object', properties: { status: { type: 'string', enum: Object.values(VenueStatus) } } } })
-  async updateVenueStatus(@Param('id') id: string, @Body('status') status: VenueStatus) {
-    return this.adminService.updateVenueStatus(id, status);
+  @ApiBody({ schema: { type: 'object', properties: { status: { type: 'string', enum: Object.values(VenueStatus) }, reason: { type: 'string', nullable: true } } } })
+  async updateVenueStatus(
+    @Param('id') id: string,
+    @Body() body: { status: VenueStatus; reason?: string },
+  ) {
+    return this.adminService.updateVenueStatus(id, body.status, body.reason);
   }
 
   @Get('bookings')
