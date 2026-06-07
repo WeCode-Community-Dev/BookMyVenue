@@ -27,7 +27,7 @@ export default function Header() {
             <Image
               src="/assets/logos/logo.png"
               alt="BookMyVenue Logo"
-              width={290}
+              width={360}
               height={200}
               priority
               className=" w-auto object-contain md:h-14"
@@ -37,18 +37,17 @@ export default function Header() {
           {/* Center Navigation */}
           <nav className="hidden items-center justify-center gap-10 lg:flex">
 
-            <button className="relative text-sm font-semibold text-slate-900">
+            <button className="relative text-[12px] font-semibold text-slate-900">
               Explore
               <span className="absolute -bottom-[26px] left-0 h-[3px] w-full rounded-full bg-teal-700" />
             </button>
 
-            <button className="text-sm font-semibold text-slate-600 transition hover:text-slate-900">
+            <button className="text-[12px] font-semibold text-slate-600 transition hover:text-slate-900">
               Venues Near Me
             </button>
 
-            <button className="relative text-sm font-semibold text-slate-600 transition hover:text-slate-900">
+            <button className="relative text-[12px] font-semibold text-slate-600 transition hover:text-slate-900">
               Offers
-
               <span
                 className="absolute -right-4 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
                 style={{ backgroundColor: "#FF6B6B" }}

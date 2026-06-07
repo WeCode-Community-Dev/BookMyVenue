@@ -17,45 +17,39 @@ export default function Sidebar() {
         <nav className="space-y-2">
           <button className="flex w-full items-start gap-3 rounded-lg bg-slate-100 p-3 text-left transition">
             <CalendarDays className="mt-0.5 h-5 w-5 text-teal-700" />
-
             <div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-[12px] font-semibold text-slate-900">
                 My Bookings
               </p>
-
-              <p className="mt-1 text-xs text-slate-500">Upcoming & Past</p>
+              <p className="mt-1 text-[12px] text-slate-500">Upcoming & Past</p>
             </div>
           </button>
 
           <button className="flex w-full items-start gap-3 rounded-lg p-3 text-left transition hover:bg-slate-100">
             <Heart className="mt-0.5 h-5 w-5 text-slate-700" />
-
             <div>
-              <p className="text-sm font-semibold text-slate-900">Wishlist</p>
+              <p className="text-[12px] font-semibold text-slate-900">Wishlist</p>
 
-              <p className="mt-1 text-xs text-slate-500">Saved Venues</p>
+              <p className="mt-1 text-[12px] text-slate-500">Saved Venues</p>
             </div>
           </button>
 
           <button className="flex w-full items-start gap-3 rounded-lg p-3 text-left transition hover:bg-slate-100">
             <Clock3 className="mt-0.5 h-5 w-5 text-slate-700" />
-
             <div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-[12px] font-semibold text-slate-900">
                 Recently Viewed
               </p>
 
-              <p className="mt-1 text-xs text-slate-500">Venues you checked</p>
+              <p className="mt-1 text-[12px] text-slate-500">Venues you checked</p>
             </div>
           </button>
 
           <button className="flex w-full items-start gap-3 rounded-lg p-3 text-left transition hover:bg-slate-100">
             <Headphones className="mt-0.5 h-5 w-5 text-slate-700" />
-
             <div>
-              <p className="text-sm font-semibold text-slate-900">Support</p>
-
-              <p className="mt-1 text-xs text-slate-500">Help & Assistance</p>
+              <p className="text-[12px] font-semibold text-slate-900">Support</p>
+              <p className="mt-1 text-[12px] text-slate-500">Help & Assistance</p>
             </div>
           </button>
         </nav>

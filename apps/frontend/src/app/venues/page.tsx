@@ -1,3 +1,5 @@
+"use client";
+
 import Header from "@/components/global/header";
 import Sidebar from "@/components/global/sidebar";
 import MapPanel from "@/components/global/mappanel";
@@ -6,6 +8,8 @@ import VenueTypeSection from "@/components/global/venuetypesection";
 import EventTypeFilter from "@/components/global/eventtypefilter";
 import VenueFiltersBar from "@/components/global/venuefilterbar";
 import Card from "@/components/global/card";
+import LoginModal from "@/components/global/login";
+import { useState } from "react";
 
 export const venues = [
   {
@@ -138,8 +142,11 @@ export const venues = [
 ];
 
 export default function Page() {
+  const [loginOpen, setLoginOpen] = useState(true);
+
   return (
     <>
+    <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
       <Header />
 
       <div className="flex">
