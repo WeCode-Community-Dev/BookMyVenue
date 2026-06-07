@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>BookMyVenue</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <p class="tagline">
+    Find and book the perfect venue near you
+</p>
+
+    <h1>BookMyVenue</h1>
+    <script src="script.js"></script>
+
+    <div class="search box">
+    <button>Use Current Location</button>
+
+    <br><br>
+
+    <select id="district" onchange="updateTowns()">
+    <option value="">Select District</option>
+    <option value="Trivandrum">Trivandrum</option>
+    <option value="Kollam">Kollam</option>
+    <option value="Kochi">Kochi</option>
+</select>
+
+    <br><br>
+
+   <select id="town">
+    <option>Select Town</option>
+</select>
+
+    <br><br>
+
+    <button onclick="showVenues()">
+    Search Venues
+    </button>
+    </div>
+    <div id="venue-list"></div>
+    
+
+    
+</div>
+<img src="https://picsum.photos/300/180" alt="Venue">
+
+</body>
+
+</html>
