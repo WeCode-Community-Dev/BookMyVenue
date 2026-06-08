@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 
 import App from './app/app.jsx';
 import './index.css';
+import './global.css';
 
 ReactDOM.createRoot(
    document.getElementById('root')

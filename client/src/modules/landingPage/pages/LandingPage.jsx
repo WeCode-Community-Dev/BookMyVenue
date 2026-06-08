@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import MainLayout from "../../common/MainLayout";
+import VenueCardList from "../components/VenueCardList";
 
 const NAV_LINKS = ["Venues", "How It Works", "For Owners", "Pricing"];
 
@@ -278,67 +279,43 @@ const LandingPage = () => {
       </section>
 
       {/* ── FEATURED VENUES ── */}
-      <section className="py-14 sm:py-[70px] px-5 sm:px-8 lg:px-[6%] bg-gray-50">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 sm:mb-9">
-            <div>
-              <p className="text-[0.75rem] font-bold uppercase tracking-[0.1em] text-gray-400 mb-1.5">
-                Handpicked for you
-              </p>
-              <h2 className="text-[1.5rem] sm:text-[1.8rem] font-extrabold tracking-tight">
-                Featured Venues
-              </h2>
-            </div>
-            <button className="btn-outline !text-[0.85rem] !bg-white self-start sm:self-auto shrink-0">
-              See all venues →
-            </button>
+       <section className="py-14 sm:py-[70px] px-5 sm:px-8 lg:px-[6%] bg-gray-50">
+      <div className="max-w-[1200px] mx-auto">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 sm:mb-9">
+          <div>
+            <p className="text-[0.75rem] font-bold uppercase tracking-[0.1em] text-gray-400 mb-1.5">
+              Handpicked for you
+            </p>
+
+            <h2 className="text-[1.5rem] sm:text-[1.8rem] font-extrabold tracking-tight">
+              Featured Venues
+            </h2>
           </div>
 
-          {/* 1 col mobile → 2 col tablet → 3 col desktop */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {VENUES.map((v) => (
-              <div key={v.id} className="venue-card">
-                <div
-                  className="h-[180px] sm:h-[200px] flex items-center justify-center text-[4rem] relative"
-                  style={{ background: v.color }}
-                >
-                  {v.emoji}
-                  <div
-                    className="absolute top-3.5 left-3.5 bg-white rounded-lg px-2.5 py-1 text-[0.72rem] font-bold"
-                    style={{ color: v.accent }}
-                  >
-                    {v.type}
-                  </div>
-                  <div className="absolute top-3.5 right-3.5 bg-white rounded-lg px-2.5 py-1 text-[0.72rem] font-bold text-gray-900">
-                    ★ {v.rating}
-                  </div>
-                </div>
-
-                <div className="px-5 pt-5 pb-[22px]">
-                  <h3 className="text-[1.05rem] font-bold mb-1 tracking-tight">{v.name}</h3>
-                  <p className="text-[0.82rem] text-gray-400 font-medium mb-3.5">📍 {v.location}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {[v.capacity, `${v.reviews} reviews`].map((tag) => (
-                      <span key={tag} className="bg-gray-100 rounded-lg px-2.5 py-1 text-[0.75rem] font-semibold text-gray-600">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <span className="text-[1.2rem] font-extrabold tracking-tight">{v.price}</span>
-                      <span className="text-[0.78rem] text-gray-400"> / day</span>
-                    </div>
-                    <button className="btn-primary !py-[9px] !px-[18px] !text-[0.82rem] !rounded-[10px]">
-                      Book Now
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <button className="btn-outline !text-[0.85rem] !bg-white self-start sm:self-auto shrink-0">
+            See all venues →
+          </button>
         </div>
-      </section>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {VENUES.map((venue) => (
+            <VenueCardList
+              key={venue.id}
+              name={venue.name}
+              location={venue.location}
+              price={venue.price}
+              reviews={venue.reviews}
+              capacity={venue.capacity}
+              rating={venue.rating}
+              type={venue.type}
+              emoji={venue.emoji}
+              color={venue.color}
+              accent={venue.accent}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
 
       {/* ── HOW IT WORKS ── */}
       <section className="py-16 sm:py-20 px-5 sm:px-8 lg:px-[6%] bg-white">
@@ -351,7 +328,7 @@ const LandingPage = () => {
               Book in 3 easy steps
             </h2>
           </div>
-          {/* 1 col mobile → 3 col desktop */}
+
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-5">
             {STEPS.map((step) => (
               <div key={step.n} className="step-card">
