@@ -6,7 +6,9 @@ export const ROUTES = {
 
     },
     OWNER: {
-
+        VENUE: {
+            CREATE: '/venue'
+        }
     },
     USER: {
         
