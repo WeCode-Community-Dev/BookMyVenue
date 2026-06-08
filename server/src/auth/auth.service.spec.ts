@@ -6,6 +6,7 @@ import { ConflictException, UnauthorizedException, BadRequestException } from '@
 import * as bcrypt from 'bcryptjs';
 import { AuthService } from './auth.service';
 import { User, UserRole, UserStatus } from '../users/entities/user.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const mockUserRepository = {
   findOne: jest.fn(),
@@ -31,12 +32,17 @@ describe('AuthService', () => {
   let service: AuthService;
 
   beforeEach(async () => {
+    const mockEventEmitter = {
+      emit: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: getRepositoryToken(User), useValue: mockUserRepository },
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
       ],
     }).compile();
 

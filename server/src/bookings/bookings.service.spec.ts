@@ -6,6 +6,7 @@ import { Booking, BookingStatus } from './entities/booking.entity';
 import { BookingLock, LockStatus } from '../booking-locks/entities/booking-lock.entity';
 import { Venue } from '../venues/entities/venue.entity';
 import { UserRole } from '../users/entities/user.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const mockQb = {
   where: jest.fn().mockReturnThis(),
@@ -19,6 +20,7 @@ const mockQb = {
   getCount: jest.fn().mockResolvedValue(0),
   getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
   getRawOne: jest.fn().mockResolvedValue({ totalRevenue: '0' }),
+  getOne: jest.fn().mockResolvedValue(null),
 };
 
 const mockBookingRepo = {
@@ -43,12 +45,17 @@ describe('BookingsService', () => {
   let service: BookingsService;
 
   beforeEach(async () => {
+    const mockEventEmitter = {
+      emit: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BookingsService,
         { provide: getRepositoryToken(Booking), useValue: mockBookingRepo },
         { provide: getRepositoryToken(BookingLock), useValue: mockLockRepo },
         { provide: getRepositoryToken(Venue), useValue: mockVenueRepo },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
       ],
     }).compile();
 
@@ -69,7 +76,7 @@ describe('BookingsService', () => {
 
     it('should create a booking successfully', async () => {
       mockVenueRepo.findOne.mockResolvedValue({ id: 'venue-1', pricePerHour: 1000 });
-      mockQb.getCount.mockResolvedValue(0); // no overlap
+      mockQb.getOne.mockResolvedValue(null); // no overlap
 
       const booking = { id: 'b-1', ...dto, bookingCode: 'BMV-ABC', totalAmount: 4000 };
       mockBookingRepo.create.mockReturnValue(booking);
@@ -87,7 +94,7 @@ describe('BookingsService', () => {
 
     it('should throw ConflictException on overlapping booking', async () => {
       mockVenueRepo.findOne.mockResolvedValue({ id: 'venue-1', pricePerHour: 1000 });
-      mockQb.getCount.mockResolvedValue(1); // overlap exists
+      mockQb.getOne.mockResolvedValue({ id: 'overlap-1', startTime: '10:00', endTime: '14:00' }); // overlap exists
 
       await expect(service.create(dto, 'user-1')).rejects.toThrow(ConflictException);
     });
@@ -95,7 +102,7 @@ describe('BookingsService', () => {
     it('should validate and consume lock if lockId is provided', async () => {
       const dtoWithLock = { ...dto, lockId: 'lock-1' };
       mockVenueRepo.findOne.mockResolvedValue({ id: 'venue-1', pricePerHour: 1000 });
-      mockQb.getCount.mockResolvedValue(0);
+      mockQb.getOne.mockResolvedValue(null);
       mockLockRepo.findOne.mockResolvedValue({ id: 'lock-1', status: LockStatus.ACTIVE });
       mockLockRepo.save.mockResolvedValue({});
 

@@ -6,6 +6,8 @@ import { Venue, VenueStatus, VenueType } from './entities/venue.entity';
 import { VenueBlockedDate } from './entities/venue-blocked-date.entity';
 import { UserRole } from '../users/entities/user.entity';
 import { Booking } from '../bookings/entities/booking.entity';
+import { CloudinaryService } from './cloudinary.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const mockQueryBuilder = {
   where: jest.fn().mockReturnThis(),
@@ -44,6 +46,14 @@ const mockBookingRepo = {
   count: jest.fn(),
 };
 
+const mockCloudinaryService = {
+  uploadImages: jest.fn().mockResolvedValue([]),
+};
+
+const mockEventEmitter = {
+  emit: jest.fn(),
+};
+
 describe('VenuesService', () => {
   let service: VenuesService;
 
@@ -54,6 +64,8 @@ describe('VenuesService', () => {
         { provide: getRepositoryToken(Venue), useValue: mockVenueRepo },
         { provide: getRepositoryToken(VenueBlockedDate), useValue: mockBlockedDatesRepo },
         { provide: getRepositoryToken(Booking), useValue: mockBookingRepo },
+        { provide: CloudinaryService, useValue: mockCloudinaryService },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
       ],
     }).compile();
 

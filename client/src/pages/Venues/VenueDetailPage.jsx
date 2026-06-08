@@ -517,7 +517,11 @@ export default function VenueDetailPage() {
     const endDec = endH + (endM || 0) / 60;
     if (endDec > startDec) {
       estimatedHours = endDec - startDec;
-      estimatedPrice = estimatedHours * (venue?.pricePerHour || 0);
+      if (venue?.pricingUnit === 'day') {
+        estimatedPrice = Number(venue?.pricePerDay || 0);
+      } else {
+        estimatedPrice = estimatedHours * (venue?.pricePerHour || 0);
+      }
     }
   }
 
@@ -608,7 +612,9 @@ export default function VenueDetailPage() {
               <div className="matte-card p-5 text-center bg-white border border-slate-200">
                 <MdCurrencyRupee className="text-xl text-primary mx-auto mb-1.5" />
                 <span className="text-[9px] uppercase font-bold text-slate-400 block">Price</span>
-                <span className="text-sm font-bold text-slate-900">₹{venue.pricePerHour}/hr</span>
+                <span className="text-sm font-bold text-slate-900">
+                  {venue.pricingUnit === 'day' ? `₹${Number(venue.pricePerDay).toLocaleString('en-IN')}/day` : `₹${Number(venue.pricePerHour).toLocaleString('en-IN')}/hr`}
+                </span>
               </div>
               <div className="matte-card p-5 text-center bg-white border border-slate-200">
                 <MdStar className="text-xl text-yellow-500 mx-auto mb-1.5" />
@@ -911,7 +917,11 @@ export default function VenueDetailPage() {
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex justify-between items-center text-xs animate-in fade-in duration-200 mt-1 mb-2 shadow-sm">
                       <div>
                         <span className="text-[10px] text-slate-400 font-bold block uppercase leading-none mb-1">Pricing Breakdown</span>
-                        <span className="text-slate-600 font-semibold">{estimatedHours.toFixed(1)} hrs @ ₹{Number(venue?.pricePerHour).toLocaleString('en-IN')}/hr</span>
+                        <span className="text-slate-600 font-semibold">
+                          {venue?.pricingUnit === 'day' 
+                            ? `Full Day Access` 
+                            : `${estimatedHours.toFixed(1)} hrs @ ₹${Number(venue?.pricePerHour).toLocaleString('en-IN')}/hr`}
+                        </span>
                       </div>
                       <div className="text-right">
                         <span className="text-[10px] text-slate-400 font-bold block uppercase leading-none mb-1">Estimated Total</span>

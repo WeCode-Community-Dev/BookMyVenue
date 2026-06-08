@@ -10,7 +10,7 @@ import { Repository, LessThan } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BookingLock, LockStatus } from './entities/booking-lock.entity';
 import { Booking, BookingStatus } from '../bookings/entities/booking.entity';
-import { Venue } from '../venues/entities/venue.entity';
+import { Venue, PricingUnit } from '../venues/entities/venue.entity';
 
 @Injectable()
 export class BookingLocksService {
@@ -78,7 +78,8 @@ export class BookingLocksService {
 
     if (existingLock) {
       // Check if the lock overlaps
-      if (this.timesOverlap(existingLock.startTime, existingLock.endTime, startTime, endTime)) {
+      const isDaily = venue.pricingUnit === PricingUnit.DAY;
+      if (isDaily || this.timesOverlap(existingLock.startTime, existingLock.endTime, startTime, endTime)) {
         if (new Date() < new Date(existingLock.expiresAt)) {
           throw new ConflictException('This slot is temporarily locked by another user');
         }
@@ -88,17 +89,25 @@ export class BookingLocksService {
       }
     }
 
-    // Check for existing confirmed bookings
+    // Check for existing confirmed or pending bookings
     const existingBooking = await this.bookingsRepository.findOne({
-      where: {
-        venueId,
-        bookingDate,
-        bookingStatus: BookingStatus.CONFIRMED,
-      },
+      where: [
+        {
+          venueId,
+          bookingDate,
+          bookingStatus: BookingStatus.CONFIRMED,
+        },
+        {
+          venueId,
+          bookingDate,
+          bookingStatus: BookingStatus.PENDING,
+        },
+      ],
     });
 
     if (existingBooking) {
-      if (this.timesOverlap(existingBooking.startTime, existingBooking.endTime, startTime, endTime)) {
+      const isDaily = venue.pricingUnit === PricingUnit.DAY;
+      if (isDaily || this.timesOverlap(existingBooking.startTime, existingBooking.endTime, startTime, endTime)) {
         const formattedStart = this.formatTime12Hour(existingBooking.startTime);
         const formattedEnd = this.formatTime12Hour(existingBooking.endTime);
         throw new ConflictException(`This slot is already booked from ${formattedStart} to ${formattedEnd}`);

@@ -196,7 +196,7 @@ export default function BookingsPage() {
       v.address?.toLowerCase().includes(query);
     const matchesType = !venueType || v.venueType === venueType;
     const matchesCapacity = !minCapacity || Number(v.capacity) >= Number(minCapacity);
-    const matchesPrice = !maxPrice || Number(v.pricePerHour) <= Number(maxPrice);
+    const matchesPrice = !maxPrice || (v.pricingUnit === 'day' ? Number(v.pricePerDay || 0) : Number(v.pricePerHour)) <= Number(maxPrice);
     return matchesSearch && matchesType && matchesCapacity && matchesPrice;
   });
 
@@ -483,7 +483,13 @@ export default function BookingsPage() {
                       
                       <div>
                         <div className="flex items-center justify-between text-xs text-slate-600 pt-3 border-t border-slate-50">
-                          <span className="flex items-center gap-0.5">Hourly: <span className="font-bold text-slate-900 flex items-center"><MdCurrencyRupee className="text-emerald-600 text-sm font-black" />{v.pricePerHour}</span></span>
+                          <span className="flex items-center gap-0.5">
+                            {v.pricingUnit === 'day' ? 'Daily:' : 'Hourly:'} 
+                            <span className="font-bold text-slate-900 flex items-center">
+                              <MdCurrencyRupee className="text-emerald-600 text-sm font-black" />
+                              {v.pricingUnit === 'day' ? Number(v.pricePerDay || 0).toLocaleString('en-IN') : Number(v.pricePerHour).toLocaleString('en-IN')}
+                            </span>
+                          </span>
                           <span>Seating: <span className="font-bold text-slate-900">{v.capacity} pax</span></span>
                         </div>
 

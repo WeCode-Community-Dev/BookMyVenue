@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Booking, BookingStatus } from './entities/booking.entity';
 import { BookingLock, LockStatus } from '../booking-locks/entities/booking-lock.entity';
-import { Venue, VenueStatus } from '../venues/entities/venue.entity';
+import { Venue, VenueStatus, PricingUnit } from '../venues/entities/venue.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { User, UserRole } from '../users/entities/user.entity';
 import * as crypto from 'crypto';
@@ -37,7 +37,7 @@ export class BookingsService {
       throw new BadRequestException('This venue has been suspended by the platform administrator and is not accepting bookings.');
     }
 
-    const overlapBooking = await this.getConflictingBooking(venueId, bookingDate, startTime, endTime);
+    const overlapBooking = await this.getConflictingBooking(venue, bookingDate, startTime, endTime);
     if (overlapBooking) {
       const formattedStart = this.formatTime12Hour(overlapBooking.startTime);
       const formattedEnd = this.formatTime12Hour(overlapBooking.endTime);
@@ -53,10 +53,15 @@ export class BookingsService {
       await this.locksRepository.save(lock);
     }
 
-    const startHour = this.parseTime(startTime);
-    const endHour = this.parseTime(endTime);
-    const hours = endHour - startHour;
-    const totalAmount = hours * Number(venue.pricePerHour);
+    let totalAmount = 0;
+    if (venue.pricingUnit === PricingUnit.DAY) {
+      totalAmount = Number(venue.pricePerDay || (venue.pricePerHour * 8));
+    } else {
+      const startHour = this.parseTime(startTime);
+      const endHour = this.parseTime(endTime);
+      const hours = endHour - startHour;
+      totalAmount = hours * Number(venue.pricePerHour);
+    }
 
     const bookingCode = 'BMV-' + crypto.randomBytes(4).toString('hex').toUpperCase();
 
@@ -69,7 +74,7 @@ export class BookingsService {
       endTime,
       guestCount: guestCount || 1,
       totalAmount,
-      bookingStatus: BookingStatus.CONFIRMED,
+      bookingStatus: BookingStatus.PENDING,
     });
 
     const savedBooking = await this.bookingsRepository.save(booking);
@@ -193,12 +198,15 @@ export class BookingsService {
     return { bookedSlots: bookings, date: bookingDate };
   }
 
-  private async getConflictingBooking(venueId: string, bookingDate: string, startTime: string, endTime: string, excludeId?: string): Promise<Booking | null> {
+  private async getConflictingBooking(venue: Venue, bookingDate: string, startTime: string, endTime: string, excludeId?: string): Promise<Booking | null> {
     const qb = this.bookingsRepository.createQueryBuilder('booking')
-      .where('booking.venueId = :venueId', { venueId })
+      .where('booking.venueId = :venueId', { venueId: venue.id })
       .andWhere('booking.bookingDate = :bookingDate', { bookingDate })
-      .andWhere('booking.bookingStatus IN (:...statuses)', { statuses: [BookingStatus.PENDING, BookingStatus.CONFIRMED] })
-      .andWhere('(booking.startTime < :endTime AND booking.endTime > :startTime)', { startTime, endTime });
+      .andWhere('booking.bookingStatus IN (:...statuses)', { statuses: [BookingStatus.PENDING, BookingStatus.CONFIRMED] });
+
+    if (venue.pricingUnit !== PricingUnit.DAY) {
+      qb.andWhere('(booking.startTime < :endTime AND booking.endTime > :startTime)', { startTime, endTime });
+    }
 
     if (excludeId) qb.andWhere('booking.id != :excludeId', { excludeId });
     return qb.getOne();

@@ -16,9 +16,24 @@ import {
   MdNavigateNext,
   MdPerson,
   MdVpnKey,
-  MdTrendingUp
+  MdTrendingUp,
+  MdClose,
+  MdAccessTime,
+  MdLocationOn,
+  MdInfo,
+  MdStar
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
+import { thumbnailUrl, detailUrl } from '../../utils/cloudinaryUrl';
+
+const formatTime12Hour = (timeStr) => {
+  if (!timeStr) return '';
+  const [hourStr, minStr] = timeStr.split(':');
+  const hour = parseInt(hourStr, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minStr} ${ampm}`;
+};
 
 export default function AdminDashboard() {
   const location = useLocation();
@@ -65,6 +80,11 @@ export default function AdminDashboard() {
   const [showSuspendModal, setShowSuspendModal] = useState(false);
   const [selectedVenueToSuspend, setSelectedVenueToSuspend] = useState(null);
   const [suspendReason, setSuspendReason] = useState('');
+
+  // Modal Venue Details states
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedVenueForDetails, setSelectedVenueForDetails] = useState(null);
+  const [activeModalImageIndex, setActiveModalImageIndex] = useState(0);
 
   // Profile Form States
   const [profileForm, setProfileForm] = useState({
@@ -681,7 +701,7 @@ export default function AdminDashboard() {
           <div className="flex flex-col gap-6 animate-fade-in">
             <div>
               <h2 className="text-2xl font-black text-slate-900">Active Venue Directory</h2>
-              <p className="text-slate-500 text-sm mt-0.5">List of registered event spaces. Listings are approved automatically and do not require admin actions.</p>
+              <p className="text-slate-500 text-sm mt-0.5">List of registered event spaces. Review new property listings pending approval, or manage active and suspended venues.</p>
             </div>
 
             <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-x-auto">
@@ -690,10 +710,10 @@ export default function AdminDashboard() {
                   <tr className="bg-slate-50/50 border-b border-slate-200/60">
                     <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Venue Name</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Type</th>
-                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Price / Hour</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Price Rate</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Capacity</th>
                     <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Platform Status</th>
-                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Emergency Actions</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -716,7 +736,7 @@ export default function AdminDashboard() {
                           {v.venueType.replace('_', ' ')}
                         </td>
                         <td className="px-6 py-4 text-xs text-slate-900 font-bold">
-                          ₹{v.pricePerHour}
+                          {v.pricingUnit === 'day' ? `₹${Number(v.pricePerDay || 0).toLocaleString('en-IN')}/day` : `₹${Number(v.pricePerHour).toLocaleString('en-IN')}/hr`}
                         </td>
                         <td className="px-6 py-4 text-xs text-slate-600">
                           {v.capacity} pax
@@ -725,27 +745,58 @@ export default function AdminDashboard() {
                           <span className={`px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${
                             v.status === 'suspended'
                               ? 'bg-rose-50 text-rose-600 border border-rose-100'
+                              : v.status === 'pending'
+                              ? 'bg-amber-50 text-amber-600 border border-amber-100'
+                              : v.status === 'rejected'
+                              ? 'bg-slate-50 text-slate-600 border border-slate-100'
                               : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
                           }`}>
                             {v.status}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          {v.status === 'suspended' ? (
+                          <div className="flex gap-2 justify-end items-center">
                             <button
-                              onClick={() => toggleVenueListingStatus(v, 'approved')}
-                              className="py-1 px-2.5 rounded-lg border border-emerald-200 text-emerald-600 font-semibold text-[11px] hover:bg-emerald-50 transition-colors"
+                              onClick={() => {
+                                setSelectedVenueForDetails(v);
+                                setActiveModalImageIndex(0);
+                                setShowDetailsModal(true);
+                              }}
+                              className="py-1 px-2.5 rounded-lg border border-slate-200 text-slate-600 font-semibold text-[11px] hover:bg-slate-50 transition-colors"
                             >
-                              Activate Listing
+                              View Details
                             </button>
-                          ) : (
-                            <button
-                              onClick={() => handleOpenSuspendModal(v)}
-                              className="py-1 px-2.5 rounded-lg border border-rose-200 text-rose-600 font-semibold text-[11px] hover:bg-rose-50 transition-colors inline-flex items-center gap-1"
-                            >
-                              <MdBlock /> Suspend Listing
-                            </button>
-                          )}
+                            {v.status === 'pending' ? (
+                              <>
+                                <button
+                                  onClick={() => toggleVenueListingStatus(v, 'approved')}
+                                  className="py-1 px-2.5 rounded-lg border border-emerald-200 text-emerald-600 font-semibold text-[11px] hover:bg-emerald-50 transition-colors"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => handleOpenSuspendModal(v)}
+                                  className="py-1 px-2.5 rounded-lg border border-rose-200 text-rose-600 font-semibold text-[11px] hover:bg-rose-50 transition-colors"
+                                >
+                                  Suspend/Reject
+                                </button>
+                              </>
+                            ) : v.status === 'suspended' || v.status === 'rejected' ? (
+                              <button
+                                onClick={() => toggleVenueListingStatus(v, 'approved')}
+                                className="py-1 px-2.5 rounded-lg border border-emerald-200 text-emerald-600 font-semibold text-[11px] hover:bg-emerald-50 transition-colors"
+                              >
+                                Activate Listing
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleOpenSuspendModal(v)}
+                                className="py-1 px-2.5 rounded-lg border border-rose-200 text-rose-600 font-semibold text-[11px] hover:bg-rose-50 transition-colors inline-flex items-center gap-1"
+                              >
+                                <MdBlock /> Suspend Listing
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -1103,6 +1154,261 @@ export default function AdminDashboard() {
                 Confirm Suspension
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Pop-up Interactive Venue Details Modal */}
+      {showDetailsModal && selectedVenueForDetails && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-xl border border-slate-100 flex flex-col gap-6 max-h-[90vh] overflow-y-auto relative animate-scale-up">
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-950 tracking-tight">{selectedVenueForDetails.venueName}</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Venue Listing Reference: <span className="font-mono text-slate-700 font-semibold">{selectedVenueForDetails.id}</span></p>
+              </div>
+              <button 
+                onClick={() => setShowDetailsModal(false)}
+                className="p-1.5 rounded-lg border border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
+              >
+                <MdClose className="text-xl" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              
+              {/* Left Column: Image Slideshow / Gallery */}
+              <div className="flex flex-col gap-3">
+                <div className="w-full h-72 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 relative shadow-sm">
+                  {selectedVenueForDetails.images && selectedVenueForDetails.images.length > 0 ? (
+                    <img 
+                      src={detailUrl(selectedVenueForDetails.images[activeModalImageIndex])} 
+                      alt={`${selectedVenueForDetails.venueName} ${activeModalImageIndex + 1}`} 
+                      className="w-full h-full object-cover transition-all duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2">
+                      <span className="text-5xl">🏢</span>
+                      <span className="text-xs font-semibold">No images uploaded for this venue</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Thumbnail selector */}
+                {selectedVenueForDetails.images && selectedVenueForDetails.images.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto py-1 scrollbar-thin">
+                    {selectedVenueForDetails.images.map((img, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveModalImageIndex(idx)}
+                        className={`w-16 h-16 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all ${
+                          idx === activeModalImageIndex ? 'border-primary shadow-sm scale-95' : 'border-transparent opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        <img src={thumbnailUrl(img)} alt="Thumbnail" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Description */}
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 mt-2">
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">About the Space</h4>
+                  <p className="text-slate-600 text-xs leading-relaxed whitespace-pre-line">
+                    {selectedVenueForDetails.description || 'No description provided by the host.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Column: Venue Details */}
+              <div className="flex flex-col gap-6">
+                
+                {/* Status and Type tags */}
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span className="px-3 py-1 text-[10px] font-bold rounded-lg uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
+                    {selectedVenueForDetails.venueType.replace('_', ' ')}
+                  </span>
+                  <span className={`px-3 py-1 text-[10px] font-bold rounded-lg uppercase tracking-wider border ${
+                    selectedVenueForDetails.status === 'suspended'
+                      ? 'bg-rose-50 text-rose-600 border-rose-100'
+                      : selectedVenueForDetails.status === 'pending'
+                      ? 'bg-amber-50 text-amber-600 border-amber-100'
+                      : selectedVenueForDetails.status === 'rejected'
+                      ? 'bg-slate-50 text-slate-600 border-slate-100'
+                      : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                  }`}>
+                    {selectedVenueForDetails.status}
+                  </span>
+                </div>
+
+                {/* Price and Capacity highlights */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-slate-50/50 border border-slate-200/60 rounded-xl p-3">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pricing Rate</span>
+                    <span className="text-lg font-black text-slate-900 mt-0.5 block">
+                      {selectedVenueForDetails.pricingUnit === 'day' 
+                        ? `₹${Number(selectedVenueForDetails.pricePerDay || 0).toLocaleString('en-IN')}/day` 
+                        : `₹${Number(selectedVenueForDetails.pricePerHour).toLocaleString('en-IN')}/hr`}
+                    </span>
+                  </div>
+                  <div className="bg-slate-50/50 border border-slate-200/60 rounded-xl p-3">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Max Capacity</span>
+                    <span className="text-lg font-black text-slate-900 mt-0.5 block">
+                      {selectedVenueForDetails.capacity} Guests
+                    </span>
+                  </div>
+                </div>
+
+                {/* Timings details */}
+                <div className="flex flex-col gap-1.5 border border-slate-100 rounded-2xl p-4">
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <MdAccessTime className="text-slate-500 text-sm" /> Timing & Working Days
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                    <div>
+                      <span className="text-slate-400 font-medium block">Opening Time</span>
+                      <span className="font-bold text-slate-800">{selectedVenueForDetails.openingTime ? formatTime12Hour(selectedVenueForDetails.openingTime) : 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 font-medium block">Closing Time</span>
+                      <span className="font-bold text-slate-800">{selectedVenueForDetails.closingTime ? formatTime12Hour(selectedVenueForDetails.closingTime) : 'N/A'}</span>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <span className="text-slate-400 font-medium text-xs block mb-1">Operational Days</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedVenueForDetails.workingDays && selectedVenueForDetails.workingDays.map((dayData, idx) => {
+                        const isString = typeof dayData === 'string';
+                        const dayName = isString ? dayData : dayData?.day;
+                        const start = isString ? null : dayData?.start;
+                        const end = isString ? null : dayData?.end;
+                        
+                        if (!dayName) return null;
+                        
+                        return (
+                          <span key={idx} className="px-2.5 py-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 rounded-md capitalize flex flex-col items-center">
+                            <span>{dayName}</span>
+                            {start && end && (
+                              <span className="text-[8px] text-emerald-600 font-normal">
+                                {formatTime12Hour(start)} - {formatTime12Hour(end)}
+                              </span>
+                            )}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Address & Coordinates */}
+                <div className="flex flex-col gap-1.5 border border-slate-100 rounded-2xl p-4">
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    <MdLocationOn className="text-slate-500 text-sm" /> Location details
+                  </h4>
+                  <p className="text-xs text-slate-700 leading-relaxed font-medium">{selectedVenueForDetails.address}</p>
+                  <p className="text-[10px] text-slate-400 font-mono mt-1">
+                    Latitude: {selectedVenueForDetails.latitude} | Longitude: {selectedVenueForDetails.longitude}
+                  </p>
+                </div>
+
+                {/* Owner details */}
+                {selectedVenueForDetails.owner && (
+                  <div className="flex flex-col gap-1.5 border border-slate-100 rounded-2xl p-4">
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                      <MdPerson className="text-slate-500 text-sm" /> Host/Owner Details
+                    </h4>
+                    <div className="text-xs text-slate-700">
+                      <p className="font-semibold">{selectedVenueForDetails.owner.name}</p>
+                      <p className="text-slate-500 mt-0.5">{selectedVenueForDetails.owner.email}</p>
+                      {selectedVenueForDetails.owner.phone && (
+                        <p className="text-slate-500 mt-0.5">Phone: {selectedVenueForDetails.owner.phone}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Amenities */}
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Amenities Offered</h4>
+                  {selectedVenueForDetails.amenities && selectedVenueForDetails.amenities.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedVenueForDetails.amenities.map((amenity, index) => (
+                        <span key={index} className="px-2.5 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded-lg flex items-center gap-1.5 border border-slate-200/60">
+                          <MdCheckCircle className="text-emerald-500 text-sm" />
+                          {amenity}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400 italic">No amenities specified.</p>
+                  )}
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* Modal Footer (with administrative actions) */}
+            <div className="flex flex-wrap gap-3 justify-end items-center border-t border-slate-100 pt-4 mt-2">
+              <button
+                type="button"
+                onClick={() => setShowDetailsModal(false)}
+                className="py-2 px-4 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors"
+              >
+                Close Details
+              </button>
+
+              {selectedVenueForDetails.status === 'pending' ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleVenueListingStatus(selectedVenueForDetails, 'approved');
+                      setShowDetailsModal(false);
+                    }}
+                    className="py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors"
+                  >
+                    Approve Listing
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDetailsModal(false);
+                      handleOpenSuspendModal(selectedVenueForDetails);
+                    }}
+                    className="py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition-colors"
+                  >
+                    Suspend/Reject Listing
+                  </button>
+                </>
+              ) : selectedVenueForDetails.status === 'suspended' || selectedVenueForDetails.status === 'rejected' ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleVenueListingStatus(selectedVenueForDetails, 'approved');
+                    setShowDetailsModal(false);
+                  }}
+                  className="py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors"
+                >
+                  Re-Activate Listing
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDetailsModal(false);
+                    handleOpenSuspendModal(selectedVenueForDetails);
+                  }}
+                  className="py-2 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition-colors inline-flex items-center gap-1.5"
+                >
+                  <MdBlock /> Suspend Listing
+                </button>
+              )}
+            </div>
+
           </div>
         </div>
       )}

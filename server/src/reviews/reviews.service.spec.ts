@@ -21,7 +21,7 @@ const mockReviewRepo = {
   createQueryBuilder: jest.fn().mockReturnValue(mockQb),
 };
 
-const mockBookingRepo = { findOne: jest.fn() };
+const mockBookingRepo = { findOne: jest.fn(), find: jest.fn() };
 const mockVenueRepo = { findOne: jest.fn(), update: jest.fn() };
 
 describe('ReviewsService', () => {
@@ -49,7 +49,7 @@ describe('ReviewsService', () => {
   describe('create', () => {
     it('should create a review after completed booking', async () => {
       mockVenueRepo.findOne.mockResolvedValue({ id: 'v-1' });
-      mockBookingRepo.findOne.mockResolvedValue({ id: 'b-1', bookingStatus: BookingStatus.COMPLETED });
+      mockBookingRepo.find.mockResolvedValue([{ id: 'b-1', bookingStatus: BookingStatus.COMPLETED }]);
       mockReviewRepo.findOne.mockResolvedValue(null);
 
       const review = { id: 'r-1', rating: 5, comment: 'Great!' };
@@ -68,20 +68,20 @@ describe('ReviewsService', () => {
 
     it('should throw ForbiddenException without completed booking', async () => {
       mockVenueRepo.findOne.mockResolvedValue({ id: 'v-1' });
-      mockBookingRepo.findOne.mockResolvedValue(null);
+      mockBookingRepo.find.mockResolvedValue([]);
       await expect(service.create('v-1', 'u-1', 5, '')).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw BadRequestException for duplicate review', async () => {
       mockVenueRepo.findOne.mockResolvedValue({ id: 'v-1' });
-      mockBookingRepo.findOne.mockResolvedValue({ id: 'b-1' });
+      mockBookingRepo.find.mockResolvedValue([{ id: 'b-1', bookingStatus: BookingStatus.COMPLETED }]);
       mockReviewRepo.findOne.mockResolvedValue({ id: 'existing' });
       await expect(service.create('v-1', 'u-1', 5, '')).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException for invalid rating', async () => {
       mockVenueRepo.findOne.mockResolvedValue({ id: 'v-1' });
-      mockBookingRepo.findOne.mockResolvedValue({ id: 'b-1' });
+      mockBookingRepo.find.mockResolvedValue([{ id: 'b-1', bookingStatus: BookingStatus.COMPLETED }]);
       mockReviewRepo.findOne.mockResolvedValue(null);
       await expect(service.create('v-1', 'u-1', 6, '')).rejects.toThrow(BadRequestException);
     });

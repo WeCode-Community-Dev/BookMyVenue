@@ -5,6 +5,7 @@ import { AdminService } from './admin.service';
 import { User, UserRole, UserStatus } from '../users/entities/user.entity';
 import { Venue, VenueStatus } from '../venues/entities/venue.entity';
 import { Booking, BookingStatus } from '../bookings/entities/booking.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const mockQb = {
   where: jest.fn().mockReturnThis(),
@@ -50,12 +51,17 @@ describe('AdminService', () => {
   let service: AdminService;
 
   beforeEach(async () => {
+    const mockEventEmitter = {
+      emit: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
         { provide: getRepositoryToken(User), useValue: mockUserRepo },
         { provide: getRepositoryToken(Venue), useValue: mockVenueRepo },
         { provide: getRepositoryToken(Booking), useValue: mockBookingRepo },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
       ],
     }).compile();
 

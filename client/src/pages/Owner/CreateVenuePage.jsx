@@ -13,6 +13,8 @@ export default function CreateVenuePage() {
     longitude: 80.2707,
     capacity: 100,
     pricePerHour: 1000,
+    pricingUnit: 'hour',
+    pricePerDay: 10000,
     openingTime: '09:00',
     closingTime: '22:00',
   });
@@ -266,7 +268,7 @@ export default function CreateVenuePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.venueName || !form.address || !form.pricePerHour) {
+    if (!form.venueName || !form.address || (form.pricingUnit === 'hour' && !form.pricePerHour) || (form.pricingUnit === 'day' && !form.pricePerDay)) {
       return toast.error('Please fill required fields');
     }
 
@@ -304,14 +306,16 @@ export default function CreateVenuePage() {
         latitude: Number(form.latitude),
         longitude: Number(form.longitude),
         capacity: Number(form.capacity),
-        pricePerHour: Number(form.pricePerHour),
+        pricePerHour: form.pricingUnit === 'hour' ? Number(form.pricePerHour) : 0,
+        pricePerDay: form.pricingUnit === 'day' ? Number(form.pricePerDay) : null,
+        pricingUnit: form.pricingUnit,
         amenities,
         workingDays,
         images: uploadedImages,
       };
 
       await venueService.create(payload);
-      toast.success('Venue listing created successfully! Your venue is live.');
+      toast.success('Venue listing created successfully! Your venue is awaiting admin approval.');
       navigate('/owner/dashboard');
     } catch {
       toast.error('Failed to create venue');
@@ -360,15 +364,37 @@ export default function CreateVenuePage() {
               </select>
             </div>
 
+            {/* Pricing Unit */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pricing Basis</label>
+              <select
+                className="w-full py-3 px-4 bg-slate-50 border border-slate-200/80 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-primary focus:bg-white transition-all duration-200"
+                value={form.pricingUnit}
+                onChange={e => setForm({ ...form, pricingUnit: e.target.value })}
+              >
+                <option value="hour">Per Hour</option>
+                <option value="day">Per Day</option>
+              </select>
+            </div>
+
             {/* Price */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Price per Hour (₹) *</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                {form.pricingUnit === 'day' ? 'Price per Day (₹) *' : 'Price per Hour (₹) *'}
+              </label>
               <input
                 type="number"
                 className="w-full py-3 px-4 bg-slate-50 border border-slate-200/80 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-primary focus:bg-white transition-all duration-200"
-                placeholder="1000"
-                value={form.pricePerHour}
-                onChange={e => setForm({ ...form, pricePerHour: Number(e.target.value) })}
+                placeholder={form.pricingUnit === 'day' ? "25000" : "1000"}
+                value={form.pricingUnit === 'day' ? form.pricePerDay : form.pricePerHour}
+                onChange={e => {
+                  const val = Number(e.target.value);
+                  if (form.pricingUnit === 'day') {
+                    setForm({ ...form, pricePerDay: val });
+                  } else {
+                    setForm({ ...form, pricePerHour: val });
+                  }
+                }}
                 required
                 min="0"
               />

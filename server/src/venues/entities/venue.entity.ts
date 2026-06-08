@@ -34,6 +34,11 @@ export enum VenueStatus {
   SUSPENDED = 'suspended',
 }
 
+export enum PricingUnit {
+  HOUR = 'hour',
+  DAY = 'day',
+}
+
 @Entity('venues')
 export class Venue {
   @PrimaryGeneratedColumn('uuid')
@@ -70,6 +75,12 @@ export class Venue {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   pricePerHour: number;
 
+  @Column({ type: 'enum', enum: PricingUnit, default: PricingUnit.HOUR })
+  pricingUnit: PricingUnit;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  pricePerDay: number;
+
   @Column({ type: 'jsonb', default: [] })
   amenities: string[];
 
@@ -82,7 +93,7 @@ export class Venue {
   @Column({ type: 'int', default: 0 })
   reviewCount: number;
 
-  @Column({ type: 'enum', enum: VenueStatus, default: VenueStatus.APPROVED })
+  @Column({ type: 'enum', enum: VenueStatus, default: VenueStatus.PENDING })
   status: VenueStatus;
 
   @Column({ type: 'jsonb', default: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] })

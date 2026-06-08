@@ -39,7 +39,7 @@ export class VenuesService {
       ...createVenueDto,
       images: uploadedImages,
       ownerId,
-      status: VenueStatus.APPROVED,
+      status: VenueStatus.PENDING,
     });
 
     const savedVenue = await this.venuesRepository.save(venue);

@@ -9,7 +9,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
-import { VenueType } from '../entities/venue.entity';
+import { VenueType, PricingUnit } from '../entities/venue.entity';
 
 export class CreateVenueDto {
   @ApiProperty({ example: 'Grand Celebration Hall', description: 'Name of the venue' })
@@ -52,6 +52,17 @@ export class CreateVenueDto {
   @IsNumber()
   @Min(0)
   pricePerHour: number;
+
+  @ApiPropertyOptional({ enum: PricingUnit, example: PricingUnit.HOUR, description: 'Pricing unit (hour/day)' })
+  @IsEnum(PricingUnit)
+  @IsOptional()
+  pricingUnit?: PricingUnit;
+
+  @ApiPropertyOptional({ example: 25000, description: 'Price per day in INR', minimum: 0 })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  pricePerDay?: number;
 
   @ApiPropertyOptional({
     example: ['WiFi', 'Parking', 'AC', 'Projector'],

@@ -356,8 +356,12 @@ export default function VenuesPage() {
                           <span className="text-xs font-bold text-slate-700">{venue.capacity} guests</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[9px] uppercase font-bold text-slate-400">Price/Hour</span>
-                          <span className="text-xs font-bold text-slate-700">₹{Number(venue.pricePerHour).toLocaleString('en-IN')}</span>
+                          <span className="text-[9px] uppercase font-bold text-slate-400 font-sans">
+                            {venue.pricingUnit === 'day' ? 'Price/Day' : 'Price/Hour'}
+                          </span>
+                          <span className="text-xs font-bold text-slate-700">
+                            ₹{venue.pricingUnit === 'day' ? Number(venue.pricePerDay || 0).toLocaleString('en-IN') : Number(venue.pricePerHour).toLocaleString('en-IN')}
+                          </span>
                         </div>
                       </div>
                     </div>
