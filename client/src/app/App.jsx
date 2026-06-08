@@ -1,11 +1,18 @@
-// import React from 'react'
+import {BrowserRouter,Routes,Route} from "react-router-dom";
+import Dashboard from "../presentation/pages/vendor/Dashboard";
 
-const App = () => {
+import React from 'react'
+
+function App() {
   return (
-    <div>
-      welcome
-    </div>
-  )
+    <BrowserRouter>
+    <Routes>
+      <Route>
+        <Route path="/" element={<Dashboard/>}/>
+      </Route>
+    </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App
