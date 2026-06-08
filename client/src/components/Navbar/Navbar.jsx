@@ -16,8 +16,6 @@ import {
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
 
-
-
 export default function Navbar() {
   const { user, isAuthenticated, logout, isAdmin, isVenueOwner } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
