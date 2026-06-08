@@ -1,3 +1,4 @@
+Add phase details to CONTRIBUTING.md
 # 🤝 Contribution Guidelines
 
 We are building BookMyVenue in **4 Phases** to ensure a structured and community-driven approach:
