@@ -13,14 +13,66 @@ enum Role {
   ADMIN
 }
 
+enum VenueStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum VenueType {
+  AUDITORIUM
+  BANQUET_HALL
+  CAFE
+  RESTAURANT
+  CONFERENCE_ROOM
+  STUDIO
+  OUTDOOR_SPACE
+  OTHER
+}
+
 model User {
   id           String   @id @default(uuid())
+
   name         String
   email        String   @unique
-  phone        String
+  phone        String   @unique
   passwordHash String
-  role         Role     @default(USER)
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  roles        UserRole[]
+  venues       Venue[]
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+
+  userId    String
+  role      Role
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+}
+
+model Venue {
+  id String @id @default(uuid())
+
+  ownerId String
+
+  name String
+
+  type VenueType
+
+  city String
+
+  status VenueStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }

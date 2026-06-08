@@ -1,16 +1,27 @@
-import SignupForm from '../components/SignupForm';
+import { useState } from 'react';
+
 import logo from '../../../assets/bookmyvenue.webp';
 
+import AccountTypeSelector from '../components/AccountTypeSelector';
+import UserSignupForm from '../components/UserSignupForm';
+import OwnerSignupForm from '../components/OwnerSignupForm';
+
 const SignupPage = () => {
+
+   const [accountType, setAccountType] = useState(null);
+
    return (
+
       <div className="min-h-screen bg-white">
 
          <div className="absolute top-6 left-6">
+
             <img
                src={logo}
                alt="BookMyVenue"
                className="h-28 w-auto"
             />
+
          </div>
 
          <div className="min-h-screen flex items-center justify-center px-4">
@@ -22,44 +33,37 @@ const SignupPage = () => {
                </h1>
 
                <p className="mt-3 text-gray-500">
-                  Join BookMyVenue and discover amazing venues
-                  for your next event.
+                  Join BookMyVenue
                </p>
 
-               {/* Tags */}
-               <div className="flex flex-wrap gap-2 mt-6 mb-8">
+               {!accountType && (
 
-                  <span className="px-3 py-1 rounded-full bg-red-50 text-red-600 text-sm font-medium">
-                     Venues
-                  </span>
+                  <AccountTypeSelector
+                     onSelect={setAccountType}
+                  />
 
-                  <span className="px-3 py-1 rounded-full bg-red-50 text-red-600 text-sm font-medium">
-                     Events
-                  </span>
+               )}
 
-                  <span className="px-3 py-1 rounded-full bg-red-50 text-red-600 text-sm font-medium">
-                     Bookings
-                  </span>
+               {accountType === 'USER' && (
 
-               </div>
+                  <UserSignupForm onBack={() => setAccountType(null)}
+                   />
 
-               <SignupForm />
+               )}
 
-               <p className="text-center text-sm text-gray-500 mt-6">
-                  Already have an account?
-                  <a
-                     href="/login"
-                     className="ml-1 text-red-600 font-medium hover:text-red-700"
-                  >
-                     Sign In
-                  </a>
-               </p>
+               {accountType === 'OWNER' && (
+
+                  <OwnerSignupForm  onBack={() => setAccountType(null)}
+                  />
+
+               )}
 
             </div>
 
          </div>
 
       </div>
+
    );
 };
 
