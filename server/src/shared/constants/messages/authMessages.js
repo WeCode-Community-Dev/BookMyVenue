@@ -4,5 +4,6 @@ export const authMessages = {
     },
     error: {
         USER_NOT_FOUND: 'User not found',
+        OWNER_NOT_FOUND: 'Owner not found',
     }
 }

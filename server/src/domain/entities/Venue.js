@@ -1,4 +1,4 @@
-import { VenueStatus } from "../enums/Venue.enum";
+import { VenueStatus } from "../enums/Venue.enum.js";
 
 export class VenueEntity {
     constructor ({

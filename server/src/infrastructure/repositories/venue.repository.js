@@ -1,28 +1,37 @@
-import { IVenueRepository } from "../../domain/repositories/IVenue.repository";
-import { VenueModel } from "../database/Venue.model";
+import { VenueMapper } from "../../application/mapper/Venue.mapper.js";
+import { IVenueRepository } from "../../domain/repositories/IVenue.repository.js";
+import { VenueModel } from "../database/Venue.model.js";
 
 
 export class VenueRepository extends IVenueRepository {
     async findById(id){
-        const documnet = await VenueModel.findById(id)
-        if(!documnet) return null
-        return this.mapToEntity(documnet)
+        const document = await VenueModel.findById(id)
+        if(!document) return null
+        return VenueMapper.mapToEntity(document)
     }
 
     async create(venue){
-        const data = this.mapToPersistence(venue)
+        const data = VenueMapper.mapToPersistence(venue)
         const document = await VenueModel.create(data)
-        return this.mapToEntity(document)
+        return VenueMapper.mapToEntity(document)
     }
 
     async update(id, venue){
-        const data = this.mapToPersistence(venue)
+        const data = VenueMapper.mapToPersistence(venue)
         const document = await VenueModel.findByIdAndUpdate(
             id,
             { $set: data},
             { new: true }
         )
         if(!document) return null
-        return this.mapToEntity(document)
+        return VenueMapper.mapToEntity(document)
     }
+
+    // mapToEntity(doc){
+    //     return VenueMapper.mapToEntity(doc)
+    // }
+
+    // mapToPersistence(entity){
+    //     return VenueMapper.mapToPersistence(entity)
+    // }
 }

@@ -14,10 +14,10 @@ export class IVenueRepository {
     // async findAllFiltered(search, page, limit){
     //     throw new Error('Method not implemented')
     // }
-    mapToEntity(doc){
-        throw new Error('Method not implemented')
-    }
-    mapToPersistence(venue){
-        throw new Error('Method not implemented')
-    }
+    // mapToEntity(doc){
+    //     throw new Error('Method not implemented')
+    // }
+    // mapToPersistence(venue){
+    //     throw new Error('Method not implemented')
+    // }
 }
