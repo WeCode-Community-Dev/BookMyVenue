@@ -1,0 +1,103 @@
+# ==========================================
+# General / IDEs / OS
+# ==========================================
+.git/
+.vscode/
+.idea/
+.DS_Store
+*.log
+*.bak
+*.tmp
+*.swp
+
+# ==========================================
+# FastAPI / Python
+# ==========================================
+# Environments
+venv/
+.venv/
+env/
+.env/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Environment variables (Security)
+.env
+
+# ==========================================
+# React JS / Node
+# ==========================================
+# Dependencies
+node_modules/
+.npm/
+
+# Build outputs
+build/
+dist/
+.next/
+out/
+
+# Testing
+coverage/
+
+# Local env files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ==========================================
+# Docker
+# ==========================================
+.docker/
+docker-compose.override.yml
+
+# ==========================================
+# PostgreSQL / Redis / MinIO (Local Data Volumes)
+# ==========================================
+# Ignore local mounted directories for databases/storage to prevent 
+# graphing tools from indexing binary data or massive storage blocks.
+# Update these folder names if you named your volume mounts differently.
+
+# PostgreSQL
+pgdata/
+postgres-data/
+*.sql
+*.dump
+
+# Redis
+redisdata/
+redis-data/
+*.rdb
+*.aof
+
+# MinIO
+minio_data/
+minio-storage/
+.minio.sys/
+
+# ==========================================
+# Project-Specific Exclusions (from BookMyVenue)
+# ==========================================
+
+# AI / Agents Memory
+.agents/
+.codebase-memory/
+
+# Linter / Cache
+.ruff_cache/
+
+# Graphify Output (Prevent graphing the graph output)
+graphify-out/
+
+# CI/CD (Optional, but usually ignored for architecture graphs)
+.github/

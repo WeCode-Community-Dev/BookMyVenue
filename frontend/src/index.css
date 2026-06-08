@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --font-sans: "Inter", system-ui, sans-serif;
+  
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-up: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
+  }
+}
+
+@utility animate-blob {
+  animation: blob 7s infinite;
+}
+
+@utility animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+@utility animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-400 font-sans antialiased transition-colors duration-500;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-semibold text-slate-100;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-slate-900/60 backdrop-blur-xl border border-slate-800/50 shadow-xl;
+  }
+  .btn-primary {
+    @apply bg-indigo-600 text-slate-50 font-medium px-4 py-2 rounded-lg hover:bg-indigo-500 active:scale-95 transition-all duration-200 shadow-md hover:shadow-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none;
+  }
+  .btn-secondary {
+    @apply bg-slate-900 text-slate-300 font-medium px-4 py-2 rounded-lg hover:bg-slate-800 border border-slate-800 active:scale-95 transition-all duration-200 focus:ring-2 focus:ring-slate-700 focus:outline-none backdrop-blur-md;
+  }
+  .input-field {
+    @apply w-full px-4 py-2 rounded-lg border border-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all duration-200 bg-slate-950 text-slate-100 placeholder:text-slate-500 shadow-inner;
+  }
+}

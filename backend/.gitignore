@@ -1,0 +1,59 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# =========================
+# Virtual Environments
+# =========================
+venv/
+env/
+.venv/
+Pipfile.lock
+poetry.lock
+
+# =========================
+# Environment Variables (Security)
+# =========================
+# Never commit your environment variables to version control!
+.env
+.env.local
+.env.*
+!.env.example 
+
+# =========================
+# FastAPI / Web Specific
+# =========================
+*.log
+*.sqlite3
+*.db
+
+# =========================
+# Testing and Coverage
+# =========================
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+.tox/
+coverage.xml
+
+# =========================
+# Type Checking and Linting
+# =========================
+.mypy_cache/
+.ruff_cache/
+.ruff_cache
+
+# =========================
+# IDEs and Editors
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

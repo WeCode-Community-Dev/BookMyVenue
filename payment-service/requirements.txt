@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+httpx
+pydantic-settings
+ruff
+aio-pika
+aiosqlite
