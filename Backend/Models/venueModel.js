@@ -10,9 +10,9 @@ const venueSchema = new mongoose.Schema({
         type: String,
         require: true
     },
-    type: {
-        type: String,
-        //require: true
+    category: {
+        type: Schema.Types.ObjectId,
+        ref: 'Category',
     },
     ownerId: {
         type: Schema.Types.ObjectId,

@@ -13,17 +13,15 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 //routes
 const venueRouter = require('./Routes/venueRoutes')
+const categoryRouter = require('./Routes/categoryRoutes')
 
 
 const port = process.env.PORT
 
 dbConnect()
 
-
-
-
-
 app.use('/api/venue', venueRouter)
+app.use('/api/category',categoryRouter)
 
 app.get('/', (req, res) => {
     res.send('Hello World!');

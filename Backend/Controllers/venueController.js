@@ -3,7 +3,7 @@ const StatusCode = require('../statusCode');
 const Venue = require('../Models/venueModel');
 
 const addVenue = asyncHandler(async (req, res) => {
-    const { name, description, price, capacity, phone,amenities,city,district,state,zipcode,longitude,latitude } = req.body
+    const { name, description, category,price, capacity, phone,amenities,city,district,state,zipcode,longitude,latitude } = req.body
 console.log(req.body.amenities)
 console.log("am",amenities)
 const files = req.files;
@@ -15,10 +15,10 @@ const files = req.files;
         res.status(StatusCode.BAD_REQUEST)
         throw new Error("Description is required");
     }
-    // if (!type) {
-    //     res.status(StatusCode.BAD_REQUEST)
-    //     throw new Error("Type is required");
-    // }
+    if (!category) {
+        res.status(StatusCode.BAD_REQUEST)
+        throw new Error("Category is required");
+    }
     if (!price) {
         res.status(StatusCode.BAD_REQUEST)
         throw new Error("Price is required");
@@ -66,7 +66,7 @@ const files = req.files;
   const imageUrls = files.map((file) => file.path);
 
     const venue = await Venue.create({
-        name, description, price, capacity, phone,amenities,city,district,state,zipcode,
+        name, description,category, price, capacity, phone,amenities,city,district,state,zipcode,
         location:{
             type:'Point',
             coordinates:[longitude,latitude]
@@ -78,7 +78,7 @@ const files = req.files;
     return res.status(StatusCode.OK).json({
         status: "success",
         message: "Venue added successfully",
-        venue
+        
     })
 })
 

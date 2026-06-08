@@ -1,16 +1,16 @@
 
 import { useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
+import { Form, Button, Col } from 'react-bootstrap';
 import { useAddVenueMutation } from '../../redux/api/venueApiSlice';
 import { toast } from 'react-toastify';
-
-
+import { useListCategoriesQuery } from '../../redux/api/categoryApiSlice';
 
 const AddVenue = () => {
 
     const [errors, setErrors] = useState({})
     const [name, setName] = useState("")
     const [description, setDescription] = useState('')
+    const [category, setCategory] = useState('')
     const [price, setPrice] = useState('')
     const [capacity, setCapacity] = useState('')
     const [phone, setPhone] = useState('')
@@ -26,13 +26,14 @@ const AddVenue = () => {
         response: [],
     });
 
+    const [addVenue, { isloading }] = useAddVenueMutation()
+    const { data } = useListCategoriesQuery()
+    const categories = data?.categories
+
     const handleChange = (e) => {
         const { value, checked } = e.target;
         const { amenities } = userinfo;
 
-        console.log(`${value} is ${checked}`);
-
-        // Case 1 : The user checks the box
         if (checked) {
             setUserInfo({
                 amenities: [...amenities, value],
@@ -40,7 +41,6 @@ const AddVenue = () => {
             });
         }
 
-        // Case 2  : The user unchecks the box
         else {
             setUserInfo({
                 amenities: amenities.filter(
@@ -53,7 +53,7 @@ const AddVenue = () => {
         }
     };
 
-    const [addVenue, { isloading }] = useAddVenueMutation()
+
 
     const selectFilesHandler = async (e) => {
         const files = e.target.files;
@@ -73,6 +73,7 @@ const AddVenue = () => {
                 data.append("name", name);
                 data.append("description", description);
                 data.append("price", price);
+                data.append("category", category);
                 data.append("capacity", capacity);
                 data.append("city", city);
                 data.append("state", state);
@@ -91,7 +92,6 @@ const AddVenue = () => {
                 toast.success("venue added successfully");
 
             } catch (error) {
-                console.log(error)
                 toast.error(error?.data?.message || `error`);
             }
         }
@@ -103,7 +103,7 @@ const AddVenue = () => {
 
         if (!name || name.length > 30) newErrors.name = 'Name must be atmost 30 characters long'
         if (!description || description.length > 50) newErrors.description = 'Description must be atmost 50 characters long'
-        //if (!type) newErrors.type = 'type is required'
+        if (!category) newErrors.category = 'Category is required';
         if (!price || price <= 0 || price > 1000000) newErrors.price = 'Enter valid price';
         if (!capacity || capacity <= 0 || capacity > 5000) newErrors.capacity = 'Enter valid capacity';
         if (!phone || phone.length > 10) newErrors.phone = 'Add a valid phone number'
@@ -139,6 +139,23 @@ const AddVenue = () => {
                             onChange={(e) => setDescription(e.target.value)} isInvalid={!!errors.description} />
                         <Form.Control.Feedback type='invalid'>
                             {errors.description}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group as={Col} controlId="formGridCategory">
+                        <Form.Label className="caption">Category</Form.Label>
+                        <Form.Select className="text-secondary"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            isInvalid={!!errors.category}>
+                            <option value="">Choose...</option>
+                            {categories?.map((c) => (
+                                <option key={c._id} value={c._id}>
+                                    {c.name}
+                                </option>
+                            ))}
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                            {errors.category}
                         </Form.Control.Feedback>
                     </Form.Group>
                     <Form.Group>
