@@ -3,11 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services';
 import { HiOutlineMenuAlt3, HiX } from 'react-icons/hi';
-import { 
-  MdLocationOn, 
-  MdKeyboardArrowDown, 
-  MdPerson, 
-  MdVpnKey, 
+import {
+  MdLocationOn,
+  MdKeyboardArrowDown,
+  MdPerson,
+  MdVpnKey,
   MdLogout,
   MdClose,
   MdVisibility,
@@ -15,6 +15,8 @@ import {
   MdAddCircleOutline
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
+
+
 
 export default function Navbar() {
   const { user, isAuthenticated, logout, isAdmin, isVenueOwner } = useAuth();
@@ -144,141 +146,141 @@ export default function Navbar() {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 py-4 bg-white/95 border-b border-slate-200/80 shadow-sm backdrop-blur-md">
-      <div className="container mx-auto px-6 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 text-xl font-extrabold tracking-tight" onClick={() => setMenuOpen(false)}>
-          <MdLocationOn className="text-2xl text-primary animate-pulse" />
-          <span className="text-slate-900">Book<span className="text-primary font-black">My</span>Venue</span>
-        </Link>
+        <div className="container mx-auto px-6 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 text-xl font-extrabold tracking-tight" onClick={() => setMenuOpen(false)}>
+            <MdLocationOn className="text-2xl text-primary animate-pulse" />
+            <span className="text-slate-900">Book<span className="text-primary font-black">My</span>Venue</span>
+          </Link>
 
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-6">
-          {!isAuthenticated && (
-            <Link to="/bookings" className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors duration-200">
-              Discover
-            </Link>
-          )}
+          {/* Desktop Links */}
+          <div className="hidden md:flex items-center gap-6">
+            {!isAuthenticated && (
+              <Link to="/bookings" className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors duration-200">
+                Discover
+              </Link>
+            )}
 
-          {isAuthenticated ? (
-            <>
-              
-              {/* Interactive Profile Dropdown */}
-              <div className="relative pl-4 border-l border-slate-200" ref={dropdownRef}>
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-3 cursor-pointer select-none group text-left focus:outline-none"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary text-sm transition-transform group-hover:scale-105">
-                    {user?.name?.charAt(0)?.toUpperCase()}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-slate-900 leading-tight flex items-center gap-0.5 group-hover:text-primary transition-colors">
-                      {user?.name}
-                      <MdKeyboardArrowDown className={`text-sm transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
-                    </span>
-                    <span className="text-[10px] text-slate-500 capitalize font-medium">{user?.role?.replace('_', ' ')}</span>
-                  </div>
-                </button>
+            {isAuthenticated ? (
+              <>
 
-                {/* Dropdown Card */}
-                {dropdownOpen && (
-                  <div className="absolute right-0 top-full mt-3 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50 text-slate-800 animate-fade-in">
-                    <div className="px-4 py-3 border-b border-slate-50 flex flex-col">
-                      <span className="text-xs font-bold text-slate-900 truncate">{user?.name}</span>
-                      <span className="text-[10px] text-slate-400 capitalize">{user?.role?.replace('_', ' ')}</span>
+                {/* Interactive Profile Dropdown */}
+                <div className="relative pl-4 border-l border-slate-200" ref={dropdownRef}>
+                  <button
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    className="flex items-center gap-3 cursor-pointer select-none group text-left focus:outline-none"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center font-bold text-primary text-sm transition-transform group-hover:scale-105">
+                      {user?.name?.charAt(0)?.toUpperCase()}
                     </div>
-                    
-                    <button 
-                      onClick={handleOpenProfile}
-                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-2.5"
-                    >
-                      <MdPerson className="text-base text-slate-400" /> Profile Details
-                    </button>
-                    
-                    <button 
-                      onClick={handleOpenPassword}
-                      className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-2.5"
-                    >
-                      <MdVpnKey className="text-base text-slate-400" /> Change Password
-                    </button>
-                    
-                    <button 
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-3 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors flex items-center gap-2.5 border-t border-slate-50 mt-1.5"
-                    >
-                      <MdLogout className="text-base" /> Logout
-                    </button>
-                  </div>
-                )}
+                    <div className="flex flex-col">
+                      <span className="text-xs font-semibold text-slate-900 leading-tight flex items-center gap-0.5 group-hover:text-primary transition-colors">
+                        {user?.name}
+                        <MdKeyboardArrowDown className={`text-sm transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                      </span>
+                      <span className="text-[10px] text-slate-500 capitalize font-medium">{user?.role?.replace('_', ' ')}</span>
+                    </div>
+                  </button>
+
+                  {/* Dropdown Card */}
+                  {dropdownOpen && (
+                    <div className="absolute right-0 top-full mt-3 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50 text-slate-800 animate-fade-in">
+                      <div className="px-4 py-3 border-b border-slate-50 flex flex-col">
+                        <span className="text-xs font-bold text-slate-900 truncate">{user?.name}</span>
+                        <span className="text-[10px] text-slate-400 capitalize">{user?.role?.replace('_', ' ')}</span>
+                      </div>
+
+                      <button
+                        onClick={handleOpenProfile}
+                        className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-2.5"
+                      >
+                        <MdPerson className="text-base text-slate-400" /> Profile Details
+                      </button>
+
+                      <button
+                        onClick={handleOpenPassword}
+                        className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-2.5"
+                      >
+                        <MdVpnKey className="text-base text-slate-400" /> Change Password
+                      </button>
+
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-3 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors flex items-center gap-2.5 border-t border-slate-50 mt-1.5"
+                      >
+                        <MdLogout className="text-base" /> Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link to="/login" className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary transition-all duration-200">
+                  Sign In
+                </Link>
+                <Link to="/register" className="px-4 py-2 text-sm font-bold rounded-lg bg-primary hover:bg-primary-dark text-white shadow-sm shadow-primary/15 transition-all duration-200 hover:scale-[1.02]">
+                  Get Started
+                </Link>
               </div>
-            </>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link to="/login" className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-primary transition-all duration-200">
-                Sign In
-              </Link>
-              <Link to="/register" className="px-4 py-2 text-sm font-bold rounded-lg bg-primary hover:bg-primary-dark text-white shadow-sm shadow-primary/15 transition-all duration-200 hover:scale-[1.02]">
-                Get Started
-              </Link>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* Mobile menu toggle */}
+          <button
+            className="md:hidden p-2 text-2xl text-slate-800 hover:text-primary transition-colors"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle navigation"
+          >
+            {menuOpen ? <HiX /> : <HiOutlineMenuAlt3 />}
+          </button>
         </div>
 
-        {/* Mobile menu toggle */}
-        <button
-          className="md:hidden p-2 text-2xl text-slate-800 hover:text-primary transition-colors"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle navigation"
-        >
-          {menuOpen ? <HiX /> : <HiOutlineMenuAlt3 />}
-        </button>
-      </div>
+        {/* Mobile Links Dropdown */}
+        {menuOpen && (
+          <div className="absolute top-[65px] left-0 right-0 bg-white border-b border-slate-200 p-6 flex flex-col gap-4 md:hidden shadow-lg animate-fade-in text-slate-800">
+            {!isAuthenticated && (
+              <Link to="/bookings" className="text-sm font-semibold text-slate-600 hover:text-primary" onClick={() => setMenuOpen(false)}>
+                Discover
+              </Link>
+            )}
 
-      {/* Mobile Links Dropdown */}
-      {menuOpen && (
-        <div className="absolute top-[65px] left-0 right-0 bg-white border-b border-slate-200 p-6 flex flex-col gap-4 md:hidden shadow-lg animate-fade-in text-slate-800">
-          {!isAuthenticated && (
-            <Link to="/bookings" className="text-sm font-semibold text-slate-600 hover:text-primary" onClick={() => setMenuOpen(false)}>
-              Discover
-            </Link>
-          )}
+            {isAuthenticated ? (
+              <>
 
-          {isAuthenticated ? (
-            <>
-              
-              {/* Profile links for mobile */}
-              <div className="flex flex-col gap-2.5 pt-4 border-t border-slate-100">
-                <button 
-                  onClick={handleOpenProfile} 
-                  className="text-sm font-semibold text-slate-600 hover:text-primary flex items-center gap-2 text-left"
-                >
-                  <MdPerson className="text-lg" /> Profile Details
-                </button>
-                <button 
-                  onClick={handleOpenPassword} 
-                  className="text-sm font-semibold text-slate-600 hover:text-primary flex items-center gap-2 text-left"
-                >
-                  <MdVpnKey className="text-lg" /> Change Password
-                </button>
-                <button 
-                  onClick={handleLogout}
-                  className="w-full mt-2 py-2.5 text-center text-xs font-bold rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors flex items-center justify-center gap-2"
-                >
-                  <MdLogout className="text-base" /> Logout
-                </button>
+                {/* Profile links for mobile */}
+                <div className="flex flex-col gap-2.5 pt-4 border-t border-slate-100">
+                  <button
+                    onClick={handleOpenProfile}
+                    className="text-sm font-semibold text-slate-600 hover:text-primary flex items-center gap-2 text-left"
+                  >
+                    <MdPerson className="text-lg" /> Profile Details
+                  </button>
+                  <button
+                    onClick={handleOpenPassword}
+                    className="text-sm font-semibold text-slate-600 hover:text-primary flex items-center gap-2 text-left"
+                  >
+                    <MdVpnKey className="text-lg" /> Change Password
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full mt-2 py-2.5 text-center text-xs font-bold rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <MdLogout className="text-base" /> Logout
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
+                <Link to="/login" className="w-full py-2.5 text-center text-sm font-semibold text-slate-600 bg-slate-50 rounded-lg border border-slate-200" onClick={() => setMenuOpen(false)}>
+                  Sign In
+                </Link>
+                <Link to="/register" className="w-full py-2.5 text-center text-sm font-bold rounded-lg bg-primary text-white" onClick={() => setMenuOpen(false)}>
+                  Get Started
+                </Link>
               </div>
-            </>
-          ) : (
-            <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
-              <Link to="/login" className="w-full py-2.5 text-center text-sm font-semibold text-slate-600 bg-slate-50 rounded-lg border border-slate-200" onClick={() => setMenuOpen(false)}>
-                Sign In
-              </Link>
-              <Link to="/register" className="w-full py-2.5 text-center text-sm font-bold rounded-lg bg-primary text-white" onClick={() => setMenuOpen(false)}>
-                Get Started
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
       </nav>
 
       {/* ========================================================================= */}
@@ -287,9 +289,9 @@ export default function Navbar() {
       {showProfileModal && (
         <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-[100] p-4 animate-fade-in text-slate-800">
           <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.15)] border border-slate-200 flex flex-col gap-4 relative">
-            
+
             {/* Close Button */}
-            <button 
+            <button
               onClick={() => setShowProfileModal(false)}
               className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-colors text-xl"
             >
@@ -359,9 +361,9 @@ export default function Navbar() {
       {showPasswordModal && (
         <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-[100] p-4 animate-fade-in text-slate-800">
           <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.15)] border border-slate-200 flex flex-col gap-4 relative">
-            
+
             {/* Close Button */}
-            <button 
+            <button
               onClick={() => setShowPasswordModal(false)}
               className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-colors text-xl"
             >
@@ -420,10 +422,9 @@ export default function Navbar() {
                   <div className="mt-2 flex flex-col gap-1">
                     <div className="flex justify-between items-center text-[9px] font-bold uppercase text-slate-500 tracking-wider">
                       <span>Password Strength:</span>
-                      <span className={`${
-                        strength.label === 'Strong' ? 'text-emerald-600' :
+                      <span className={`${strength.label === 'Strong' ? 'text-emerald-600' :
                         strength.label === 'Medium' ? 'text-amber-500' : 'text-rose-500'
-                      }`}>{strength.label}</span>
+                        }`}>{strength.label}</span>
                     </div>
                     <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200/50">
                       <div className={`h-full transition-all duration-300 ${strength.color}`} />
