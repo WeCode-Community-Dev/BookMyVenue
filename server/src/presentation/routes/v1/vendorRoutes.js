@@ -2,6 +2,8 @@ import Express from 'express'
 import { ROUTES } from '../../../shared/constants/routes.js'
 import cloudinaryUpload from '../../middlewares/cloudinaryUpload.js'
 import {iVendorVenueController} from '../../controllers/di.js'
+import { validate } from '../../middlewares/validator.js'
+import { createVenueSchema } from '../../validators/VenderVenue.validator.js'
 
 
 const router = Express.Router()
@@ -9,6 +11,6 @@ const router = Express.Router()
 const uploadVenueImages = cloudinaryUpload("venues")
 
 //venue
-router.post(ROUTES.OWNER.VENUE.CREATE, uploadVenueImages.array("images", 10), iVendorVenueController.createVenue)
+router.post(ROUTES.OWNER.VENUE.CREATE, uploadVenueImages.array("images", 10),  validate(createVenueSchema, 'body'), iVendorVenueController.createVenue)
 
 export default router

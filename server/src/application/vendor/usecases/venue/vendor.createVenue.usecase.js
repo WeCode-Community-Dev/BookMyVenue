@@ -1,6 +1,6 @@
 import { AppError } from '../../../../domain/errors/app.error.js'
 import { statusCode } from '../../../../shared/constants/enums/statusCode.js'
-import { authMessages } from '../../../../shared/constants/messages/authMessages.js'
+// import { authMessages } from '../../../../shared/constants/messages/authMessages.js'
 import { VenueMessages } from '../../../../shared/constants/messages/venueMessages.js'
 import { VenueEntity } from '../../../../domain/entities/Venue.js'
 import { VenueStatus } from '../../../../domain/enums/Venue.enum.js'
@@ -9,10 +9,10 @@ import { VenueStatus } from '../../../../domain/enums/Venue.enum.js'
 export class VendorCreateVenueUsecase {
     constructor (
         venueRepository,
-        ownerRepository,
+        // ownerRepository,
     ) {
         this._venueRepository = venueRepository;
-        this._ownerRepository = ownerRepository;
+        // this._ownerRepository = ownerRepository;
     }
 
     async execute({
@@ -47,6 +47,12 @@ export class VendorCreateVenueUsecase {
         // if(owner.role !== 'OWNER'){
         //     throw new AppError(VenueMessages.error.CANNOT_ADD_VENUE, statusCode.BAD_REQUEST)
         // }
+        console.log('from usecsae: ', ownerId)
+        const existing = await this._venueRepository.findByOwnerAndName(ownerId, name)
+        if(existing){
+            throw new AppError(VenueMessages.error.ALREADY_EXISTING, statusCode.BAD_REQUEST)
+        }
+        
         if(images.length < 3){
             throw new AppError(VenueMessages.error.REQUIRE_ATLEAST_THREE_IMAGES, statusCode.BAD_REQUEST)
         }

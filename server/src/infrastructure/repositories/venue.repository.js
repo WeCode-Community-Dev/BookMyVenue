@@ -27,6 +27,15 @@ export class VenueRepository extends IVenueRepository {
         return VenueMapper.mapToEntity(document)
     }
 
+    async findByOwnerAndName(ownerId, name) {
+        const document = await VenueModel.findOne({
+            ownerId,
+            name
+        })
+        if(!document) return null
+        return VenueMapper.mapToEntity(document)
+    }
+
     // mapToEntity(doc){
     //     return VenueMapper.mapToEntity(doc)
     // }
