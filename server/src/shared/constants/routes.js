@@ -12,7 +12,7 @@ export const ROUTES = {
             GET_BY_ID: '/venue/:venueId/:ownerId',
             GET_ALL: '/venues',
             DELETE: '/venue/:venueId/:ownerId',
-            UPDATE: '/venue/:venueId/status'
+            UPDATE_STATUS: '/venue/:venueId/:ownerId/status'
         }
     },
     USER: {

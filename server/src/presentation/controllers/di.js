@@ -3,6 +3,8 @@ import { VendorEditVenueUsecase } from '../../application/vendor/usecases/venue/
 import { VendorCreateVenueUsecase } from '../../application/vendor/usecases/venue/vendor.createVenue.usecase.js'
 import { VendorGetVenueByIdUsecase } from '../../application/vendor/usecases/venue/vendor.getVenueById.usecase.js'
 import { VendorDeleteVenueUsecase } from '../../application/vendor/usecases/venue/vendor.deleteVenue.usecase.js'
+import { VendorUpdateVenueStatusUsecase } from '../../application/vendor/usecases/venue/venue.updateVenueStatus.usecase.js'
+
 
 
 import {VendorVenueController} from '../controllers/vendor/vendor.venueController.js'
@@ -36,6 +38,9 @@ const iVendorGetAllVenues = new VendorGetAllVenuesUsecase (
 const iVendorDeleteVenue = new VendorDeleteVenueUsecase(
     iVenueRepository
 )
+const iUpdatevenueStatus = new VendorUpdateVenueStatusUsecase (
+    iVenueRepository
+)
 //controller
 export const iVendorVenueController = new VendorVenueController (
     iCreateVenueUsecase,
@@ -43,4 +48,5 @@ export const iVendorVenueController = new VendorVenueController (
     iVendorVenueGetById,
     iVendorGetAllVenues,
     iVendorDeleteVenue,
+    iUpdatevenueStatus,
 )

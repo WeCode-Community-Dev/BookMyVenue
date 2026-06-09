@@ -10,13 +10,15 @@ export class VendorVenueController {
         VendorEditVenueUsecase,
         VendorGetVenueByIdUsecase,
         VendorGetAllVenuesUsecase,
-        VendorDeleteVenueUsecase
+        VendorDeleteVenueUsecase,
+        VendorUpdateVenueStatusUsecase,
     ){
         this._vendorCreateVenueUsecase = VendorCreateVenueUsecase
         this._vendorEditVenueUsecase = VendorEditVenueUsecase
         this._vendorGetVenueByIdUsecase = VendorGetVenueByIdUsecase
         this._vendorGetAllVenuesUsecase = VendorGetAllVenuesUsecase
         this._vendorDeleteVenueUsecase = VendorDeleteVenueUsecase
+        this._vendorUpdateVenueStatusUsecase = VendorUpdateVenueStatusUsecase
     }
 
     createVenue = asyncHandler( async (req, res) => {
@@ -59,6 +61,13 @@ export class VendorVenueController {
         const ownerId = req.params.ownerId
         const venueId = req.params.venueId
         await this._vendorDeleteVenueUsecase.execute(ownerId,venueId)
+        return sendSuccess(res, statusCode.OK, '')
+    })
+
+    updateVenueStatus = asyncHandler( async (req, res) => {
+        const ownerId = req.params.ownerId
+        const venueId = req.params.venueId
+        await this._vendorUpdateVenueStatusUsecase.execute({ownerId,venueId, status: req.body.status})
         return sendSuccess(res, statusCode.OK, '')
     })
     
