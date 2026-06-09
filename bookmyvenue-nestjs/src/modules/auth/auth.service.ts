@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { VerifySignupOtpDto } from './dto/verify-signup-otp.dto';
 import { PrismaService } from '../../shared/prisma/prisma.service';
@@ -6,29 +6,56 @@ import { MailService } from '../../shared/mail/mail.service';
 import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { RedisService } from '../../shared/redis/redis.service';
-import { randomInt } from 'crypto';
 import { SignupCachePayload } from './types/signup-payload.type';
 import { ResendOtpDto } from './dto/resend-otp.dto';
+import { normalizeEmail } from './utils/normalize-email';
+import { generateOtp } from './utils/generate-otp';
+import { ConfigService } from '@nestjs/config';
+import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ForgotPasswordPayload } from './types/forgot-password-payload.type';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { JwtTokenService } from '../../shared/jwt/jwt.service';
+import { VerifyForgotPasswordOtpDto } from './dto/verify-forgot-password.dto';
 
 @Injectable()
 export class AuthService {
-    private readonly signupTtlSeconds = 10 * 60;
-    private readonly resendCooldownSeconds = 60;
+    private readonly signupTtlSeconds: number;
+    private readonly resendCooldownSeconds: number;
+    private readonly forgotPasswordTtlSeconds: number;
+    private readonly forgotPasswordCooldownSeconds: number;
 
     constructor(private readonly prisma: PrismaService,
         private readonly mailService: MailService,
-        private readonly redisService: RedisService
-    ) { }
+        private readonly redisService: RedisService,
+        private readonly configService: ConfigService,
+        private readonly jwtService: JwtTokenService
+    ) {
+        this.signupTtlSeconds = Number(
+            this.configService.get('SIGNUP_OTP_TTL_SECONDS', 600),
+        );
+
+        this.resendCooldownSeconds = Number(
+            this.configService.get('SIGNUP_RESEND_COOLDOWN_SECONDS', 60),
+        );
+        this.forgotPasswordTtlSeconds = Number(
+            this.configService.get('FORGOT_PASSWORD_OTP_TTL_SECONDS', 600),
+        );
+
+        this.forgotPasswordCooldownSeconds = Number(
+            this.configService.get('FORGOT_PASSWORD_COOLDOWN_SECONDS', 60),
+        );
+    }
 
     async register(registerDto: RegisterDto) {
-        const email = this.normalizeEmail(registerDto.email);
+        const email = normalizeEmail(registerDto.email);
         const name = registerDto.name.trim();
         const role = registerDto.role === Role.OWNER ? Role.OWNER : Role.USER;
 
         await this.ensureUserDoesNotExist(email);
         await this.ensureCooldownPassed(email);
 
-        const otp = this.generateOtp();
+        const otp = generateOtp();
         const passwordHash = await bcrypt.hash(registerDto.password, 10);
         const otpHash = await bcrypt.hash(otp, 10);
 
@@ -64,13 +91,14 @@ export class AuthService {
         }
 
         return {
+            success: 'true',
             message:
                 'A verification OTP has been sent to your email. It will expire in 10 minutes.',
         };
     }
 
     async verifyOtp(verifySignupOtpDto: VerifySignupOtpDto) {
-        const email = this.normalizeEmail(verifySignupOtpDto.email);
+        const email = normalizeEmail(verifySignupOtpDto.email);
         const payload = await this.getSignupPayload(email);
 
         if (!payload) {
@@ -123,7 +151,7 @@ export class AuthService {
     }
 
     async resendOtp(resendOtpDto: ResendOtpDto) {
-        const email = this.normalizeEmail(resendOtpDto.email);
+        const email = normalizeEmail(resendOtpDto.email);
 
         await this.ensureUserDoesNotExist(email);
         await this.ensureCooldownPassed(email);
@@ -136,7 +164,7 @@ export class AuthService {
             );
         }
 
-        const otp = this.generateOtp();
+        const otp = generateOtp();
         const otpHash = await bcrypt.hash(otp, 10);
 
         const updatedPayload: SignupCachePayload = {
@@ -163,24 +191,193 @@ export class AuthService {
         }
 
         return {
+            success: 'true',
             message: 'A new OTP has been sent to your email.',
         };
     }
 
-    private normalizeEmail(email: string) {
-        return email.trim().toLowerCase();
+    async login(loginDto: LoginDto) {
+        const email = normalizeEmail(loginDto.email);
+
+        const user = await this.prisma.user.findUnique({
+            where: { email },
+        });
+
+        if (!user) {
+            throw new UnauthorizedException('Invalid email or password.');
+        }
+
+        const isPasswordValid = await bcrypt.compare(
+            loginDto.password,
+            user.password,
+        );
+
+        if (!isPasswordValid) {
+            throw new UnauthorizedException('Invalid email or password.');
+        }
+
+        const accessToken = await this.jwtService.generateAccessToken({
+            sub: user.id,
+            email: user.email,
+            role: user.role,
+        });
+
+        return {
+            success: 'true',
+            message: 'Login successful.',
+            'data': {
+                accessToken,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                },
+            }
+        };
+    }
+
+    async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+        const email = normalizeEmail(forgotPasswordDto.email);
+
+        const user = await this.prisma.user.findUnique({
+            where: { email },
+        });
+
+        if (!user) {
+            return {
+                message:
+                    'If an account with this email exists, a password reset OTP has been sent.',
+            };
+        }
+
+        await this.ensureCooldownPassed(this.getForgotPasswordCooldownKey(email), false);
+
+        const otp = generateOtp();
+        const otpHash = await bcrypt.hash(otp, 10);
+
+        const payload: ForgotPasswordPayload = {
+            email,
+            otpHash,
+        };
+
+        await this.redisService.set(
+            this.getForgotPasswordKey(email),
+            JSON.stringify(payload),
+            this.forgotPasswordTtlSeconds,
+        );
+
+        await this.redisService.set(
+            this.getForgotPasswordCooldownKey(email),
+            '1',
+            this.forgotPasswordCooldownSeconds,
+        );
+
+        try {
+            await this.mailService.sendForgotPasswordOtpEmail(
+                user.email,
+                user.name,
+                otp,
+            );
+        } catch {
+            await this.redisService.del(this.getForgotPasswordKey(email));
+            await this.redisService.del(this.getForgotPasswordCooldownKey(email));
+
+            throw new InternalServerErrorException(
+                'Failed to send password reset OTP. Try again.',
+            );
+        }
+
+        return {
+            success: 'true',
+            message: 'If an account with this email exists, a password reset OTP has been sent.',
+        };
+    }
+
+    async verifyForgotPasswordOtp(verifyForgotPasswordOtpDto: VerifyForgotPasswordOtpDto) {
+        const email = normalizeEmail(verifyForgotPasswordOtpDto.email);
+        const payload = await this.getForgotPasswordPayload(email);
+
+        if (!payload) {
+            throw new BadRequestException(
+                'OTP expired or no password reset request found.',
+            );
+        }
+
+        const isOtpValid = await bcrypt.compare(
+            verifyForgotPasswordOtpDto.otp,
+            payload.otpHash,
+        );
+
+        if (!isOtpValid) {
+            throw new BadRequestException('Invalid OTP');
+        }
+
+        await this.redisService.set(
+            this.getForgotPasswordVerifiedKey(email),
+            '1',
+            this.forgotPasswordTtlSeconds,
+        );
+
+        await this.redisService.del(this.getForgotPasswordKey(email));
+
+        return {
+            success: 'true',
+            message: 'OTP verified successfully. You can now reset your password.',
+        };
+    }
+
+    async resetPassword(resetPasswordDto: ResetPasswordDto) {
+        const email = normalizeEmail(resetPasswordDto.email);
+
+        if (resetPasswordDto.newPassword !== resetPasswordDto.confirmPassword) {
+            throw new BadRequestException('Passwords do not match.');
+        }
+
+        const isVerified = await this.redisService.get(
+            this.getForgotPasswordVerifiedKey(email),
+        );
+
+        if (!isVerified) {
+            throw new BadRequestException(
+                'Password reset not verified. Please verify OTP first.',
+            );
+        }
+
+        const passwordHash = await bcrypt.hash(resetPasswordDto.newPassword, 10);
+
+        await this.prisma.user.update({
+            where: { email },
+            data: { password: passwordHash },
+        });
+
+        await this.redisService.del(this.getForgotPasswordVerifiedKey(email));
+        await this.redisService.del(this.getForgotPasswordCooldownKey(email));
+
+        return {
+            success: 'true',
+            message: 'Password reset successful. You can now log in.',
+        };
     }
 
     private getCooldownKey(email: string) {
         return `auth:signup:cooldown:${email}`;
     }
 
-    private generateOtp() {
-        return randomInt(100000, 1000000).toString();
-    }
-
     private getSignupKey(email: string) {
         return `auth:signup:${email}`;
+    }
+
+    private getForgotPasswordKey(email: string) {
+        return `auth:forgot-password:${email}`;
+    }
+
+    private getForgotPasswordCooldownKey(email: string) {
+        return `auth:forgot-password:cooldown:${email}`;
+    }
+
+    private getForgotPasswordVerifiedKey(email: string) {
+        return `auth:forgot-password:verified:${email}`;
     }
 
     private async ensureUserDoesNotExist(email: string) {
@@ -193,8 +390,9 @@ export class AuthService {
         }
     }
 
-    private async ensureCooldownPassed(email: string) {
-        const ttl = await this.redisService.ttl(this.getCooldownKey(email));
+    private async ensureCooldownPassed(email: string, useSignupKey = true) {
+        const cooldownKey = useSignupKey ? this.getCooldownKey(email) : email;
+        const ttl = await this.redisService.ttl(cooldownKey);
 
         if (ttl > 0) {
             throw new BadRequestException(
@@ -203,15 +401,27 @@ export class AuthService {
         }
     }
 
-    private async getSignupPayload(
-        email: string,
-    ): Promise<SignupCachePayload | null> {
+    private async getSignupPayload(email: string,): Promise<SignupCachePayload | null> {
         const raw = await this.redisService.get(this.getSignupKey(email));
 
         if (!raw) {
             return null;
         }
-
         return JSON.parse(raw) as SignupCachePayload;
+    }
+
+    private async getForgotPasswordPayload(email: string,): Promise<ForgotPasswordPayload | null> {
+        const raw = await this.redisService.get(this.getForgotPasswordKey(email));
+
+        if (!raw) {
+            return null;
+        }
+
+        try {
+            return JSON.parse(raw) as ForgotPasswordPayload;
+        } catch {
+            await this.redisService.del(this.getForgotPasswordKey(email));
+            return null;
+        }
     }
 }

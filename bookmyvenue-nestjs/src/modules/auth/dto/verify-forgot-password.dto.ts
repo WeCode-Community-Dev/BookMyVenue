@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
 
-export class VerifySignupOtpDto {
+export class VerifyForgotPasswordOtpDto {
   @ApiProperty({
-    example: 'fathima@example.com',
-    description: 'Email address used during registration',
+    example: 'john.doe@example.com',
+    description: 'Email address associated with the password reset request',
   })
   @IsEmail()
   @IsNotEmpty()
@@ -12,7 +12,7 @@ export class VerifySignupOtpDto {
 
   @ApiProperty({
     example: '123456',
-    description: '6-digit OTP sent to the registered email address',
+    description: '6-digit OTP sent to the user email for verification',
   })
   @IsString()
   @IsNotEmpty()
