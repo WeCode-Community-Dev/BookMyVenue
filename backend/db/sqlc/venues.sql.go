@@ -47,6 +47,8 @@ func (q *Queries) AssignAmenityToVenue(ctx context.Context, arg AssignAmenityToV
 const createAmenity = `-- name: CreateAmenity :one
 INSERT INTO amenities (name)
 VALUES ($1)
+ON CONFLICT (name)
+DO UPDATE SET name = amenities.name
 RETURNING id, name
 `
 
