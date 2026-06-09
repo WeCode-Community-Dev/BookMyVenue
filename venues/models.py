@@ -3,6 +3,12 @@ from account.models import User
 from locations.models import City
 
 # Create your models here.
+
+class Facility(models.Model):
+    name = models.CharField(max_length=225)
+
+    def __str__(self):
+        return self.name
 class Venue(models.Model):
     owner = models.ForeignKey(User,on_delete=models.CASCADE)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
@@ -11,7 +17,7 @@ class Venue(models.Model):
     description = models.TextField()
     capacity = models.IntegerField()
     price_per_hour = models.DecimalField(max_digits=10, decimal_places=2)
-    facilities = models.ManyToManyField('Facility')
+    facilities = models.ManyToManyField(Facility)
 
     def __str__(self):
         return self.name
@@ -25,8 +31,3 @@ class VenueImage(models.Model):
 
 
 
-class Facility(models.Model):
-    name = models.CharField(max_length=225)
-
-    def __str__(self):
-        return self.name

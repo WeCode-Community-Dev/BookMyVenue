@@ -1,3 +1,10 @@
-from django.shortcuts import render
+from rest_framework.views import Response
+from rest_framework.generics import CreateAPIView
 
-# Create your views here.
+from .models import State
+from .serializers import StateSerializer
+
+
+class StateCreateView(CreateAPIView):
+    queryset = State
+    serializer_class = StateSerializer
