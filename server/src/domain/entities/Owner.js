@@ -7,7 +7,8 @@ class Owner {
     role,
     businessName,
     isVerified = false,
-    isAminVerified = false  
+    isAdminVerified = false ,
+    isAdminApproeved = false, 
   }) {
     this.fullName = fullName;
     this.email = email;
@@ -15,6 +16,8 @@ class Owner {
     this.password = password;
     this.businessName = businessName;
     this.isVerified = isVerified;
+    this.isAdminApproeved = isAdminApproeved;
+    this.isAdminVerified = isAdminVerified;
   }
 }
 
