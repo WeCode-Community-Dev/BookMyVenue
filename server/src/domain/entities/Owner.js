@@ -4,8 +4,10 @@ class Owner {
     email,
     phone,
     password,
+    role,
     businessName,
     isVerified = false,
+    isAminVerified = false  
   }) {
     this.fullName = fullName;
     this.email = email;

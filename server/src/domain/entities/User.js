@@ -4,7 +4,8 @@ class User {
         email,
         phone,
         password,
-        role
+        role,
+        isVerified = false,
     }){
         this.fullName = fullName;
         this.email = email;

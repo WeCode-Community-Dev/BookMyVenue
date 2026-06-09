@@ -3,12 +3,13 @@ class Admin {
     fullName,
     email,
     password,
-    permissions = [],
+    role
+    
   }) {
     this.fullName = fullName;
     this.email = email;
     this.password = password;
-    this.permissions = permissions;
+    
   }
 }
 
