@@ -61,6 +61,10 @@ INSERT INTO amenities (name)
 VALUES ($1)
 RETURNING *;
 
+-- name: GetAmenityByID :one
+SELECT * FROM amenities
+WHERE id = $1;
+
 -- name: GetAllAmenities :many
 SELECT * FROM amenities
 ORDER BY name;

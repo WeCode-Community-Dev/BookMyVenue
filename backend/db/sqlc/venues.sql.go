@@ -375,6 +375,18 @@ func (q *Queries) GetAmenitiesForVenue(ctx context.Context, venueID pgtype.UUID)
 	return items, nil
 }
 
+const getAmenityByID = `-- name: GetAmenityByID :one
+SELECT id, name FROM amenities
+WHERE id = $1
+`
+
+func (q *Queries) GetAmenityByID(ctx context.Context, id pgtype.UUID) (Amenity, error) {
+	row := q.db.QueryRow(ctx, getAmenityByID, id)
+	var i Amenity
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const getVenueByID = `-- name: GetVenueByID :one
 SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
 WHERE id = $1
