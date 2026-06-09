@@ -4,6 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { signupApi } from '../services/auth.service';
 import { userSignupSchema } from '../validations/signup.validation';
 
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../shared/context/AuthContext';
+
 const inputClass = `
    w-full
    h-12
@@ -20,6 +23,9 @@ const inputClass = `
 
 const UserSignupForm = ({ onBack }) => {
 
+   const navigate = useNavigate();
+   const { login } = useAuth();
+
    const {
       register,
       handleSubmit,
@@ -33,17 +39,33 @@ const UserSignupForm = ({ onBack }) => {
 
    const onSubmit = async (data) => {
 
-      const payload = {
-         accountType: 'USER',
-         name: data.name,
-         email: data.email,
-         phone: data.phone,
-         password: data.password
-      };
+      try {
+         const payload = {
+            accountType: 'USER',
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            password: data.password
+         };
 
-      const response = await signupApi(payload);
+         const response = await signupApi(payload);
+         console.log(response);
+         
+         login(
 
-      alert(response.message);
+            response.data.user,
+
+            response.data.accessToken
+
+         );
+
+         navigate('/');
+
+      } catch (error) {
+
+         alert(error.message);
+
+      }
 
    };
 
