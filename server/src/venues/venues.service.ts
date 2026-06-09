@@ -181,6 +181,11 @@ export class VenuesService {
       ...updateVenueDto,
       images: uploadedImages,
     });
+
+    if (user.role === UserRole.VENUE_OWNER) {
+      venue.status = VenueStatus.PENDING;
+    }
+
     const savedVenue = await this.venuesRepository.save(venue);
 
     // Emit event asynchronously for venue updated notification email
