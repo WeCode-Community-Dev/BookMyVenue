@@ -2,6 +2,7 @@ import { Body, Controller, Post } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/register.dto";
 import { VerifySignupOtpDto } from "./dto/verify-signup-otp.dto";
+import { ResendOtpDto } from "./dto/resend-otp.dto";
 
 @Controller('auth')
 export class AuthController {
@@ -15,5 +16,10 @@ export class AuthController {
     @Post('verify-otp')
     async verifyOtp(@Body() verifySignupOtpDto: VerifySignupOtpDto) {
         return this.authService.verifyOtp(verifySignupOtpDto);
+    }
+
+    @Post('resend-otp')
+    async resendOtp(@Body() resendOtpDto: ResendOtpDto) {
+        return this.authService.resendOtp(resendOtpDto);
     }
 }

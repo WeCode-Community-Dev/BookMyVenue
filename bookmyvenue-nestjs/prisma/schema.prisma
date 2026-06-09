@@ -13,17 +13,6 @@ enum Role {
   ADMIN
 }
 
-enum PricingType {
-  HOURLY
-  DAILY
-}
-
-enum VenueStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
 //user model
 model User {
   id        Int       @id @default(autoincrement())
@@ -32,62 +21,5 @@ model User {
   name      String
   role      Role      @default(USER)
   createdAt DateTime  @default(now())
-  bookings  Booking[]
 }
 
-//venue model
-model Venue {
-  id                      Int       @id @default(autoincrement())
-  name                    String
-  location                String
-  capacity                Int
-  pricePerHour            Float
-  imageUrl                String?
-  cancellationWindowDays  Int       @default(7)    
-  advanceRefundPercentage Float     @default(100.0) 
-  priceType               PricingType @default(HOURLY)
-  status                  VenueStatus @default(PENDING)
-  createdAt               DateTime  @default(now())
-  bookings                Booking[]
-}
-
-//booking model
-model Booking {
-  id          Int       @id @default(autoincrement())
-  userId      Int
-  venueId     Int
-  startTime   DateTime  
-  endTime     DateTime  
-  totalAmount Float
-  status      String    @default("confirmed")
-  createdAt   DateTime  @default(now())
-  user        User      @relation(fields: [userId], references: [id])
-  venue       Venue     @relation(fields: [venueId], references: [id])
-  payments    Payment[]
-  @@index([venueId, startTime, endTime])
-}
-
-//payment model
-
-model Payment {
-  id            Int      @id @default(autoincrement())
-  bookingId     Int
-  amountPaid    Float    
-  paymentStatus String   @default("completed")
-  paymentMethod String
-  transactionId String   @unique
-  createdAt     DateTime @default(now())
-  booking       Booking  @relation(fields: [bookingId], references: [id])
-}
-
-//otp verification model
-model PendingRegistration {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  otp       String
-  name      String
-  password  String 
-  role      Role
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-}

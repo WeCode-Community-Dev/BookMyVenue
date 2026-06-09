@@ -20,11 +20,11 @@ export class RegisterDto {
   })
   password!: string;
 
+  @IsOptional()
   @IsEnum([Role.USER, Role.OWNER],
     {
       message: "USER or OWNER",
     }
   )
-  @IsOptional()
   role?: Role;
 }
