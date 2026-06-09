@@ -37,6 +37,44 @@ export class VenueRepository extends IVenueRepository {
         return VenueMapper.mapToEntity(document)
     }
 
+    async findAllFiltered(query = {}){
+        const filter = {}
+        if(query.ownerId){
+            filter.ownerId = query.ownerId
+        }
+        if(query.status){
+            filter.status = query.status
+        }
+        if(query.price){
+            filter.$or = {
+                pricePerHour: { $lte: query.price },
+                pricePerDay: { $lte: query.price}
+            }
+        }
+        if(query.search){
+           filter.$or = {
+            name: { $regex: query.search, $options: "i"},
+            addressLine1: { $regex: query.search, $options: "i"},
+            city: { $regex: query.search, $options: "i"},
+            state: { $regex: query.search, $options: "i"}
+           }
+        }
+
+        const skip = query.limit * ( query.page - 1)
+        const totalCount = await VenueModel.countDocuments(filter)
+        const totalPages = Math.ceil(totalCount/query.limit)
+        const documents = await VenueModel.find(filter)
+            .sort({createdAt: -1})
+            .skip(skip)
+            .limit(query.limit)
+        return {
+            data: documents,
+            totalCount,
+            totalPages
+        }
+
+    }
+
     // mapToEntity(doc){
     //     return VenueMapper.mapToEntity(doc)
     // }

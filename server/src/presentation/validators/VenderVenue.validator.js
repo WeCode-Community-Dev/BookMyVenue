@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { VenueCategory } from '../../domain/enums/Venue.enum.js'
+import { VenueCategory, VenueStatus } from '../../domain/enums/Venue.enum.js'
 
 
 export const createVenueSchema = z.object({
@@ -107,4 +107,13 @@ export const createVenueSchema = z.object({
 export const VenueParamsSchema = z.object({
     venueId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid venue ID'),
     ownerId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid venue ID')
+})
+
+export const VenueQuerySchema = z.object({
+    ownerId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid venue ID'),
+    search: z.string().optional(),
+    status: z.nativeEnum(VenueStatus).optional(),
+    price: z.coerce.number().optional(),
+    page: z.coerce.number().default(1),
+    limit: z.coerce.number().default(1)
 })

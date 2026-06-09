@@ -10,7 +10,11 @@ export const validate = (schema, target = 'body') => {
             const errors = result.error.issues.map(issue => issue.message)
             return next(new AppError(errors.join(", "), statusCode.BAD_REQUEST))
         }
-        req[target] = result.data
+        if(target === 'query'){ 
+            req.validatedQuery = result.data
+        }else{
+          req[target] = result.data
+        }
         next()
     }
 }

@@ -9,10 +9,12 @@ export class VendorVenueController {
         VendorCreateVenueUsecase,
         VendorEditVenueUsecase,
         VendorGetVenueById,
+        VendorGetAllVenues,
     ){
         this._vendorCreateVenueUsecase = VendorCreateVenueUsecase
         this._vendorEditVenueUsecase = VendorEditVenueUsecase
         this._vendorGetVenueByIdUsecase = VendorGetVenueById
+        this._vendorGetAllVenuesUsecase = VendorGetAllVenues
     }
 
     createVenue = asyncHandler( async (req, res) => {
@@ -40,10 +42,15 @@ export class VendorVenueController {
     getById = asyncHandler( async (req, res) => {
         const ownerId = req.params.ownerId
         const venueId = req.params.venueId
-        console.log('ownerid', ownerId)
-        console.log('venueid', venueId)
         const venue = await this._vendorGetVenueByIdUsecase.execute(ownerId,venueId)
         return sendSuccess(res, statusCode.OK, '', venue)
+    })
+
+    getAllVenues = asyncHandler( async (req, res) => {
+        // const ownerId = req.params.ownerId
+        const { ownerId, page, limit, search, status, price} = req.validatedQuery
+        const { data, totalCount, totalPages }= await this._vendorGetAllVenuesUsecase.execute(ownerId, page, limit, search, status, price)
+        return sendSuccess(res, statusCode.OK, '', {data, totalCount, totalPages})
     })
     
 }
