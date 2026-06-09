@@ -1,9 +1,9 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
-
 import { loginSchema } from '../validations/login.validation';
 import { loginApi } from '../services/auth.service';
+import { useAuth } from '../../../shared/context/AuthContext';
 
 const inputClass = `
    w-full
@@ -22,6 +22,7 @@ const inputClass = `
 const LoginForm = () => {
 
    const navigate = useNavigate();
+   const { login } = useAuth();
 
    const {
       register,
@@ -56,6 +57,8 @@ const LoginForm = () => {
          );
          */
 
+         login(response.data);
+         
          alert(response.message);
 
          navigate('/');
