@@ -746,12 +746,14 @@ export default function AdminDashboard() {
                             v.status === 'suspended'
                               ? 'bg-rose-50 text-rose-600 border border-rose-100'
                               : v.status === 'pending'
-                              ? 'bg-amber-50 text-amber-600 border border-amber-100'
+                              ? v.suspensionReason
+                                ? 'bg-indigo-50 text-indigo-600 border border-indigo-100'
+                                : 'bg-amber-50 text-amber-600 border border-amber-100'
                               : v.status === 'rejected'
                               ? 'bg-slate-50 text-slate-600 border border-slate-100'
                               : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
                           }`}>
-                            {v.status}
+                            {v.status === 'pending' && v.suspensionReason ? 'resubmitted' : v.status}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -1225,7 +1227,6 @@ export default function AdminDashboard() {
 
               {/* Right Column: Venue Details */}
               <div className="flex flex-col gap-6">
-                
                 {/* Status and Type tags */}
                 <div className="flex flex-wrap gap-2 items-center">
                   <span className="px-3 py-1 text-[10px] font-bold rounded-lg uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
@@ -1235,14 +1236,38 @@ export default function AdminDashboard() {
                     selectedVenueForDetails.status === 'suspended'
                       ? 'bg-rose-50 text-rose-600 border-rose-100'
                       : selectedVenueForDetails.status === 'pending'
-                      ? 'bg-amber-50 text-amber-600 border-amber-100'
+                      ? selectedVenueForDetails.suspensionReason
+                        ? 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                        : 'bg-amber-50 text-amber-600 border-amber-100'
                       : selectedVenueForDetails.status === 'rejected'
                       ? 'bg-slate-50 text-slate-600 border-slate-100'
                       : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                   }`}>
-                    {selectedVenueForDetails.status}
+                    {selectedVenueForDetails.status === 'pending' && selectedVenueForDetails.suspensionReason ? 'resubmitted' : selectedVenueForDetails.status}
                   </span>
                 </div>
+
+                {selectedVenueForDetails.suspensionReason && (
+                  <div className={`w-full rounded-xl p-3 text-xs flex flex-col gap-1 border ${
+                    selectedVenueForDetails.status === 'suspended'
+                      ? 'bg-rose-50 border-rose-100 text-rose-950'
+                      : 'bg-indigo-50 border-indigo-100 text-indigo-950'
+                  }`}>
+                    <span className="font-bold flex items-center gap-1">
+                      {selectedVenueForDetails.status === 'suspended' ? '🚫 Suspended Listing' : '🔄 Resubmitted Listing Review'}
+                    </span>
+                    <span>
+                      {selectedVenueForDetails.status === 'suspended' 
+                        ? 'This venue listing is currently suspended.' 
+                        : 'This venue was previously suspended and resubmitted by the owner.'}
+                      <span className={`block mt-0.5 font-semibold italic ${
+                        selectedVenueForDetails.status === 'suspended' ? 'text-rose-700' : 'text-indigo-700'
+                      }`}>
+                        Reason: "{selectedVenueForDetails.suspensionReason}"
+                      </span>
+                    </span>
+                  </div>
+                )}
 
                 {/* Price and Capacity highlights */}
                 <div className="grid grid-cols-2 gap-4">
