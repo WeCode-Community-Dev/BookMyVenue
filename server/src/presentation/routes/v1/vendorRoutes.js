@@ -13,6 +13,7 @@ const uploadVenueImages = cloudinaryUpload("venues")
 //venue
 router.post(ROUTES.OWNER.VENUE.CREATE, uploadVenueImages.array("images", 10),  validate(createVenueSchema, 'body'), iVendorVenueController.createVenue)
 router.post(ROUTES.OWNER.VENUE.EDIT, uploadVenueImages.array('images', 10), validate(createVenueSchema, 'body'), validate(VenueParamsSchema, 'params'), iVendorVenueController.updateVenue)
+router.get(ROUTES.OWNER.VENUE.GET_BY_ID, validate(VenueParamsSchema, 'params'), iVendorVenueController.getById)
 
 
 export default router

@@ -11,6 +11,6 @@ export const VenueMessages = {
         UNAUTHORIZED: 'Unauthorized',
         CANNOT_UPDATE_DELETED_VENUE: 'You cannot update deleted venue',
         CANNOT_UPDATE_INACTIVE_VENUE: 'You cannot update inactive venue',
-        
+        DELETED_VENUE: 'The venue is Deleted',
     }
 }

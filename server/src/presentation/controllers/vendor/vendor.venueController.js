@@ -8,9 +8,11 @@ export class VendorVenueController {
     constructor (
         VendorCreateVenueUsecase,
         VendorEditVenueUsecase,
+        VendorGetVenueById,
     ){
         this._vendorCreateVenueUsecase = VendorCreateVenueUsecase
         this._vendorEditVenueUsecase = VendorEditVenueUsecase
+        this._vendorGetVenueByIdUsecase = VendorGetVenueById
     }
 
     createVenue = asyncHandler( async (req, res) => {
@@ -33,6 +35,15 @@ export class VendorVenueController {
         console.log('venueid: ', venueId)
         await this._vendorEditVenueUsecase.execute({ownerId, venueId, images, ...req.body})
         return sendSuccess(res, statusCode.OK, '')
+    })
+
+    getById = asyncHandler( async (req, res) => {
+        const ownerId = req.params.ownerId
+        const venueId = req.params.venueId
+        console.log('ownerid', ownerId)
+        console.log('venueid', venueId)
+        const venue = await this._vendorGetVenueByIdUsecase.execute(ownerId,venueId)
+        return sendSuccess(res, statusCode.OK, '', venue)
     })
     
 }

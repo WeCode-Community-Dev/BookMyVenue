@@ -106,4 +106,5 @@ export const createVenueSchema = z.object({
 
 export const VenueParamsSchema = z.object({
     venueId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid venue ID'),
+    ownerId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid venue ID')
 })
