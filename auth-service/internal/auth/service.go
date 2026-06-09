@@ -48,6 +48,12 @@ func (s *authService) Login(email, password string) (string, error) {
 }
 
 func (s *authService) Register(name, email, role, password string) (*domain.User, error) {
+	user, err := s.repo.GetByEmail(email)
+	if user != nil {
+		log.Printf("Email already exists")
+		return nil, err
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("Error hashing")
