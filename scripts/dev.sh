@@ -7,6 +7,15 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 export GONOSUMDB="${GONOSUMDB:-bookmyvenue.com}"
 
+# ensure shared docker network exists
+if ! docker network inspect wecode_network >/dev/null 2>&1; then
+  docker network create wecode_network
+fi
+
+# start RabbitMQ (message broker)
+docker compose -f "$REPO_ROOT/docker-compose.rabbitmq.yml" up -d
+
+# start booking service infra (postgres for booking)
 docker compose -f "$REPO_ROOT/booking-service/compose.yaml" up -d
 
 echo "Waiting for Postgres..."
@@ -14,6 +23,9 @@ until nc -z localhost 5433 2>/dev/null; do sleep 1; done
 
 echo "Waiting for Redis..."
 until nc -z localhost 6379 2>/dev/null; do sleep 1; done
+
+echo "Waiting for RabbitMQ..."
+until nc -z localhost 5672 2>/dev/null; do sleep 1; done
 
 cleanup() {
   kill "$AUTH_PID" "$BOOKING_PID" 2>/dev/null

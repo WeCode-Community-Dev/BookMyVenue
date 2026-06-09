@@ -1,0 +1,23 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - wecode_network
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  wecode_network:
+    external: true

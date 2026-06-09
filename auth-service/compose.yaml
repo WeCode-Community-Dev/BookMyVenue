@@ -11,6 +11,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+    networks:
+      - wecode_network
 
 volumes:
   postgres_data:
+
+networks:
+  wecode_network:
+    external: true
