@@ -38,7 +38,9 @@ export class VenueRepository extends IVenueRepository {
     }
 
     async findAllFiltered(query = {}){
-        const filter = {}
+        const filter = {
+            isDeleted : false
+        }
         if(query.ownerId){
             filter.ownerId = query.ownerId
         }
@@ -75,6 +77,13 @@ export class VenueRepository extends IVenueRepository {
 
     }
 
+    async delete(id){
+        return await VenueModel.findByIdAndUpdate(
+            id, 
+            {isDeleted: true},
+            { new: true}
+        )
+    }
     // mapToEntity(doc){
     //     return VenueMapper.mapToEntity(doc)
     // }

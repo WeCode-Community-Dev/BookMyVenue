@@ -11,7 +11,7 @@ export const ROUTES = {
             EDIT: '/venue/:venueId',
             GET_BY_ID: '/venue/:venueId/:ownerId',
             GET_ALL: '/venues',
-            DELETE: '/venue/:venueId',
+            DELETE: '/venue/:venueId/:ownerId',
             UPDATE: '/venue/:venueId/status'
         }
     },

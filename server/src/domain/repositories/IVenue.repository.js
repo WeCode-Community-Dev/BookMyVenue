@@ -11,9 +11,9 @@ export class IVenueRepository {
     async findByOwnerAndName(query = {}){
         throw new Error('Method not implemented')
     }
-    // async delete(id){
-    //     throw new Error('Method not implemented')
-    // }
+    async delete(id){
+        throw new Error('Method not implemented')
+    }
     async findAllFiltered(ownerId, search, status, page, limit){
         throw new Error('Method not implemented')
     }

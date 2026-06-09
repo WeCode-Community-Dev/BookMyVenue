@@ -8,13 +8,15 @@ export class VendorVenueController {
     constructor (
         VendorCreateVenueUsecase,
         VendorEditVenueUsecase,
-        VendorGetVenueById,
-        VendorGetAllVenues,
+        VendorGetVenueByIdUsecase,
+        VendorGetAllVenuesUsecase,
+        VendorDeleteVenueUsecase
     ){
         this._vendorCreateVenueUsecase = VendorCreateVenueUsecase
         this._vendorEditVenueUsecase = VendorEditVenueUsecase
-        this._vendorGetVenueByIdUsecase = VendorGetVenueById
-        this._vendorGetAllVenuesUsecase = VendorGetAllVenues
+        this._vendorGetVenueByIdUsecase = VendorGetVenueByIdUsecase
+        this._vendorGetAllVenuesUsecase = VendorGetAllVenuesUsecase
+        this._vendorDeleteVenueUsecase = VendorDeleteVenueUsecase
     }
 
     createVenue = asyncHandler( async (req, res) => {
@@ -51,6 +53,13 @@ export class VendorVenueController {
         const { ownerId, page, limit, search, status, price} = req.validatedQuery
         const { data, totalCount, totalPages }= await this._vendorGetAllVenuesUsecase.execute(ownerId, page, limit, search, status, price)
         return sendSuccess(res, statusCode.OK, '', {data, totalCount, totalPages})
+    })
+
+    deleteVenue = asyncHandler( async (req, res) => {
+        const ownerId = req.params.ownerId
+        const venueId = req.params.venueId
+        await this._vendorDeleteVenueUsecase.execute(ownerId,venueId)
+        return sendSuccess(res, statusCode.OK, '')
     })
     
 }
