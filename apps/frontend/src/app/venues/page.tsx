@@ -1,7 +1,5 @@
 "use client";
 
-import Header from "@/components/global/header";
-import Sidebar from "@/components/global/sidebar";
 import MapPanel from "@/components/global/mappanel";
 import OfferSection from "@/components/global/offersection";
 import VenueTypeSection from "@/components/global/venuetypesection";
@@ -27,7 +25,6 @@ export const venues = [
     availability: "Available This Weekend",
     price: 18000,
   },
-
   {
     id: 2,
     name: "The Garden Courtyard",
@@ -43,7 +40,6 @@ export const venues = [
     availability: "Available Today",
     price: 8000,
   },
-
   {
     id: 3,
     name: "Silverline Banquets",
@@ -59,7 +55,6 @@ export const venues = [
     availability: "Available This Weekend",
     price: 15000,
   },
-
   {
     id: 4,
     name: "Metro Cafe & Lounge",
@@ -75,7 +70,6 @@ export const venues = [
     availability: "Available Tomorrow",
     price: 4500,
   },
-
   {
     id: 5,
     name: "Palm Grove Convention Center",
@@ -91,7 +85,6 @@ export const venues = [
     availability: "Available Today",
     price: 25000,
   },
-
   {
     id: 6,
     name: "Coral Bay Resort",
@@ -107,7 +100,6 @@ export const venues = [
     availability: "Available This Weekend",
     price: 12000,
   },
-
   {
     id: 7,
     name: "Royal Palace Banquets",
@@ -123,7 +115,6 @@ export const venues = [
     availability: "Available Tomorrow",
     price: 22000,
   },
-
   {
     id: 8,
     name: "Blue Ocean Retreat",
@@ -147,10 +138,10 @@ export default function Page() {
   return (
     <>
     <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
-      <Header />
+      {/* <Header /> */}
 
       <div className="flex">
-        <Sidebar />
+        {/* <Sidebar /> */}
 
         <main className="flex-1">
           <OfferSection />
