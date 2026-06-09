@@ -1,4 +1,5 @@
 //usecase
+import { VendorEditVenueUsecase } from '../../application/vendor/usecases/venue/vendor.editVenue.usecase.js'
 import { VendorCreateVenueUsecase } from '../../application/vendor/usecases/venue/vendor.createVenue.usecase.js'
 import {VendorVenueController} from '../controllers/vendor/vendor.venueController.js'
 import { VenueRepository } from '../../infrastructure/repositories/venue.repository.js'
@@ -18,8 +19,12 @@ const iVenueRepository = new VenueRepository()
 const iCreateVenueUsecase = new VendorCreateVenueUsecase(
     iVenueRepository,
 )
+const iUpdateVenueUsecase = new VendorEditVenueUsecase(
+    iVenueRepository
+)
 
 //controller
 export const iVendorVenueController = new VendorVenueController (
-    iCreateVenueUsecase
+    iCreateVenueUsecase,
+    iUpdateVenueUsecase
 )

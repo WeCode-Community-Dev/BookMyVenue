@@ -6,6 +6,7 @@ import { VenueModel } from "../database/Venue.model.js";
 export class VenueRepository extends IVenueRepository {
     async findById(id){
         const document = await VenueModel.findById(id)
+        console.log('from repo', document)
         if(!document) return null
         return VenueMapper.mapToEntity(document)
     }

@@ -6,9 +6,11 @@ import { VenueMessages } from '../../../shared/constants/messages/venueMessages.
 
 export class VendorVenueController {
     constructor (
-        VendorCreateVenueUsecase
+        VendorCreateVenueUsecase,
+        VendorEditVenueUsecase,
     ){
         this._vendorCreateVenueUsecase = VendorCreateVenueUsecase
+        this._vendorEditVenueUsecase = VendorEditVenueUsecase
     }
 
     createVenue = asyncHandler( async (req, res) => {
@@ -20,4 +22,17 @@ export class VendorVenueController {
         const venue = await this._vendorCreateVenueUsecase.execute({ownerId,...req.body, images})
         return sendSuccess(res, statusCode.OK, VenueMessages.success.VENUE_CREATED, venue)
     })
+
+    updateVenue = asyncHandler( async(req, res) => {
+        const ownerId = req.body.ownerId
+        const venueId = req.params.venueId
+        const images = (req.files || []).map(file => ({
+            publicId: file.filename,
+            url: file.path
+        }))
+        console.log('venueid: ', venueId)
+        await this._vendorEditVenueUsecase.execute({ownerId, venueId, images, ...req.body})
+        return sendSuccess(res, statusCode.OK, '')
+    })
+    
 }
