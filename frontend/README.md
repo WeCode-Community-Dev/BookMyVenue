@@ -1,6 +1,6 @@
 # BookMyVenue — Frontend
 
-Web client for BookMyVenue. This folder holds the user-facing app for browsing venues, making bookings, and managing listings.
+Web client for BookMyVenue. This folder holds the user-facing app for browsing venues, making bookings, and managing listings..
 
 During Phase 1 (MVP), contributors may use any frontend stack. Whatever you choose, follow the **modular monolithic** layout described below — one deployable app, organized by feature modules.
 
