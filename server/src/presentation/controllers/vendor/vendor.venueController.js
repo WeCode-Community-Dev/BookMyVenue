@@ -38,9 +38,9 @@ export class VendorVenueController {
             publicId: file.filename,
             url: file.path
         }))
-        console.log('venueid: ', venueId)
-        await this._vendorEditVenueUsecase.execute({ownerId, venueId, newImages, ...req.body})
-        return sendSuccess(res, statusCode.OK, '')
+
+        const venue = await this._vendorEditVenueUsecase.execute({ownerId, venueId, newImages, ...req.body})
+        return sendSuccess(res, statusCode.OK, '', venue)
     })
 
     getById = asyncHandler( async (req, res) => {

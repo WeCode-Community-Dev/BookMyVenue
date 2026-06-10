@@ -1,7 +1,10 @@
 import { VenueStatus } from "../../../../domain/enums/Venue.enum.js"
-import { AppError } from "../../../../domain/errors/app.error.js"
-import { statusCode } from "../../../../shared/constants/enums/statusCode.js"
 import { VenueMessages } from "../../../../shared/constants/messages/venueMessages.js"
+import { NotFoundError } from '../../../../domain/errors/NotFoundError.js'
+import { ConflictError } from '../../../../domain/errors/ConflictError.js'
+import { ForbiddenError } from '../../../../domain/errors/forbidden.error.js'
+import { ValidationError } from '../../../../domain/errors/ValidationError.js'
+
 
 export class VendorEditVenueUsecase  {
     constructor (
@@ -40,39 +43,38 @@ export class VendorEditVenueUsecase  {
     }) {
             const venue = await this._venueRepository.findById(venueId)
             if(!venue){
-                throw new AppError(VenueMessages.error.VENUE_NOT_FOUND, statusCode.NOT_FOUND)
+                throw new NotFoundError(VenueMessages.error.VENUE_NOT_FOUND)
             }
-            console.log('venue from usecase', venue)
-            console.log('userId', ownerId)
+
             if(venue.ownerId !== ownerId){
-                throw new AppError(VenueMessages.error.UNAUTHORIZED, statusCode.UNAUTHORIZED)
+                throw new ForbiddenError(VenueMessages.error.FORBIDDEN)
             }
 
             if(venue.isDeleted){
-                throw new AppError(VenueMessages.error.CANNOT_UPDATE_DELETED_VENUE, statusCode.BAD_REQUEST)
+                throw new NotFoundError(VenueMessages.error.CANNOT_UPDATE_DELETED_VENUE)
             }
             if(venue.status !== VenueStatus.ACTIVE && venue.status !== VenueStatus.DRAFT){
-                throw new AppError(VenueMessages.error.CANNOT_UPDATE_INACTIVE_VENUE, statusCode.BAD_REQUEST)
+                throw new ConflictError(VenueMessages.error.CANNOT_UPDATE_INACTIVE_VENUE)
             }
-            console.log('venue images', venue.images)
 
             const remainingImages = venue.images.filter(image => !deletedImages.includes(image.publicId))
 
-            if(deletedImages.length){
-                await this._cloudinaryService.deletedImages(deletedImages)
+            const finalImages = [...remainingImages, ...newImages]
+            if(finalImages.length < 3){
+                throw new ValidationError(VenueMessages.error.REQUIRE_ATLEAST_THREE_IMAGES)
             }
-            console.log('NEW IMAGES', newImages)
+
             venue.name = name
             venue.description = description
             venue.category = category
             venue.websiteUrl = websiteUrl
-            venue.addressLine1 = addressLine1
-            venue.city = city
-            venue.state = state
-            venue.country = country
-            venue.pincode = pincode
-            venue.phone = phone
-            venue.googleMapLink = googleMapLink
+            venue.address.addressLine1 = addressLine1
+            venue.address.city = city
+            venue.address.state = state
+            venue.address.country = country
+            venue.address.pincode = pincode
+            venue.address.phone = phone
+            venue.address.googleMapLink = googleMapLink
             venue.seatingCapacity = seatingCapacity
             venue.standingCapacity = standingCapacity
             venue.pricePerDay = pricePerDay
@@ -84,6 +86,11 @@ export class VendorEditVenueUsecase  {
             venue.amenities = amenities
             venue.images = [...remainingImages, ...newImages]
 
-            return await this._venueRepository.update(venue.id, venue)
+            const updatedVenue = await this._venueRepository.update(venue.id, venue)
+            if(deletedImages.length){
+                await this._cloudinaryService.deletedImages(deletedImages)
+            }
+
+            return updatedVenue
         }
 }

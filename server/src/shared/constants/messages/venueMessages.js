@@ -8,7 +8,7 @@ export const VenueMessages = {
         REQUIRE_ATLEAST_THREE_IMAGES: 'You should upload atleast 3 images',
         ALREADY_EXISTING: 'Venue with same name already existing',
         VENUE_NOT_FOUND: 'Venue not found',
-        UNAUTHORIZED: 'Unauthorized',
+        FORBIDDEN: 'Forbidden',
         CANNOT_UPDATE_DELETED_VENUE: 'You cannot update deleted venue',
         CANNOT_UPDATE_INACTIVE_VENUE: 'You cannot update inactive venue',
         DELETED_VENUE: 'The venue is Deleted',
