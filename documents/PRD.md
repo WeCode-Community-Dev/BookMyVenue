@@ -9,7 +9,7 @@ BookMyVenue is a simple platform where users can:
 
 * Find venues
 * View details
-* Book them online
+* Book them online 
 
 It also allows venue owners to:
 
@@ -41,7 +41,7 @@ And a super admin to:
 ### 3. Super Admin
 
 * Can approve or reject venues
-* Can manage users and owners
+* Can manage users and owners 
 * Has full control over the platform
 
 ## 3. Core Features (MVP Only)
@@ -52,7 +52,7 @@ And a super admin to:
 * User can login
 * Role-based access (user / owner / admin)
 
-### Venue Management
+### Venue Management 
 
 * Owner can:
 

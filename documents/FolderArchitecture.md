@@ -8,7 +8,7 @@ bookmyvenue/
 │
 │   ├── core/                  # Global config
 │   │   ├── config.py
-│   │   ├── security.py
+│   │   ├── security.py  
 │
 │   ├── db/
 │   │   ├── session.py
@@ -176,5 +176,5 @@ Example:
 Client → api/bookings.py → booking_service.py → DB → Response
 ```
 
----
+--- 
 

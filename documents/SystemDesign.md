@@ -38,7 +38,7 @@ Client (Frontend / Postman)
 
 ### Example: Booking a Venue
 
-1. User sends request → `POST /bookings`
+1. User sends request → `POST /bookings/`
 2. FastAPI:
 
    * Checks user login (JWT)
