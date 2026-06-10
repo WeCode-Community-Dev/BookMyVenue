@@ -389,6 +389,92 @@ func (q *Queries) GetAmenityByID(ctx context.Context, id pgtype.UUID) (Amenity, 
 	return i, err
 }
 
+const getPendingVenuesByOwnerID = `-- name: GetPendingVenuesByOwnerID :many
+SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
+WHERE owner_id = $1 AND status = 'pending'
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetPendingVenuesByOwnerID(ctx context.Context, ownerID pgtype.UUID) ([]Venue, error) {
+	rows, err := q.db.Query(ctx, getPendingVenuesByOwnerID, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Venue
+	for rows.Next() {
+		var i Venue
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.Name,
+			&i.Description,
+			&i.Category,
+			&i.Address,
+			&i.City,
+			&i.State,
+			&i.Pincode,
+			&i.Capacity,
+			&i.PricePerHour,
+			&i.PricePerDay,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Location,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRejectedVenuesByOwnerID = `-- name: GetRejectedVenuesByOwnerID :many
+SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
+WHERE owner_id = $1 AND status = 'rejected'
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetRejectedVenuesByOwnerID(ctx context.Context, ownerID pgtype.UUID) ([]Venue, error) {
+	rows, err := q.db.Query(ctx, getRejectedVenuesByOwnerID, ownerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Venue
+	for rows.Next() {
+		var i Venue
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.Name,
+			&i.Description,
+			&i.Category,
+			&i.Address,
+			&i.City,
+			&i.State,
+			&i.Pincode,
+			&i.Capacity,
+			&i.PricePerHour,
+			&i.PricePerDay,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Location,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getVenueByID = `-- name: GetVenueByID :one
 SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
 WHERE id = $1
