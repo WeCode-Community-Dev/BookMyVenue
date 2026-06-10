@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add venue</title>
+</head>
+<body>
+    <form id="addVenueForm">
+        <label for="name">Venue Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+        <label for="description">Description</label>
+        <textarea name="description" id="description" required></textarea><br><br>
+
+        <label for="category">Category</label>
+        <select name="category" id="category" required>
+            <option value="wedding_hall">Wedding Hall</option>
+            <option value="convention_center">Convention Center</option>
+            <option value="auditorium">Auditorium</option>
+            <option value="conference_hall">Conference Hall</option>
+            <option value="sports_turf">Sports Turf</option>
+            <option value="sports_turf">Sports Turf</option>
+            <option value="party_hall">Party Hall</option>
+        </select><br><br>
+
+        <label for="address">Address</label>
+        <input type="text" name="address" id="address" required><br><br>
+        <label for="city">City</label>
+        <input type="text" name="city" id="city" required><br><br>
+        <label for="state">State</label>
+        <input type="text" name="state" id="state" required><br><br>
+        <label for="pincode">Pin Code</label>
+        <input type="text" name="pincode" id="pincode"><br><br>
+
+        <label for="capacity">Maximum Capacity</label>
+        <input type="number" name="capacity" id="capacity" required><br><br>
+        <label for="price_per_hour">Price Per Hour</label>
+        <input type="number" name="price_per_hour" id="price_per_hour"><br><br>
+        <label for="price_per_day">Price Per Day</label>
+        <input type="number" name="price_per_day" id="price_per_day"><br><br>
+
+        <h3>Amenities</h3>
+        <div class="amenities-grid">
+            <label><input type="checkbox" value="WiFi" />          WiFi</label>
+            <label><input type="checkbox" value="Parking" />       Parking</label>
+            <label><input type="checkbox" value="AC" />            Air Conditioning</label>
+            <label><input type="checkbox" value="Projector" />     Projector</label>
+            <label><input type="checkbox" value="Sound System" />  Sound System</label>
+            <label><input type="checkbox" value="Catering" />      Catering</label>
+            <label><input type="checkbox" value="Stage" />         Stage</label>
+            <label><input type="checkbox" value="Generator" />     Generator</label>
+            <label><input type="checkbox" value="CCTV" />          CCTV</label>
+            <label><input type="checkbox" value="Restrooms" />     Restrooms</label>
+        </div><br><br>
+
+        <label for="images">Upload images (max 5, each under 5MB)</label>
+        <input type="file" name="images" id="images" accept=".jpg,.jpeg,.png,.webp" multiple required><br><br>
+
+        <!-- preview selected images -->
+        <div id="imagePreview" class="image-preview"></div>
+
+        <button type="submit">Add Venue</button>
+    </form>
+
+    <script>
+        // Show image preview when selected
+        document.getElementById("images").addEventListener("change", function () {
+            const preview = document.getElementById("imagePreview");
+            preview.innerHTML = "";
+
+            const files = Array.from(this.files);
+
+            // Max 5 images
+            if (files.length > 5) {
+                alert("You can upload maximum 5 images")
+                this.value = ""
+                return
+            }
+
+            files.forEach(file => {
+                // validate size — max 5MB each
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`${file.name} exceeds 5MB limit`)
+                    this.value = ""
+                    preview.innerHTML = ""
+                    return
+                }
+
+                // show preview
+                const reader = new FileReader()
+                reader.onload = function (e) {
+                    const img = document.createElement("img") 
+                    img.src    = e.target.result
+                    img.width  = 150
+                    img.height = 100
+                    img.style.objectFit = "cover"
+                    img.style.margin    = "5px"
+                    preview.appendChild(img)
+                }
+                reader.readAsDataURL(file)
+            })
+        })
+
+        document.getElementById("addVenueForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem("access_token")
+            if (!token) {
+                window.location.href = "/login"
+            }
+
+            const amenityCheckboxes = document.querySelectorAll(".amenities-grid input[type=checkbox]:checked")
+            const amenities = Array.from(amenityCheckboxes).map(cb => cb.value)
+
+            // collect image files
+            const imageFiles = document.getElementById("images").files
+            if (imageFiles.length === 0) {
+                showMessage("Please upload at least one image", "error")
+                return
+            }
+
+            const venueRes = await fetch("/api/v1/owner/addVenue", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("access_token")
+                },
+                body: JSON.stringify({
+                    name: document.getElementById("name").value,
+                    description: document.getElementById("description").value,
+                    category: document.getElementById("category").value,
+                    address: document.getElementById("address").value,
+                    city: document.getElementById("city").value,
+                    state: document.getElementById("state").value,
+                    pincode: document.getElementById("pincode").value,
+                    capacity: parseInt(document.getElementById("capacity").value),
+                    price_per_hour: parseFloat(document.getElementById("price_per_hour").value),
+                    price_per_day: parseFloat(document.getElementById("price_per_day").value),
+                    amenities: amenities,
+                })
+            });
+
+            const venueData = await venueRes.json();
+            if (!venueData.success) {
+                showMessage(venueData.Message, "error")
+                return
+            }
+
+            const venueID = venueData.data.id
+
+            const formData = new FormData()
+            Array.from(imageFiles).forEach(file => {
+                formData.append("images", file)
+            })
+
+            const imageRes = await fetch(`/api/v1/owner/${venueID}/images`, {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + token
+                },
+                body: formData
+            })
+
+            const imageData = await imageRes.json()
+
+            if (!imageData.success) {
+                showMessage("Venue created but image upload failed", "error")
+                return
+            }
+
+            showMessage("Venue submitted successfully! Waiting for admin approval.", "success")
+            window.location.href = "/owner"
+        })
+
+        function showMessage(msg, type) {
+            const el    = document.getElementById("message")
+            el.innerText       = msg
+            el.style.color     = type === "error" ? "red" : "green"
+        }
+    </script>
+</body>
+</html>

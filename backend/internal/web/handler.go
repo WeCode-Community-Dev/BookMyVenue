@@ -31,3 +31,7 @@ func (h *Handler) OwnerPage(c *gin.Context) {
 func (h *Handler) AdminPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "admin_homepage.html", nil)
 }
+
+func (h *Handler) AddVenuePage(c *gin.Context) {
+	c.HTML(http.StatusOK, "add_venue.html", nil)
+}

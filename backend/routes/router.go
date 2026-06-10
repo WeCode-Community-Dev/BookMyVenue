@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/auth"
+	"github.com/WeCode-Community-Dev/BookMyVenue/internal/venues"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/web"
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +15,9 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 	r.GET("/user", webHandler.UserPage)
 	r.GET("/owner", webHandler.OwnerPage)
 	r.GET("/admin", webHandler.AdminPage)
+	r.GET("/addVenue", webHandler.AddVenuePage)
+	r.GET("/viewApprovedVenues")
+	r.GET("/viewUnapprovedVenues")
 
 	api := r.Group("/api/v1")
 
@@ -26,10 +30,14 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 		authRoutes.POST("/logout", authHandler.Logout)
 	}
 
-	// venueRoutes := api.Group("/venue")
-	// {
-	// 	venueRoutes.GET("/", venueResponse)
-	// }
+	// Venue routes
+	ownerHandler := venues.NewHandler(db)
+	ownerRoutes := api.Group("/owner")
+	ownerRoutes.Use(auth.JWTAuthentication, auth.RoleGuarde("owner"))
+	{
+		ownerRoutes.POST("/addVenue", ownerHandler.AddVenue)
+		ownerRoutes.POST("/:id/images", ownerHandler.AddImage)
+	}
 
 	// userRoutes := api.Group("/user")
 	// {
