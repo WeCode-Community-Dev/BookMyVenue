@@ -5,9 +5,11 @@ import { VenueMessages } from "../../../../shared/constants/messages/venueMessag
 
 export class VendorEditVenueUsecase  {
     constructor (
-        VenueRepository
+        VenueRepository,
+        cloudinaryService
     )  {
         this._venueRepository = VenueRepository
+        this._cloudinaryService = cloudinaryService
     }
 
     async execute({ 
@@ -33,7 +35,8 @@ export class VendorEditVenueUsecase  {
         weekendSurcharge = 0,
         minimumBookingHours = 0,
         amenities = [],
-        images = [],
+        newImages = [],
+        deletedImages = []
     }) {
             const venue = await this._venueRepository.findById(venueId)
             if(!venue){
@@ -51,7 +54,14 @@ export class VendorEditVenueUsecase  {
             if(venue.status !== VenueStatus.ACTIVE && venue.status !== VenueStatus.DRAFT){
                 throw new AppError(VenueMessages.error.CANNOT_UPDATE_INACTIVE_VENUE, statusCode.BAD_REQUEST)
             }
+            console.log('venue images', venue.images)
 
+            const remainingImages = venue.images.filter(image => !deletedImages.includes(image.publicId))
+
+            if(deletedImages.length){
+                await this._cloudinaryService.deletedImages(deletedImages)
+            }
+            console.log('NEW IMAGES', newImages)
             venue.name = name
             venue.description = description
             venue.category = category
@@ -72,7 +82,7 @@ export class VendorEditVenueUsecase  {
             venue.weekendSurcharge = weekendSurcharge
             venue.minimumBookingHours = minimumBookingHours
             venue.amenities = amenities
-            venue.images = images
+            venue.images = [...remainingImages, ...newImages]
 
             return await this._venueRepository.update(venue.id, venue)
         }

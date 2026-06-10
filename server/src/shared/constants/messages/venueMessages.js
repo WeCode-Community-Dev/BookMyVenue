@@ -12,6 +12,8 @@ export const VenueMessages = {
         CANNOT_UPDATE_DELETED_VENUE: 'You cannot update deleted venue',
         CANNOT_UPDATE_INACTIVE_VENUE: 'You cannot update inactive venue',
         DELETED_VENUE: 'The venue is Deleted',
-        STATUS_ALREADY_SET: 'Status alredy set,'
+        STATUS_ALREADY_SET: 'Status alredy set',
+        NOT_ACTIVE_VENUE: 'Current venue is inactivated',
+        NOT_ADMIN_VERIFIED: 'Venue is not verified by admin',
     }
 }

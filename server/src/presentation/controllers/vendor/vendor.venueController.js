@@ -34,12 +34,12 @@ export class VendorVenueController {
     updateVenue = asyncHandler( async(req, res) => {
         const ownerId = req.body.ownerId
         const venueId = req.params.venueId
-        const images = (req.files || []).map(file => ({
+        const newImages = (req.files || []).map(file => ({
             publicId: file.filename,
             url: file.path
         }))
         console.log('venueid: ', venueId)
-        await this._vendorEditVenueUsecase.execute({ownerId, venueId, images, ...req.body})
+        await this._vendorEditVenueUsecase.execute({ownerId, venueId, newImages, ...req.body})
         return sendSuccess(res, statusCode.OK, '')
     })
 
