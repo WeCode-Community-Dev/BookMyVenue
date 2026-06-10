@@ -25,13 +25,25 @@ Map<String, dynamic> _$VerifyOtpResponseToJson(_VerifyOtpResponse instance) =>
 _User _$UserFromJson(Map<String, dynamic> json) => _User(
   id: json['id'] as String,
   mobileNumber: json['mobile_number'] as String,
-  isActive: json['is_active'] as bool,
+  fullName: json['full_name'] as String,
+  email: json['email'] as String?,
+  mobileVerified: json['mobile_verified'] as bool,
+  emailVerified: json['email_verified'] as bool,
+  role: json['role'] as String,
+  status: json['status'] as String,
   createdAt: DateTime.parse(json['created_at'] as String),
+  updatedAt: DateTime.parse(json['updated_at'] as String),
 );
 
 Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
   'id': instance.id,
   'mobile_number': instance.mobileNumber,
-  'is_active': instance.isActive,
+  'full_name': instance.fullName,
+  'email': instance.email,
+  'mobile_verified': instance.mobileVerified,
+  'email_verified': instance.emailVerified,
+  'role': instance.role,
+  'status': instance.status,
   'created_at': instance.createdAt.toIso8601String(),
+  'updated_at': instance.updatedAt.toIso8601String(),
 };

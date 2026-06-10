@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 
+import 'core/auth/auth_session.dart';
 import 'core/di/injection.dart';
 import 'core/environment/app_env.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/ui/app_commands.dart';
 
 Future<void> main() async {
   Environment.init(AppEnvironment.dev);
   WidgetsFlutterBinding.ensureInitialized();
 
   await setupInjector();
+  await AuthSession.init();
   runApp(const MyApp());
 }
 
@@ -26,6 +29,7 @@ class MyApp extends StatelessWidget {
       valueListenable: themeNotifier,
       builder: (_, ThemeMode mode, _) {
         return MaterialApp.router(
+          scaffoldMessengerKey: AppCommands.messengerKey,
           title: 'Book my venue',
           themeMode: mode,
           theme: AppTheme.lightTheme,

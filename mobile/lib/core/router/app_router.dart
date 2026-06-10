@@ -6,6 +6,7 @@ import '../../feature/auth/presentation/bloc/auth_bloc.dart';
 import '../../feature/auth/presentation/pages/user_login/signin_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_business_profile_setup.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_signup_page.dart';
+import '../../feature/home/presentation/pages/home_page.dart';
 import '../auth/auth_session.dart';
 import '../di/injection.dart';
 import 'route_name.dart';
@@ -50,6 +51,14 @@ class AppRouter {
               create: (BuildContext context) => sl<AuthBloc>(),
               child: const VenueOwnerBusinessProfileSetup(),
             ),
+      ),
+      GoRoute(
+        path: '/${AppRouteNames.home}',
+        name: AppRouteNames.home,
+        builder: (BuildContext context, GoRouterState state) {
+          final String role = state.extra! as String;
+          return HomePage(role: role);
+        },
       ),
       // GoRoute(
       //   path: '/signup2',

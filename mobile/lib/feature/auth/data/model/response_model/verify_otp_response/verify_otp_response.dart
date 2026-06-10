@@ -21,8 +21,14 @@ sealed class User with _$User {
   const factory User({
     required String id,
     @JsonKey(name: 'mobile_number') required String mobileNumber,
-    @JsonKey(name: 'is_active') required bool isActive,
+    @JsonKey(name: 'full_name') required String fullName,
+    required String? email,
+    @JsonKey(name: 'mobile_verified') required bool mobileVerified,
+    @JsonKey(name: 'email_verified') required bool emailVerified,
+    required String role,
+    required String status,
     @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../widgets/app_text.dart';
+import '../colors.dart';
 import 'app_commands.dart';
 
 enum ToastType { success, error, info, warning }
@@ -76,13 +78,7 @@ class AppToast extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                AppText(title, color: AppColors.black),
 
                 if (label != null) ...<Widget>[
                   const SizedBox(height: 4),
@@ -97,15 +93,16 @@ class AppToast extends StatelessWidget {
                       ).colorScheme.surface.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(label!, style: const TextStyle(fontSize: 12)),
+                    child: AppText(label!, color: AppColors.black),
                   ),
                 ],
 
                 if (description != null) ...<Widget>[
                   const SizedBox(height: 6),
-                  Text(
+                  AppText(
                     description!,
-                    style: const TextStyle(fontSize: 13, color: Colors.black54),
+                    color: AppColors.black,
+                    variant: TextVariant.labelSmall,
                   ),
                 ],
               ],

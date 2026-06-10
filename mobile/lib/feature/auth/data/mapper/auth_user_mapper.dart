@@ -29,8 +29,14 @@ extension UserMapper on User {
     return UserEntity(
       id: id,
       mobileNumber: mobileNumber,
-      isActive: isActive,
+      fullName: fullName,
+      email: email,
+      mobileVerified: mobileVerified,
+      emailVerified: emailVerified,
+      role: role,
+      status: status,
       createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 }

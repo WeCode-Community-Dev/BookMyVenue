@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 
 import '../../core/di/injection.dart';
+import '../../core/notifications/notification_service.dart';
+import '../../core/storage/secure_storage_service.dart';
+import 'data/datasource/auth_local_datasource.dart';
 import 'data/datasource/auth_remote_datasource_impl.dart';
 import 'data/datasource/i_auth_remote_datasource.dart';
 import 'data/repository/auth_repository_impl.dart';
@@ -15,13 +18,16 @@ Future<void> registerAuthDependencies() async {
     () => AuthRemoteDatasourceImpl(sl<Dio>()),
   );
 
-  // sl.registerLazySingleton<IAuthLocalDatasource>(
-  //   () => AuthLocalDatasourceImpl(sl<SecureStorageService>()),
-  // );
+  sl.registerLazySingleton<IAuthLocalDatasource>(
+    () => AuthLocalDatasourceImpl(sl<SecureStorageService>()),
+  );
 
   /// Repository
   sl.registerLazySingleton<IAuthRepository>(
-    () => AuthRepositoryImpl(sl<IAuthRemoteDatasource>()),
+    () => AuthRepositoryImpl(
+      remoteDataSource: sl<IAuthRemoteDatasource>(),
+      localDatasource: sl<IAuthLocalDatasource>(),
+    ),
   );
 
   /// UseCases
@@ -37,6 +43,7 @@ Future<void> registerAuthDependencies() async {
     () => AuthBloc(
       requestOtpUseCase: sl<RequestOtpUseCase>(),
       verifyOtpUseCase: sl<VerifyOtpUseCase>(),
+      notificationService: sl<NotificationService>(),
     ),
   );
 }

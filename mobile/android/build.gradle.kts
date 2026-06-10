@@ -1,3 +1,9 @@
+buildscript {
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.11.1")
+    }
+}
+
 allprojects {
     repositories {
         google()

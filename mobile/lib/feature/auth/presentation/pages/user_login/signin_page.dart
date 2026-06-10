@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 
+import '../../../../../core/logger/app_logger.dart';
 import '../../../../../core/router/route_name.dart';
 import '../../../../../core/utils/ui/snackbar_command.dart';
 import '../../../../../core/validation/app_validation.dart';
@@ -46,11 +47,24 @@ class _SigninPageState extends State<SigninPage> {
       body: SafeArea(
         child: BlocConsumer<AuthBloc, AuthState>(
           listener: (BuildContext context, AuthState state) {
-            if (state.successMessage != null) {
+            AppLogger.debug('$state ');
+            if (state.isError) {
+              AppLogger.info('${state.errorMessage!} error message');
+              SnackbarCommand.show(
+                type: ToastType.error,
+                title: state.errorMessage!,
+              );
+            } else if (state.successMessage != null) {
               SnackbarCommand.show(
                 type: ToastType.success,
                 title: state.successMessage!,
               );
+              if (state.verifyOtpResponse != null) {
+                context.goNamed(
+                  AppRouteNames.home,
+                  extra: state.verifyOtpResponse!.user.role,
+                );
+              }
             }
           },
           builder: (BuildContext context, AuthState state) {
