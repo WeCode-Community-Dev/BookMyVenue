@@ -131,3 +131,16 @@ func (s *service) uploadImage(ctx *gin.Context, venueID, ownerID string, file *m
 	}
 	return &img, nil
 }
+
+func (s *service) viewRejectedVenues(ctx context.Context, ownerID string) ([]sqlc.Venue, error) {
+	venues, err := s.repo.getRejectedVenuesByOwnerID(ctx, ownerID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(venues) == 0 {
+		return nil, errors.New("No Unapproved Venues")
+	}
+
+	return venues, nil
+}

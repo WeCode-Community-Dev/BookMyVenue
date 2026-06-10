@@ -44,3 +44,11 @@ func (r *repository) createAmenity(ctx context.Context, amenity string) (sqlc.Am
 func (r *repository) assignAmenityToVenue(ctx context.Context, params sqlc.AssignAmenityToVenueParams) error {
 	return r.db.AssignAmenityToVenue(ctx, params)
 }
+
+func (r *repository) getRejectedVenuesByOwnerID(ctx context.Context, ownerID string) ([]sqlc.Venue, error) {
+	UUID, err := utils.StringToUUID(ownerID)
+	if err != nil {
+		return []sqlc.Venue{}, err
+	}
+	return r.db.GetRejectedVenuesByOwnerID(ctx, UUID)
+}

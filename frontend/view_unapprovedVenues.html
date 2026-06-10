@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unapproved views</title>
+</head>
+<body>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Pincode</th>
+                <th>Capacity</th>
+                <th>Price per hour</th>
+                <th>Price per day</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="venueTableBody">
+        </tbody>
+    </table>
+    <script type="module">
+        const tbody = document.getElementById("venueTableBody");
+        const token = localStorage.getItem("access_token");
+
+        const venuesRes = await fetch("/api/v1/owner/viewRejectedVenues", {
+            method: "GET",
+            headers: {
+                "content-type": "application/json",
+                "Authorization": "Bearer "+token
+            }
+        });
+
+        const venueData = await venuesRes.json();
+        console.log(venueData)
+        if (!venueData.success) {
+            alert("Uable to fetch data");
+        }
+
+        venueData.data.forEach(element => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${element.name}</td>
+                <td>${element.description}</td>
+            `
+            tbody.appendChild(row);
+        });
+    </script>
+</body>
+</html>

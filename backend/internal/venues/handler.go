@@ -91,6 +91,19 @@ func (h *Handler) AddImage(c *gin.Context) {
 	response.Success(c, http.StatusOK, "images uploaded successfully", nil)
 }
 
+func (h *Handler) ViewRejectedVenues(c *gin.Context) {
+	ownerID := ctxutil.GetUserID(c)
+
+	venues, err := h.service.viewRejectedVenues(c.Request.Context(), ownerID)
+	if err != nil {
+		response.Error(c, http.StatusForbidden, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Rejected Venues", venues)
+
+}
+
 // CreateVenueRequest represents the payload required to create a new venue.
 type CreateVenueRequest struct {
 	Name         string   `json:"name" binding:"required"`
