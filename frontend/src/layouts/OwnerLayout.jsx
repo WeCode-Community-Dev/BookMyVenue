@@ -1,0 +1,152 @@
+import React from 'react';
+import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectCurrentUser } from '../redux/slices/authSlice';
+import {
+  FiGrid,
+  FiLayers,
+  FiPlus,
+  FiCalendar,
+  FiSettings,
+  FiLogOut,
+  FiSearch,
+  FiBell,
+  FiChevronDown
+} from 'react-icons/fi';
+import './ownerLayout.scss';
+import { logout } from '../redux/slices/authSlice';
+
+function OwnerLayout() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const currentUser = useSelector(selectCurrentUser);
+
+  const user = {
+    name: currentUser?.username,
+    role: currentUser?.role,
+    initials: currentUser?.username ? currentUser.username.split(' ').map(n => n[0]).join('').toUpperCase() : ""
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
+
+  return (
+    <div className="owner-layout">
+      <aside className="owner-sidebar">
+        <div className="sidebar-brand">
+          <Link to="/owner/dashboard" className="brand-link">
+            <div className="brand-logo-icon">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </div>
+            <span className="brand-name">BookMyVenue</span>
+          </Link>
+        </div>
+
+        <nav className="sidebar-nav">
+          <NavLink
+            to="/owner/dashboard"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          >
+            <FiGrid className="link-icon" />
+            <span className="link-text">Dashboard</span>
+          </NavLink>
+
+          <NavLink
+            to="/owner/venues"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          >
+            <FiLayers className="link-icon" />
+            <span className="link-text">My Venues</span>
+          </NavLink>
+
+          <NavLink
+            to="/owner/add-venue"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          >
+            <FiPlus className="link-icon" />
+            <span className="link-text">Add Venue</span>
+          </NavLink>
+
+          <NavLink
+            to="/owner/bookings"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          >
+            <FiCalendar className="link-icon" />
+            <span className="link-text">Bookings</span>
+          </NavLink>
+
+          <NavLink
+            to="/owner/settings"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          >
+            <FiSettings className="link-icon" />
+            <span className="link-text">Settings</span>
+          </NavLink>
+        </nav>
+
+        <div className="sidebar-footer">
+          <div className="owner-profile-summary">
+            <div className="profile-avatar-initials">
+              {user.initials}
+            </div>
+            <div className="profile-details">
+              <span className="profile-name">{user.name}</span>
+            </div>
+          </div>
+          <button className="sidebar-logout-btn" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <div className="owner-main">
+        <header className="owner-header">
+          {/* <div className="header-search-wrapper">
+            <FiSearch className="search-bar-icon" />
+            <input
+              type="text"
+              className="search-bar-input"
+              placeholder="Search for quick navigation..."
+            />
+          </div> */}
+          {/* //write logic to make it appear only for venue */}
+
+          <div className="header-controls">
+
+            <button className="control-btn notification-btn" aria-label="Notifications">
+              <FiBell className="control-icon" />
+              <span className="notification-badge"></span>
+            </button>
+
+            <div className="header-profile-dropdown">
+              <div className="header-avatar-initials">
+                {user.initials}
+              </div>
+              <span className="header-profile-name">{user.name}</span>
+              <FiChevronDown className="dropdown-arrow-icon" />
+            </div>
+          </div>
+        </header>
+        <main className="owner-content-body">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
+
+export default OwnerLayout;

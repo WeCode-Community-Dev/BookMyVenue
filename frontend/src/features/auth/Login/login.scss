@@ -1,0 +1,303 @@
+.login-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  padding: 48px;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.4s ease-out;
+
+  @media (max-width: 640px) {
+    padding: 32px 24px;
+    border-radius: 12px;
+  }
+
+  .login-logo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+
+    .login-card-logo {
+      height: 42px;
+      width: auto;
+      object-fit: contain;
+    }
+  }
+
+  .login-header {
+    text-align: center;
+    margin-bottom: 32px;
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111827;
+      margin: 0 0 8px 0;
+      letter-spacing: -0.5px;
+    }
+
+    .login-subtitle {
+      font-size: 14.5px;
+      color: #6b7280;
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+
+  .login-error-message {
+    background-color: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 24px;
+    text-align: center;
+    font-weight: 500;
+    line-height: 1.4;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .login-form {
+    .form-group {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+
+      label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #4b5563;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      .label-row {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 8px;
+
+        label {
+          margin-bottom: 0;
+        }
+
+        .forgot-password-link {
+          margin-left: auto;
+          font-size: 11px;
+          font-weight: 600;
+          color: #008060;
+          text-decoration: none;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+
+      .input-with-icon {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+
+        .input-icon {
+          position: absolute;
+          left: 14px;
+          color: #9ca3af;
+          font-size: 18px;
+          pointer-events: none;
+        }
+
+        .form-input {
+          width: 100%;
+          padding: 12px 16px 12px 42px;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          font-size: 15px;
+          color: #111827;
+          background: #ffffff;
+          box-sizing: border-box;
+          transition: all 0.2s ease;
+
+          &::placeholder {
+            color: #9ca3af;
+          }
+
+          &:focus {
+            outline: none;
+            border-color: #008060;
+            box-shadow: 0 0 0 3px rgba(0, 128, 96, 0.15);
+          }
+        }
+      }
+    }
+
+    .password-group {
+      .password-input {
+        padding-right: 44px !important;
+      }
+
+      .password-toggle-btn {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        color: #9ca3af;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: #4b5563;
+        }
+      }
+    }
+
+    .form-checkbox-group {
+      margin-bottom: 24px;
+
+      .checkbox-container {
+        display: flex;
+        position: relative;
+        padding-left: 28px;
+        cursor: pointer;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #4b5563;
+        user-select: none;
+
+        input {
+          position: absolute;
+          opacity: 0;
+          cursor: pointer;
+          height: 0;
+          width: 0;
+
+          &:checked ~ .checkmark {
+            background-color: #008060;
+            border-color: #008060;
+
+            &:after {
+              display: block;
+            }
+          }
+        }
+
+        .checkmark {
+          position: absolute;
+          top: 2px;
+          left: 0;
+          height: 18px;
+          width: 18px;
+          background-color: #ffffff;
+          border: 1px solid #d1d5db;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+
+          &:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 5px;
+            top: 2px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+          }
+        }
+
+        &:hover input ~ .checkmark {
+          border-color: #008060;
+        }
+
+        .checkbox-label {
+          margin-top: 1px;
+        }
+      }
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px 20px;
+      background-color: #008060;
+      border: none;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0, 128, 96, 0.1), 0 2px 4px -1px rgba(0, 128, 96, 0.06);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover {
+        background-color: #00664d;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 15px -3px rgba(0, 128, 96, 0.15), 0 4px 6px -2px rgba(0, 128, 96, 0.05);
+
+        .btn-arrow {
+          transform: translateX(3px);
+        }
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+
+      .btn-arrow {
+        font-size: 16px;
+        transition: transform 0.2s ease;
+      }
+    }
+  }
+
+  .form-link-highlight {
+    color: #008060;
+    text-decoration: none;
+    font-weight: 600;
+    transition: text-decoration 0.2s ease;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .login-footer-links {
+    margin-top: 24px;
+    text-align: center;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 20px;
+
+    p {
+      font-size: 14px;
+      color: #6b7280;
+      margin: 0;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
