@@ -39,7 +39,10 @@ export class VenueRepository extends IVenueRepository {
 
     async findAllFiltered(query = {}){
         const filter = {
-            isDeleted : false
+            isDeleted : false,
+        }
+        if(!query.ownerId){
+            filter.isAdminVerified = true
         }
         if(query.ownerId){
             filter.ownerId = query.ownerId
@@ -48,18 +51,39 @@ export class VenueRepository extends IVenueRepository {
             filter.status = query.status
         }
         if(query.price){
-            filter.$or = {
-                pricePerHour: { $lte: query.price },
-                pricePerDay: { $lte: query.price}
+            filter.$or = [
+                { pricePerHour: { $lte: query.price }},
+                { pricePerDay: { $lte: query.price}}
+            ]
+        }
+        if(query.category){
+            filter.category = query.category
+        }
+        if(query.minPrice){
+            filter.pricePerDay.$gte = query.minPrice
+        }
+
+        if(query.maxPrice){
+            filter.pricePerDay.$lte = query.maxPrice
+        }
+
+        if(query.rating){
+            filter.rating = query.rating
+        }
+
+        if(query.amenities){
+            filter.amenities = {
+                $all: query.amenities
             }
         }
+
         if(query.search){
-           filter.$or = {
-            name: { $regex: query.search, $options: "i"},
-            addressLine1: { $regex: query.search, $options: "i"},
-            city: { $regex: query.search, $options: "i"},
-            state: { $regex: query.search, $options: "i"}
-           }
+           filter.$or = [
+            {name: { $regex: query.search, $options: "i"}},
+            {addressLine1: { $regex: query.search, $options: "i"}},
+            {city: { $regex: query.search, $options: "i"}},
+            {state: { $regex: query.search, $options: "i"}}
+           ]
         }
 
         const skip = query.limit * ( query.page - 1)

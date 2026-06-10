@@ -52,8 +52,8 @@ export class VendorVenueController {
 
     getAllVenues = asyncHandler( async (req, res) => {
         // const ownerId = req.params.ownerId
-        const { ownerId, page, limit, search, status, price} = req.validatedQuery
-        const { data, totalCount, totalPages }= await this._vendorGetAllVenuesUsecase.execute(ownerId, page, limit, search, status, price)
+        const { ownerId, page, limit, category, search, status, price} = req.validatedQuery
+        const { data, totalCount, totalPages }= await this._vendorGetAllVenuesUsecase.execute(ownerId, page, limit, category, search, status, price)
         return sendSuccess(res, statusCode.OK, '', {data, totalCount, totalPages})
     })
 
