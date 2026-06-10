@@ -1,0 +1,249 @@
+:root {
+  --text: #6b6b6b;
+  --text-h: #1a1a1a;
+  --bg: #ffffff;
+  --border: #e8e8e8;
+  --code-bg: #f7f7f7;
+  --accent: #dc2626;
+  --accent-bg: rgba(220, 38, 38, 0.08);
+  --accent-border: rgba(220, 38, 38, 0.35);
+  --social-bg: rgba(247, 247, 247, 0.7);
+  --shadow:
+    rgba(0, 0, 0, 0.08) 0 4px 12px -2px, rgba(0, 0, 0, 0.04) 0 2px 6px -1px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #9ca3af;
+    --text-h: #f3f4f6;
+    --bg: #141414;
+    --border: #2a2a2a;
+    --code-bg: #1e1e1e;
+    --accent: #f87171;
+    --accent-bg: rgba(248, 113, 113, 0.12);
+    --accent-border: rgba(248, 113, 113, 0.4);
+    --social-bg: rgba(30, 30, 30, 0.6);
+    --shadow:
+      rgba(0, 0, 0, 0.4) 0 4px 12px -2px, rgba(0, 0, 0, 0.2) 0 2px 6px -1px;
+  }
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
+  text-align: center;
+  border-inline: 1px solid var(--border);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 52px;
+  letter-spacing: -1.5px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 34px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.2px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* Modal Card */
+.modal-content {
+  width: 100%;
+  max-width: 550px;
+
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  box-shadow: var(--shadow);
+
+  padding: 28px;
+  text-align: left;
+
+  animation: modalPop 0.18s ease-out;
+}
+
+.modal-content h3 {
+  margin: 0 0 16px;
+  color: var(--text-h);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* Terms Area */
+.terms-content {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  padding: 16px;
+  margin-bottom: 20px;
+
+  background: var(--social-bg);
+
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.terms-content p {
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.terms-content ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.terms-content li {
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+/* Checkbox */
+.terms-checkbox {
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+.terms-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.terms-checkbox input {
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+}
+
+/* Buttons */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modal-actions button:first-child {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--sans);
+  font-size: 14px;
+}
+
+.modal-actions button:first-child:hover {
+  background: var(--social-bg);
+}
+
+.modal-actions button:last-child {
+  background: var(--accent);
+  border: none;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.modal-actions button:last-child:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.modal-actions button:last-child:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
