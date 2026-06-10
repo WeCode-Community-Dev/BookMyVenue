@@ -3,31 +3,27 @@ import { useState } from 'react';
 const FEATURED_CATEGORIES = [
   {
     id: 'banquet',
-    name: 'Banquet & Party Halls',
-    desc: 'Perfect for galas, anniversaries, and grand celebrations.',
+    name: 'Banquet Halls',
+    desc: 'Perfect for anniversaries, and grand celebrations.',
     image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=400',
-    count: 24
   },
   {
     id: 'outdoor',
-    name: 'Outdoor Gardens & Rooftops',
+    name: 'Outdoor Gardens',
     desc: 'Breathtaking locations under the sky for social gatherings.',
     image: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=400',
-    count: 18
   },
   {
-    id: 'meeting',
-    name: 'Executive Meeting Rooms',
+    id: 'conference',
+    name: 'Conference Rooms',
     desc: 'High-speed internet and professional setups for businesses.',
     image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=400',
-    count: 35
   },
   {
     id: 'wedding',
-    name: 'Charming Wedding Chapels',
+    name: 'Wedding/reception halls',
     desc: 'Make your special day unforgettable in gorgeous spots.',
-    image: 'https://images.unsplash.com/photo-1519225495810-7517c696567a?auto=format&fit=crop&q=80&w=400',
-    count: 12
+    image: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=800&q=80',
   }
 ];
 
@@ -38,10 +34,8 @@ function LandingPage({ user, onLogout, onNavigate }) {
   const handleSearch = (e) => {
     e.preventDefault();
     if (!user) {
-      alert(`Searching for ${searchType} venues in ${searchLoc || 'any location'}...\nPlease Sign In to submit inquiries and complete bookings!`);
       onNavigate('login');
     } else {
-      alert(`Searching for ${searchType} venues in ${searchLoc || 'any location'}...\nRedirecting you to your Booker dashboard.`);
       onNavigate('dashboard');
     }
   };
@@ -92,9 +86,9 @@ function LandingPage({ user, onLogout, onNavigate }) {
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-content">
-          <h1>Find & Book the Perfect Venue for Any Event</h1>
+          <h1>Find & Book the Perfect Venue for Your Event</h1>
           <p className="hero-subtitle">
-            Discover a curated collection of banquet halls, corporate hubs, rooftop terraces, and vineyard retreats.
+            Discover good collection of wedding halls, corporate hubs, open halls .
           </p>
 
           <form onSubmit={handleSearch} className="hero-search-bar">
@@ -114,10 +108,10 @@ function LandingPage({ user, onLogout, onNavigate }) {
                 onChange={(e) => setSearchType(e.target.value)}
               >
                 <option value="all">Any Event</option>
-                <option value="banquet">Party / Banquet</option>
-                <option value="meeting">Business Meeting</option>
-                <option value="outdoor">Rooftop / Garden</option>
-                <option value="wedding">Wedding / Chapel</option>
+                <option value="BANQUET_HALL">Banquet Hall</option>
+                <option value="OUTDOOR_GARDEN">Outdoor / Garden</option>
+                <option value="CONFERENCE_ROOM">Conference Room</option>
+                <option value="WEDDING_RECEPTION_HALL">Wedding/reception Hall</option>
               </select>
             </div>
             <button type="submit" className="search-submit-btn">
@@ -141,7 +135,6 @@ function LandingPage({ user, onLogout, onNavigate }) {
                 className="category-image" 
                 style={{ backgroundImage: `url(${category.image})` }}
               >
-                <span className="category-count">{category.count} Venues</span>
               </div>
               <div className="category-body">
                 <h3>{category.name}</h3>
@@ -162,7 +155,7 @@ function LandingPage({ user, onLogout, onNavigate }) {
       <section className="hosting-cta">
         <div className="hosting-content">
           <h2>Have a space you want to share?</h2>
-          <p>List your hall, office space, or garden on BookMyVenue. Set your hourly rates, manage requests, and earn side revenue.</p>
+          <p>List your hall, office space, or garden on BookMyVenue. Set your hourly rates, manage requests.</p>
           <button 
             onClick={() => onNavigate('register')}
             className="hosting-btn"

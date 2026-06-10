@@ -4,6 +4,8 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import './App.css';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -74,10 +76,17 @@ function App() {
           </footer>
         </div>
       )}
-
       {currentPage === 'dashboard' && (
         <Dashboard user={user} onLogout={handleLogout} />
       )}
+      <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            closeOnClick
+            pauseOnHover
+            theme="dark"
+          />
     </div>
   );
 }

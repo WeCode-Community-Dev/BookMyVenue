@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from "react-toastify";
 
 function OwnerDashboard({ user, onLogout }) {
 
@@ -60,7 +61,7 @@ function OwnerDashboard({ user, onLogout }) {
   const handleAddVenue = async (e) => {
     e.preventDefault();
     if (!name || !location || !capacity || !price) {
-      alert('Please fill out all required fields.');
+      toast.warning('Please fill out all required fields.');
       return;
     }
     try {
@@ -84,10 +85,10 @@ function OwnerDashboard({ user, onLogout }) {
         }),
       });
       if (!response.ok) throw new Error('Failed to submit venue');
-      alert('Venue request submitted successfully. Awaiting admin approval.');
+      toast.success("Venue request submitted successfully. Awaiting admin approval.");
       await fetchVenues();
     } catch (error) {
-      alert(error.message);
+        toast.error(error.message);
     }
     // Reset add form
     setName(''); setType(''); setLocation(''); setDescription('');
@@ -115,13 +116,13 @@ function OwnerDashboard({ user, onLogout }) {
 
       if (!response.ok) throw new Error('Failed to delete venue');
 
-      alert('Venue deleted successfully!');
+      toast.warning('Venue deleted successfully!');
 
       // Refresh the list so deleted venue disappears from screen
       await fetchVenues();
 
     } catch (error) {
-      alert(error.message);
+      toast.error(error.message);
     }
   };
 
@@ -175,7 +176,7 @@ function OwnerDashboard({ user, onLogout }) {
 
       if (!response.ok) throw new Error('Failed to update venue');
 
-      alert('Venue updated successfully! Status reset to PENDING for re-approval.');
+      toast.success('Venue updated successfully! Status reset to PENDING for re-approval.');
 
       setEditingVenue(null); // close the edit form
 
@@ -183,7 +184,7 @@ function OwnerDashboard({ user, onLogout }) {
       await fetchVenues();
 
     } catch (error) {
-      alert(error.message);
+      toast.error(error.message);
     }
   };
 

@@ -137,7 +137,7 @@ function Register({ onRegisterSuccess, onNavigate }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="password">Password * (Min 6 characters)</label>
+          <label htmlFor="password">Password * (Min 8 characters)</label>
           <input
             type="password"
             id="password"
