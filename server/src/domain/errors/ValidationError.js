@@ -1,9 +1,9 @@
 import { AppError } from "./app.error.js";
-import StatusCode from "../enums/statusCode.js";
+import { statusCode } from "../../shared/constants/enums/statusCode.js";
 
 export class ValidationError extends AppError {
     constructor(message = "Validation failed") {
-        super(message, StatusCode.BAD_REQUEST);
+        super(message, statusCode.BAD_REQUEST);
         this.name = "ValidationError";
     }
 }

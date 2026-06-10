@@ -34,6 +34,10 @@ const vendorSchema = new mongoose.Schema(
         isBlocked: {
             type: Boolean,
             default: false
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
         }
     },
     {

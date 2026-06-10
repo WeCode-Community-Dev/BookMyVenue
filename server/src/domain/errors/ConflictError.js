@@ -1,9 +1,9 @@
 import { AppError } from "./app.error.js";
-import StatusCode from "../enums/statusCode.js";
+import { statusCode } from "../../shared/constants/enums/statusCode.js";
 
 export class ConflictError extends AppError {
     constructor(message = "Resource already exists") {
-        super(message, StatusCode.CONFLICT);
+        super(message, statusCode.CONFLICT);
         this.name = "ConflictError";
     }
 }

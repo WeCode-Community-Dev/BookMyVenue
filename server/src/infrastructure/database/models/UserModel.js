@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
         type:String,
         enum: Object.values(UserRole),
         default: UserRole.CUSTOMER
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 },
     {
