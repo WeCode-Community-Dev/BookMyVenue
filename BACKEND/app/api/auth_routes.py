@@ -26,7 +26,8 @@ def signup_user(
             db,
             payload.name,
             payload.email,
-            payload.password
+            payload.password,
+            payload.role
         )
     except Exception as e:
         raise HTTPException(

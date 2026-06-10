@@ -18,7 +18,8 @@ def signup(
     db: Session,
     name: str,
     email: str,
-    password: str
+    password: str,
+    role: str
 ):
 
     existing_user = (
@@ -39,7 +40,8 @@ def signup(
     user = User(
         name=name,
         email=email,
-        password=hashed_password
+        password=hashed_password,
+        role=role
     )
 
     db.add(user)
@@ -81,7 +83,8 @@ def login(
     token = create_access_token(
         {
             "sub": str(user.id),
-            "email": user.email
+            "email": user.email,
+            "role": user.role
         }
     )
 
@@ -91,6 +94,7 @@ def login(
         "user": {
             "id": user.id,
             "name": user.name,
-            "email": user.email
+            "email": user.email,
+            "role": user.role
         }
     }
