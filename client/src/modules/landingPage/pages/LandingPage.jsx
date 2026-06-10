@@ -348,57 +348,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── OWNER BANNER ── */}
-      <section className="py-14 sm:py-[70px] px-5 sm:px-8 lg:px-[6%] bg-gray-900">
-        <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row lg:justify-between lg:items-center gap-10">
-          <div className="lg:max-w-[480px]">
-            <p className="text-[0.75rem] font-bold uppercase tracking-[0.1em] text-gray-500 mb-3">
-              For Venue Owners
-            </p>
-            <h2 className="text-[1.8rem] sm:text-[2.2rem] lg:text-[clamp(1.8rem,3vw,2.6rem)] font-extrabold text-white tracking-[-0.03em] leading-[1.15] mb-4">
-              List your venue and reach thousands of customers
-            </h2>
-            <p className="text-gray-400 text-[0.95rem] leading-[1.7]">
-              Free to list. Manage bookings, track revenue, and grow your business — all from one dashboard.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3.5 lg:shrink-0">
-            {OWNER_FEATURES.map((f) => (
-              <div key={f} className="flex items-center gap-3">
-                <div className="w-[22px] h-[22px] bg-green-500 rounded-full flex items-center justify-center text-[0.65rem] text-white font-extrabold shrink-0">
-                  ✓
-                </div>
-                <span className="text-gray-300 text-[0.9rem] font-medium">{f}</span>
-              </div>
-            ))}
-            <button className="mt-2 bg-white text-gray-900 rounded-xl px-7 py-3.5 font-bold text-[0.95rem] cursor-pointer transition-colors duration-200 hover:bg-gray-100 w-full sm:w-auto">
-              List Your Venue →
-            </button>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ── FINAL CTA ── */}
-      <section className="py-16 sm:py-20 px-5 sm:px-8 text-center bg-gray-50 border-t border-gray-100">
-        <div className="max-w-[560px] mx-auto">
-          <h2 className="text-[2rem] sm:text-[clamp(2rem,4vw,3rem)] font-extrabold tracking-[-0.03em] leading-[1.15] mb-4">
-            Find your perfect venue today
-          </h2>
-          <p className="text-gray-500 text-base sm:text-[1rem] leading-[1.7] mb-8">
-            Join 50,000+ event planners who trust BookMyVenue for every occasion.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button className="btn-primary !text-[1rem] !py-[15px] !px-8 justify-center">
-              Browse Venues →
-            </button>
-            <button className="btn-outline !text-[1rem] !py-[15px] !px-7 justify-center">
-              Contact Us
-            </button>
-          </div>
-        </div>
-      </section>
 
       
 
