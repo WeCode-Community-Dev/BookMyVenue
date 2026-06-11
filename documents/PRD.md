@@ -9,7 +9,7 @@ BookMyVenue is a simple platform where users can:
 
 * Find venues
 * View details
-* Book them online 
+* Book them online. 
 
 It also allows venue owners to:
 
