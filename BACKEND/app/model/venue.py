@@ -26,7 +26,8 @@ class Venue(Base):
     location = Column(String(255), nullable=False)
     capacity = Column(Integer, nullable=False)
     venue_price = Column(Integer, nullable=False)
-    
+    venue_availabilty = Column(String(255), nullable=False) # hourly or daily
+    is_available = Column(String(255), nullable=False) # turn on, off venue
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
@@ -36,4 +37,6 @@ class Venue(Base):
     )
 
     user = relationship("User", back_populates="venues")
+    venue_amenities = relationship("VenueAmenities", back_populates="venues", cascade="all, delete-orphan")
+    venue_images = relationship("VenueImages", back_populates="venues", cascade="all, delete-orphan")
 

@@ -18,4 +18,4 @@ class User(Base):
         onupdate=func.now()
     )
     
-    venues = relationship("Venue", back_populates="user")
+    venues = relationship("Venue", back_populates="user", cascade="all, delete-orphan")
