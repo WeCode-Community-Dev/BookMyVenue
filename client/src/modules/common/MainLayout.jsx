@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
 import logo from "../../assets/bookmyvenue.webp";
 import {  useNavigate } from "react-router";
+import { useAuth } from "../../shared/context/AuthContext";
 const MainLayout = ({ children }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const isOwner = user?.roles?.includes("OWNER");
+  const isUser = user?.roles?.includes("USER");
+
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useNavigate();
@@ -9,15 +16,19 @@ const MainLayout = ({ children }) => {
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", fn);
+
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  // Close menu on resize to desktop
   useEffect(() => {
     const fn = () => {
-      if (window.innerWidth >= 1024) setMenuOpen(false);
+      if (window.innerWidth >= 1024) {
+        setMenuOpen(false);
+      }
     };
+
     window.addEventListener("resize", fn);
+
     return () => window.removeEventListener("resize", fn);
   }, []);
 
@@ -26,9 +37,8 @@ const MainLayout = ({ children }) => {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 border-b border-gray-100 transition-all duration-300 ${
-          scrolled ? "bg-white/95 backdrop-blur-[12px]" : "bg-white"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 border-b border-gray-100 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-[12px]" : "bg-white"
+          }`}
       >
         <div className="flex items-center justify-between h-[68px] px-5 sm:px-8 lg:px-[6%]">
           {/* Logo */}
@@ -36,6 +46,7 @@ const MainLayout = ({ children }) => {
             <div className="w-20 h-auto bg-gray-900 rounded-[10px] flex items-center justify-center text-base">
               <img src={logo} alt="BookMyVenue" className="" />
             </div>
+
             <span>BookMyVenue</span>
           </div>
 
@@ -80,26 +91,99 @@ const MainLayout = ({ children }) => {
         </div>
 
         {/* Mobile menu dropdown */}
+        {/* Mobile menu dropdown */}
         <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${menuOpen ? "max-h-80" : "max-h-0"} bg-white border-t border-gray-100`}
+          className={`lg:hidden overflow-hidden transition-all duration-300 ${menuOpen ? "max-h-[600px]" : "max-h-0"
+            } bg-white border-t border-gray-100`}
         >
           <div className="px-5 py-4 flex flex-col gap-1">
+
             {NAV_LINKS.map((l) => (
               <span
                 key={l}
-                className="text-gray-700 font-medium py-2.5 cursor-pointer border-b border-gray-50 last:border-0"
+                className="
+          text-gray-700
+          font-medium
+          py-2.5
+          cursor-pointer
+          border-b
+          border-gray-50
+          last:border-0
+        "
               >
                 {l}
               </span>
             ))}
-            <div className="flex gap-2.5 mt-3 pt-3 border-t border-gray-100">
-              <button className="btn-outline flex-1 !py-2.5 !text-[0.88rem] !rounded-[10px]">
-                Log In
-              </button>
-              <button className="btn-primary flex-1 !py-2.5 !text-[0.88rem] !rounded-[10px]">
-                Sign Up
-              </button>
+
+            <div className="flex flex-col gap-3 mt-3 pt-3 border-t border-gray-100">
+
+              {!user ? (
+                <>
+                  <button
+                    onClick={() => {
+                      navigate("/login");
+                      setMenuOpen(false);
+                    }}
+                    className="btn-outline"
+                  >
+                    Log In
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      navigate("/signup");
+                      setMenuOpen(false);
+                    }}
+                    className="btn-primary"
+                  >
+                    Sign Up
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="font-medium">
+                    Hi, {user.name}
+                  </span>
+
+                  {isUser && !isOwner && (
+                    <button
+                      onClick={() => {
+                        navigate("/become-partner");
+                        setMenuOpen(false);
+                      }}
+                      className="btn-outline"
+                    >
+                      Become a Partner
+                    </button>
+                  )}
+
+                  {isOwner && (
+                    <button
+                      onClick={() => {
+                        navigate("/owner/dashboard");
+                        setMenuOpen(false);
+                      }}
+                      className="btn-primary"
+                    >
+                      Owner Dashboard
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      logout();
+                      navigate("/");
+                      setMenuOpen(false);
+                    }}
+                    className="btn-outline"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
+
             </div>
+
           </div>
         </div>
       </nav>
@@ -122,46 +206,13 @@ const MainLayout = ({ children }) => {
               </p>
             </div>
 
-            {[
-              {
-                title: "Platform",
-                links: [
-                  "Browse Venues",
-                  "How It Works",
-                  "Pricing",
-                  "Mobile App",
-                ],
-              },
-              {
-                title: "Venue Owners",
-                links: ["List a Venue", "Owner Login", "Analytics", "Payouts"],
-              },
-              {
-                title: "Company",
-                links: ["About", "Blog", "Careers", "Contact"],
-              },
-            ].map((col) => (
-              <div key={col.title}>
-                <p className="text-[0.75rem] font-bold uppercase tracking-[0.1em] text-gray-400 mb-3 sm:mb-4">
-                  {col.title}
-                </p>
-                {col.links.map((l) => (
-                  <div
-                    key={l}
-                    className="text-[0.88rem] text-gray-700 font-medium mb-2 sm:mb-2.5 cursor-pointer hover:text-gray-900 transition-colors"
-                  >
-                    {l}
-                  </div>
-                ))}
-              </div>
-            ))}
           </div>
 
           <div className="border-t border-gray-100 pt-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <span className="text-[0.82rem] text-gray-400">
               © 2026 BookMyVenue.
             </span>
-            <div className="flex flex-wrap gap-4 sm:gap-6">
+            {/* <div className="flex flex-wrap gap-4 sm:gap-6">
               {["Privacy Policy", "Terms of Use", "Support"].map((l) => (
                 <span
                   key={l}
@@ -170,7 +221,7 @@ const MainLayout = ({ children }) => {
                   {l}
                 </span>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
       </footer>

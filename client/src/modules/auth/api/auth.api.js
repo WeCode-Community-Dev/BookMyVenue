@@ -11,3 +11,14 @@ export const signupUser = async (payload) => {
    return response.data;
 
 };
+
+export const loginUser = async (payload) => {
+
+   const response = await axiosInstance.post(
+      API_ROUTES.AUTH.LOGIN,
+      payload
+   );
+
+   return response.data;
+
+};
