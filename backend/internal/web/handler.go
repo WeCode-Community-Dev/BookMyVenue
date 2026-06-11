@@ -39,3 +39,7 @@ func (h *Handler) AddVenuePage(c *gin.Context) {
 func (h *Handler) ViewRejectedVenuesPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "view_unapprovedVenues.html", nil)
 }
+
+func (h *Handler) ViewPendingVenuesPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "view_pendingVenue.html", nil)
+}

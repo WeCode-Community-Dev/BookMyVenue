@@ -61,3 +61,11 @@ func (r *repository) getAmenitiesForVenue(ctx context.Context, venueID pgtype.UU
 func (r *repository) getVenueImagesByVenueID(ctx context.Context, venuID pgtype.UUID) ([]sqlc.VenueImage, error) {
 	return r.db.GetVenueImages(ctx, venuID)
 }
+
+func (r *repository) getPendingVenuesByOwnerID(ctx context.Context, ownerID string) ([]sqlc.Venue, error) {
+	UUID, err := utils.StringToUUID(ownerID)
+	if err != nil {
+		return []sqlc.Venue{}, err
+	}
+	return r.db.GetPendingVenuesByOwnerID(ctx, UUID)
+}
