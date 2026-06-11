@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import SignupPage from '../modules/auth/pages/SignupPage';
 import LoginPage from '../modules/auth/pages/LoginPage';
+import LoginPage from '../modules/auth/pages/LoginPage';
 import { ROUTES } from '../shared/constants/routes';
 import LandingPage from '../modules/landingPage/pages/LandingPage';
 
