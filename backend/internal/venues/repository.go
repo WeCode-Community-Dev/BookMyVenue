@@ -5,6 +5,7 @@ import (
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/utils"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // repository provides database access methods for venue-related operations.
@@ -51,4 +52,12 @@ func (r *repository) getRejectedVenuesByOwnerID(ctx context.Context, ownerID str
 		return []sqlc.Venue{}, err
 	}
 	return r.db.GetRejectedVenuesByOwnerID(ctx, UUID)
+}
+
+func (r *repository) getAmenitiesForVenue(ctx context.Context, venueID pgtype.UUID) ([]sqlc.Amenity, error) {
+	return r.db.GetAmenitiesForVenue(ctx, venueID)
+}
+
+func (r *repository) getVenueImagesByVenueID(ctx context.Context, venuID pgtype.UUID) ([]sqlc.VenueImage, error) {
+	return r.db.GetVenueImages(ctx, venuID)
 }

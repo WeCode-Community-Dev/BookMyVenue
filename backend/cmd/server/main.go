@@ -29,6 +29,7 @@ func main() {
 	// Create a Gin router with default middleware (logger and recovery)
 	r := gin.Default()
 	r.LoadHTMLGlob("../frontend/*")
+	r.Static("/uploads", "./internal/venues/uploads")
 
 	routes.SetupRouter(r, queries)
 
