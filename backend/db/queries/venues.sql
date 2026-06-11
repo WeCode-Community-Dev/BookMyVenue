@@ -41,6 +41,11 @@ SELECT * FROM venues
 WHERE owner_id = $1 AND status = 'pending'
 ORDER BY created_at DESC;
 
+-- name: GetApprovedVenuesByOwnerID :many
+SELECT * FROM venues
+WHERE owner_id = $1 AND status = 'approved'
+ORDER BY created_at DESC;
+
 -- name: UpdateVenue :one
 UPDATE venues
 SET name = $2, location = $3, capacity = $4, price_per_day = $5, price_per_hour = $6, updated_at = NOW()
