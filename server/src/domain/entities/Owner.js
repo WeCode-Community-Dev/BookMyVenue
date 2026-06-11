@@ -1,5 +1,6 @@
-class Owner {
+class OwnerEntity {
   constructor({
+    id,
     fullName,
     email,
     phone,
@@ -7,18 +8,25 @@ class Owner {
     role,
     businessName,
     isVerified = false,
-    isAdminVerified = false ,
-    isAdminApproeved = false, 
+    isBlocked = false,
+    isDeleted = false,
+    
+    
+    isAdminApproved = false, 
   }) {
+    this.id = id;
     this.fullName = fullName;
     this.email = email;
     this.phone = phone;
     this.password = password;
     this.businessName = businessName;
     this.isVerified = isVerified;
-    this.isAdminApproeved = isAdminApproeved;
-    this.isAdminVerified = isAdminVerified;
+    this.isBlocked = isBlocked;
+    this.isAdminApproved = isAdminApproved;
+    this.role = role;
+    this.isDeleted = isDeleted;
+    
   }
 }
 
-export default Owner;
+export default OwnerEntity;
