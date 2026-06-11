@@ -6,6 +6,18 @@ import { detailUrl, thumbnailUrl } from '../../utils/cloudinaryUrl';
 import { MdStar, MdPeople, MdCurrencyRupee, MdLock, MdTimer, MdCalendarToday, MdOutlineAccessTime, MdSend, MdLocationOn, MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import toast from 'react-hot-toast';
 
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+};
+
 export default function VenueDetailPage() {
   const { id } = useParams();
   const { user, isAuthenticated } = useAuth();
@@ -15,6 +27,29 @@ export default function VenueDetailPage() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [blockedDates, setBlockedDates] = useState([]);
+  const [userLoc, setUserLoc] = useState(null);
+
+  useEffect(() => {
+    const lat = localStorage.getItem('user_latitude');
+    const lng = localStorage.getItem('user_longitude');
+    const name = localStorage.getItem('user_location_name');
+    if (lat && lng) {
+      setUserLoc({ lat: parseFloat(lat), lng: parseFloat(lng), name });
+    } else if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const uLat = pos.coords.latitude;
+          const uLng = pos.coords.longitude;
+          setUserLoc({ lat: uLat, lng: uLng, name: 'My Location' });
+          localStorage.setItem('user_latitude', uLat);
+          localStorage.setItem('user_longitude', uLng);
+          localStorage.setItem('user_location_name', 'My Location');
+        },
+        () => {},
+        { timeout: 5000 }
+      );
+    }
+  }, []);
 
   // Booking / Locking States
   const [bookingDate, setBookingDate] = useState('');
@@ -575,7 +610,14 @@ export default function VenueDetailPage() {
               {venue.venueType?.replace('_', ' ')}
             </span>
             <h1 className="text-3xl font-black text-white tracking-tight">{venue.venueName}</h1>
-            <p className="text-slate-200 text-xs mt-1">📍 {venue.address}</p>
+            <p className="text-slate-200 text-xs mt-1 flex flex-wrap items-center gap-1.5">
+              <span>📍 {venue.address}</span>
+              {userLoc && venue.latitude && venue.longitude && (
+                <span className="bg-primary/30 text-white border border-white/20 text-[10px] font-bold px-2.5 py-0.5 rounded-full backdrop-blur-md shadow-sm">
+                  📍 {calculateDistance(userLoc.lat, userLoc.lng, Number(venue.latitude), Number(venue.longitude)).toFixed(1)} km away from {userLoc.name}
+                </span>
+              )}
+            </p>
           </div>
 
           {/* Mini Thumbnail Row floating on the bottom right */}

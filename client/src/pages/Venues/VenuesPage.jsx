@@ -20,6 +20,7 @@ export default function VenuesPage() {
   const [minRating, setMinRating] = useState(searchParams.get('minRating') || '');
   const [useGeo, setUseGeo] = useState(false);
   const [geoLoc, setGeoLoc] = useState({ lat: null, lng: null });
+  const [radius, setRadius] = useState(50);
 
   // Geocoding and Location Suggestion State
   const [locationSearch, setLocationSearch] = useState('');
@@ -27,17 +28,48 @@ export default function VenuesPage() {
   const [selectedLocationName, setSelectedLocationName] = useState('');
 
   useEffect(() => {
+    const savedLat = localStorage.getItem('user_latitude');
+    const savedLng = localStorage.getItem('user_longitude');
+    const savedName = localStorage.getItem('user_location_name');
+
+    if (savedLat && savedLng) {
+      setGeoLoc({ lat: parseFloat(savedLat), lng: parseFloat(savedLng) });
+      setUseGeo(true);
+      setLocationSearch(savedName || 'My Location');
+      setSelectedLocationName(savedName || 'My Location');
+    } else if (navigator.geolocation && !searchParams.get('search')) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          setGeoLoc({ lat, lng });
+          setUseGeo(true);
+          setLocationSearch('My Location');
+          setSelectedLocationName('My Location');
+          
+          localStorage.setItem('user_latitude', lat);
+          localStorage.setItem('user_longitude', lng);
+          localStorage.setItem('user_location_name', 'My Location');
+        },
+        () => {},
+        { timeout: 5000 }
+      );
+    }
+  }, []);
+
+  useEffect(() => {
     fetchVenues();
-  }, [searchParams, page, useGeo, geoLoc]);
+  }, [searchParams, page, useGeo, geoLoc, radius]);
 
   const fetchVenues = async () => {
     setLoading(true);
     try {
       let res;
       if (useGeo && geoLoc.lat && geoLoc.lng) {
-        res = await venueService.getNearby(geoLoc.lat, geoLoc.lng, 50);
-        setVenues(res.data || []);
-        setTotal(res.data?.length || 0);
+        res = await venueService.getNearby(geoLoc.lat, geoLoc.lng, radius);
+        const sorted = (res.data || []).sort((a, b) => Number(a.distance || 0) - Number(b.distance || 0));
+        setVenues(sorted);
+        setTotal(sorted.length);
         setTotalPages(1);
       } else {
         const params = {
@@ -98,7 +130,12 @@ export default function VenuesPage() {
     setLocationSuggestions([]);
     setUseGeo(true);
     setPage(1);
-    toast.success(`Showing spaces near ${displayNameShort} (50km)`);
+
+    localStorage.setItem('user_latitude', lat);
+    localStorage.setItem('user_longitude', lng);
+    localStorage.setItem('user_location_name', displayNameShort);
+
+    toast.success(`Showing spaces near ${displayNameShort} (${radius}km)`);
   };
 
   const handleClearLocation = () => {
@@ -107,6 +144,10 @@ export default function VenuesPage() {
     setLocationSearch('');
     setLocationSuggestions([]);
     setUseGeo(false);
+
+    localStorage.removeItem('user_latitude');
+    localStorage.removeItem('user_longitude');
+    localStorage.removeItem('user_location_name');
   };
 
   const handleGeoDiscovery = () => {
@@ -114,11 +155,18 @@ export default function VenuesPage() {
     toast.loading('Fetching your location...', { id: 'geo' });
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setGeoLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setGeoLoc({ lat, lng });
         setUseGeo(true);
         setLocationSearch('My Location');
         setSelectedLocationName('My Location');
-        toast.success('Found location! Listing spaces within 50km.', { id: 'geo' });
+
+        localStorage.setItem('user_latitude', lat);
+        localStorage.setItem('user_longitude', lng);
+        localStorage.setItem('user_location_name', 'My Location');
+
+        toast.success(`Found location! Listing spaces within ${radius}km.`, { id: 'geo' });
       },
       (err) => {
         console.warn('Geolocation error:', err);
@@ -140,11 +188,16 @@ export default function VenuesPage() {
     setMinRating('');
     setUseGeo(false);
     setGeoLoc({ lat: null, lng: null });
+    setRadius(50);
     setSelectedLocationName('');
     setLocationSearch('');
     setLocationSuggestions([]);
     setSearchParams({});
     setPage(1);
+
+    localStorage.removeItem('user_latitude');
+    localStorage.removeItem('user_longitude');
+    localStorage.removeItem('user_location_name');
   };
 
   return (
@@ -242,9 +295,7 @@ export default function VenuesPage() {
                     value={minCapacity}
                     onChange={e => setMinCapacity(e.target.value)}
                   />
-                </div>
-
-                <div className="flex flex-col gap-1">
+                </div>                 <div className="flex flex-col gap-1">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Max Price/hr (₹)</label>
                   <input
                     type="number"
@@ -253,6 +304,20 @@ export default function VenuesPage() {
                     value={maxPrice}
                     onChange={e => setMaxPrice(e.target.value)}
                   />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Search Radius</label>
+                  <select
+                    className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors"
+                    value={radius}
+                    onChange={e => setRadius(Number(e.target.value))}
+                  >
+                    <option value="10">10 km</option>
+                    <option value="25">25 km</option>
+                    <option value="50">50 km</option>
+                    <option value="100">100 km</option>
+                  </select>
                 </div>
 
                 <button type="submit" className="w-full py-2.5 mt-2 font-bold rounded-xl bg-primary hover:bg-primary-dark text-white text-xs transition-colors shadow-sm shadow-primary/10 cursor-pointer">
@@ -281,9 +346,9 @@ export default function VenuesPage() {
               <h1 className="text-2xl font-black text-slate-950 tracking-tight">Available Spaces</h1>
               <p className="text-slate-500 text-xs mt-1 font-medium">
                 {selectedLocationName ? (
-                  <span>Showing spaces within 50km of <strong className="text-primary">{selectedLocationName.split(',')[0]}</strong> ({total} found)</span>
+                  <span>Showing spaces within {radius}km of <strong className="text-primary">{selectedLocationName.split(',')[0]}</strong> ({total} found)</span>
                 ) : useGeo ? (
-                  <span>Showing spaces within 50km of <strong className="text-primary">Detected Location</strong> ({total} found)</span>
+                  <span>Showing spaces within {radius}km of <strong className="text-primary">Detected Location</strong> ({total} found)</span>
                 ) : (
                   <span>{total} event spaces found</span>
                 )}

@@ -53,6 +53,7 @@ export default function BookingsPage() {
   const [maxPrice, setMaxPrice] = useState('');
   const [useGeo, setUseGeo] = useState(false);
   const [geoLoc, setGeoLoc] = useState({ lat: null, lng: null });
+  const [radius, setRadius] = useState(50);
   const [locationSearch, setLocationSearch] = useState('');
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [selectedLocationName, setSelectedLocationName] = useState('');
@@ -68,20 +69,71 @@ export default function BookingsPage() {
       setLoading(true);
       const bRes = await bookingService.getMyBookings();
       setBookings(bRes.data.bookings || []);
-      const vRes = await venueService.getAll();
-      setVenues(vRes.data.venues || []);
+
+      const savedLat = localStorage.getItem('user_latitude');
+      const savedLng = localStorage.getItem('user_longitude');
+      const savedName = localStorage.getItem('user_location_name');
+
+      if (savedLat && savedLng) {
+        const lat = parseFloat(savedLat);
+        const lng = parseFloat(savedLng);
+        setGeoLoc({ lat, lng });
+        setUseGeo(true);
+        setLocationSearch(savedName || 'My Location');
+        setSelectedLocationName(savedName || 'My Location');
+        const vRes = await venueService.getNearby(lat, lng, radius);
+        setVenues(vRes.data || []);
+        setLoading(false);
+      } else if (navigator.geolocation) {
+        await new Promise((resolve) => {
+          navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+              const lat = pos.coords.latitude;
+              const lng = pos.coords.longitude;
+              setGeoLoc({ lat, lng });
+              setUseGeo(true);
+              setLocationSearch('My Location');
+              setSelectedLocationName('My Location');
+              
+              localStorage.setItem('user_latitude', lat);
+              localStorage.setItem('user_longitude', lng);
+              localStorage.setItem('user_location_name', 'My Location');
+              
+              try {
+                const vRes = await venueService.getNearby(lat, lng, radius);
+                setVenues(vRes.data || []);
+              } catch {
+                toast.error('Failed to load nearby spaces');
+              }
+              resolve();
+            },
+            async () => {
+              try {
+                const vRes = await venueService.getAll();
+                setVenues(vRes.data.venues || []);
+              } catch {}
+              resolve();
+            },
+            { timeout: 5000 }
+          );
+        });
+        setLoading(false);
+      } else {
+        const vRes = await venueService.getAll();
+        setVenues(vRes.data.venues || []);
+        setLoading(false);
+      }
     } catch {
       toast.error('Failed to load accounts and listings data');
-    } finally {
       setLoading(false);
     }
   };
 
-  const fetchVenues = async (latitude = null, longitude = null) => {
+  const fetchVenues = async (latitude = null, longitude = null, searchRadius = radius) => {
     try {
       let res;
       if (latitude && longitude) {
-        res = await venueService.getNearby(latitude, longitude, 50);
+        res = await venueService.getNearby(latitude, longitude, searchRadius);
         setVenues(res.data || []);
       } else {
         res = await venueService.getAll();
@@ -115,8 +167,13 @@ export default function BookingsPage() {
     setLocationSearch(displayNameShort);
     setLocationSuggestions([]);
     setUseGeo(true);
-    toast.success(`Showing spaces near ${displayNameShort} (50km)`);
-    await fetchVenues(lat, lng);
+
+    localStorage.setItem('user_latitude', lat);
+    localStorage.setItem('user_longitude', lng);
+    localStorage.setItem('user_location_name', displayNameShort);
+
+    toast.success(`Showing spaces near ${displayNameShort} (${radius}km)`);
+    await fetchVenues(lat, lng, radius);
   };
 
   const handleClearLocation = async () => {
@@ -125,6 +182,11 @@ export default function BookingsPage() {
     setLocationSearch('');
     setLocationSuggestions([]);
     setUseGeo(false);
+
+    localStorage.removeItem('user_latitude');
+    localStorage.removeItem('user_longitude');
+    localStorage.removeItem('user_location_name');
+
     await fetchVenues();
   };
 
@@ -139,8 +201,13 @@ export default function BookingsPage() {
         setUseGeo(true);
         setLocationSearch('My Location');
         setSelectedLocationName('My Location');
-        toast.success('Found location! Listing spaces within 50km.', { id: 'geo' });
-        await fetchVenues(lat, lng);
+
+        localStorage.setItem('user_latitude', lat);
+        localStorage.setItem('user_longitude', lng);
+        localStorage.setItem('user_location_name', 'My Location');
+
+        toast.success(`Found location! Listing spaces within ${radius}km.`, { id: 'geo' });
+        await fetchVenues(lat, lng, radius);
       },
       (err) => {
         console.warn('Geolocation error:', err);
@@ -198,6 +265,11 @@ export default function BookingsPage() {
     const matchesCapacity = !minCapacity || Number(v.capacity) >= Number(minCapacity);
     const matchesPrice = !maxPrice || (v.pricingUnit === 'day' ? Number(v.pricePerDay || 0) : Number(v.pricePerHour)) <= Number(maxPrice);
     return matchesSearch && matchesType && matchesCapacity && matchesPrice;
+  }).sort((a, b) => {
+    if (a.distance !== undefined && b.distance !== undefined) {
+      return Number(a.distance) - Number(b.distance);
+    }
+    return 0;
   });
 
   return (
@@ -371,8 +443,8 @@ export default function BookingsPage() {
                   )}
                 </div>
 
-                {/* Row 2: Space Type + Min Seating + Max Price + Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-3 border-t border-slate-100 items-end">
+                {/* Row 2: Space Type + Min Seating + Max Price + Radius + Actions */}
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 pt-3 border-t border-slate-100 items-end">
                   {/* Space Type */}
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Space Type</label>
@@ -413,18 +485,39 @@ export default function BookingsPage() {
                     />
                   </div>
 
+                  {/* Radius */}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Radius (km)</label>
+                    <select
+                      className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
+                      value={radius}
+                      onChange={async (e) => {
+                        const newRadius = Number(e.target.value);
+                        setRadius(newRadius);
+                        if (geoLoc.lat && geoLoc.lng) {
+                          await fetchVenues(geoLoc.lat, geoLoc.lng, newRadius);
+                        }
+                      }}
+                    >
+                      <option value="10">10 km</option>
+                      <option value="25">25 km</option>
+                      <option value="50">50 km</option>
+                      <option value="100">100 km</option>
+                    </select>
+                  </div>
+
                   {/* Device GPS Discovery + Reset Actions */}
                   <div className="flex gap-2 items-center justify-end h-10">
                     <button
                       type="button"
                       onClick={handleGeoDiscovery}
-                      className="h-10 py-2.5 px-4 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shadow-primary/10 border border-primary"
+                      className="h-10 py-2.5 px-4 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shadow-primary/10 border border-primary w-full"
                       title="Find venues near me using browser GPS"
                     >
-                      <MdMyLocation className="text-sm animate-pulse" /> Device Location
+                      <MdMyLocation className="text-sm animate-pulse" /> Location
                     </button>
 
-                    {(searchQuery || venueType || minCapacity || maxPrice || locationSearch) && (
+                    {(searchQuery || venueType || minCapacity || maxPrice || locationSearch || radius !== 50) && (
                       <button
                         type="button"
                         onClick={() => {
@@ -432,11 +525,12 @@ export default function BookingsPage() {
                           setVenueType('');
                           setMinCapacity('');
                           setMaxPrice('');
+                          setRadius(50);
                           handleClearLocation();
                         }}
                         className="h-10 py-2.5 px-4 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all border border-slate-200 cursor-pointer"
                       >
-                        Clear All
+                        Reset
                       </button>
                     )}
                   </div>
@@ -467,6 +561,11 @@ export default function BookingsPage() {
                           <span className="text-4xl mb-1">🏢</span>
                           <span className="text-[10px] font-semibold uppercase tracking-wider">No image</span>
                         </div>
+                      )}
+                      {v.distance !== undefined && (
+                        <span className="absolute top-3 left-3 px-2 py-0.5 rounded bg-primary text-white text-[10px] font-bold shadow-md z-10">
+                          📍 {Number(v.distance).toFixed(1)} km away
+                        </span>
                       )}
                     </div>
                     <div className="p-5 flex-grow flex flex-col justify-between">
