@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-
+import logo from "../../assets/bookmyvenue.webp";
+import {  useNavigate } from "react-router";
 const MainLayout = ({ children }) => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useNavigate();
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 50);
@@ -19,7 +21,6 @@ const MainLayout = ({ children }) => {
     return () => window.removeEventListener("resize", fn);
   }, []);
 
-  
   const NAV_LINKS = ["Venues", "How It Works", "For Owners", "Pricing"];
 
   return (
@@ -32,8 +33,8 @@ const MainLayout = ({ children }) => {
         <div className="flex items-center justify-between h-[68px] px-5 sm:px-8 lg:px-[6%]">
           {/* Logo */}
           <div className="flex items-center gap-2 font-extrabold text-lg tracking-tight shrink-0">
-            <div className="w-8 h-8 bg-gray-900 rounded-[10px] flex items-center justify-center text-base">
-              🏛
+            <div className="w-20 h-auto bg-gray-900 rounded-[10px] flex items-center justify-center text-base">
+              <img src={logo} alt="BookMyVenue" className="" />
             </div>
             <span>BookMyVenue</span>
           </div>
@@ -55,7 +56,7 @@ const MainLayout = ({ children }) => {
             <button className="btn-outline !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]">
               Log In
             </button>
-            <button className="btn-primary !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]">
+            <button className="btn-primary !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]" onClick={() => router.push('/signup')}>
               Sign Up
             </button>
           </div>
@@ -109,9 +110,9 @@ const MainLayout = ({ children }) => {
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-8 sm:gap-10 lg:gap-12 mb-10 sm:mb-12">
             <div className="col-span-2 lg:col-span-1">
               <div className="flex items-center gap-2 mb-3.5">
-                <div className="w-[30px] h-[30px] bg-gray-900 rounded-lg flex items-center justify-center text-[15px]">
-                  🏛
-                </div>
+                 <div className="w-20 h-auto bg-gray-900 rounded-[10px] flex items-center justify-center text-base">
+              <img src={logo} alt="BookMyVenue" className="" />
+            </div>
                 <span className="font-extrabold text-[1.1rem] tracking-tight">
                   BookMyVenue
                 </span>
