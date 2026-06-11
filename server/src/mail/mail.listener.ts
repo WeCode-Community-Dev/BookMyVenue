@@ -26,7 +26,8 @@ export class MailListener {
    * Sends a beautiful welcome email to the newly registered customer/owner.
    */
   @OnEvent('user.registered')
-  async handleUserRegistered(user: User) {
+  async handleUserRegistered(payload: { user: User; otp?: string }) {
+    const { user, otp } = payload;
     this.logger.log(`Handling user.registered event for: ${user.email}`);
 
     const isOwner = user.role === 'venue_owner';
@@ -34,6 +35,19 @@ export class MailListener {
     
     const html = this.wrapTemplate(`
       <h2 style="color: #1e293b; font-size: 24px; font-weight: 800; margin-bottom: 16px;">Welcome to BookMyVenue, ${user.name}! 👋</h2>
+      
+      ${otp ? `
+        <div style="background-color: #f8fafc; border-left: 4px solid #6366f1; padding: 20px; border-radius: 0 12px 12px 0; margin-bottom: 24px; text-align: center;">
+          <h4 style="margin: 0 0 8px 0; color: #1e293b; font-size: 16px; font-weight: 700;">Account Verification Code 🔒</h4>
+          <p style="margin: 0 0 12px 0; color: #475569; font-size: 14px; line-height: 20px;">
+            Please enter the following 6-digit One-Time Password (OTP) to verify your account and access your dashboard. This code is valid for 5 minutes.
+          </p>
+          <div style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #6366f1; font-family: monospace; display: inline-block; background-color: #e0e7ff; padding: 8px 24px; border-radius: 8px;">
+            ${otp}
+          </div>
+        </div>
+      ` : ''}
+
       <p style="color: #475569; font-size: 16px; line-height: 24px; margin-bottom: 24px;">
         We are thrilled to have you join our premium venue booking platform. Whether you are seeking the ultimate spot for a corporate retreat, an elegant wedding hall, or a cozy cafe slot, BookMyVenue makes it seamless, secure, and stress-free.
       </p>
@@ -63,7 +77,37 @@ export class MailListener {
 
     await this.mailService.sendMail(
       user.email,
-      'Welcome to BookMyVenue! 🏢✨',
+      otp ? 'Verify your BookMyVenue Account 🔒' : 'Welcome to BookMyVenue! 🏢✨',
+      html,
+    );
+  }
+
+  @OnEvent('user.otpResent')
+  async handleOtpResent(payload: { user: User; otp: string }) {
+    const { user, otp } = payload;
+    this.logger.log(`Handling user.otpResent event for: ${user.email}`);
+
+    const html = this.wrapTemplate(`
+      <h2 style="color: #1e293b; font-size: 24px; font-weight: 800; margin-bottom: 16px;">Verify Your Account 🔒</h2>
+      <p style="color: #475569; font-size: 16px; line-height: 24px; margin-bottom: 24px;">
+        Hello <strong>${user.name}</strong>, here is your new One-Time Password (OTP) to verify your BookMyVenue account. This code is valid for 5 minutes.
+      </p>
+      
+      <div style="background-color: #f8fafc; border-left: 4px solid #6366f1; padding: 24px; border-radius: 12px; margin-bottom: 24px; text-align: center;">
+        <span style="display: block; color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; tracking-wider; margin-bottom: 8px;">YOUR VERIFICATION CODE</span>
+        <div style="font-size: 36px; font-weight: 800; letter-spacing: 6px; color: #6366f1; font-family: monospace; display: inline-block; background-color: #e0e7ff; padding: 8px 24px; border-radius: 8px;">
+          ${otp}
+        </div>
+      </div>
+
+      <p style="color: #64748b; font-size: 13px; line-height: 20px;">
+        If you did not request this verification code, please ignore this email.
+      </p>
+    `);
+
+    await this.mailService.sendMail(
+      user.email,
+      'Your BookMyVenue Verification Code 🔒',
       html,
     );
   }

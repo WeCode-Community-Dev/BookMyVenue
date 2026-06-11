@@ -13,7 +13,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (user?.role === 'admin') navigate('/admin');
+      if (user && !user.isOtpVerified) navigate('/verify-otp');
+      else if (user?.role === 'admin') navigate('/admin');
       else if (user?.role === 'venue_owner') navigate('/owner/dashboard');
       else navigate('/venues');
     }

@@ -11,6 +11,7 @@ import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
 import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
+import VerifyOtpPage from './pages/Auth/VerifyOtpPage';
 import VenuesPage from './pages/Venues/VenuesPage';
 import VenueDetailPage from './pages/Venues/VenueDetailPage';
 import BookingsPage from './pages/Bookings/BookingsPage';
@@ -21,15 +22,18 @@ import AdminDashboard from './pages/Admin/AdminDashboard';
 
 // Route Guards
 function PrivateRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   if (loading) return null;
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user && !user.isOtpVerified) return <Navigate to="/verify-otp" replace />;
+  return children;
 }
 
 function RoleRoute({ children, allowedRoles }) {
   const { user, isAuthenticated, loading } = useAuth();
   if (loading) return null;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user && !user.isOtpVerified) return <Navigate to="/verify-otp" replace />;
   if (!allowedRoles.includes(user?.role)) return <Navigate to="/" replace />;
   return children;
 }
@@ -49,6 +53,7 @@ export default function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/verify-otp" element={<VerifyOtpPage />} />
               <Route path="/venues" element={<Navigate to="/bookings" replace />} />
               <Route path="/venues/:id" element={<VenueDetailPage />} />
 

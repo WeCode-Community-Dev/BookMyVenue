@@ -1,122 +1,69 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private resend: Resend | null = null;
-  private fromEmail = 'BookMyVenue <onboarding@resend.dev>'; // Default Resend test sending domain
+  private transporter: nodemailer.Transporter | null = null;
+  private fromEmail = 'BookMyVenue <support@bookmyvenue.dev>'; // Default sender
 
   constructor(private configService: ConfigService) {
-    const apiKey = this.configService.get<string>('RESEND_API_KEY');
+    const smtpHost = this.configService.get<string>('SMTP_HOST') || 'smtp.gmail.com';
+    const smtpPort = this.configService.get<number>('SMTP_PORT') || 587;
+    const smtpUser = this.configService.get<string>('SMTP_USER');
+    const smtpPass = this.configService.get<string>('SMTP_PASS');
     const configuredFrom = this.configService.get<string>('MAIL_FROM');
 
     if (configuredFrom) {
       this.fromEmail = configuredFrom;
+    } else if (smtpUser) {
+      this.fromEmail = `BookMyVenue <${smtpUser}>`;
     }
 
-    if (apiKey && apiKey !== 'your_resend_api_key' && apiKey.trim() !== '') {
+    if (smtpUser && smtpPass) {
       try {
-        this.resend = new Resend(apiKey);
-        this.logger.log('📧 Resend Email Service successfully initialized.');
+        this.transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: Number(smtpPort),
+          secure: Number(smtpPort) === 465, // true for 465, false for other ports
+          auth: {
+            user: smtpUser,
+            pass: smtpPass,
+          },
+        });
+        this.logger.log('📧 SMTP Mail Service successfully initialized.');
       } catch (err) {
-        this.logger.error(`Failed to initialize Resend: ${err.message}`);
+        this.logger.error(`Failed to initialize SMTP Mail: ${err.message}`);
       }
     } else {
       this.logger.warn(
-        '⚠️ RESEND_API_KEY not configured in environment. All outbound emails will be printed to the server logs.',
+        '⚠️ SMTP credentials (SMTP_USER/SMTP_PASS) not configured in environment. All outbound emails will be printed to the server logs.',
       );
     }
   }
 
   /**
    * Sends a beautiful, professional email.
-   * Falls back to logging if Resend is not configured.
+   * Falls back to logging if SMTP is not configured.
    */
   async sendMail(to: string | string[], subject: string, htmlContent: string): Promise<boolean> {
     const recipients = Array.isArray(to) ? to : [to];
 
-    if (this.resend) {
+    if (this.transporter) {
       try {
-        this.logger.log(`Sending email to ${recipients.join(', ')} via Resend...`);
-        let { data, error } = await this.resend.emails.send({
+        this.logger.log(`Sending email to ${recipients.join(', ')} via SMTP...`);
+        const info = await this.transporter.sendMail({
           from: this.fromEmail,
-          to: recipients,
+          to: recipients.join(', '),
           subject: subject,
           html: htmlContent,
         });
 
-        const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
-
-        // Intercept unverified domain errors (Only in development/test environments)
-        if (error && error.message && error.message.includes('not verified') && !isProduction) {
-          this.logger.warn(`
-┌────────────────────────────────────────────────────────────────────────┐
-│ 💡 RESEND DOMAIN VERIFICATION TIP                                     │
-├────────────────────────────────────────────────────────────────────────┤
-│ The domain in your MAIL_FROM is not verified on Resend.               │
-│                                                                        │
-│ To fix this:                                                           │
-│ 1. Verify your domain at https://resend.com/domains                    │
-│ 2. Or, change MAIL_FROM=onboarding@resend.dev in server/.env           │
-│                                                                        │
-│ ➡️ Retrying automatically using onboarding@resend.dev ...              │
-└────────────────────────────────────────────────────────────────────────┘
-          `);
-
-          // Auto-retry with sandbox onboarding@resend.dev
-          const retryResult = await this.resend.emails.send({
-            from: 'BookMyVenue <onboarding@resend.dev>',
-            to: recipients,
-            subject: subject,
-            html: htmlContent,
-          });
-          data = retryResult.data;
-          error = retryResult.error;
-        }
-
-        // Intercept sandbox recipient restrictions (Only in development/test environments)
-        if (error && error.message && error.message.includes('only send testing emails') && !isProduction) {
-          const match = error.message.match(/own email address \(([^)]+)\)/);
-          if (match && match[1]) {
-            const sandboxEmail = match[1];
-            this.logger.warn(`
-┌────────────────────────────────────────────────────────────────────────┐
-│ 💡 RESEND SANDBOX AUTO-FORWARD                                         │
-├────────────────────────────────────────────────────────────────────────┤
-│ Resend limits sandbox sends strictly to your registered email:         │
-│ ➡️ ${sandboxEmail}                                                     │
-│                                                                        │
-│ We are automatically redirecting this email to your inbox so you can    │
-│ view the dynamic HTML live!                                           │
-└────────────────────────────────────────────────────────────────────────┘
-            `);
-
-            const sandboxRetry = await this.resend.emails.send({
-              from: 'BookMyVenue <onboarding@resend.dev>',
-              to: sandboxEmail,
-              subject: `[Test Redirect: ${recipients.join(', ')}] ${subject}`,
-              html: htmlContent,
-            });
-            data = sandboxRetry.data;
-            error = sandboxRetry.error;
-          }
-        }
-
-        if (error) {
-          this.logger.error(`Resend API Error: ${JSON.stringify(error)}`);
-          if (!isProduction) {
-            this.logger.warn('Email sending failed. Displaying local fallback console preview.');
-            this.logLocalEmail(recipients, subject, htmlContent);
-          }
-          return false;
-        }
-
-        this.logger.log(`✅ Email sent successfully! ID: ${data?.id}`);
+        this.logger.log(`✅ Email sent successfully! MessageId: ${info.messageId}`);
         return true;
       } catch (error) {
-        this.logger.error(`Resend send failure: ${error.message}`);
+        this.logger.error(`SMTP send failure: ${error.message}`);
         this.logLocalEmail(recipients, subject, htmlContent);
         return false;
       }

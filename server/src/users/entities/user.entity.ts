@@ -61,6 +61,15 @@ export class User {
   @Column({ nullable: true, select: false })
   currentHashedRefreshToken: string;
 
+  @Column({ nullable: true, select: false })
+  otp: string;
+
+  @Column({ type: 'timestamp', nullable: true, select: false })
+  otpExpires: Date;
+
+  @Column({ type: 'boolean', default: false })
+  isOtpVerified: boolean;
+
 
   @OneToMany(() => Venue, (venue) => venue.owner)
   venues: Venue[];

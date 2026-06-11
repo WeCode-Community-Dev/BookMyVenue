@@ -19,6 +19,7 @@ export async function seedDatabase(app: INestApplication): Promise<void> {
         password: adminPassword,
         role: UserRole.ADMIN,
         phone: '1234567890',
+        isOtpVerified: true,
       });
       await userRepository.save(admin);
       console.log('✅ Default Admin created: admin@bookmyvenue.com (pwd: adminpassword)');
@@ -32,6 +33,7 @@ export async function seedDatabase(app: INestApplication): Promise<void> {
         password: ownerPassword,
         role: UserRole.VENUE_OWNER,
         phone: '0987654321',
+        isOtpVerified: true,
       });
       await userRepository.save(owner);
       console.log('✅ Default Host created: owner@bookmyvenue.com (pwd: ownerpassword)');
@@ -45,6 +47,7 @@ export async function seedDatabase(app: INestApplication): Promise<void> {
         password: userPassword,
         role: UserRole.USER,
         phone: '5555555555',
+        isOtpVerified: true,
       });
       await userRepository.save(guest);
       console.log('✅ Default Guest created: guest@bookmyvenue.com (pwd: guestpassword)');

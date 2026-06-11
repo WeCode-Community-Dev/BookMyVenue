@@ -27,6 +27,10 @@ export class AuthService {
     private eventEmitter: EventEmitter2,
   ) {}
 
+  private generateOtp(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
   async register(registerDto: RegisterDto) {
     const { name, email, phone, password, role } = registerDto;
 
@@ -43,6 +47,11 @@ export class AuthService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Create OTP
+    const isOwnerOrUser = !role || role === UserRole.USER || role === UserRole.VENUE_OWNER;
+    const otp = isOwnerOrUser ? this.generateOtp() : null;
+    const otpExpires = isOwnerOrUser ? new Date(Date.now() + 5 * 60 * 1000) : null; // 5 minutes
+
     // Create user
     const user = this.usersRepository.create({
       name,
@@ -50,12 +59,15 @@ export class AuthService {
       phone,
       password: hashedPassword,
       role: role || UserRole.USER,
+      otp: otp as any,
+      otpExpires: otpExpires as any,
+      isOtpVerified: !isOwnerOrUser, // Admin verified automatically
     });
 
     await this.usersRepository.save(user);
 
-    // Emit event asynchronously for welcome email
-    this.eventEmitter.emit('user.registered', user);
+    // Emit event asynchronously for welcome email with OTP
+    this.eventEmitter.emit('user.registered', { user, otp });
 
     // Generate tokens
     const tokens = await this.generateTokens(user);
@@ -68,13 +80,94 @@ export class AuthService {
     };
   }
 
+  async verifyOtp(email: string, otp: string) {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        status: true,
+        profileImage: true,
+        otp: true,
+        otpExpires: true,
+        isOtpVerified: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.isOtpVerified) {
+      return {
+        message: 'OTP already verified',
+        user: this.sanitizeUser(user),
+      };
+    }
+
+    if (!user.otp || !user.otpExpires) {
+      throw new BadRequestException('No active OTP found. Please request a new one.');
+    }
+
+    if (new Date() > user.otpExpires) {
+      throw new BadRequestException('OTP has expired. Please request a new one.');
+    }
+
+    if (user.otp !== otp) {
+      throw new BadRequestException('Invalid OTP. Please try again.');
+    }
+
+    user.isOtpVerified = true;
+    user.otp = null as any;
+    user.otpExpires = null as any;
+
+    await this.usersRepository.save(user);
+
+    return {
+      message: 'OTP verified successfully',
+      user: this.sanitizeUser(user),
+    };
+  }
+
+  async resendOtp(email: string) {
+    const user = await this.usersRepository.findOne({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.isOtpVerified) {
+      throw new BadRequestException('Account is already verified');
+    }
+
+    const otp = this.generateOtp();
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+
+    await this.usersRepository.save(user);
+
+    // Emit event for resend email
+    this.eventEmitter.emit('user.otpResent', { user, otp });
+
+    return {
+      message: 'OTP resent successfully',
+    };
+  }
+
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
 
     // Find user with password
     const user = await this.usersRepository.findOne({
       where: { email },
-      select: { id: true, name: true, email: true, phone: true, role: true, status: true, password: true, profileImage: true },
+      select: { id: true, name: true, email: true, phone: true, role: true, status: true, password: true, profileImage: true, isOtpVerified: true },
     });
 
     if (!user) {
@@ -241,6 +334,7 @@ export class AuthService {
         name: true,
         profileImage: true,
         currentHashedRefreshToken: true,
+        isOtpVerified: true,
       },
     });
 
@@ -274,7 +368,7 @@ export class AuthService {
   }
 
   private sanitizeUser(user: User) {
-    const { password, resetPasswordToken, resetPasswordExpires, currentHashedRefreshToken, ...sanitized } = user as any;
+    const { password, resetPasswordToken, resetPasswordExpires, currentHashedRefreshToken, otp, otpExpires, ...sanitized } = user as any;
     return sanitized;
   }
 }

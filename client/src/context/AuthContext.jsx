@@ -46,6 +46,19 @@ export function AuthProvider({ children }) {
     return userData;
   };
 
+  const verifyOtp = async (email, otp) => {
+    const res = await authService.verifyOtp(email, otp);
+    const { user: userData } = res.data;
+    localStorage.setItem('bmv_user', JSON.stringify(userData));
+    setUser(userData);
+    return userData;
+  };
+
+  const resendOtp = async (email) => {
+    const res = await authService.resendOtp(email);
+    return res.data;
+  };
+
   const logout = async () => {
     try {
       await authService.logout();
@@ -65,6 +78,8 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    verifyOtp,
+    resendOtp,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     isVenueOwner: user?.role === 'venue_owner',

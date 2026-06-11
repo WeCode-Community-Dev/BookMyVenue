@@ -19,7 +19,8 @@ export default function RegisterPage() {
     try {
       const userData = await register(form);
       toast.success(`Welcome to BookMyVenue, ${userData.name}!`);
-      if (userData.role === 'venue_owner') navigate('/owner/dashboard');
+      if (userData && !userData.isOtpVerified) navigate('/verify-otp');
+      else if (userData.role === 'venue_owner') navigate('/owner/dashboard');
       else navigate('/venues');
     } catch (err) {
       toast.error(err.response?.data?.message?.[0] || 'Registration failed');
