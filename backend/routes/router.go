@@ -16,7 +16,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 	r.GET("/owner", webHandler.OwnerPage)
 	r.GET("/admin", webHandler.AdminPage)
 	r.GET("/addVenue", webHandler.AddVenuePage)
-	r.GET("/viewApprovedVenues")
+	r.GET("/viewApprovedVenues", webHandler.ViewApprovedVenues)
 	r.GET("/viewRejectedVenues", webHandler.ViewRejectedVenuesPage)
 	r.GET("/viewPendingVenues", webHandler.ViewPendingVenuesPage)
 
@@ -40,6 +40,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 		ownerRoutes.POST("/:id/images", ownerHandler.AddImage)
 		ownerRoutes.GET("/viewRejectedVenues", ownerHandler.ViewRejectedVenues)
 		ownerRoutes.GET("/viewPendingVenues", ownerHandler.ViewPendingVenues)
+		ownerRoutes.GET("/viewApprovedVenues", ownerHandler.ViewApprovedVenues)
 	}
 
 	// userRoutes := api.Group("/user")

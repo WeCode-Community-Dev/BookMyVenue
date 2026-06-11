@@ -116,6 +116,18 @@ func (h *Handler) ViewPendingVenues(c *gin.Context) {
 	response.Success(c, http.StatusOK, "Pending Venues", venues)
 }
 
+func (h *Handler) ViewApprovedVenues(c *gin.Context) {
+	ownerID := ctxutil.GetUserID(c)
+
+	venues, err := h.service.viewApprovedVenues(c.Request.Context(), ownerID)
+	if err != nil {
+		response.Error(c, http.StatusForbidden, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Approved Venues", venues)
+}
+
 // CreateVenueRequest represents the payload required to create a new venue.
 type CreateVenueRequest struct {
 	Name         string   `json:"name" binding:"required"`

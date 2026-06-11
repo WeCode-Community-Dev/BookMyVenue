@@ -69,3 +69,11 @@ func (r *repository) getPendingVenuesByOwnerID(ctx context.Context, ownerID stri
 	}
 	return r.db.GetPendingVenuesByOwnerID(ctx, UUID)
 }
+
+func (r *repository) getApprovedVenuesByOwnerID(ctx context.Context, ownerID string) ([]sqlc.Venue, error) {
+	UUID, err := utils.StringToUUID(ownerID)
+	if err != nil {
+		return []sqlc.Venue{}, err
+	}
+	return r.db.GetApprovedVenuesByOwnerID(ctx, UUID)
+}
