@@ -42,7 +42,7 @@
         const venueData = await venuesRes.json();
         console.log(venueData)
         if (!venueData.success) {
-            alert("Uable to fetch data");
+            alert(venueData.message);
         }
 
         venueData.data.venues.forEach(element => {
