@@ -22,7 +22,7 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-gray-900 text-white border-none rounded-xl px-7 py-3.5
+    @apply bg-gray-900 bg-red-600 text-white border-none rounded-xl px-7 py-3.5
            text-[0.95rem] font-semibold cursor-pointer inline-flex items-center gap-1.5
            transition-all duration-200 hover:bg-gray-700 hover:-translate-y-0.5;
   }

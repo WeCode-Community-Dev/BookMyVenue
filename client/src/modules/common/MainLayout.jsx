@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import logo from "../../assets/bookmyvenue.webp";
+import {  useNavigate } from "react-router";
 import { useAuth } from "../../shared/context/AuthContext";
-
 const MainLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ const MainLayout = ({ children }) => {
 
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useNavigate();
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 50);
@@ -31,12 +32,7 @@ const MainLayout = ({ children }) => {
     return () => window.removeEventListener("resize", fn);
   }, []);
 
-  const NAV_LINKS = [
-    "Venues",
-    "How It Works",
-    "For Owners",
-    "Pricing",
-  ];
+  const NAV_LINKS = ["Venues", "How It Works", "For Owners", "Pricing"];
 
   return (
     <>
@@ -46,12 +42,9 @@ const MainLayout = ({ children }) => {
       >
         <div className="flex items-center justify-between h-[68px] px-5 sm:px-8 lg:px-[6%]">
           {/* Logo */}
-          <div
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 font-extrabold text-lg tracking-tight shrink-0 cursor-pointer"
-          >
-            <div className="w-8 h-8 bg-gray-900 rounded-[10px] flex items-center justify-center text-base">
-              🏛
+          <div className="flex items-center gap-2 font-extrabold text-lg tracking-tight shrink-0">
+            <div className="w-20 h-auto bg-gray-900 rounded-[10px] flex items-center justify-center text-base">
+              <img src={logo} alt="BookMyVenue" className="" />
             </div>
 
             <span>BookMyVenue</span>
@@ -70,58 +63,13 @@ const MainLayout = ({ children }) => {
           </div>
 
           {/* Desktop auth */}
-          <div className="hidden lg:flex items-center gap-3">
-            {!user ? (
-              <>
-                <button
-                  onClick={() => navigate("/login")}
-                  className="btn-outline"
-                >
-                  Log In
-                </button>
-
-                <button
-                  onClick={() => navigate("/signup")}
-                  className="btn-primary"
-                >
-                  Sign Up
-                </button>
-              </>
-            ) : (
-              <>
-                <span className="font-medium">
-                  Hi, {user.name}
-                </span>
-
-                {isUser && !isOwner && (
-                  <button
-                    onClick={() => navigate("/become-partner")}
-                    className="btn-outline"
-                  >
-                    Become a Partner
-                  </button>
-                )}
-
-                {isOwner && (
-                  <button
-                    onClick={() => navigate("/owner/dashboard")}
-                    className="btn-primary"
-                  >
-                    Owner Dashboard
-                  </button>
-                )}
-
-                <button
-                  onClick={() => {
-                    logout();
-                    navigate("/");
-                  }}
-                  className="btn-outline"
-                >
-                  Logout
-                </button>
-              </>
-            )}
+          <div className="hidden lg:flex items-center gap-2.5">
+            <button className="btn-outline !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]">
+              Log In
+            </button>
+            <button className="btn-primary !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]" onClick={() => router.push('/signup')}>
+              Sign Up
+            </button>
           </div>
 
           {/* Mobile hamburger */}
@@ -246,9 +194,9 @@ const MainLayout = ({ children }) => {
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-8 sm:gap-10 lg:gap-12 mb-10 sm:mb-12">
             <div className="col-span-2 lg:col-span-1">
               <div className="flex items-center gap-2 mb-3.5">
-                <div className="w-[30px] h-[30px] bg-gray-900 rounded-lg flex items-center justify-center text-[15px]">
-                  🏛
-                </div>
+                 <div className="w-20 h-auto bg-gray-900 rounded-[10px] flex items-center justify-center text-base">
+              <img src={logo} alt="BookMyVenue" className="" />
+            </div>
                 <span className="font-extrabold text-[1.1rem] tracking-tight">
                   BookMyVenue
                 </span>
@@ -258,46 +206,13 @@ const MainLayout = ({ children }) => {
               </p>
             </div>
 
-            {[
-              {
-                title: "Platform",
-                links: [
-                  "Browse Venues",
-                  "How It Works",
-                  "Pricing",
-                  "Mobile App",
-                ],
-              },
-              {
-                title: "Venue Owners",
-                links: ["List a Venue", "Owner Login", "Analytics", "Payouts"],
-              },
-              {
-                title: "Company",
-                links: ["About", "Blog", "Careers", "Contact"],
-              },
-            ].map((col) => (
-              <div key={col.title}>
-                <p className="text-[0.75rem] font-bold uppercase tracking-[0.1em] text-gray-400 mb-3 sm:mb-4">
-                  {col.title}
-                </p>
-                {col.links.map((l) => (
-                  <div
-                    key={l}
-                    className="text-[0.88rem] text-gray-700 font-medium mb-2 sm:mb-2.5 cursor-pointer hover:text-gray-900 transition-colors"
-                  >
-                    {l}
-                  </div>
-                ))}
-              </div>
-            ))}
           </div>
 
           <div className="border-t border-gray-100 pt-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <span className="text-[0.82rem] text-gray-400">
               © 2026 BookMyVenue.
             </span>
-            <div className="flex flex-wrap gap-4 sm:gap-6">
+            {/* <div className="flex flex-wrap gap-4 sm:gap-6">
               {["Privacy Policy", "Terms of Use", "Support"].map((l) => (
                 <span
                   key={l}
@@ -306,7 +221,7 @@ const MainLayout = ({ children }) => {
                   {l}
                 </span>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
       </footer>

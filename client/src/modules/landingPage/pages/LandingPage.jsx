@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import MainLayout from "../../common/MainLayout";
 import VenueCardList from "../components/VenueCardList";
 
+
 const NAV_LINKS = ["Venues", "How It Works", "For Owners", "Pricing"];
 
 const CATEGORIES = [
@@ -333,7 +334,7 @@ const LandingPage = () => {
             {STEPS.map((step) => (
               <div key={step.n} className="step-card">
                 <div className="flex items-center gap-3.5 mb-5">
-                  <div className="w-11 h-11 bg-gray-900 rounded-xl flex items-center justify-center text-[1.2rem] shrink-0">
+                  <div className="w-11 h-11 bg-red-600 rounded-xl flex items-center justify-center text-[1.2rem] shrink-0">
                     {step.icon}
                   </div>
                   <div className="w-7 h-7 border-2 border-gray-200 rounded-full flex items-center justify-center text-[0.8rem] font-extrabold text-gray-400 shrink-0">

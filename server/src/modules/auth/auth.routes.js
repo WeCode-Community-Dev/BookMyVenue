@@ -4,18 +4,18 @@ import { signupController, loginController } from './auth.controller.js';
 import { signupSchema, loginSchema } from './auth.validation.js';
 import { validate } from '../../shared/middlewares/validate.middleware.js';
 
-const router = Router();
+const Authrouter = Router();
 
-router.post(
+Authrouter.post(
    '/signup',
    validate(signupSchema),
    signupController
 );
 
-router.post(
+Authrouter.post(
    '/login',
    validate(loginSchema),
    loginController
 );
 
-export default router;
+export default Authrouter;
