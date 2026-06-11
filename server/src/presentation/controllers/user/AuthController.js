@@ -1,89 +1,55 @@
-import RegisterUserUseCase from "../../../application/user/usecases/RegisterUserUseCase.js";
-import LoginUserUseCase from "../../../application/user/usecases/LoginUserUserCase.js";
-import UserRepositoryImpl from "../../../infrastructure/repositories/UserRepositoryImpl.js";
-import TokenService from "../../../infrastructure/services/TokenService.js";
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
+import { sendSuccess } from "../../../shared/utils/apiResponse.js";
 import { statusCode } from "../../../shared/constants/enums/statusCode.js";
 
-class AuthController {
-    async register(req, res, next) {
-        try {
-            const userRepository = new UserRepositoryImpl();
-            const registerUserUseCase = new RegisterUserUseCase(userRepository);
-            const user = await registerUserUseCase.execute(req.body);
+const REFRESH_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000
+};
 
-            return res.status(statusCode.CREATED).json({
-                success: true,
-                message: "User registered successfully",
-                data: user
-            });
-        } catch (error) {
-            next(error);
-        }
+export class AuthController {
+    constructor(
+        registerUserUseCase,
+        loginUserUseCase,
+        logoutUseCase,
+        refreshTokenUseCase
+    ) {
+        this._registerUserUseCase = registerUserUseCase;
+        this._loginUserUseCase = loginUserUseCase;
+        this._logoutUseCase = logoutUseCase;
+        this._refreshTokenUseCase = refreshTokenUseCase;
     }
 
-    async login(req, res, next) {
-        try {
-            const { email, password } = req.body;
+    register = asyncHandler(async (req, res) => {
+        const user = await this._registerUserUseCase.execute(req.body);
+        return sendSuccess(res, statusCode.CREATED, "User registered successfully", user);
+    });
 
-            const userRepository = new UserRepositoryImpl();
-            const loginUserUseCase = new LoginUserUseCase(userRepository);
-            const user = await loginUserUseCase.execute(email, password);
+    login = asyncHandler(async (req, res) => {
+        const { email, password } = req.body;
+        const { accessToken, refreshToken, user } =
+            await this._loginUserUseCase.execute(email, password);
 
-            const payload = { userId: user.id, role: user.role };
-            const accessToken = TokenService.generateAccessToken(payload);
-            const refreshToken = TokenService.generateRefreshToken(payload);
+        res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
+        return sendSuccess(res, statusCode.OK, "Login successful", { accessToken, user });
+    });
 
-            res.cookie("refreshToken", refreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
+    refreshToken = asyncHandler(async (req, res) => {
+        const refreshToken = req.cookies?.refreshToken;
+        const { accessToken, refreshToken: newRefreshToken } =
+            await this._refreshTokenUseCase.execute(refreshToken);
 
-            return res.status(statusCode.OK).json({
-                success: true,
-                message: "Login successful",
-                accessToken,
-                data: user
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
+        res.cookie("refreshToken", newRefreshToken, REFRESH_COOKIE_OPTIONS);
+        return sendSuccess(res, statusCode.OK, "Token refreshed", { accessToken });
+    });
 
-    async refreshToken(req, res, next) {
-        try {
-            const refreshToken = req.cookies?.refreshToken;
-            const decoded = TokenService.verifyRefreshToken(refreshToken);
+    logout = asyncHandler(async (req, res) => {
+        const refreshToken = req.cookies?.refreshToken;
+        await this._logoutUseCase.execute(refreshToken);
 
-            const payload = { userId: decoded.userId, role: decoded.role };
-            const accessToken = TokenService.generateAccessToken(payload);
-
-            return res.status(statusCode.OK).json({
-                success: true,
-                accessToken
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    async logout(req, res, next) {
-        try {
-            res.clearCookie("refreshToken", {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict"
-            });
-
-            return res.status(statusCode.OK).json({
-                success: true,
-                message: "Logged out successfully"
-            });
-        } catch (error) {
-            next(error);
-        }
-    }
+        res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
+        return sendSuccess(res, statusCode.OK, "Logged out successfully");
+    });
 }
-
-export default new AuthController();

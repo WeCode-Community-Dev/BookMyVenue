@@ -7,9 +7,9 @@ class UserEntity {
         password = null,
         role,
         isDeleted = false,
-        refreshToken = null,
-        createdAt,
-        updatedAt
+    
+        
+        
     }) {
         this.id = id;
         this.fullName = fullName;
@@ -18,9 +18,9 @@ class UserEntity {
         this.password = password;
         this.role = role;
         this.isDeleted = isDeleted;
-        this.refreshToken = refreshToken;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        
+        
+        
     }
 }
 
