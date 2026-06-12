@@ -172,6 +172,8 @@ export class VenuesService {
       throw new ForbiddenException('You can only update your own venues');
     }
 
+    const originalStatus = venue.status;
+
     let uploadedImages = venue.images;
     if (updateVenueDto.images) {
       uploadedImages = await this.cloudinaryService.uploadImages(updateVenueDto.images);
@@ -183,7 +185,11 @@ export class VenuesService {
     });
 
     if (user.role === UserRole.VENUE_OWNER) {
-      venue.status = VenueStatus.PENDING;
+      if (originalStatus === VenueStatus.APPROVED) {
+        venue.status = VenueStatus.APPROVED;
+      } else {
+        venue.status = VenueStatus.PENDING;
+      }
     }
 
     const savedVenue = await this.venuesRepository.save(venue);

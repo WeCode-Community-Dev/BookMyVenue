@@ -71,6 +71,7 @@ export default function AdminDashboard() {
   const [venues, setVenues] = useState([]);
   const [venuePage, setVenuePage] = useState(1);
   const [venueTotalPages, setVenueTotalPages] = useState(1);
+  const [pendingVenues, setPendingVenues] = useState([]);
 
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [selectedUserToBlock, setSelectedUserToBlock] = useState(null);
@@ -115,6 +116,8 @@ export default function AdminDashboard() {
       setLoading(true);
       const res = await adminService.getAnalytics();
       setAnalytics(res.data);
+      const pendingRes = await adminService.getVenues({ page: 1, limit: 100, status: 'pending' });
+      setPendingVenues(pendingRes.data.venues || []);
     } catch {
       toast.error('Failed to load system analytics');
     } finally {
@@ -229,6 +232,7 @@ export default function AdminDashboard() {
       await adminService.updateVenueStatus(venue.id, newStatus, reason);
       toast.success(`Venue listing status updated to ${newStatus}`);
       fetchVenues();
+      fetchOverviewData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update venue listing status');
     }
@@ -249,6 +253,7 @@ export default function AdminDashboard() {
       toast.success(`${selectedVenueToSuspend.venueName} has been suspended successfully.`);
       setShowSuspendModal(false);
       fetchVenues();
+      fetchOverviewData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to suspend venue listing');
     }
@@ -402,6 +407,83 @@ export default function AdminDashboard() {
               </h1>
               <p className="text-slate-500 text-sm mt-1">Here is a platform summary of all user activities, booking performance, and cumulative turnovers.</p>
             </div>
+
+            {/* Notification / Pending Approvals Section */}
+            {pendingVenues.length > 0 && (
+              <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-6 shadow-sm animate-fade-in">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="p-2 bg-amber-500/10 text-amber-600 rounded-xl text-lg font-black">⚠️</span>
+                  <div>
+                    <h2 className="text-base font-extrabold text-slate-900 tracking-tight">Pending Approval Notifications</h2>
+                    <p className="text-slate-500 text-xs mt-0.5">There are {pendingVenues.length} venue listing request(s) waiting for platform approval.</p>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-100">
+                          <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Venue Name</th>
+                          <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Owner Details</th>
+                          <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pricing</th>
+                          <th className="px-4 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {pendingVenues.map((v) => (
+                          <tr key={v.id} className="hover:bg-slate-50/50">
+                            <td className="px-4 py-3.5">
+                              <div className="flex flex-col">
+                                <span className="font-extrabold text-slate-900 text-xs">{v.venueName}</span>
+                                <span className="text-[10px] text-slate-400 truncate max-w-xs">{v.address}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3.5">
+                              <div className="flex flex-col">
+                                <span className="text-xs font-semibold text-slate-700">{v.owner?.name || 'Unknown Owner'}</span>
+                                <span className="text-[9px] text-slate-400">{v.owner?.email || '-'}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3.5">
+                              <span className="text-xs font-bold text-slate-900">
+                                {v.pricingUnit === 'day' ? `₹${Number(v.pricePerDay || 0).toLocaleString('en-IN')}/day` : `₹${Number(v.pricePerHour || 0).toLocaleString('en-IN')}/hr`}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3.5 text-right">
+                              <div className="flex gap-2 justify-end items-center">
+                                <button
+                                  onClick={() => {
+                                    setSelectedVenueForDetails(v);
+                                    setActiveModalImageIndex(0);
+                                    setShowDetailsModal(true);
+                                  }}
+                                  className="py-1 px-2.5 rounded-lg border border-slate-200 text-slate-600 font-semibold text-[10px] hover:bg-slate-50 transition-colors cursor-pointer"
+                                >
+                                  Details
+                                </button>
+                                <button
+                                  onClick={() => toggleVenueListingStatus(v, 'approved')}
+                                  className="py-1 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] transition-colors cursor-pointer shadow-sm shadow-emerald-600/10"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => handleOpenSuspendModal(v)}
+                                  className="py-1 px-2.5 rounded-lg border border-rose-200 text-rose-600 font-semibold text-[10px] hover:bg-rose-50 transition-colors cursor-pointer"
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">

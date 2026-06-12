@@ -68,6 +68,11 @@ export default function OwnerDashboard() {
   const [allBlockedDates, setAllBlockedDates] = useState([]);
   const [loadingBlockedDates, setLoadingBlockedDates] = useState(false);
 
+  // Delete confirmation modal states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedVenueToDelete, setSelectedVenueToDelete] = useState(null);
+  const [selectedVenueNameToDelete, setSelectedVenueNameToDelete] = useState('');
+
   useEffect(() => {
     fetchOwnerData();
   }, []);
@@ -104,13 +109,19 @@ export default function OwnerDashboard() {
     }
   };
 
-  const handleDeleteVenue = async (venueId) => {
-    if (!window.confirm('Are you absolutely sure you want to delete this space listing? This action is permanent.')) {
-      return;
-    }
+  const handleDeleteVenue = (venue) => {
+    setSelectedVenueToDelete(venue.id);
+    setSelectedVenueNameToDelete(venue.venueName);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteVenue = async () => {
     try {
-      await venueService.delete(venueId);
+      await venueService.delete(selectedVenueToDelete);
       toast.success('Space deleted successfully!');
+      setShowDeleteModal(false);
+      setSelectedVenueToDelete(null);
+      setSelectedVenueNameToDelete('');
       fetchOwnerData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to delete space. Make sure it has no active bookings.');
@@ -716,7 +727,7 @@ export default function OwnerDashboard() {
                           <span>✏️</span> Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteVenue(v.id)}
+                          onClick={() => handleDeleteVenue(v)}
                           className="flex-1 py-2 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-lg border border-rose-200/50 transition-all text-center cursor-pointer flex items-center justify-center gap-1"
                           title="Delete space listing"
                         >
@@ -1112,6 +1123,44 @@ export default function OwnerDashboard() {
         )}
 
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 flex flex-col gap-4 animate-scale-up">
+            <div className="flex items-center gap-3">
+              <span className="p-3 bg-rose-50 text-rose-600 rounded-2xl text-2xl font-black">🗑️</span>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Delete Space Listing</h3>
+                <p className="text-slate-400 text-xs mt-0.5">This action is permanent and cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you absolutely sure you want to delete the space listing <span className="font-bold text-slate-900">"{selectedVenueNameToDelete}"</span>? Any active or past metrics linked to this space will be archived.
+            </p>
+
+            <div className="flex gap-3 mt-2 justify-end">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setSelectedVenueToDelete(null);
+                  setSelectedVenueNameToDelete('');
+                }}
+                className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteVenue}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm shadow-rose-600/10"
+              >
+                Delete Space
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
