@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
+	"github.com/WeCode-Community-Dev/BookMyVenue/internal/admin"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/auth"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/venues"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/web"
@@ -9,6 +10,8 @@ import (
 )
 
 func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
+	adminWebRoutes := r.Group("/admin")
+
 	webHandler := web.NewHandler()
 	r.GET("/register", webHandler.RegisterPage)
 	r.GET("/login", webHandler.LoginPage)
@@ -19,6 +22,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 	r.GET("/viewApprovedVenues", webHandler.ViewApprovedVenues)
 	r.GET("/viewRejectedVenues", webHandler.ViewRejectedVenuesPage)
 	r.GET("/viewPendingVenues", webHandler.ViewPendingVenuesPage)
+	adminWebRoutes.GET("viewPendingVenuesPage", webHandler.Admin_viewPendingVenues)
 
 	api := r.Group("/api/v1")
 
@@ -41,6 +45,16 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 		ownerRoutes.GET("/viewRejectedVenues", ownerHandler.ViewRejectedVenues)
 		ownerRoutes.GET("/viewPendingVenues", ownerHandler.ViewPendingVenues)
 		ownerRoutes.GET("/viewApprovedVenues", ownerHandler.ViewApprovedVenues)
+	}
+
+	// Admin routes
+	adminHandler := admin.NewHandler(db)
+	adminRoutes := api.Group("/admin")
+	adminRoutes.Use(auth.JWTAuthentication, auth.RoleGuarde("admin"))
+	{
+		adminRoutes.GET("/viewPendingVenues", adminHandler.ViewPendingVenues)
+		adminRoutes.PUT("/approveVenue/:id", adminHandler.ApproveVenue)
+		adminRoutes.PUT("/rejectVenue/:id", adminHandler.RejectVenue)
 	}
 
 	// userRoutes := api.Group("/user")
