@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$RegisterResponseModel {
 
-@JsonKey(name: 'full_name') String get fullName;@JsonKey(name: 'business_name') String get businessName; String get email;@JsonKey(name: 'mobile_number') String get mobileNumber; String get otp;@JsonKey(name: 'expires_in_seconds') int get expiresInSeconds; String get message;
+@JsonKey(name: 'full_name') String get fullName; String get email;@JsonKey(name: 'mobile_number') String get mobileNumber; String get otp;@JsonKey(name: 'expires_in_seconds') int get expiresInSeconds; String get message;
 /// Create a copy of RegisterResponseModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $RegisterResponseModelCopyWith<RegisterResponseModel> get copyWith => _$Register
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RegisterResponseModel&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&(identical(other.email, email) || other.email == email)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.otp, otp) || other.otp == otp)&&(identical(other.expiresInSeconds, expiresInSeconds) || other.expiresInSeconds == expiresInSeconds)&&(identical(other.message, message) || other.message == message));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RegisterResponseModel&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.email, email) || other.email == email)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.otp, otp) || other.otp == otp)&&(identical(other.expiresInSeconds, expiresInSeconds) || other.expiresInSeconds == expiresInSeconds)&&(identical(other.message, message) || other.message == message));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,fullName,businessName,email,mobileNumber,otp,expiresInSeconds,message);
+int get hashCode => Object.hash(runtimeType,fullName,email,mobileNumber,otp,expiresInSeconds,message);
 
 @override
 String toString() {
-  return 'RegisterResponseModel(fullName: $fullName, businessName: $businessName, email: $email, mobileNumber: $mobileNumber, otp: $otp, expiresInSeconds: $expiresInSeconds, message: $message)';
+  return 'RegisterResponseModel(fullName: $fullName, email: $email, mobileNumber: $mobileNumber, otp: $otp, expiresInSeconds: $expiresInSeconds, message: $message)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $RegisterResponseModelCopyWith<$Res>  {
   factory $RegisterResponseModelCopyWith(RegisterResponseModel value, $Res Function(RegisterResponseModel) _then) = _$RegisterResponseModelCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'full_name') String fullName,@JsonKey(name: 'business_name') String businessName, String email,@JsonKey(name: 'mobile_number') String mobileNumber, String otp,@JsonKey(name: 'expires_in_seconds') int expiresInSeconds, String message
+@JsonKey(name: 'full_name') String fullName, String email,@JsonKey(name: 'mobile_number') String mobileNumber, String otp,@JsonKey(name: 'expires_in_seconds') int expiresInSeconds, String message
 });
 
 
@@ -65,10 +65,9 @@ class _$RegisterResponseModelCopyWithImpl<$Res>
 
 /// Create a copy of RegisterResponseModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? fullName = null,Object? businessName = null,Object? email = null,Object? mobileNumber = null,Object? otp = null,Object? expiresInSeconds = null,Object? message = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? fullName = null,Object? email = null,Object? mobileNumber = null,Object? otp = null,Object? expiresInSeconds = null,Object? message = null,}) {
   return _then(_self.copyWith(
 fullName: null == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
-as String,businessName: null == businessName ? _self.businessName : businessName // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,mobileNumber: null == mobileNumber ? _self.mobileNumber : mobileNumber // ignore: cast_nullable_to_non_nullable
 as String,otp: null == otp ? _self.otp : otp // ignore: cast_nullable_to_non_nullable
@@ -156,10 +155,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'full_name')  String fullName, @JsonKey(name: 'business_name')  String businessName,  String email, @JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  int expiresInSeconds,  String message)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'full_name')  String fullName,  String email, @JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  int expiresInSeconds,  String message)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RegisterResponseModel() when $default != null:
-return $default(_that.fullName,_that.businessName,_that.email,_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.message);case _:
+return $default(_that.fullName,_that.email,_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.message);case _:
   return orElse();
 
 }
@@ -177,10 +176,10 @@ return $default(_that.fullName,_that.businessName,_that.email,_that.mobileNumber
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'full_name')  String fullName, @JsonKey(name: 'business_name')  String businessName,  String email, @JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  int expiresInSeconds,  String message)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'full_name')  String fullName,  String email, @JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  int expiresInSeconds,  String message)  $default,) {final _that = this;
 switch (_that) {
 case _RegisterResponseModel():
-return $default(_that.fullName,_that.businessName,_that.email,_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.message);}
+return $default(_that.fullName,_that.email,_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.message);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -194,10 +193,10 @@ return $default(_that.fullName,_that.businessName,_that.email,_that.mobileNumber
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'full_name')  String fullName, @JsonKey(name: 'business_name')  String businessName,  String email, @JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  int expiresInSeconds,  String message)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'full_name')  String fullName,  String email, @JsonKey(name: 'mobile_number')  String mobileNumber,  String otp, @JsonKey(name: 'expires_in_seconds')  int expiresInSeconds,  String message)?  $default,) {final _that = this;
 switch (_that) {
 case _RegisterResponseModel() when $default != null:
-return $default(_that.fullName,_that.businessName,_that.email,_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.message);case _:
+return $default(_that.fullName,_that.email,_that.mobileNumber,_that.otp,_that.expiresInSeconds,_that.message);case _:
   return null;
 
 }
@@ -209,11 +208,10 @@ return $default(_that.fullName,_that.businessName,_that.email,_that.mobileNumber
 @JsonSerializable()
 
 class _RegisterResponseModel implements RegisterResponseModel {
-  const _RegisterResponseModel({@JsonKey(name: 'full_name') required this.fullName, @JsonKey(name: 'business_name') required this.businessName, required this.email, @JsonKey(name: 'mobile_number') required this.mobileNumber, required this.otp, @JsonKey(name: 'expires_in_seconds') required this.expiresInSeconds, required this.message});
+  const _RegisterResponseModel({@JsonKey(name: 'full_name') required this.fullName, required this.email, @JsonKey(name: 'mobile_number') required this.mobileNumber, required this.otp, @JsonKey(name: 'expires_in_seconds') required this.expiresInSeconds, required this.message});
   factory _RegisterResponseModel.fromJson(Map<String, dynamic> json) => _$RegisterResponseModelFromJson(json);
 
 @override@JsonKey(name: 'full_name') final  String fullName;
-@override@JsonKey(name: 'business_name') final  String businessName;
 @override final  String email;
 @override@JsonKey(name: 'mobile_number') final  String mobileNumber;
 @override final  String otp;
@@ -233,16 +231,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegisterResponseModel&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.businessName, businessName) || other.businessName == businessName)&&(identical(other.email, email) || other.email == email)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.otp, otp) || other.otp == otp)&&(identical(other.expiresInSeconds, expiresInSeconds) || other.expiresInSeconds == expiresInSeconds)&&(identical(other.message, message) || other.message == message));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegisterResponseModel&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.email, email) || other.email == email)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.otp, otp) || other.otp == otp)&&(identical(other.expiresInSeconds, expiresInSeconds) || other.expiresInSeconds == expiresInSeconds)&&(identical(other.message, message) || other.message == message));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,fullName,businessName,email,mobileNumber,otp,expiresInSeconds,message);
+int get hashCode => Object.hash(runtimeType,fullName,email,mobileNumber,otp,expiresInSeconds,message);
 
 @override
 String toString() {
-  return 'RegisterResponseModel(fullName: $fullName, businessName: $businessName, email: $email, mobileNumber: $mobileNumber, otp: $otp, expiresInSeconds: $expiresInSeconds, message: $message)';
+  return 'RegisterResponseModel(fullName: $fullName, email: $email, mobileNumber: $mobileNumber, otp: $otp, expiresInSeconds: $expiresInSeconds, message: $message)';
 }
 
 
@@ -253,7 +251,7 @@ abstract mixin class _$RegisterResponseModelCopyWith<$Res> implements $RegisterR
   factory _$RegisterResponseModelCopyWith(_RegisterResponseModel value, $Res Function(_RegisterResponseModel) _then) = __$RegisterResponseModelCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'full_name') String fullName,@JsonKey(name: 'business_name') String businessName, String email,@JsonKey(name: 'mobile_number') String mobileNumber, String otp,@JsonKey(name: 'expires_in_seconds') int expiresInSeconds, String message
+@JsonKey(name: 'full_name') String fullName, String email,@JsonKey(name: 'mobile_number') String mobileNumber, String otp,@JsonKey(name: 'expires_in_seconds') int expiresInSeconds, String message
 });
 
 
@@ -270,10 +268,9 @@ class __$RegisterResponseModelCopyWithImpl<$Res>
 
 /// Create a copy of RegisterResponseModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? fullName = null,Object? businessName = null,Object? email = null,Object? mobileNumber = null,Object? otp = null,Object? expiresInSeconds = null,Object? message = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? fullName = null,Object? email = null,Object? mobileNumber = null,Object? otp = null,Object? expiresInSeconds = null,Object? message = null,}) {
   return _then(_RegisterResponseModel(
 fullName: null == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
-as String,businessName: null == businessName ? _self.businessName : businessName // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,mobileNumber: null == mobileNumber ? _self.mobileNumber : mobileNumber // ignore: cast_nullable_to_non_nullable
 as String,otp: null == otp ? _self.otp : otp // ignore: cast_nullable_to_non_nullable

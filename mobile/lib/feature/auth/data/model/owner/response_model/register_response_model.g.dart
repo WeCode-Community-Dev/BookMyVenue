@@ -10,7 +10,6 @@ _RegisterResponseModel _$RegisterResponseModelFromJson(
   Map<String, dynamic> json,
 ) => _RegisterResponseModel(
   fullName: json['full_name'] as String,
-  businessName: json['business_name'] as String,
   email: json['email'] as String,
   mobileNumber: json['mobile_number'] as String,
   otp: json['otp'] as String,
@@ -22,7 +21,6 @@ Map<String, dynamic> _$RegisterResponseModelToJson(
   _RegisterResponseModel instance,
 ) => <String, dynamic>{
   'full_name': instance.fullName,
-  'business_name': instance.businessName,
   'email': instance.email,
   'mobile_number': instance.mobileNumber,
   'otp': instance.otp,

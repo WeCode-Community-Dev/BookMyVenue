@@ -9,7 +9,6 @@ part 'register_response_model.g.dart';
 sealed class RegisterResponseModel with _$RegisterResponseModel {
   const factory RegisterResponseModel({
     @JsonKey(name: 'full_name') required String fullName,
-    @JsonKey(name: 'business_name') required String businessName,
     required String email,
     @JsonKey(name: 'mobile_number') required String mobileNumber,
     required String otp,
