@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../feature/auth/presentation/bloc/auth_bloc.dart';
+import '../../feature/auth/presentation/bloc/owner/owner_auth_bloc.dart';
+import '../../feature/auth/presentation/bloc/user/auth_bloc.dart';
 import '../../feature/auth/presentation/pages/user_login/signin_page.dart';
-import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_business_profile_setup.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_signup_page.dart';
 import '../../feature/home/presentation/pages/home_page.dart';
 import '../../feature/owner_verification_page/presentation/pages/owner_verification_page.dart';
@@ -18,8 +18,8 @@ class AppRouter {
       GlobalKey<NavigatorState>();
 
   static final GoRouter router = GoRouter(
-    // initialLocation: '/login',
-    initialLocation: AppRouteNames.ownerVerification,
+    initialLocation: '/login',
+    // initialLocation: AppRouteNames.ownerVerification,
     navigatorKey: navigatorKey,
     debugLogDiagnostics: true, // Useful for development
     // --- Deep Linking Configuration ---
@@ -39,20 +39,12 @@ class AppRouter {
         path: '/${AppRouteNames.venueOwnerSignup}',
         name: AppRouteNames.venueOwnerSignup,
         builder: (BuildContext context, GoRouterState state) =>
-            BlocProvider<AuthBloc>(
-              create: (BuildContext context) => sl<AuthBloc>(),
+            BlocProvider<OwnerAuthBloc>(
+              create: (BuildContext context) => sl<OwnerAuthBloc>(),
               child: const VenueOwnerSignupPage(),
             ),
       ),
-      GoRoute(
-        path: '/${AppRouteNames.ownerBusinessProfile}',
-        name: AppRouteNames.ownerBusinessProfile,
-        builder: (BuildContext context, GoRouterState state) =>
-            BlocProvider<AuthBloc>(
-              create: (BuildContext context) => sl<AuthBloc>(),
-              child: const VenueOwnerBusinessProfileSetup(),
-            ),
-      ),
+
       GoRoute(
         path: '/${AppRouteNames.home}',
         name: AppRouteNames.home,
@@ -65,7 +57,7 @@ class AppRouter {
         path: '/${AppRouteNames.ownerVerification}',
         name: AppRouteNames.ownerVerification,
         builder: (BuildContext context, GoRouterState state) {
-          return OwnerVerificationPage();
+          return const OwnerVerificationPage();
         },
       ),
       // GoRoute(
@@ -180,23 +172,22 @@ class AppRouter {
 
     // --- Auth Guard (Redirection) ---
     // This is where you will check if the user is logged in
-    // redirect: (BuildContext context, GoRouterState state) {
-    //   final bool loggedIn = AuthSession.isLoggedIn;
+    redirect: (BuildContext context, GoRouterState state) {
+      final bool loggedIn = AuthSession.isLoggedIn;
 
-    //   final bool loggingIn =
-    //       state.matchedLocation == '/${AppRouteNames.signin}' ||
-    //       state.matchedLocation == '/${AppRouteNames.venueOwnerSignup}' ||
-    //       state.matchedLocation == '/${AppRouteNames.ownerBusinessProfile}';
+      final bool loggingIn =
+          state.matchedLocation == '/${AppRouteNames.signin}' ||
+          state.matchedLocation == '/${AppRouteNames.venueOwnerSignup}';
 
-    //   if (!loggedIn && !loggingIn) {
-    //     return '/login';
-    //   }
+      if (!loggedIn && !loggingIn) {
+        return '/login';
+      }
 
-    //   if (loggedIn && loggingIn) {
-    //     return '/home';
-    //   }
+      if (loggedIn && loggingIn) {
+        return '/home';
+      }
 
-    //   return null;
-    // },
+      return null;
+    },
   );
 }

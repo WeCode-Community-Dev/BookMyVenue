@@ -1,7 +1,7 @@
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/type_def.dart';
 import '../entity/user_entity.dart';
-import '../params/otp_param.dart';
+import '../params/auth_param.dart';
 import '../repository/i_auth_repository.dart';
 
 class RequestOtpUseCase

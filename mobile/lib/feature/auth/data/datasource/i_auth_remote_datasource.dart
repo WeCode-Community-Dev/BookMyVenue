@@ -1,4 +1,6 @@
 import '../../../../core/model/api_response.dart';
+import '../model/owner/reqeust_model/register_request_model.dart';
+import '../model/owner/response_model/register_response_model.dart';
 import '../model/user/request_model/otp_request/otp_request.dart';
 import '../model/user/request_model/verify_otp_request/verify_otp_request.dart';
 import '../model/user/response_model/otp_response/otp_response.dart';
@@ -10,11 +12,10 @@ abstract interface class IAuthRemoteDatasource {
 }
 
 abstract interface class IAuthOwnerDataSource {
-  Future<ApiResponse<OtpResponse>> createAccount(OtpRequest request);
-  Future<ApiResponse<VerifyOtpResponse>> verifyOwnerOtp(
-    VerifyOtpRequest request,
+  Future<ApiResponse<RegisterResponseModel>> registerAccount(
+    OwnerRegisterRequest request,
   );
-  Future<ApiResponse<VerifyOtpResponse>> createBusinessProfile(
-    VerifyOtpRequest request,
+  Future<ApiResponse<VerifyOwnerOtpResponseModel>> verifyOwnerOtp(
+    VerifyOwnerOtpRequest request,
   );
 }

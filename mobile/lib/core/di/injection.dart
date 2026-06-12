@@ -12,8 +12,9 @@ final GetIt sl = GetIt.instance;
 
 Future<void> setupInjector() async {
   await _registerCore();
-  _registerLocalNotification();
+  await _registerLocalNotification();
   await registerAuthDependencies();
+  await registerOwnerAuthDependencies();
 }
 
 Future<void> _registerCore() async {

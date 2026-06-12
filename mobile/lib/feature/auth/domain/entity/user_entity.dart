@@ -36,8 +36,8 @@ class OtpResponseEntity extends Equatable {
 
 // =========== Verify Otp Entity ================
 
-class VerifyOtpRequestResult extends Equatable {
-  const VerifyOtpRequestResult({required this.result, required this.message});
+class VerifyOtpResponseResult extends Equatable {
+  const VerifyOtpResponseResult({required this.result, required this.message});
 
   final VerifyOtpResponseEntity result;
   final String message;

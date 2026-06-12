@@ -7,7 +7,8 @@ import '../../../../../core/utils/ui/snackbar_command.dart';
 import '../../../../../core/validation/app_validation.dart';
 import '../../../../../core/widgets/app_button.dart';
 import '../../../../../core/widgets/custom_text_field.dart';
-import '../../bloc/auth_bloc.dart';
+import '../../../domain/params/auth_param.dart';
+import '../../bloc/owner/owner_auth_bloc.dart';
 import '../widget/auth_header.dart';
 
 class VenueOwnerSignupPage extends StatefulWidget {
@@ -21,6 +22,7 @@ class _VenueOwnerSignupPageState extends State<VenueOwnerSignupPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _fullNameController = TextEditingController();
+  final TextEditingController _businessNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -43,16 +45,27 @@ class _VenueOwnerSignupPageState extends State<VenueOwnerSignupPage> {
       backgroundColor: theme.scaffoldBackgroundColor,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: BlocConsumer<AuthBloc, AuthState>(
-          listener: (BuildContext context, AuthState state) {
-            if (state.successMessage != null) {
+        child: BlocConsumer<OwnerAuthBloc, OwnerAuthState>(
+          listener: (BuildContext context, OwnerAuthState state) {
+            if (state.isError) {
+              SnackbarCommand.show(
+                type: ToastType.error,
+                title: state.errorMessage!,
+              );
+            } else if (state.successMessage != null) {
               SnackbarCommand.show(
                 type: ToastType.success,
                 title: state.successMessage!,
               );
+              if (state.verifyOtpResponse != null) {
+                context.goNamed(
+                  AppRouteNames.ownerVerification,
+                  extra: state.verifyOtpResponse!.user.role,
+                );
+              }
             }
           },
-          builder: (BuildContext context, AuthState state) {
+          builder: (BuildContext context, OwnerAuthState state) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SingleChildScrollView(
@@ -85,7 +98,7 @@ class _VenueOwnerSignupPageState extends State<VenueOwnerSignupPage> {
                       CustomTextField(
                         label: 'Business Name',
                         hint: 'Enter registered business name',
-                        controller: _fullNameController,
+                        controller: _businessNameController,
                         icon: Icons.email_outlined,
                         keyboardType: TextInputType.name,
                         maxLength: 25,
@@ -127,8 +140,20 @@ class _VenueOwnerSignupPageState extends State<VenueOwnerSignupPage> {
                         label: 'Sign In',
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            context.pushNamed(
-                              AppRouteNames.ownerBusinessProfile,
+                            final OwnerRegisterParams registerParams =
+                                OwnerRegisterParams(
+                                  fullName: _fullNameController.text.trim(),
+                                  businessName: _businessNameController.text
+                                      .trim(),
+                                  email: _emailController.text.trim(),
+                                  mobileNumber:
+                                      '+91${_mobileController.text.trim()}',
+                                  password: _passwordController.text.trim(),
+                                );
+                            context.read<OwnerAuthBloc>().add(
+                              OwnerAuthEvent.registerAccount(
+                                requestParam: registerParams,
+                              ),
                             );
                           }
                         },

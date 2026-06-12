@@ -4,13 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../../../core/errors/failures.dart';
-import '../../../../core/notifications/notification_model.dart';
-import '../../../../core/notifications/notification_service.dart';
-import '../../domain/entity/user_entity.dart';
-import '../../domain/params/otp_param.dart';
-import '../../domain/usecase/request_otp_usecase.dart';
-import '../../domain/usecase/verify_otp_usecase.dart';
+import '../../../../../core/errors/failures.dart';
+import '../../../../../core/notifications/notification_model.dart';
+import '../../../../../core/notifications/notification_service.dart';
+import '../../../domain/entity/user_entity.dart';
+import '../../../domain/params/auth_param.dart';
+import '../../../domain/usecase/request_otp_usecase.dart';
+import '../../../domain/usecase/verify_otp_usecase.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -50,40 +50,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final Either<Failure, OtpResponseResult> result = await _requestOtpUseCase(
       event.requestParam,
     );
-
-    // if (result.isLeft()) {
-    //   final Failure failure = result.swap().getOrElse(() => throw Exception());
-
-    //   emit(
-    //     state.copyWith(
-    //       isLoading: false,
-    //       isError: true,
-    //       isOtpRequesting: false,
-    //       errorMessage: failure.message,
-    //     ),
-    //   );
-
-    //   return;
-    // }
-
-    // final authResult = result.getOrElse(() => throw Exception());
-
-    // await _notificationService.showNotification(
-    //   LocalNotification(
-    //     id: 1001,
-    //     title: 'Registration OTP',
-    //     body: 'Your OTP is ${authResult.user.otp}',
-    //   ),
-    // );
-
-    // emit(
-    //   state.copyWith(
-    //     isLoading: false,
-    //     isError: false,
-    //     successMessage: authResult.message,
-    //     otpResponse: authResult.user,
-    //   ),
-    // );
 
     await result.fold<Future<void>>(
       (Failure failure) async {
@@ -125,7 +91,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(state.copyWith(isLoading: true, isError: false));
 
-    final Either<Failure, VerifyOtpRequestResult> result =
+    final Either<Failure, VerifyOtpResponseResult> result =
         await _verifyOtpUseCase(event.requestParam);
 
     result.fold(
@@ -139,7 +105,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           ),
         );
       },
-      (VerifyOtpRequestResult verifyOtpResult) {
+      (VerifyOtpResponseResult verifyOtpResult) {
         emit(
           state.copyWith(
             isLoading: false,

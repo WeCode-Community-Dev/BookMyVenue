@@ -1,12 +1,16 @@
 import '../../../../core/model/api_response.dart';
 import '../../../../core/network/base_repository.dart';
 import '../../../../core/utils/type_def.dart';
+import '../../domain/entity/owner_entity.dart';
 import '../../domain/entity/user_entity.dart';
-import '../../domain/params/otp_param.dart';
+import '../../domain/params/auth_param.dart';
 import '../../domain/repository/i_auth_repository.dart';
 import '../datasource/auth_local_datasource.dart';
 import '../datasource/i_auth_remote_datasource.dart';
+import '../mapper/auth_owner_maper.dart';
 import '../mapper/auth_user_mapper.dart';
+import '../model/owner/reqeust_model/register_request_model.dart';
+import '../model/owner/response_model/register_response_model.dart';
 import '../model/user/request_model/otp_request/otp_request.dart';
 import '../model/user/request_model/verify_otp_request/verify_otp_request.dart';
 import '../model/user/response_model/otp_response/otp_response.dart';
@@ -36,9 +40,9 @@ class AuthRepositoryImpl extends BaseRepository implements IAuthRepository {
   }
 
   @override
-  ResultFuture<VerifyOtpRequestResult> verifyOtp({
+  ResultFuture<VerifyOtpResponseResult> verifyOtp({
     required VerifyOtpRequestParams params,
-  }) async {
+  }) {
     return handleRequest(() async {
       final VerifyOtpRequest request = VerifyOtpRequest(
         mobileNumber: params.mobileNumber,
@@ -50,12 +54,64 @@ class AuthRepositoryImpl extends BaseRepository implements IAuthRepository {
       if (response.data != null) {
         await localDatasource.saveToken(response.data!);
       }
-      final VerifyOtpRequestResult result = VerifyOtpRequestResult(
+      final VerifyOtpResponseResult result = VerifyOtpResponseResult(
         result: response.data!.toEntity(),
         message: response.message ?? '',
       );
 
       return result;
+    });
+  }
+}
+
+class OwnerAuthRepositoryImpl extends BaseRepository
+    implements IOwnerAuthRepository {
+  OwnerAuthRepositoryImpl({
+    required this.remoteDataSource,
+    required this.localDatasource,
+  });
+
+  final IAuthOwnerDataSource remoteDataSource;
+  final IAuthLocalDatasource localDatasource;
+
+  @override
+  ResultFuture<RegisterResponseResult> registerAccount({
+    required OwnerRegisterParams params,
+  }) {
+    return handleRequest(() async {
+      final OwnerRegisterRequest request = OwnerRegisterRequest(
+        fullName: params.fullName,
+        businessName: params.businessName,
+        email: params.email,
+        mobileNumber: params.mobileNumber,
+        password: params.password,
+      );
+      final ApiResponse<RegisterResponseModel> response = await remoteDataSource
+          .registerAccount(request);
+
+      return RegisterResponseResult(
+        user: response.data!.toEntity(),
+        message: response.message ?? '',
+      );
+    });
+  }
+
+  @override
+  ResultFuture<VerifyOwnerOtpResponseResult> verifyOtp({
+    required VerifyOwnerOtpParams params,
+  }) {
+    return handleRequest(() async {
+      final VerifyOwnerOtpRequest request = VerifyOwnerOtpRequest(
+        mobileNumber: params.mobileNumber,
+        otp: params.otp,
+      );
+      final ApiResponse<VerifyOwnerOtpResponseModel> response =
+          await remoteDataSource.verifyOwnerOtp(request);
+
+      return VerifyOwnerOtpResponseResult(
+        user: response.data!.toEntity(),
+        message: response.message ?? '',
+      );
     });
   }
 }

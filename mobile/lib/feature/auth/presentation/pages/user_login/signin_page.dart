@@ -4,15 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 
-import '../../../../../core/logger/app_logger.dart';
 import '../../../../../core/router/route_name.dart';
 import '../../../../../core/utils/ui/snackbar_command.dart';
 import '../../../../../core/validation/app_validation.dart';
 import '../../../../../core/widgets/app_button.dart';
 import '../../../../../core/widgets/app_text.dart';
 import '../../../../../core/widgets/custom_text_field.dart';
-import '../../../domain/params/otp_param.dart';
-import '../../bloc/auth_bloc.dart';
+import '../../../domain/params/auth_param.dart';
+import '../../bloc/user/auth_bloc.dart';
 import '../widget/auth_header.dart';
 
 class SigninPage extends StatefulWidget {
@@ -47,9 +46,7 @@ class _SigninPageState extends State<SigninPage> {
       body: SafeArea(
         child: BlocConsumer<AuthBloc, AuthState>(
           listener: (BuildContext context, AuthState state) {
-            AppLogger.debug('$state ');
             if (state.isError) {
-              AppLogger.info('${state.errorMessage!} error message');
               SnackbarCommand.show(
                 type: ToastType.error,
                 title: state.errorMessage!,
