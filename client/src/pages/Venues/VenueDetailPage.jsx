@@ -59,6 +59,11 @@ export default function VenueDetailPage() {
   const [purpose, setPurpose] = useState('');
 
   const [activeLock, setActiveLock] = useState(null);
+  const activeLockRef = useRef(null);
+  const updateActiveLock = (lock) => {
+    setActiveLock(lock);
+    activeLockRef.current = lock;
+  };
   const [lockTimeLeft, setLockTimeLeft] = useState(0); // in seconds
   const [completingBooking, setCompletingBooking] = useState(false);
   const timerRef = useRef(null);
@@ -97,8 +102,29 @@ export default function VenueDetailPage() {
   useEffect(() => {
     fetchVenueDetails();
     checkUserActiveLock();
+
+    const handleBeforeUnload = () => {
+      if (activeLockRef.current) {
+        const url = `${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/bookings/lock/${activeLockRef.current.id}`;
+        const token = localStorage.getItem('bmv_access_token') || localStorage.getItem('bmv_token');
+        fetch(url, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+          },
+          keepalive: true
+        });
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       clearInterval(timerRef.current);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      if (activeLockRef.current) {
+        bookingService.releaseLock(activeLockRef.current.id).catch(() => {});
+      }
     };
   }, [id]);
 
@@ -186,19 +212,30 @@ export default function VenueDetailPage() {
   };
 
   const startLockTimer = (lock) => {
-    setActiveLock(lock);
+    updateActiveLock(lock);
     const expiresAt = new Date(lock.expiresAt).getTime();
+    const initialDiff = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+    
+    clearInterval(timerRef.current);
+    
+    if (initialDiff <= 0) {
+      updateActiveLock(null);
+      setLockTimeLeft(0);
+      return;
+    }
+    
+    setLockTimeLeft(initialDiff);
+    
     const calculateTimeLeft = () => {
       const diff = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
       setLockTimeLeft(diff);
       if (diff <= 0) {
         clearInterval(timerRef.current);
-        setActiveLock(null);
+        updateActiveLock(null);
         toast.error('Booking lock expired. The slot is now released.');
       }
     };
-    calculateTimeLeft();
-    clearInterval(timerRef.current);
+    
     timerRef.current = setInterval(calculateTimeLeft, 1000);
   };
 
@@ -454,7 +491,7 @@ export default function VenueDetailPage() {
     try {
       await bookingService.releaseLock(activeLock.id);
       clearInterval(timerRef.current);
-      setActiveLock(null);
+      updateActiveLock(null);
       setLockTimeLeft(0);
       toast.success('Lock released.');
     } catch {
@@ -480,7 +517,7 @@ export default function VenueDetailPage() {
         purpose: purpose.trim(),
       });
       clearInterval(timerRef.current);
-      setActiveLock(null);
+      updateActiveLock(null);
       setPurpose('');
       toast.success('Booking requested successfully!');
       navigate('/bookings?tab=bookings');
@@ -1062,6 +1099,18 @@ export default function VenueDetailPage() {
                       <div className="flex justify-between">
                         <span>Time:</span>
                         <span className="text-slate-950 font-bold">{startTime} - {endTime}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Duration:</span>
+                        <span className="text-slate-950 font-bold">
+                          {venue?.pricingUnit === 'day' 
+                            ? `1 Day (₹${Number(venue?.pricePerDay || 0).toLocaleString('en-IN')}/day)` 
+                            : `${estimatedHours.toFixed(1)} ${estimatedHours === 1 ? 'Hour' : 'Hours'} (₹${Number(venue?.pricePerHour || 0).toLocaleString('en-IN')}/hr)`}
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-t border-slate-200/60 pt-1 mt-1">
+                        <span className="font-semibold text-slate-700">Total Price:</span>
+                        <span className="text-slate-950 font-extrabold text-xs">₹{Number(estimatedPrice).toLocaleString('en-IN')}</span>
                       </div>
                     </div>
 

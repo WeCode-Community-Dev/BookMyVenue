@@ -30,7 +30,7 @@ export default function HomePage() {
   const categories = [
     { name: 'Banquet Halls', type: 'banquet_hall', icon: '🏢', count: '12 spaces' },
     { name: 'Conference Rooms', type: 'conference_room', icon: '💻', count: '8 spaces' },
-    { name: 'Resorts & Hotels', type: 'resort_hotel', icon: '🏖️', count: '15 spaces' },
+    { name: 'Resorts & Hotels', type: 'resort', icon: '🏖️', count: '15 spaces' },
     { name: 'Meetup Spaces', type: 'meetup_space', icon: '👥', count: '6 spaces' },
   ];
 

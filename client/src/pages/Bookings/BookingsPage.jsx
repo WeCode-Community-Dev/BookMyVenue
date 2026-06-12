@@ -491,8 +491,14 @@ export default function BookingsPage() {
                       <option value="">All Types</option>
                       <option value="banquet_hall">Banquet Hall</option>
                       <option value="conference_room">Conference Room</option>
-                      <option value="resort_hotel">Resort/Hotel</option>
+                      <option value="resort">Resort</option>
+                      <option value="hotel">Hotel</option>
                       <option value="meetup_space">Meetup Space</option>
+                      <option value="birthday_hall">Birthday Hall</option>
+                      <option value="auditorium">Auditorium</option>
+                      <option value="cafe">Cafe / Resto</option>
+                      <option value="outdoor_space">Outdoor Space</option>
+                      <option value="other">Other</option>
                     </select>
                   </div>
 

@@ -447,11 +447,21 @@ export default function EditVenuePage() {
               <select
                 className="w-full py-3 px-4 bg-slate-50 border border-slate-200/80 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-primary focus:bg-white transition-all duration-200"
                 value={form.venueType}
-                onChange={e => setForm({ ...form, venueType: e.target.value })}
+                onChange={e => {
+                  const type = e.target.value;
+                  let unit = form.pricingUnit;
+                  if (['conference_room', 'meetup_space', 'cafe'].includes(type)) {
+                    unit = 'hour';
+                  } else if (['banquet_hall', 'auditorium', 'resort', 'hotel', 'outdoor_space', 'birthday_hall'].includes(type)) {
+                    unit = 'day';
+                  }
+                  setForm({ ...form, venueType: type, pricingUnit: unit });
+                }}
               >
                 <option value="banquet_hall">Banquet Hall</option>
                 <option value="conference_room">Conference Room</option>
-                <option value="resort_hotel">Resort/Hotel</option>
+                <option value="resort">Resort</option>
+                <option value="hotel">Hotel</option>
                 <option value="meetup_space">Meetup Space</option>
                 <option value="birthday_hall">Birthday Hall</option>
                 <option value="auditorium">Auditorium</option>
@@ -578,7 +588,16 @@ export default function EditVenuePage() {
                 type="number"
                 className="w-full py-3 px-4 bg-slate-50 border border-slate-200/80 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-primary focus:bg-white transition-all duration-200"
                 value={form.capacity}
-                onChange={e => setForm({ ...form, capacity: Number(e.target.value) })}
+                onChange={e => {
+                  const cap = Number(e.target.value);
+                  let unit = form.pricingUnit;
+                  if (cap > 50) {
+                    unit = 'day';
+                  } else {
+                    unit = 'hour';
+                  }
+                  setForm({ ...form, capacity: cap, pricingUnit: unit });
+                }}
                 min="1"
               />
             </div>
