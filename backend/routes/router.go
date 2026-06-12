@@ -6,11 +6,13 @@ import (
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/auth"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/venues"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/web"
+	"github.com/WeCode-Community-Dev/BookMyVenue/users"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 	adminWebRoutes := r.Group("/admin")
+	userWebRoutes := r.Group("/user")
 
 	webHandler := web.NewHandler()
 	r.GET("/register", webHandler.RegisterPage)
@@ -25,6 +27,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 	adminWebRoutes.GET("viewPendingVenuesPage", webHandler.Admin_viewPendingVenues)
 	adminWebRoutes.GET("viewApprovedVenues", webHandler.Admin_viewApprovedVenues)
 	adminWebRoutes.GET("viewRejectedVenues", webHandler.Admin_viewRejectedVenues)
+	userWebRoutes.GET("/viewVenues", webHandler.User_viewVenues)
 
 	api := r.Group("/api/v1")
 
@@ -61,10 +64,12 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 		adminRoutes.GET("/viewRejectedVenues", adminHandler.ViewRejectedVenues)
 	}
 
-	// userRoutes := api.Group("/user")
-	// {
-	// 	userRoutes.GET("/", userResponse)
-	// }
+	userHandler := users.NewHandler(db)
+	userRoutes := api.Group("/user")
+	userRoutes.Use(auth.JWTAuthentication, auth.RoleGuarde("user"))
+	{
+		userRoutes.GET("/venues", userHandler.ViewVenue)
+	}
 }
 
 // func userResponse(ctx *gin.Context) {
