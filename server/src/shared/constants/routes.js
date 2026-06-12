@@ -3,7 +3,9 @@ export const ROUTES = {
         LOGOUT: '/logout'
     },
     ADMIN: {
-
+        USERS: '/users',
+        BLOCK_USER: '/users/block/:userId',
+        UNBLOCK_USER: '/users/unblock/:userId'
     },
     OWNER: {
         VENUE: {
