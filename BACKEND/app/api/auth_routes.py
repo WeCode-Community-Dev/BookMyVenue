@@ -6,10 +6,7 @@ from app.schema.auth import (
     SignupRequest,
     LoginRequest
 )
-from app.services.auth_service import (
-    signup,
-    login
-)
+from app.services.auth_service import ( signup, login )
 
 router = APIRouter(
     prefix="/auth",
