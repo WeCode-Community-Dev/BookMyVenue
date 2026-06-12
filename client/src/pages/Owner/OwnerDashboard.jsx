@@ -507,6 +507,11 @@ export default function OwnerDashboard() {
                           <h4 className="font-bold text-slate-900 text-sm leading-tight mb-1">{b.venue?.venueName}</h4>
                           <p className="text-xs text-slate-500">Guest: <span className="font-semibold text-slate-700">{b.user?.name}</span> ({b.guestCount} pax)</p>
                           <p className="text-xs text-slate-500">Date: <span className="font-semibold text-slate-700">{b.bookingDate}</span> ({formatTime12Hour(b.startTime)} - {formatTime12Hour(b.endTime)})</p>
+                          {b.purpose && (
+                            <div className="mt-2 pt-2 border-t border-slate-100/50 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-slate-400">
+                              <span>Purpose: <strong className="text-slate-600">{b.purpose}</strong></span>
+                            </div>
+                          )}
                         </div>
                         <div className="flex flex-col items-end gap-2.5 w-full sm:w-auto shrink-0">
                           <div className="text-right">
@@ -559,6 +564,11 @@ export default function OwnerDashboard() {
                             <h4 className="font-bold text-slate-900 text-sm leading-tight mb-1">{b.venue?.venueName}</h4>
                             <p className="text-xs text-slate-500">Guest: <span className="font-semibold text-slate-700">{b.user?.name}</span> ({b.guestCount} pax)</p>
                             <p className="text-xs text-slate-500">Date: <span className="font-semibold text-slate-700">{b.bookingDate}</span> ({formatTime12Hour(b.startTime)} - {formatTime12Hour(b.endTime)})</p>
+                            {b.purpose && (
+                              <div className="mt-2 pt-2 border-t border-slate-100/50 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-slate-400">
+                                <span>Purpose: <strong className="text-slate-600">{b.purpose}</strong></span>
+                              </div>
+                            )}
                           </div>
                           <div className="text-right">
                             <span className="text-xs font-black text-slate-950 block">₹{Number(b.totalAmount).toLocaleString('en-IN')}</span>

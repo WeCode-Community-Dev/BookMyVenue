@@ -56,6 +56,7 @@ export default function VenueDetailPage() {
   const [startTime, setStartTime] = useState('10:00');
   const [endTime, setEndTime] = useState('12:00');
   const [guestCount, setGuestCount] = useState(1);
+  const [purpose, setPurpose] = useState('');
 
   const [activeLock, setActiveLock] = useState(null);
   const [lockTimeLeft, setLockTimeLeft] = useState(0); // in seconds
@@ -464,6 +465,9 @@ export default function VenueDetailPage() {
   const handleCompleteBooking = async (e) => {
     e.preventDefault();
     if (!activeLock) return;
+    if (!purpose.trim()) {
+      return toast.error('Please enter the purpose of this booking');
+    }
     setCompletingBooking(true);
     try {
       await bookingService.create({
@@ -473,11 +477,13 @@ export default function VenueDetailPage() {
         endTime,
         guestCount,
         lockId: activeLock.id,
+        purpose: purpose.trim(),
       });
       clearInterval(timerRef.current);
       setActiveLock(null);
+      setPurpose('');
       toast.success('Booking requested successfully!');
-      navigate('/bookings');
+      navigate('/bookings?tab=bookings');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Booking failed.');
     } finally {
@@ -1033,6 +1039,18 @@ export default function VenueDetailPage() {
                         max={venue.capacity}
                         value={guestCount}
                         onChange={e => setGuestCount(Number(e.target.value))}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Purpose of Booking</label>
+                      <input
+                        type="text"
+                        className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors"
+                        placeholder="e.g. Birthday Party, Corporate Meeting"
+                        value={purpose}
+                        onChange={e => setPurpose(e.target.value)}
+                        required
                       />
                     </div>
 

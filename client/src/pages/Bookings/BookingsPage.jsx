@@ -737,6 +737,14 @@ export default function BookingsPage() {
                                 <span className="flex items-center gap-1.5"><MdOutlineAccessTime className="text-secondary" /> {formatTime12Hour(booking.startTime)} - {formatTime12Hour(booking.endTime)}</span>
                                 <span className="flex items-center gap-1.5"><MdCurrencyRupee className="text-emerald-600 font-bold text-sm" />{Number(booking.totalAmount).toLocaleString('en-IN')}</span>
                               </div>
+
+                              {booking.purpose && (
+                                <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-slate-500">
+                                  <span>
+                                    Purpose: <strong className="text-slate-700">{booking.purpose}</strong>
+                                  </span>
+                                </div>
+                              )}
                             </div>
 
                             <div className="w-full md:w-auto flex flex-row md:flex-col gap-2 self-stretch justify-end">

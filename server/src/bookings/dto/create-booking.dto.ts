@@ -38,4 +38,9 @@ export class CreateBookingDto {
   @IsString()
   @IsOptional()
   lockId?: string;
+
+  @ApiPropertyOptional({ example: 'Wedding Reception', description: 'Purpose of booking' })
+  @IsString()
+  @IsOptional()
+  purpose?: string;
 }

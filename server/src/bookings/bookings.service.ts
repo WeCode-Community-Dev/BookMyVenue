@@ -28,7 +28,7 @@ export class BookingsService {
   ) {}
 
   async create(createBookingDto: CreateBookingDto, userId: string) {
-    const { venueId, bookingDate, startTime, endTime, guestCount, lockId } = createBookingDto;
+    const { venueId, bookingDate, startTime, endTime, guestCount, lockId, purpose } = createBookingDto;
 
     const venue = await this.venuesRepository.findOne({ where: { id: venueId } });
     if (!venue) throw new NotFoundException('Venue not found');
@@ -95,6 +95,7 @@ export class BookingsService {
       guestCount: guestCount || 1,
       totalAmount,
       bookingStatus: BookingStatus.PENDING,
+      purpose,
     });
 
     const savedBooking = await this.bookingsRepository.save(booking);

@@ -68,6 +68,9 @@ export class Booking {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   totalAmount: number;
 
+  @Column({ nullable: true })
+  purpose: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
