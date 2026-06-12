@@ -51,6 +51,7 @@ const UserSignupForm = ({ onBack }) => {
          const response = await signupApi(payload);
          console.log(response);
          
+         
          login(
 
             response.data.user,

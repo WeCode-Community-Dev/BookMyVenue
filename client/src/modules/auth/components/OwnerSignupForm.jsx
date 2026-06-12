@@ -1,8 +1,10 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router-dom";
 
-import { signupApi } from '../services/auth.service';
-import { ownerSignupSchema } from '../validations/signup.validation';
+import { signupApi } from "../services/auth.service";
+import { ownerSignupSchema } from "../validations/signup.validation";
+import { useAuth } from "../../../shared/context/AuthContext";
 
 const inputClass = `
    w-full
@@ -19,167 +21,131 @@ const inputClass = `
 `;
 
 const OwnerSignupForm = ({ onBack }) => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(ownerSignupSchema),
+  });
 
-   const {
-      register,
-      handleSubmit,
-      formState: {
-         errors,
-         isSubmitting
-      }
-   } = useForm({
-      resolver: zodResolver(ownerSignupSchema)
-   });
+  const onSubmit = async (data) => {
+    const payload = {
+      accountType: "OWNER",
 
-   const onSubmit = async (data) => {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      password: data.password,
 
-      const payload = {
+      venue: {
+        name: data.venueName,
 
-         accountType: 'OWNER',
+        type: data.venueType,
 
-         name: data.name,
-         email: data.email,
-         phone: data.phone,
-         password: data.password,
+        city: data.city,
+      },
+    };
 
-         venue: {
+    const response = await signupApi(payload);
+    navigate("/");
+    login(response.data.user, response.data.accessToken);
 
-            name: data.venueName,
+    // alert(response.message);
+  };
 
-            type: data.venueType,
-
-            city: data.city
-
-         }
-
-      };
-
-      const response = await signupApi(payload);
-
-      alert(response.message);
-
-   };
-
-   return (
-      <>
-         <button
-            type="button"
-            onClick={onBack}
-            className="
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onBack}
+        className="
             mb-6
             text-sm
             text-red-600
             hover:text-red-700
             font-medium
          "
-         >
-            ← Change Selection
-         </button>
-         <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4 mt-8"
-         >
+      >
+        ← Change Selection
+      </button>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-8">
+        {/* User Details */}
 
-            {/* User Details */}
+        <input
+          placeholder="Full Name"
+          {...register("name")}
+          className={inputClass}
+        />
 
-            <input
-               placeholder="Full Name"
-               {...register('name')}
-               className={inputClass}
-            />
+        <input
+          placeholder="Email Address"
+          {...register("email")}
+          className={inputClass}
+        />
 
-            <input
-               placeholder="Email Address"
-               {...register('email')}
-               className={inputClass}
-            />
+        <input
+          placeholder="Phone Number"
+          {...register("phone")}
+          className={inputClass}
+        />
 
-            <input
-               placeholder="Phone Number"
-               {...register('phone')}
-               className={inputClass}
-            />
+        <input
+          type="password"
+          placeholder="Password"
+          {...register("password")}
+          className={inputClass}
+        />
 
-            <input
-               type="password"
-               placeholder="Password"
-               {...register('password')}
-               className={inputClass}
-            />
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          {...register("confirmPassword")}
+          className={inputClass}
+        />
 
-            <input
-               type="password"
-               placeholder="Confirm Password"
-               {...register('confirmPassword')}
-               className={inputClass}
-            />
+        <div className="pt-4">
+          <h3 className="font-semibold text-lg">Venue Information</h3>
+        </div>
 
-            <div className="pt-4">
+        <input
+          placeholder="Venue Name"
+          {...register("venueName")}
+          className={inputClass}
+        />
 
-               <h3 className="font-semibold text-lg">
-                  Venue Information
-               </h3>
+        <select {...register("venueType")} className={inputClass}>
+          <option value="">Select Venue Type</option>
 
-            </div>
+          <option value="AUDITORIUM">Auditorium</option>
 
-            <input
-               placeholder="Venue Name"
-               {...register('venueName')}
-               className={inputClass}
-            />
+          <option value="BANQUET_HALL">Banquet Hall</option>
 
-            <select
-               {...register('venueType')}
-               className={inputClass}
-            >
-               <option value="">
-                  Select Venue Type
-               </option>
+          <option value="CAFE">Cafe</option>
 
-               <option value="AUDITORIUM">
-                  Auditorium
-               </option>
+          <option value="RESTAURANT">Restaurant</option>
 
-               <option value="BANQUET_HALL">
-                  Banquet Hall
-               </option>
+          <option value="CONFERENCE_ROOM">Conference Room</option>
 
-               <option value="CAFE">
-                  Cafe
-               </option>
+          <option value="STUDIO">Studio</option>
 
-               <option value="RESTAURANT">
-                  Restaurant
-               </option>
+          <option value="OUTDOOR_SPACE">Outdoor Space</option>
 
-               <option value="CONFERENCE_ROOM">
-                  Conference Room
-               </option>
+          <option value="OTHER">Other</option>
+        </select>
 
-               <option value="STUDIO">
-                  Studio
-               </option>
+        <input
+          placeholder="City"
+          {...register("city")}
+          className={inputClass}
+        />
 
-               <option value="OUTDOOR_SPACE">
-                  Outdoor Space
-               </option>
-
-               <option value="OTHER">
-                  Other
-               </option>
-
-            </select>
-
-            <input
-               placeholder="City"
-               {...register('city')}
-               className={inputClass}
-            />
-
-            <button
-               type="submit"
-               disabled={isSubmitting}
-               className="
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="
                w-full
                h-12
                rounded-xl
@@ -187,18 +153,12 @@ const OwnerSignupForm = ({ onBack }) => {
                text-white
                font-semibold
             "
-            >
-               {
-                  isSubmitting
-                     ? 'Creating Owner Account...'
-                     : 'Create Owner Account'
-               }
-            </button>
-
-         </form>
-      </>
-   );
-
+        >
+          {isSubmitting ? "Creating Owner Account..." : "Create Owner Account"}
+        </button>
+      </form>
+    </>
+  );
 };
 
 export default OwnerSignupForm;
