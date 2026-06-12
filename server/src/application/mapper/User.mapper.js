@@ -1,4 +1,4 @@
-import {UserEntity} from "../../domain/entities/User.js";
+import { UserEntity } from "../../domain/entities/User.js";
 
 export class UserMapper {
 
@@ -10,10 +10,11 @@ export class UserMapper {
             phone: doc.phone,
             password: doc.password,
             role: doc.role,
-            isDeleted: doc.isDeleted,
-            refreshToken: doc.refreshToken,
+            isOtpVerified: doc.isOtpVerified,
+            isBlocked: doc.isBlocked,
             createdAt: doc.createdAt,
-            updatedAt: doc.updatedAt
+            updatedAt: doc.updatedAt,
+            refreshToken: doc.refreshToken,
         });
     }
 
@@ -24,7 +25,10 @@ export class UserMapper {
             phone: entity.phone,
             password: entity.password,
             role: entity.role,
-            isDeleted: entity.isDeleted,
+            isOtpVerified: entity.isOtpVerified,
+            isBlocked: entity.isBlocked,
+            createdAt: entity.createdAt,
+            updatedAt: entity.updatedAt,
             refreshToken: entity.refreshToken
         };
     }
