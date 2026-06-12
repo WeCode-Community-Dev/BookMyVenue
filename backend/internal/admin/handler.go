@@ -45,3 +45,13 @@ func (h *Handler) RejectVenue(c *gin.Context) {
 		return
 	}
 }
+
+func (h *Handler) ViewApprovedVenues(c *gin.Context) {
+	venues, err := h.service.viewApprovedVenues(c.Request.Context())
+	if err != nil {
+		response.Error(c, http.StatusForbidden, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Approved Venues", venues)
+}

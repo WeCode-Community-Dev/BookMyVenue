@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pending views</title>
+</head>
+<body>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Pincode</th>
+                <th>Capacity</th>
+                <th>Price per hour</th>
+                <th>Price per day</th>
+                <th>Amenities</th>
+                <th>Images</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="venueTableBody">
+        </tbody>
+    </table>
+    <script type="module">
+        const tbody = document.getElementById("venueTableBody");
+        const token = localStorage.getItem("access_token");
+
+        const venuesRes = await fetch("/api/v1/admin/viewApprovedVenues", {
+            method: "GET",
+            headers: {
+                "content-type": "application/json",
+                "Authorization": "Bearer "+token
+            }
+        });
+
+        const venueData = await venuesRes.json();
+        console.log(venueData)
+        if (!venueData.success) {
+            alert(venueData.message);
+        }
+
+        venueData.data.venues.forEach(element => {
+            const row = document.createElement("tr");
+            const amenitiesString = element.amenities.map(amenity => amenity.name).join(", ")
+            // TODO: Implement support for rendering all uploaded venue images (currently only the first image is displayed).
+            const imagePath = element.images?.[0] ?? null
+            // console.log(amenitiesString)
+            row.innerHTML = `
+                <td>${element.venue.name}</td>
+                <td>${element.venue.description}</td>
+                <td>${element.venue.category}</td>
+                <td>${element.venue.address}</td>
+                <td>${element.venue.city}</td>
+                <td>${element.venue.state}</td>
+                <td>${element.venue.pincode}</td>
+                <td>${element.venue.capacity}</td>
+                <td>${element.venue.price_per_hour}</td>
+                <td>${element.venue.price_per_day}</td>
+                <td>${amenitiesString}</td>
+                <td><img src="${imagePath}" width="100" height="100"></td>
+                <td>${element.venue.status}</td>
+                <td>
+                    <button onclick="rejectVenue('${element.venue.id}')">Reject</button>
+                </td>
+            `
+            tbody.appendChild(row);
+        });
+    </script>
+    <script>
+        window.rejectVenue = async function(id) {
+            const response = await fetch(`/api/v1/admin/rejectVenue/${id}`, {
+                method: "PUT",
+                headers: {
+                    "content-type": "application/json",
+                    "Authorization": "Bearer "+localStorage.getItem("access_token")
+                }
+            })
+            if (response.ok) {
+                alert("Venue rejected")
+            } else {
+                const text = await response.text();
+                console.error(text);
+                alert("Request failed: " + text);
+                return;
+            }
+        }
+    </script>
+</body>
+</html>
