@@ -4,7 +4,7 @@ export const SUCCESS_MESSAGES = {
   PROFILE_FETCHED: "Profile fetched successfully",
 
   // venuee messages successs
-  VENUE_REGISTERED: "Venue registered successfully",
+  VENUE_CREATED: "Venue registered successfully",
   VENUE_RETRIEVED: "Venue retrieved successfully",
   VENUE_UPDATED: "Venue updated successfully",
   VENUE_DELETED: "Venue deleted successfully",

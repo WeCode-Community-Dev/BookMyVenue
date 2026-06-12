@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import MainLayout from "../../common/MainLayout";
 import VenueCardList from "../components/VenueCardList";
 import { useAuth } from "../../../shared/context/AuthContext";
-import VenueRegistrationForm from "../../venues/pages/VenueRegistrationForm";
-
+import { useNavigate } from "react-router-dom";
 const NAV_LINKS = ["Venues", "How It Works", "For Owners", "Pricing"];
 
 const CATEGORIES = [
@@ -111,8 +110,6 @@ const OWNER_FEATURES = [
 ];
 
 const LandingPage = () => {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState({
     location: "",
     date: "",
@@ -121,9 +118,9 @@ const LandingPage = () => {
   });
 
   const { user } = useAuth();
-  const isUser = user?.roles?.includes("USER");
   const isOwner = user?.roles?.includes("OWNER");
-
+  const navigate = useNavigate();
+  
   return (
     <MainLayout>
       <div className="font-sans bg-white text-gray-900 overflow-x-hidden">
@@ -279,8 +276,19 @@ const LandingPage = () => {
             </div>
           )}
           {isOwner && (
-            <div>
-              <VenueRegistrationForm />
+            <div className="animate-fade-up-2">
+              <button
+                onClick={() => navigate("/owner/dashboard")}
+                className="btn-primary"
+              >
+                Go to Owner Dashboard →
+              </button>
+
+              <p className="text-gray-500 mt-4 max-w-md leading-7">
+                Manage your venues, complete venue setup,
+                track bookings and grow your business
+                from your dashboard.
+              </p>
             </div>
           )}
           {/* Stats */}

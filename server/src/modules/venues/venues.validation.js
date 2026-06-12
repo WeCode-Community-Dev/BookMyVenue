@@ -1,10 +1,11 @@
 import { z } from "zod";
 
-export const registerVenueSchema = z.object({
-  name: z.string().min(3),
-  ownerName: z.string().min(2),
-  ownerEmail: z.string().email(),
-  ownerPhone: z.string(),
+export const createVenueSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Venue name is required"),
+
   type: z.enum([
     "AUDITORIUM",
     "BANQUET_HALL",
@@ -15,12 +16,37 @@ export const registerVenueSchema = z.object({
     "OUTDOOR_SPACE",
     "OTHER",
   ]),
-  images: z.array(z.string()),
-  city: z.string().min(2),
-  address: z.string().min(5),
-  capacity: z.number().int().positive(),
-  pricePerHour: z.number().positive(),
-  amenities: z.array(z.string()).optional(),
-  currency: z.enum(["USD", "EUR", "GBP", "INR", "JPY", "CNY"]),
-  description: z.string().optional(),
+
+  city: z
+    .string()
+    .trim()
+    .min(2, "City is required"),
+
+  address: z
+    .string()
+    .trim()
+    .optional(),
+
+  description: z
+    .string()
+    .trim()
+    .optional(),
+
+  capacity: z
+    .number()
+    .int()
+    .positive()
+    .optional(),
+
+  price: z
+    .number()
+    .positive()
+    .optional(),
+
+  images: z
+    .array(z.string().url("Invalid image URL"))
+    .default([]),
 });
+
+export const updateVenueSchema =
+  createVenueSchema.partial();

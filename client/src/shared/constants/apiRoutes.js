@@ -6,10 +6,10 @@ export const API_ROUTES = {
   },
 
   VENUES: {
-    GET_ALL: "/venues",
-    CREATE: "/venues/register",
-    GET_BY_ID: (id) => `/venues/${id}`,
-    UPDATE: (id) => `/venues/${id}`,
-    DELETE: (id) => `/venues/${id}`,
+    BASE: "/venues",
+  },
+
+  USERS: {
+    MY_VENUES: "/users/me/venues",
   },
 };

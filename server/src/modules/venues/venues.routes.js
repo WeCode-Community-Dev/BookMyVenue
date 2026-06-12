@@ -1,24 +1,49 @@
 
 import { Router } from "express";
+import { deleteVenue, getVenueById, getVenues, createVenue, updateVenue } from "./venues.controller.js";
+import { authenticate }  from './../../shared/middlewares/auth.middleware.js';
+import { authorize }  from './../../shared/middlewares/authorize.middleware.js';
+import { validate }  from '../../shared/middlewares/validate.middleware.js';
+import { createVenueSchema, updateVenueSchema } from "./venues.validation.js";
 
-import { registerVenueSchema } from "./venues.validation.js";
-import { deleteVenue, getVenueById, getVenues, registerVenue, updateVenue } from "./venues.controller.js";
-import { authenticate } from './../../shared/middlewares/auth.middleware.js';
-
-const Venuerouter = Router();
-
-
-Venuerouter.post("/register" ,registerVenue);
+const venueRoutes = Router();
 
 
-Venuerouter.get("/", getVenues);
+venueRoutes.post(
+    "/" ,
+    authenticate, 
+    authorize("OWNER"), 
+    validate(createVenueSchema),
+    createVenue
+);
 
-Venuerouter.get("/:id", getVenueById);
-Venuerouter.put("/:id", updateVenue);
-Venuerouter.delete("/:id", deleteVenue);
+venueRoutes.get(
+    "/",
+    getVenues
+);
+
+venueRoutes.get(
+    "/:id", 
+    getVenueById
+
+);
+
+venueRoutes.patch(
+    "/:id",
+    authenticate, 
+    authorize("OWNER"),
+    validate(updateVenueSchema),
+    updateVenue
+);
+
+venueRoutes.delete(
+    "/:id", 
+    authenticate, 
+    authorize("OWNER"), 
+    deleteVenue
+);
 
 
-
-export default Venuerouter;
+export default venueRoutes;
 
 

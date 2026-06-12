@@ -6,6 +6,8 @@ import { signupApi } from "../services/auth.service";
 import { ownerSignupSchema } from "../validations/signup.validation";
 import { useAuth } from "../../../shared/context/AuthContext";
 
+import { ROUTES } from '../../../shared/constants/routes';
+
 const inputClass = `
    w-full
    h-12
@@ -50,10 +52,17 @@ const OwnerSignupForm = ({ onBack }) => {
     };
 
     const response = await signupApi(payload);
-    navigate("/");
     login(response.data.user, response.data.accessToken);
+    navigate(
 
-    // alert(response.message);
+      ROUTES.OWNER_DASHBOARD,
+
+      {
+        state: {
+          openVenueSetup: true,
+        },
+      }
+    );
   };
 
   return (

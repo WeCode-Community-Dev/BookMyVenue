@@ -3,9 +3,7 @@ import { ERROR_MESSAGES } from "../../shared/constants/messages.js";
 import { STATUS_CODES } from "../../shared/constants/statusCodes.js";
 import ApiError from "../../shared/utils/apiError.js";
 
-import bcrypt from "bcryptjs";
-
-export const registerVenueService = async (
+export const createVenueService = async (
   venueData,
   ownerId
 ) => {
@@ -16,72 +14,142 @@ export const registerVenueService = async (
 
       ownerId,
 
-      images: venueData.images || [],
-      description: venueData.description,
-
       city: venueData.city,
       address: venueData.address,
+
+      description: venueData.description,
 
       capacity: venueData.capacity,
       price: venueData.price,
 
-      amenities: venueData.amenities || [],
-      currency: venueData.currency,
+      images: venueData.images || [],
     },
   });
 };
 
 export const getVenuesService = async () => {
-  try {
-    const venues = await prisma.venue.findMany();
-    return venues;
-  } catch (error) {
-    throw new ApiError(
-      STATUS_CODES.INTERNAL_SERVER_ERROR,
-      ERROR_MESSAGES.VENUES_RETRIEVAL_FAILED,
-    );
-  }
+  return prisma.venue.findMany({
+    include: {
+      owner: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 };
 
-export const getVenueByIdService = async (id) => {
-  try {
-    const venue = await prisma.venue.findUnique({
-      where: { id: parseInt(id) },
-    });
-    return venue;
-  } catch (error) {
-    throw new ApiError(
-      STATUS_CODES.INTERNAL_SERVER_ERROR,
-      ERROR_MESSAGES.VENUE_RETRIEVAL_FAILED,
-    );
-  }
+export const getMyVenuesService = async (
+  ownerId
+) => {
+  return prisma.venue.findMany({
+    where: {
+      ownerId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 };
 
-export const updateVenueService = async (id, venueData) => {
-  try {
-    const updatedVenue = await prisma.venue.update({
-      where: { id: parseInt(id) },
-      data: venueData,
-    });
-    return updatedVenue;
-  } catch (error) {
-    throw new ApiError(
-      STATUS_CODES.INTERNAL_SERVER_ERROR,
-      ERROR_MESSAGES.VENUE_UPDATE_FAILED,
-    );
-  }
+export const getVenueByIdService = async (
+  id
+) => {
+  return prisma.venue.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      owner: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
 };
 
-export const deleteVenueService = async (id) => {
-  try {
-    await prisma.venue.delete({
-      where: { id: parseInt(id) },
-    });
-    return { message: "Venue deleted successfully" };
-  } catch (error) {
+export const updateVenueService = async (
+  id,
+  venueData,
+  ownerId
+) => {
+  const venue = await prisma.venue.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!venue) {
     throw new ApiError(
-      STATUS_CODES.INTERNAL_SERVER_ERROR,
-      ERROR_MESSAGES.VENUE_DELETION_FAILED,
+      STATUS_CODES.NOT_FOUND,
+      ERROR_MESSAGES.VENUE_NOT_FOUND
     );
   }
+
+  if (venue.ownerId !== ownerId) {
+    throw new ApiError(
+      STATUS_CODES.FORBIDDEN,
+      "You cannot update this venue"
+    );
+  }
+
+  return prisma.venue.update({
+    where: {
+      id,
+    },
+    data: {
+      name: venueData.name,
+      type: venueData.type,
+
+      city: venueData.city,
+      address: venueData.address,
+
+      description: venueData.description,
+
+      capacity: venueData.capacity,
+      price: venueData.price,
+
+      images: venueData.images,
+    },
+  });
+};
+
+export const deleteVenueService = async (
+  id,
+  ownerId
+) => {
+  const venue = await prisma.venue.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!venue) {
+    throw new ApiError(
+      STATUS_CODES.NOT_FOUND,
+      ERROR_MESSAGES.VENUE_NOT_FOUND
+    );
+  }
+
+  if (venue.ownerId !== ownerId) {
+    throw new ApiError(
+      STATUS_CODES.FORBIDDEN,
+      "You cannot delete this venue"
+    );
+  }
+
+  await prisma.venue.delete({
+    where: {
+      id,
+    },
+  });
+
+  return true;
 };

@@ -13,8 +13,7 @@ export const authenticate = (
 
    try {
 
-      const authHeader =
-         req.headers.authorization;
+      const authHeader = req.headers.authorization?.trim();
 
       if (
          !authHeader ||
@@ -43,6 +42,28 @@ export const authenticate = (
 
    } catch (error) {
 
+      if (
+
+         error.name === 'TokenExpiredError' ||
+   
+         error.name === 'JsonWebTokenError'
+   
+      ) {
+   
+         return next(
+   
+            new ApiError(
+   
+               STATUS_CODES.UNAUTHORIZED,
+   
+               'Invalid or expired token'
+   
+            )
+   
+         );
+   
+      }
+   
       next(error);
 
    }

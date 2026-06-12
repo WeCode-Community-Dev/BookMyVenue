@@ -4,24 +4,26 @@ import {
   SUCCESS_MESSAGES,
 } from "../../shared/constants/messages.js";
 import ApiResponse from "../../shared/utils/apiResponse.js";
+import ApiError from "../../shared/utils/apiError.js";
 import {
   deleteVenueService,
   getVenueByIdService,
   getVenuesService,
-  registerVenueService,
+  createVenueService,
   updateVenueService,
+  getMyVenuesService
 } from "./venues.service.js";
 
-export const registerVenue = async (req, res, next) => {
+export const createVenue = async (req, res, next) => {
   console.log("USER:", req.user.userId);
   try {
-    const venue = await registerVenueService(req.body, req.user.userId);
+    const venue = await createVenueService(req.body, req.user.userId);
     return res
       .status(STATUS_CODES.CREATED)
       .json(
         new ApiResponse(
           STATUS_CODES.CREATED,
-          SUCCESS_MESSAGES.VENUE_REGISTERED,
+          SUCCESS_MESSAGES.VENUE_CREATED,
           venue,
         ),
       );
@@ -51,14 +53,13 @@ export const getVenueById = async (req, res, next) => {
   try {
     const venue = await getVenueByIdService(req.params.id);
     if (!venue) {
-      return res
-        .status(STATUS_CODES.NOT_FOUND)
-        .json(
-          new ApiResponse(
-            STATUS_CODES.NOT_FOUND,
-            ERROR_MESSAGES.VENUE_NOT_FOUND,
-          ),
-        );
+      throw new ApiError(
+
+        STATUS_CODES.NOT_FOUND,
+  
+        ERROR_MESSAGES.VENUE_NOT_FOUND
+  
+     );
     }
     return res
       .status(STATUS_CODES.OK)
@@ -76,16 +77,17 @@ export const getVenueById = async (req, res, next) => {
 
 export const updateVenue = async (req, res, next) => {
   try {
-    const updatedVenue = await updateVenueService(req.params.id, req.body);
+    const updatedVenue = await updateVenueService(
+      req.params.id,
+      req.body,
+      req.user.userId
+    );
+
     if (!updatedVenue) {
-      return res
-        .status(STATUS_CODES.NOT_FOUND)
-        .json(
-          new ApiResponse(
-            STATUS_CODES.NOT_FOUND,
-            ERROR_MESSAGES.VENUE_NOT_FOUND,
-          ),
-        );
+      throw new ApiError(
+        STATUS_CODES.NOT_FOUND,
+        ERROR_MESSAGES.VENUE_NOT_FOUND
+      );
     }
     return res
       .status(STATUS_CODES.OK)
@@ -103,21 +105,45 @@ export const updateVenue = async (req, res, next) => {
 
 export const deleteVenue = async (req, res, next) => {
   try {
-    const deleted = await deleteVenueService(req.params.id);
+    const deleted = await deleteVenueService(
+      req.params.id,
+      req.user.userId
+    );
     if (!deleted) {
-      return res
-        .status(STATUS_CODES.NOT_FOUND)
-        .json(
-          new ApiResponse(
-            STATUS_CODES.NOT_FOUND,
-            ERROR_MESSAGES.VENUE_NOT_FOUND,
-          ),
-        );
+      throw new ApiError(
+        STATUS_CODES.NOT_FOUND,
+        ERROR_MESSAGES.VENUE_NOT_FOUND
+      );
     }
 
     return res
       .status(STATUS_CODES.OK)
       .json(new ApiResponse(STATUS_CODES.OK, SUCCESS_MESSAGES.VENUE_DELETED));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMyVenues = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const venues =
+      await getMyVenuesService(
+        req.user.userId
+      );
+
+    return res
+      .status(STATUS_CODES.OK)
+      .json(
+        new ApiResponse(
+          STATUS_CODES.OK,
+          SUCCESS_MESSAGES.VENUES_RETRIEVED,
+          venues
+        )
+      );
   } catch (error) {
     next(error);
   }
