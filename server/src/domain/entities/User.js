@@ -1,21 +1,19 @@
-export class UserEntity {
+class UserEntity {
     constructor({
         id,
         fullName,
         email,
         phone,
-        password,
+        password = null,
         role,
-        isOtpVerified = false,
-        isBlocked = false
+        isVerified = false,
     }){
-        this.id = id;
         this.fullName = fullName;
         this.email = email;
         this.phone = phone;
         this.password = password;
         this.role = role;
-        this.isOtpVerified = isOtpVerified;
-        this.isBlocked = isBlocked;
     }
 }
+
+export default User;

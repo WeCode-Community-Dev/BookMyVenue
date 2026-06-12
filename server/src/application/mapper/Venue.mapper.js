@@ -4,30 +4,30 @@ import { Types } from 'mongoose'
 
 export class VenueMapper {
     static mapToEntity(doc){
-        const venue = new VenueEntity(
-            doc._id.toString(),
-            doc.name,
-            doc.ownerId ? doc.ownerId.toString() : null,
-            doc.description,
-            doc.category,
-            doc.websiteUrl,
-            doc.address,
-            doc.seatingCapacity,
-            doc.standingCapacity,
-            doc.pricePerHour,
-            doc.pricePerDay,
-            doc.securityDeposit,
-            doc.availabilityRules,
-            doc.weekendSurcharge,
-            doc.minimumBookingHours,
-            doc.amenities,
-            doc.images,
-            doc.status,
-            doc.isDeleted,
-            doc.rating,
-            doc.reviews,
-            doc.isAdminVerified
-        )
+        const venue = new VenueEntity({
+            id: doc._id.toString(),
+            name: doc.name,
+            ownerId: doc.ownerId ? doc.ownerId.toString() : null,
+            description: doc.description,
+            category: doc.category,
+            websiteUrl: doc.websiteUrl,
+            address: doc.address,
+            seatingCapacity: doc.seatingCapacity,
+            standingCapacity: doc.standingCapacity,
+            pricePerHour: doc.pricePerHour,
+            pricePerDay: doc.pricePerDay,
+            securityDeposit: doc.securityDeposit,
+            availabilityRules: doc.availabilityRules,
+            weekendSurcharge: doc.weekendSurcharge,
+            minimumBookingHours: doc.minimumBookingHours,
+            amenities: doc.amenities,
+            images: doc.images,
+            status: doc.status,
+            isDeleted: doc.isDeleted,
+            rating: doc.rating,
+            reviews: doc.reviews,
+            isAdminVerified: doc.isAdminVerified
+        })
         return venue
     }
     static mapToPersistence(entity){
