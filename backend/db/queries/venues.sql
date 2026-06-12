@@ -36,6 +36,11 @@ SELECT * FROM venues
 WHERE status = 'pending'
 ORDER BY created_at DESC;
 
+-- name: GetAllRejectedVenues :many
+SELECT * FROM venues
+WHERE status = 'rejected'
+ORDER BY created_at DESC;
+
 -- name: GetRejectedVenuesByOwnerID :many
 SELECT * FROM venues
 WHERE owner_id = $1 AND status = 'rejected'
