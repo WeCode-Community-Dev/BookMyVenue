@@ -6,25 +6,36 @@ import { VendorDeleteVenueUsecase } from '../../application/vendor/usecases/venu
 import { VendorUpdateVenueStatusUsecase } from '../../application/vendor/usecases/venue/venue.updateVenueStatus.usecase.js'
 import { UserGetAllVenuesUsecase } from '../../application/user/usecases/venue/user.getAllVenue.usecase.js'
 import { UserGetVenueByIdUsecase } from '../../application/user/usecases/venue/user.getVenueById.usecase.js'
+import RegisterUserUseCase from '../../application/user/usecases/RegisterUserUseCase.js'
+import LoginUserUseCase from '../../application/user/usecases/LoginUserUserCase.js'
+import LogoutUseCase from '../../application/user/usecases/LogoutUseCase.js'
+import RefreshTokenUseCase from '../../application/user/usecases/RefreshTokenUseCase.js'
 
-
-import {VendorVenueController} from '../controllers/vendor/vendor.venueController.js'
+import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
 import { UserVenueController } from '../controllers/user/user.venueController.js'
+import { AuthController } from '../controllers/user/AuthController.js'
 import { VenueRepository } from '../../infrastructure/repositories/venue.repository.js'
 import { VendorGetAllVenuesUsecase } from '../../application/vendor/usecases/venue/vendor.getAllVenues.usecase.js'
 import { CloudinaryService } from '../../infrastructure/services/cloudinaryService.js'
-// import { OwnerRepository }from '../../infrastructure/repositories/owner.repository.js'
+import UserRepositoryImpl from '../../infrastructure/repositories/UserRepositoryImpl.js'
+import HashService from '../../infrastructure/services/HashService.js'
 
 
 
 //repository
 const iVenueRepository = new VenueRepository()
-// const iOwnerRepository = new OwnerRepository()
+const iUserRepository = new UserRepositoryImpl()
 
 
 //service
 const iCloudinaryService = new CloudinaryService()
 
+
+//auth usecases
+const iRegisterUserUseCase = new RegisterUserUseCase(iUserRepository, HashService)
+const iLoginUserUseCase = new LoginUserUseCase(iUserRepository, HashService)
+const iLogoutUseCase = new LogoutUseCase(iUserRepository)
+const iRefreshTokenUseCase = new RefreshTokenUseCase(iUserRepository)
 
 
 //vendor
@@ -72,3 +83,9 @@ export const iUserVenueController = new UserVenueController (
     iUserGetVenueById,
 )
 
+export const iAuthController = new AuthController(
+    iRegisterUserUseCase,
+    iLoginUserUseCase,
+    iLogoutUseCase,
+    iRefreshTokenUseCase,
+)

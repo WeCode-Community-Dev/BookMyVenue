@@ -1,13 +1,18 @@
 import mongoose from "mongoose";
 import UserRole from "../../../domain/enums/userRole.js";
 
-const adminSchema = new mongoose.Schema(
+const vendorSchema = new mongoose.Schema(
     {
         fullName: {
             type: String,
             required: true
         },
         email: {
+            type: String,
+            required: true,
+            unique: true
+        },
+        phone: {
             type: String,
             required: true,
             unique: true
@@ -20,7 +25,19 @@ const adminSchema = new mongoose.Schema(
         role: {
             type: String,
             enum: Object.values(UserRole),
-            default: UserRole.ADMIN
+            default: UserRole.VENDOR
+        },
+        isApproved: {
+            type: Boolean,
+            default: false
+        },
+        isBlocked: {
+            type: Boolean,
+            default: false
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
         }
     },
     {
@@ -28,4 +45,4 @@ const adminSchema = new mongoose.Schema(
     }
 );
 
-export default mongoose.model("Admin", adminSchema);
+export default mongoose.model("Vendor", vendorSchema);

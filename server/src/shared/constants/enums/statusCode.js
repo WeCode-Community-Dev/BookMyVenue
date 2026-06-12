@@ -1,11 +1,12 @@
-export const statusCode = {
-    CREATED: 201,
+export const statusCode = Object.freeze({
     OK: 200,
+    CREATED: 201,
     NO_CONTENT: 204,
-    FORBIDDEN: 403,
     BAD_REQUEST: 400,
-    NOT_FOUND: 404,
     UNAUTHORIZED: 401,
-    SERVER_ERROR: 500,
+    FORBIDDEN: 403,
+    NOT_FOUND: 404,
     CONFLICT: 409,
-}
+    UNPROCESSABLE_ENTITY: 422,
+    SERVER_ERROR: 500,
+});
