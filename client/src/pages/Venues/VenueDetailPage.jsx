@@ -372,6 +372,26 @@ export default function VenueDetailPage() {
       return toast.error('Start time must be before end time');
     }
 
+    // Validate that the slot is not in the past
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    if (bookingDate < todayStr) {
+      return toast.error('Cannot book a slot in the past');
+    }
+
+    if (bookingDate === todayStr) {
+      const currentHours = String(now.getHours()).padStart(2, '0');
+      const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+      const currentTimeStr = `${currentHours}:${currentMinutes}`;
+      if (startTime < currentTimeStr) {
+        return toast.error('Cannot book a slot in the past');
+      }
+    }
+
     // Verify date is not blocked
     const isBlocked = blockedDates.some(bd => bd.blockedDate === bookingDate);
     if (isBlocked) {

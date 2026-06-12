@@ -59,6 +59,8 @@ export default function BookingsPage() {
   const [selectedLocationName, setSelectedLocationName] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [cancelConfirmId, setCancelConfirmId] = useState(null);
+  const [bookingFilter, setBookingFilter] = useState('all');
+  const [bookingSortOrder, setBookingSortOrder] = useState('desc');
 
   useEffect(() => {
     fetchInitialData();
@@ -242,6 +244,39 @@ export default function BookingsPage() {
       toast.error('Failed to cancel booking.');
     }
   };
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+
+  const currentHours = String(now.getHours()).padStart(2, '0');
+  const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+  const currentTimeStr = `${currentHours}:${currentMinutes}`;
+
+  const getBookingCategory = (b) => {
+    if (b.bookingDate < todayStr) return 'past';
+    if (b.bookingDate > todayStr) return 'upcoming';
+    if (b.endTime <= currentTimeStr) return 'past';
+    if (b.startTime > currentTimeStr) return 'upcoming';
+    return 'current';
+  };
+
+  const processedBookings = bookings
+    .filter((b) => {
+      if (bookingFilter === 'all') return true;
+      return getBookingCategory(b) === bookingFilter;
+    })
+    .sort((a, b) => {
+      const dateA = `${a.bookingDate}T${a.startTime}`;
+      const dateB = `${b.bookingDate}T${b.startTime}`;
+      if (bookingSortOrder === 'desc') {
+        return dateB.localeCompare(dateA);
+      } else {
+        return dateA.localeCompare(dateB);
+      }
+    });
 
   if (loading) {
     return (
@@ -623,51 +658,103 @@ export default function BookingsPage() {
               </div>
             ) : (
               <div className="flex flex-col gap-4">
-                {bookings.map((booking) => (
-                  <div key={booking.id} className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
-                    {(() => {
-                      const todayStr = new Date().toLocaleDateString('en-CA');
-                      const isPast = booking.bookingDate < todayStr;
-                      const displayStatus = isPast && (booking.bookingStatus === 'confirmed' || booking.bookingStatus === 'pending')
-                        ? 'completed'
-                        : booking.bookingStatus;
-
-                      return (
-                        <>
-                          <div className="flex-grow">
-                            <div className="flex items-center gap-3 mb-2.5">
-                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusClass(displayStatus)}`}>
-                                {displayStatus}
-                              </span>
-                              <span className="text-xs text-slate-400 font-bold flex items-center gap-1">
-                                <MdQrCode /> {booking.bookingCode}
-                              </span>
-                            </div>
-
-                            <h3 className="text-lg font-black text-slate-900 mb-3">{booking.venue?.venueName}</h3>
-
-                            <div className="flex flex-wrap gap-4 text-xs text-slate-500">
-                              <span className="flex items-center gap-1.5"><MdCalendarToday className="text-primary" /> {booking.bookingDate}</span>
-                              <span className="flex items-center gap-1.5"><MdOutlineAccessTime className="text-secondary" /> {formatTime12Hour(booking.startTime)} - {formatTime12Hour(booking.endTime)}</span>
-                              <span className="flex items-center gap-1.5"><MdCurrencyRupee className="text-emerald-600 font-bold text-sm" />{Number(booking.totalAmount).toLocaleString('en-IN')}</span>
-                            </div>
-                          </div>
-
-                          <div className="w-full md:w-auto flex flex-row md:flex-col gap-2 self-stretch justify-end">
-                            {!isPast && (booking.bookingStatus === 'pending' || booking.bookingStatus === 'confirmed') && (
-                              <button
-                                onClick={() => setCancelConfirmId(booking.id)}
-                                className="px-5 py-2.5 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition-colors w-full md:w-auto cursor-pointer"
-                              >
-                                Cancel Booking
-                              </button>
-                            )}
-                          </div>
-                        </>
-                      );
-                    })()}
+                <div className="flex flex-wrap gap-3 items-center bg-white p-4 rounded-2xl border border-slate-100 shadow-sm justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Filter:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {['all', 'upcoming', 'current', 'past'].map((filterType) => (
+                        <button
+                          key={filterType}
+                          onClick={() => setBookingFilter(filterType)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            bookingFilter === filterType
+                              ? 'bg-primary text-white shadow-sm'
+                              : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/60'
+                          }`}
+                        >
+                          {filterType === 'all'
+                            ? 'All'
+                            : filterType === 'current'
+                            ? 'Current (Today)'
+                            : filterType.charAt(0).toUpperCase() + filterType.slice(1)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                ))}
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sort Date:</span>
+                    <select
+                      value={bookingSortOrder}
+                      onChange={(e) => setBookingSortOrder(e.target.value)}
+                      className="py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 text-xs font-bold focus:outline-none cursor-pointer"
+                    >
+                      <option value="desc">Newest First</option>
+                      <option value="asc">Oldest First</option>
+                    </select>
+                  </div>
+                </div>
+
+                {processedBookings.length === 0 ? (
+                  <div className="bg-white p-12 rounded-2xl border border-slate-100 text-center shadow-sm">
+                    <span className="text-3xl mb-3 inline-block">📅</span>
+                    <h3 className="text-base font-bold text-slate-900 mb-1">No {bookingFilter} bookings found</h3>
+                    <p className="text-slate-500 text-xs max-w-xs mx-auto">There are no bookings matching the selected filter category.</p>
+                  </div>
+                ) : (
+                  processedBookings.map((booking) => (
+                    <div key={booking.id} className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-sm">
+                      {(() => {
+                        const isPast = booking.bookingDate < todayStr || (booking.bookingDate === todayStr && booking.endTime <= currentTimeStr);
+                        const isCurrent = booking.bookingDate === todayStr && booking.startTime <= currentTimeStr && booking.endTime > currentTimeStr;
+                        
+                        let displayStatus = booking.bookingStatus;
+                        if (isPast && (booking.bookingStatus === 'confirmed' || booking.bookingStatus === 'pending')) {
+                          displayStatus = 'completed';
+                        }
+
+                        return (
+                          <>
+                            <div className="flex-grow">
+                              <div className="flex items-center gap-3 mb-2.5">
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusClass(displayStatus)}`}>
+                                  {displayStatus}
+                                </span>
+                                {isCurrent && (
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-100 animate-pulse">
+                                    In Progress
+                                  </span>
+                                )}
+                                <span className="text-xs text-slate-400 font-bold flex items-center gap-1">
+                                  <MdQrCode /> {booking.bookingCode}
+                                </span>
+                              </div>
+
+                              <h3 className="text-lg font-black text-slate-900 mb-3">{booking.venue?.venueName}</h3>
+
+                              <div className="flex flex-wrap gap-4 text-xs text-slate-500">
+                                <span className="flex items-center gap-1.5"><MdCalendarToday className="text-primary" /> {booking.bookingDate}</span>
+                                <span className="flex items-center gap-1.5"><MdOutlineAccessTime className="text-secondary" /> {formatTime12Hour(booking.startTime)} - {formatTime12Hour(booking.endTime)}</span>
+                                <span className="flex items-center gap-1.5"><MdCurrencyRupee className="text-emerald-600 font-bold text-sm" />{Number(booking.totalAmount).toLocaleString('en-IN')}</span>
+                              </div>
+                            </div>
+
+                            <div className="w-full md:w-auto flex flex-row md:flex-col gap-2 self-stretch justify-end">
+                              {!isPast && (booking.bookingStatus === 'pending' || booking.bookingStatus === 'confirmed') && (
+                                <button
+                                  onClick={() => setCancelConfirmId(booking.id)}
+                                  className="px-5 py-2.5 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition-colors w-full md:w-auto cursor-pointer"
+                                >
+                                  Cancel Booking
+                                </button>
+                              )}
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>

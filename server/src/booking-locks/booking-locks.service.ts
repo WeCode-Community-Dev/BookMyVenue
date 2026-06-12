@@ -36,6 +36,26 @@ export class BookingLocksService {
       throw new NotFoundException('Venue not found');
     }
 
+    // Validate that the slot is not in the past
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    if (bookingDate < todayStr) {
+      throw new BadRequestException('Cannot book a slot in the past');
+    }
+
+    if (bookingDate === todayStr) {
+      const currentHours = String(now.getHours()).padStart(2, '0');
+      const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+      const currentTimeStr = `${currentHours}:${currentMinutes}`;
+      if (startTime < currentTimeStr) {
+        throw new BadRequestException('Cannot book a slot in the past');
+      }
+    }
+
     // Validate booking date and times against venue operational schedule
     const dateObj = new Date(bookingDate);
     if (!isNaN(dateObj.getTime()) && venue.workingDays && Array.isArray(venue.workingDays) && venue.workingDays.length > 0) {
