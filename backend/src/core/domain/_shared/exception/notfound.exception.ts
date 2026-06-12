@@ -1,3 +1,3 @@
-import { DomainException } from "./domain.exception";
+import { DomainException } from './domain.exception';
 
-export class NotFoundException extends DomainException { }
+export class NotFoundException extends DomainException {}

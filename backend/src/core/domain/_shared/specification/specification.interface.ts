@@ -1,3 +1,3 @@
 export interface ISpecification<T> {
-    isSatisfiedBy(candidate: T): boolean;
+  isSatisfiedBy(candidate: T): boolean;
 }

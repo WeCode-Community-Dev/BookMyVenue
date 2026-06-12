@@ -1,13 +1,11 @@
 export abstract class Identifier {
-    constructor(
-        protected readonly value: string,
-    ) { }
+  constructor(protected readonly value: string) {}
 
-    toString(): string {
-        return this.value;
-    }
+  toString(): string {
+    return this.value;
+  }
 
-    equals(other: Identifier): boolean {
-        return this.value === other.value;
-    }
+  equals(other: Identifier): boolean {
+    return this.value === other.value;
+  }
 }

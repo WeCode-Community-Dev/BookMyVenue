@@ -5,7 +5,7 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 @Injectable()
 export class AuthService {
   login(loginDto: LoginDto) {
-    return loginDto
+    return loginDto;
   }
 
   findAll() {

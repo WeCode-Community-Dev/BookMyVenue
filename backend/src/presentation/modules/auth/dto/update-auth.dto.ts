@@ -1,3 +1,3 @@
 import { PartialType } from '@nestjs/swagger';
 
-export class UpdateAuthDto { }
+export class UpdateAuthDto {}

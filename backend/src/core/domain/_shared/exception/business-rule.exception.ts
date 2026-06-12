@@ -1,3 +1,3 @@
-import { DomainException } from "./domain.exception";
+import { DomainException } from './domain.exception';
 
-export class BusinessRuleException extends DomainException { }
+export class BusinessRuleException extends DomainException {}

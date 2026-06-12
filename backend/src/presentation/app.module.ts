@@ -7,13 +7,8 @@ import { BookingsModule } from './modules/bookings/bookings.module';
 import { VenuesModule } from './modules/venues/venues.module';
 
 @Module({
-  imports: [
-    AuthModule,
-    BookingsModule,
-    VenuesModule,
-    UsersModule
-  ],
+  imports: [AuthModule, BookingsModule, VenuesModule, UsersModule],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
