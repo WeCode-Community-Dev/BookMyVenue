@@ -24,6 +24,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 	r.GET("/viewPendingVenues", webHandler.ViewPendingVenuesPage)
 	adminWebRoutes.GET("viewPendingVenuesPage", webHandler.Admin_viewPendingVenues)
 	adminWebRoutes.GET("viewApprovedVenues", webHandler.Admin_viewApprovedVenues)
+	adminWebRoutes.GET("viewRejectedVenues", webHandler.Admin_viewRejectedVenues)
 
 	api := r.Group("/api/v1")
 
@@ -57,6 +58,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 		adminRoutes.PUT("/approveVenue/:id", adminHandler.ApproveVenue)
 		adminRoutes.PUT("/rejectVenue/:id", adminHandler.RejectVenue)
 		adminRoutes.GET("/viewApprovedVenues", adminHandler.ViewApprovedVenues)
+		adminRoutes.GET("/viewRejectedVenues", adminHandler.ViewRejectedVenues)
 	}
 
 	// userRoutes := api.Group("/user")

@@ -56,3 +56,7 @@ func (h *Handler) Admin_viewPendingVenues(c *gin.Context) {
 func (h *Handler) Admin_viewApprovedVenues(c *gin.Context) {
 	c.HTML(http.StatusOK, "admin_view_venueApproved.html", nil)
 }
+
+func (h *Handler) Admin_viewRejectedVenues(c *gin.Context) {
+	c.HTML(http.StatusOK, "admin_view_venueRejected.html", nil)
+}

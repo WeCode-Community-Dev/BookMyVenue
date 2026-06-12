@@ -48,3 +48,7 @@ func (r *repository) rejectVenue(ctx context.Context, venueID pgtype.UUID) error
 func (r *repository) getAllApprovedVenues(ctx context.Context) ([]sqlc.Venue, error) {
 	return r.db.GetAllVenues(ctx)
 }
+
+func (r *repository) getAllRejectedVenues(ctx context.Context) ([]sqlc.Venue, error) {
+	return r.db.GetAllRejectedVenues(ctx)
+}
