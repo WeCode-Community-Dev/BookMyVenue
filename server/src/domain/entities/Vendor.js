@@ -1,4 +1,4 @@
-class OwnerEntity {
+class VendorEntity {
   constructor({
     id,
     fullName,
@@ -29,4 +29,4 @@ class OwnerEntity {
   }
 }
 
-export default OwnerEntity;
+export default VendorEntity;

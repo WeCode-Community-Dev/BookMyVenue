@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import UserRole from "../../../domain/enums/userRole.js";
+import UserRole from "../../../domain/enums/UserRole.enum.js";
 const userSchema = new mongoose.Schema({
     fullName:{
         type: String,
@@ -30,10 +30,11 @@ const userSchema = new mongoose.Schema({
         default: false
     },
     refreshToken: {
-        type: String,
-        default: null,
-        select: false
-    }
+    type: [String],
+    default: [],
+    select: false
+}
+    
 },
     {
         timestamps:true
@@ -41,3 +42,4 @@ const userSchema = new mongoose.Schema({
 
 
 export default mongoose.model("User", userSchema)
+
