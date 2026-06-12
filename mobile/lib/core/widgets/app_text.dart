@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../utils/typography.dart';
 
 enum TextVariant {
+  headerText,
   headingLarge,
   headingMedium,
   bodyMedium,
@@ -38,6 +39,9 @@ class AppText extends StatelessWidget {
     TextStyle? style;
 
     switch (variant) {
+      case TextVariant.headerText:
+        style = AppTypography.headerText;
+        break;
       case TextVariant.headingLarge:
         style = AppTypography.headingLarge;
         break;

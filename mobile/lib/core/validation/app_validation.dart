@@ -62,4 +62,20 @@ class AppValidation {
 
     return null;
   }
+
+  static String? validateBusinessName(String? value) {
+    if (value == null || value.isEmpty) {
+      return ValidationMessages.businessNameRequired;
+    }
+
+    if (value.length < 3) {
+      return ValidationMessages.businessNameTooLong;
+    }
+
+    if (value.length > 25) {
+      return ValidationMessages.businessNameTooLong;
+    }
+
+    return null;
+  }
 }

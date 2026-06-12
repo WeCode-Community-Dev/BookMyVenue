@@ -1,6 +1,6 @@
 import '../../domain/entity/user_entity.dart';
-import '../model/response_model/otp_response/otp_response.dart';
-import '../model/response_model/verify_otp_response/verify_otp_response.dart';
+import '../model/user/response_model/otp_response/otp_response.dart';
+import '../model/user/response_model/verify_otp_response/verify_otp_response.dart';
 
 extension OtpResponseMapper on OtpResponse {
   OtpResponseEntity toEntity() {

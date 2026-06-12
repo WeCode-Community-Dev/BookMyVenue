@@ -7,6 +7,7 @@ import '../../feature/auth/presentation/pages/user_login/signin_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_business_profile_setup.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_signup_page.dart';
 import '../../feature/home/presentation/pages/home_page.dart';
+import '../../feature/owner_verification_page/presentation/pages/owner_verification_page.dart';
 import '../auth/auth_session.dart';
 import '../di/injection.dart';
 import 'route_name.dart';
@@ -17,8 +18,8 @@ class AppRouter {
       GlobalKey<NavigatorState>();
 
   static final GoRouter router = GoRouter(
-    initialLocation: '/login',
-    // initialLocation: '/help-support',
+    // initialLocation: '/login',
+    initialLocation: AppRouteNames.ownerVerification,
     navigatorKey: navigatorKey,
     debugLogDiagnostics: true, // Useful for development
     // --- Deep Linking Configuration ---
@@ -58,6 +59,13 @@ class AppRouter {
         builder: (BuildContext context, GoRouterState state) {
           final String role = state.extra! as String;
           return HomePage(role: role);
+        },
+      ),
+      GoRoute(
+        path: '/${AppRouteNames.ownerVerification}',
+        name: AppRouteNames.ownerVerification,
+        builder: (BuildContext context, GoRouterState state) {
+          return OwnerVerificationPage();
         },
       ),
       // GoRoute(
@@ -172,23 +180,23 @@ class AppRouter {
 
     // --- Auth Guard (Redirection) ---
     // This is where you will check if the user is logged in
-    redirect: (BuildContext context, GoRouterState state) {
-      final bool loggedIn = AuthSession.isLoggedIn;
+    // redirect: (BuildContext context, GoRouterState state) {
+    //   final bool loggedIn = AuthSession.isLoggedIn;
 
-      final bool loggingIn =
-          state.matchedLocation == '/${AppRouteNames.signin}' ||
-          state.matchedLocation == '/${AppRouteNames.venueOwnerSignup}' ||
-          state.matchedLocation == '/${AppRouteNames.ownerBusinessProfile}';
+    //   final bool loggingIn =
+    //       state.matchedLocation == '/${AppRouteNames.signin}' ||
+    //       state.matchedLocation == '/${AppRouteNames.venueOwnerSignup}' ||
+    //       state.matchedLocation == '/${AppRouteNames.ownerBusinessProfile}';
 
-      if (!loggedIn && !loggingIn) {
-        return '/login';
-      }
+    //   if (!loggedIn && !loggingIn) {
+    //     return '/login';
+    //   }
 
-      if (loggedIn && loggingIn) {
-        return '/home';
-      }
+    //   if (loggedIn && loggingIn) {
+    //     return '/home';
+    //   }
 
-      return null;
-    },
+    //   return null;
+    // },
   );
 }

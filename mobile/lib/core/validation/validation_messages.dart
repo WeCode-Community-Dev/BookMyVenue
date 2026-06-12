@@ -20,4 +20,11 @@ class ValidationMessages {
   static const String fullnameTooShort =
       'Fullname must be at least 3 characters';
   static const String fullnameTooLong = 'Fullname cannot exceed 25 characters';
+
+  // Business name
+  static const String businessNameRequired = 'Business name is required';
+  static const String businessNameTooShort =
+      'Business name must be at least 3 characters';
+  static const String businessNameTooLong =
+      'Business name cannot exceed 50 characters';
 }

@@ -55,12 +55,15 @@ extension AuthEventPatterns on AuthEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _RequestOtpEvent value)?  requestOtp,TResult Function( _VerifyOtpEvent value)?  verifyOtp,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _RequestOtpEvent value)?  requestOtp,TResult Function( _VerifyOtpEvent value)?  verifyOtp,TResult Function( _CreateAccountEvent value)?  createAccount,TResult Function( _VerifyOwnerOtpEvent value)?  verifyOwnerOtp,TResult Function( _CreateBusinessProfileEvent value)?  createBusinessProfile,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _RequestOtpEvent() when requestOtp != null:
 return requestOtp(_that);case _VerifyOtpEvent() when verifyOtp != null:
-return verifyOtp(_that);case _:
+return verifyOtp(_that);case _CreateAccountEvent() when createAccount != null:
+return createAccount(_that);case _VerifyOwnerOtpEvent() when verifyOwnerOtp != null:
+return verifyOwnerOtp(_that);case _CreateBusinessProfileEvent() when createBusinessProfile != null:
+return createBusinessProfile(_that);case _:
   return orElse();
 
 }
@@ -78,12 +81,15 @@ return verifyOtp(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _RequestOtpEvent value)  requestOtp,required TResult Function( _VerifyOtpEvent value)  verifyOtp,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _RequestOtpEvent value)  requestOtp,required TResult Function( _VerifyOtpEvent value)  verifyOtp,required TResult Function( _CreateAccountEvent value)  createAccount,required TResult Function( _VerifyOwnerOtpEvent value)  verifyOwnerOtp,required TResult Function( _CreateBusinessProfileEvent value)  createBusinessProfile,}){
 final _that = this;
 switch (_that) {
 case _RequestOtpEvent():
 return requestOtp(_that);case _VerifyOtpEvent():
-return verifyOtp(_that);case _:
+return verifyOtp(_that);case _CreateAccountEvent():
+return createAccount(_that);case _VerifyOwnerOtpEvent():
+return verifyOwnerOtp(_that);case _CreateBusinessProfileEvent():
+return createBusinessProfile(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -100,12 +106,15 @@ return verifyOtp(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _RequestOtpEvent value)?  requestOtp,TResult? Function( _VerifyOtpEvent value)?  verifyOtp,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _RequestOtpEvent value)?  requestOtp,TResult? Function( _VerifyOtpEvent value)?  verifyOtp,TResult? Function( _CreateAccountEvent value)?  createAccount,TResult? Function( _VerifyOwnerOtpEvent value)?  verifyOwnerOtp,TResult? Function( _CreateBusinessProfileEvent value)?  createBusinessProfile,}){
 final _that = this;
 switch (_that) {
 case _RequestOtpEvent() when requestOtp != null:
 return requestOtp(_that);case _VerifyOtpEvent() when verifyOtp != null:
-return verifyOtp(_that);case _:
+return verifyOtp(_that);case _CreateAccountEvent() when createAccount != null:
+return createAccount(_that);case _VerifyOwnerOtpEvent() when verifyOwnerOtp != null:
+return verifyOwnerOtp(_that);case _CreateBusinessProfileEvent() when createBusinessProfile != null:
+return createBusinessProfile(_that);case _:
   return null;
 
 }
@@ -122,11 +131,14 @@ return verifyOtp(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( OtpRequestParams requestParam)?  requestOtp,TResult Function( VerifyOtpRequestParams requestParam)?  verifyOtp,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( OtpRequestParams requestParam)?  requestOtp,TResult Function( VerifyOtpRequestParams requestParam)?  verifyOtp,TResult Function( OtpRequestParams requestParam)?  createAccount,TResult Function( VerifyOtpRequestParams requestParam)?  verifyOwnerOtp,TResult Function( OtpRequestParams requestParam)?  createBusinessProfile,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RequestOtpEvent() when requestOtp != null:
 return requestOtp(_that.requestParam);case _VerifyOtpEvent() when verifyOtp != null:
-return verifyOtp(_that.requestParam);case _:
+return verifyOtp(_that.requestParam);case _CreateAccountEvent() when createAccount != null:
+return createAccount(_that.requestParam);case _VerifyOwnerOtpEvent() when verifyOwnerOtp != null:
+return verifyOwnerOtp(_that.requestParam);case _CreateBusinessProfileEvent() when createBusinessProfile != null:
+return createBusinessProfile(_that.requestParam);case _:
   return orElse();
 
 }
@@ -144,11 +156,14 @@ return verifyOtp(_that.requestParam);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( OtpRequestParams requestParam)  requestOtp,required TResult Function( VerifyOtpRequestParams requestParam)  verifyOtp,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( OtpRequestParams requestParam)  requestOtp,required TResult Function( VerifyOtpRequestParams requestParam)  verifyOtp,required TResult Function( OtpRequestParams requestParam)  createAccount,required TResult Function( VerifyOtpRequestParams requestParam)  verifyOwnerOtp,required TResult Function( OtpRequestParams requestParam)  createBusinessProfile,}) {final _that = this;
 switch (_that) {
 case _RequestOtpEvent():
 return requestOtp(_that.requestParam);case _VerifyOtpEvent():
-return verifyOtp(_that.requestParam);case _:
+return verifyOtp(_that.requestParam);case _CreateAccountEvent():
+return createAccount(_that.requestParam);case _VerifyOwnerOtpEvent():
+return verifyOwnerOtp(_that.requestParam);case _CreateBusinessProfileEvent():
+return createBusinessProfile(_that.requestParam);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -165,11 +180,14 @@ return verifyOtp(_that.requestParam);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( OtpRequestParams requestParam)?  requestOtp,TResult? Function( VerifyOtpRequestParams requestParam)?  verifyOtp,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( OtpRequestParams requestParam)?  requestOtp,TResult? Function( VerifyOtpRequestParams requestParam)?  verifyOtp,TResult? Function( OtpRequestParams requestParam)?  createAccount,TResult? Function( VerifyOtpRequestParams requestParam)?  verifyOwnerOtp,TResult? Function( OtpRequestParams requestParam)?  createBusinessProfile,}) {final _that = this;
 switch (_that) {
 case _RequestOtpEvent() when requestOtp != null:
 return requestOtp(_that.requestParam);case _VerifyOtpEvent() when verifyOtp != null:
-return verifyOtp(_that.requestParam);case _:
+return verifyOtp(_that.requestParam);case _CreateAccountEvent() when createAccount != null:
+return createAccount(_that.requestParam);case _VerifyOwnerOtpEvent() when verifyOwnerOtp != null:
+return verifyOwnerOtp(_that.requestParam);case _CreateBusinessProfileEvent() when createBusinessProfile != null:
+return createBusinessProfile(_that.requestParam);case _:
   return null;
 
 }
@@ -303,6 +321,204 @@ class __$VerifyOtpEventCopyWithImpl<$Res>
   return _then(_VerifyOtpEvent(
 requestParam: null == requestParam ? _self.requestParam : requestParam // ignore: cast_nullable_to_non_nullable
 as VerifyOtpRequestParams,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _CreateAccountEvent implements AuthEvent {
+  const _CreateAccountEvent({required this.requestParam});
+  
+
+@override final  OtpRequestParams requestParam;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$CreateAccountEventCopyWith<_CreateAccountEvent> get copyWith => __$CreateAccountEventCopyWithImpl<_CreateAccountEvent>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateAccountEvent&&(identical(other.requestParam, requestParam) || other.requestParam == requestParam));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,requestParam);
+
+@override
+String toString() {
+  return 'AuthEvent.createAccount(requestParam: $requestParam)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$CreateAccountEventCopyWith<$Res> implements $AuthEventCopyWith<$Res> {
+  factory _$CreateAccountEventCopyWith(_CreateAccountEvent value, $Res Function(_CreateAccountEvent) _then) = __$CreateAccountEventCopyWithImpl;
+@useResult
+$Res call({
+ OtpRequestParams requestParam
+});
+
+
+
+
+}
+/// @nodoc
+class __$CreateAccountEventCopyWithImpl<$Res>
+    implements _$CreateAccountEventCopyWith<$Res> {
+  __$CreateAccountEventCopyWithImpl(this._self, this._then);
+
+  final _CreateAccountEvent _self;
+  final $Res Function(_CreateAccountEvent) _then;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? requestParam = null,}) {
+  return _then(_CreateAccountEvent(
+requestParam: null == requestParam ? _self.requestParam : requestParam // ignore: cast_nullable_to_non_nullable
+as OtpRequestParams,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _VerifyOwnerOtpEvent implements AuthEvent {
+  const _VerifyOwnerOtpEvent({required this.requestParam});
+  
+
+@override final  VerifyOtpRequestParams requestParam;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$VerifyOwnerOtpEventCopyWith<_VerifyOwnerOtpEvent> get copyWith => __$VerifyOwnerOtpEventCopyWithImpl<_VerifyOwnerOtpEvent>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VerifyOwnerOtpEvent&&(identical(other.requestParam, requestParam) || other.requestParam == requestParam));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,requestParam);
+
+@override
+String toString() {
+  return 'AuthEvent.verifyOwnerOtp(requestParam: $requestParam)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$VerifyOwnerOtpEventCopyWith<$Res> implements $AuthEventCopyWith<$Res> {
+  factory _$VerifyOwnerOtpEventCopyWith(_VerifyOwnerOtpEvent value, $Res Function(_VerifyOwnerOtpEvent) _then) = __$VerifyOwnerOtpEventCopyWithImpl;
+@useResult
+$Res call({
+ VerifyOtpRequestParams requestParam
+});
+
+
+
+
+}
+/// @nodoc
+class __$VerifyOwnerOtpEventCopyWithImpl<$Res>
+    implements _$VerifyOwnerOtpEventCopyWith<$Res> {
+  __$VerifyOwnerOtpEventCopyWithImpl(this._self, this._then);
+
+  final _VerifyOwnerOtpEvent _self;
+  final $Res Function(_VerifyOwnerOtpEvent) _then;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? requestParam = null,}) {
+  return _then(_VerifyOwnerOtpEvent(
+requestParam: null == requestParam ? _self.requestParam : requestParam // ignore: cast_nullable_to_non_nullable
+as VerifyOtpRequestParams,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class _CreateBusinessProfileEvent implements AuthEvent {
+  const _CreateBusinessProfileEvent({required this.requestParam});
+  
+
+@override final  OtpRequestParams requestParam;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$CreateBusinessProfileEventCopyWith<_CreateBusinessProfileEvent> get copyWith => __$CreateBusinessProfileEventCopyWithImpl<_CreateBusinessProfileEvent>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreateBusinessProfileEvent&&(identical(other.requestParam, requestParam) || other.requestParam == requestParam));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,requestParam);
+
+@override
+String toString() {
+  return 'AuthEvent.createBusinessProfile(requestParam: $requestParam)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$CreateBusinessProfileEventCopyWith<$Res> implements $AuthEventCopyWith<$Res> {
+  factory _$CreateBusinessProfileEventCopyWith(_CreateBusinessProfileEvent value, $Res Function(_CreateBusinessProfileEvent) _then) = __$CreateBusinessProfileEventCopyWithImpl;
+@useResult
+$Res call({
+ OtpRequestParams requestParam
+});
+
+
+
+
+}
+/// @nodoc
+class __$CreateBusinessProfileEventCopyWithImpl<$Res>
+    implements _$CreateBusinessProfileEventCopyWith<$Res> {
+  __$CreateBusinessProfileEventCopyWithImpl(this._self, this._then);
+
+  final _CreateBusinessProfileEvent _self;
+  final $Res Function(_CreateBusinessProfileEvent) _then;
+
+/// Create a copy of AuthEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? requestParam = null,}) {
+  return _then(_CreateBusinessProfileEvent(
+requestParam: null == requestParam ? _self.requestParam : requestParam // ignore: cast_nullable_to_non_nullable
+as OtpRequestParams,
   ));
 }
 

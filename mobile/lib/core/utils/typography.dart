@@ -3,6 +3,12 @@ import 'package:flutter/material.dart';
 class AppTypography {
   AppTypography._();
 
+  static const TextStyle headerText = TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w600,
+    height: 1.4,
+  );
+
   /// 18px - SemiBold
   /// Used for:
   /// - Screen titles

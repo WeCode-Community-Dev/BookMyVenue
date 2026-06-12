@@ -1,5 +1,5 @@
 import '../../../../core/storage/secure_storage_service.dart';
-import '../model/response_model/verify_otp_response/verify_otp_response.dart';
+import '../model/user/response_model/verify_otp_response/verify_otp_response.dart';
 
 abstract class IAuthLocalDatasource {
   Future<void> saveToken(VerifyOtpResponse token);

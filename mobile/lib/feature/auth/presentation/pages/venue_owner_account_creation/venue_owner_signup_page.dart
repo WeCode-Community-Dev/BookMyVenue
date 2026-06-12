@@ -55,89 +55,108 @@ class _VenueOwnerSignupPageState extends State<VenueOwnerSignupPage> {
           builder: (BuildContext context, AuthState state) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  // mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const SizedBox(height: 60),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    // mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const SizedBox(height: 60),
 
-                    const AuthHeader(
-                      title: 'Welcome Back',
-                      subtitle: 'Sign in to continue your journey',
-                    ),
+                      const AuthHeader(
+                        title: 'Create Your Owner Account',
+                        subtitle:
+                            'Join our premium marketplace and start reaching thousands of potential venue seekers today.',
+                      ),
 
-                    const SizedBox(height: 40),
+                      const SizedBox(height: 40),
 
-                    // Text Fields
-                    CustomTextField(
-                      hint: 'Enter Fullname',
-                      controller: _fullNameController,
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.name,
-                      maxLength: 25,
-                      validator: AppValidation.validateFullname,
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      hint: 'Enter your email',
-                      controller: _emailController,
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      maxLength: 50,
-                      validator: AppValidation.validateEmail,
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      hint: 'Enter mobile number',
-                      controller: _mobileController,
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.number,
-                      maxLength: 10,
-                      validator: AppValidation.validateMobile,
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      hint: 'Enter password',
-                      controller: _passwordController,
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.visiblePassword,
-                      maxLength: 25,
-                      validator: AppValidation.validatePassword,
-                    ),
-                    const SizedBox(height: 16),
+                      // Text Fields
+                      CustomTextField(
+                        label: 'Full Owner Name',
+                        hint: 'Enter your full legal name',
+                        controller: _fullNameController,
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.name,
+                        maxLength: 25,
+                        validator: AppValidation.validateFullname,
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        label: 'Business Name',
+                        hint: 'Enter registered business name',
+                        controller: _fullNameController,
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.name,
+                        maxLength: 25,
+                        validator: AppValidation.validateBusinessName,
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        label: 'Email Address',
+                        hint: 'abc@company.com',
+                        controller: _emailController,
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        maxLength: 50,
+                        validator: AppValidation.validateEmail,
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        label: 'Mobile Number',
+                        hint: '9876543210',
+                        controller: _mobileController,
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.number,
+                        maxLength: 10,
+                        validator: AppValidation.validateMobile,
+                      ),
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        label: 'Create Password',
+                        hint: 'At least 6 characters',
+                        controller: _passwordController,
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.visiblePassword,
+                        maxLength: 25,
+                        validator: AppValidation.validatePassword,
+                      ),
+                      const SizedBox(height: 16),
 
-                    AppButton(
-                      label: 'Sign In',
-                      onPressed: () {
-                        context.pushNamed(AppRouteNames.ownerBusinessProfile);
-                      },
-                    ),
+                      AppButton(
+                        label: 'Sign In',
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            context.pushNamed(
+                              AppRouteNames.ownerBusinessProfile,
+                            );
+                          }
+                        },
+                      ),
 
-                    const SizedBox(height: 24),
+                      const SizedBox(height: 24),
 
-                    const Spacer(),
-
-                    // Navigation using AppText for consistency
-                    GestureDetector(
-                      onTap: () => context.goNamed(AppRouteNames.signin),
-                      child: RichText(
-                        text: TextSpan(
-                          style: theme.textTheme.bodyMedium,
-                          children: <InlineSpan>[
-                            const TextSpan(text: 'Already have an account? '),
-                            TextSpan(
-                              text: 'Sign In',
-                              style: TextStyle(
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.bold,
+                      // Navigation using AppText for consistency
+                      GestureDetector(
+                        onTap: () => context.goNamed(AppRouteNames.signin),
+                        child: RichText(
+                          text: TextSpan(
+                            style: theme.textTheme.bodyMedium,
+                            children: <InlineSpan>[
+                              const TextSpan(text: 'Already have an account? '),
+                              TextSpan(
+                                text: 'Sign In',
+                                style: TextStyle(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );

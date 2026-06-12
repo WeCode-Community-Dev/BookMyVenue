@@ -7,10 +7,10 @@ import '../../domain/repository/i_auth_repository.dart';
 import '../datasource/auth_local_datasource.dart';
 import '../datasource/i_auth_remote_datasource.dart';
 import '../mapper/auth_user_mapper.dart';
-import '../model/request_model/otp_request/otp_request.dart';
-import '../model/request_model/verify_otp_request/verify_otp_request.dart';
-import '../model/response_model/otp_response/otp_response.dart';
-import '../model/response_model/verify_otp_response/verify_otp_response.dart';
+import '../model/user/request_model/otp_request/otp_request.dart';
+import '../model/user/request_model/verify_otp_request/verify_otp_request.dart';
+import '../model/user/response_model/otp_response/otp_response.dart';
+import '../model/user/response_model/verify_otp_response/verify_otp_response.dart';
 
 class AuthRepositoryImpl extends BaseRepository implements IAuthRepository {
   AuthRepositoryImpl({
