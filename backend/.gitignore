@@ -57,3 +57,4 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /src/infra/database/prisma/generated/prisma
 some.txt
+REST

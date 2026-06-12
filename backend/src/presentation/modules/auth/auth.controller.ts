@@ -1,15 +1,17 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
+import type { LoginDto } from './dto/login.dto';
+import { ZodValidationPipe } from 'src/presentation/pipes/zod-validation.pipe';
+import { loginSchema } from 'src/presentation/validation/auth/login.schema';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
+  create(@Body(new ZodValidationPipe(loginSchema)) data: LoginDto) {
+    return this.authService.login(data);
   }
 
   @Get()

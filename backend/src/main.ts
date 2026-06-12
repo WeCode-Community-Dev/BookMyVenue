@@ -1,9 +1,13 @@
+
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './presentation/app.module';
+import { NestjsConsoleLogger } from './infra/logger/console.logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { logger: false });
+
+  app.useLogger(new NestjsConsoleLogger());
 
   const config = new DocumentBuilder()
     .setTitle('BMV API Documentation')
