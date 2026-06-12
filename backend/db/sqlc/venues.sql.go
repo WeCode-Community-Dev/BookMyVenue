@@ -29,6 +29,17 @@ func (q *Queries) AddVenueImage(ctx context.Context, arg AddVenueImageParams) (V
 	return i, err
 }
 
+const approveVenue = `-- name: ApproveVenue :exec
+UPDATE venues 
+SET status='approved' 
+WHERE id=$1
+`
+
+func (q *Queries) ApproveVenue(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, approveVenue, id)
+	return err
+}
+
 const assignAmenityToVenue = `-- name: AssignAmenityToVenue :exec
 INSERT INTO venue_amenities (venue_id, amenity_id)
 VALUES ($1, $2)
@@ -296,6 +307,49 @@ func (q *Queries) GetAllAmenities(ctx context.Context) ([]Amenity, error) {
 	for rows.Next() {
 		var i Amenity
 		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllPendingVenues = `-- name: GetAllPendingVenues :many
+SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
+WHERE status = 'pending'
+ORDER BY created_at DESC
+`
+
+func (q *Queries) GetAllPendingVenues(ctx context.Context) ([]Venue, error) {
+	rows, err := q.db.Query(ctx, getAllPendingVenues)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Venue
+	for rows.Next() {
+		var i Venue
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.Name,
+			&i.Description,
+			&i.Category,
+			&i.Address,
+			&i.City,
+			&i.State,
+			&i.Pincode,
+			&i.Capacity,
+			&i.PricePerHour,
+			&i.PricePerDay,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Location,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -613,6 +667,17 @@ func (q *Queries) GetVenuesByOwnerID(ctx context.Context, ownerID pgtype.UUID) (
 		return nil, err
 	}
 	return items, nil
+}
+
+const rejectVenue = `-- name: RejectVenue :exec
+UPDATE venues
+SET status='rejected'
+WHERE id=$1
+`
+
+func (q *Queries) RejectVenue(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, rejectVenue, id)
+	return err
 }
 
 const removeAmenityFromVenue = `-- name: RemoveAmenityFromVenue :exec

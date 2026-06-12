@@ -31,6 +31,11 @@ SELECT * FROM venues
 WHERE status = 'approved'
 ORDER BY created_at DESC;
 
+-- name: GetAllPendingVenues :many
+SELECT * FROM venues
+WHERE status = 'pending'
+ORDER BY created_at DESC;
+
 -- name: GetRejectedVenuesByOwnerID :many
 SELECT * FROM venues
 WHERE owner_id = $1 AND status = 'rejected'
@@ -126,3 +131,13 @@ WHERE status = 'approved'
   AND ($5::numeric = 0 OR price_per_day    >= $5)
   AND ($6::numeric = 0 OR price_per_day    <= $6)
 ORDER BY created_at DESC;
+
+-- name: ApproveVenue :exec
+UPDATE venues 
+SET status='approved' 
+WHERE id=$1;
+
+-- name: RejectVenue :exec
+UPDATE venues
+SET status='rejected'
+WHERE id=$1;
