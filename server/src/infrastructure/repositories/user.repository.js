@@ -1,6 +1,6 @@
 import { UserMapper } from "../../application/mapper/User.mapper.js";
-import { IUserRepository } from "../../domain/repositories/IUserRepository.js";
-import { UserModel } from "../database/User.model.js";
+import { IUserRepository } from "../../domain/repositories/IUser.repository.js";
+import { UserModel } from "../database/models/User.model.js"
 
 export class UserRepository extends IUserRepository {
 
@@ -63,6 +63,7 @@ export class UserRepository extends IUserRepository {
     }
 
     async blockUser(id) {
+        console.log("blocked repo")
 
         const document =
             await UserModel.findByIdAndUpdate(
@@ -76,6 +77,7 @@ export class UserRepository extends IUserRepository {
             );
 
         if (!document) return null;
+        console.log(document)
 
         return UserMapper.mapToEntity(document);
     }

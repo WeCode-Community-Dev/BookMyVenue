@@ -19,7 +19,7 @@ export class AdminBlockUserUsecase {
         if(user.isBlocked) {
             throw new ConflictError(UserMessage.error.USER_ALREADY_BLOCKED,statusCode.BAD_REQUEST);
         }
-        const blockedUser = await this._userRepository.unblockUser(userId);
+        const blockedUser = await this._userRepository.blockUser(userId);
         return blockedUser;
     }
 }

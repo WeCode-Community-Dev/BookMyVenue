@@ -8,7 +8,7 @@ export class AdminGetAllUsersUsecase {
     async execute(search, page, limit){
 
         const { data, totalPages, totalCount } =
-            await this._userRepository.findAllUsers({
+            await this._userRepository.findAllFiltered({
                 search,
                 page,
                 limit

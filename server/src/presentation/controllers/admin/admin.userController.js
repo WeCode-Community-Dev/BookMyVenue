@@ -33,7 +33,7 @@ export class AdminUserController {
         return sendSuccess(
             res,
             statusCode.OK,
-            UserMessages.success.USERS_FETCHED,
+            UserMessage.success.USERS_FETCHED,
             { data, totalCount, totalPages }
         )
     })
@@ -48,7 +48,7 @@ export class AdminUserController {
         return sendSuccess(
             res,
             statusCode.OK,
-            UserMessages.success.USER_BLOCKED,
+            UserMessage.success.USER_BLOCKED,
             user
         )
     })
@@ -63,7 +63,7 @@ export class AdminUserController {
         return sendSuccess(
             res,
             statusCode.OK,
-            UserMessages.success.USER_UNBLOCKED,
+            UserMessage.success.USER_UNBLOCKED,
             user
         )
     })

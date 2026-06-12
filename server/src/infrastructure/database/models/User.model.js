@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import UserRole from "../../../domain/enums/UserRole.enum.js";
+import { UserRole } from "../../../domain/enums/UserRole.enum.js";
 const userSchema = new mongoose.Schema({
     fullName: {
         type: String,
@@ -45,5 +45,5 @@ const userSchema = new mongoose.Schema({
     })
 
 
-export default mongoose.model("User", userSchema)
+export const UserModel = mongoose.model("User", userSchema)
 

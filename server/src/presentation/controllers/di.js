@@ -26,7 +26,7 @@ import { AdminUserController } from '../controllers/admin/admin.userController.j
 import { VenueRepository } from '../../infrastructure/repositories/venue.repository.js'
 import { VendorGetAllVenuesUsecase } from '../../application/vendor/usecases/venue/vendor.getAllVenues.usecase.js'
 import { CloudinaryService } from '../../infrastructure/services/cloudinaryService.js'
-import UserRepositoryImpl from '../../infrastructure/repositories/UserRepositoryImpl.js'
+import { UserRepository } from '../../infrastructure/repositories/user.repository.js'
 import HashService from '../../infrastructure/services/HashService.js'
 
 
