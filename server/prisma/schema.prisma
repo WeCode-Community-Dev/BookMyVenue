@@ -59,20 +59,28 @@ model UserRole {
 }
 
 model Venue {
-  id String @id @default(uuid())
+  id          String       @id @default(uuid())
 
-  ownerId String
+  ownerId     String
 
-  name String
+  name         String
+  type         VenueType
 
-  type VenueType
+  city         String
+  address      String?
 
-  city String
+  description  String?
 
-  status VenueStatus @default(PENDING)
+  capacity     Int?
+  price        Float?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  amenities    String[]
+  images       String[]
 
-  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  status       VenueStatus @default(PENDING)
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  owner User @relation( fields: [ownerId], references: [id], onDelete: Cascade )
 }

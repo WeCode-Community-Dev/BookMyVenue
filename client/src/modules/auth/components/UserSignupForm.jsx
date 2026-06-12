@@ -7,6 +7,8 @@ import { userSignupSchema } from '../validations/signup.validation';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../shared/context/AuthContext';
 
+import { ROUTES } from '../../../shared/constants/routes';
+
 const inputClass = `
    w-full
    h-12
@@ -51,6 +53,7 @@ const UserSignupForm = ({ onBack }) => {
          const response = await signupApi(payload);
          console.log(response);
          
+         
          login(
 
             response.data.user,
@@ -59,7 +62,7 @@ const UserSignupForm = ({ onBack }) => {
 
          );
 
-         navigate('/');
+         navigate(ROUTES.HOME);
 
       } catch (error) {
 

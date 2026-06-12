@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import logo from "../../assets/bookmyvenue.webp";
-import {  useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useAuth } from "../../shared/context/AuthContext";
 const MainLayout = ({ children }) => {
   const { user, logout } = useAuth();
@@ -11,7 +11,6 @@ const MainLayout = ({ children }) => {
 
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const router = useNavigate();
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 50);
@@ -37,8 +36,9 @@ const MainLayout = ({ children }) => {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 border-b border-gray-100 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-[12px]" : "bg-white"
-          }`}
+        className={`fixed top-0 left-0 right-0 z-50 border-b border-gray-100 transition-all duration-300 ${
+          scrolled ? "bg-white/95 backdrop-blur-[12px]" : "bg-white"
+        }`}
       >
         <div className="flex items-center justify-between h-[68px] px-5 sm:px-8 lg:px-[6%]">
           {/* Logo */}
@@ -64,12 +64,59 @@ const MainLayout = ({ children }) => {
 
           {/* Desktop auth */}
           <div className="hidden lg:flex items-center gap-2.5">
-            <button className="btn-outline !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]">
-              Log In
-            </button>
-            <button className="btn-primary !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]" onClick={() => router.push('/signup')}>
-              Sign Up
-            </button>
+            {!user ? (
+              <>
+                <button
+                  onClick={() => navigate("/login")}
+                  className="btn-outline !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]"
+                >
+                  Log In
+                </button>
+                <button
+                  className="btn-primary !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]"
+                  onClick={() => navigate("/signup")}
+                >
+                  Sign Up
+                </button>
+              </>
+            ) : (
+              <>
+                {isUser && !isOwner && (
+                  <button
+                    onClick={() => {
+                      navigate("/become-partner");
+                      setMenuOpen(false);
+                    }}
+                    className="btn-outline !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]"
+                  >
+                    Become a Partner
+                  </button>
+                )}
+
+                {isOwner && (
+                  <button
+                    className="btn-primary !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]"
+                    onClick={() => {
+                      navigate("/owner/dashboard");
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Owner Dashboard
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    logout();
+                    navigate("/");
+                    setMenuOpen(false);
+                  }}
+                  className="btn-outline"
+                >
+                  Logout
+                </button>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -91,13 +138,13 @@ const MainLayout = ({ children }) => {
         </div>
 
         {/* Mobile menu dropdown */}
-        {/* Mobile menu dropdown */}
+
         <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${menuOpen ? "max-h-[600px]" : "max-h-0"
-            } bg-white border-t border-gray-100`}
+          className={`lg:hidden overflow-hidden transition-all duration-300 ${
+            menuOpen ? "max-h-[600px]" : "max-h-0"
+          } bg-white border-t border-gray-100`}
         >
           <div className="px-5 py-4 flex flex-col gap-1">
-
             {NAV_LINKS.map((l) => (
               <span
                 key={l}
@@ -116,7 +163,6 @@ const MainLayout = ({ children }) => {
             ))}
 
             <div className="flex flex-col gap-3 mt-3 pt-3 border-t border-gray-100">
-
               {!user ? (
                 <>
                   <button
@@ -141,9 +187,7 @@ const MainLayout = ({ children }) => {
                 </>
               ) : (
                 <>
-                  <span className="font-medium">
-                    Hi, {user.name}
-                  </span>
+                  <span className="font-medium">Hi, {user.name}</span>
 
                   {isUser && !isOwner && (
                     <button
@@ -181,9 +225,7 @@ const MainLayout = ({ children }) => {
                   </button>
                 </>
               )}
-
             </div>
-
           </div>
         </div>
       </nav>
@@ -194,9 +236,9 @@ const MainLayout = ({ children }) => {
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-8 sm:gap-10 lg:gap-12 mb-10 sm:mb-12">
             <div className="col-span-2 lg:col-span-1">
               <div className="flex items-center gap-2 mb-3.5">
-                 <div className="w-20 h-auto bg-gray-900 rounded-[10px] flex items-center justify-center text-base">
-              <img src={logo} alt="BookMyVenue" className="" />
-            </div>
+                <div className="w-20 h-auto bg-gray-900 rounded-[10px] flex items-center justify-center text-base">
+                  <img src={logo} alt="BookMyVenue" className="" />
+                </div>
                 <span className="font-extrabold text-[1.1rem] tracking-tight">
                   BookMyVenue
                 </span>
@@ -205,7 +247,6 @@ const MainLayout = ({ children }) => {
                 India's most trusted venue booking platform for every occasion.
               </p>
             </div>
-
           </div>
 
           <div className="border-t border-gray-100 pt-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">

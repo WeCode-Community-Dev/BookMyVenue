@@ -71,4 +71,38 @@
   .testi-card {
     @apply bg-gray-50 rounded-[20px] p-7 flex-1;
   }
+
+  .inputClass {
+    @apply w-full h-12 px-4 rounded-xl border border-gray-300 focus:border-red-500
+           focus:ring-4 focus:ring-red-100 outline-none transition;
+  }
+
+ .selectClass {
+    @apply w-full h-12 px-4 rounded-xl border border-gray-300 focus:border-red-500
+           focus:ring-4 focus:ring-red-100 outline-none transition bg-white;
+  }
+
+  .sectionTitle {
+    @apply text-sm font-medium text-gray-500 mb-4 flex items-center gap-2;
+  }
+
+  .sectionHeading {
+    @apply text-2xl font-extrabold tracking-tight mb-6;
+  }
+  .sectionSubheading {
+    @apply text-gray-600 text-lg mb-8;
+  }
+.selectionTitle {
+    @apply text-sm font-medium text-gray-500 mb-2;
+  }
+
+  .selectionHeading {
+    @apply text-xl font-bold tracking-tight mb-4;
+  }
+
+  .selectionSubheading {
+    @apply text-gray-600 text-base mb-6;
+  }
+  
 }
+

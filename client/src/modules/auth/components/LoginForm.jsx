@@ -57,7 +57,10 @@ const LoginForm = () => {
          );
          */
 
-         login(response.data);
+         login(
+            response.data.user,
+            response.data.accessToken
+         );
          
          alert(response.message);
 
