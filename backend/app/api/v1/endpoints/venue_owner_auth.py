@@ -2,7 +2,6 @@ from fastapi import APIRouter, status, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.schema.venue_owner_auth_schema import (
-    CreateOwnerProfileRequest,
     OwnerProfileResponse,
     VenueOwnerOTPRequest,
     VenueOwnerOTPResponse,
@@ -48,25 +47,6 @@ def verify_otp(
 ) -> SuccessResponse:
     result = venue_owner_auth_service.verify_otp(db=db, data=data)
     return SuccessResponse(message="OTP sent Successfully", data=result)
-
-
-# Create business profile
-@router.post(
-    "/profile",
-    response_model=SuccessResponse[OwnerProfileResponse],
-    status_code=status.HTTP_201_CREATED,
-    summary="Create owner profile",
-    description="Collect Owner profile details like business type and name",
-)
-def create_business_profile(
-    data: CreateOwnerProfileRequest,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    result = venue_owner_auth_service.create_business_profile(
-        db=db, data=data, user_id=current_user.id
-    )
-    return SuccessResponse(message="Business profile created successfully", data=result)
 
 
 # Get all Venue owner details

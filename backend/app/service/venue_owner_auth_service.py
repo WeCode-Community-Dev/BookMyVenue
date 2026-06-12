@@ -8,6 +8,7 @@ from app.schema.venue_owner_auth_schema import (
     OwnerProfileResponse,
     VenueOwnerOTPRequest,
     VenueOwnerOTPResponse,
+    VenueOwnerResponse,
 )
 from app.config.security import create_access_token, create_refresh_token, verify_token
 from app.config.redis import redis_client
@@ -15,7 +16,7 @@ from app.core.config import settings
 from app.service.user_service import user_service
 from app.service.sms_service import sms_service
 from app.model.user import User, UserRole
-from app.schema.user_auth_schema import OTPVerifyRequest, TokenResponse, UserResponse
+from app.schema.user_auth_schema import OTPVerifyRequest, TokenResponse
 from app.model.owner_profile import OwnerProfile
 
 
@@ -32,6 +33,36 @@ class VenueOwnerAuthService:
         try:
             return "".join(
                 secrets.choice("0123456789") for _ in range(settings.OTP_LENGTH)
+            )
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    def create_business_profile(
+        self,
+        db: Session,
+        data: CreateOwnerProfileRequest,
+        user_id: str,
+    ) -> OwnerProfileResponse:
+        try:
+            owner_profile = OwnerProfile(
+                user_id=user_id,
+                business_name=data.business_name,
+            )
+
+            db.add(owner_profile)
+            db.commit()
+            db.refresh(owner_profile)
+
+            return OwnerProfileResponse(
+                id=owner_profile.id,
+                user_id=owner_profile.id,
+                business_name=owner_profile.business_name,
+                approval_status=owner_profile.approval_status,
+                created_at=owner_profile.created_at,
+                updated_at=owner_profile.updated_at,
             )
         except HTTPException:
             raise
@@ -62,6 +93,14 @@ class VenueOwnerAuthService:
                 full_name=data.full_name,
                 email=data.email,
                 role=UserRole.VENUE_OWNER,
+            )
+
+            self.create_business_profile(
+                db=db,
+                data=CreateOwnerProfileRequest(
+                    business_name=data.business_name,
+                ),
+                user_id=user.id,
             )
 
             return VenueOwnerOTPResponse(
@@ -123,37 +162,7 @@ class VenueOwnerAuthService:
             return TokenResponse(
                 access_token=access_token,
                 refresh_token=refresh_token,
-                user=UserResponse.model_validate(user),
-            )
-        except HTTPException:
-            raise
-
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-
-    def create_business_profile(
-        self,
-        db: Session,
-        data: CreateOwnerProfileRequest,
-        user_id: str,
-    ) -> OwnerProfileResponse:
-        try:
-            owner_profile = OwnerProfile(
-                user_id=user_id,
-                business_name=data.business_name,
-            )
-
-            db.add(owner_profile)
-            db.commit()
-            db.refresh(owner_profile)
-
-            return OwnerProfileResponse(
-                id=owner_profile.id,
-                user_id=owner_profile.id,
-                business_name=owner_profile.business_name,
-                approval_status=owner_profile.approval_status,
-                created_at=owner_profile.created_at,
-                updated_at=owner_profile.updated_at,
+                user=VenueOwnerResponse.model_validate(user),
             )
         except HTTPException:
             raise

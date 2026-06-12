@@ -29,6 +29,14 @@ class VenueOwnerOTPRequest(BaseModel):
         examples=["Sanju Samson"],
     )
 
+    business_name: str = Field(
+        ...,
+        min_length=3,
+        max_length=50,
+        description="Venue owner full name",
+        examples=["Samson Auditorium International"],
+    )
+
     email: EmailStr = Field(
         ...,
         description="Valid email address",
@@ -126,6 +134,8 @@ class OwnerProfileResponse(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class VenueOwnerResponse(BaseModel):
