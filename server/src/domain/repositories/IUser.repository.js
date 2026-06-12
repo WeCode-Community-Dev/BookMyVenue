@@ -1,16 +1,21 @@
-
- 
-
 export class IUserRepository {
-    async create(data) {
-        throw new Error('Method not implemented');
-    }
-
     async findById(id) {
         throw new Error('Method not implemented');
     }
 
-    async findAll() {
+    async findAllFiltered(query={}) {
+        throw new Error('Method not implemented');
+    }
+
+    async blockUser(id) {
+        throw new Error('Method not implemented');
+    }
+
+    async unblockUser(id) {
+        throw new Error('Method not implemented');
+    }
+
+    async create(data) {
         throw new Error('Method not implemented');
     }
 
@@ -37,4 +42,5 @@ export class IUserRepository {
     async updateRefreshToken(userId, refreshToken) {
         throw new Error('Method not implemented');
     }
+
 }
