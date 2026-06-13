@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../feature/auth/domain/enums/approval_status.dart';
+import '../../feature/auth/domain/enums/role_base.dart';
 import '../../feature/auth/presentation/bloc/owner/owner_auth_bloc.dart';
 import '../../feature/auth/presentation/bloc/user/auth_bloc.dart';
 import '../../feature/auth/presentation/pages/user_login/signin_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_signup_page.dart';
+import '../../feature/auth/presentation/pages/venue_owner_account_creation/verify_otp_page.dart';
 import '../../feature/home/presentation/pages/home_page.dart';
 import '../../feature/owner_verification_page/presentation/pages/owner_verification_page.dart';
 import '../auth/auth_session.dart';
@@ -42,6 +45,15 @@ class AppRouter {
             BlocProvider<OwnerAuthBloc>(
               create: (BuildContext context) => sl<OwnerAuthBloc>(),
               child: const VenueOwnerSignupPage(),
+            ),
+      ),
+      GoRoute(
+        path: '/${AppRouteNames.venueOwnerVerify}',
+        name: AppRouteNames.venueOwnerVerify,
+        builder: (BuildContext context, GoRouterState state) =>
+            BlocProvider<OwnerAuthBloc>(
+              create: (BuildContext context) => sl<OwnerAuthBloc>(),
+              child: const OwnerVerifyOtpPage(),
             ),
       ),
 
@@ -174,16 +186,29 @@ class AppRouter {
     // This is where you will check if the user is logged in
     redirect: (BuildContext context, GoRouterState state) {
       final bool loggedIn = AuthSession.isLoggedIn;
+      final UserRole? role = AuthSession.role;
+      final ApprovalStatus status = AuthSession.ownerVerified;
 
-      final bool loggingIn =
-          state.matchedLocation == '/${AppRouteNames.signin}' ||
-          state.matchedLocation == '/${AppRouteNames.venueOwnerSignup}';
+      final String location = state.matchedLocation;
 
-      if (!loggedIn && !loggingIn) {
+      final bool authRoutes = <String>[
+        '/${AppRouteNames.signin}',
+        '/${AppRouteNames.venueOwnerSignup}',
+        '/${AppRouteNames.venueOwnerVerify}',
+      ].contains(location);
+
+      if (!loggedIn && !authRoutes) {
         return '/login';
       }
 
-      if (loggedIn && loggingIn) {
+      if (loggedIn && authRoutes) {
+        if (role == UserRole.venueOwner && status != ApprovalStatus.approved) {
+          return '/${AppRouteNames.ownerVerification}';
+        } else if (role == UserRole.venueOwner &&
+            status == ApprovalStatus.approved) {
+          return '/${AppRouteNames.ownerDashboard}';
+        }
+
         return '/home';
       }
 

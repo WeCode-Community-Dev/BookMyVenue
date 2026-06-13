@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../../../../domain/enums/role_base.dart';
+
 part 'verify_otp_response.freezed.dart';
 part 'verify_otp_response.g.dart';
 
@@ -25,7 +27,7 @@ sealed class User with _$User {
     required String? email,
     @JsonKey(name: 'mobile_verified') required bool mobileVerified,
     @JsonKey(name: 'email_verified') required bool emailVerified,
-    required String role,
+    required UserRole role,
     required String status,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,

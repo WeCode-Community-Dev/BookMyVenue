@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pinput/pinput.dart';
 
 import '../../../../../core/router/route_name.dart';
 import '../../../../../core/utils/ui/snackbar_command.dart';
@@ -13,6 +12,7 @@ import '../../../../../core/widgets/custom_text_field.dart';
 import '../../../domain/params/auth_param.dart';
 import '../../bloc/user/auth_bloc.dart';
 import '../widget/auth_header.dart';
+import '../widget/otp_field_widget.dart';
 
 class SigninPage extends StatefulWidget {
   const SigninPage({super.key});
@@ -152,44 +152,6 @@ class _SigninPageState extends State<SigninPage> {
           },
         ),
       ),
-    );
-  }
-}
-
-class OtpFieldWidget extends StatelessWidget {
-  const OtpFieldWidget({super.key, required this.controller, this.onCompleted});
-  final TextEditingController controller;
-  final Function(String)? onCompleted;
-
-  @override
-  Widget build(BuildContext context) {
-    final PinTheme defaultPinTheme = PinTheme(
-      width: 60,
-      height: 60,
-
-      textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(12),
-      ),
-    );
-
-    return Pinput(
-      controller: controller,
-      length: 6,
-      inputFormatters: <TextInputFormatter>[
-        FilteringTextInputFormatter.digitsOnly,
-      ],
-      defaultPinTheme: defaultPinTheme,
-
-      validator: (String? value) {
-        if (value == null || value.length != 6) {
-          return 'Enter valid OTP';
-        }
-        return null;
-      },
-
-      onCompleted: onCompleted,
     );
   }
 }

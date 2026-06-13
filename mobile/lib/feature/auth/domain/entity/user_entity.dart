@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../enums/role_base.dart';
+
 // =========== Request Otp Entity ================
 
 class OtpResponseResult extends Equatable {
@@ -88,7 +90,7 @@ class UserEntity extends Equatable {
   final String fullName;
   final bool mobileVerified;
   final bool emailVerified;
-  final String role;
+  final UserRole role;
   final String status;
   final DateTime createdAt;
   final DateTime updatedAt;

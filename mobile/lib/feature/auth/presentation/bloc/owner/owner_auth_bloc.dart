@@ -40,7 +40,6 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
     emit(
       state.copyWith(
         isLoading: true,
-        isOtpRequesting: true,
         isError: false,
         successMessage: null,
         errorMessage: null,
@@ -56,7 +55,6 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
           state.copyWith(
             isLoading: false,
             isError: true,
-            isOtpRequesting: false,
             successMessage: null,
             errorMessage: failure.message,
           ),
@@ -98,7 +96,6 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
           state.copyWith(
             isLoading: false,
             isError: true,
-            isOtpRequesting: false,
             errorMessage: failure.message,
           ),
         );

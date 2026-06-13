@@ -1,14 +1,20 @@
-import '../../feature/auth/data/model/user/response_model/verify_otp_response/verify_otp_response.dart';
+import '../../feature/auth/domain/enums/approval_status.dart';
+import '../../feature/auth/domain/enums/role_base.dart';
 import '../di/injection.dart';
 import '../storage/secure_storage_service.dart';
+import 'auth_session_model.dart';
 
 class AuthSession {
   static bool isLoggedIn = false;
+  static UserRole? role;
+  static ApprovalStatus ownerVerified = ApprovalStatus.pending;
 
   static Future<void> init() async {
-    final VerifyOtpResponse? token = await sl<SecureStorageService>()
-        .getToken();
+    final AuthSessionModel? user = await sl<SecureStorageService>()
+        .getSession();
 
-    isLoggedIn = token != null && token.accessToken.isNotEmpty;
+    isLoggedIn = user != null && user.accessToken.isNotEmpty;
+    role = user?.role;
+    ownerVerified = user?.status ?? ApprovalStatus.pending;
   }
 }

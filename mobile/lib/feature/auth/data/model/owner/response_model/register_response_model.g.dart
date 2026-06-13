@@ -53,7 +53,7 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   email: json['email'] as String,
   mobileVerified: json['mobile_verified'] as bool,
   emailVerified: json['email_verified'] as bool,
-  role: json['role'] as String,
+  role: $enumDecode(_$UserRoleEnumMap, json['role']),
   status: json['status'] as String,
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
@@ -70,12 +70,18 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
       'email': instance.email,
       'mobile_verified': instance.mobileVerified,
       'email_verified': instance.emailVerified,
-      'role': instance.role,
+      'role': _$UserRoleEnumMap[instance.role]!,
       'status': instance.status,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
       'owner_profile': instance.ownerProfile,
     };
+
+const _$UserRoleEnumMap = {
+  UserRole.customer: 'customer',
+  UserRole.venueOwner: 'venueOwner',
+  UserRole.admin: 'admin',
+};
 
 _OwnerBusinessProfileModel _$OwnerBusinessProfileModelFromJson(
   Map<String, dynamic> json,

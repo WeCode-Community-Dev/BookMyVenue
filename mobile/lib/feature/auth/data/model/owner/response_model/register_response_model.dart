@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../../domain/enums/approval_status.dart';
+import '../../../../domain/enums/role_base.dart';
 
 part 'register_response_model.freezed.dart';
 part 'register_response_model.g.dart';
@@ -42,7 +43,7 @@ sealed class UserModel with _$UserModel {
     required String email,
     @JsonKey(name: 'mobile_verified') required bool mobileVerified,
     @JsonKey(name: 'email_verified') required bool emailVerified,
-    required String role,
+    required UserRole role,
     required String status,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,

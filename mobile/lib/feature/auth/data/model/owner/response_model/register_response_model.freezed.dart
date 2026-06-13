@@ -571,7 +571,7 @@ $UserModelCopyWith<$Res> get user {
 /// @nodoc
 mixin _$UserModel {
 
- String get id;@JsonKey(name: 'mobile_number') String get mobileNumber;@JsonKey(name: 'full_name') String get fullName; String get email;@JsonKey(name: 'mobile_verified') bool get mobileVerified;@JsonKey(name: 'email_verified') bool get emailVerified; String get role; String get status;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'owner_profile') OwnerBusinessProfileModel get ownerProfile;
+ String get id;@JsonKey(name: 'mobile_number') String get mobileNumber;@JsonKey(name: 'full_name') String get fullName; String get email;@JsonKey(name: 'mobile_verified') bool get mobileVerified;@JsonKey(name: 'email_verified') bool get emailVerified; UserRole get role; String get status;@JsonKey(name: 'created_at') DateTime get createdAt;@JsonKey(name: 'updated_at') DateTime get updatedAt;@JsonKey(name: 'owner_profile') OwnerBusinessProfileModel get ownerProfile;
 /// Create a copy of UserModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -604,7 +604,7 @@ abstract mixin class $UserModelCopyWith<$Res>  {
   factory $UserModelCopyWith(UserModel value, $Res Function(UserModel) _then) = _$UserModelCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'mobile_number') String mobileNumber,@JsonKey(name: 'full_name') String fullName, String email,@JsonKey(name: 'mobile_verified') bool mobileVerified,@JsonKey(name: 'email_verified') bool emailVerified, String role, String status,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'owner_profile') OwnerBusinessProfileModel ownerProfile
+ String id,@JsonKey(name: 'mobile_number') String mobileNumber,@JsonKey(name: 'full_name') String fullName, String email,@JsonKey(name: 'mobile_verified') bool mobileVerified,@JsonKey(name: 'email_verified') bool emailVerified, UserRole role, String status,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'owner_profile') OwnerBusinessProfileModel ownerProfile
 });
 
 
@@ -630,7 +630,7 @@ as String,email: null == email ? _self.email : email // ignore: cast_nullable_to
 as String,mobileVerified: null == mobileVerified ? _self.mobileVerified : mobileVerified // ignore: cast_nullable_to_non_nullable
 as bool,emailVerified: null == emailVerified ? _self.emailVerified : emailVerified // ignore: cast_nullable_to_non_nullable
 as bool,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
-as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as UserRole,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,ownerProfile: null == ownerProfile ? _self.ownerProfile : ownerProfile // ignore: cast_nullable_to_non_nullable
@@ -725,7 +725,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'mobile_number')  String mobileNumber, @JsonKey(name: 'full_name')  String fullName,  String email, @JsonKey(name: 'mobile_verified')  bool mobileVerified, @JsonKey(name: 'email_verified')  bool emailVerified,  String role,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'owner_profile')  OwnerBusinessProfileModel ownerProfile)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'mobile_number')  String mobileNumber, @JsonKey(name: 'full_name')  String fullName,  String email, @JsonKey(name: 'mobile_verified')  bool mobileVerified, @JsonKey(name: 'email_verified')  bool emailVerified,  UserRole role,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'owner_profile')  OwnerBusinessProfileModel ownerProfile)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
 return $default(_that.id,_that.mobileNumber,_that.fullName,_that.email,_that.mobileVerified,_that.emailVerified,_that.role,_that.status,_that.createdAt,_that.updatedAt,_that.ownerProfile);case _:
@@ -746,7 +746,7 @@ return $default(_that.id,_that.mobileNumber,_that.fullName,_that.email,_that.mob
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'mobile_number')  String mobileNumber, @JsonKey(name: 'full_name')  String fullName,  String email, @JsonKey(name: 'mobile_verified')  bool mobileVerified, @JsonKey(name: 'email_verified')  bool emailVerified,  String role,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'owner_profile')  OwnerBusinessProfileModel ownerProfile)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'mobile_number')  String mobileNumber, @JsonKey(name: 'full_name')  String fullName,  String email, @JsonKey(name: 'mobile_verified')  bool mobileVerified, @JsonKey(name: 'email_verified')  bool emailVerified,  UserRole role,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'owner_profile')  OwnerBusinessProfileModel ownerProfile)  $default,) {final _that = this;
 switch (_that) {
 case _UserModel():
 return $default(_that.id,_that.mobileNumber,_that.fullName,_that.email,_that.mobileVerified,_that.emailVerified,_that.role,_that.status,_that.createdAt,_that.updatedAt,_that.ownerProfile);}
@@ -763,7 +763,7 @@ return $default(_that.id,_that.mobileNumber,_that.fullName,_that.email,_that.mob
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'mobile_number')  String mobileNumber, @JsonKey(name: 'full_name')  String fullName,  String email, @JsonKey(name: 'mobile_verified')  bool mobileVerified, @JsonKey(name: 'email_verified')  bool emailVerified,  String role,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'owner_profile')  OwnerBusinessProfileModel ownerProfile)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'mobile_number')  String mobileNumber, @JsonKey(name: 'full_name')  String fullName,  String email, @JsonKey(name: 'mobile_verified')  bool mobileVerified, @JsonKey(name: 'email_verified')  bool emailVerified,  UserRole role,  String status, @JsonKey(name: 'created_at')  DateTime createdAt, @JsonKey(name: 'updated_at')  DateTime updatedAt, @JsonKey(name: 'owner_profile')  OwnerBusinessProfileModel ownerProfile)?  $default,) {final _that = this;
 switch (_that) {
 case _UserModel() when $default != null:
 return $default(_that.id,_that.mobileNumber,_that.fullName,_that.email,_that.mobileVerified,_that.emailVerified,_that.role,_that.status,_that.createdAt,_that.updatedAt,_that.ownerProfile);case _:
@@ -787,7 +787,7 @@ class _UserModel implements UserModel {
 @override final  String email;
 @override@JsonKey(name: 'mobile_verified') final  bool mobileVerified;
 @override@JsonKey(name: 'email_verified') final  bool emailVerified;
-@override final  String role;
+@override final  UserRole role;
 @override final  String status;
 @override@JsonKey(name: 'created_at') final  DateTime createdAt;
 @override@JsonKey(name: 'updated_at') final  DateTime updatedAt;
@@ -826,7 +826,7 @@ abstract mixin class _$UserModelCopyWith<$Res> implements $UserModelCopyWith<$Re
   factory _$UserModelCopyWith(_UserModel value, $Res Function(_UserModel) _then) = __$UserModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'mobile_number') String mobileNumber,@JsonKey(name: 'full_name') String fullName, String email,@JsonKey(name: 'mobile_verified') bool mobileVerified,@JsonKey(name: 'email_verified') bool emailVerified, String role, String status,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'owner_profile') OwnerBusinessProfileModel ownerProfile
+ String id,@JsonKey(name: 'mobile_number') String mobileNumber,@JsonKey(name: 'full_name') String fullName, String email,@JsonKey(name: 'mobile_verified') bool mobileVerified,@JsonKey(name: 'email_verified') bool emailVerified, UserRole role, String status,@JsonKey(name: 'created_at') DateTime createdAt,@JsonKey(name: 'updated_at') DateTime updatedAt,@JsonKey(name: 'owner_profile') OwnerBusinessProfileModel ownerProfile
 });
 
 
@@ -852,7 +852,7 @@ as String,email: null == email ? _self.email : email // ignore: cast_nullable_to
 as String,mobileVerified: null == mobileVerified ? _self.mobileVerified : mobileVerified // ignore: cast_nullable_to_non_nullable
 as bool,emailVerified: null == emailVerified ? _self.emailVerified : emailVerified // ignore: cast_nullable_to_non_nullable
 as bool,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
-as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as UserRole,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,ownerProfile: null == ownerProfile ? _self.ownerProfile : ownerProfile // ignore: cast_nullable_to_non_nullable

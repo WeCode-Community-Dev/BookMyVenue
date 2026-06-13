@@ -1,9 +1,9 @@
+import '../../../../core/auth/auth_session_model.dart';
 import '../../../../core/storage/secure_storage_service.dart';
-import '../model/user/response_model/verify_otp_response/verify_otp_response.dart';
 
 abstract class IAuthLocalDatasource {
-  Future<void> saveToken(VerifyOtpResponse token);
-  Future<VerifyOtpResponse?> getToken();
+  Future<void> saveToken(AuthSessionModel token);
+  Future<AuthSessionModel?> getToken();
 }
 
 class AuthLocalDatasourceImpl implements IAuthLocalDatasource {
@@ -11,12 +11,12 @@ class AuthLocalDatasourceImpl implements IAuthLocalDatasource {
   final SecureStorageService storage;
 
   @override
-  Future<void> saveToken(VerifyOtpResponse token) {
-    return storage.saveToken(token);
+  Future<void> saveToken(AuthSessionModel token) {
+    return storage.saveSession(token);
   }
 
   @override
-  Future<VerifyOtpResponse?> getToken() {
-    return storage.getToken();
+  Future<AuthSessionModel?> getToken() {
+    return storage.getSession();
   }
 }

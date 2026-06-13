@@ -57,11 +57,10 @@ class _VenueOwnerSignupPageState extends State<VenueOwnerSignupPage> {
                 type: ToastType.success,
                 title: state.successMessage!,
               );
-              if (state.verifyOtpResponse != null) {
-                context.goNamed(
-                  AppRouteNames.ownerVerification,
-                  extra: state.verifyOtpResponse!.user.role,
-                );
+              if (state.otpResponse != null) {
+                context.goNamed(AppRouteNames.venueOwnerVerify);
+              } else if (state.verifyOtpResponse != null) {
+                context.goNamed(AppRouteNames.ownerVerification);
               }
             }
           },

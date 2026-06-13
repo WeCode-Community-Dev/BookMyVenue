@@ -312,7 +312,7 @@ as VerifyOwnerOtpParams,
 /// @nodoc
 mixin _$OwnerAuthState {
 
- bool get isLoading; bool get isOtpRequesting; RegisterDataEntity? get otpResponse; VerifyOtpDataEntity? get verifyOtpResponse; String? get successMessage; bool get isError; String? get errorMessage;
+ bool get isLoading; RegisterDataEntity? get otpResponse; VerifyOtpDataEntity? get verifyOtpResponse; String? get successMessage; bool get isError; String? get errorMessage;
 /// Create a copy of OwnerAuthState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -323,16 +323,16 @@ $OwnerAuthStateCopyWith<OwnerAuthState> get copyWith => _$OwnerAuthStateCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OwnerAuthState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isOtpRequesting, isOtpRequesting) || other.isOtpRequesting == isOtpRequesting)&&(identical(other.otpResponse, otpResponse) || other.otpResponse == otpResponse)&&(identical(other.verifyOtpResponse, verifyOtpResponse) || other.verifyOtpResponse == verifyOtpResponse)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.isError, isError) || other.isError == isError)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OwnerAuthState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.otpResponse, otpResponse) || other.otpResponse == otpResponse)&&(identical(other.verifyOtpResponse, verifyOtpResponse) || other.verifyOtpResponse == verifyOtpResponse)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.isError, isError) || other.isError == isError)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,isOtpRequesting,otpResponse,verifyOtpResponse,successMessage,isError,errorMessage);
+int get hashCode => Object.hash(runtimeType,isLoading,otpResponse,verifyOtpResponse,successMessage,isError,errorMessage);
 
 @override
 String toString() {
-  return 'OwnerAuthState(isLoading: $isLoading, isOtpRequesting: $isOtpRequesting, otpResponse: $otpResponse, verifyOtpResponse: $verifyOtpResponse, successMessage: $successMessage, isError: $isError, errorMessage: $errorMessage)';
+  return 'OwnerAuthState(isLoading: $isLoading, otpResponse: $otpResponse, verifyOtpResponse: $verifyOtpResponse, successMessage: $successMessage, isError: $isError, errorMessage: $errorMessage)';
 }
 
 
@@ -343,7 +343,7 @@ abstract mixin class $OwnerAuthStateCopyWith<$Res>  {
   factory $OwnerAuthStateCopyWith(OwnerAuthState value, $Res Function(OwnerAuthState) _then) = _$OwnerAuthStateCopyWithImpl;
 @useResult
 $Res call({
- bool isLoading, bool isOtpRequesting, RegisterDataEntity? otpResponse, VerifyOtpDataEntity? verifyOtpResponse, String? successMessage, bool isError, String? errorMessage
+ bool isLoading, RegisterDataEntity? otpResponse, VerifyOtpDataEntity? verifyOtpResponse, String? successMessage, bool isError, String? errorMessage
 });
 
 
@@ -360,10 +360,9 @@ class _$OwnerAuthStateCopyWithImpl<$Res>
 
 /// Create a copy of OwnerAuthState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? isOtpRequesting = null,Object? otpResponse = freezed,Object? verifyOtpResponse = freezed,Object? successMessage = freezed,Object? isError = null,Object? errorMessage = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? otpResponse = freezed,Object? verifyOtpResponse = freezed,Object? successMessage = freezed,Object? isError = null,Object? errorMessage = freezed,}) {
   return _then(_self.copyWith(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
-as bool,isOtpRequesting: null == isOtpRequesting ? _self.isOtpRequesting : isOtpRequesting // ignore: cast_nullable_to_non_nullable
 as bool,otpResponse: freezed == otpResponse ? _self.otpResponse : otpResponse // ignore: cast_nullable_to_non_nullable
 as RegisterDataEntity?,verifyOtpResponse: freezed == verifyOtpResponse ? _self.verifyOtpResponse : verifyOtpResponse // ignore: cast_nullable_to_non_nullable
 as VerifyOtpDataEntity?,successMessage: freezed == successMessage ? _self.successMessage : successMessage // ignore: cast_nullable_to_non_nullable
@@ -454,10 +453,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isLoading,  bool isOtpRequesting,  RegisterDataEntity? otpResponse,  VerifyOtpDataEntity? verifyOtpResponse,  String? successMessage,  bool isError,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isLoading,  RegisterDataEntity? otpResponse,  VerifyOtpDataEntity? verifyOtpResponse,  String? successMessage,  bool isError,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OwnerAuthState() when $default != null:
-return $default(_that.isLoading,_that.isOtpRequesting,_that.otpResponse,_that.verifyOtpResponse,_that.successMessage,_that.isError,_that.errorMessage);case _:
+return $default(_that.isLoading,_that.otpResponse,_that.verifyOtpResponse,_that.successMessage,_that.isError,_that.errorMessage);case _:
   return orElse();
 
 }
@@ -475,10 +474,10 @@ return $default(_that.isLoading,_that.isOtpRequesting,_that.otpResponse,_that.ve
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isLoading,  bool isOtpRequesting,  RegisterDataEntity? otpResponse,  VerifyOtpDataEntity? verifyOtpResponse,  String? successMessage,  bool isError,  String? errorMessage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isLoading,  RegisterDataEntity? otpResponse,  VerifyOtpDataEntity? verifyOtpResponse,  String? successMessage,  bool isError,  String? errorMessage)  $default,) {final _that = this;
 switch (_that) {
 case _OwnerAuthState():
-return $default(_that.isLoading,_that.isOtpRequesting,_that.otpResponse,_that.verifyOtpResponse,_that.successMessage,_that.isError,_that.errorMessage);case _:
+return $default(_that.isLoading,_that.otpResponse,_that.verifyOtpResponse,_that.successMessage,_that.isError,_that.errorMessage);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -495,10 +494,10 @@ return $default(_that.isLoading,_that.isOtpRequesting,_that.otpResponse,_that.ve
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isLoading,  bool isOtpRequesting,  RegisterDataEntity? otpResponse,  VerifyOtpDataEntity? verifyOtpResponse,  String? successMessage,  bool isError,  String? errorMessage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isLoading,  RegisterDataEntity? otpResponse,  VerifyOtpDataEntity? verifyOtpResponse,  String? successMessage,  bool isError,  String? errorMessage)?  $default,) {final _that = this;
 switch (_that) {
 case _OwnerAuthState() when $default != null:
-return $default(_that.isLoading,_that.isOtpRequesting,_that.otpResponse,_that.verifyOtpResponse,_that.successMessage,_that.isError,_that.errorMessage);case _:
+return $default(_that.isLoading,_that.otpResponse,_that.verifyOtpResponse,_that.successMessage,_that.isError,_that.errorMessage);case _:
   return null;
 
 }
@@ -510,11 +509,10 @@ return $default(_that.isLoading,_that.isOtpRequesting,_that.otpResponse,_that.ve
 
 
 class _OwnerAuthState implements OwnerAuthState {
-  const _OwnerAuthState({this.isLoading = false, this.isOtpRequesting = false, this.otpResponse, this.verifyOtpResponse, this.successMessage, this.isError = false, this.errorMessage});
+  const _OwnerAuthState({this.isLoading = false, this.otpResponse, this.verifyOtpResponse, this.successMessage, this.isError = false, this.errorMessage});
   
 
 @override@JsonKey() final  bool isLoading;
-@override@JsonKey() final  bool isOtpRequesting;
 @override final  RegisterDataEntity? otpResponse;
 @override final  VerifyOtpDataEntity? verifyOtpResponse;
 @override final  String? successMessage;
@@ -531,16 +529,16 @@ _$OwnerAuthStateCopyWith<_OwnerAuthState> get copyWith => __$OwnerAuthStateCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OwnerAuthState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isOtpRequesting, isOtpRequesting) || other.isOtpRequesting == isOtpRequesting)&&(identical(other.otpResponse, otpResponse) || other.otpResponse == otpResponse)&&(identical(other.verifyOtpResponse, verifyOtpResponse) || other.verifyOtpResponse == verifyOtpResponse)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.isError, isError) || other.isError == isError)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OwnerAuthState&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.otpResponse, otpResponse) || other.otpResponse == otpResponse)&&(identical(other.verifyOtpResponse, verifyOtpResponse) || other.verifyOtpResponse == verifyOtpResponse)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.isError, isError) || other.isError == isError)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isLoading,isOtpRequesting,otpResponse,verifyOtpResponse,successMessage,isError,errorMessage);
+int get hashCode => Object.hash(runtimeType,isLoading,otpResponse,verifyOtpResponse,successMessage,isError,errorMessage);
 
 @override
 String toString() {
-  return 'OwnerAuthState(isLoading: $isLoading, isOtpRequesting: $isOtpRequesting, otpResponse: $otpResponse, verifyOtpResponse: $verifyOtpResponse, successMessage: $successMessage, isError: $isError, errorMessage: $errorMessage)';
+  return 'OwnerAuthState(isLoading: $isLoading, otpResponse: $otpResponse, verifyOtpResponse: $verifyOtpResponse, successMessage: $successMessage, isError: $isError, errorMessage: $errorMessage)';
 }
 
 
@@ -551,7 +549,7 @@ abstract mixin class _$OwnerAuthStateCopyWith<$Res> implements $OwnerAuthStateCo
   factory _$OwnerAuthStateCopyWith(_OwnerAuthState value, $Res Function(_OwnerAuthState) _then) = __$OwnerAuthStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isLoading, bool isOtpRequesting, RegisterDataEntity? otpResponse, VerifyOtpDataEntity? verifyOtpResponse, String? successMessage, bool isError, String? errorMessage
+ bool isLoading, RegisterDataEntity? otpResponse, VerifyOtpDataEntity? verifyOtpResponse, String? successMessage, bool isError, String? errorMessage
 });
 
 
@@ -568,10 +566,9 @@ class __$OwnerAuthStateCopyWithImpl<$Res>
 
 /// Create a copy of OwnerAuthState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isLoading = null,Object? isOtpRequesting = null,Object? otpResponse = freezed,Object? verifyOtpResponse = freezed,Object? successMessage = freezed,Object? isError = null,Object? errorMessage = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isLoading = null,Object? otpResponse = freezed,Object? verifyOtpResponse = freezed,Object? successMessage = freezed,Object? isError = null,Object? errorMessage = freezed,}) {
   return _then(_OwnerAuthState(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
-as bool,isOtpRequesting: null == isOtpRequesting ? _self.isOtpRequesting : isOtpRequesting // ignore: cast_nullable_to_non_nullable
 as bool,otpResponse: freezed == otpResponse ? _self.otpResponse : otpResponse // ignore: cast_nullable_to_non_nullable
 as RegisterDataEntity?,verifyOtpResponse: freezed == verifyOtpResponse ? _self.verifyOtpResponse : verifyOtpResponse // ignore: cast_nullable_to_non_nullable
 as VerifyOtpDataEntity?,successMessage: freezed == successMessage ? _self.successMessage : successMessage // ignore: cast_nullable_to_non_nullable

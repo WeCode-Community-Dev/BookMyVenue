@@ -1,3 +1,4 @@
+import '../../../../core/auth/auth_session_model.dart';
 import '../../../../core/model/api_response.dart';
 import '../../../../core/network/base_repository.dart';
 import '../../../../core/utils/type_def.dart';
@@ -7,7 +8,7 @@ import '../../domain/params/auth_param.dart';
 import '../../domain/repository/i_auth_repository.dart';
 import '../datasource/auth_local_datasource.dart';
 import '../datasource/i_auth_remote_datasource.dart';
-import '../mapper/auth_owner_maper.dart';
+import '../mapper/auth_owner_mapper.dart';
 import '../mapper/auth_user_mapper.dart';
 import '../model/owner/reqeust_model/register_request_model.dart';
 import '../model/owner/response_model/register_response_model.dart';
@@ -52,7 +53,12 @@ class AuthRepositoryImpl extends BaseRepository implements IAuthRepository {
           .verifyOtp(request);
 
       if (response.data != null) {
-        await localDatasource.saveToken(response.data!);
+        final AuthSessionModel sessionModel = AuthSessionModel(
+          accessToken: response.data!.accessToken,
+          refreshToken: response.data!.refreshToken,
+          role: response.data!.user.role,
+        );
+        await localDatasource.saveToken(sessionModel);
       }
       final VerifyOtpResponseResult result = VerifyOtpResponseResult(
         result: response.data!.toEntity(),
@@ -107,6 +113,16 @@ class OwnerAuthRepositoryImpl extends BaseRepository
       );
       final ApiResponse<VerifyOwnerOtpResponseModel> response =
           await remoteDataSource.verifyOwnerOtp(request);
+
+      if (response.data != null) {
+        final AuthSessionModel sessionModel = AuthSessionModel(
+          accessToken: response.data!.accessToken,
+          refreshToken: response.data!.refreshToken,
+          role: response.data!.user.role,
+          status: response.data!.user.ownerProfile.approvalStatus,
+        );
+        await localDatasource.saveToken(sessionModel);
+      }
 
       return VerifyOwnerOtpResponseResult(
         user: response.data!.toEntity(),
