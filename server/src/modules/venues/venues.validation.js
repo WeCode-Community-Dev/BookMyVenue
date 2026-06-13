@@ -44,9 +44,33 @@ export const createVenueSchema = z.object({
     .optional(),
 
   images: z
-    .array(z.string().url("Invalid image URL"))
+    .array(
+      z.string().url()
+    )
     .default([]),
 });
 
-export const updateVenueSchema =
-  createVenueSchema.partial();
+export const updateVenueSchema = z.object({
+  address: z
+    .string()
+    .trim()
+    .optional(),
+
+  description: z
+    .string()
+    .trim()
+    .optional(),
+
+  capacity: z
+    .coerce
+    .number()
+    .int()
+    .positive()
+    .optional(),
+
+  price: z
+    .coerce
+    .number()
+    .positive()
+    .optional(),
+});
