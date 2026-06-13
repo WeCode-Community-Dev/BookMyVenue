@@ -24,7 +24,7 @@ Map<String, dynamic> _$AuthSessionModelToJson(_AuthSessionModel instance) =>
 
 const _$UserRoleEnumMap = {
   UserRole.customer: 'customer',
-  UserRole.venueOwner: 'venueOwner',
+  UserRole.venueOwner: 'venue_owner',
   UserRole.admin: 'admin',
 };
 

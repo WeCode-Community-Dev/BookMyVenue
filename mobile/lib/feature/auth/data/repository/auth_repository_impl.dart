@@ -4,6 +4,7 @@ import '../../../../core/network/base_repository.dart';
 import '../../../../core/utils/type_def.dart';
 import '../../domain/entity/owner_entity.dart';
 import '../../domain/entity/user_entity.dart';
+import '../../domain/enums/approval_status.dart';
 import '../../domain/params/auth_param.dart';
 import '../../domain/repository/i_auth_repository.dart';
 import '../datasource/auth_local_datasource.dart';
@@ -119,7 +120,9 @@ class OwnerAuthRepositoryImpl extends BaseRepository
           accessToken: response.data!.accessToken,
           refreshToken: response.data!.refreshToken,
           role: response.data!.user.role,
-          status: response.data!.user.ownerProfile.approvalStatus,
+          status:
+              response.data!.user.ownerProfile?.approvalStatus ??
+              ApprovalStatus.pending,
         );
         await localDatasource.saveToken(sessionModel);
       }

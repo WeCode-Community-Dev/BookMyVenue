@@ -47,10 +47,8 @@ sealed class UserModel with _$UserModel {
     required String status,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
-    @JsonKey(name: 'owner_profile')
-    required OwnerBusinessProfileModel ownerProfile,
+    @JsonKey(name: 'owner_profile') OwnerBusinessProfileModel? ownerProfile,
   }) = _UserModel;
-
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
 }

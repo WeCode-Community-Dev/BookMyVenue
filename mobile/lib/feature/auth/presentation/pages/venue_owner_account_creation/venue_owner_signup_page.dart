@@ -58,9 +58,10 @@ class _VenueOwnerSignupPageState extends State<VenueOwnerSignupPage> {
                 title: state.successMessage!,
               );
               if (state.otpResponse != null) {
-                context.goNamed(AppRouteNames.venueOwnerVerify);
-              } else if (state.verifyOtpResponse != null) {
-                context.goNamed(AppRouteNames.ownerVerification);
+                context.goNamed(
+                  AppRouteNames.venueOwnerVerify,
+                  extra: state.otpResponse!.mobileNumber,
+                );
               }
             }
           },

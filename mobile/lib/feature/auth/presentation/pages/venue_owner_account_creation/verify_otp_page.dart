@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../../core/router/route_name.dart';
 import '../../../../../core/utils/colors.dart';
+import '../../../../../core/utils/ui/snackbar_command.dart';
 import '../../../../../core/widgets/app_button.dart';
 import '../../../../../core/widgets/app_text.dart';
 import '../../../domain/params/auth_param.dart';
@@ -11,7 +14,8 @@ import '../../bloc/owner/owner_auth_bloc.dart';
 import '../widget/otp_field_widget.dart';
 
 class OwnerVerifyOtpPage extends StatefulWidget {
-  const OwnerVerifyOtpPage({super.key});
+  const OwnerVerifyOtpPage({super.key, required this.mobileNumber});
+  final String mobileNumber;
 
   @override
   State<OwnerVerifyOtpPage> createState() => _OwnerVerifyOtpPageState();
@@ -141,7 +145,7 @@ class _OwnerVerifyOtpPageState extends State<OwnerVerifyOtpPage> {
             OtpFieldWidget(
               controller: _otpController,
               onCompleted: (String otp) {
-                print("OTP: $otp");
+                print('OTP: $otp');
                 setState(() {
                   isValidOtp = true;
                 });
@@ -149,17 +153,30 @@ class _OwnerVerifyOtpPageState extends State<OwnerVerifyOtpPage> {
             ),
             _buildResendSection(),
             const Spacer(),
-            BlocBuilder<OwnerAuthBloc, OwnerAuthState>(
+            BlocConsumer<OwnerAuthBloc, OwnerAuthState>(
+              listener: (BuildContext context, OwnerAuthState state) {
+                if (state.isError) {
+                  SnackbarCommand.show(
+                    type: ToastType.error,
+                    title: state.errorMessage!,
+                  );
+                } else if (state.successMessage != null) {
+                  SnackbarCommand.show(
+                    type: ToastType.success,
+                    title: state.successMessage!,
+                  );
+                  if (state.verifyOtpResponse != null) {
+                    context.goNamed(AppRouteNames.ownerVerification);
+                  }
+                }
+              },
               builder: (BuildContext context, OwnerAuthState state) {
                 return AppButton(
                   label: 'Continue',
                   onPressed: () {
-                    if (state.otpResponse == null) {
-                      return;
-                    }
                     final VerifyOwnerOtpParams requestParam =
                         VerifyOwnerOtpParams(
-                          mobileNumber: state.otpResponse!.mobileNumber,
+                          mobileNumber: widget.mobileNumber,
                           otp: _otpController.text.trim(),
                         );
                     context.read<OwnerAuthBloc>().add(

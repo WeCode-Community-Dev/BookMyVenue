@@ -57,9 +57,11 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
   status: json['status'] as String,
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
-  ownerProfile: OwnerBusinessProfileModel.fromJson(
-    json['owner_profile'] as Map<String, dynamic>,
-  ),
+  ownerProfile: json['owner_profile'] == null
+      ? null
+      : OwnerBusinessProfileModel.fromJson(
+          json['owner_profile'] as Map<String, dynamic>,
+        ),
 );
 
 Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
@@ -79,7 +81,7 @@ Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
 
 const _$UserRoleEnumMap = {
   UserRole.customer: 'customer',
-  UserRole.venueOwner: 'venueOwner',
+  UserRole.venueOwner: 'venue_owner',
   UserRole.admin: 'admin',
 };
 

@@ -1,6 +1,7 @@
 import '../../feature/auth/domain/enums/approval_status.dart';
 import '../../feature/auth/domain/enums/role_base.dart';
 import '../di/injection.dart';
+import '../logger/app_logger.dart';
 import '../storage/secure_storage_service.dart';
 import 'auth_session_model.dart';
 
@@ -12,6 +13,8 @@ class AuthSession {
   static Future<void> init() async {
     final AuthSessionModel? user = await sl<SecureStorageService>()
         .getSession();
+
+    AppLogger.info(' $user session user data');
 
     isLoggedIn = user != null && user.accessToken.isNotEmpty;
     role = user?.role;

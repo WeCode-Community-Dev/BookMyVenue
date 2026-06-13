@@ -98,7 +98,7 @@ class UserEntity extends Equatable {
   final String status;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final OwnerBusinessProfileEntity ownerBusinessProfileEntity;
+  final OwnerBusinessProfileEntity? ownerBusinessProfileEntity;
 
   @override
   List<Object?> get props => <Object?>[

@@ -50,11 +50,13 @@ class AppRouter {
       GoRoute(
         path: '/${AppRouteNames.venueOwnerVerify}',
         name: AppRouteNames.venueOwnerVerify,
-        builder: (BuildContext context, GoRouterState state) =>
-            BlocProvider<OwnerAuthBloc>(
-              create: (BuildContext context) => sl<OwnerAuthBloc>(),
-              child: const OwnerVerifyOtpPage(),
-            ),
+        builder: (BuildContext context, GoRouterState state) {
+          final String mobileNumber = state.extra! as String;
+          return BlocProvider<OwnerAuthBloc>(
+            create: (BuildContext context) => sl<OwnerAuthBloc>(),
+            child: OwnerVerifyOtpPage(mobileNumber: mobileNumber),
+          );
+        },
       ),
 
       GoRoute(
@@ -197,18 +199,23 @@ class AppRouter {
         '/${AppRouteNames.venueOwnerVerify}',
       ].contains(location);
 
-      if (!loggedIn && !authRoutes) {
-        return '/login';
+      if (!loggedIn) {
+        return authRoutes ? null : '/${AppRouteNames.signin}';
       }
 
-      if (loggedIn && authRoutes) {
-        if (role == UserRole.venueOwner && status != ApprovalStatus.approved) {
+      if (role == UserRole.venueOwner) {
+        final bool approved = status == ApprovalStatus.approved;
+
+        if (!approved && location != '/${AppRouteNames.ownerVerification}') {
           return '/${AppRouteNames.ownerVerification}';
-        } else if (role == UserRole.venueOwner &&
-            status == ApprovalStatus.approved) {
-          return '/${AppRouteNames.ownerDashboard}';
         }
 
+        if (approved && location == '/${AppRouteNames.ownerVerification}') {
+          return '/${AppRouteNames.ownerDashboard}';
+        }
+      }
+
+      if (authRoutes) {
         return '/home';
       }
 

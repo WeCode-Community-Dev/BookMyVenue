@@ -38,7 +38,7 @@ extension UserMapper on UserModel {
       status: status,
       createdAt: createdAt,
       updatedAt: updatedAt,
-      ownerBusinessProfileEntity: ownerProfile.toEntity(),
+      ownerBusinessProfileEntity: ownerProfile?.toEntity(),
     );
   }
 }

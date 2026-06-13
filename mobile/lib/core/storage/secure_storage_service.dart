@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../auth/auth_session_model.dart';
+import '../logger/app_logger.dart';
 
 abstract interface class ISecureStorageService {
   Future<void> saveSession(AuthSessionModel session);
@@ -22,7 +23,8 @@ class SecureStorageService implements ISecureStorageService {
 
   @override
   Future<void> saveSession(AuthSessionModel session) async {
-    await _storage.write(key: _sessionKey, value: jsonEncode(session));
+    await _storage.write(key: _sessionKey, value: jsonEncode(session.toJson()));
+    AppLogger.debug('${session.toJson()} session stored');
   }
 
   @override
