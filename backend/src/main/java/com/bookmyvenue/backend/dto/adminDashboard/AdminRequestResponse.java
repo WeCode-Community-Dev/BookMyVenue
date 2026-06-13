@@ -1,4 +1,4 @@
-package com.bookmyvenue.backend.dto.admin;
+package com.bookmyvenue.backend.dto.adminDashboard;
 
 import com.bookmyvenue.backend.enums.VenueStatus;
 import lombok.Builder;

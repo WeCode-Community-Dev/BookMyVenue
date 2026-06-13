@@ -1,7 +1,7 @@
 package com.bookmyvenue.backend.service;
 
-import com.bookmyvenue.backend.dto.admin.AdminVenueOwnerResponse;
-import com.bookmyvenue.backend.dto.admin.AdminVenueOwnerSearchRequest;
+import com.bookmyvenue.backend.dto.adminDashboard.AdminVenueOwnerResponse;
+import com.bookmyvenue.backend.dto.adminDashboard.AdminVenueOwnerSearchRequest;
 
 import java.util.List;
 

@@ -1,11 +1,10 @@
 package com.bookmyvenue.backend.service;
-import com.bookmyvenue.backend.dto.admin.AdminRequestResponse;
-import com.bookmyvenue.backend.dto.admin.AdminRequestSearchRequest;
+import com.bookmyvenue.backend.dto.adminDashboard.AdminRequestResponse;
+import com.bookmyvenue.backend.dto.adminDashboard.AdminRequestSearchRequest;
 import com.bookmyvenue.backend.entity.Venue;
 import com.bookmyvenue.backend.enums.VenueStatus;
 import com.bookmyvenue.backend.exception.ResourceNotFoundException;
 import com.bookmyvenue.backend.repository.VenueRepository;
-import com.bookmyvenue.backend.service.AdminRequestService;
 import com.bookmyvenue.backend.specification.AdminRequestSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;

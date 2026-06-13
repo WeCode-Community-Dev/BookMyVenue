@@ -6,9 +6,13 @@ import lombok.Data;
 @Data
 public class BookingStatusRequest {
 
-    private BookingStatus status;
-
     private String remarks;
 
     private Long updatedBy;
+
+    private BookingStatus bookingStatus;
+
+    private String cancellationReason;
+
+    private String cancelledBy;
 }

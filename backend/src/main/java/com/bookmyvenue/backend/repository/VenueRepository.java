@@ -27,4 +27,8 @@ public interface VenueRepository extends JpaRepository<Venue, Long> ,
 
     long countByOwnerUserUserId(Long ownerId);
 
+    long countByOwnerUserUserIdAndStatus(
+            Long ownerId,
+            VenueStatus status);
+
 }

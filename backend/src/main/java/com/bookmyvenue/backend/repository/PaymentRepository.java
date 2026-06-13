@@ -7,17 +7,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Repository
 public interface PaymentRepository
         extends JpaRepository<Payment, Long> {
 
-    @Query("""
-           SELECT COALESCE(SUM(p.totalAmount), 0)
-           FROM Payment p
-           WHERE p.booking.venue.ownerUser.userId = :ownerId
-           AND p.paymentStatus = com.bookmyvenue.backend.enums.PaymentStatus.SUCCESS
-           """)
-    BigDecimal getRevenueByOwnerId(
-            @Param("ownerId") Long ownerId);
+    Optional<Payment>
+    findByBookingBookingId(
+            Long bookingId);
+
 }
