@@ -188,12 +188,8 @@ export const authStyle = {
         "text-teal-600",
         "hover:text-teal-700",
     ),
-
     trustGrid: clsx("mt-8", "grid", "grid-cols-3", "gap-2", "sm:gap-4"),
-
     trustItem: clsx("text-center"),
-
     trustIcon: clsx("mx-auto", "mb-2", "h-6", "w-6", "text-teal-600"),
-
     trustText: clsx("text-xs", "text-slate-500"),
 };
