@@ -5,6 +5,7 @@ import { authenticate }  from './../../shared/middlewares/auth.middleware.js';
 import { authorize }  from './../../shared/middlewares/authorize.middleware.js';
 import { validate }  from '../../shared/middlewares/validate.middleware.js';
 import { createVenueSchema, updateVenueSchema } from "./venues.validation.js";
+import upload from "../../shared/middlewares/upload.middleware.js";
 
 const venueRoutes = Router();
 
@@ -28,13 +29,15 @@ venueRoutes.get(
 
 );
 
+
 venueRoutes.patch(
     "/:id",
-    authenticate, 
+    authenticate,
     authorize("OWNER"),
+    upload.array("images", 5),
     validate(updateVenueSchema),
     updateVenue
-);
+ );
 
 venueRoutes.delete(
     "/:id", 

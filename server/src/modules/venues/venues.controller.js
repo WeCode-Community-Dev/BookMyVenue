@@ -13,6 +13,7 @@ import {
   updateVenueService,
   getMyVenuesService
 } from "./venues.service.js";
+import { uploadImages } from "../../shared/services/storage/storage.service.js";
 
 export const createVenue = async (req, res, next) => {
   console.log("USER:", req.user.userId);
@@ -77,18 +78,24 @@ export const getVenueById = async (req, res, next) => {
 
 export const updateVenue = async (req, res, next) => {
   try {
+    let imageUrls = [];
+    if (req.files?.length) {
+      imageUrls = await uploadImages(req.files);
+    }
+
+    const venueData = {
+      ...req.body,
+      ...(imageUrls.length > 0 && {
+        images: imageUrls,
+      }),
+    };
+
     const updatedVenue = await updateVenueService(
       req.params.id,
-      req.body,
+      venueData,
       req.user.userId
     );
 
-    if (!updatedVenue) {
-      throw new ApiError(
-        STATUS_CODES.NOT_FOUND,
-        ERROR_MESSAGES.VENUE_NOT_FOUND
-      );
-    }
     return res
       .status(STATUS_CODES.OK)
       .json(
