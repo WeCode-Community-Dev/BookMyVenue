@@ -5,8 +5,10 @@ import com.example.bookMyVenue.Venue.Model.Venue;
 import com.example.bookMyVenue.Venue.Model.VenueAvailabilityRules;
 import com.example.bookMyVenue.Venue.Repository.VenueAvailabilityRulesRepo;
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @AllArgsConstructor
+@Service
 public class VenueAvailabilityRulesService {
 
     private final VenueAvailabilityRulesRepo venueAvailabilityRulesRepo;
