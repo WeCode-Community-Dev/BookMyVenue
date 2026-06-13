@@ -1,36 +1,36 @@
 "use client";
 
 import { Info } from "lucide-react";
-import { addVenueStyle } from "../styles/AddVenueStyle";
+import { venueStyle } from "../styles/VenueStyle";
 
 export default function BasicInfo() {
     return (
-        <div className={addVenueStyle.basicInfoCard}>
+        <div className={venueStyle.basicInfoCard}>
             {/* Header */}
-            <div className={addVenueStyle.headerWrapper}>
-                <Info className={addVenueStyle.headerIcon} />
-                <h2 className={addVenueStyle.headerTitle}>
+            <div className={venueStyle.headerWrapper}>
+                <Info className={venueStyle.headerIcon} />
+                <h2 className={venueStyle.headerTitle}>
                     1. Basic Information
                 </h2>
             </div>
 
             {/* Fields */}
-            <div className={addVenueStyle.fieldGrid}>
+            <div className={venueStyle.fieldGrid}>
                 <div>
-                    <label className={addVenueStyle.label}>
+                    <label className={venueStyle.label}>
                         Venue Name *
                     </label>
                     <input
                         type="text"
                         placeholder="Enter venue name"
-                        className={addVenueStyle.input}
+                        className={venueStyle.input}
                     />
                 </div>
                 <div>
-                    <label className={addVenueStyle.label}>
+                    <label className={venueStyle.label}>
                         Venue Type *
                     </label>
-                    <select className={addVenueStyle.select}>
+                    <select className={venueStyle.select}>
                         <option>Select venue type</option>
                         <option>Banquet Hall</option>
                         <option>Resort</option>
@@ -41,8 +41,8 @@ export default function BasicInfo() {
             </div>
 
             {/* Description */}
-            <div className={addVenueStyle.descriptionWrapper}>
-                <label className={addVenueStyle.label}>
+            <div className={venueStyle.descriptionWrapper}>
+                <label className={venueStyle.label}>
                     Short Description *
                 </label>
 
@@ -50,9 +50,9 @@ export default function BasicInfo() {
                     rows={3}
                     maxLength={200}
                     placeholder="Describe your venue in a few words..."
-                    className={addVenueStyle.textarea}
+                    className={venueStyle.textarea}
                 />
-                <div className={addVenueStyle.charCounter}>
+                <div className={venueStyle.charCounter}>
                     0 / 200
                 </div>
             </div>

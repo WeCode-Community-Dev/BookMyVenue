@@ -1,41 +1,42 @@
 "use client";
 
 import { Plus, Upload } from "lucide-react";
-import { addVenueStyle } from "@/features/add-venue/styles/AddVenueStyle";
+
+import { venueStyle } from "@/features/venues/styles/VenueStyle";
 
 export default function PhotoUpload() {
     return (
-        <div className={addVenueStyle.card}>
+        <div className={venueStyle.card}>
             {/* Header */}
-            <div className={addVenueStyle.headerWrapper}>
-                <Upload className={addVenueStyle.headerIcon} />
+            <div className={venueStyle.headerWrapper}>
+                <Upload className={venueStyle.headerIcon} />
 
-                <h2 className={addVenueStyle.headerTitle}>
+                <h2 className={venueStyle.headerTitle}>
                     4. Photos
                 </h2>
             </div>
 
             <div className="grid gap-4">
                 {/* Cover Image */}
-                <div className={addVenueStyle.uploadZone}>
-                    <Upload className={addVenueStyle.uploadIcon} />
+                <div className={venueStyle.uploadZone}>
+                    <Upload className={venueStyle.uploadIcon} />
 
-                    <p className={addVenueStyle.uploadText}>
+                    <p className={venueStyle.uploadText}>
                         Upload Cover Image
                     </p>
 
-                    <p className={addVenueStyle.uploadSubtext}>
+                    <p className={venueStyle.uploadSubtext}>
                         Recommended: 1280 × 720 px
                     </p>
                 </div>
 
                 {/* Gallery Images */}
                 <div>
-                    <p className={addVenueStyle.galleryLabel}>
+                    <p className={venueStyle.galleryLabel}>
                         Additional Photos
                     </p>
 
-                    <div className={addVenueStyle.galleryGrid}>
+                    <div className={venueStyle.galleryGrid}>
                         {[
                             1,
                             2,
@@ -47,9 +48,9 @@ export default function PhotoUpload() {
                                 <button
                                     key={item}
                                     type="button"
-                                    className={addVenueStyle.galleryAddButton}
+                                    className={venueStyle.galleryAddButton}
                                 >
-                                    <Plus className={addVenueStyle.galleryAddIcon} />
+                                    <Plus className={venueStyle.galleryAddIcon} />
                                 </button>
                             );
                         })}
@@ -57,7 +58,7 @@ export default function PhotoUpload() {
                 </div>
 
                 {/* Upload Hint */}
-                <p className={addVenueStyle.uploadSubtext}>
+                <p className={venueStyle.uploadSubtext}>
                     Upload up to 10 high-quality venue photos.
                 </p>
             </div>

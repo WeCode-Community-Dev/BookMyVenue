@@ -1,6 +1,7 @@
 import clsx from "clsx";
 
-export const addVenueStyle = {
+export const venueStyle = {
+
     pageWrapper: clsx(
         "ml-6",
         "mt-2",
@@ -347,5 +348,12 @@ export const addVenueStyle = {
         "transition",
         "hover:bg-teal-700",
         "sm:h-14",
+    ),
+    listvenuecontainer: clsx(
+        "mx-4",
+        "mt-4",
+        "grid",
+        "gap-4",
+        "[grid-template-columns:repeat(auto-fill,minmax(340px,1fr))]",
     ),
 };

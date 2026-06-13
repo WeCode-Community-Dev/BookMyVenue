@@ -1,82 +1,82 @@
 "use client";
 
 import { Users } from "lucide-react";
-import { addVenueStyle } from "@/features/add-venue/styles/AddVenueStyle";
+import { venueStyle } from "@/features/venues/styles/VenueStyle";
 
 export default function CapacityAndPricing() {
     return (
-        <div className={addVenueStyle.card}>
+        <div className={venueStyle.card}>
             {/* Header */}
-            <div className={addVenueStyle.headerWrapper}>
-                <Users className={addVenueStyle.headerIcon} />
-                <h2 className={addVenueStyle.headerTitle}>
+            <div className={venueStyle.headerWrapper}>
+                <Users className={venueStyle.headerIcon} />
+                <h2 className={venueStyle.headerTitle}>
                     2. Capacity & Pricing
                 </h2>
             </div>
 
             {/* First Row */}
-            <div className={addVenueStyle.rowGrid3}>
+            <div className={venueStyle.rowGrid3}>
                 <div>
-                    <label className={addVenueStyle.label}>
+                    <label className={venueStyle.label}>
                         Min Guests *
                     </label>
 
                     <input
                         type="number"
                         placeholder="e.g. 50"
-                        className={addVenueStyle.input}
+                        className={venueStyle.input}
                     />
                 </div>
 
                 <div>
-                    <label className={addVenueStyle.label}>
+                    <label className={venueStyle.label}>
                         Max Guests *
                     </label>
 
                     <input
                         type="number"
                         placeholder="e.g. 500"
-                        className={addVenueStyle.input}
+                        className={venueStyle.input}
                     />
                 </div>
 
                 <div>
-                    <label className={addVenueStyle.label}>
+                    <label className={venueStyle.label}>
                         Price Per Day (₹) *
                     </label>
 
                     <input
                         type="number"
                         placeholder="e.g. 25000"
-                        className={addVenueStyle.input}
+                        className={venueStyle.input}
                     />
                 </div>
             </div>
 
             {/* Second Row */}
-            <div className={addVenueStyle.rowWrapper}>
-                <div className={addVenueStyle.rowGrid2}>
+            <div className={venueStyle.rowWrapper}>
+                <div className={venueStyle.rowGrid2}>
                     <div>
-                        <label className={addVenueStyle.label}>
+                        <label className={venueStyle.label}>
                             Security Deposit (₹)
                         </label>
 
                         <input
                             type="number"
                             placeholder="e.g. 5000"
-                            className={addVenueStyle.input}
+                            className={venueStyle.input}
                         />
                     </div>
 
                     <div>
-                        <label className={addVenueStyle.label}>
+                        <label className={venueStyle.label}>
                             Extra Guest Price (₹)
                         </label>
 
                         <input
                             type="number"
                             placeholder="e.g. 500"
-                            className={addVenueStyle.input}
+                            className={venueStyle.input}
                         />
                     </div>
                 </div>

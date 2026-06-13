@@ -1,7 +1,8 @@
 "use client";
 
 import { CheckSquare, Plus } from "lucide-react";
-import { addVenueStyle } from "@/features/add-venue/styles/AddVenueStyle";
+
+import { venueStyle } from "@/features/venues/styles/VenueStyle";
 
 const amenities = [
     "Parking",
@@ -17,27 +18,27 @@ const amenities = [
 
 export default function Ammenities() {
     return (
-        <div className={addVenueStyle.card}>
+        <div className={venueStyle.card}>
             {/* Header */}
-            <div className={addVenueStyle.headerWrapper}>
-                <CheckSquare className={addVenueStyle.headerIcon} />
+            <div className={venueStyle.headerWrapper}>
+                <CheckSquare className={venueStyle.headerIcon} />
 
-                <h2 className={addVenueStyle.headerTitle}>
+                <h2 className={venueStyle.headerTitle}>
                     3. Amenities
                 </h2>
             </div>
 
             {/* Amenities Grid */}
-            <div className={addVenueStyle.amenitiesGrid}>
+            <div className={venueStyle.amenitiesGrid}>
                 {amenities.map((item) => {
                     return (
                         <label
                             key={item}
-                            className={addVenueStyle.checkboxLabel}
+                            className={venueStyle.checkboxLabel}
                         >
                             <input
                                 type="checkbox"
-                                className={addVenueStyle.checkbox}
+                                className={venueStyle.checkbox}
                             />
 
                             <span>{item}</span>
@@ -49,7 +50,7 @@ export default function Ammenities() {
             {/* Add More */}
             <button
                 type="button"
-                className={addVenueStyle.buttonSecondary}
+                className={venueStyle.buttonSecondary}
             >
                 <Plus className="h-4 w-4" />
                 Add More Amenities

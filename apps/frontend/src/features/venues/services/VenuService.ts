@@ -1,0 +1,138 @@
+export const venues = [
+    {
+        id: 1,
+        name: "Lagoona Beach Resort",
+        image: "https://images.unsplash.com/photo-1566073771259-6a8506099945",
+        location: "Cherai, Kochi",
+        distance: "12 km",
+        rating: 4.8,
+        reviews: 88,
+        verified: true,
+        guests: 200,
+        amenities: [
+            "AC", "Parking"
+        ],
+        moreAmenities: 5,
+        availability: "Available This Weekend",
+        price: 18000,
+    },
+    {
+        id: 2,
+        name: "The Garden Courtyard",
+        image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3",
+        location: "Kakkanad, Kochi",
+        distance: "2.3 km",
+        rating: 4.6,
+        reviews: 128,
+        verified: true,
+        guests: 100,
+        amenities: [
+            "AC", "Parking"
+        ],
+        moreAmenities: 3,
+        availability: "Available Today",
+        price: 8000,
+    },
+    {
+        id: 3,
+        name: "Silverline Banquets",
+        image: "https://images.unsplash.com/photo-1511578314322-379afb476865",
+        location: "Edappally, Kochi",
+        distance: "4.1 km",
+        rating: 4.7,
+        reviews: 96,
+        verified: true,
+        guests: 100,
+        amenities: [
+            "AC", "Parking"
+        ],
+        moreAmenities: 4,
+        availability: "Available This Weekend",
+        price: 15000,
+    },
+    {
+        id: 4,
+        name: "Metro Cafe & Lounge",
+        image: "https://images.unsplash.com/photo-1552566626-52f8b828add9",
+        location: "Panampilly Nagar",
+        distance: "1.8 km",
+        rating: 4.4,
+        reviews: 63,
+        verified: false,
+        guests: 40,
+        amenities: [
+            "AC", "WiFi"
+        ],
+        moreAmenities: 2,
+        availability: "Available Tomorrow",
+        price: 4500,
+    },
+    {
+        id: 5,
+        name: "Palm Grove Convention Center",
+        image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3",
+        location: "Aluva",
+        distance: "9 km",
+        rating: 4.9,
+        reviews: 142,
+        verified: true,
+        guests: 500,
+        amenities: [
+            "AC", "Parking"
+        ],
+        moreAmenities: 8,
+        availability: "Available Today",
+        price: 25000,
+    },
+    {
+        id: 6,
+        name: "Coral Bay Resort",
+        image: "https://images.unsplash.com/photo-1582719508461-905c673771fd",
+        location: "Fort Kochi",
+        distance: "7 km",
+        rating: 4.5,
+        reviews: 71,
+        verified: true,
+        guests: 150,
+        amenities: [
+            "Pool", "Parking"
+        ],
+        moreAmenities: 6,
+        availability: "Available This Weekend",
+        price: 12000,
+    },
+    {
+        id: 7,
+        name: "Royal Palace Banquets",
+        image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622",
+        location: "Thrippunithura",
+        distance: "10 km",
+        rating: 4.7,
+        reviews: 110,
+        verified: true,
+        guests: 350,
+        amenities: [
+            "AC", "Parking"
+        ],
+        moreAmenities: 5,
+        availability: "Available Tomorrow",
+        price: 22000,
+    },
+    {
+        id: 8,
+        name: "Blue Ocean Retreat",
+        image: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461",
+        location: "Vypin",
+        distance: "15 km",
+        rating: 4.3,
+        reviews: 54,
+        verified: false,
+        guests: 80,
+        amenities: [
+            "Pool", "WiFi"
+        ],
+        moreAmenities: 4,
+        availability: "Available Today",
+        price: 9500,
+    },
+];

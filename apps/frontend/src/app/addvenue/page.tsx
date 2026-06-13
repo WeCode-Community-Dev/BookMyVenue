@@ -1,6 +1,6 @@
 "use client";
 
-import AddVenue from "@/features/add-venue/components/AddVenue";
+import AddVenue from "@/features/venues/components/AddVenue";
 
 const AddVenuePage = () => {
     return (
