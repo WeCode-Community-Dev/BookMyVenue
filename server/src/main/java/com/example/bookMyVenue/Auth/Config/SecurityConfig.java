@@ -1,5 +1,7 @@
 package com.example.bookMyVenue.Auth.Config;
 
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,9 +16,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.example.bookMyVenue.Auth.SecurityFilters.JwtFilter;
+import com.example.bookMyVenue.Enums.Role;
+
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Autowired
+    JwtFilter jwtAuthenticationFilter;
 
     @Bean
     @ConditionalOnProperty( name = "app.security.enabled",  havingValue = "true",  matchIfMissing = true)
@@ -24,10 +33,12 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable).
                 authorizeHttpRequests(
                         auth-> auth
-                                .requestMatchers("/login","/register").permitAll()
-                                .requestMatchers("/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/owner/**").hasRole("OWNER")
-                                .anyRequest().authenticated());
+                                .requestMatchers("/owner/login","/owner/register","/user/register","/user/login").permitAll()
+                                .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
+                                .requestMatchers("/api/owner/**").hasRole(Role.VENUE_OWNER.name())
+                                .anyRequest().authenticated())
+                                .addFilterBefore(jwtAuthenticationFilter,
+                     UsernamePasswordAuthenticationFilter.class);;
         return http.build();
     }
 

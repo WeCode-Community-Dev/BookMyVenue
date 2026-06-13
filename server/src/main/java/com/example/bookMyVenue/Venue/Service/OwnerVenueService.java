@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.bookMyVenue.Common.APP_ERR.FILE_UPLOAD_ERR;
+import static com.example.bookMyVenue.Common.APP_MSG.FILE_UPLOAD_ERR;
 import static com.example.bookMyVenue.Common.SystemUtil.createFileName;
 
 @Service
