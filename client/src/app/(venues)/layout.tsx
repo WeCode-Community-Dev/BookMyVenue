@@ -23,9 +23,7 @@ export default function VenueLayout({ children }: any) {
                     <Banner />
                 </div>
             ) : (
-                <div className="absolute top-0 left-0 right-0 z-50">
                     <Navbar />
-                </div>
             )}
 
             <main className="flex-grow">
