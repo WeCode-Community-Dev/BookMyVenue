@@ -5,12 +5,14 @@ from app.db.session import get_db
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from app.schema.venue import (
-    BasicRequest
+    VenueDetailsCreate,
+    VenueAmenitiesCreate
 )
 from app.services.venue_service import ( 
     get_venues, 
     get_venue_details_by_id,
     add_venue,
+    add_venue_amenities
 )
 
 router = APIRouter(
@@ -60,7 +62,7 @@ def venues(
 
 @router.post("/basic-details")
 def venues(
-    payload: BasicRequest,
+    payload: VenueDetailsCreate,
     db: Session = Depends(get_db),
 ):
     try:
@@ -73,6 +75,29 @@ def venues(
             capacity=payload.capacity,
             venue_price=payload.venue_price,
             venue_availabilty=payload.venue_availabilty,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+@router.post("/{venue_id}/amenities")
+def venues(
+    payload: VenueAmenitiesCreate,
+    venue_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return add_venue_amenities(
+            db=db,
+            venue_id=payload.user_id,
+            wifi=payload.wifi,
+            kitchen=payload.kitchen,
+            parking=payload.parking,
+            ac=payload.ac,
+            wheel_chair=payload.wheel_chair,
+            av_equipements=payload.av_equipements,
         )
     except Exception as e:
         raise HTTPException(

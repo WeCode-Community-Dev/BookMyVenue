@@ -5,7 +5,8 @@ from sqlalchemy import (
     Text,
     DateTime,
     ForeignKey,
-    func
+    func,
+    Boolean,
 )
 from sqlalchemy.orm import relationship
 from app.db.database import Base

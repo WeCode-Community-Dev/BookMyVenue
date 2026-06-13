@@ -26,6 +26,8 @@ class VenueAmenities(Base):
     kitchen = Column(Boolean, default=False)
     parking = Column(Boolean, default=False)
     ac = Column(Boolean, default=False)
+    wheel_chair = Column(Boolean, default=False)
+    av_equipements = Column(Boolean, default=False) 
     
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
