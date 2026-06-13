@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import UserRole from "../../../domain/enums/userRole.js";
+import {UserRole} from "../../../domain/enums/UserRole.enum.js";
 
 const vendorSchema = new mongoose.Schema(
     {
