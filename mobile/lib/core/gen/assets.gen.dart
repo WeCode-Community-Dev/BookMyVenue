@@ -22,10 +22,25 @@ class $AssetsImagesGen {
   List<AssetGenImage> get values => [marketplace];
 }
 
+class $AssetsLogoGen {
+  const $AssetsLogoGen();
+
+  /// File path: assets/logo/bmv_banner.png
+  AssetGenImage get bmvBanner =>
+      const AssetGenImage('assets/logo/bmv_banner.png');
+
+  /// File path: assets/logo/logo.png
+  AssetGenImage get logo => const AssetGenImage('assets/logo/logo.png');
+
+  /// List of all assets
+  List<AssetGenImage> get values => [bmvBanner, logo];
+}
+
 class Assets {
   const Assets._();
 
   static const $AssetsImagesGen images = $AssetsImagesGen();
+  static const $AssetsLogoGen logo = $AssetsLogoGen();
 }
 
 class AssetGenImage {
