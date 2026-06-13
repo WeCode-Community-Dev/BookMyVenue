@@ -1,7 +1,7 @@
 import { ConflictError } from "../../../domain/errors/ConflictError.js";
-import UserMapper from "../../mapper/UserMapper.js";
-import UserRole from "../../../domain/enums/userRole.js";
-import User from "../../../domain/entities/User.js";
+import { UserMapper } from "../../mapper/User.mapper.js";
+import { UserRole } from "../../../domain/enums/UserRole.enum.js";
+import { UserEntity } from "../../../domain/entities/User.js";
 
 class RegisterUserUseCase {
     constructor(userRepository, hashService) {

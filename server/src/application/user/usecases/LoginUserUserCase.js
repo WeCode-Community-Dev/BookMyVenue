@@ -1,6 +1,6 @@
 import { NotFoundError } from "../../../domain/errors/NotFoundError.js";
 import { UnauthorizedError } from "../../../domain/errors/UnauthorizedError.js";
-import UserMapper from "../../mapper/UserMapper.js";
+import { UserMapper } from "../../mapper/User.mapper.js";
 import TokenService from "../../../infrastructure/services/TokenService.js";
 
 export default class LoginUserUseCase {

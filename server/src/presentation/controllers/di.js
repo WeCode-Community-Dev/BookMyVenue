@@ -11,25 +11,49 @@ import LoginUserUseCase from '../../application/user/usecases/LoginUserUserCase.
 import LogoutUseCase from '../../application/user/usecases/LogoutUseCase.js'
 import RefreshTokenUseCase from '../../application/user/usecases/RefreshTokenUseCase.js'
 
+// AdminUserUsecases
+import { AdminGetAllUsersUsecase } from '../../application/admin/usecases/user/admin.getAllUsers.usecase.js'
+import { AdminBlockUserUsecase } from '../../application/admin/usecases/user/admin.blockUser.usecase.js'
+import { AdminUnblockUserUsecase } from '../../application/admin/usecases/user/admin.unblockUser.usecase.js'
+
 import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
 import { UserVenueController } from '../controllers/user/user.venueController.js'
 import { AuthController } from '../controllers/user/AuthController.js'
+
+// AdminController
+import { AdminUserController } from '../controllers/admin/admin.userController.js'
+
 import { VenueRepository } from '../../infrastructure/repositories/venue.repository.js'
 import { VendorGetAllVenuesUsecase } from '../../application/vendor/usecases/venue/vendor.getAllVenues.usecase.js'
 import { CloudinaryService } from '../../infrastructure/services/cloudinaryService.js'
-import UserRepositoryImpl from '../../infrastructure/repositories/UserRepositoryImpl.js'
+import { UserRepository } from '../../infrastructure/repositories/user.repository.js'
 import HashService from '../../infrastructure/services/HashService.js'
 
 
 
 //repository
 const iVenueRepository = new VenueRepository()
-const iUserRepository = new UserRepositoryImpl()
+const iUserRepository = new UserRepository()
 
 
 //service
 const iCloudinaryService = new CloudinaryService()
 
+//adminUserUsecases
+const iAdminGetAllUsersUsecase =
+    new AdminGetAllUsersUsecase(
+        iUserRepository
+    )
+
+const iAdminBlockUserUsecase =
+    new AdminBlockUserUsecase(
+        iUserRepository
+    )
+
+const iAdminUnblockUserUsecase =
+    new AdminUnblockUserUsecase(
+        iUserRepository
+    )
 
 //auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(iUserRepository, HashService)
@@ -77,6 +101,14 @@ export const iVendorVenueController = new VendorVenueController (
     iVendorDeleteVenue,
     iUpdatevenueStatus,
 )
+
+//adminUserController
+export const iAdminUserController =
+    new AdminUserController(
+        iAdminGetAllUsersUsecase,
+        iAdminBlockUserUsecase,
+        iAdminUnblockUserUsecase
+    )
 
 export const iUserVenueController = new UserVenueController (
     iUserGetAllVenues,
