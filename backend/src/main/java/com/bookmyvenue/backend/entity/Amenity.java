@@ -37,10 +37,10 @@ public class Amenity {
     private LocalDateTime updatedAt;
 
     @Column(name = "created_by", nullable = false, updatable = false)
-    private String createdBy;
+    private Long createdBy;
 
     @Column(name = "updated_by",nullable = false)
-    private String updatedBy;
+    private Long updatedBy;
 
     @PrePersist
     protected void prePersist() {

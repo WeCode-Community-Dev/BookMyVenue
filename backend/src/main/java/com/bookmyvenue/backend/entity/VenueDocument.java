@@ -39,11 +39,12 @@ public class VenueDocument {
     @Column(name = "document_status", nullable = false)
     private DocumentStatus documentStatus;
 
-    @Column(name = "created_by")
+    @Column(name = "created_by", nullable = false, updatable = false)
     private Long createdBy;
 
-    @Column(name = "updated_by")
+    @Column(name = "updated_by",nullable = false)
     private Long updatedBy;
+
 
     @Column(name = "remarks", length = 500)
     private String remarks;

@@ -30,7 +30,7 @@ public class Users {
     @Column(name="email",nullable = false, unique = true,length = 150)
     private String email;
 
-    @Column(name="phone", unique = true,length = 20)
+    @Column(name="phone",nullable = false, unique = true,length = 20)
     private String phone;
 
     @Column(name="password_hash",nullable = false,length = 255)
@@ -51,10 +51,10 @@ public class Users {
     private LocalDateTime updatedAt;
 
     @Column(name = "created_by", updatable = false)
-    private String createdBy;
+    private Long createdBy;
 
     @Column(name = "updated_by")
-    private String updatedBy;
+    private Long updatedBy;
 
     @PrePersist
     protected void prePersist() {

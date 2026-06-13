@@ -46,6 +46,12 @@ public class VenueAvailability {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "created_by", nullable = false, updatable = false)
+    private Long createdBy;
+
+    @Column(name = "updated_by",nullable = false)
+    private Long updatedBy;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

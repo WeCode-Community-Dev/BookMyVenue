@@ -1,6 +1,8 @@
 package com.bookmyvenue.backend.entity;
 import com.bookmyvenue.backend.enums.PaymentStatus;
 import com.bookmyvenue.backend.enums.PaymentType;
+import com.bookmyvenue.backend.enums.RefundStatus;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -14,89 +16,99 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Payment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payment_id")
     private Long paymentId;
 
-    @OneToOne(fetch = FetchType.LAZY,optional = false)
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="payment_type",nullable = false,length = 30)
-    private PaymentType paymentType =PaymentType.PARTIAL_PAYMENT;
+    @Column(name = "payment_type",
+            nullable = false,
+            length = 30)
+    private PaymentType paymentType;
 
+    // Amount of THIS payment transaction
+    @Column(name = "amount",
+            nullable = false,
+            precision = 12,
+            scale = 2)
+    private BigDecimal amount;
 
-    @Column(name = "total_mount",nullable = false,precision = 12,scale=2)
-    private String totalAmount;
-
-    @Column(name = "advance_mount",nullable = true,precision = 12,scale=2)
-    private String advanceAmount;
-
-    @Column(name = "remaining_amount",nullable = false,precision = 12,scale=2)
-    private String remainingAmount;
-
-    @Column(name = "paymentDueDate")
+    @Column(name = "payment_due_date")
     private LocalDateTime paymentDueDate;
 
-
-    @Column(name = "refund_amount",precision = 12,scale=2)
-    private BigDecimal refundAmount=BigDecimal.ZERO;
-
-
-    @Enumerated(EnumType.STRING)
-    @Column(name="payment_status",nullable = false,length = 30)
-    private PaymentStatus paymentStatus =PaymentStatus.PENDING;
+    @Column(name = "refund_amount",
+            precision = 12,
+            scale = 2)
+    private BigDecimal refundAmount = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="refund_status",nullable = false,length = 30)
-    private PaymentStatus refundStatus =PaymentStatus.PENDING;
+    @Column(name = "payment_status",
+            nullable = false,
+            length = 30)
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
-    @Column(name = "razorpay_order_id",unique = true,length = 100)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "refund_status",
+            nullable = false,
+            length = 30)
+    private RefundStatus refundStatus = RefundStatus.REFUND_PENDING;
+
+    @Column(name = "razorpay_order_id",
+            unique = true,
+            length = 100)
     private String razorOrderId;
 
-    @Column(name = "razor_payment_id",length = 50)
+    @Column(name = "razorpay_payment_id",
+            length = 100)
     private String razorPaymentId;
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at",
+            nullable = false,
+            updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "created_by", updatable = false)
-    private String createdBy;
+    @Column(name = "created_by",
+            updatable = false)
+    private Long createdBy;
 
     @Column(name = "updated_by")
-    private String updatedBy;
+    private Long updatedBy;
 
     @PrePersist
     protected void prePersist() {
+
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
 
-        if(this.refundAmount==null)
-        {
-            this.refundAmount=BigDecimal.ZERO;
+        if (refundAmount == null) {
+            refundAmount = BigDecimal.ZERO;
         }
 
-        if(this.paymentStatus==null)
-        {
-            this.paymentStatus=PaymentStatus.PENDING;
+        if (paymentStatus == null) {
+            paymentStatus = PaymentStatus.PENDING;
+        }
+
+        if (refundStatus == null) {
+            refundStatus = RefundStatus.REFUND_PENDING;
         }
     }
+
     @PreUpdate
     protected void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-
-
-
-
-
 }
+

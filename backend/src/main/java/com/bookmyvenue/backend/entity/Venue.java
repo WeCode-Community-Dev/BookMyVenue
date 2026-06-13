@@ -1,5 +1,6 @@
 package com.bookmyvenue.backend.entity;
 import com.bookmyvenue.backend.enums.PricingType;
+import com.bookmyvenue.backend.enums.VenueStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -18,24 +19,27 @@ public class Venue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "venue_id")
-    private Long venuId;
+    private Long venueId;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "owner_user_id", nullable = false)
     private Users ownerUser;
 
-    @Column(name = "venu_name",nullable = false,length = 255)
-    private String venuName;
+    @Column(name = "venue_name",nullable = false,length = 255)
+    private String venueName;
 
 
     @Column(name = "address_line1",nullable = false,length = 255)
     private String addressLine1;
 
-    @Column(name = "address_line2",nullable = false,length = 255)
+    @Column(name = "address_line2",length = 255)
     private String addressLine2;
 
     @Column(name = "city",nullable = false,length = 100)
     private String city;
+
+    @Column(name = "district",nullable = false,length = 255)
+    private String district;
 
     @Column(name = "state",nullable = false,length = 100)
     private String state;
@@ -66,8 +70,9 @@ public class Venue {
     @Column(name = "advance_percentage",precision=12,scale=2)
     private BigDecimal advancePercentage;
 
-    @Column(name = "status",nullable = false,length = 100)
-    private String status="PENDING";
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private VenueStatus status = VenueStatus.PENDING_APPROVAL;
 
     @Column(name = "approval_remarks",columnDefinition = "TEXT")
     private String approvalRemarks;
@@ -81,7 +86,7 @@ public class Venue {
     @ManyToMany
     @JoinTable(
             name="venue_amenity",
-            joinColumns =@JoinColumn(name="venu_id"),
+            joinColumns =@JoinColumn(name="venue_id"),
             inverseJoinColumns = @JoinColumn(name = "amenity_id")
 
     )
@@ -90,7 +95,7 @@ private Set<Amenity> amenities;
     @ManyToMany
     @JoinTable(
             name="venue_category_map",
-            joinColumns =@JoinColumn(name="venu_id"),
+            joinColumns =@JoinColumn(name="venue_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id")
 
     )
@@ -99,7 +104,7 @@ private Set<Amenity> amenities;
     @OneToMany(mappedBy="venue",
             cascade=CascadeType.ALL,
             orphanRemoval = true)
-    private List<VenuPhoto> venuPhotos;
+    private List<VenuePhoto> venuePhotos;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -108,10 +113,10 @@ private Set<Amenity> amenities;
     private LocalDateTime updatedAt;
 
     @Column(name = "created_by", nullable = false, updatable = false)
-    private String createdBy;
+    private Long createdBy;
 
     @Column(name = "updated_by",nullable = false)
-    private String updatedBy;
+    private Long updatedBy;
 
     @PrePersist
     protected void prePersist() {
@@ -119,7 +124,7 @@ private Set<Amenity> amenities;
         updatedAt = LocalDateTime.now();
         if(this.status==null)
         {
-            this.status="PENDING";
+            this.status=VenueStatus.PENDING_APPROVAL;
         }
     }
 
