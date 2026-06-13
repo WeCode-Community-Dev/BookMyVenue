@@ -1,4 +1,4 @@
-# BookMyVenue (by WeCode)
+#  BookMyVenue (by WeCode)
 
 BookMyVenue is a 100% open-source initiative built by the **WeCode community**, designed to simplify the process of finding and booking venues in local areas. This is a platform built for the community, by the community. Whether you're looking for a cozy cafe for a quick meetup, a spacious auditorium for a community event, or a scenic outdoor space for a personal celebration, BookMyVenue aims to connect people with the perfect space—without the commercial overhead.
 
