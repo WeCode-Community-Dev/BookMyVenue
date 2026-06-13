@@ -12,8 +12,14 @@ from app.services.venue_service import (
     get_venues, 
     get_venue_details_by_id,
     add_venue,
-    add_venue_amenities
+    add_venue_amenities,
+    add_venue_images
 )
+
+from fastapi import APIRouter, HTTPException, status, UploadFile, File
+from typing import List
+from app.services.cloudinary_service import upload_images
+
 
 router = APIRouter(
     prefix="/venues",
@@ -91,7 +97,7 @@ def venues(
     try:
         return add_venue_amenities(
             db=db,
-            venue_id=payload.user_id,
+            venue_id=venue_id,
             wifi=payload.wifi,
             kitchen=payload.kitchen,
             parking=payload.parking,
@@ -99,6 +105,35 @@ def venues(
             wheel_chair=payload.wheel_chair,
             av_equipements=payload.av_equipements,
         )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+@router.post("/{venue_id}/images")
+async def upload_venue_images(
+    venue_id: int,
+    images: List[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+):
+    try:
+        images_urls = await upload_images(
+            images=images,
+            venue_id=venue_id
+        )
+        print(images_urls)
+
+        return add_venue_images(
+            db=db,
+            images_urls=images_urls,
+            venue_id=venue_id
+        )
+
+
+        return images_urls
+            
+
     except Exception as e:
         raise HTTPException(
             status_code=400,

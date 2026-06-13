@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app.model.venue import Venue
 from app.model.user import User
 from app.model.venue_amenities import VenueAmenities
+from app.model.venue_images import VenueImages
+from typing import List
 
 def get_venues(
     db: Session,
@@ -113,5 +115,22 @@ def add_venue_amenities(
         "venue_id": amenities.id
     }
 
+def add_venue_images(
+    db: Session,
+    images_urls : List, 
+    venue_id : int
+):
+    for image in images_urls:
+        add_image_url = VenueImages(
+            venue_id=venue_id,
+            image_url=image["url"]
+        )
 
+        db.add(add_image_url)
+        db.commit()
+        db.refresh(add_image_url)
 
+    return {
+        "message": "Images added successfully",
+    }
+    

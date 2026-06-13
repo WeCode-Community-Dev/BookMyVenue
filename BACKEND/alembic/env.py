@@ -26,7 +26,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 from app.model.user import User
 from app.model.venue import Venue
-from app.model.venue_amenites import VenueAmenities
+from app.model.venue_amenities import VenueAmenities
 from app.model.venue_images import VenueImages
 
 # target_metadata = mymodel.Base.metadata
