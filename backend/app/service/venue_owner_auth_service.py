@@ -6,18 +6,19 @@ from sqlalchemy.orm import Session, joinedload
 from app.schema.venue_owner_auth_schema import (
     CreateOwnerProfileRequest,
     OwnerProfileResponse,
+    UpdateOwnerStatusResponse,
     VenueOwnerOTPRequest,
     VenueOwnerOTPResponse,
     VenueOwnerResponse,
 )
-from app.config.security import create_access_token, create_refresh_token, verify_token
+from app.config.security import create_access_token, create_refresh_token
 from app.config.redis import redis_client
 from app.core.config import settings
 from app.service.user_service import user_service
 from app.service.sms_service import sms_service
 from app.model.user import User, UserRole
 from app.schema.user_auth_schema import OTPVerifyRequest, TokenResponse
-from app.model.owner_profile import OwnerProfile
+from app.model.owner_profile import ApprovalStatus, OwnerProfile
 
 
 class VenueOwnerAuthService:
@@ -169,6 +170,54 @@ class VenueOwnerAuthService:
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
+    def update_status(
+        self,
+        db: Session,
+        owner_id: str,
+        status: int,
+    ):
+        try:
+
+            user = user_service.get_user_by_id(
+                db=db,
+                user_id=owner_id,
+            )
+
+            if not user.owner_profile:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Owner profile not found",
+                )
+
+            status_mapping = {
+                0: ApprovalStatus.APPROVED,
+                1: ApprovalStatus.REJECTED,
+                2: ApprovalStatus.SUSPENDED,
+            }
+
+            user.owner_profile.approval_status = status_mapping.get(
+                status,
+                ApprovalStatus.PENDING,
+            )
+
+            db.commit()
+            db.refresh(user)
+
+            return UpdateOwnerStatusResponse(
+                owner_id=owner_id,
+                approval_status=user.owner_profile.approval_status,
+            )
+
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail=str(e),
+            )
 
     def get_all_venue_owners(
         self,

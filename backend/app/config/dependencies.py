@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.config.security import verify_token
 from app.config.database import get_db
 from app.service.user_service import user_service
-from app.model.user import User
+from app.model.user import User, UserRole
 
 security = HTTPBearer()
 
@@ -42,3 +42,15 @@ def get_current_user(
         )
 
     return user
+
+
+def get_current_admin(
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin can perform this action",
+        )
+
+    return current_user

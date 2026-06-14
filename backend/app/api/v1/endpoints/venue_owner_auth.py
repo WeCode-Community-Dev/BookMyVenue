@@ -2,7 +2,8 @@ from fastapi import APIRouter, status, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.schema.venue_owner_auth_schema import (
-    OwnerProfileResponse,
+    UpdateOwnerStatusRequest,
+    UpdateOwnerStatusResponse,
     VenueOwnerOTPRequest,
     VenueOwnerOTPResponse,
     VenueOwnerResponse,
@@ -11,7 +12,7 @@ from app.schema.base_schema import SuccessResponse
 from app.service.venue_owner_auth_service import venue_owner_auth_service
 from app.schema.user_auth_schema import OTPVerifyRequest, TokenResponse
 from app.config.database import get_db
-from app.config.dependencies import get_current_user
+from app.config.dependencies import get_current_admin, get_current_user
 from app.model.user import User
 
 router = APIRouter()
@@ -47,6 +48,28 @@ def verify_otp(
 ) -> SuccessResponse:
     result = venue_owner_auth_service.verify_otp(db=db, data=data)
     return SuccessResponse(message="OTP sent Successfully", data=result)
+
+
+@router.patch(
+    "/update-status",
+    response_model=SuccessResponse[UpdateOwnerStatusResponse],
+    status_code=status.HTTP_200_OK,
+)
+def update_status(
+    data: UpdateOwnerStatusRequest,
+    db: Session = Depends(get_db),
+    current_admin=Depends(get_current_admin),
+):
+    result = venue_owner_auth_service.update_status(
+        db=db,
+        owner_id=data.owner_id,
+        status=data.status,
+    )
+
+    return SuccessResponse(
+        message="Owner status updated successfully",
+        data=result,
+    )
 
 
 # Get all Venue owner details

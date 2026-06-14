@@ -158,3 +158,13 @@ class VenueOwnerResponse(BaseModel):
     owner_profile: OwnerProfileResponse | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UpdateOwnerStatusRequest(BaseModel):
+    owner_id: str
+    status: int
+
+
+class UpdateOwnerStatusResponse(BaseModel):
+    owner_id: str
+    approval_status: ApprovalStatus
