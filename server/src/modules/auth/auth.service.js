@@ -264,3 +264,83 @@ export const loginUser = async (
       };
 
 };
+
+export const loginAdmin = async (
+   credentials
+) => {
+
+   const user = await prisma.user.findUnique({
+
+      where: {
+         email: credentials.email
+      },
+
+      include: {
+         roles: true
+      }
+
+   });
+
+   if (!user) {
+
+      throw new ApiError(
+         STATUS_CODES.UNAUTHORIZED,
+         ERROR_MESSAGES.INVALID_CREDENTIALS
+      );
+
+   }
+
+   const isPasswordValid =
+      await bcrypt.compare(
+         credentials.password,
+         user.passwordHash
+      );
+
+   if (!isPasswordValid) {
+
+      throw new ApiError(
+         STATUS_CODES.UNAUTHORIZED,
+         ERROR_MESSAGES.INVALID_CREDENTIALS
+      );
+
+   }
+
+   const roles = user.roles.map(
+      role => role.role
+   );
+   // console.log("Admin Login Roles:", roles);
+
+   if (!roles.includes('ADMIN')) {
+
+      throw new ApiError(
+         STATUS_CODES.FORBIDDEN,
+         "Admin access required"
+      );
+
+   }
+
+   const accessToken =
+      generateAccessToken({
+
+         userId: user.id,
+
+         roles
+
+      });
+
+   return {
+
+      accessToken,
+
+      user: {
+
+         id: user.id,
+         name: user.name,
+         email: user.email,
+         roles
+
+      }
+
+   };
+
+};

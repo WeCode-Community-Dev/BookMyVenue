@@ -137,7 +137,7 @@ const LandingPage = () => {
           {/* Headline */}
           <h1 className="animate-fade-up-0 text-[2.2rem] sm:text-[3rem] lg:text-[clamp(3rem,5.5vw,4.2rem)] font-extrabold leading-[1.1] tracking-[-0.03em] max-w-[700px] mb-4 sm:mb-5">
             {isOwner
-              ? "Grow your venue business with VenueVista"
+              ? "Grow your venue business with Us"
               : "Book the perfect venue for every occasion"}
           </h1>
 
@@ -148,7 +148,7 @@ const LandingPage = () => {
             book in minutes.`}
           </p>
 
-          {/* Mobile: vertical stack | Desktop: horizontal row */}
+        
           {!isOwner && (
             <div className="animate-fade-up-2 max-w-[860px]">
               {/* Desktop search bar */}
