@@ -8,8 +8,15 @@ export const ownerApi = baseApi.injectEndpoints({
                 method: 'POST',
                 body: data
             })
+        }),
+
+        getOwnerVenues: builder.query({
+            query: () =>( {
+                url: '/owner/venues'
+
+            })
         })
     })
 })
 
-export const {useAddVenueMutation} = ownerApi
+export const {useAddVenueMutation, useGetOwnerVenuesQuery} = ownerApi

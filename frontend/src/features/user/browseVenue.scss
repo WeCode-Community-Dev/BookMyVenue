@@ -1,0 +1,526 @@
+// Inherits app CSS variables: --accent, --bg, --border, --text, --text-h, --sans
+
+.browse-page {
+  min-height: calc(100vh - 72px);
+  background: var(--bg);
+  font-family: var(--sans);
+  text-align: left;
+  padding: calc(72px + 24px) 28px 24px;
+  box-sizing: border-box;
+
+  * { box-sizing: border-box; }
+
+  // ─── Search Bar ──────────────────────────────────────────────────────────
+  .browse-search-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .search-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      flex: 1;
+      max-width: 520px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-bg);
+      }
+
+      .search-icon {
+        color: var(--text);
+        font-size: 16px;
+        flex-shrink: 0;
+      }
+
+      input {
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 14px;
+        color: var(--text-h);
+        flex: 1;
+        font-family: var(--sans);
+
+        &::placeholder { color: var(--text); }
+      }
+
+      .search-clear {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        padding: 2px;
+        border-radius: 4px;
+        transition: color 0.2s;
+
+        &:hover { color: var(--text-h); }
+      }
+    }
+
+    .results-meta {
+      font-size: 13px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+  }
+
+  // ─── Body Layout ─────────────────────────────────────────────────────────
+  .browse-body {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 24px;
+    align-items: start;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // ─── Venue Grid ──────────────────────────────────────────────────────────
+  .venue-grid-section {
+    .venue-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text);
+
+      p { font-size: 15px; margin-bottom: 12px; }
+
+      .btn-clear-link {
+        background: none;
+        border: none;
+        color: var(--accent);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .venue-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      border-color: var(--accent-border);
+    }
+
+    .venue-card-image {
+      position: relative;
+      height: 176px;
+      overflow: hidden;
+      background: var(--border);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+      }
+
+      &:hover img { transform: scale(1.04); }
+
+      .type-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 20px;
+        letter-spacing: 0.2px;
+
+        // type colours using plain tones (no gradients per design)
+        &.type-hall         { background: #e0f2fe; color: #0369a1; }
+        &.type-rooftop      { background: #dcfce7; color: #15803d; }
+        &.type-banquet      { background: #fef9c3; color: #854d0e; }
+        &.type-conference   { background: #ede9fe; color: #6d28d9; }
+        &.type-farmhouse    { background: #fce7f3; color: #9d174d; }
+        &.type-studio       { background: #ffedd5; color: #c2410c; }
+        &.type-cafe         { background: #f3f4f6; color: #374151; }
+      }
+
+      .capacity-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.55);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 500;
+        padding: 3px 8px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        backdrop-filter: blur(4px);
+      }
+    }
+
+    .venue-card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+
+      .venue-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-h);
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      .venue-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+
+        .venue-location {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 12px;
+          color: var(--text);
+        }
+
+        .venue-rating {
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #d97706;
+
+          .review-count {
+            font-weight: 400;
+            color: var(--text);
+            margin-left: 1px;
+          }
+        }
+      }
+
+      .venue-price {
+        font-size: 13px;
+        color: var(--text);
+
+        strong {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--text-h);
+        }
+      }
+
+      .venue-amenities-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 2px;
+
+        .amenity-chip {
+          font-size: 11px;
+          font-weight: 500;
+          background: var(--accent-bg);
+          color: var(--accent);
+          padding: 3px 8px;
+          border-radius: 4px;
+
+          &.more {
+            background: var(--border);
+            color: var(--text);
+          }
+        }
+      }
+
+      .view-details-btn {
+        margin-top: auto;
+        width: 100%;
+        padding: 9px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-h);
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: var(--accent-bg);
+          border-color: var(--accent-border);
+          color: var(--accent);
+        }
+      }
+    }
+  }
+
+  // ─── Filter Panel ────────────────────────────────────────────────────────
+  .filter-panel {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: sticky;
+    top: 88px; // below the fixed header
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+
+    .filter-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+
+      .filter-title {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-h);
+
+        .filter-count-badge {
+          background: var(--accent);
+          color: #fff;
+          font-size: 11px;
+          font-weight: 700;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+
+      .btn-clear-all {
+        background: none;
+        border: none;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent);
+        cursor: pointer;
+        padding: 0;
+
+        &:hover { text-decoration: underline; }
+      }
+    }
+
+    .filter-section {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 0;
+
+      &:last-of-type { border-bottom: none; }
+
+      .filter-section-header {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-h);
+        text-align: left;
+        margin-bottom: 10px;
+        transition: color 0.15s;
+
+        &:hover { color: var(--accent); }
+      }
+    }
+
+    // Venue type pills
+    .type-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+
+      .type-pill {
+        padding: 5px 12px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text);
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          border-color: var(--accent-border);
+          color: var(--accent);
+          background: var(--accent-bg);
+        }
+
+        &.active {
+          background: var(--accent);
+          border-color: var(--accent);
+          color: #fff;
+        }
+      }
+    }
+
+    // Amenities checklist
+    .amenities-checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .amenity-check-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 13px;
+        color: var(--text);
+        cursor: pointer;
+        transition: color 0.15s;
+
+        &:hover { color: var(--text-h); }
+
+        input[type="checkbox"] {
+          width: 14px;
+          height: 14px;
+          accent-color: var(--accent);
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+      }
+    }
+
+    // Capacity range
+    .capacity-filter {
+      .capacity-value {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent);
+        margin-bottom: 8px;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+
+      .capacity-range-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: var(--text);
+        margin-top: 4px;
+      }
+    }
+
+    // Price input
+    .price-filter {
+      .price-input-wrapper {
+        display: flex;
+        align-items: stretch;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        overflow: hidden;
+        transition: border-color 0.2s;
+
+        &:focus-within {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 2px var(--accent-bg);
+        }
+
+        .price-prefix {
+          background: var(--code-bg);
+          border-right: 1px solid var(--border);
+          padding: 0 10px;
+          font-size: 13px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          color: var(--text);
+        }
+
+        input {
+          flex: 1;
+          padding: 8px 10px;
+          border: none;
+          outline: none;
+          font-size: 13px;
+          background: var(--bg);
+          color: var(--text-h);
+          font-family: var(--sans);
+
+          &::placeholder { color: var(--text); }
+        }
+      }
+    }
+
+    // Bottom action buttons
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+
+      .btn-apply {
+        flex: 1;
+        padding: 9px;
+        background: var(--accent);
+        border: 1px solid var(--accent);
+        border-radius: 7px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+
+        &:hover { opacity: 0.88; }
+      }
+
+      .btn-clear {
+        padding: 9px 14px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text);
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: var(--accent-border);
+          color: var(--accent);
+        }
+      }
+    }
+  }
+}

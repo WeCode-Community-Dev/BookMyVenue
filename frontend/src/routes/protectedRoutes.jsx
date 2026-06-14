@@ -1,4 +1,4 @@
-import Home from "../features/BrowseVenues";
+import BrowseVenue from "../features/user/browseVenue";
 import MainLayout from "../layouts/MainLayout";
 import AuthGuard from "../guards/Authguard";
 import OwnerLayout from "../layouts/OwnerLayout";
@@ -7,6 +7,7 @@ import OwnerVenues from "../features/owner/venues";
 import OwnerBookings from "../features/owner/bookings";
 import OwnerSettings from "../features/owner/settings";
 import OwnerAddVenue from "../features/owner/addVenue";
+import VenueDetails from "../features/user/VenueDetails";
 
 export const protectedRoutes = [
   {
@@ -14,8 +15,9 @@ export const protectedRoutes = [
     children: [
       {
         path: "/", element: <MainLayout />, children: [
-          { path: "/browse-venues", element: <p>browse venues</p> },
+          { path: "/browse-venues", element: <BrowseVenue/> },
           { path: "/my-bookings", element: <p>my bookings</p> },
+          {path: '/venue/:venueId', element: <VenueDetails/>}
         ]
       }
 

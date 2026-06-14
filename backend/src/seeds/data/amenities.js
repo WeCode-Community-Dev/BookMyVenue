@@ -5,7 +5,12 @@ export const amenitiesData = [
   { name: 'Parking', slug: 'parking', icon: 'ti-car', category: 'facilities' },
   { name: 'AC', slug: 'ac', icon: 'ti-snowflake', category: 'facilities' },
   { name: 'Kitchen', slug: 'kitchen', icon: 'ti-tools-kitchen-2', category: 'facilities' },
-  { name: 'Wheelchair Accessible', slug: 'wheelchair', icon: 'ti-wheelchair', category: 'facilities' },
+  {
+    name: 'Wheelchair Accessible',
+    slug: 'wheelchair',
+    icon: 'ti-wheelchair',
+    category: 'facilities',
+  },
   { name: 'Security', slug: 'security', icon: 'ti-shield', category: 'facilities' },
   { name: 'Outdoor Seating', slug: 'outdoor_seating', icon: 'ti-armchair', category: 'facilities' },
   // equipment
@@ -17,4 +22,4 @@ export const amenitiesData = [
   // ambience
   { name: 'Natural Light', slug: 'natural_light', icon: 'ti-sun', category: 'ambience' },
   { name: 'Catering', slug: 'catering', icon: 'ti-salad', category: 'ambience' },
-]
+];
