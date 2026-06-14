@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Alert from '@mui/material/Alert';
+import { CheckDiamond } from "@mynaui/icons-react";
 
 export const useAuthForm = () => {
     const navigate = useNavigate();
 
-    const [role, setRole] = useState('organizer');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [role, setRole] = useState('user');
     const [isLoginView, setIsLoginView] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
+        name: '',
+        email: '',
+        password: '',
     });
 
     const handleChange = (e) => {
@@ -20,12 +23,14 @@ export const useAuthForm = () => {
         [e.target.name]: e.target.value,
     })
     setError('');
+    setSuccessMessage('')
     }
 
     const toggleView = (e) => {
     e.preventDefault();
     setIsLoginView(!isLoginView);
     setError('');
+    setSuccessMessage('')
     setFormData({ name: '', email: '', password: ''});
     };
 
@@ -69,27 +74,39 @@ export const useAuthForm = () => {
         throw new Error(data.message || "Something went wrong. Please try again.");
         }
         
-        console.log("Success! Data sent to server:", { view: isLoginView ? 'Login' : 'Signup', role, ...formData });
+        console.log("Success! Data sent to server: ", data);
 
         if(data.access_token){
             localStorage.setItem('authToken', data.access_token);
+            localStorage.setItem('userRole', data.user.role)
         }
 
-        navigate('/')
-        alert(isLoginView ? 'Logged in successfully!' : 'Account created successfully!');
+        setSuccessMessage(isLoginView ? 'Logged in successfully!' : 'Account created successfully!')
 
-    } catch (err) {
-        console.error("Error during form submission:", err);
-        setError(err.message)
+        setTimeout(() => {
+            if (data.user.role == "user"){
+                navigate("/")
+            } else if(data.user.role == "admin") {
+                navigate("/admin")
+            } else if(data.user.role == "owner"){
+                navigate("/host")
+            }
+        }, 1000);
+            
 
-    } finally {
-        setIsLoading(false);
+        } catch (err) {
+            console.error("Error during form submission:", err);
+            setError(err.message)
+
+        } finally {
+            setIsLoading(false);
+        }
     }
-    }
+
     return {
         role, setRole,
         isLoginView, toggleView,
         formData, handleChange,
-        error, isLoading, handleSubmit
+        error, isLoading, handleSubmit,
     }
 }

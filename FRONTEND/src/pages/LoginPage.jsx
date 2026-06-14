@@ -1,8 +1,5 @@
 import Logo from "../assets/Logo.png"
 import { useAuthForm } from "../hooks/useAuthForm";
-
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Users, Store, ArrowRight, SpinnerOne } from "@mynaui/icons-react";
 
 const LeftPanel = () => (
@@ -24,11 +21,13 @@ const LeftPanel = () => (
 function LoginPage() {
   const {
     role, setRole, isLoginView, toggleView, 
-    formData, handleChange, error, isLoading, handleSubmit
+    formData, handleChange, error, isLoading, handleSubmit,
+    successMessage
   } = useAuthForm();
 
   return (
     <div className="Login-Container flex justify-start h-screen overflow-hidden">
+      
       <LeftPanel />
       
       {/* Right Panel */}
@@ -48,19 +47,19 @@ function LoginPage() {
           {/* Role Selection Toggle */}
           {!isLoginView && (
             <div className="grid grid-cols-2 gap-4 mb-8">
-              {/* Organizer Button */}
+              {/* user Button */}
               <button
                 type="button"
-                onClick={() => setRole('organizer')}
+                onClick={() => setRole('user')}
                 className={`flex flex-col items-center justify-center p-5 border rounded-xl transition-all duration-200 ${
-                  role === 'organizer'
+                  role === 'user'
                     ? 'border-[#2b5155] bg-slate-50 text-[#2b5155] shadow-sm ring-1 ring-[#2b5155]'
                     : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
                 }`}
               >
-                <Users className={`w-7 h-7 mb-2 ${role === 'organizer' ? 'text-[#2b5155]' : 'text-gray-400'}`} />
-                <span className={`font-bold text-sm ${role === 'organizer' ? 'text-gray-900' : 'text-gray-700'}`}>
-                  The Organizer
+                <Users className={`w-7 h-7 mb-2 ${role === 'user' ? 'text-[#2b5155]' : 'text-gray-400'}`} />
+                <span className={`font-bold text-sm ${role === 'user' ? 'text-gray-900' : 'text-gray-700'}`}>
+                  The user
                 </span>
                 <span className="text-xs mt-0.5">(Guest)</span>
               </button>
@@ -133,7 +132,7 @@ function LoginPage() {
 
             <button
               type="submit"
-              className="w-full bg-[#2b5155] hover:bg-[#203f42] text-white font-semibold py-3.5 rounded-lg flex items-center justify-center gap-2 transition-colors mt-8 shadow-md"
+              className="w-full bg-[#ff6660] hover:bg-[#BF5842] text-white font-semibold py-3.5 rounded-lg flex items-center justify-center gap-2 transition-colors mt-8 shadow-md"
               disabled={isLoading}
             >
               {isLoading ? (
