@@ -22,3 +22,14 @@ export const loginUser = async (payload) => {
    return response.data;
 
 };
+
+export const loginAdmin = async (payload) => {
+
+   const response = await axiosInstance.post(
+      API_ROUTES.ADMIN.LOGIN,
+      payload
+   );
+
+   return response.data;
+
+}

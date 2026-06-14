@@ -12,4 +12,9 @@ export const API_ROUTES = {
   USERS: {
     MY_VENUES: "/users/me/venues",
   },
+
+  ADMIN: {
+    LOGIN: "/auth/admin/login",
+  },
+  
 };

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { signupController, loginController } from './auth.controller.js';
+import { signupController, loginController, adminLoginController } from './auth.controller.js';
 import { signupSchema, loginSchema } from './auth.validation.js';
 import { validate } from '../../shared/middlewares/validate.middleware.js';
 
@@ -18,4 +18,9 @@ authRoutes.post(
    loginController
 );
 
+authRoutes.post(
+   '/admin/login',
+   validate(loginSchema),
+   adminLoginController
+);
 export default authRoutes;

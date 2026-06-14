@@ -5,6 +5,9 @@ import { ROUTES } from '../shared/constants/routes';
 import LandingPage from '../modules/landingPage/pages/LandingPage';
 import OwnerDashboard from "../modules/venues/pages/OwnerDashboard";
 
+import AdminLoginPage from '../modules/auth/pages/AdminLoginPage';
+import AdminDashboard from '../modules/admin/pages/AdminDashboard';
+
 const router = createBrowserRouter([
    {
       path: ROUTES.SIGNUP,
@@ -24,7 +27,17 @@ const router = createBrowserRouter([
    {
       path: ROUTES.OWNER_DASHBOARD,
       element: <OwnerDashboard />,
+    },
+    {
+      path:ROUTES.ADMIN_LOGIN,
+      element: <AdminLoginPage
+       /> 
+    },
+    {
+      path: ROUTES.ADMIN_DASHBOARD,
+      element: <AdminDashboard />
     }
+
 ]);
 
 export default router;
