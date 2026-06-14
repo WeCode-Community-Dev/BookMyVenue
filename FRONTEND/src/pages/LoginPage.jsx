@@ -1,10 +1,11 @@
 import Logo from "../assets/Logo.png"
+import stock1 from "../assets/stock1.png"
 import { useAuthForm } from "../hooks/useAuthForm";
 import { Users, Store, ArrowRight, SpinnerOne } from "@mynaui/icons-react";
 
 const LeftPanel = () => (
   <div className="hidden lg:flex lg:w-1/2 relative">
-    <img src="./src/assets/stock1.png" 
+    <img src={stock1}
       alt="Login Illustration" 
       className="absolute w-full h-full object-cover opacity-90"
     />

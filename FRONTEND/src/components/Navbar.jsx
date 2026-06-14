@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
 import logo from "../assets/Logo.png"
 
-function ActionButton({role}) {
+ function ActionButton({role}) {
 
   const navigate = useNavigate()
 
