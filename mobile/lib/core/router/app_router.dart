@@ -197,6 +197,7 @@ class AppRouter {
         '/${AppRouteNames.signin}',
         '/${AppRouteNames.venueOwnerSignup}',
         '/${AppRouteNames.venueOwnerVerify}',
+        // '/${AppRouteNames.ownerVerification}',
       ].contains(location);
 
       if (!loggedIn) {
