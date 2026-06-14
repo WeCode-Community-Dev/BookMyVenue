@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react'
 import './VenueDetails.scss'
 import { useGetVenueDetailsQuery } from './venueApi'
 import { useParams } from 'react-router-dom'
+import { FiStar } from 'react-icons/fi'
+import { useGetFavoritesQuery, useAddFavoriteMutation, useDeleteFavoriteMutation } from './venueApi'
 
 const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const TYPE_LABELS = {
@@ -23,6 +25,29 @@ function VenueDetails() {
   const images = venue?.images || []
   const imageUrl = (img) => (typeof img === 'string' ? img : img?.url || '')
   const imageAlt = (img) => (typeof img === 'string' ? venue?.name || 'Venue image' : img?.alt || venue?.name || 'Venue image')
+
+  const { data: favResp, refetch: refetchFavorites } = useGetFavoritesQuery()
+  const favoriteIds = new Set((favResp?.data || []).map(i => i?.venue?.id).filter(Boolean))
+  const [addFavorite] = useAddFavoriteMutation()
+  const [deleteFavorite] = useDeleteFavoriteMutation()
+
+  const isFavorited = Boolean(favoriteIds.has(Number(venueId)) || favoriteIds.has(venue?.id))
+
+  const toggleFavorite = async () => {
+    try {
+      const id = venue?.id || Number(venueId)
+      if (!id) return
+      if (isFavorited) {
+        await deleteFavorite(id).unwrap()
+      } else {
+        await addFavorite(id).unwrap()
+      }
+    } catch (e) {
+      console.error('toggle favorite failed', e)
+    } finally {
+      refetchFavorites()
+    }
+  }
 
   const amenitiesByCategory = useMemo(() => {
     if (!venue?.venueAmenities) return {}
@@ -100,7 +125,12 @@ function VenueDetails() {
           </div>
 
           <div className="venue-header">
-            <h1>{venue.name}</h1>
+            <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+              <h1>{venue.name}</h1>
+              <button type="button" className={`favorite-toggle ${isFavorited ? 'active' : ''}`} onClick={toggleFavorite} aria-label="Toggle favorite">
+                <FiStar />
+              </button>
+            </div>
             <div className="tag-row">
               <span className="pill pill-type">{venueTypeLabel}</span>
               <span className="pill">

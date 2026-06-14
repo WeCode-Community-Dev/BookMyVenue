@@ -1,6 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { venuesTable, venuePricing } from './venueModel.js';
 import { venueAmenities, amenities } from './amenityModel.js';
+import { userFavourites } from './userModel.js';
 
 export const venueRelations = relations(venuesTable, ({ many }) => ({
   pricing: many(venuePricing),
@@ -28,3 +29,10 @@ export const venueAmenitiesRelations = relations(venueAmenities, ({ one }) => ({
 export const amenitiesRelations = relations(amenities, ({ many }) => ({
   venueAmenities: many(venueAmenities),
 }));
+
+export const userFavouritesRelations = relations(userFavourites, ({ one }) => ({
+    venue: one(venuesTable, {
+        fields: [userFavourites.venueId],
+        references: [venuesTable.id],
+    })
+}))

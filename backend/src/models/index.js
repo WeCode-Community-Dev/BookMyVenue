@@ -1,4 +1,4 @@
-import { usersTable } from './userModel.js';
+import { usersTable,userFavourites } from './userModel.js';
 import { venuesTable, venuePricing } from './venueModel.js';
 import { amenities, venueAmenities } from './amenityModel.js';
 import {
@@ -6,6 +6,7 @@ import {
   venuePricingRelations,
   venueAmenitiesRelations,
   amenitiesRelations,
+  userFavouritesRelations
 } from './relations.js';
 
 export {
@@ -18,4 +19,6 @@ export {
   venuePricingRelations,
   venueAmenitiesRelations,
   amenitiesRelations,
+  userFavourites,
+  userFavouritesRelations
 };

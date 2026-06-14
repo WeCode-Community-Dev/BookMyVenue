@@ -91,6 +91,24 @@
   margin-bottom: 1rem;
 }
 
+.favorite-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: #fff;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.favorite-toggle.active {
+  color: #d97706;
+  background: #fff7ed;
+  border-color: #fcd34d;
+}
+
 .tag-row {
   display: flex;
   flex-wrap: wrap;

@@ -21,7 +21,7 @@ router.get(
 );
 
 //users routes
-router.get('/venues',isAuthenticated, requireRole('user'), catchErrors(venueController.getVenues));
-router.get('/venue/:id',catchErrors(venueController.getVenueDetails))
+router.get('/venues', isAuthenticated, requireRole('user'), catchErrors(venueController.getVenues));
+router.get('/venue/:id', catchErrors(venueController.getVenueDetails));
 
 export default router;

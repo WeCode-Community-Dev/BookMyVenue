@@ -8,6 +8,7 @@ import OwnerBookings from "../features/owner/bookings";
 import OwnerSettings from "../features/owner/settings";
 import OwnerAddVenue from "../features/owner/addVenue";
 import VenueDetails from "../features/user/VenueDetails";
+import Favorites from "../features/user/Favorites";
 
 export const protectedRoutes = [
   {
@@ -17,7 +18,8 @@ export const protectedRoutes = [
         path: "/", element: <MainLayout />, children: [
           { path: "/browse-venues", element: <BrowseVenue/> },
           { path: "/my-bookings", element: <p>my bookings</p> },
-          {path: '/venue/:venueId', element: <VenueDetails/>}
+          { path: '/venue/:venueId', element: <VenueDetails/> },
+          { path: '/favorites', element: <Favorites /> }
         ]
       }
 

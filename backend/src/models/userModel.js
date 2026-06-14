@@ -1,4 +1,5 @@
-import { pgTable, varchar, uuid, text } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, uuid, text,primaryKey } from 'drizzle-orm/pg-core';
+import {venuesTable} from './venueModel.js'
 
 export const usersTable = pgTable('users', {
   id: uuid().primaryKey().defaultRandom(),
@@ -8,3 +9,13 @@ export const usersTable = pgTable('users', {
   role: varchar({ length: 50 }).notNull().default('user'), // Add role field with default value
   salt: text().notNull(), // Add salt if your hashPassword utility generates it!
 });
+
+
+export const userFavourites = pgTable('user_favourites',{
+  userId: uuid('user_id').references(() => usersTable.id).notNull(),
+  venueId: uuid('venue_id').references(() => venuesTable.id ).notNull()},
+    (table) => ({
+      pk: primaryKey({ columns: [table.userId, table.venueId] }),
+    })
+
+)

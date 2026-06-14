@@ -3,7 +3,7 @@ import { FiSearch, FiMapPin, FiUsers, FiChevronDown, FiChevronUp, FiStar, FiFilt
 import './browseVenue.scss';
 import { useNavigate } from 'react-router-dom'
 
-import {useGetUserVenuesQuery} from "./venueApi.js"
+import {useGetUserVenuesQuery, useGetFavoritesQuery, useAddFavoriteMutation, useDeleteFavoriteMutation} from "./venueApi.js"
 
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
@@ -95,8 +95,25 @@ function BrowseVenues() {
     type: selectedTypes[0] || undefined,
     capacity: minCapacity > 1 ? minCapacity : undefined,
   };
-
   const { data: apiResp, isLoading, error } = useGetUserVenuesQuery(apiParams);
+  const { data: favResp, refetch: refetchFavorites } = useGetFavoritesQuery();
+  const favoriteIds = new Set((favResp?.data || []).map(i => i?.venue?.id).filter(Boolean));
+  const [addFavorite] = useAddFavoriteMutation();
+  const [deleteFavorite] = useDeleteFavoriteMutation();
+
+  const toggleFavorite = async (venueId, isFav) => {
+    try {
+      if (isFav) {
+        await deleteFavorite(venueId).unwrap();
+      } else {
+        await addFavorite(venueId).unwrap();
+      }
+    } catch (e) {
+      console.error('favorite toggle failed', e);
+    } finally {
+      refetchFavorites();
+    }
+  };
   const serverVenues = apiResp?.data || [];
   const meta = apiResp?.meta || { total: 0, page: 1, pageSize };
 
@@ -171,6 +188,14 @@ function BrowseVenues() {
                 <div key={venue.id} className="venue-card">
                   <div className="venue-card-image">
                     <img src={venue.images?.[0]?.url || venue.image} alt={venue.name} />
+                    <button
+                      type="button"
+                      className={`fav-btn ${favoriteIds.has(venue.id) ? 'active' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); toggleFavorite(venue.id, favoriteIds.has(venue.id)); }}
+                      aria-label="Toggle favorite"
+                    >
+                      <FiStar />
+                    </button>
                     <span className={`type-badge ${TYPE_COLORS[venue.type] || ''}`}>{venue.type}</span>
                     <span className="capacity-badge">
                       <FiUsers size={11} /> {venue.capacity}

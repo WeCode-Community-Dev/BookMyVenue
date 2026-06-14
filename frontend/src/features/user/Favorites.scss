@@ -1,0 +1,157 @@
+.favorites-page {
+  padding: 24px;
+  min-height: calc(100vh - 120px);
+  background: #f7f8fb;
+}
+
+.favorites-container {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.favorites-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.favorites-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #1f2937;
+}
+
+.favorites-header p {
+  margin: 4px 0 0;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.favorites-state,
+.favorites-empty {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 48px 32px;
+  text-align: center;
+  color: #374151;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.favorites-state.error {
+  color: #b91c1c;
+}
+
+.favorites-empty h2 {
+  margin: 0 0 12px;
+  font-size: 1.5rem;
+}
+
+.favorites-empty p {
+  margin: 0;
+}
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.favorite-card {
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.favorite-card-image {
+  min-height: 210px;
+  overflow: hidden;
+}
+
+.favorite-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.favorite-card-body {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.favorite-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.favorite-card-top h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #111827;
+}
+
+.favorite-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.favorite-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  color: #6b7280;
+  font-size: 0.92rem;
+}
+
+.favorite-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.favorite-price {
+  color: #111827;
+  font-weight: 600;
+}
+
+.favorite-details-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.favorite-details-btn:hover {
+  background: #1d4ed8;
+}
+
+@media (max-width: 768px) {
+  .favorites-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .favorite-meta {
+    grid-template-columns: 1fr;
+  }
+}
