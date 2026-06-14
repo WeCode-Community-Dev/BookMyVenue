@@ -1,0 +1,14 @@
+export const VendorMessages = {
+    success: {
+        PROFILE_FETCHED: 'Vendor profile fetched successfully',
+        PROFILE_UPDATED: 'Vendor profile updated successfully',
+        LICENSE_UPLOADED: 'License uploaded successfully'
+    },
+
+    error: {
+        VENDOR_NOT_FOUND: 'Vendor not found',
+        PROFILE_UPDATE_FAILED: 'Failed to update profile',
+        LICENSE_UPLOAD_FAILED: 'Failed to upload license',
+        PHONE_ALREADY_EXISTS: 'Phone number alredy exist'
+    }
+};

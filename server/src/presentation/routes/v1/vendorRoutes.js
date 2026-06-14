@@ -5,6 +5,9 @@ import {iVendorVenueController} from '../../controllers/di.js'
 import { validate } from '../../middlewares/validator.js'
 import { createVenueSchema, VenueParamsSchema, VenueQuerySchema, VenueUpdateStatusSchema } from '../../validators/VenderVenue.validator.js'
 
+import { GetVendorProfileSchema, UpdateVendorProfileSchema } from '../../validators/vendorProfile.validator.js'
+import {iVendorProfileController} from '../../controllers/di.js'
+
 
 const router = Express.Router()
 
@@ -17,6 +20,18 @@ router.get(ROUTES.OWNER.VENUE.GET_BY_ID, validate(VenueParamsSchema, 'params'), 
 router.get(ROUTES.OWNER.VENUE.GET_ALL, validate(VenueQuerySchema, 'query'), iVendorVenueController.getAllVenues)
 router.delete(ROUTES.OWNER.VENUE.DELETE, validate(VenueParamsSchema, 'params'), iVendorVenueController.deleteVenue)
 router.patch(ROUTES.OWNER.VENUE.UPDATE_STATUS, validate(VenueParamsSchema, 'params'), validate(VenueUpdateStatusSchema, 'body'), iVendorVenueController.updateVenueStatus)
+
+//vendor profile
+router.get(
+    ROUTES.OWNER.PROFILE.GET,
+    iVendorProfileController.getProfile
+)
+
+router.patch(
+    ROUTES.OWNER.PROFILE.UPDATE,
+    validate(UpdateVendorProfileSchema, 'body'),
+    iVendorProfileController.updateProfile
+)
 
 
 
