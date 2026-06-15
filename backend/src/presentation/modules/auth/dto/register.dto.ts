@@ -1,21 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'user@bmv.com' })
   email!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'password123' })
   password!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'John' })
   firstName!: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ example: 'Doe', required: false })
   lastName?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ example: '+919876543210', required: false })
   phone?: string;
-
-  @ApiProperty({ required: false, enum: ['USER', 'VENUE_OWNER', 'ADMIN'] })
-  role?: 'USER' | 'VENUE_OWNER' | 'ADMIN';
 }

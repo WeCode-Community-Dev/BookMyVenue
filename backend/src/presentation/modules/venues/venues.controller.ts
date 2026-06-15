@@ -12,7 +12,6 @@ import { type TokenPayload } from '../../../core/application/users/services/toke
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
 import { createVenueSchema } from '../../validation/venues/create-venue.schema';
 import { CreateVenueDto } from './dto/create-venue.dto';
-import { UpdateVenueDto } from './dto/update-venue.dto';
 import { ApproveVenueDto } from './dto/approve-venue.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiQuery } from '@nestjs/swagger';
 
@@ -71,23 +70,6 @@ export class VenuesController {
     return this.getVenueDetailsQuery.execute(id);
   }
 
-  @Patch(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update an existing venue' })
-  @ApiResponse({ status: 200, description: 'Venue updated successfully' })
-  update(
-    @Param('id') id: string,
-    @CurrentUser() user: TokenPayload,
-    @Body(new ZodValidationPipe(createVenueSchema as any)) data: UpdateVenueDto,
-  ) {
-    return this.updateVenueCommand.execute({
-      venueId: id,
-      userId: user.userId,
-      userRole: user.role,
-      ...data,
-    });
-  }
 
   @Post(':id/approve')
   @UseGuards(JwtAuthGuard, RolesGuard)
