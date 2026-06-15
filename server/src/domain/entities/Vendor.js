@@ -1,4 +1,4 @@
-class VendorEntity {
+export class VendorEntity {
   constructor({
     id,
     fullName,

@@ -29,11 +29,18 @@ import { CloudinaryService } from '../../infrastructure/services/cloudinaryServi
 import { UserRepository } from '../../infrastructure/repositories/user.repository.js'
 import HashService from '../../infrastructure/services/HashService.js'
 
+//Vendor
+import VendorRepository from '../../infrastructure/repositories/vendor.repository.js'
+import { GetVendorProfileUsecase } from '../../application/vendor/usecases/profile/getVendorProfile.usecase.js'
+import { VendorUpdateProfileUsecase } from '../../application/vendor/usecases/profile/updateVendorProfile.usecase.js'
+import { VendorProfileController } from './vendor/vendorProfileController.js'
+
 
 
 //repository
 const iVenueRepository = new VenueRepository()
 const iUserRepository = new UserRepository()
+const iVendorRepository = new VendorRepository()
 
 
 //service
@@ -78,6 +85,25 @@ const iVendorDeleteVenue = new VendorDeleteVenueUsecase(
 const iUpdatevenueStatus = new VendorUpdateVenueStatusUsecase (
     iVenueRepository
 )
+
+//vendor profile
+
+const iGetVendorProfileUsecase =
+    new GetVendorProfileUsecase(
+        iVendorRepository
+    )
+const iUpdateVendorProfileUsecase =
+    new VendorUpdateProfileUsecase(
+        iVendorRepository
+    )
+
+export const iVendorProfileController =
+    new VendorProfileController(
+
+        iGetVendorProfileUsecase,
+        iUpdateVendorProfileUsecase
+
+    )
 
 
 //user

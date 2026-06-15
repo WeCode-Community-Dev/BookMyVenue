@@ -1,9 +1,12 @@
-import {OwnerEnity} from "../../domain/entities/Owner.js";
+import { VendorEntity } from "../../domain/entities/Vendor.js";
 
-export class OwnerMapper {
+export class VendorMapper {
 
     static mapToEntity(doc) {
-        return new OwnerEntity({
+
+        if (!doc) return null;
+
+        return new VendorEntity({
             id: doc._id?.toString(),
             fullName: doc.fullName,
             email: doc.email,
@@ -18,6 +21,9 @@ export class OwnerMapper {
     }
 
     static mapToPersistence(entity) {
+
+        if (!entity) return null;
+
         return {
             fullName: entity.fullName,
             email: entity.email,

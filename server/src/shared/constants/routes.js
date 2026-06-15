@@ -14,6 +14,10 @@ export const ROUTES = {
             GET_ALL: '/venues',
             DELETE: '/venue/:venueId/:ownerId',
             UPDATE_STATUS: '/venue/:venueId/:ownerId/status'
+        },
+        PROFILE: {
+            GET: '/profile',
+            UPDATE: '/profile'
         }
     },
     USER: {
