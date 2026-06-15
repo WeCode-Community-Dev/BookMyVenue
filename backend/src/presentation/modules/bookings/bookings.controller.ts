@@ -11,14 +11,17 @@ import { createBookingSchema } from '../../validation/bookings/create-booking.sc
 import { CreateBookingDto } from './dto/create-booking.dto';
 
 @ApiTags('bookings')
-@Controller('bookings')
+@Controller({
+  version: '1',
+  path: 'bookings',
+})
 @ApiBearerAuth('JWT-auth')
 export class BookingsController {
   constructor(
     private readonly createBookingCommand: CreateBookingCommand,
     private readonly cancelBookingCommand: CancelBookingCommand,
     private readonly getUserBookingsQuery: GetUserBookingsQuery,
-  ) {}
+  ) { }
 
   @Post()
   @UseGuards(JwtAuthGuard)

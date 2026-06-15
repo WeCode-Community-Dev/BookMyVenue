@@ -6,7 +6,10 @@ import { type TokenPayload } from '../../../core/application/users/services/toke
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('users')
-@Controller('users')
+@Controller({
+  version: '1',
+  path: 'users',
+})
 export class UsersController {
   constructor(private readonly getUserProfileQuery: GetUserProfileQuery) { }
 

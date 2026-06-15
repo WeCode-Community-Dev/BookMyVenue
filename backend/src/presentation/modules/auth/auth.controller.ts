@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
 import { RegisterUserCommand } from '../../../core/application/users/commands/register-user.command';
 import { LoginUserCommand } from '../../../core/application/users/commands/login-user.command';
 import { RefreshAccessTokenCommand } from '../../../core/application/users/commands/refresh-access-token.command';
@@ -16,14 +16,17 @@ import { type TokenPayload } from '../../../core/application/users/services/toke
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('auth')
-@Controller('auth')
+@Controller({
+  version: '1',
+  path: 'auth',
+})
 export class AuthController {
   constructor(
     private readonly registerUserCommand: RegisterUserCommand,
     private readonly loginUserCommand: LoginUserCommand,
     private readonly refreshAccessTokenCommand: RefreshAccessTokenCommand,
     private readonly logoutCommand: LogoutCommand,
-  ) {}
+  ) { }
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
@@ -57,4 +60,6 @@ export class AuthController {
   logout(@CurrentUser() user: TokenPayload) {
     return this.logoutCommand.execute({ userId: user.userId });
   }
+
 }
+

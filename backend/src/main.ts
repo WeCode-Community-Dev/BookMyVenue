@@ -3,12 +3,18 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './presentation/app.module';
 import { NestjsConsoleLogger } from './infra/logger/console.logger';
 import { DomainExceptionFilter } from './presentation/filters/domain-exception.filter';
+import { VersioningType } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { logger: false });
 
   app.useLogger(new NestjsConsoleLogger());
   app.useGlobalFilters(new DomainExceptionFilter());
+
+  // versioning
+  app.enableVersioning({
+    type: VersioningType.URI,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('BMV API Documentation')

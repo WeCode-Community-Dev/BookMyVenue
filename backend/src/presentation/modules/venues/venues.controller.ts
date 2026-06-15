@@ -16,7 +16,10 @@ import { ApproveVenueDto } from './dto/approve-venue.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('venues')
-@Controller('venues')
+@Controller({
+  version: '1',
+  path: 'venues',
+})
 @ApiBearerAuth('JWT-auth')
 export class VenuesController {
   constructor(
