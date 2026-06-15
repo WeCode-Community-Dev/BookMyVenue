@@ -23,6 +23,24 @@ export class PrismaUserRepository implements IUserRepository {
     });
   }
 
+  async findAll(query?: { search?: string, offset: number, limit: number }): Promise<User[]> {
+    const dbUsers = await this.prisma.users.findMany({
+      where: query?.search ? {
+        OR: [
+          { email: { contains: query.search, mode: 'insensitive' } },
+          { first_name: { contains: query.search, mode: 'insensitive' } },
+          { last_name: { contains: query.search, mode: 'insensitive' } },
+          { phone: { contains: query.search, mode: 'insensitive' } },
+        ],
+      } : undefined,
+      skip: query?.offset,
+      take: query?.limit,
+      orderBy: { created_at: 'desc' },
+    });
+
+    return dbUsers.map(this.mapToDomain);
+  }
+
   async findById(id: string): Promise<User | null> {
     const dbUser = await this.prisma.users.findUnique({
       where: { id },

@@ -16,6 +16,14 @@ async function bootstrap() {
     type: VersioningType.URI,
   });
 
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN?.split(',') || '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
+  app.setGlobalPrefix('api');
+
   const config = new DocumentBuilder()
     .setTitle('BMV API Documentation')
     .setDescription('API documentation for the BookMyVenue application')
