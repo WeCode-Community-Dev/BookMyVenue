@@ -1,8 +1,8 @@
 "use client";
 
-import Card from "@/components/global/card";
+import Card from "@/components/global/card/Card";
 import EventTypeFilter from "@/components/global/eventtypefilter";
-import LoginModal from "@/components/global/login";
+import LoginModal from "@/components/global/login/Login";
 import MapPanel from "@/components/global/mappanel";
 import OfferSection from "@/components/global/offersection";
 import VenueFiltersBar from "@/components/global/venuefilterbar";
@@ -14,11 +14,11 @@ import { venues } from "../services/VenuService";
 export default function Venues() {
     const [
         loginOpen, setLoginOpen
-    ] = useState(false);
+    ] = useState(true);
 
     return (
         <>
-            <LoginModal open={loginOpen} onOpenChange={setLoginOpen} />
+            <LoginModal isOpen={loginOpen} onOpenChange={setLoginOpen} />
             {/* <Header /> */}
             <div className="flex">
                 {/* <Sidebar /> */}
