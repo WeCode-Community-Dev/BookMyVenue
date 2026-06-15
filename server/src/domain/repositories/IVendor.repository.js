@@ -31,6 +31,10 @@ export class IVendorRepository {
         throw new Error('Method not implemented');
     }
 
+    async findByRefreshToken(refreshToken) {
+        throw new Error('Method not implemented');
+    }
+
     async updateRefreshToken(vendorId, refreshToken) {
         throw new Error('Method not implemented');
     }

@@ -1,5 +1,4 @@
 import { ConflictError } from "../../../domain/errors/ConflictError.js";
-import { UserMapper } from "../../mapper/User.mapper.js";
 import { UserRole } from "../../../domain/enums/UserRole.enum.js";
 import { UserEntity } from "../../../domain/entities/User.js";
 
@@ -18,7 +17,7 @@ class RegisterUserUseCase {
 
         const hashedPassword = await this._hashService.hash(userData.password);
 
-        const userEntity = new User({
+        const userEntity = new UserEntity({
             fullName: userData.fullName,
             email: userData.email,
             phone: userData.phone,
@@ -28,7 +27,7 @@ class RegisterUserUseCase {
 
         const created = await this._userRepository.create(userEntity);
 
-        return UserMapper.toDTO(created);
+        return created;
     }
 }
 

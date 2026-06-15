@@ -111,7 +111,7 @@ export class UserRepository extends IUserRepository {
     async findByEmail(email, includePassword = false) {
         let query = UserModel.findOne({
             email,
-            isDeleted: false,
+            isDeleted: { $ne: true }
         });
 
         if (includePassword) {
@@ -128,7 +128,7 @@ export class UserRepository extends IUserRepository {
     async findByPhone(phone) {
         const document = await UserModel.findOne({
             phone,
-            isDeleted: false,
+            isDeleted: { $ne: true }
         });
 
         if (!document) return null;
@@ -150,10 +150,33 @@ export class UserRepository extends IUserRepository {
         return UserMapper.mapToEntity(document);
     }
 
+    async findByRefreshToken(refreshToken) {
+        const document = await UserModel.findOne({
+            refreshToken,
+            isDeleted: { $ne: true }
+        }).select("+password");
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
+
     async updateRefreshToken(userId, refreshToken) {
         const document = await UserModel.findByIdAndUpdate(
             userId,
             { refreshToken },
+            { new: true }
+        );
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
+
+    async clearRefreshToken(userId) {
+        const document = await UserModel.findByIdAndUpdate(
+            userId,
+            { refreshToken: [] },
             { new: true }
         );
 

@@ -17,7 +17,7 @@ export class VendorEditVenueUsecase  {
 
     async execute({ 
         venueId,
-        ownerId,
+        vendorId,
         name,
         description,
         category,
@@ -46,7 +46,7 @@ export class VendorEditVenueUsecase  {
                 throw new NotFoundError(VenueMessages.error.VENUE_NOT_FOUND)
             }
 
-            if(venue.ownerId !== ownerId){
+            if(venue.vendorId !== vendorId){
                 throw new ForbiddenError(VenueMessages.error.FORBIDDEN)
             }
 

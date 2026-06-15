@@ -22,52 +22,52 @@ export class VendorVenueController {
     }
 
     createVenue = asyncHandler( async (req, res) => {
-        const ownerId = req.body.ownerId
+        const vendorId = req.body.vendorId
         const images = (req.files || []).map(file => ({
             publicId: file.filename,
             url: file.path
         }))
-        const venue = await this._vendorCreateVenueUsecase.execute({ownerId,...req.body, images})
+        const venue = await this._vendorCreateVenueUsecase.execute({vendorId,...req.body, images})
         return sendSuccess(res, statusCode.OK, VenueMessages.success.VENUE_CREATED, venue)
     })
 
     updateVenue = asyncHandler( async(req, res) => {
-        const ownerId = req.body.ownerId
+        const vendorId = req.body.vendorId
         const venueId = req.params.venueId
         const newImages = (req.files || []).map(file => ({
             publicId: file.filename,
             url: file.path
         }))
 
-        const venue = await this._vendorEditVenueUsecase.execute({ownerId, venueId, newImages, ...req.body})
+        const venue = await this._vendorEditVenueUsecase.execute({vendorId, venueId, newImages, ...req.body})
         return sendSuccess(res, statusCode.OK, '', venue)
     })
 
     getById = asyncHandler( async (req, res) => {
-        const ownerId = req.params.ownerId
+        const vendorId = req.params.vendorId
         const venueId = req.params.venueId
-        const venue = await this._vendorGetVenueByIdUsecase.execute(ownerId,venueId)
+        const venue = await this._vendorGetVenueByIdUsecase.execute(vendorId,venueId)
         return sendSuccess(res, statusCode.OK, '', venue)
     })
 
     getAllVenues = asyncHandler( async (req, res) => {
-        // const ownerId = req.params.ownerId
-        const { ownerId, page, limit, category, search, status, price} = req.validatedQuery
-        const { data, totalCount, totalPages }= await this._vendorGetAllVenuesUsecase.execute(ownerId, page, limit, category, search, status, price)
+        // const vendorId = req.params.vendorId
+        const { vendorId, page, limit, category, search, status, price} = req.validatedQuery
+        const { data, totalCount, totalPages }= await this._vendorGetAllVenuesUsecase.execute(vendorId, page, limit, category, search, status, price)
         return sendSuccess(res, statusCode.OK, '', {data, totalCount, totalPages})
     })
 
     deleteVenue = asyncHandler( async (req, res) => {
-        const ownerId = req.params.ownerId
+        const vendorId = req.params.vendorId
         const venueId = req.params.venueId
-        await this._vendorDeleteVenueUsecase.execute(ownerId,venueId)
+        await this._vendorDeleteVenueUsecase.execute(vendorId,venueId)
         return sendSuccess(res, statusCode.OK, '')
     })
 
     updateVenueStatus = asyncHandler( async (req, res) => {
-        const ownerId = req.params.ownerId
+        const vendorId = req.params.vendorId
         const venueId = req.params.venueId
-        await this._vendorUpdateVenueStatusUsecase.execute({ownerId,venueId, status: req.body.status})
+        await this._vendorUpdateVenueStatusUsecase.execute({vendorId,venueId, status: req.body.status})
         return sendSuccess(res, statusCode.OK, '')
     })
     

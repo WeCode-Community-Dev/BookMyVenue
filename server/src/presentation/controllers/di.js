@@ -19,11 +19,15 @@ import { AdminUnblockUserUsecase } from '../../application/admin/usecases/user/a
 import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
 import { UserVenueController } from '../controllers/user/user.venueController.js'
 import { AuthController } from '../controllers/user/AuthController.js'
+import { VendorAuthController } from '../controllers/vendor/vendor.authController.js'
 
 // AdminController
 import { AdminUserController } from '../controllers/admin/admin.userController.js'
 
 import { VenueRepository } from '../../infrastructure/repositories/venue.repository.js'
+import VendorRepository from '../../infrastructure/repositories/vendor.repository.js'
+import RegisterVendorUseCase from '../../application/vendor/usecases/RegisterVendorUseCase.js'
+import LoginVendorUseCase from '../../application/vendor/usecases/LoginVendorUseCase.js'
 import { VendorGetAllVenuesUsecase } from '../../application/vendor/usecases/venue/vendor.getAllVenues.usecase.js'
 import { CloudinaryService } from '../../infrastructure/services/cloudinaryService.js'
 import { UserRepository } from '../../infrastructure/repositories/user.repository.js'
@@ -34,6 +38,7 @@ import HashService from '../../infrastructure/services/HashService.js'
 //repository
 const iVenueRepository = new VenueRepository()
 const iUserRepository = new UserRepository()
+const iVendorRepository = new VendorRepository()
 
 
 //service
@@ -60,6 +65,8 @@ const iRegisterUserUseCase = new RegisterUserUseCase(iUserRepository, HashServic
 const iLoginUserUseCase = new LoginUserUseCase(iUserRepository, HashService)
 const iLogoutUseCase = new LogoutUseCase(iUserRepository)
 const iRefreshTokenUseCase = new RefreshTokenUseCase(iUserRepository)
+const iRegisterVendorUseCase = new RegisterVendorUseCase(iVendorRepository, HashService)
+const iLoginVendorUseCase = new LoginVendorUseCase(iVendorRepository, HashService)
 
 
 //vendor
@@ -113,6 +120,11 @@ export const iAdminUserController =
 export const iUserVenueController = new UserVenueController (
     iUserGetAllVenues,
     iUserGetVenueById,
+)
+
+export const iVendorAuthController = new VendorAuthController(
+    iRegisterVendorUseCase,
+    iLoginVendorUseCase
 )
 
 export const iAuthController = new AuthController(

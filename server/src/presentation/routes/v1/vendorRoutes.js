@@ -11,12 +11,12 @@ const router = Express.Router()
 const uploadVenueImages = cloudinaryUpload("venues")
 
 //venue
-router.post(ROUTES.OWNER.VENUE.CREATE, uploadVenueImages.array("images", 10),  validate(createVenueSchema, 'body'), iVendorVenueController.createVenue)
-router.patch(ROUTES.OWNER.VENUE.EDIT, uploadVenueImages.array('images', 10), validate(createVenueSchema, 'body'), validate(VenueParamsSchema, 'params'), iVendorVenueController.updateVenue)
-router.get(ROUTES.OWNER.VENUE.GET_BY_ID, validate(VenueParamsSchema, 'params'), iVendorVenueController.getById)
-router.get(ROUTES.OWNER.VENUE.GET_ALL, validate(VenueQuerySchema, 'query'), iVendorVenueController.getAllVenues)
-router.delete(ROUTES.OWNER.VENUE.DELETE, validate(VenueParamsSchema, 'params'), iVendorVenueController.deleteVenue)
-router.patch(ROUTES.OWNER.VENUE.UPDATE_STATUS, validate(VenueParamsSchema, 'params'), validate(VenueUpdateStatusSchema, 'body'), iVendorVenueController.updateVenueStatus)
+router.post(ROUTES.VENDOR.VENUE.CREATE, uploadVenueImages.array("images", 10),  validate(createVenueSchema, 'body'), iVendorVenueController.createVenue)
+router.patch(ROUTES.VENDOR.VENUE.EDIT, uploadVenueImages.array('images', 10), validate(createVenueSchema, 'body'), validate(VenueParamsSchema, 'params'), iVendorVenueController.updateVenue)
+router.get(ROUTES.VENDOR.VENUE.GET_BY_ID, validate(VenueParamsSchema, 'params'), iVendorVenueController.getById)
+router.get(ROUTES.VENDOR.VENUE.GET_ALL, validate(VenueQuerySchema, 'query'), iVendorVenueController.getAllVenues)
+router.delete(ROUTES.VENDOR.VENUE.DELETE, validate(VenueParamsSchema, 'params'), iVendorVenueController.deleteVenue)
+router.patch(ROUTES.VENDOR.VENUE.UPDATE_STATUS, validate(VenueParamsSchema, 'params'), validate(VenueUpdateStatusSchema, 'body'), iVendorVenueController.updateVenueStatus)
 
 
 

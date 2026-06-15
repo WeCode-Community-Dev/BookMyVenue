@@ -10,8 +10,7 @@ class VendorEntity {
     isVerified = false,
     isBlocked = false,
     isDeleted = false,
-    
-    
+    refreshToken = [],
     isAdminApproved = false, 
   }) {
     this.id = id;
@@ -22,10 +21,10 @@ class VendorEntity {
     this.businessName = businessName;
     this.isVerified = isVerified;
     this.isBlocked = isBlocked;
+    this.refreshToken = refreshToken;
     this.isAdminApproved = isAdminApproved;
     this.role = role;
     this.isDeleted = isDeleted;
-    
   }
 }
 

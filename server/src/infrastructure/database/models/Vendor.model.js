@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import UserRole from "../../../domain/enums/userRole.js";
+import { UserRole } from "../../../domain/enums/UserRole.enum.js";
 
 const vendorSchema = new mongoose.Schema(
     {
@@ -17,6 +17,10 @@ const vendorSchema = new mongoose.Schema(
             required: true,
             unique: true
         },
+        businessName: {
+            type: String,
+            required: false,
+        },
         password: {
             type: String,
             required: true,
@@ -26,6 +30,10 @@ const vendorSchema = new mongoose.Schema(
             type: String,
             enum: Object.values(UserRole),
             default: UserRole.VENDOR
+        },
+        isVerified: {
+            type: Boolean,
+            default: false
         },
         isApproved: {
             type: Boolean,
@@ -38,6 +46,11 @@ const vendorSchema = new mongoose.Schema(
         isDeleted: {
             type: Boolean,
             default: false
+        },
+        refreshToken: {
+            type: [String],
+            default: [],
+            select: false
         }
     },
     {

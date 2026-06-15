@@ -23,7 +23,7 @@ export default class RefreshTokenUseCase {
         const newAccessToken = TokenService.generateAccessToken(payload);
         const newRefreshToken = TokenService.generateRefreshToken(payload);
 
-        await this._userRepository.saveRefreshToken(user.id, newRefreshToken);
+        await this._userRepository.updateRefreshToken(user.id, newRefreshToken);
 
         return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     }

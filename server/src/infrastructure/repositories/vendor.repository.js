@@ -1,5 +1,5 @@
-import IVendorRepository from "../../domain/repositories/IVendorRepository.js";
-import VendorModel from "../database/models/VendorModel.js";
+import { IVendorRepository } from "../../domain/repositories/IVendor.repository.js";
+import VendorModel from "../database/models/Vendor.model.js";
 import VendorMapper from "../../application/mapper/VendorMapper.js";
 
 class VendorRepositoryImpl extends IVendorRepository {
@@ -11,6 +11,7 @@ class VendorRepositoryImpl extends IVendorRepository {
 
     async findById(id) {
         const doc = await VendorModel.findOne({ _id: id, isDeleted: false });
+        if (!doc) return null;
         return VendorMapper.toDomain(doc);
     }
 
@@ -25,6 +26,7 @@ class VendorRepositoryImpl extends IVendorRepository {
             VendorMapper.toPersistence(entity),
             { new: true }
         );
+        if (!doc) return null;
         return VendorMapper.toDomain(doc);
     }
 
@@ -45,11 +47,29 @@ class VendorRepositoryImpl extends IVendorRepository {
         const query = VendorModel.findOne({ email, isDeleted: false });
         if (includePassword) query.select("+password");
         const doc = await query;
+        if (!doc) return null;
         return VendorMapper.toDomain(doc);
     }
 
     async findByPhone(phone) {
         const doc = await VendorModel.findOne({ phone, isDeleted: false });
+        if (!doc) return null;
+        return VendorMapper.toDomain(doc);
+    }
+
+    async findByRefreshToken(refreshToken) {
+        const doc = await VendorModel.findOne({ refreshToken, isDeleted: false }).select("+password");
+        if (!doc) return null;
+        return VendorMapper.toDomain(doc);
+    }
+
+    async updateRefreshToken(vendorId, refreshToken) {
+        const doc = await VendorModel.findByIdAndUpdate(
+            vendorId,
+            { refreshToken },
+            { new: true }
+        );
+        if (!doc) return null;
         return VendorMapper.toDomain(doc);
     }
 }

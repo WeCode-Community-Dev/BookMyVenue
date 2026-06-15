@@ -28,9 +28,9 @@ export class VenueRepository extends IVenueRepository {
         return VenueMapper.mapToEntity(document)
     }
 
-    async findByOwnerAndName(ownerId, name) {
+    async findByVendorAndName(vendorId, name) {
         const document = await VenueModel.findOne({
-            ownerId,
+            vendorId,
             name
         })
         if(!document) return null
@@ -41,11 +41,11 @@ export class VenueRepository extends IVenueRepository {
         const filter = {
             isDeleted : false,
         }
-        if(!query.ownerId){
+        if(!query.vendorId){
             filter.isAdminVerified = true
         }
-        if(query.ownerId){
-            filter.ownerId = query.ownerId
+        if(query.vendorId){
+            filter.vendorId = query.vendorId
         }
         if(query.status){
             filter.status = query.status
@@ -94,7 +94,7 @@ export class VenueRepository extends IVenueRepository {
             .skip(skip)
             .limit(query.limit)
         return {
-            data: documents,
+            data: documents.map((doc) => VenueMapper.mapToEntity(doc)),
             totalCount,
             totalPages
         }
@@ -102,11 +102,15 @@ export class VenueRepository extends IVenueRepository {
     }
 
     async delete(id){
-        return await VenueModel.findByIdAndUpdate(
+        const document = await VenueModel.findByIdAndUpdate(
             id, 
             {isDeleted: true},
             { new: true}
         )
+
+        if (!document) return null
+
+        return VenueMapper.mapToEntity(document)
     }
     // mapToEntity(doc){
     //     return VenueMapper.mapToEntity(doc)

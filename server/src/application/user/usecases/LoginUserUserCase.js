@@ -1,6 +1,5 @@
 import { NotFoundError } from "../../../domain/errors/NotFoundError.js";
 import { UnauthorizedError } from "../../../domain/errors/UnauthorizedError.js";
-import { UserMapper } from "../../mapper/User.mapper.js";
 import TokenService from "../../../infrastructure/services/TokenService.js";
 
 export default class LoginUserUseCase {
@@ -26,12 +25,14 @@ export default class LoginUserUseCase {
         const accessToken = TokenService.generateAccessToken(payload);
         const refreshToken = TokenService.generateRefreshToken(payload);
 
-        await this._userRepository.saveRefreshToken(user.id, refreshToken);
+        await this._userRepository.updateRefreshToken(user.id, refreshToken);
+
+        const { password: _, refreshToken: __, ...userWithoutSensitiveData } = user;
 
         return {
             accessToken,
             refreshToken,
-            user: UserMapper.toDTO(user)
+            user: userWithoutSensitiveData
         };
     }
 }

@@ -32,4 +32,18 @@ export class UserMapper {
             refreshToken: entity.refreshToken
         };
     }
+
+    static toDTO(entity) {
+        return {
+            id: entity.id,
+            fullName: entity.fullName,
+            email: entity.email,
+            phone: entity.phone,
+            role: entity.role,
+            isOtpVerified: entity.isOtpVerified,
+            isBlocked: entity.isBlocked,
+            createdAt: entity.createdAt,
+            updatedAt: entity.updatedAt
+        };
+    }
 }

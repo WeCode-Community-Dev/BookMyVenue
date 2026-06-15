@@ -39,7 +39,15 @@ export class IUserRepository {
         throw new Error('Method not implemented');
     }
 
+    async findByRefreshToken(refreshToken) {
+        throw new Error('Method not implemented');
+    }
+
     async updateRefreshToken(userId, refreshToken) {
+        throw new Error('Method not implemented');
+    }
+
+    async clearRefreshToken(userId) {
         throw new Error('Method not implemented');
     }
 

@@ -10,7 +10,7 @@ const VenueSchema = new Schema({
         type: String,
         required: true
     },
-    ownerId: {
+    vendorId: {
         type: Types.ObjectId,
         ref: 'User',
         required: true

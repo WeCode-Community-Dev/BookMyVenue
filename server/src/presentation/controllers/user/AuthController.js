@@ -1,6 +1,8 @@
 import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 import { sendSuccess } from "../../../shared/utils/apiResponse.js";
 import { statusCode } from "../../../shared/constants/enums/statusCode.js";
+import TokenService from "../../../infrastructure/services/TokenService.js";
+import { UnauthorizedError } from "../../../domain/errors/UnauthorizedError.js";
 
 const REFRESH_COOKIE_OPTIONS = {
     httpOnly: true,
@@ -8,6 +10,9 @@ const REFRESH_COOKIE_OPTIONS = {
     sameSite: "strict",
     maxAge: 7 * 24 * 60 * 60 * 1000
 };
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@bookmyvenue.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Admin@123";
 
 export class AuthController {
     constructor(
@@ -51,5 +56,28 @@ export class AuthController {
 
         res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
         return sendSuccess(res, statusCode.OK, "Logged out successfully");
+    });
+
+    adminLogin = asyncHandler(async (req, res) => {
+        const { email, password } = req.body;
+
+        if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+            throw new UnauthorizedError("Invalid admin credentials");
+        }
+
+        const payload = { userId: "admin", role: "ADMIN" };
+        const accessToken = TokenService.generateAccessToken(payload);
+        const refreshToken = TokenService.generateRefreshToken(payload);
+
+        res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
+
+        return sendSuccess(res, statusCode.OK, "Admin login successful", {
+            accessToken,
+            user: {
+                id: "admin",
+                email: ADMIN_EMAIL,
+                role: "ADMIN"
+            }
+        });
     });
 }

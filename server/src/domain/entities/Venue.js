@@ -4,7 +4,7 @@ export class VenueEntity {
     constructor ({
     id,
     name,
-    ownerId,
+    vendorId,
     description,
     category,
     websiteUrl,
@@ -35,7 +35,7 @@ export class VenueEntity {
 
     } = {}) {
         this.id = id;
-        this.ownerId = ownerId;
+        this.vendorId = vendorId;
         this.name = name;
         this.description = description;
         this.category = category;
