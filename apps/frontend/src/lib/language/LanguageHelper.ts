@@ -1,10 +1,12 @@
+import { storeLanguage, useLanguage } from "@/store/AppConfigReducer";
+
 import { DEFAULT_LANGUAGE } from "@/lib/Constants";
 import { StringNumberDictionary } from "@/types/SharedInterface";
 import english from "./English.json";
 import hindi from "./Hindi.json";
 import { isNonEmpty } from "../Utils";
 import store from "@/store/Store";
-import { storeLanguage } from "@/store/AppConfigReducer";
+import { useSelector } from "react-redux";
 
 const dictionaryList = {
     english,
@@ -31,22 +33,34 @@ const setLanguage = (lang: string) => {
 };
 
 
-const getText = (textName: string, textModule?: string) => {
-
-    const selectedLang = languageOptions[ 0 ];
+const getText = (textName: string, textModule?: string, append?: StringNumberDictionary) => {
+    const selectedLang = store.getState().AppConfigReducer.language || languageOptions[ 0 ];
     const dictionary: Record<string, any> = dictionaryList[ selectedLang as selectedLangType ];
+    let result: any = "";
 
     if (textModule)
-        return dictionary[ textModule ] && dictionary[ textModule ][ textName ] ?
+        result = dictionary[ textModule ] && dictionary[ textModule ][ textName ] ?
             dictionary[ textModule ][ textName ]
-            : null;
+            : textName ? textName : "";
+    else
+        result = dictionary[ textName ] ? dictionary[ textName ] : textName ? textName : "";
 
-    return dictionary[ textName ] ? dictionary[ textName ] : null;
+    if (append && isNonEmpty(append)) {
+        for (const item in append) {
+            result = result.replace(`{${item}}`, append[ item ] as string);
+        }
+    }
+
+    if (isNonEmpty(result))
+        result = result.replace(/{param\d}/g, "-");
+
+    return result;
 };
 
 const AppText = (props: AppTextProps) => {
     const { textName, textModule, append } = props;
-    const selectedLang = languageOptions[ 0 ];
+
+    const selectedLang = useSelector(useLanguage) || languageOptions[ 0 ];
     const dictionary: Record<string, any> = dictionaryList[ selectedLang as selectedLangType ];
     let result: any = "";
 
