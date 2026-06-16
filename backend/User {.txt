@@ -1,0 +1,119 @@
+User collection 
+
+User {
+   _id
+
+   name
+   email
+   phone
+   password
+   isEmailVerified
+   roles
+   profileImage
+   bio
+   address
+   dob
+   gender
+   city
+   state
+   providerProfileCompleted (for completing the first venue listing)
+   isActive
+   lastLogin
+   createdAt
+   updatedAt
+}
+
+venue collection
+
+Venue {
+   _id
+   ownerId
+   title
+   description
+   category
+   coverImage
+   images
+   venueType [offline,online,hybrid]
+   indoorOutdoor [indoor,outdoor, both]
+   price 
+   pricingUnit [perhour,perday]
+   capacity
+   amenities ["AC","Parking"WiFi","Stage","Projector"]
+   rules [no smoking,no drinking etc.]
+   address
+   city
+   state
+   pincode
+   location: {
+      latitude
+      longitude
+   }
+   averageRating
+   totalReviews
+   status [active,inactive,blocked] (active -visible, inactive-owner disbled,blocked-admin)
+   createdAt
+   updatedAt
+}
+
+venue availability
+
+VenueAvailability {
+   _id
+   venueId
+   date
+   slotLabel (morng,evng night shifts)
+   startTime
+   endTime
+   isBooked
+   bookingId
+   createdAt
+   updatedAt
+}
+
+booking
+
+Booking {
+   _id
+   bookingReference (access id after booking)
+   userId
+   venueId
+   availabilityId
+   amount
+   currency
+   paymentMethod
+   paymentId
+   bookingStatus
+   paymentStatus
+   contactPhone
+   qrCode
+   bookedAt
+   cancelledAt
+   cancelReason
+
+   createdAt
+   updatedAt
+}
+
+Review/ Rating
+
+Review {
+   _id
+   userId
+   venueId
+   bookingId
+   rating
+   comment
+
+   createdAt
+   updatedAt
+}
+
+category
+
+Category {
+   _id
+   name
+   icon
+
+   createdAt
+}
