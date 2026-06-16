@@ -29,6 +29,7 @@ class Venue(Base):
     venue_price = Column(Integer, nullable=False)
     venue_availabilty = Column(String(255), nullable=False) # hourly or daily
     is_available = Column(Boolean, nullable=False, default=False)
+    not_available_reason = Column(Text, nullable=True, default="")
     is_approved = Column(Boolean, nullable=False, default=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())

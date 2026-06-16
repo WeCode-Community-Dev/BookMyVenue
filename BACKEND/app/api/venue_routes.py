@@ -6,14 +6,16 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from app.schema.venue import (
     VenueDetailsCreate,
-    VenueAmenitiesCreate
+    VenueAmenitiesCreate,
+    VenueActiveStatusRequest
 )
 from app.services.venue_service import ( 
     get_venues, 
     get_venue_details_by_id,
     add_venue,
     add_venue_amenities,
-    add_venue_images
+    add_venue_images,
+    update_venue_active_status
 )
 
 from fastapi import APIRouter, HTTPException, status, UploadFile, File
@@ -27,7 +29,7 @@ router = APIRouter(
 )
 
 @router.get("/")
-def venues(
+def get_venues_route(
     db: Session = Depends(get_db),
     page_no: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(20, ge=1, le=100, description="Records per page"),
@@ -51,7 +53,7 @@ def venues(
         )
 
 @router.get("/details/{venue_id}")
-def venues(
+def get_venue_by_id(
     venue_id: int,
     db: Session = Depends(get_db),
 ):
@@ -67,7 +69,7 @@ def venues(
         )
 
 @router.post("/basic-details")
-def venues(
+def upload_venue_details(
     payload: VenueDetailsCreate,
     db: Session = Depends(get_db),
 ):
@@ -89,7 +91,7 @@ def venues(
         )
 
 @router.post("/{venue_id}/amenities")
-def venues(
+def upload_venue_amenities(
     payload: VenueAmenitiesCreate,
     venue_id: int,
     db: Session = Depends(get_db),
@@ -134,6 +136,40 @@ async def upload_venue_images(
         return images_urls
             
 
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+@router.patch("/active-status/{venue_id}")
+def update_venue_status(
+    venue_id: int,
+    payload: VenueActiveStatusRequest,
+    db: Session = Depends(get_db),
+):
+    try:
+        return update_venue_active_status(
+            db=db,
+            venue_id=venue_id,
+            status=payload.status,
+            reason=payload.reason
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+@router.put("/")
+def edit_venue(
+    db: Session = Depends(get_db),
+):
+    try:
+        return edit_venue(
+            db
+        )
     except Exception as e:
         raise HTTPException(
             status_code=400,

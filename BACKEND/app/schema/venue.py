@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Optional
 
 class VenueDetailsCreate(BaseModel):
     user_id: int = Field(..., gt=0) 
@@ -17,3 +17,12 @@ class VenueAmenitiesCreate(BaseModel):
     ac: bool = False
     wheel_chair: bool = False
     av_equipements: bool = False
+
+
+class VenueApprovalRequest(BaseModel):
+    status: Literal["approved", "rejected"]
+    reason: Optional[str] = None
+
+class VenueActiveStatusRequest(BaseModel):
+    status: Literal["active", "inactive"]
+    reason: Optional[str] = None

@@ -13,17 +13,22 @@ def get_venues(
     action : str,
     location : str,
     avaialability : str
-):
-    offset = (page_no - 1) * limit
+):  
+    try:
+        offset = (page_no - 1) * limit
 
-    venues = db.query(Venue).offset(offset).limit(limit).all()
+        venues = db.query(Venue).offset(offset).limit(limit).all()
 
-    if not venues:
-        return {
-            "message": "venues are not added"
-        }
+        if not venues:
+            return {
+                "message": "venues are not added"
+            }
+        
+        return venues
 
-    return venues
+    except Exception as e:
+        raise Exception(f"Error occurred while fetching venues: {str(e)}")
+
 
 def get_venue_details_by_id(
     db: Session,
@@ -134,3 +139,80 @@ def add_venue_images(
         "message": "Images added successfully",
     }
     
+def update_venue_approval_status(
+    db: Session,
+    venue_id: int,
+    status: str,
+    reason: str
+):
+    venue = (
+        db.query(Venue)
+        .filter(Venue.id == venue_id) 
+        .first()
+    )
+
+    if not venue:
+        raise Exception("Invalid venue")
+
+    if status.lower() == "approved":
+        venue.is_approved = True
+    elif status.lower() == "rejected":
+        venue.is_approved = False
+        
+        ## reason
+        ## rejection schema to store rejected description plus venue_id
+        ## shoot mail to venue owner mentioning rejection
+
+    else:
+        raise Exception("Status must be either 'approved' or 'rejected'")
+
+    db.commit()
+    db.refresh(venue)
+
+    return {
+        "message": f"Venue {status.lower()} successfully",
+        "venue_id": venue.id,
+        "is_approved": venue.is_approved
+    } 
+
+
+def update_venue_active_status(
+    db: Session,
+    venue_id: int,
+    status: str,
+    reason: str = None
+):
+    venue = (
+        db.query(Venue)
+        .filter(Venue.id == venue_id)
+        .first()
+    )
+
+    if not venue:
+        raise Exception("Invalid venue")
+
+    if status.lower() == "active":
+        venue.is_active = True
+
+    elif status.lower() == "inactive":
+        venue.is_active = False
+        venue.not_available_reason = reason
+
+    else:
+        raise Exception("Status must be either 'active' or 'inactive'")
+
+    db.commit()
+    db.refresh(venue)
+
+    return {
+        "message": f"Venue {status.lower()} successfully",
+        "venue_id": venue.id,
+        "is_active": venue.is_active
+    }
+
+
+def edit_venue():
+    return {
+        "message": f"Venue edited successfully",
+        # "venue_id": venue.id,
+    }
