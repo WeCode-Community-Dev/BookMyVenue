@@ -3,11 +3,6 @@ import { type IVenueRepository } from '../../../domain/venues/repositories/venue
 import { NotFoundException } from '../../../domain/_shared/exception/notfound.exception';
 import { BusinessRuleException } from '../../../domain/_shared/exception/business-rule.exception';
 
-export interface ApproveVenueDto {
-  venueId: string;
-  userRole: string;
-  approve: boolean;
-}
 
 @Injectable()
 export class ApproveVenueCommand {
@@ -16,22 +11,18 @@ export class ApproveVenueCommand {
     private readonly venueRepository: IVenueRepository,
   ) { }
 
-  async execute(dto: ApproveVenueDto): Promise<void> {
-    if (dto.userRole !== 'ADMIN') {
-      throw new BusinessRuleException('Only admins can approve or reject venues');
-    }
+  async execute(venueId: string): Promise<{ message: string }> {
 
-    const venue = await this.venueRepository.findById(dto.venueId);
+    const venue = await this.venueRepository.findById(venueId);
     if (!venue) {
       throw new NotFoundException('Venue not found');
     }
 
-    if (dto.approve) {
-      venue.approve();
-    } else {
-      venue.reject();
-    }
+    venue.approve();
 
     await this.venueRepository.save(venue);
+
+    return { message: 'Venue approved' }
+
   }
 }

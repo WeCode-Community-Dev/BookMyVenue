@@ -1,18 +1,13 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { CreateVenueCommand } from '../../../core/application/venues/commands/create-venue.command';
-import { UpdateVenueCommand } from '../../../core/application/venues/commands/update-venue.command';
-import { ApproveVenueCommand } from '../../../core/application/venues/commands/approve-venue.command';
 import { SearchVenuesQuery } from '../../../core/application/venues/queries/search-venues.query';
 import { GetVenueDetailsQuery } from '../../../core/application/venues/queries/get-venue-details.query';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
-import { RolesGuard } from '../../guards/roles.guard';
-import { Roles } from '../../decorators/roles.decorator';
 import { CurrentUser } from '../../decorators/current-user.decorator';
 import { type TokenPayload } from '../../../core/application/users/services/token.interface';
 import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
 import { createVenueSchema } from '../../validation/venues/create-venue.schema';
 import { CreateVenueDto } from './dto/create-venue.dto';
-import { ApproveVenueDto } from './dto/approve-venue.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('venues')
@@ -24,8 +19,6 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiQuery } from '@ne
 export class VenuesController {
   constructor(
     private readonly createVenueCommand: CreateVenueCommand,
-    private readonly updateVenueCommand: UpdateVenueCommand,
-    private readonly approveVenueCommand: ApproveVenueCommand,
     private readonly searchVenuesQuery: SearchVenuesQuery,
     private readonly getVenueDetailsQuery: GetVenueDetailsQuery,
   ) { }
@@ -73,22 +66,4 @@ export class VenuesController {
     return this.getVenueDetailsQuery.execute(id);
   }
 
-
-  @Post(':id/approve')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Approve or reject a venue listing (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Action recorded successfully' })
-  approve(
-    @Param('id') id: string,
-    @CurrentUser() user: TokenPayload,
-    @Body() data: ApproveVenueDto,
-  ) {
-    return this.approveVenueCommand.execute({
-      venueId: id,
-      userRole: user.role,
-      approve: data.approve,
-    });
-  }
 }

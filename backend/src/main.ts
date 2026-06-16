@@ -6,7 +6,7 @@ import { DomainExceptionFilter } from './presentation/filters/domain-exception.f
 import { VersioningType } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { logger: false });
+  const app = await NestFactory.create(AppModule,);
 
   app.useLogger(new NestjsConsoleLogger());
   app.useGlobalFilters(new DomainExceptionFilter());
