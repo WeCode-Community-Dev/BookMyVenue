@@ -1,7 +1,8 @@
 import { AggregateRoot } from '../../_shared/entity/aggregate-root';
 import { DomainException } from '../../_shared/exception/domain.exception';
+import { UserRole as UserRoleEnum } from '../../_shared/enum/UserRole'
 
-export type UserRole = 'ADMIN' | 'VENUE_OWNER' | 'USER';
+export type UserRole = `${UserRoleEnum}`;
 export type UserStatus = 'ACTIVE' | 'BLOCKED' | 'DELETED';
 
 export interface UserProps {

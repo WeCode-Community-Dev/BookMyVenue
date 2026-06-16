@@ -1,21 +1,22 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { User } from '../../../domain/users/entities/user.entity';
+import { User, } from '../../../domain/users/entities/user.entity';
 import { type IUserRepository } from '../../../domain/users/repositories/user-repository.interface';
-import { type IPasswordHasher } from '../services/password-hasher.interface';
+import { type IPasswordHasher } from '../../users/services/password-hasher.interface';
 import { BusinessRuleException } from '../../../domain/_shared/exception/business-rule.exception';
 import * as crypto from 'crypto';
 import type { UserRole } from 'src/core/domain/_shared/enum/UserRole';
 
-export interface RegisterUserDto {
+export interface CreateUserDto {
   email: string;
   password?: string;
   firstName: string;
   lastName?: string;
   phone?: string;
+  role: UserRole.USER | UserRole.VENUE_OWNER;
 }
 
 @Injectable()
-export class RegisterUserCommand {
+export class CreateUserCommand {
   constructor(
     @Inject('IUserRepository')
     private readonly userRepository: IUserRepository,
@@ -23,7 +24,7 @@ export class RegisterUserCommand {
     private readonly passwordHasher: IPasswordHasher,
   ) { }
 
-  async execute(dto: RegisterUserDto): Promise<{ userId: string }> {
+  async execute(dto: CreateUserDto): Promise<{ userId: string }> {
     const existing = await this.userRepository.findByEmail(dto.email);
     if (existing) {
       throw new BusinessRuleException('Email is already registered');
@@ -41,7 +42,7 @@ export class RegisterUserCommand {
       firstName: dto.firstName,
       lastName: dto.lastName || null,
       phone: dto.phone || null,
-      role: 'USER',
+      role: dto.role,
       status: 'ACTIVE',
     });
 

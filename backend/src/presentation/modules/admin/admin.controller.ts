@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApproveVenueCommand } from 'src/core/application/admin/commands/approve-venue.command';
 import { RejectVenueCommand } from 'src/core/application/admin/commands/reject-venue.command';
@@ -7,6 +7,8 @@ import { UserRole } from 'src/core/domain/_shared/enum/UserRole';
 import { Roles } from 'src/presentation/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/presentation/guards/roles.guard';
+import { CreateUserDTO } from './dto/create-user';
+import { CreateUserCommand } from 'src/core/application/admin/commands/create-user.command';
 
 @ApiTags('admin')
 @Controller({
@@ -20,7 +22,8 @@ export class AdminController {
   constructor(
     private readonly listVenuesQuery: ListVenueQuery,
     private readonly approveVenueCommand: ApproveVenueCommand,
-    private readonly rejectVenueCommand: RejectVenueCommand
+    private readonly rejectVenueCommand: RejectVenueCommand,
+    private readonly createUserCommand: CreateUserCommand
   ) { }
 
   @Get('venues')
@@ -36,6 +39,11 @@ export class AdminController {
   @Post('venues/:id/reject')
   rejectVenue(@Param('id', ParseUUIDPipe) id: string) {
     return this.rejectVenueCommand.execute(id)
+  }
+
+  @Post('users')
+  createUser(@Body() data: CreateUserDTO) {
+    return this.createUserCommand.execute(data)
   }
 
 }
