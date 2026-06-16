@@ -2,6 +2,19 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { IVenueRepository } from 'src/core/domain/venues/repositories/venue-repository.interface';
 import { Pagination } from '../../_shared/dto/pagination';
 
+export interface ListVenueQueryOutputDto {
+    id: string
+    ownerId: string
+    title: string
+    description: string
+    venueType: string
+    addressLine1: string
+    capacity: number
+    pricePerDay: number
+    status: string
+    createdAt: Date
+    updatedAt: Date
+}
 
 export interface ListVenueQueryInputDto {
     offset: number
@@ -16,11 +29,25 @@ export class ListVenueQuery {
         private readonly venueRepository: IVenueRepository,
     ) { }
 
-    async execute(params: ListVenueQueryInputDto): Promise<Pagination<any>> {
+    async execute(params: ListVenueQueryInputDto): Promise<Pagination<ListVenueQueryOutputDto>> {
 
         const response = await this.venueRepository.findAll()
 
-        return new Pagination(response, response.length, 1, params.limit)
+        const venues = response.map(item => ({
+            id: item.id,
+            ownerId: item.ownerId,
+            capacity: item.capacity,
+            description: item.description,
+            title: item.title,
+            pricePerDay: item.pricePerDay,
+            status: item.status,
+            venueType: item.venueType,
+            addressLine1: item.address.addressLine1,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt
+        }))
+
+        return new Pagination(venues, response.length, 1, params.limit)
 
     }
 }
