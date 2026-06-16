@@ -132,13 +132,15 @@ export const headerStyle = {
     profileContainer: clsx("relative"),
 
     profileBtn: clsx(
+        "h-11",
+        "cursor-pointer",
         "flex",
         "items-center",
         "gap-2",
         "rounded-full",
         "border",
         "border-border",
-        "px-2",
+        "px-3",
         "py-1",
         "transition",
         "hover:bg-muted",
@@ -197,7 +199,7 @@ export const headerStyle = {
 
     mobileDrawerCloseBtn: clsx("rounded-lg", "p-2", "hover:bg-muted"),
 
-    mobileDrawerMenu: clsx("flex", "flex-col", "p-4"),
+    mobileDrawerMenu: clsx("flex", "flex-col", "p-4", "items-start"),
 
     mobileDrawerMenuItem: clsx(
         "rounded-lg",

@@ -14,7 +14,7 @@ import { venues } from "../services/VenuService";
 export default function Venues() {
     const [
         loginOpen, setLoginOpen
-    ] = useState(true);
+    ] = useState(false);
 
     return (
         <>

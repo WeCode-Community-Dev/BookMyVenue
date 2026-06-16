@@ -1,0 +1,30 @@
+{
+    "english": "English",
+    "hindi": "Hindi",
+    "INPUT_LABELS": {},
+    "TOOLTIP": {},
+    "BUTTON": {},
+    "LABEL": {
+        "MENU": "Menu"
+    },
+    "FILTERS": {
+        "FILTER": "Filters",
+        "CLEAR": "Clear"
+    },
+    "MENUS": {
+        "PROFILE": "Profile",
+        "SETTINGS": "Settings",
+        "LANGUAGE": "Language",
+        "THEME": "Theme",
+        "SUPPORT": "Support",
+        "LOGOUT": "Logout",
+        "EXPLORE": "Explore",
+        "VENUE_NEAR_ME": "Venues Near Me",
+        "OFFERS": "Offers",
+        "MY_BOOKINGS": "My Bookings",
+        "WISHLIST": "Wishlist",
+        "RECENTLY_VIEWED": "Recently Viewed"
+    },
+    "COLUMNS": {},
+    "MESSAGES": {}
+}

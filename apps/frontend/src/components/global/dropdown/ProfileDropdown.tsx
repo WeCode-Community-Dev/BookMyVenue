@@ -1,5 +1,6 @@
 "use client";
 
+import { AppText, getText, setLanguage } from "@/lib/language/LanguageHelper";
 import {
     Headphones,
     Languages,
@@ -9,43 +10,56 @@ import {
     Sun,
     User,
 } from "lucide-react";
-import { storeTheme, useConfigTheme } from "@/store/AppConfigReducer";
+import { LANGUAGE, SCREENS, THEME } from "@/lib/Constants";
+import { storeTheme, useConfigTheme, useLanguage } from "@/store/AppConfigReducer";
 import { useDispatch, useSelector } from "react-redux";
 
 import NxtImage from "next/image";
-import { THEME } from "@/lib/Constants";
 import { profileDropdownStyle } from "./ProfileDropdownStyle";
+import { useRouter } from "next/navigation";
 
 interface ProfileDropdownProps {
     isOpen: boolean;
 }
 
 export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
-    const theme = useSelector(useConfigTheme);
+    const router = useRouter();
     const dispatch = useDispatch();
+    const theme = useSelector(useConfigTheme);
+    const currentLanguage = useSelector(useLanguage);
+    if (!isOpen) return null;
 
     const toggleTheme = () => {
         dispatch(storeTheme(theme === THEME.DARK ? THEME.LIGHT : THEME.DARK));
     };
 
-    if (!isOpen) return null;
+    const handleProfile = () => {
+        router.push(SCREENS.PROFILE);
+    };
+
+    const changeLanguage = () => {
+        const nextLanguage = currentLanguage === LANGUAGE.HINDI ? LANGUAGE.ENGLISH : LANGUAGE.HINDI;
+        setLanguage(nextLanguage);
+    };
 
     const menuItems = [
         {
             icon: User,
-            label: "Profile",
+            label: getText("PROFILE", "MENUS"),
+            onClick: handleProfile
         },
         {
             icon: Settings,
-            label: "Settings",
+            label: getText("SETTINGS", "MENUS"),
         },
         {
             icon: Languages,
-            label: "Language",
+            label: getText("LANGUAGE", "MENUS"),
+            onClick: changeLanguage
         },
         {
             icon: theme === THEME.DARK ? Sun : Moon,
-            label: "Theme",
+            label: getText("THEME", "MENUS"),
             onClick: toggleTheme,
         },
     ];
@@ -100,7 +114,7 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
             <div className={profileDropdownStyle.supportContainer}>
                 <button className={profileDropdownStyle.menuItem}>
                     <Headphones className={profileDropdownStyle.menuItemIcon} />
-                    Support
+                    <AppText textName="SUPPORT" textModule="MENUS"/>
                 </button>
             </div>
 
@@ -110,7 +124,7 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
             <div className={profileDropdownStyle.logoutContainer}>
                 <button className={profileDropdownStyle.logoutItem}>
                     <LogOut className={profileDropdownStyle.logoutIcon} />
-                    Logout
+                    <AppText textName="LOGOUT" textModule="MENUS"/>
                 </button>
             </div>
         </div>

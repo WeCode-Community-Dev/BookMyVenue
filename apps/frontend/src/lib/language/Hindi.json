@@ -1,0 +1,30 @@
+{
+    "english": "अंग्रेज़ी",
+    "hindi": "हिंदी",
+    "INPUT_LABELS": {},
+    "TOOLTIP": {},
+    "BUTTON": {},
+    "LABEL": {
+        "MENU": "मेनू"
+    },
+    "FILTERS": {
+        "FILTER": "फ़िल्टर्स",
+        "CLEAR": "साफ़ करें"
+    },
+    "MENUS": {
+        "PROFILE": "प्रोफ़ाइल",
+        "SETTINGS": "सेटिंग्स",
+        "LANGUAGE": "भाषा",
+        "THEME": "थीम",
+        "SUPPORT": "सहायता",
+        "LOGOUT": "लॉग आउट",
+        "EXPLORE": "एक्सप्लोर करें",
+        "VENUE_NEAR_ME": "मेरे आस-पास के स्थान",
+        "OFFERS": "ऑफ़र्स",
+        "MY_BOOKINGS": "मेरी बुकिंग",
+        "WISHLIST": "इच्छासूची",
+        "RECENTLY_VIEWED": "हाल ही में देखे गए"
+    },
+    "COLUMNS": {},
+    "MESSAGES": {}
+}
