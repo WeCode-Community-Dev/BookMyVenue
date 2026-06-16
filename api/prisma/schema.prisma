@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CUSTOMER
+  VENUE_OWNER
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+model User {
+  id String @id @default(uuid())
+
+  firstName String  @db.VarChar(100)
+  lastName  String? @db.VarChar(100)
+
+  email String  @unique @db.VarChar(255)
+  phone String? @unique @db.VarChar(20)
+
+  passwordHash String @db.VarChar(255)
+
+  role   UserRole   @default(CUSTOMER)
+  status UserStatus @default(PENDING_VERIFICATION)
+
+  emailVerified   Boolean   @default(false)
+  emailVerifiedAt DateTime?
+
+  phoneVerified   Boolean   @default(false)
+  phoneVerifiedAt DateTime?
+
+  avatarUrl String? @db.VarChar(500)
+
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+
+  lastLoginAt          DateTime?
+  lastPasswordChangeAt DateTime?
+
+  verificationTokens VerificationToken[]
+
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model VerificationToken {
+  id String @id @default(uuid())
+
+  tokenHash String @unique
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("verification_tokens")
+}
