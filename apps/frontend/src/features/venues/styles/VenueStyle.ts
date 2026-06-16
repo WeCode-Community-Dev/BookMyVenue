@@ -1,16 +1,8 @@
 import clsx from "clsx";
 
 export const venueStyle = {
-
-    pageWrapper: clsx(
-        "ml-6",
-        "mt-2",
-    ),
-    formBox: clsx(
-        "grid",
-        "gap-6",
-        "lg:grid-cols-[1.2fr_1fr]",
-    ),
+    pageWrapper: clsx("ml-6", "mt-2"),
+    formBox: clsx("grid", "gap-6", "lg:grid-cols-[1.2fr_1fr]"),
     basicInfoCard: clsx(
         "rounded-3xl",
         "border",
@@ -29,47 +21,14 @@ export const venueStyle = {
         "shadow-sm",
         "lg:p-8",
     ),
-    headerWrapper: clsx(
-        "mb-6",
-        "flex",
-        "items-center",
-        "gap-3",
-    ),
-    headerIcon: clsx(
-        "h-6",
-        "w-6",
-        "text-teal-600",
-    ),
-    headerTitle: clsx(
-        "text-lg",
-        "font-semibold",
-        "text-slate-900",
-    ),
-    fieldGrid: clsx(
-        "grid",
-        "gap-6",
-        "md:grid-cols-2",
-    ),
-    rowGrid3: clsx(
-        "grid",
-        "gap-4",
-        "md:grid-cols-3",
-    ),
-    rowGrid2: clsx(
-        "grid",
-        "gap-4",
-        "md:grid-cols-2",
-    ),
-    rowWrapper: clsx(
-        "mt-4",
-    ),
-    label: clsx(
-        "mb-2",
-        "block",
-        "text-sm",
-        "font-medium",
-        "text-slate-700",
-    ),
+    headerWrapper: clsx("mb-6", "flex", "items-center", "gap-3"),
+    headerIcon: clsx("h-6", "w-6", "text-teal-600"),
+    headerTitle: clsx("text-lg", "font-semibold", "text-slate-900"),
+    fieldGrid: clsx("grid", "gap-6", "md:grid-cols-2"),
+    rowGrid3: clsx("grid", "gap-4", "md:grid-cols-3"),
+    rowGrid2: clsx("grid", "gap-4", "md:grid-cols-2"),
+    rowWrapper: clsx("mt-4"),
+    label: clsx("mb-2", "block", "text-sm", "font-medium", "text-slate-700"),
     input: clsx(
         "h-12",
         "w-full",
@@ -114,15 +73,8 @@ export const venueStyle = {
         "focus:ring-2",
         "focus:ring-teal-100",
     ),
-    descriptionWrapper: clsx(
-        "mt-6",
-    ),
-    charCounter: clsx(
-        "mt-2",
-        "text-right",
-        "text-xs",
-        "text-slate-400",
-    ),
+    descriptionWrapper: clsx("mt-6"),
+    charCounter: clsx("mt-2", "text-right", "text-xs", "text-slate-400"),
     amenitiesGrid: clsx(
         "grid",
         "gap-y-4",
@@ -178,34 +130,11 @@ export const venueStyle = {
         "hover:border-teal-500",
         "hover:bg-teal-50/30",
     ),
-    uploadIcon: clsx(
-        "mb-2",
-        "h-7",
-        "w-7",
-        "text-teal-600",
-    ),
-    uploadText: clsx(
-        "text-sm",
-        "font-medium",
-        "text-slate-900",
-    ),
-    uploadSubtext: clsx(
-        "mt-1",
-        "text-xs",
-        "text-slate-500",
-    ),
-    galleryLabel: clsx(
-        "mb-3",
-        "text-sm",
-        "font-medium",
-        "text-slate-700",
-    ),
-    galleryGrid: clsx(
-        "grid",
-        "grid-cols-3",
-        "gap-3",
-        "sm:grid-cols-5",
-    ),
+    uploadIcon: clsx("mb-2", "h-7", "w-7", "text-teal-600"),
+    uploadText: clsx("text-sm", "font-medium", "text-slate-900"),
+    uploadSubtext: clsx("mt-1", "text-xs", "text-slate-500"),
+    galleryLabel: clsx("mb-3", "text-sm", "font-medium", "text-slate-700"),
+    galleryGrid: clsx("grid", "grid-cols-3", "gap-3", "sm:grid-cols-5"),
     galleryAddButton: clsx(
         "flex",
         "h-16",
@@ -220,20 +149,9 @@ export const venueStyle = {
         "hover:border-teal-500",
         "hover:bg-teal-50/30",
     ),
-    galleryAddIcon: clsx(
-        "h-5",
-        "w-5",
-        "text-slate-500",
-    ),
-    headerSubtitle: clsx(
-        "mt-1",
-        "text-sm",
-        "text-slate-500",
-    ),
-    searchWrapper: clsx(
-        "relative",
-        "mb-4",
-    ),
+    galleryAddIcon: clsx("h-5", "w-5", "text-slate-500"),
+    headerSubtitle: clsx("mt-1", "text-sm", "text-slate-500"),
+    searchWrapper: clsx("relative", "mb-4"),
     searchIcon: clsx(
         "absolute",
         "left-3",
@@ -268,21 +186,9 @@ export const venueStyle = {
         "bg-slate-100",
         "lg:h-[380px]",
     ),
-    mapTextWrapper: clsx(
-        "flex",
-        "h-full",
-        "items-center",
-        "justify-center",
-    ),
-    mapText: clsx(
-        "text-sm",
-        "text-slate-500",
-    ),
-    mapHint: clsx(
-        "mt-2",
-        "text-xs",
-        "text-slate-500",
-    ),
+    mapTextWrapper: clsx("flex", "h-full", "items-center", "justify-center"),
+    mapText: clsx("text-sm", "text-slate-500"),
+    mapHint: clsx("mt-2", "text-xs", "text-slate-500"),
     readOnlyInput: clsx(
         "h-12",
         "w-full",
@@ -296,15 +202,8 @@ export const venueStyle = {
         "outline-none",
         "sm:h-14",
     ),
-    coordinatesGrid: clsx(
-        "mt-4",
-        "grid",
-        "gap-4",
-        "sm:grid-cols-2",
-    ),
-    fieldSpacing: clsx(
-        "mt-4",
-    ),
+    coordinatesGrid: clsx("mt-4", "grid", "gap-4", "sm:grid-cols-2"),
+    fieldSpacing: clsx("mt-4"),
     actionsContainer: clsx(
         "sticky",
         "bottom-0",
@@ -354,6 +253,6 @@ export const venueStyle = {
         "mt-4",
         "grid",
         "gap-4",
-        "[grid-template-columns:repeat(auto-fill,minmax(340px,1fr))]",
+        "[grid-template-columns:repeat(auto-fill,minmax(280px,1fr))]",
     ),
 };
