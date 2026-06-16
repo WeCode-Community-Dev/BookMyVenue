@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -10,32 +11,42 @@ import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 
 import { _users } from 'src/_mock';
+import { UserApiService } from 'src/api/user';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
+import { emptyRows } from '../utils';
 import { TableNoData } from '../table-no-data';
 import { UserTableRow } from '../user-table-row';
 import { UserTableHead } from '../user-table-head';
 import { TableEmptyRows } from '../table-empty-rows';
 import { UserTableToolbar } from '../user-table-toolbar';
-import { emptyRows, applyFilter, getComparator } from '../utils';
 
-import type { UserProps } from '../user-table-row';
 
 // ----------------------------------------------------------------------
+
 
 export function UserView() {
   const table = useTable();
 
   const [filterName, setFilterName] = useState('');
-
-  const dataFiltered: UserProps[] = applyFilter({
-    inputData: _users,
-    comparator: getComparator(table.order, table.orderBy),
-    filterName,
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['users'],
+    queryFn: () => UserApiService.listUsers(table.page + 1, table.rowsPerPage),
   });
+
+  const dataFiltered = data?.data.map((user) => ({
+    id: user.id,
+    name: user.firstName + ' ' + user.lastName,
+    company: 'Company', // Placeholder, replace with actual company data if available
+    role: user.role,
+    isVerified: true, // Placeholder, replace with actual verification status if available
+    status: user.status,
+    avatarUrl: `https://i.pravatar.cc/150?u=${user.email}`, // Generate avatar URL based on email
+  })) || [];
+
 
   const notFound = !dataFiltered.length && !!filterName;
 
@@ -87,11 +98,11 @@ export function UserView() {
                 }
                 headLabel={[
                   { id: 'name', label: 'Name' },
-                  { id: 'company', label: 'Company' },
+                  // { id: 'company', label: 'Company' },
                   { id: 'role', label: 'Role' },
                   { id: 'isVerified', label: 'Verified', align: 'center' },
                   { id: 'status', label: 'Status' },
-                  { id: '' },
+                  // { id: '' },
                 ]}
               />
               <TableBody>
