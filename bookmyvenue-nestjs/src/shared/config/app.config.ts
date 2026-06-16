@@ -3,10 +3,10 @@ import {
   RawBodyRequest,
   ValidationPipe,
 } from '@nestjs/common';
-import * as morgan from 'morgan';
 import { Request } from 'express';
+import morgan = require('morgan');
+import cookieParser = require('cookie-parser');
 import * as bodyParser from 'body-parser';
-import * as cookieParser from 'cookie-parser';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 
@@ -31,13 +31,13 @@ export async function setupApp(): Promise<INestApplication> {
 
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-//   const origins = configService.getOrThrow<string>('CORS_ORIGINS').split(',');
+  const origins = configService.getOrThrow<string>('CORS_ORIGINS').split(',');
 
-//   app.enableCors({
-//     origin: origins,
-//     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//     credentials: true,
-//   });
+  app.enableCors({
+    origin: origins,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
 
   app.use(morgan('dev'));
 
