@@ -7,6 +7,7 @@ import OwnerDashboard from "../modules/venues/pages/OwnerDashboard";
 
 import AdminLoginPage from '../modules/auth/pages/AdminLoginPage';
 import AdminDashboard from '../modules/admin/pages/AdminDashboard';
+import VenueBookingForm from '../modules/landingPage/components/VenueBookingForm';
 
 const router = createBrowserRouter([
    {
@@ -36,7 +37,12 @@ const router = createBrowserRouter([
     {
       path: ROUTES.ADMIN_DASHBOARD,
       element: <AdminDashboard />
+    },
+    {
+      path: ROUTES.VENUE_BOOKING,
+      element: <VenueBookingForm/>
     }
+
 
 ]);
 
