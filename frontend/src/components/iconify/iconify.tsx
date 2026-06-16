@@ -9,18 +9,18 @@ import { styled } from '@mui/material/styles';
 import { iconifyClasses } from './classes';
 import { allIconNames, registerIcons } from './register-icons';
 
-import type { IconifyName } from './register-icons';
 
 // ----------------------------------------------------------------------
 
 export type IconifyProps = React.ComponentProps<typeof IconRoot> &
   Omit<IconProps, 'icon'> & {
-    icon: IconifyName;
+    icon: string;
   };
 
 export function Iconify({ className, icon, width = 20, height, sx, ...other }: IconifyProps) {
   const id = useId();
 
+  // @ts-expect-error it is working
   if (!allIconNames.includes(icon)) {
     console.warn(
       [

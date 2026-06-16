@@ -5,11 +5,13 @@ import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import { Popover, MenuItem, MenuList, IconButton, menuItemClasses } from '@mui/material';
 
+import { AdminApiService } from 'src/api/admin';
+import { VenueStatus } from 'src/api/types/venue.type';
+
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
-
 
 type VenueTableRowProps = {
   row: any;
@@ -19,6 +21,7 @@ type VenueTableRowProps = {
 
 export function VenueTableRow({ row, selected, onSelectRow }: VenueTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+  const [status, setStatus] = useState(row.status)
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     setOpenPopover(event.currentTarget);
@@ -28,13 +31,25 @@ export function VenueTableRow({ row, selected, onSelectRow }: VenueTableRowProps
     setOpenPopover(null);
   }, []);
 
+  const handleApprove = useCallback(() => {
+    handleClosePopover()
+    setStatus(VenueStatus.APPROVED)
+    AdminApiService.approveVenue(row.id)
+  }, []);
+
+  const handleReject = useCallback(() => {
+    handleClosePopover()
+    setStatus(VenueStatus.REJECTED)
+    AdminApiService.rejectVenue(row.id)
+  }, []);
+
+
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
         <TableCell padding="checkbox">
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
         </TableCell>
-
         {/* <TableCell component="th" scope="row">
           <Box
             sx={{
@@ -51,16 +66,17 @@ export function VenueTableRow({ row, selected, onSelectRow }: VenueTableRowProps
         <TableCell>{row.venueType}</TableCell>
         <TableCell>{row.addressLine1}</TableCell>
         <TableCell>
-          <Label color={(row.status === 'PENDING' && 'error') || 'success'}>{row.status}</Label>
+          <Label color={(status === VenueStatus.APPROVED && 'success') || 'error'}>{status}</Label>
         </TableCell>
-
         <TableCell align="right">
-          <IconButton onClick={handleOpenPopover}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
+          {
+            status === VenueStatus.PENDING &&
+            <IconButton onClick={handleOpenPopover}>
+              <Iconify icon="eva:more-vertical-fill" />
+            </IconButton>
+          }
         </TableCell>
       </TableRow>
-
       <Popover
         open={!!openPopover}
         anchorEl={openPopover}
@@ -84,13 +100,13 @@ export function VenueTableRow({ row, selected, onSelectRow }: VenueTableRowProps
             },
           }}
         >
-          <MenuItem onClick={handleClosePopover}>
-            <Iconify icon="solar:pen-bold" />
+          <MenuItem onClick={handleApprove} sx={{ color: 'success.dark' }}>
+            <Iconify icon="typcn:tick" />
             Approve
           </MenuItem>
 
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
-            <Iconify icon="solar:trash-bin-trash-bold" />
+          <MenuItem onClick={handleReject} sx={{ color: 'error.main' }}>
+            <Iconify icon="iconamoon:close-bold" />
             Reject
           </MenuItem>
         </MenuList>
