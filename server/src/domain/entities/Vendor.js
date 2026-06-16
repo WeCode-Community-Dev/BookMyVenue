@@ -5,6 +5,18 @@ export class VendorEntity {
     email,
     phone,
     password,
+    profileImage = {
+      publicId: "",
+      url: ""
+  },
+  companyName = "",
+  address = {
+      addressLine1: "",
+      city: "",
+      state: "",
+      pincode: ""
+  },
+  bio = "",
     role,
     businessName,
     isVerified = false,
@@ -19,6 +31,10 @@ export class VendorEntity {
     this.email = email;
     this.phone = phone;
     this.password = password;
+    this.profileImage = profileImage;
+    this.companyName = companyName;
+    this.address = address;
+    this.bio = bio;
     this.businessName = businessName;
     this.isVerified = isVerified;
     this.isBlocked = isBlocked;

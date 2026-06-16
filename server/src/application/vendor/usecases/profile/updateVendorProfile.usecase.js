@@ -11,7 +11,11 @@ export class VendorUpdateProfileUsecase {
     async execute({
         vendorId,
         fullName,
-        phone
+        phone,
+        profileImage,
+        companyName,
+        address,
+        bio
     }) {
 
         const vendor =
@@ -37,6 +41,10 @@ export class VendorUpdateProfileUsecase {
 
         vendor.fullName = fullName
         vendor.phone = phone
+        vendor.profileImage = profileImage;
+        vendor.companyName = companyName;
+        vendor.address = address;
+        vendor.bio = bio;
 
         const updatedVendor =
             await this._vendorRepository.update(

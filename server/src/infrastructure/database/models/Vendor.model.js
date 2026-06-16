@@ -22,6 +22,42 @@ const vendorSchema = new mongoose.Schema(
             required: true,
             select: false
         },
+        profileImage: {
+            publicId: {
+                type: String,
+                default: ""
+            },
+            url: {
+                type: String,
+                default: ""
+            }
+        },
+        companyName: {
+            type: String,
+            default: ""
+        },
+        address: {
+            addressLine1: {
+                type: String,
+                default: ""
+            },
+            city: {
+                type: String,
+                default: ""
+            },
+            state: {
+                type: String,
+                default: ""
+            },
+            pincode: {
+                type: String,
+                default: ""
+            }
+        },
+        bio: {
+            type: String,
+            default: ""
+        },
         role: {
             type: String,
             enum: Object.values(UserRole),
