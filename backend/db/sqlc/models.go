@@ -59,6 +59,13 @@ type Amenity struct {
 	Name string      `json:"name"`
 }
 
+type Availability struct {
+	ID        pgtype.UUID      `json:"id"`
+	VenueID   pgtype.UUID      `json:"venue_id"`
+	StartTime pgtype.Timestamp `json:"start_time"`
+	EndTime   pgtype.Timestamp `json:"end_time"`
+}
+
 type User struct {
 	ID        pgtype.UUID      `json:"id"`
 	Name      string           `json:"name"`
