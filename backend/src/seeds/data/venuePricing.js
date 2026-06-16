@@ -1,34 +1,34 @@
 export const venuePricingData = [
-  // Grand Ballroom pricing
+  // Grand Ballroom pricing (daily)
   {
-    venueId: '550e8400-e29b-41d4-a716-446655440010', // Grand Ballroom
+    venueId: '550e8400-e29b-41d4-a716-446655440010',
     dayType: 'weekday',
-    pricePerHour: '5000.00',
-    minHours: 4,
+    price: '35000.00',
+    minHours: 1,
     validFrom: new Date('2024-01-01'),
     validTo: null,
   },
   {
     venueId: '550e8400-e29b-41d4-a716-446655440010',
     dayType: 'weekend',
-    pricePerHour: '7500.00',
-    minHours: 4,
+    price: '50000.00',
+    minHours: 1,
     validFrom: new Date('2024-01-01'),
     validTo: null,
   },
   {
     venueId: '550e8400-e29b-41d4-a716-446655440010',
     dayType: 'holiday',
-    pricePerHour: '8500.00',
-    minHours: 4,
+    price: '60000.00',
+    minHours: 1,
     validFrom: new Date('2024-01-01'),
     validTo: null,
   },
-  // Tech Hub Meeting Rooms pricing
+  // Tech Hub Meeting Rooms pricing (hourly)
   {
-    venueId: '550e8400-e29b-41d4-a716-446655440011', // Tech Hub
+    venueId: '550e8400-e29b-41d4-a716-446655440011',
     dayType: 'weekday',
-    pricePerHour: '500.00',
+    price: '600.00',
     minHours: 1,
     validFrom: new Date('2024-01-01'),
     validTo: null,
@@ -36,25 +36,76 @@ export const venuePricingData = [
   {
     venueId: '550e8400-e29b-41d4-a716-446655440011',
     dayType: 'weekend',
-    pricePerHour: '750.00',
+    price: '900.00',
     minHours: 2,
     validFrom: new Date('2024-01-01'),
     validTo: null,
   },
-  // Garden Bistro pricing
+  // Garden Bistro pricing (daily)
   {
-    venueId: '550e8400-e29b-41d4-a716-446655440012', // Garden Bistro
+    venueId: '550e8400-e29b-41d4-a716-446655440012',
     dayType: 'weekday',
-    pricePerHour: '2000.00',
-    minHours: 3,
+    price: '15000.00',
+    minHours: 1,
     validFrom: new Date('2024-01-01'),
     validTo: null,
   },
   {
     venueId: '550e8400-e29b-41d4-a716-446655440012',
     dayType: 'weekend',
-    pricePerHour: '3500.00',
-    minHours: 3,
+    price: '25000.00',
+    minHours: 1,
+    validFrom: new Date('2024-01-01'),
+    validTo: null,
+  },
+  // Cozy Workspace pricing (hourly)
+  {
+    venueId: '550e8400-e29b-41d4-a716-446655440013',
+    dayType: 'weekday',
+    price: '150.00',
+    minHours: 1,
+    validFrom: new Date('2024-01-01'),
+    validTo: null,
+  },
+  {
+    venueId: '550e8400-e29b-41d4-a716-446655440013',
+    dayType: 'weekend',
+    price: '250.00',
+    minHours: 1,
+    validFrom: new Date('2024-01-01'),
+    validTo: null,
+  },
+  // Penthouse Suite pricing (daily)
+  {
+    venueId: '550e8400-e29b-41d4-a716-446655440014',
+    dayType: 'weekday',
+    price: '40000.00',
+    minHours: 1,
+    validFrom: new Date('2024-01-01'),
+    validTo: null,
+  },
+  {
+    venueId: '550e8400-e29b-41d4-a716-446655440014',
+    dayType: 'weekend',
+    price: '55000.00',
+    minHours: 1,
+    validFrom: new Date('2024-01-01'),
+    validTo: null,
+  },
+  // Rusty Shed pricing (hourly)
+  {
+    venueId: '550e8400-e29b-41d4-a716-446655440015',
+    dayType: 'weekday',
+    price: '100.00',
+    minHours: 2,
+    validFrom: new Date('2024-01-01'),
+    validTo: null,
+  },
+  {
+    venueId: '550e8400-e29b-41d4-a716-446655440015',
+    dayType: 'weekend',
+    price: '150.00',
+    minHours: 2,
     validFrom: new Date('2024-01-01'),
     validTo: null,
   },

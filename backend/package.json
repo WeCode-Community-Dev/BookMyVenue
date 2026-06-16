@@ -16,6 +16,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@phonepe-pg/pg-sdk-node": "^2.0.6",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -24,6 +25,7 @@
     "jsonwebtoken": "^9.0.3",
     "nodemon": "^3.1.14",
     "pg": "^8.21.0",
+    "pg-sdk-node": "^2.0.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {

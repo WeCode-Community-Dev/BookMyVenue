@@ -31,4 +31,20 @@ export const usersData = [
     role: 'user',
     salt: 'salt4',
   },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440005',
+    username: 'michael_user',
+    email: 'michael@example.com',
+    password: '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36gZvQOm',
+    role: 'user',
+    salt: 'salt5',
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440006',
+    username: 'admin_user',
+    email: 'admin@example.com',
+    password: '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36gZvQOm',
+    role: 'admin',
+    salt: 'salt6',
+  },
 ];

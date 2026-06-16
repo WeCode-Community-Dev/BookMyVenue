@@ -34,6 +34,7 @@ export const venuesTable = pgTable('venues', {
   isActive: boolean('is_active').notNull().default(true),
   approvalStatus: varchar('approval_status', { length: 20 }).notNull().default('pending'),
   adminNote: text('admin_note'),
+  bookingType: varchar('booking_type').notNull().default('daily'), // 'hourly' | 'daily'
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -44,8 +45,9 @@ export const venuePricing = pgTable('venue_pricing', {
     .references(() => venuesTable.id)
     .notNull(),
   dayType: varchar('day_type', { length: 20 }).notNull(), // weekday / weekend / holiday
-  pricePerHour: decimal('price_per_hour', { precision: 10, scale: 2 }).notNull(),
+  price: decimal('price', { precision: 10, scale: 2 }).notNull(),
   minHours: integer('min_hours').notNull().default(1),
   validFrom: timestamp('valid_from').defaultNow().notNull(),
   validTo: timestamp('valid_to'), // null = currently active
+  
 });

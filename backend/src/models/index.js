@@ -6,8 +6,13 @@ import {
   venuePricingRelations,
   venueAmenitiesRelations,
   amenitiesRelations,
-  userFavouritesRelations
+  userFavouritesRelations,
+  usersRelations,
+  paymentsRelations,
+  bookingRelations
 } from './relations.js';
+import {bookingsTable} from './bookingModel.js';
+import {paymentsTable} from './paymentModel.js';
 
 export {
   usersTable,
@@ -20,5 +25,10 @@ export {
   venueAmenitiesRelations,
   amenitiesRelations,
   userFavourites,
-  userFavouritesRelations
+  userFavouritesRelations,
+  bookingsTable,
+  paymentsTable,
+  usersRelations,
+  paymentsRelations,
+  bookingRelations
 };

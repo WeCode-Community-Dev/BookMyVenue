@@ -35,6 +35,20 @@ export const userAPi = baseApi.injectEndpoints({
         method: 'DELETE',
       }),
     }),
+
+    createBooking: builder.mutation({
+      query: (body) => ({
+        url: '/bookings',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    verifyPayment: builder.query({
+      query: (bookingId) => ({
+        url: `/payments/verify/${bookingId}`,
+      }),
+    }),
   }),
 });
 
@@ -44,4 +58,6 @@ export const {
   useGetFavoritesQuery,
   useAddFavoriteMutation,
   useDeleteFavoriteMutation,
+  useCreateBookingMutation,
+  useVerifyPaymentQuery,
 } = userAPi;
