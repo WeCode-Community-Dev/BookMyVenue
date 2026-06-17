@@ -7,8 +7,8 @@ export const router = createBrowserRouter([
   {
     element: <App />,
     children: [
+      ...publicRoutes,
       ...protectedRoutes,
-      publicRoutes,
     ],
   },
   {

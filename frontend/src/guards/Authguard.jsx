@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated, selectUserRole } from '../redux/slices/authSlice';
+import { PageLoader } from '../components/ui/LoadingSkeleton';
 
 export default function AuthGuard({ allowedRoles }) {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -9,7 +10,7 @@ export default function AuthGuard({ allowedRoles }) {
 
   console.log("AUTHGUARD - isAuthenticated:", isAuthenticated, "role:", role);
 
-  if (!isInitialized) return <div>Loading...</div>;
+  if (!isInitialized) return <PageLoader label="Authenticating..." />;
 
   if (!isAuthenticated) {
     console.log("AUTHGUARD - redirecting to login");

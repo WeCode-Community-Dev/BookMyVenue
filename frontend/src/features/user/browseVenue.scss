@@ -5,13 +5,96 @@
   background: var(--bg);
   font-family: var(--sans);
   text-align: left;
-  padding: calc(72px + 24px) 28px 24px;
+  padding: 0 0 48px;
   box-sizing: border-box;
 
   * { box-sizing: border-box; }
 
+  // ─── Hero band ───────────────────────────────────────────────────────────
+  .browse-hero {
+    background: var(--gradient-warm);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 40px 32px 32px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -5%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(194, 65, 12, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    &__content {
+      max-width: 1240px;
+      margin: 0 auto 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    &__title {
+      font-family: var(--heading);
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 700;
+      color: var(--text-h);
+      margin: 12px 0 10px;
+      letter-spacing: -0.02em;
+
+      em {
+        font-style: italic;
+        color: var(--accent);
+      }
+    }
+
+    &__subtitle {
+      font-size: 15px;
+      color: var(--text);
+      max-width: 520px;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    &__chips {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+  }
+
+  .browse-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-h);
+    box-shadow: var(--shadow);
+
+    &--sage {
+      background: var(--sage-bg);
+      border-color: rgba(45, 106, 79, 0.2);
+      color: var(--sage);
+    }
+  }
+
   // ─── Search Bar ──────────────────────────────────────────────────────────
   .browse-search-bar {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -22,12 +105,13 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
+      background: var(--surface-elevated);
+      border: 1.5px solid var(--border);
+      border-radius: 100px;
+      padding: 12px 20px;
       flex: 1;
-      max-width: 520px;
+      max-width: 560px;
+      box-shadow: var(--shadow);
       transition: border-color 0.2s, box-shadow 0.2s;
 
       &:focus-within {
@@ -78,9 +162,12 @@
   // ─── Body Layout ─────────────────────────────────────────────────────────
   .browse-body {
     display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: 24px;
+    grid-template-columns: 1fr 300px;
+    gap: 28px;
     align-items: start;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 32px;
 
     @media (max-width: 900px) {
       grid-template-columns: 1fr;
@@ -115,24 +202,24 @@
   }
 
   .venue-card {
-    background: var(--bg);
+    background: var(--surface-elevated);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: var(--radius-xl);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: var(--shadow);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
 
     &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-lg);
       border-color: var(--accent-border);
     }
 
     .venue-card-image {
       position: relative;
-      height: 176px;
+      height: 220px;
       overflow: hidden;
       background: var(--border);
 
@@ -140,10 +227,18 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.4s ease;
+        transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
-      &:hover img { transform: scale(1.04); }
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(20, 18, 16, 0.35) 0%, transparent 50%);
+        pointer-events: none;
+      }
+
+      &:hover img { transform: scale(1.06); }
 
       .type-badge {
         position: absolute;
@@ -179,6 +274,25 @@
         align-items: center;
         gap: 4px;
         backdrop-filter: blur(4px);
+      }
+
+      .price-badge {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: var(--accent);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 5px 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px var(--accent-glow);
+
+        small {
+          font-size: 10px;
+          font-weight: 500;
+          opacity: 0.85;
+        }
       }
       .fav-btn {
         position: absolute;
@@ -301,15 +415,54 @@
     }
   }
 
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+
+    span {
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .btn-page {
+      padding: 8px 18px;
+      background: var(--surface-elevated, var(--bg));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-h);
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        border-color: var(--accent-border);
+        color: var(--accent);
+        background: var(--accent-bg);
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+    }
+  }
+
   // ─── Filter Panel ────────────────────────────────────────────────────────
   .filter-panel {
-    background: var(--bg);
+    background: var(--surface-elevated);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: var(--radius-xl);
+    padding: 24px;
     position: sticky;
-    top: 88px; // below the fixed header
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    top: 88px;
+    box-shadow: var(--shadow-md);
 
     .filter-panel-header {
       display: flex;

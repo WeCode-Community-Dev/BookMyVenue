@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiCheck, FiTrash2, FiPlus, FiUpload } from 'react-icons/fi';
 import './addVenue.scss';
 import {useAddVenueMutation} from "./ownerApi.js"
+import PageTransition from '../../components/ui/PageTransition';
 
 // Steps list
 const STEPS = [
@@ -243,7 +244,21 @@ function OwnerAddVenue() {
   };
 
   return (
+    <PageTransition className="wizard-page">
+      <header className="wizard-page-header">
+        <div className="wizard-page-header__text">
+          <span className="eyebrow">List a venue</span>
+          <h1 className="wizard-page-title">Add New Venue</h1>
+          <p className="wizard-page-subtitle">Complete all steps to publish your venue on BookMyVenue</p>
+        </div>
+        <div className="wizard-step-counter">
+          <span className="wizard-step-counter__label">Progress</span>
+          <span className="wizard-step-counter__value">Step {currentStep} of {STEPS.length}</span>
+        </div>
+      </header>
+
     <div className="wizard-container">
+      <div className="wizard-card">
       <div className="wizard-progress-bar">
         {STEPS.map((step, index) => {
           const isActive = currentStep === step.id;
@@ -265,7 +280,7 @@ function OwnerAddVenue() {
         })}
       </div>
 
-       {/* BASIC INFO */}
+      <div className="wizard-card__body">
       {currentStep === 1 && (
         <div className="wizard-step-content">
           <div className="step-header">
@@ -650,6 +665,9 @@ function OwnerAddVenue() {
         </div>
       )}
 
+      </div>{/* wizard-card__body */}
+      </div>{/* wizard-card */}
+
       <footer className="wizard-bottom-bar">
         <div className="bottom-bar-inner">
           <button 
@@ -685,6 +703,7 @@ function OwnerAddVenue() {
         </div>
       </footer>
     </div>
+    </PageTransition>
   );
 }
 

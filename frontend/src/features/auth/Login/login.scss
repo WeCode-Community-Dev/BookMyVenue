@@ -1,8 +1,8 @@
 .login-card {
-  background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  background: var(--surface-elevated);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
   padding: 48px;
   width: 100%;
   box-sizing: border-box;
@@ -30,6 +30,7 @@
     margin-bottom: 32px;
 
     h1 {
+      font-family: var(--heading);
       font-size: 28px;
       font-weight: 700;
       color: #111827;
@@ -131,8 +132,8 @@
 
           &:focus {
             outline: none;
-            border-color: #008060;
-            box-shadow: 0 0 0 3px rgba(0, 128, 96, 0.15);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-bg);
           }
         }
       }
@@ -231,9 +232,9 @@
     .submit-btn {
       width: 100%;
       padding: 14px 20px;
-      background-color: #008060;
+      background: var(--gradient-brand);
       border: none;
-      border-radius: 8px;
+      border-radius: 100px;
       color: #ffffff;
       font-size: 16px;
       font-weight: 600;
@@ -242,13 +243,13 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      box-shadow: 0 4px 6px -1px rgba(0, 128, 96, 0.1), 0 2px 4px -1px rgba(0, 128, 96, 0.06);
+      box-shadow: 0 4px 14px var(--accent-glow);
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
       &:hover {
-        background-color: #00664d;
-        transform: translateY(-1px);
-        box-shadow: 0 10px 15px -3px rgba(0, 128, 96, 0.15), 0 4px 6px -2px rgba(0, 128, 96, 0.05);
+        background-color: var(--accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px var(--accent-glow);
 
         .btn-arrow {
           transform: translateX(3px);
@@ -267,7 +268,7 @@
   }
 
   .form-link-highlight {
-    color: #008060;
+    color: var(--accent);
     text-decoration: none;
     font-weight: 600;
     transition: text-decoration 0.2s ease;

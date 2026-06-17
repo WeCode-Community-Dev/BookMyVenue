@@ -1,8 +1,12 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import './VenueDetails.scss'
 import { useGetVenueDetailsQuery, useCreateBookingMutation, useGetFavoritesQuery, useAddFavoriteMutation, useDeleteFavoriteMutation } from './venueApi'
-import { href, useParams } from 'react-router-dom'
-import { FiStar } from 'react-icons/fi'
+import { useParams } from 'react-router-dom'
+import { FiStar, FiMapPin, FiUsers, FiClock, FiCalendar } from 'react-icons/fi'
+import PageTransition from '../../components/ui/PageTransition'
+import { VenueDetailSkeleton } from '../../components/ui/LoadingSkeleton'
+import EmptyState from '../../components/ui/EmptyState'
+import { ToastBanner } from '../../components/ui/ToastProvider'
 
 const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const TYPE_LABELS = {
@@ -169,31 +173,38 @@ function VenueDetails() {
 
   if (isLoading) {
     return (
-      <div className="venue-details-page">
-        <main className="container">
-          <div className="loading-state">Loading venue details...</div>
-        </main>
-      </div>
+      <PageTransition className="venue-details-page">
+        <VenueDetailSkeleton />
+      </PageTransition>
     )
   }
 
   if (error) {
     return (
-      <div className="venue-details-page">
-        <main className="container">
-          <div className="loading-state">Unable to load venue details.</div>
+      <PageTransition className="venue-details-page">
+        <main className="container container--centered">
+          <EmptyState
+            title="Unable to load venue"
+            message="Something went wrong while fetching venue details. Please try again later."
+            variant="error"
+          />
         </main>
-      </div>
+      </PageTransition>
     )
   }
 
   if (!venue) {
     return (
-      <div className="venue-details-page">
-        <main className="container">
-          <div className="loading-state">Venue not found.</div>
+      <PageTransition className="venue-details-page">
+        <main className="container container--centered">
+          <EmptyState
+            title="Venue not found"
+            message="The venue you're looking for doesn't exist or may have been removed."
+            actionLabel="Browse Venues"
+            actionTo="/browse-venues"
+          />
         </main>
-      </div>
+      </PageTransition>
     )
   }
 
@@ -202,65 +213,128 @@ function VenueDetails() {
 
   const bookingLabel = bookingType === 'hourly' ? 'Hourly booking' : 'Daily booking'
   const pricingNote = bookingType === 'hourly' ? 'per hour' : 'per day'
+  const startingPrice = pricingRows[0]?.price
 
   return (
-    <div className="venue-details-page">
+    <PageTransition className="venue-details-page">
+      {/* ── Hero with gallery ── */}
+      <section className="venue-hero">
+        <img
+          src={imageUrl(images[activeImage] || images[0] || {})}
+          alt={imageAlt(images[activeImage] || images[0] || {})}
+          className="venue-hero__img"
+        />
+        <div className="venue-hero__gradient" />
+
+        <div className="venue-hero__actions">
+          <button
+            type="button"
+            className={`favorite-toggle ${isFavorited ? 'active' : ''}`}
+            onClick={toggleFavorite}
+            aria-label="Toggle favorite"
+          >
+            <FiStar />
+            <span>{isFavorited ? 'Saved' : 'Save'}</span>
+          </button>
+        </div>
+
+        {images.length > 1 && (
+          <div className="venue-hero__thumbs">
+            {(images.length > 0 ? images : [{ url: '' }]).map((img, index) => (
+              <button
+                key={index}
+                type="button"
+                className={`thumbnail ${index === activeImage ? 'active' : ''}`}
+                onClick={() => setActiveImage(index)}
+              >
+                <img src={imageUrl(img)} alt={imageAlt(img)} />
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="venue-hero__content">
+          <span className="pill pill-type">{venueTypeLabel}</span>
+          <h1 className="venue-hero__title">{venue.name}</h1>
+          <p className="venue-hero__location">
+            <FiMapPin /> {venueCity}
+          </p>
+        </div>
+      </section>
+
+      {/* ── Quick stats strip ── */}
+      <div className="venue-stats-bar">
+        <div className="venue-stats-bar__inner">
+          <div className="venue-stat">
+            <FiUsers className="venue-stat__icon" />
+            <div>
+              <span className="venue-stat__label">Capacity</span>
+              <span className="venue-stat__value">Up to {venue.capacity}</span>
+            </div>
+          </div>
+          <div className="venue-stat">
+            <FiClock className="venue-stat__icon" />
+            <div>
+              <span className="venue-stat__label">Hours</span>
+              <span className="venue-stat__value">{venue.openTime || '—'} – {venue.closeTime || '—'}</span>
+            </div>
+          </div>
+          <div className="venue-stat">
+            <FiCalendar className="venue-stat__icon" />
+            <div>
+              <span className="venue-stat__label">Booking</span>
+              <span className="venue-stat__value">{bookingLabel}</span>
+            </div>
+          </div>
+          {startingPrice != null && (
+            <div className="venue-stat venue-stat--price">
+              <div>
+                <span className="venue-stat__label">From</span>
+                <span className="venue-stat__value">{formatCurrency(startingPrice)}<small>/{bookingType === 'hourly' ? 'hr' : 'day'}</small></span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       <main className="container">
         <section className="main-content">
-          <div className="gallery-container">
-            <div className="primary-image">
-              <img src={imageUrl(images[activeImage] || images[0] || {})} alt={imageAlt(images[activeImage] || images[0] || {})} />
+          {/* Open days */}
+          <div className="detail-card detail-card--compact">
+            <div className="detail-card__header">
+              <span className="eyebrow">Schedule</span>
+              <h2>Open days</h2>
             </div>
-            <div className="thumbnails">
-              {(images.length > 0 ? images : [{ url: '' }]).map((img, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  className={`thumbnail ${index === activeImage ? 'active' : ''}`}
-                  onClick={() => setActiveImage(index)}
-                >
-                  <img src={imageUrl(img)} alt={imageAlt(img)} />
-                </button>
+            <div className="day-pills">
+              {DAY_ORDER.map((day) => (
+                <div key={day} className={`day-pill ${openDaysSet.has(day) ? 'active' : ''}`} title={day}>
+                  <span className="day-pill__letter">{day.slice(0, 1)}</span>
+                  <span className="day-pill__name">{day.slice(0, 3)}</span>
+                </div>
               ))}
             </div>
           </div>
 
-          <div className="venue-header">
-            <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
-              <h1>{venue.name}</h1>
-              <button type="button" className={`favorite-toggle ${isFavorited ? 'active' : ''}`} onClick={toggleFavorite} aria-label="Toggle favorite">
-                <FiStar />
-              </button>
+          <div className="content-section detail-card">
+            <div className="detail-card__header">
+              <span className="eyebrow">Overview</span>
+              <h2>About this venue</h2>
             </div>
-            <div className="tag-row">
-              <span className="pill pill-type">{venueTypeLabel}</span>
-              <span className="pill">
-                <i className="ti ti-map-pin" /> {venueCity}
-              </span>
-              <span className="pill">
-                <i className="ti ti-users" /> Up to {venue.capacity} people
-              </span>
-              <div className="day-pills">
-                {DAY_ORDER.map((day) => (
-                  <div key={day} className={`day-pill ${openDaysSet.has(day) ? 'active' : ''}`}>
-                    {day.slice(0, 1)}
-                  </div>
-                ))}
+            <p className="about-text">{venue.description}</p>
+            <div className="venue-address">
+              <FiMapPin className="venue-address__icon" />
+              <div>
+                <strong>Address</strong>
+                <p>{venue.address}{venue.pincode ? ` • ${venue.pincode}` : ''}</p>
               </div>
             </div>
           </div>
 
-          <div className="content-section">
-            <h2>About this venue</h2>
-            <p className="about-text">{venue.description}</p>
-            <div className="venue-address">
-              <strong>Location:</strong> {venue.address}
-              {venue.pincode ? ` • ${venue.pincode}` : ''}
+          <div className="content-section detail-card">
+            <div className="detail-card__header">
+              <span className="eyebrow">Features</span>
+              <h2>Amenities</h2>
             </div>
-          </div>
-
-          <div className="content-section">
-            <h2>Amenities</h2>
             <div className="amenities-container">
               {Object.entries(amenitiesByCategory).map(([category, amenities]) => (
                 <div key={category} className="amenity-category">
@@ -274,24 +348,29 @@ function VenueDetails() {
                   </div>
                 </div>
               ))}
-              {Object.keys(amenitiesByCategory).length === 0 && <p>No amenities listed.</p>}
+              {Object.keys(amenitiesByCategory).length === 0 && (
+                <p className="empty-hint">No amenities listed for this venue.</p>
+              )}
             </div>
           </div>
 
-          <div className="content-section">
-            <h2>Availability</h2>
+          <div className="content-section detail-card">
+            <div className="detail-card__header">
+              <span className="eyebrow">Hours</span>
+              <h2>Availability</h2>
+            </div>
             <div className="info-row">
               <div className="info-block">
-                <span className="info-label">Opening Time</span>
+                <span className="info-label">Opens</span>
                 <span className="info-value">{venue.openTime || 'N/A'}</span>
               </div>
               <div className="info-block">
-                <span className="info-label">Closing Time</span>
+                <span className="info-label">Closes</span>
                 <span className="info-value">{venue.closeTime || 'N/A'}</span>
               </div>
               <div className="info-block">
-                <span className="info-label">Min. Booking</span>
-                <span className="info-value">{minBookingHours} {minBookingHours === 1 ? 'Hour' : 'Hours'}</span>
+                <span className="info-label">Min. booking</span>
+                <span className="info-value">{minBookingHours} {minBookingHours === 1 ? 'hr' : 'hrs'}</span>
               </div>
             </div>
           </div>
@@ -299,32 +378,35 @@ function VenueDetails() {
 
         <aside className="sidebar-wrapper">
           <div className="booking-card">
-            <h2>Book this Venue</h2>
-            <div className="form-group">
-              <span className="form-label">Booking type</span>
-              <div>{bookingLabel}</div>
+            <div className="booking-card__header">
+              <span className="eyebrow">Reserve</span>
+              <h2>Book this venue</h2>
             </div>
 
-            <table className="pricing-table">
-              <tbody>
-                {pricingRows.length > 0 ? (
-                  pricingRows.map((pricing) => (
-                    <tr key={`${pricing.dayType}-${pricing.id || pricing.dayType}`}>
-                      <td className="price-day">{pricing.dayType?.charAt(0).toUpperCase() + pricing.dayType?.slice(1)}</td>
-                      <td className="price-value">
-                        {formatCurrency(pricing.price)}
-                        <span className="price-note">{pricingNote} {bookingType === 'hourly' ? `(min. ${pricing.minHours || minBookingHours} hrs)` : ''}</span>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="2" className="price-day">Pricing unavailable</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <div className="booking-type-badge">
+              <FiCalendar />
+              <span>{bookingLabel}</span>
+            </div>
 
+            <div className="pricing-cards">
+              {pricingRows.length > 0 ? (
+                pricingRows.map((pricing) => (
+                  <div key={`${pricing.dayType}-${pricing.id || pricing.dayType}`} className="pricing-card">
+                    <span className="pricing-card__day">
+                      {pricing.dayType?.charAt(0).toUpperCase() + pricing.dayType?.slice(1)}
+                    </span>
+                    <span className="pricing-card__price">
+                      {formatCurrency(pricing.price)}
+                      <small>{pricingNote}{bookingType === 'hourly' ? ` · min ${pricing.minHours || minBookingHours}h` : ''}</small>
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="empty-hint">Pricing unavailable</p>
+              )}
+            </div>
+
+            <div className="booking-form">
             {bookingType === 'hourly' ? (
               <>
                 <div className="form-group">
@@ -376,11 +458,14 @@ function VenueDetails() {
                   </div>
                 </div>
                 <div className="estimation-row">
-                  <span className="est-label">Estimated Total</span>
+                  <span className="est-label">Estimated total</span>
                   <span className="est-value">
-                    {priceEstimate ? formatCurrency(priceEstimate.amount) : 'Select date and time'}
+                    {priceEstimate ? formatCurrency(priceEstimate.amount) : '—'}
                   </span>
                 </div>
+                {!priceEstimate && (
+                  <p className="est-hint">Select a date and time to see pricing</p>
+                )}
               </>
             ) : (
               <>
@@ -407,27 +492,33 @@ function VenueDetails() {
                   </div>
                 </div>
                 <div className="estimation-row">
-                  <span className="est-label">Estimated Total</span>
+                  <span className="est-label">Estimated total</span>
                   <span className="est-value">
-                    {priceEstimate ? formatCurrency(priceEstimate.amount) : 'Select booking dates'}
+                    {priceEstimate ? formatCurrency(priceEstimate.amount) : '—'}
                   </span>
                 </div>
+                {!priceEstimate && (
+                  <p className="est-hint">Select booking dates to see pricing</p>
+                )}
               </>
             )}
+            </div>
 
-            <button type="button" className="book-btn" onClick={handleBookNow} disabled={!priceEstimate || isBooking}>
-              {isBooking ? 'Booking...' : 'Book Now'}
-            </button>
-            {bookingMessage && <div className="booking-message">{bookingMessage}</div>}
-            <span className="muted-note">
-              {bookingType === 'hourly'
-                ? `Min. booking: ${minBookingHours} ${minBookingHours === 1 ? 'hour' : 'hours'}`
-                : 'Daily bookings are selected using a date range.'}
-            </span>
+            <div className="booking-card__footer">
+              <button type="button" className="book-btn" onClick={handleBookNow} disabled={!priceEstimate || isBooking}>
+                {isBooking ? 'Booking...' : 'Book Now'}
+              </button>
+              <ToastBanner message={bookingMessage} type={bookingMessage?.toLowerCase().includes('fail') ? 'error' : 'success'} />
+              <span className="muted-note">
+                {bookingType === 'hourly'
+                  ? `Min. booking: ${minBookingHours} ${minBookingHours === 1 ? 'hour' : 'hours'}`
+                  : 'Daily bookings use a date range.'}
+              </span>
+            </div>
           </div>
         </aside>
       </main>
-    </div>
+    </PageTransition>
   )
 }
 

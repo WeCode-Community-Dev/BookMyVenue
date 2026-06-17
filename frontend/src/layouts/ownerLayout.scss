@@ -513,6 +513,55 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
 
 // 2. DASHBOARD OVERVIEW STYLING
 .dashboard-container {
+  .dashboard-welcome-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    background: linear-gradient(135deg, $teal-primary 0%, #0f3d44 100%);
+    border-radius: 16px;
+    color: $white;
+    box-shadow: $shadow-lg;
+    flex-wrap: wrap;
+
+    &__eyebrow {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      opacity: 0.8;
+      margin-bottom: 6px;
+    }
+
+    &__title {
+      font-family: var(--heading);
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0 0 6px;
+      color: $white;
+    }
+
+    &__subtitle {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    &__cta {
+      background: $white !important;
+      color: $teal-primary !important;
+      flex-shrink: 0;
+
+      &:hover {
+        background: $teal-light !important;
+        transform: translateY(-1px);
+      }
+    }
+  }
+
   .dashboard-header-row {
     display: flex;
     justify-content: space-between;

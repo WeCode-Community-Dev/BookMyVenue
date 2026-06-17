@@ -1,6 +1,9 @@
 import React from 'react';
 import { FiUsers, FiTrendingUp, FiCheckCircle, FiDollarSign } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from '../../redux/slices/authSlice';
+import PageTransition from '../../components/ui/PageTransition';
 
 const MOCK_STATS = [
   { label: 'Total Revenue', value: '$12,450', change: '+12% this month', icon: FiDollarSign, color: 'stat-green' },
@@ -18,17 +21,29 @@ const RECENT_ACTIVITIES = [
 
 function OwnerDashboard() {
   const navigate = useNavigate();
+  const currentUser = useSelector(selectCurrentUser);
+  const userName = currentUser?.username || 'Owner';
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header-row">
-        <h1 className="dashboard-title">Dashboard Overview</h1>
-        <button 
-          className="dashboard-quick-btn"
+    <PageTransition className="dashboard-container">
+      <div className="dashboard-welcome-banner">
+        <div className="dashboard-welcome-banner__content">
+          <span className="dashboard-welcome-banner__eyebrow">Welcome back</span>
+          <h2 className="dashboard-welcome-banner__title">Hello, {userName}!</h2>
+          <p className="dashboard-welcome-banner__subtitle">
+            Here&apos;s what&apos;s happening with your venues today.
+          </p>
+        </div>
+        <button
+          className="dashboard-quick-btn dashboard-welcome-banner__cta"
           onClick={() => navigate('/owner/venues')}
         >
           Manage Venues
         </button>
+      </div>
+
+      <div className="dashboard-header-row">
+        <h1 className="dashboard-title">Dashboard Overview</h1>
       </div>
 
       <div className="stats-grid">
@@ -80,7 +95,7 @@ function OwnerDashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }
 
