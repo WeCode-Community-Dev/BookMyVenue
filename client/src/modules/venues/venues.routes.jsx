@@ -1,8 +1,6 @@
 import VenueListingPage from "./pages/VenueListingPage";
-// later:
-// import VenueDetailsPage from "./pages/VenueDetailsPage";
-
 import { ROUTES } from "../../shared/constants/routes";
+import VenueDetailsPage from "./pages/VenueDetailsPage";
 
 export const venueRoutes = [
    {
@@ -11,8 +9,8 @@ export const venueRoutes = [
    },
 
    // later
-   // {
-   //    path: ROUTES.VENUE_DETAILS,
-   //    element: <VenueDetailsPage />,
-   // },
+   {
+      path: ROUTES.VENUE_DETAILS,
+      element: <VenueDetailsPage />,
+   },
 ];

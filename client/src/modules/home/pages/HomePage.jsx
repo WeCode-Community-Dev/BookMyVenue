@@ -12,7 +12,7 @@ const HomePage = () => {
       <div className="font-sans bg-white text-gray-900 overflow-x-hidden">
         <HeroSection />
 
-        <StatsSection />
+        {/* <StatsSection /> */}
 
         <CategoriesSection />
 

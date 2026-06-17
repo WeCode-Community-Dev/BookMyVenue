@@ -7,4 +7,7 @@ export const ROUTES = {
   ADMIN: "/admin",
   VENUE_BOOKING: "/venues/book",
   VENUES: "/venues",
+  VENUE_DETAILS: "/venues/:id",
+  
+  
 };

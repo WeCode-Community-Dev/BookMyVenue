@@ -20,9 +20,9 @@ const STEPS = [
     return (
       <section className="py-16 px-5 sm:px-8 lg:px-[6%]">
   
-        <div className="max-w-[1100px] mx-auto">
+        <div className="max-w-[1200px] mx-auto">
   
-          <div className="text-center mb-10">
+          <div className="mb-10">
   
             <h2 className="text-3xl font-bold">
               Book in 3 easy steps
