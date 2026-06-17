@@ -9,7 +9,7 @@ export const VENUE_DATA = [
     capacity: "50",
     rating: "4.9",
     imageUrl: "https://images.unsplash.com/photo-1572025442646-866d16c84a54?auto=format&fit=crop&q=80&w=800",
-    isLarge: true,
+    isLarge: false,
     availtime: [
       "10am - 1pm", "1pm - 4pm", "5pm - 10pm"
     ],
