@@ -46,7 +46,7 @@ const AdminLoginForm = () => {
 
       alert(response.message);
 
-      navigate(ROUTES.ADMIN_DASHBOARD);
+      navigate(ROUTES.ADMIN);
     } catch (error) {
       alert(error.message);
     }

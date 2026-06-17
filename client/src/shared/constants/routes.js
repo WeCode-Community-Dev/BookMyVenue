@@ -3,7 +3,8 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   ADMIN_LOGIN: "/admin/login",
-  OWNER_DASHBOARD: "/owner/dashboard",
-  ADMIN_DASHBOARD: "/admin/dashboard",
+  OWNER: "/owner",
+  ADMIN: "/admin",
   VENUE_BOOKING: "/venues/book",
+  VENUES: "/venues",
 };

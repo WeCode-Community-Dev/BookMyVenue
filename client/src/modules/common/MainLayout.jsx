@@ -97,7 +97,7 @@ const MainLayout = ({ children }) => {
                   <button
                     className="btn-primary !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]"
                     onClick={() => {
-                      navigate("/owner/dashboard");
+                      navigate("/owner");
                       setMenuOpen(false);
                     }}
                   >
@@ -204,7 +204,7 @@ const MainLayout = ({ children }) => {
                   {isOwner && (
                     <button
                       onClick={() => {
-                        navigate("/owner/dashboard");
+                        navigate("/venue/dashboard");
                         setMenuOpen(false);
                       }}
                       className="btn-primary"
