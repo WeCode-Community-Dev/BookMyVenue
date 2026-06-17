@@ -22,6 +22,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final JwtService jwtService;
+
     @Override
     public RegisterResponse register(RegisterRequest registerRequest) {
 
@@ -85,6 +87,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         LoginResponse loginResponse = new LoginResponse();
+
+        String token = jwtService.generateToken(user);
+        loginResponse.setToken(token);
+
         loginResponse.setUserId(user.getUserId());
         loginResponse.setFirstName(user.getFirstName());
         loginResponse.setEmail(user.getEmail());
@@ -93,9 +99,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         loginResponse.setRole(user.getRole());
         loginResponse.setMessage("Login Successful");
 
-
         return loginResponse;
     }
-
 
 }
