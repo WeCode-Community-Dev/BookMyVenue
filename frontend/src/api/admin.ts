@@ -49,4 +49,13 @@ export class AdminApiService {
         const response = await axiosClient.post(`/admin/venues/${venueId}/reject`);
         return response.data as VenueListResponse
     }
+
+    /**
+     * Create New User
+     */
+    static async createUser(data: any) {
+        const response = await axiosClient.post(`/admin/users`, data);
+        return response.data as VenueListResponse
+    }
+
 }

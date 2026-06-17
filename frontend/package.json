@@ -33,6 +33,7 @@
     "@emotion/styled": "^11.14.0",
     "@fontsource-variable/dm-sans": "^5.2.5",
     "@fontsource/barlow": "^5.2.5",
+    "@hookform/resolvers": "^5.4.0",
     "@iconify/react": "^5.2.1",
     "@mui/lab": "^7.0.0-beta.10",
     "@mui/material": "^7.0.1",
@@ -45,8 +46,10 @@
     "react": "^19.1.0",
     "react-apexcharts": "^1.7.0",
     "react-dom": "^19.1.0",
+    "react-hook-form": "^7.79.0",
     "react-router-dom": "^7.4.1",
-    "simplebar-react": "^3.3.0"
+    "simplebar-react": "^3.3.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",

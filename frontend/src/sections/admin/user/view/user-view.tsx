@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
@@ -62,13 +63,15 @@ export function UserView() {
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           Users
         </Typography>
-        <Button
-          variant="contained"
-          color="inherit"
-          startIcon={<Iconify icon="mingcute:add-line" />}
-        >
-          New user
-        </Button>
+        <Link to='/admin/users/create'>
+          <Button
+            variant="contained"
+            color="inherit"
+            startIcon={<Iconify icon="mingcute:add-line" />}
+          >
+            New user
+          </Button>
+        </Link>
       </Box>
 
       <Card>

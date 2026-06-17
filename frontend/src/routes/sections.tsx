@@ -25,6 +25,7 @@ export const Page404 = lazy(() => import('src/pages/page-not-found'));
 // admin pages 
 export const AdminVenuesPage = lazy(() => import('src/pages/admin/venues/list'));
 export const AdminUsersPage = lazy(() => import('src/pages/admin/users/list'));
+export const CreateUsersPage = lazy(() => import('src/pages/admin/users/create'));
 
 const renderFallback = () => (
   <Box
@@ -204,9 +205,8 @@ export const routesSection: RouteObject[] = [
               },
 
               {
-                path: 'admin/analytics',
-                // element: <AdminAnalyticsPage />,
-                element: <h1>Admin Analytics Page</h1>,
+                path: 'admin/users/create',
+                element: <CreateUsersPage />,
               },
             ],
           },
