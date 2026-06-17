@@ -13,8 +13,4 @@ export class JwtTokenService {
     async verifyAccessToken(token: string) {
         return this.jwtService.verifyAsync<JwtPayload>(token);
     }
-
-    decodeToken(token: string) {
-        return this.jwtService.decode(token);
-    }
 }

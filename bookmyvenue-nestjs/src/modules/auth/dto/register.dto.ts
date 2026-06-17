@@ -51,5 +51,5 @@ export class RegisterDto {
   @IsEnum([Role.USER, Role.OWNER], {
     message: 'USER or OWNER',
   })
-  role?: Role;
+  role!: Role;
 }

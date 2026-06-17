@@ -67,17 +67,9 @@ export class AuthService {
             otpHash,
         };
 
-        await this.redisService.set(
-            this.getSignupKey(email),
-            JSON.stringify(payload),
-            this.signupTtlSeconds,
-        );
+        await this.redisService.set(this.getSignupKey(email), JSON.stringify(payload), this.signupTtlSeconds);
 
-        await this.redisService.set(
-            this.getCooldownKey(email),
-            '1',
-            this.resendCooldownSeconds,
-        );
+        await this.redisService.set(this.getCooldownKey(email), '1', this.resendCooldownSeconds);
 
         try {
             await this.mailService.sendOtpEmail(email, name, otp);
@@ -85,15 +77,12 @@ export class AuthService {
             await this.redisService.del(this.getSignupKey(email));
             await this.redisService.del(this.getCooldownKey(email));
 
-            throw new InternalServerErrorException(
-                'Failed to send verification email. Try again.',
-            );
+            throw new InternalServerErrorException('Failed to send verification email. Try again.');
         }
 
         return {
             success: 'true',
-            message:
-                'A verification OTP has been sent to your email. It will expire in 10 minutes.',
+            message: 'A verification OTP has been sent to your email. It will expire in 10 minutes.',
         };
     }
 
@@ -102,15 +91,10 @@ export class AuthService {
         const payload = await this.getSignupPayload(email);
 
         if (!payload) {
-            throw new BadRequestException(
-                'OTP expired or no active registration found. Please register again.',
-            );
+            throw new BadRequestException('OTP expired or no active registration found. Please register again.');
         }
 
-        const isOtpValid = await bcrypt.compare(
-            verifySignupOtpDto.otp,
-            payload.otpHash,
-        );
+        const isOtpValid = await bcrypt.compare(verifySignupOtpDto.otp, payload.otpHash);
 
         if (!isOtpValid) {
             throw new BadRequestException('Invalid OTP');
@@ -133,19 +117,14 @@ export class AuthService {
                 message: 'Account verified successfully! You can now log in.',
                 userId: user.id,
             };
+
         } catch (error) {
-            if (
-                error instanceof Prisma.PrismaClientKnownRequestError &&
-                error.code === 'P2002'
-            ) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
                 await this.redisService.del(this.getSignupKey(email));
                 await this.redisService.del(this.getCooldownKey(email));
 
-                throw new ConflictException(
-                    'Email is already registered. Please log in.',
-                );
+                throw new ConflictException('Email is already registered. Please log in.');
             }
-
             throw error;
         }
     }
@@ -157,11 +136,10 @@ export class AuthService {
         await this.ensureCooldownPassed(email);
 
         const existingPayload = await this.getSignupPayload(email);
+        const oldPayload = existingPayload
 
         if (!existingPayload) {
-            throw new BadRequestException(
-                'OTP expired or no active registration found. Please register again.',
-            );
+            throw new BadRequestException('OTP expired or no active registration found. Please register again.');
         }
 
         const otp = generateOtp();
@@ -172,21 +150,16 @@ export class AuthService {
             otpHash,
         };
 
-        await this.redisService.set(
-            this.getSignupKey(email),
-            JSON.stringify(updatedPayload),
-            this.signupTtlSeconds,
-        );
+        await this.redisService.set(this.getSignupKey(email), JSON.stringify(updatedPayload), this.signupTtlSeconds);
 
-        await this.redisService.set(
-            this.getCooldownKey(email),
-            '1',
-            this.resendCooldownSeconds,
-        );
+        await this.redisService.set(this.getCooldownKey(email), '1', this.resendCooldownSeconds);
 
         try {
             await this.mailService.sendOtpEmail(email, existingPayload.name, otp);
         } catch {
+            await this.redisService.set(this.getSignupKey(email), JSON.stringify(oldPayload), this.signupTtlSeconds);
+            await this.redisService.del(this.getCooldownKey(email));
+
             throw new InternalServerErrorException('Failed to resend OTP. Try again.');
         }
 
@@ -199,18 +172,13 @@ export class AuthService {
     async login(loginDto: LoginDto) {
         const email = normalizeEmail(loginDto.email);
 
-        const user = await this.prisma.user.findUnique({
-            where: { email },
-        });
+        const user = await this.prisma.user.findUnique({ where: { email } });
 
         if (!user) {
             throw new UnauthorizedException('Invalid email or password.');
         }
 
-        const isPasswordValid = await bcrypt.compare(
-            loginDto.password,
-            user.password,
-        );
+        const isPasswordValid = await bcrypt.compare(loginDto.password, user.password,);
 
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid email or password.');
@@ -240,14 +208,11 @@ export class AuthService {
     async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
         const email = normalizeEmail(forgotPasswordDto.email);
 
-        const user = await this.prisma.user.findUnique({
-            where: { email },
-        });
+        const user = await this.prisma.user.findUnique({ where: { email } });
 
         if (!user) {
             return {
-                message:
-                    'If an account with this email exists, a password reset OTP has been sent.',
+                message: 'If an account with this email exists, a password reset OTP has been sent.',
             };
         }
 
@@ -261,31 +226,17 @@ export class AuthService {
             otpHash,
         };
 
-        await this.redisService.set(
-            this.getForgotPasswordKey(email),
-            JSON.stringify(payload),
-            this.forgotPasswordTtlSeconds,
-        );
+        await this.redisService.set(this.getForgotPasswordKey(email), JSON.stringify(payload), this.forgotPasswordTtlSeconds);
 
-        await this.redisService.set(
-            this.getForgotPasswordCooldownKey(email),
-            '1',
-            this.forgotPasswordCooldownSeconds,
-        );
+        await this.redisService.set(this.getForgotPasswordCooldownKey(email), '1', this.forgotPasswordCooldownSeconds);
 
         try {
-            await this.mailService.sendForgotPasswordOtpEmail(
-                user.email,
-                user.name,
-                otp,
-            );
+            await this.mailService.sendForgotPasswordOtpEmail(user.email, user.name, otp);
         } catch {
             await this.redisService.del(this.getForgotPasswordKey(email));
             await this.redisService.del(this.getForgotPasswordCooldownKey(email));
 
-            throw new InternalServerErrorException(
-                'Failed to send password reset OTP. Try again.',
-            );
+            throw new InternalServerErrorException('Failed to send password reset OTP. Try again.');
         }
 
         return {
@@ -299,25 +250,16 @@ export class AuthService {
         const payload = await this.getForgotPasswordPayload(email);
 
         if (!payload) {
-            throw new BadRequestException(
-                'OTP expired or no password reset request found.',
-            );
+            throw new BadRequestException('OTP expired or no password reset request found.');
         }
 
-        const isOtpValid = await bcrypt.compare(
-            verifyForgotPasswordOtpDto.otp,
-            payload.otpHash,
-        );
+        const isOtpValid = await bcrypt.compare(verifyForgotPasswordOtpDto.otp, payload.otpHash);
 
         if (!isOtpValid) {
             throw new BadRequestException('Invalid OTP');
         }
 
-        await this.redisService.set(
-            this.getForgotPasswordVerifiedKey(email),
-            '1',
-            this.forgotPasswordTtlSeconds,
-        );
+        await this.redisService.set(this.getForgotPasswordVerifiedKey(email), '1', this.forgotPasswordTtlSeconds);
 
         await this.redisService.del(this.getForgotPasswordKey(email));
 
@@ -334,14 +276,10 @@ export class AuthService {
             throw new BadRequestException('Passwords do not match.');
         }
 
-        const isVerified = await this.redisService.get(
-            this.getForgotPasswordVerifiedKey(email),
-        );
+        const isVerified = await this.redisService.get(this.getForgotPasswordVerifiedKey(email),);
 
         if (!isVerified) {
-            throw new BadRequestException(
-                'Password reset not verified. Please verify OTP first.',
-            );
+            throw new BadRequestException('Password reset not verified. Please verify OTP first.',);
         }
 
         const passwordHash = await bcrypt.hash(resetPasswordDto.newPassword, 10);
@@ -357,6 +295,33 @@ export class AuthService {
         return {
             success: 'true',
             message: 'Password reset successful. You can now log in.',
+        };
+    }
+
+    async me(userId: number) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId }, });
+
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
+
+        return {
+            success: true,
+            data: {
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                },
+            },
+        };
+    }
+
+    async logout() {
+        return {
+            success: true,
+            message: 'Logged out successfully.',
         };
     }
 
@@ -381,9 +346,7 @@ export class AuthService {
     }
 
     private async ensureUserDoesNotExist(email: string) {
-        const existingUser = await this.prisma.user.findUnique({
-            where: { email },
-        });
+        const existingUser = await this.prisma.user.findUnique({ where: { email }, });
 
         if (existingUser) {
             throw new ConflictException('Email is already registered. Please log in.');
@@ -395,9 +358,7 @@ export class AuthService {
         const ttl = await this.redisService.ttl(cooldownKey);
 
         if (ttl > 0) {
-            throw new BadRequestException(
-                `Please wait ${ttl} seconds before requesting another OTP.`,
-            );
+            throw new BadRequestException(`Please wait ${ttl} seconds before requesting another OTP.`,);
         }
     }
 
@@ -407,6 +368,7 @@ export class AuthService {
         if (!raw) {
             return null;
         }
+
         return JSON.parse(raw) as SignupCachePayload;
     }
 
