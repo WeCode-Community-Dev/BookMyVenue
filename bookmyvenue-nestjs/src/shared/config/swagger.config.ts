@@ -20,7 +20,7 @@ export function setupSwagger(app: INestApplication): void {
     .setContact(
       'Fathima Sadakkathullah',
       'https://www.linkedin.com/in/fathima-sadakkathullah/',
-      'fathimasadakkathullah@gmail.com',
+      'fathimasadakkathullah@gmail.com'
     )
     .addBearerAuth()
     .addCookieAuth()

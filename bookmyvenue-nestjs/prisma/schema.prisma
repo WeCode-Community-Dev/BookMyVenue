@@ -15,11 +15,50 @@ enum Role {
 
 //user model
 model User {
-  id        Int       @id @default(autoincrement())
+  id        String    @id @default(uuid())
   email     String    @unique
   password  String    
   name      String
   role      Role      @default(USER)
   createdAt DateTime  @default(now())
+
+  venues    Venue[]
+  bookings  Booking[]
 }
 
+model Venue {
+  id           String    @id @default(uuid())
+  name         String
+  location     String
+  description  String?
+  pricePerHour Float
+  amenities    String[]  
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  ownerId      String
+  owner        User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  bookings     Booking[]
+}
+
+
+model Booking {
+  id          String        @id @default(uuid())
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  totalPrice  Float
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venueId     String
+  venue       Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
