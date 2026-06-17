@@ -4,6 +4,7 @@ package com.bookmyvenue.backend.service;
 import com.bookmyvenue.backend.dto.Venue.VenueRequest;
 import com.bookmyvenue.backend.dto.Venue.VenueResponse;
 import com.bookmyvenue.backend.dto.Venue.VenueSearchRequest;
+import com.bookmyvenue.backend.dto.Venue.VenueStatusRequest;
 import com.bookmyvenue.backend.entity.Users;
 import com.bookmyvenue.backend.entity.Venue;
 import com.bookmyvenue.backend.enums.VenueStatus;
@@ -171,8 +172,8 @@ public class VenueServiceImpl implements VenueService {
     public List<VenueResponse> searchVenues(
             VenueSearchRequest request) {
         Specification<Venue> spec = Specification.allOf(
-                VenueSpecification.hasCategory(
-                        request.getCategoryId()),
+//                VenueSpecification.hasCategory(
+//                        request.getCategoryId()),
                 VenueSpecification.hasMinPrice(
                         request.getMinPrice()),
                 VenueSpecification.hasMaxPrice(
@@ -188,5 +189,22 @@ public class VenueServiceImpl implements VenueService {
                 .stream()
                 .map(venueMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public VenueResponse updateVenueStatus(
+            Long venueId,
+            VenueStatusRequest request) {
+
+        Venue venue = venueRepository.findById(venueId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Venue not found with id: " + venueId));
+
+        venue.setStatus(request.getStatus());
+
+        Venue updatedVenue = venueRepository.save(venue);
+
+        return venueMapper.toResponse(updatedVenue);
     }
 }

@@ -1,5 +1,7 @@
 package com.bookmyvenue.backend.specification;
 import com.bookmyvenue.backend.entity.Venue;
+import com.bookmyvenue.backend.enums.VenueStatus;
+import com.bookmyvenue.backend.enums.VenueType;
 import org.springframework.data.jpa.domain.Specification;
 import java.math.BigDecimal;
 import com.bookmyvenue.backend.entity.VenueAvailability;
@@ -57,23 +59,20 @@ public class VenueSpecification {
     }
 
     /**
-     * Filter by Venue Category
+     * Filter by Venue Type
      */
-    public static Specification<Venue> hasCategory(
-            Long categoryId) {
+    public static Specification<Venue> hasVenueType(
+            VenueType venueType) {
 
         return (root, query, cb) -> {
 
-            if (categoryId == null) {
-                return null;
+            if (venueType == null) {
+                return cb.conjunction();
             }
 
-            Join<Object, Object> categoryJoin =
-                    root.join("venuCategories");
-
             return cb.equal(
-                    categoryJoin.get("categoryId"),
-                    categoryId);
+                    root.get("venueType"),
+                    venueType);
         };
     }
 
@@ -113,4 +112,30 @@ public class VenueSpecification {
             return root.get("venueId").in(subQuery);
         };
     }
+    public static Specification<Venue> hasOwner(
+            Long ownerId) {
+
+        return (root, query, cb) ->
+                ownerId == null
+                        ? cb.conjunction()
+                        : cb.equal(
+                        root.get("owner")
+                                .get("userId"),
+                        ownerId);
+    }
+
+    public static Specification<Venue> hasStatus(
+            VenueStatus status) {
+
+        return (root, query, cb) ->
+                status == null
+                        ? cb.conjunction()
+                        : cb.equal(
+                        root.get("status"),
+                        status);
+    }
+
+
+//    public static Specification<Venue> hasCategory(Long categoryId) {
+//    }
 }
