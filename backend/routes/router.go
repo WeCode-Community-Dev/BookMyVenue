@@ -4,6 +4,7 @@ import (
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/admin"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/auth"
+	"github.com/WeCode-Community-Dev/BookMyVenue/internal/availability"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/venues"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/web"
 	"github.com/WeCode-Community-Dev/BookMyVenue/users"
@@ -24,6 +25,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 	r.GET("/viewApprovedVenues", webHandler.ViewApprovedVenues)
 	r.GET("/viewRejectedVenues", webHandler.ViewRejectedVenuesPage)
 	r.GET("/viewPendingVenues", webHandler.ViewPendingVenuesPage)
+	r.GET("/owner/venues/:id/setslot", webHandler.SetSlotPage)
 	adminWebRoutes.GET("viewPendingVenuesPage", webHandler.Admin_viewPendingVenues)
 	adminWebRoutes.GET("viewApprovedVenues", webHandler.Admin_viewApprovedVenues)
 	adminWebRoutes.GET("viewRejectedVenues", webHandler.Admin_viewRejectedVenues)
@@ -70,16 +72,13 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
 	{
 		userRoutes.GET("/venues", userHandler.ViewVenue)
 	}
+
+	availabilityHandler := availability.NewService(db)
+	availabilityRoutes := api.Group("")
+	availabilityRoutes.Use(auth.JWTAuthentication)
+	{
+		availabilityRoutes.GET("/venues/:id/availability", auth.RoleGuarde("owner"), availabilityHandler.AvailableSlots)
+		availabilityRoutes.POST("/venues/:id/availability", auth.RoleGuarde("owner"), availabilityHandler.SetNewSlot)
+		availabilityRoutes.DELETE("/venues/:venue_id/availability/:slot_id", auth.RoleGuarde("owner"), availabilityHandler.DeleteSlot)
+	}
 }
-
-// func userResponse(ctx *gin.Context) {
-// 	ctx.JSON(200, gin.H{
-// 		"message": "user",
-// 	})
-// }
-
-// func venueResponse(ctx *gin.Context) {
-// 	ctx.JSON(200, gin.H{
-// 		"message": "venue",
-// 	})
-// }

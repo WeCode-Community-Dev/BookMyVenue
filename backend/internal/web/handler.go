@@ -48,6 +48,10 @@ func (h *Handler) ViewApprovedVenues(c *gin.Context) {
 	c.HTML(http.StatusOK, "view_approvedVenues.html", nil)
 }
 
+func (h *Handler) SetSlotPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "set-availability.html", nil)
+}
+
 // ---------Admin-------------
 func (h *Handler) Admin_viewPendingVenues(c *gin.Context) {
 	c.HTML(http.StatusOK, "admin_view_venuePending.html", nil)

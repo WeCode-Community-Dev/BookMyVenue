@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Set Availability</title>
+</head>
+<body>
+
+<div class="container">
+    <h2>Set Venue Availability</h2>
+
+    <!-- tabs -->
+    <div class="tabs">
+        <button onclick="showTab('single')"  id="tab-single">Single Slot</button>
+        <button onclick="showTab('bulk')"    id="tab-bulk">Bulk / Weekly</button>
+    </div>
+
+    <!-- single slot -->
+    <div id="single-tab">
+        <h3>Add Single Slot</h3>
+
+        <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="single-date" />
+        </div>
+
+        <div class="form-group">
+            <label>Start Time</label>
+            <input type="time" id="single-start" />
+        </div>
+
+        <div class="form-group">
+            <label>End Time</label>
+            <input type="time" id="single-end" />
+        </div>
+
+        <button onclick="addSingleSlot()">Add Slot</button>
+    </div>
+
+    <!-- bulk slot -->
+    <div id="bulk-tab" style="display:none">
+        <h3>Add Weekly Schedule</h3>
+
+        <div class="form-group">
+            <label>Select Days</label>
+            <div class="days-grid">
+                <label><input type="checkbox" value="Monday" />    Monday</label>
+                <label><input type="checkbox" value="Tuesday" />   Tuesday</label>
+                <label><input type="checkbox" value="Wednesday" /> Wednesday</label>
+                <label><input type="checkbox" value="Thursday" />  Thursday</label>
+                <label><input type="checkbox" value="Friday" />    Friday</label>
+                <label><input type="checkbox" value="Saturday" />  Saturday</label>
+                <label><input type="checkbox" value="Sunday" />    Sunday</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Start Time</label>
+            <input type="time" id="bulk-start" />
+        </div>
+
+        <div class="form-group">
+            <label>End Time</label>
+            <input type="time" id="bulk-end" />
+        </div>
+
+        <div class="form-group">
+            <label>From Date</label>
+            <input type="date" id="bulk-from" />
+        </div>
+
+        <div class="form-group">
+            <label>To Date</label>
+            <input type="date" id="bulk-to" />
+        </div>
+
+        <button onclick="addBulkSlots()">Add Weekly Slots</button>
+    </div>
+
+    <p id="message"></p>
+
+    <!-- existing slots list -->
+    <h3>Current Slots</h3>
+    <div id="slotsList"></div>
+</div>
+
+<script>
+    const venueID = window.location.pathname.split("/")[3];
+    console.log(venueID)
+    const token   = localStorage.getItem("access_token")
+
+    // load existing slots on page load
+    window.onload = () => {
+        loadSlots()
+    }
+
+    // ─── Add Single Slot ─────────────────────────────────────────
+
+    async function addSingleSlot() {
+        const date  = document.getElementById("single-date").value
+        const start = document.getElementById("single-start").value
+        const end   = document.getElementById("single-end").value
+        console.log(start);
+        console.log(end)
+
+        if (!date || !start || !end) {
+            showMessage("Please fill all fields", "error")
+            return
+        }
+
+        if (start >= end) {
+            showMessage("End time must be after start time", "error")
+            return
+        }
+
+        const res = await fetch(`/api/v1/venues/${venueID}/availability`, {
+            method: "POST",
+            headers: {
+                "Content-Type":  "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({
+                slots: [
+                    {
+                        date:       date,
+                        start_time: start,
+                        end_time:   end
+                    }
+                ]
+            })
+        })
+
+        const data = await res.json()
+        if (data.success) {
+            showMessage("Slot added successfully", "success")
+            loadSlots()
+        } else {
+            showMessage(data.message, "error")
+        }
+    }
+
+    // ─── Add Bulk Slots ──────────────────────────────────────────
+
+    async function addBulkSlots() {
+        const days  = Array.from(document.querySelectorAll(".days-grid input:checked")).map(cb => cb.value)
+        const start = document.getElementById("bulk-start").value
+        const end   = document.getElementById("bulk-end").value
+        const from  = document.getElementById("bulk-from").value
+        const to    = document.getElementById("bulk-to").value
+
+        if (days.length === 0 || !start || !end || !from || !to) {
+            showMessage("Please fill all fields", "error")
+            return
+        }
+
+        if (start >= end) {
+            showMessage("End time must be after start time", "error")
+            return
+        }
+
+        // generate all matching dates between from and to
+        const slots = generateWeeklySlots(days, start, end, from, to)
+
+        if (slots.length === 0) {
+            showMessage("No matching dates found in selected range", "error")
+            return
+        }
+
+        const res = await fetch(`/api/v1/venues/${venueID}/availability`, {
+            method: "POST",
+            headers: {
+                "Content-Type":  "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({ slots })
+        })
+
+        const data = await res.json()
+        if (data.success) {
+            showMessage(`${slots.length} slots added successfully`, "success")
+            loadSlots()
+        } else {
+            showMessage(data.message, "error")
+        }
+    }
+
+    // ─── Generate Weekly Slots ───────────────────────────────────
+    // builds array of slot objects for every matching weekday between from and to
+
+    function generateWeeklySlots(days, start, end, from, to) {
+        const slots    = []
+        const current  = new Date(from)
+        const endDate  = new Date(to)
+        const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+        while (current <= endDate) {
+            const dayName = dayNames[current.getDay()]
+
+            if (days.includes(dayName)) {
+                slots.push({
+                    date:       current.toISOString().split("T")[0],  // YYYY-MM-DD
+                    start_time: start,
+                    end_time:   end
+                })
+            }
+
+            current.setDate(current.getDate() + 1)  // next day
+        }
+
+        return slots
+    }
+
+    // ─── Load Existing Slots ─────────────────────────────────────
+
+    async function loadSlots() {
+        const res  = await fetch(`/api/v1/venues/${venueID}/availability`, {
+            headers: { "Authorization": "Bearer " + token }
+        })
+
+        const data = await res.json()
+        if (!data.success) return
+
+        const list = document.getElementById("slotsList")
+        list.innerHTML = ""
+
+        console.log(data)
+        if (data.data.length === 0) {
+            list.innerHTML = "<p>No slots added yet</p>"
+            return
+        }
+
+        data.data.slots.forEach(slot => {
+            const div       = document.createElement("div")
+            div.className   = "slot-item"
+            div.innerHTML   = `
+                <span>${slot.date}  ${slot.start_time} - ${slot.end_time}</span>
+                <span class="${slot.is_booked ? 'booked' : 'available'}">
+                    ${slot.is_booked ? "Booked" : "Available"}
+                </span>
+                ${!slot.is_booked
+                    ? `<button onclick="deleteSlot('${slot.id}')">Remove</button>`
+                    : ""
+                }
+            `
+            list.appendChild(div)
+        })
+    }
+
+    // ─── Delete Slot ─────────────────────────────────────────────
+
+    async function deleteSlot(slotID) {
+        const res  = await fetch(`/api/v1/venues/${venueID}/availability/${slotID}`, {
+            method:  "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+        })
+
+        const data = await res.json()
+        console.log(data)
+        if (data.success) {
+            loadSlots()
+        } else {
+            showMessage(data.message, "error")
+        }
+    }
+
+    // ─── Tab toggle ──────────────────────────────────────────────
+
+    function showTab(tab) {
+        document.getElementById("single-tab").style.display = tab === "single" ? "block" : "none"
+        document.getElementById("bulk-tab").style.display   = tab === "bulk"   ? "block" : "none"
+    }
+
+    function showMessage(msg, type) {
+        const el       = document.getElementById("message")
+        el.innerText   = msg
+        el.style.color = type === "error" ? "red" : "green"
+    }
+</script>
+</body>
+</html>
