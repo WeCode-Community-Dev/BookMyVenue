@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button/Button";
 import NxtImage from "next/image";
 import { cardStyle } from "./CardStyle";
 
-type Venue = {
+export type Venue = {
   id: number;
   name: string;
   image: string;
@@ -32,9 +32,10 @@ type Venue = {
 
 type CardProps = {
   venue: Venue;
+  onViewDetails?: (venue: Venue) => void;
 };
 
-export default function Card({ venue }: CardProps) {
+export default function Card({ venue, onViewDetails }: CardProps) {
     return (
         <div className={cardStyle.cardWrapper}>
 
@@ -157,7 +158,12 @@ export default function Card({ venue }: CardProps) {
 
                     </div>
 
-                    <Button className={cardStyle.detailsBtn}>
+                    <Button
+                        className={cardStyle.detailsBtn}
+                        onClick={() => {
+                            onViewDetails?.(venue);
+                        }}
+                    >
             View Details
                     </Button>
 

@@ -16,6 +16,8 @@ export enum LoginStatus {
 
 export const SCREENS = {
     PROFILE: "/profile",
+    ADD_VENUE:"/addvenue",
+    SETTINGS:"/settings"
 };
 
 export const LANGUAGE={

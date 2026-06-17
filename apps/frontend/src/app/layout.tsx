@@ -5,7 +5,7 @@ import { LANGUAGE, LOCAL_STORAGE, THEME } from "@/lib/Constants";
 import Header from "@/components/global/header/Header";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import SidebarWrapper from "@/components/global/sidebarwrapper";
+import SidebarWrapper from "@/components/global/SideBarWrapper";
 import StoreProvider from "@/components/global/StoreProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({

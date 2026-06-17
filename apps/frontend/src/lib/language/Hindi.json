@@ -3,9 +3,34 @@
     "hindi": "हिंदी",
     "INPUT_LABELS": {},
     "TOOLTIP": {},
-    "BUTTON": {},
+    "BUTTON": {
+        "GET_STARTED": "शुरू करें",
+        "COLLAPSE_SIDEBAR": "साइडबार समेटें",
+        "CANCEL": "रद्द करें",
+        "PAY_NOW": "अभी भुगतान करें",
+        "APPROVE_VENUE": "स्थान स्वीकृत करें",
+        "OPEN_IN_MAPS": "नक्शे में खोलें"
+    },
     "LABEL": {
-        "MENU": "मेनू"
+        "MENU": "मेनू",
+        "REACH_CUSTOMERS": "हर दिन हजारों ग्राहकों तक पहुंचें।",
+        "PENDING_APPROVAL": "अनुमोदन लंबित",
+        "VENUE_INFORMATION": "स्थान की जानकारी",
+        "CAPACITY": "क्षमता",
+        "PRICE": "कीमत",
+        "RATING": "रेटिंग",
+        "AVAILABILITY": "उपलब्धता",
+        "AMENITIES": "सुविधाएं",
+        "DESCRIPTION": "विवरण",
+        "LOCATION": "स्थान",
+        "OWNER_INFORMATION": "मालिक की जानकारी",
+        "OWNER_NAME": "मालिक का नाम",
+        "EMAIL": "ईमेल",
+        "PHONE": "फ़ोन",
+        "MEMBER_SINCE": "सदस्यता तिथि",
+        "SUBMISSION_DETAILS": "जमा करने का विवरण",
+        "SUBMITTED_ON": "जमा करने की तिथि",
+        "ADDITIONAL_NOTES": "अतिरिक्त टिप्पणियाँ"
     },
     "FILTERS": {
         "FILTER": "फ़िल्टर्स",
@@ -23,8 +48,15 @@
         "OFFERS": "ऑफ़र्स",
         "MY_BOOKINGS": "मेरी बुकिंग",
         "WISHLIST": "इच्छासूची",
-        "RECENTLY_VIEWED": "हाल ही में देखे गए"
+        "RECENTLY_VIEWED": "हाल ही में देखे गए",
+        "DASHBOARD": "डैशबोर्ड",
+        "ADD_VENUE": "स्थान जोड़ें",
+        "MY_VENUE": "मेरा स्थान",
+        "BOOKINGS": "बुकिंग",
+        "HELP_SUPPORT": "सहायता और समर्थन"
     },
     "COLUMNS": {},
-    "MESSAGES": {}
+    "MESSAGES": {
+        "VENUE_DESCRIPTION": "एक सुंदर समुद्र तट स्थल जो शादियों, पार्टियों और कॉर्पोरेट आयोजनों के लिए बिल्कुल सही है।"
+    }
 }
