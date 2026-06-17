@@ -1,4 +1,6 @@
 package com.bookmyvenue.backend.controller;
+import com.bookmyvenue.backend.dto.authentication.LoginRequest;
+import com.bookmyvenue.backend.dto.authentication.LoginResponse;
 import com.bookmyvenue.backend.dto.authentication.RegisterRequest;
 import com.bookmyvenue.backend.dto.authentication.RegisterResponse;
 import com.bookmyvenue.backend.service.AuthenticationService;

@@ -13,4 +13,5 @@ public class LoginResponse {
     private String city;
     private UserRole role;
     private String message;
+    private String token;
 }
