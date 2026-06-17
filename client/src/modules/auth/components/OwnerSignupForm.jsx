@@ -55,7 +55,7 @@ const OwnerSignupForm = ({ onBack }) => {
     login(response.data.user, response.data.accessToken);
     navigate(
 
-      ROUTES.OWNER_DASHBOARD,
+      ROUTES.OWNER,
 
       {
         state: {

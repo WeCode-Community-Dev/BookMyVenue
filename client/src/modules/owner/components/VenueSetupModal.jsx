@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 
-import { updateVenueApi } from "../api/venue.api";
+import { updateVenueApi } from "../../venues/api/venue.api";
 
 const VenueSetupModal = ({ venue, onClose }) => {
     const [selectedFiles, setSelectedFiles] = useState([]);
