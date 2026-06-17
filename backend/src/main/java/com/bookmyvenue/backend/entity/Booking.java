@@ -25,8 +25,8 @@ public class Booking {
     private Venue venue;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private Users bookedByUser;
+    @JoinColumn(name = "user_id")
+    private Users user;
 
     @Enumerated(EnumType.STRING)
     @Column(name="bookingType",nullable = false,length = 30)

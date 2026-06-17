@@ -1,0 +1,180 @@
+AuthController->Register, Login, Refresh Token
+UserController->User profile management
+VenueController->Venue CRUD
+VenueAvailabilityController->Availability management
+VenuePhotoController->Venue photo upload/manage
+VenueDocumentController->Venue document upload/manage
+AmenityController->Amenity CRUD
+VenueCategoryController->Venue category CRUD
+BookingController->Booking CRUD
+PaymentController->Payment processing
+********************************************
+
+AdminVenueController->	Approve/Reject venues
+AdminUserController->	Suspend/Delete users
+AdminDashboardController->	Statistics & analytics
+
+********************************************
+ReviewController->	Venue reviews and ratings
+NotificationController->	Notifications
+RefundController->	Refund management
+
+
+********************************************
+1. User Module
+Authentication
+Sign Up
+Login
+Google Login (optional)
+********************************************
+Venue Discovery
+Search nearby venues
+Filter by:
+Venue type
+Price
+Capacity
+Date
+********************************************
+Venue Details
+View photos
+View amenities
+Check availability
+View pricing
+********************************************
+Booking
+Create booking
+Make payment
+View booking history
+Cancel booking
+Request refund
+********************************************
+Suggested APIs
+POST   /api/auth/register
+POST   /api/auth/login
+
+GET    /api/venues
+GET    /api/venues/{id}
+
+POST   /api/bookings
+
+GET    /api/bookings/user/{userId}
+
+POST   /api/payments
+
+PUT    /api/bookings/{id}/cancel
+********************************************
+2. Venue Owner Module
+Owner Authentication
+Register as owner
+Login
+********************************************
+Venue Management
+Create venue
+Upload photos
+Upload documents
+Update venue details
+Update pricing
+Update availability
+********************************************
+Booking Management
+View incoming bookings
+Accept booking
+Reject booking
+********************************************
+Analytics
+Occupancy rate
+Booking statistics
+Revenue statistics
+********************************************
+Suggested APIs
+POST   /api/venues
+
+PUT    /api/venues/{id}
+
+POST   /api/venue-photos
+
+POST   /api/venue-documents
+
+POST   /api/availability
+
+PUT    /api/availability/{id}
+
+GET    /api/bookings/owner/{ownerId}
+
+PATCH  /api/bookings/{id}/accept
+
+PATCH  /api/bookings/{id}/reject
+3. Admin Module
+********************************************
+User Management
+View users
+Suspend users
+Delete users
+********************************************
+Venue Approval
+Review venue
+Approve venue
+Reject venue
+********************************************
+Platform Monitoring
+View all bookings
+View all venues
+View all payments
+********************************************
+Analytics Dashboard
+Total Users
+Total Venues
+Total Bookings
+Total Revenue
+Suggested APIs
+GET    /api/admin/users
+
+PATCH  /api/admin/users/{id}/suspend
+
+DELETE /api/admin/users/{id}
+
+GET    /api/admin/venues/pending
+
+PATCH  /api/admin/venues/{id}/approve
+
+PATCH  /api/admin/venues/{id}/reject
+
+GET    /api/admin/bookings
+
+GET    /api/admin/payments
+
+GET    /api/admin/dashboard
+********************************************
+Recommended Database Tables
+
+Based on your current entities and this workflow, the core tables should be:
+
+users
+roles
+user_roles
+
+venue
+venue_category
+venue_category_map
+
+amenity
+venue_amenity
+
+venue_photo
+venue_document
+venue_availability
+
+booking
+payment
+refund
+
+review
+notification
+
+audit_log
+
+
+
+
+
+
