@@ -117,7 +117,7 @@ def add_venue_amenities(
 
     return {
         "message": "Amenities added successfully",
-        "venue_id": amenities.id
+        "amenities_id": amenities.id
     }
 
 def add_venue_images(
@@ -211,8 +211,88 @@ def update_venue_active_status(
     }
 
 
-def edit_venue():
+def edit_venue(
+    db: Session,
+    venue_id: int,
+    venue_name: str = None,
+    venue_description: str = None,
+    location: str = None,
+    capacity: int = None,
+    venue_price: int = None,
+    venue_availabilty: str = None,
+):
+    
+    venue = (
+        db.query(Venue)
+        .filter(Venue.id == venue_id)
+        .first()
+    )
+
+    if not venue:
+        raise Exception("Venue not found")
+
+    if venue_name is not None:
+        venue.venue_name = venue_name
+
+    if venue_description is not None:
+        venue.venue_description = venue_description
+
+    if location is not None:
+        venue.location = location
+
+    if capacity is not None:
+        venue.capacity = capacity
+
+    if venue_price is not None:
+        venue.venue_price = venue_price
+
+    if venue_availabilty is not None:
+        venue.venue_availabilty = venue_availabilty
+
+    db.commit()
+    db.refresh(venue)
+
     return {
-        "message": f"Venue edited successfully",
-        # "venue_id": venue.id,
+        "message": "Venue updated successfully",
+        "venue_id": venue.id
+    }
+
+def edit_venue_amenities(
+    db: Session,
+    venue_id: int,
+    wifi: bool,
+    kitchen: bool,
+    parking: bool,
+    ac: bool,
+    wheel_chair: bool,
+    av_equipements: bool,
+):
+    
+    amenities = (
+        db.query(VenueAmenities)
+        .filter(VenueAmenities.venue_id == venue_id)
+        .first()
+    )
+
+    if not amenities:
+        raise Exception("Amenities not found")
+
+    if wifi is not None:
+        amenities.wifi = wifi
+    if kitchen is not None:
+        amenities.kitchen = kitchen
+    if parking is not None:
+        amenities.parking = parking
+    if ac is not None:
+        amenities.ac = ac
+    if wheel_chair is not None:
+        amenities.wheel_chair = wheel_chair
+    if av_equipements is not None:
+        amenities.av_equipements = av_equipements
+
+    db.commit()
+    db.refresh(amenities)
+
+    return {
+        "message": "Amenities updated successfully"
     }

@@ -26,3 +26,19 @@ class VenueApprovalRequest(BaseModel):
 class VenueActiveStatusRequest(BaseModel):
     status: Literal["active", "inactive"]
     reason: Optional[str] = None
+
+class VenueDetailsUpdate(BaseModel):
+    venue_name: Optional[str] = None
+    venue_description: Optional[str] = None
+    location: Optional[str] = None
+    capacity: Optional[int] = None
+    venue_price: Optional[int] = None
+    venue_availabilty: Optional[str] = None
+
+class VenueAmenitiesUpdate(BaseModel):
+    wifi: bool = False
+    kitchen: bool = False
+    parking: bool = False
+    ac: bool = False
+    wheel_chair: bool = False
+    av_equipements: bool = False

@@ -7,7 +7,9 @@ from sqlalchemy.orm import Session
 from app.schema.venue import (
     VenueDetailsCreate,
     VenueAmenitiesCreate,
-    VenueActiveStatusRequest
+    VenueAmenitiesUpdate,
+    VenueActiveStatusRequest,
+    VenueDetailsUpdate
 )
 from app.services.venue_service import ( 
     get_venues, 
@@ -15,7 +17,9 @@ from app.services.venue_service import (
     add_venue,
     add_venue_amenities,
     add_venue_images,
-    update_venue_active_status
+    update_venue_active_status,
+    edit_venue,
+    edit_venue_amenities
 )
 
 from fastapi import APIRouter, HTTPException, status, UploadFile, File
@@ -124,7 +128,6 @@ async def upload_venue_images(
             images=images,
             venue_id=venue_id
         )
-        print(images_urls)
 
         return add_venue_images(
             db=db,
@@ -162,13 +165,45 @@ def update_venue_status(
         )
 
 
-@router.put("/")
-def edit_venue(
+@router.put("/{venue_id}/basic-details")
+def update_venue_basic_details(
+    venue_id: int,
+    payload: VenueDetailsUpdate,
     db: Session = Depends(get_db),
 ):
     try:
         return edit_venue(
-            db
+            db=db,
+            venue_id=venue_id,
+            venue_name=payload.venue_name,
+            venue_description=payload.venue_description,
+            location=payload.location,
+            capacity=payload.capacity,
+            venue_price=payload.venue_price,
+            venue_availabilty=payload.venue_availabilty,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+@router.put("/{venue_id}/amenities")
+def update_venue_amenities(
+    venue_id: int,
+    payload: VenueAmenitiesUpdate,
+    db: Session = Depends(get_db),
+):
+    try:
+        return edit_venue_amenities(
+            db=db,
+            venue_id=venue_id,
+            wifi=payload.wifi,
+            kitchen=payload.kitchen,
+            parking=payload.parking,
+            ac=payload.ac,
+            wheel_chair=payload.wheel_chair,
+            av_equipements=payload.av_equipements,
         )
     except Exception as e:
         raise HTTPException(
