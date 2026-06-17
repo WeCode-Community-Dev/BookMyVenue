@@ -66,7 +66,7 @@ function VenueCard({ venue }) {
 
 
 export default function VenueGrid() {
-    // const {venues, isLoading, error} = useVenueGrid();
+    const {venues, isLoading, error} = useVenueGrid();
     const Data = VENUE_DATA  // 'venues' for fetched api data [API INTEGRATION PHASE]
 
     // if(error){
@@ -80,14 +80,14 @@ export default function VenueGrid() {
     //     )
     // }
 
-    // if(isLoading){
-    //     return (
-    //         <div className="flex flex-col items-center justify-center min-h-[50vh] text-[#2b5155]">
-    //             <SpinnerOne className="w-10 h-10 animate-spin mb-4" />
-    //             <p className="font-semibold text-lg">Loading your spaces...</p>
-    //         </div>
-    //     )
-    // }
+    if(isLoading){
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-[#2b5155]">
+                <SpinnerOne className="w-10 h-10 animate-spin mb-4" />
+                <p className="font-semibold text-lg">Loading your spaces...</p>
+            </div>
+        )
+    }
 
     return (
         <div>

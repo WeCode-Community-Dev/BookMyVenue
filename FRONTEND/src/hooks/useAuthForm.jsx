@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Alert from '@mui/material/Alert';
-import { CheckDiamond } from "@mynaui/icons-react";
 
 export const useAuthForm = () => {
     const navigate = useNavigate();
@@ -77,8 +75,8 @@ export const useAuthForm = () => {
         console.log("Success! Data sent to server: ", data);
 
         if(data.access_token){
-            localStorage.setItem('authToken', data.access_token);
-            localStorage.setItem('userRole', data.user.role)
+            Cookies.set("authToken", data.access_token, {expires: 30, secure: true, sameSite: 'Lax'})
+            Cookies.set('userRole', data.user.role, {expires: 30, secure: true, sameSite: 'Lax'})
         }
 
         setSuccessMessage(isLoginView ? 'Logged in successfully!' : 'Account created successfully!')

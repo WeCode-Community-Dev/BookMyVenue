@@ -10,6 +10,12 @@ export const VENUE_DATA = [
     rating: "4.9",
     imageUrl: "https://images.unsplash.com/photo-1572025442646-866d16c84a54?auto=format&fit=crop&q=80&w=800",
     isLarge: true,
+    availtime: [
+      "10am - 1pm", "1pm - 4pm", "5pm - 10pm"
+    ],
+    availdays: [
+      "Monday", "Tuesday", "Wednesday"
+    ],
   },
   {
     id: 2,
@@ -19,6 +25,12 @@ export const VENUE_DATA = [
     rating: "4.9",
     capacity: "210",
     imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600",
+    availtime: [
+      "10am - 1pm", "1pm - 4pm", "5pm - 10pm"
+    ],
+    availdays: [
+      "Monday", "Tuesday", "Wednesday"
+    ],
   },
   {
     id: 3,
@@ -28,6 +40,12 @@ export const VENUE_DATA = [
     rating: "4.8",
     capacity: "110",
     imageUrl: "https://www.greenply.com:5001/originalfile1769165698904-875.jpg",
+    availtime: [
+      "10am - 1pm", "1pm - 4pm", "5pm - 10pm"
+    ],
+    availdays: [
+      "Monday", "Tuesday", "Wednesday"
+    ],
   },
   {
     id: 4,
@@ -37,6 +55,12 @@ export const VENUE_DATA = [
     rating: "4.7",
     capacity: "40",
     imageUrl: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&q=80&w=600",
+    availtime: [
+      "10am - 1pm", "1pm - 4pm", "5pm - 10pm"
+    ],
+    availdays: [
+      "Monday", "Tuesday", "Wednesday"
+    ],
   },
   {
     id: 5,
@@ -46,5 +70,11 @@ export const VENUE_DATA = [
     rating: "4.9",
     capacity: "20",
     imageUrl: "https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&q=80&w=600",
+    availtime: [
+      "10am - 1pm", "1pm - 4pm", "5pm - 10pm"
+    ],
+    availdays: [
+      "Monday", "Tuesday", "Wednesday"
+    ],
   }
 ];

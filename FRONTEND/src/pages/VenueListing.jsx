@@ -9,6 +9,8 @@ import {
 } from '@mynaui/icons-react';
 import { useParams } from 'react-router-dom';
 import { VENUE_DATA } from '../data/VenueCardData';
+import FormBooking from "../components/FormBooking"
+
 
 export default function SpaceListing() {
 
@@ -166,32 +168,7 @@ export default function SpaceListing() {
                 </div>
 
                 {/* Form Inputs */}
-                <div className="border border-gray-300 rounded-lg overflow-hidden mb-4">
-                <div className="grid grid-cols-2 border-b border-gray-300">
-                    <div className="p-3 border-r border-gray-300 cursor-pointer hover:bg-gray-50">
-                    <div className="text-[10px] font-bold text-gray-800 uppercase tracking-wide">Check-in</div>
-                    <div className="text-sm text-gray-500 mt-0.5">Add date</div>
-                    </div>
-                    <div className="p-3 cursor-pointer hover:bg-gray-50">
-                    <div className="text-[10px] font-bold text-gray-800 uppercase tracking-wide">Check-out</div>
-                    <div className="text-sm text-gray-500 mt-0.5">Add date</div>
-                    </div>
-                </div>
-                <div className="p-3 cursor-pointer hover:bg-gray-50 flex justify-between items-center relative">
-                    <div>
-                    <div className="text-[10px] font-bold text-gray-800 uppercase tracking-wide">Session</div>
-                    <select className="w-full text-sm text-gray-800 mt-0.5 bg-transparent outline-none appearance-none cursor-pointer">
-                        <option>Select session</option>
-                        <option>Morning (8am - 12pm)</option>
-                        <option>Afternoon (1pm - 5pm)</option>
-                    </select>
-                    </div>
-                    {/* dropdown arrow */}
-                    <svg className="w-4 h-4 text-gray-600 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div>
-                </div>
+                <FormBooking venue={venue} />
 
                 {/* Submit Button */}
                 <button className="w-full cursor-pointer bg-[#f4645c] hover:bg-[#e05048] text-white py-3.5 rounded-lg font-semibold text-base transition-colors duration-200">

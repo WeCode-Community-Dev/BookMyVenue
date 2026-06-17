@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import logo from "../assets/Logo.png"
+import Cookies from 'js-cookie';
 
  function ActionButton({role}) {
 
@@ -57,7 +58,7 @@ function NavBar() {
   
   const isActive = (path) => location.pathname === path
 
-  const role = localStorage.getItem("userRole")
+  const role = Cookies.get("userRole")
 
   return (
     <div className="relative w-full">
