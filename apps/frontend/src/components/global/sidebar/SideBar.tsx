@@ -1,6 +1,5 @@
 "use client";
 
-import { AppText, getText } from "@/lib/language/LanguageHelper";
 import {
     Building2,
     CalendarDays,
@@ -13,6 +12,7 @@ import {
     User,
 } from "lucide-react";
 
+import { AppText } from "@/lib/language/LanguageHelper";
 import { Button } from "../../ui/button/Button";
 import NxtImage from "next/image";
 import { SCREENS } from "@/lib/Constants";
@@ -30,76 +30,79 @@ export default function Sidebar() {
     const menuItems = [
         {
             icon: LayoutDashboard,
-            label: getText("DASHBOARD", "MENUS"),
+            label: "DASHBOARD",
             active: false,
             path: ""
         },
         {
             icon: CirclePlus,
-            label: getText("ADD_VENUE", "MENUS"),
+            label: "ADD_VENUE",
             active: false,
             path: SCREENS.ADD_VENUE
         },
         {
             icon: Building2,
-            label: getText("MY_VENUE", "MENUS"),
+            label: "MY_VENUE",
             active: false,
             path: ""
         },
         {
             icon: CalendarDays,
-            label: getText("BOOKINGS", "MENUS"),
+            label: "BOOKINGS",
             active: false,
             path: ""
         },
         {
             icon: Heart,
-            label: getText("WISHLIST", "MENUS"),
+            label: "WISHLIST",
             active: false,
             path: ""
         },
         {
             icon: User,
-            label: getText("PROFILE", "MENUS"),
+            label: "PROFILE",
             active: false,
             path: SCREENS.PROFILE
         },
         {
             icon: Settings,
-            label: getText("SETTINGS", "MENUS"),
+            label: "SETTINGS",
             active: false,
             path: SCREENS.SETTINGS
         },
         {
             icon: CircleHelp,
-            label: getText("HELP_SUPPORT", "MENUS"),
+            label: "HELP_SUPPORT",
             active: false,
             path: ""
         },
     ];
+
     return (
         <aside className={sideBarStyle.aside}>
             {/* Scrollable Content */}
             <div className={sideBarStyle.scrollableContent}>
                 <nav className={sideBarStyle.nav}>
-                    {menuItems.map((item) => {
+                    {menuItems.map((item, index) => {
                         const Icon = item.icon;
 
                         return (
                             <Button
-                                key={item.label}
+                                key={index}
                                 onClick={() => {
                                     naviagateToScreen(item.path);
                                 }}
                                 className={cn(
                                     sideBarStyle.menuItemButton,
-                                    item.active ? sideBarStyle.menuItemActive : sideBarStyle.menuItemInactive
+                                    item.active
+                                        ? sideBarStyle.menuItemActive
+                                        : sideBarStyle.menuItemInactive
                                 )}
                             >
                                 <Icon className={sideBarStyle.menuItemIcon} />
 
                                 <span className={sideBarStyle.menuItemLabel}>
-                                    {item.label}
+                                    <AppText textName={item.label} textModule="MENUS" />
                                 </span>
                             </Button>
                         );
