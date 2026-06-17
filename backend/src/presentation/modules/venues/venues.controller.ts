@@ -9,6 +9,10 @@ import { ZodValidationPipe } from '../../pipes/zod-validation.pipe';
 import { createVenueSchema } from '../../validation/venues/create-venue.schema';
 import { CreateVenueDto } from './dto/create-venue.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { FindMyVenuesQuery } from 'src/core/application/venues/queries/find-my-venues.query';
+import { RolesGuard } from 'src/presentation/guards/roles.guard';
+import { Roles } from 'src/presentation/decorators/roles.decorator';
+import { UserRole } from 'src/core/domain/_shared/enum/UserRole';
 
 @ApiTags('venues')
 @Controller({
@@ -21,10 +25,12 @@ export class VenuesController {
     private readonly createVenueCommand: CreateVenueCommand,
     private readonly searchVenuesQuery: SearchVenuesQuery,
     private readonly getVenueDetailsQuery: GetVenueDetailsQuery,
+    private readonly findMyVenuesQuery: FindMyVenuesQuery
   ) { }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.VENUE_OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new venue' })
   @ApiResponse({ status: 201, description: 'Venue created successfully' })
@@ -56,6 +62,14 @@ export class VenuesController {
       capacity: capacity ? parseInt(capacity, 10) : undefined,
       status,
     });
+  }
+
+  @Get('my-venues')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.VENUE_OWNER)
+  @ApiOperation({ summary: 'Get the list of all venues created by owner' })
+  findMyVenues(@CurrentUser() user: TokenPayload) {
+    return this.findMyVenuesQuery.execute(user.userId);
   }
 
   @Get(':id')

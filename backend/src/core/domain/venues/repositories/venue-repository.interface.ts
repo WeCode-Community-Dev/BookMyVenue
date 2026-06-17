@@ -5,6 +5,7 @@ export interface VenueFilters {
   venueType?: string;
   capacity?: number;
   status?: string;
+  ownerId?: string
 }
 
 export interface IVenueRepository {
