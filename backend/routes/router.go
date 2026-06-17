@@ -5,9 +5,9 @@ import (
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/admin"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/auth"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/availability"
+	"github.com/WeCode-Community-Dev/BookMyVenue/internal/users"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/venues"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/web"
-	"github.com/WeCode-Community-Dev/BookMyVenue/users"
 	"github.com/gin-gonic/gin"
 )
 
