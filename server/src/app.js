@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import authRoutes from './modules/auth/auth.routes.js';
 import venueRoutes from './modules/venues/venues.routes.js';
 import userRoutes from "./modules/users/users.routes.js";
+import bookingRoutes from "./modules/bookings/bookings.routes.js";
 
 import { errorHandler } from './shared/middlewares/error.middleware.js';
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/venues", venueRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 app.use(errorHandler);
 

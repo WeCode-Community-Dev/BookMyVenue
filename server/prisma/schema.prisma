@@ -43,6 +43,7 @@ model User {
 
   roles        UserRole[]
   venues       Venue[]
+  bookings     Booking[]
 }
 
 model UserRole {
@@ -83,4 +84,43 @@ model Venue {
   updatedAt    DateTime     @updatedAt
 
   owner User @relation( fields: [ownerId], references: [id], onDelete: Cascade )
+
+  bookings     Booking[]
+}
+
+model Booking {
+  id          String   @id @default(uuid())
+
+  venueId     String
+  venue       Venue    @relation(fields: [venueId], references: [id])
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  startDate   DateTime
+  endDate     DateTime
+
+  guestCount  Int
+
+  eventType   String?
+  notes       String?
+
+  totalPrice  Decimal? @db.Decimal(10,2)
+
+  status      BookingStatus @default(PENDING)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([venueId])
+  @@index([userId])
+  @@index([status])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+  COMPLETED
 }
