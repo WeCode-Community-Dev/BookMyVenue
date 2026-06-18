@@ -4,28 +4,48 @@ from app.model.venue import Venue
 from app.model.user import User
 from app.model.venue_amenities import VenueAmenities
 from app.model.venue_images import VenueImages
+from app.model.venue_availability import VenueAvailability
 from typing import List
+from sqlalchemy import or_
 
 def get_venues(
     db: Session,
     page_no : int,
     limit : int,
-    action : str,
-    location : str,
-    avaialability : str
 ):  
     try:
         offset = (page_no - 1) * limit
 
         venues = db.query(Venue).offset(offset).limit(limit).all()
+        
+        result = []
 
         if not venues:
             return {
                 "message": "venues are not added"
             }
-        
-        return venues
 
+        for venue in venues:
+            first_image = venue.venue_images[0] if venue.venue_images else None
+            price = venue.venue_availability[0].venue_price if venue.venue_availability else None
+
+            result.append({
+                "id": venue.id,
+                "user_id": venue.user_id,
+                "venue_name": venue.venue_name,
+                "venue_description": venue.venue_description,
+                "location": venue.location,
+                "capacity": venue.capacity,
+                "is_available": venue.is_available,
+                "is_approved": venue.is_approved,
+                "not_available_reason": venue.not_available_reason,
+                "created_at": venue.created_at,
+                "updated_at": venue.updated_at,
+                "image": first_image.image_url if first_image else None,
+                "price": price
+            })
+        
+        return result
     except Exception as e:
         raise Exception(f"Error occurred while fetching venues: {str(e)}")
 
@@ -46,8 +66,21 @@ def get_venue_details_by_id(
             "message": "venues details is not present"
         }
 
-    return venue
-
+    return {
+        "id": venue.id,
+        "venue_name": venue.venue_name,
+        "location": venue.location,
+        "venue_description": venue.venue_description,
+        "capacity": venue.capacity,
+        "not_available_reason": venue.not_available_reason,
+        "is_approved": venue.is_approved,
+        "venue_price": venue.venue_price,
+        "is_available": venue.is_available,
+        "created_at": venue.created_at,
+        "updated_at": venue.updated_at,
+        "amenities": venue.venue_amenities,
+        "images": venue.venue_images
+    }
 
 def add_venue(
     db: Session,
@@ -56,8 +89,6 @@ def add_venue(
     venue_description: str,
     location: str,
     capacity: int,
-    venue_price: int,
-    venue_availabilty: str,
 ):
 
     user = (
@@ -75,8 +106,6 @@ def add_venue(
         venue_description=venue_description,
         location=location,
         capacity=capacity,
-        venue_price=venue_price,
-        venue_availabilty=venue_availabilty,
     )
 
 
@@ -295,4 +324,113 @@ def edit_venue_amenities(
 
     return {
         "message": "Amenities updated successfully"
+    }
+
+def search_venues(
+    db: Session,
+    q: str | None,
+    location: str | None,
+    min_price: int | None,
+    max_price: int | None,
+    wifi: bool | None,
+    parking: bool | None,
+    ac: bool | None,
+    page_no: int,
+    limit: int,
+):
+    offset = (page_no - 1) * limit
+
+    query = db.query(Venue)
+
+    if q:
+        search_text = f"%{q}%"
+        query = query.filter(
+            or_(
+                Venue.venue_name.ilike(search_text),
+                Venue.location.ilike(search_text),
+                Venue.venue_description.ilike(search_text),
+            )
+        )
+
+    if location:
+        query = query.filter(Venue.location.ilike(f"%{location}%"))
+
+    query = query.join(VenueAvailability)
+
+    if min_price is not None:
+        query = query.filter(VenueAvailability.venue_price >= min_price)
+
+    if max_price is not None:
+        query = query.filter(VenueAvailability.venue_price <= max_price)
+
+    query = query.join(VenueAmenities)
+
+    if wifi is not None:
+        query = query.filter(VenueAmenities.wifi == wifi)
+
+    if parking is not None:
+        query = query.filter(VenueAmenities.parking == parking)
+
+    if ac is not None:
+        query = query.filter(VenueAmenities.ac == ac)
+    
+    venues = query.offset(offset).limit(limit).all()
+
+    result = []
+
+    if not venues:
+        return {
+            "message": "venues are not added"
+        }
+
+    for venue in venues:
+        first_image = venue.venue_images[0] if venue.venue_images else None
+        price = venue.venue_availability[0].venue_price if venue.venue_availability else None
+
+    result.append({
+        "id": venue.id,
+        "user_id": venue.user_id,
+        "venue_name": venue.venue_name,
+        "venue_description": venue.venue_description,
+        "location": venue.location,
+        "capacity": venue.capacity,
+        "is_available": venue.is_available,
+        "is_approved": venue.is_approved,
+        "not_available_reason": venue.not_available_reason,
+        "created_at": venue.created_at,
+        "updated_at": venue.updated_at,
+        "image": first_image.image_url if first_image else None,
+        "price": price
+    })
+        
+    return result
+
+
+def add_venue_availability(
+    db: Session,
+    venue_id: int,
+    booking_types: str,
+    open_time: str,
+    closing_time: str,
+    minimum_hours: int | None,
+    gap_between_bookings: int | None,
+    venue_price: int,
+):
+    new_availability = VenueAvailability(
+        venue_id=venue_id,
+        booking_types=booking_types,
+        open_time=open_time,
+        closing_time=closing_time,
+        minimum_hours=minimum_hours,
+        gap_between_bookings=gap_between_bookings,
+        venue_price=venue_price,
+    )
+
+    db.add(new_availability)
+    db.commit()
+    db.refresh(new_availability)
+
+    return {
+        "message": "Venue availability added successfully",
+        "availability_id": new_availability.id
     }

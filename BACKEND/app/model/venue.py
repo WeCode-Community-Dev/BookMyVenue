@@ -26,8 +26,7 @@ class Venue(Base):
     venue_description = Column(Text)
     location = Column(String(255), nullable=False)
     capacity = Column(Integer, nullable=False)
-    venue_price = Column(Integer, nullable=False)
-    venue_availabilty = Column(String(255), nullable=False) # hourly or daily
+
     is_available = Column(Boolean, nullable=False, default=False)
     not_available_reason = Column(Text, nullable=True, default="")
     is_approved = Column(Boolean, nullable=False, default=False)
@@ -42,4 +41,5 @@ class Venue(Base):
     user = relationship("User", back_populates="venues")
     venue_amenities = relationship("VenueAmenities", back_populates="venue", cascade="all, delete-orphan")
     venue_images = relationship("VenueImages", back_populates="venue", cascade="all, delete-orphan")
+    venue_availability = relationship("VenueAvailability", back_populates="venue", cascade="all, delete-orphan")
 

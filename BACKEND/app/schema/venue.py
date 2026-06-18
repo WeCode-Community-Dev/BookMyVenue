@@ -42,3 +42,11 @@ class VenueAmenitiesUpdate(BaseModel):
     ac: bool = False
     wheel_chair: bool = False
     av_equipements: bool = False
+
+class VenueAvailabilityCreate(BaseModel):
+    booking_types: Literal["hourly", "daily"]
+    open_time: str
+    closing_time: str
+    minimum_hours: Optional[int] = None
+    gap_between_bookings: Optional[int] = None
+    venue_price: int
