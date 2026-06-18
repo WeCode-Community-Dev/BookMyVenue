@@ -27,6 +27,11 @@ export const AdminVenuesPage = lazy(() => import('src/pages/admin/venues/list'))
 export const AdminUsersPage = lazy(() => import('src/pages/admin/users/list'));
 export const CreateUsersPage = lazy(() => import('src/pages/admin/users/create'));
 
+// owner pages 
+export const OwnerVenuesPage = lazy(() => import('src/pages/venue-owner/venues/list'));
+export const CreateVenuePage = lazy(() => import('src/pages/venue-owner/venues/create'));
+export const OwnerBookingPage = lazy(() => import('src/pages/venue-owner/booking/list'));
+
 const renderFallback = () => (
   <Box
     sx={{
@@ -141,27 +146,19 @@ export const routesSection: RouteObject[] = [
 
               {
                 path: 'owner/venues',
-                // element: <OwnerVenuesPage />,
-                element: <h1>Owner Venues Page</h1>,
+                element: <OwnerVenuesPage />,
               },
 
               {
-                path: 'owner/venues/new',
-                // element: <CreateVenuePage />,
-                element: <h1>Create Venue Page</h1>,
+                path: 'owner/venues/create',
+                element: <CreateVenuePage />,
               },
 
               {
                 path: 'owner/bookings',
-                // element: <OwnerBookingsPage />,
-                element: <h1>Owner Bookings Page</h1>,
+                element: <OwnerBookingPage />,
               },
 
-              {
-                path: 'owner/analytics',
-                // element: <OwnerAnalyticsPage />,
-                element: <h1>Owner Analytics Page</h1>,
-              },
             ],
           },
         ],

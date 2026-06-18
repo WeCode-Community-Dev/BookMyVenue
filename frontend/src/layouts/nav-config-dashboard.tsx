@@ -1,4 +1,5 @@
 import { Label } from 'src/components/label';
+import { Iconify } from 'src/components/iconify';
 import { SvgColor } from 'src/components/svg-color';
 
 // ----------------------------------------------------------------------
@@ -81,18 +82,18 @@ export const navDataVenueOwner = [
     icon: icon('ic-analytics'),
   },
   {
-    title: 'User',
-    path: '/owner/users',
-    icon: icon('ic-user'),
+    title: 'My Venues',
+    path: '/owner/venues',
+    icon: <Iconify icon='material-symbols:house-outline' />,
   },
   {
     title: 'Bookings',
     path: '/owner/bookings',
-    icon: icon('ic-cart'),
-    info: (
-      <Label color="error" variant="inverted">
-        +3
-      </Label>
-    ),
+    icon: <Iconify icon='lets-icons:order' />,
+    // info: (
+    //   <Label color="error" variant="inverted">
+    //     +3
+    //   </Label>
+    // ),
   },
 ];
