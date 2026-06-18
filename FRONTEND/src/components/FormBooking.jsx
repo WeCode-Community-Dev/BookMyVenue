@@ -5,7 +5,7 @@ import 'react-calendar/dist/Calendar.css';
 export default function FormBooking ({venue}) {
 
     const [selectedDate, setSelectedDate] = useState(new Date())
-    const [selectedSession, setSelectedSession] = useState("")
+    const [selectedSession, setSelectedSession] = useState("Hourly")
 
     const handleChange = (e) => {
         setSelectedSession(e.target.value)
@@ -14,14 +14,7 @@ export default function FormBooking ({venue}) {
     return (
         <div className="mb-6 space-y-4">
     
-        <div className="border border-gray-300 rounded-xl overflow-hidden shadow-sm bg-white">
-            <Calendar
-                value={selectedDate}
-                onChange={setSelectedDate}
-                minDate={new Date()}
-                className="border-none w-full"
-            />
-        </div>
+        
 
         {/* 2. Unified Session & Time Slot Card */}
         <div className="border border-gray-300 rounded-xl shadow-sm bg-white overflow-hidden transition-all">
@@ -36,7 +29,6 @@ export default function FormBooking ({venue}) {
                     className="w-full pt-6 pb-2 px-3 text-sm font-medium text-gray-800 bg-transparent outline-none appearance-none cursor-pointer"
                     onChange={handleChange}
                 >
-                    <option value="">Select session</option>
                     <option value="Hourly">Hourly</option>
                     <option value="Daily">Daily</option>
                 </select>
@@ -74,27 +66,15 @@ export default function FormBooking ({venue}) {
                     )}
                 </div>
             )}
-            {selectedSession === "Daily" && (
-                <div className="border-t border-gray-200 bg-gray-50 p-4">
-                    {venue.availdays && venue.availdays.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                            {venue.availdays.map((day) => (
-                                <button
-                                    className="border border-gray-200 rounded-lg py-2 px-3 bg-white hover:border-black hover:ring-1 hover:ring-black text-sm font-medium text-gray-700 transition-all text-center cursor-pointer shadow-sm"
-                                    type="button"
-                                    key={day}
-                                >
-                                    {day}
-                                </button>
-                            ))}
-                        </div>
-                            ) : (
-                                <div className="text-sm text-gray-500 text-center py-2 italic">
-                                    No specific daily slots listed for this venue.
-                                </div>
-                            )}
-                        </div>
-                    )}
+            
+                    </div>
+                    <div className="border border-gray-300 rounded-xl overflow-hidden shadow-sm bg-white">
+                        <Calendar
+                            value={selectedDate}
+                            onChange={setSelectedDate}
+                            minDate={new Date()}
+                            className="border-none w-full"
+                        />
                     </div>
                 </div>
             )
