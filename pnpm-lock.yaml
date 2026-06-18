@@ -33,6 +33,9 @@ importers:
       '@bookmyvenue/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
+      '@bookmyvenue/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.3.1
