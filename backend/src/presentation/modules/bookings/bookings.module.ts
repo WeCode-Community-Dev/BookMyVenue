@@ -5,6 +5,8 @@ import { CancelBookingCommand } from '../../../core/application/bookings/command
 import { GetUserBookingsQuery } from '../../../core/application/bookings/queries/get-user-bookings.query';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { InfraModule } from '../../../infra/infra.module';
+import { GetBookingsByVenueQuery } from 'src/core/application/bookings/queries/get-venue-bookings.query';
+import { GetBookingsByOwnerQuery } from 'src/core/application/bookings/queries/get-bookings-for-owner.query';
 
 @Module({
   imports: [InfraModule],
@@ -14,6 +16,8 @@ import { InfraModule } from '../../../infra/infra.module';
     CancelBookingCommand,
     GetUserBookingsQuery,
     JwtAuthGuard,
+    GetBookingsByVenueQuery,
+    GetBookingsByOwnerQuery
   ],
 })
-export class BookingsModule {}
+export class BookingsModule { }

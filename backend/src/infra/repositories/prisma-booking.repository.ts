@@ -6,7 +6,7 @@ import type { IBookingRepository } from '../../core/domain/bookings/repositories
 
 @Injectable()
 export class PrismaBookingRepository implements IBookingRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   private mapToDomain(dbBooking: any): Booking {
     const dateRange = DateRange.create(dbBooking.booking_start, dbBooking.booking_end);
@@ -18,6 +18,7 @@ export class PrismaBookingRepository implements IBookingRepository {
       totalAmount: Number(dbBooking.total_amount),
       createdAt: dbBooking.created_at,
       updatedAt: dbBooking.updated_at,
+      venue: dbBooking.venue
     });
   }
 
@@ -41,8 +42,31 @@ export class PrismaBookingRepository implements IBookingRepository {
     const dbBookings = await this.prisma.bookings.findMany({
       where: { user_id: userId },
       orderBy: { booking_start: 'asc' },
+      include: {
+        venue: true
+      }
     });
-    return dbBookings.map((b) => this.mapToDomain(b));
+
+    return dbBookings.map((b) => (this.mapToDomain(b)))
+  }
+
+  async findByOwnerId(ownerId: string): Promise<Booking[]> {
+
+    const venues = await this.prisma.venues.findMany({
+      where: { owner_id: ownerId },
+      select: { id: true }
+    })
+    const bookings = await this.prisma.bookings.findMany({
+      where: {
+        venue_id: { in: venues.map(v => v.id) }
+      },
+      include: {
+        venue: true
+      }
+    })
+
+    return bookings.map(b => this.mapToDomain(b))
+
   }
 
   async checkAvailability(venueId: string, startDate: Date, endDate: Date): Promise<boolean> {

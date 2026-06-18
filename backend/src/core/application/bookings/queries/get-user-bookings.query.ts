@@ -4,12 +4,15 @@ import { type IBookingRepository } from '../../../domain/bookings/repositories/b
 export interface BookingResponseDto {
   id: string;
   userId: string;
-  venueId: string;
   startDate: Date;
   endDate: Date;
   guestsCount: number;
   totalAmount: number;
   createdAt: Date;
+  venue: {
+    id: string;
+    title: string
+  }
 }
 
 @Injectable()
@@ -25,12 +28,15 @@ export class GetUserBookingsQuery {
     return bookings.map((b) => ({
       id: b.id,
       userId: b.userId,
-      venueId: b.venueId,
-      startDate: b.dateRange.startDate,
-      endDate: b.dateRange.endDate,
+      startDate: b.dateRange?.startDate,
+      endDate: b.dateRange?.endDate,
       guestsCount: b.guestsCount,
       totalAmount: b.totalAmount,
       createdAt: b.createdAt,
+      venue: {
+        id: b.venue!.id,
+        title: b.venue!.title
+      }
     }));
   }
 }
