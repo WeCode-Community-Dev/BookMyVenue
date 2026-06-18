@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/ctxutil"
@@ -47,7 +48,7 @@ func JWTAuthentication(ctx *gin.Context) {
 }
 
 // checks if user has the required role to access the route
-func RoleGuarde(role string) gin.HandlerFunc {
+func RoleGuarde(roles ...string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		// get role from context (set by AuthMiddleware)
@@ -58,7 +59,7 @@ func RoleGuarde(role string) gin.HandlerFunc {
 			return
 		}
 
-		if userRole == role {
+		if slices.Contains(roles, userRole) {
 			ctx.Next()
 			return
 		}

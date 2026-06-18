@@ -139,26 +139,32 @@ func TestRoleGuarde(t *testing.T) {
 	tests := []struct {
 		name       string
 		userRole   string
-		required   string
+		required   []string
 		wantStatus int
 	}{
 		{
 			name:       "role missing",
 			userRole:   "",
-			required:   "owner",
+			required:   []string{"owner"},
 			wantStatus: http.StatusForbidden,
 		},
 		{
 			name:       "role matches",
 			userRole:   "owner",
-			required:   "owner",
+			required:   []string{"owner"},
 			wantStatus: http.StatusOK,
 		},
 		{
-			name:       "role deos not match",
+			name:       "role deos not match any allowed role",
 			userRole:   "user",
-			required:   "owner",
+			required:   []string{"owner", "admin"},
 			wantStatus: http.StatusForbidden,
+		},
+		{
+			name:       "role matches admin from multiple roles",
+			userRole:   "admin",
+			required:   []string{"owner", "admin"},
+			wantStatus: http.StatusOK,
 		},
 	}
 
@@ -174,7 +180,7 @@ func TestRoleGuarde(t *testing.T) {
 				ctx.Next()
 			})
 
-			router.Use(RoleGuarde(tt.required))
+			router.Use(RoleGuarde(tt.required...))
 
 			router.GET("/protected", func(ctx *gin.Context) {
 				ctx.Status(http.StatusOK)
