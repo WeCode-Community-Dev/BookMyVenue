@@ -7,7 +7,7 @@ import CapacityAndPricing from "./CapacityAndPricing";
 import LocationForm from "@/components/global/LocationForm";
 import PhotoUpload from "@/components/global/PhotoUpload";
 import VenueHeader from "@/components/global/venueheader";
-import VerifyBooking from "@/components/global/verifybooking";
+import VerifyBooking from "@/components/global/booking/VerifyBooking";
 import { useState } from "react";
 import { venueStyle } from "../styles/VenueStyle";
 
@@ -19,7 +19,7 @@ const AddVenue = () => {
     return (
         <div className={venueStyle.pageWrapper}>
             <VerifyBooking
-                open={isOpen}
+                isOpen={isOpen}
                 onClose={() => {
                     return setIsOpen(false);
                 }}

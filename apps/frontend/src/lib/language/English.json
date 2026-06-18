@@ -1,0 +1,62 @@
+{
+    "english": "English",
+    "hindi": "Hindi",
+    "INPUT_LABELS": {},
+    "TOOLTIP": {},
+    "BUTTON": {
+        "GET_STARTED":"Get Started",
+        "COLLAPSE_SIDEBAR":"Collapse Sidebar",
+        "CANCEL": "Cancel",
+        "PAY_NOW": "Pay Now",
+        "APPROVE_VENUE": "Approve Venue",
+        "OPEN_IN_MAPS": "Open In Maps"
+    },
+    "LABEL": {
+        "MENU": "Menu",
+        "REACH_CUSTOMERS":"Reach thousands of customers every day.",
+        "PENDING_APPROVAL": "Pending Approval",
+        "VENUE_INFORMATION": "Venue Information",
+        "CAPACITY": "Capacity",
+        "PRICE": "Price",
+        "RATING": "Rating",
+        "AVAILABILITY": "Availability",
+        "AMENITIES": "Amenities",
+        "DESCRIPTION": "Description",
+        "LOCATION": "Location",
+        "OWNER_INFORMATION": "Owner Information",
+        "OWNER_NAME": "Owner Name",
+        "EMAIL": "Email",
+        "PHONE": "Phone",
+        "MEMBER_SINCE": "Member Since",
+        "SUBMISSION_DETAILS": "Submission Details",
+        "SUBMITTED_ON": "Submitted On",
+        "ADDITIONAL_NOTES": "Additional Notes"
+    },
+    "FILTERS": {
+        "FILTER": "Filters",
+        "CLEAR": "Clear"
+    },
+    "MENUS": {
+        "PROFILE": "Profile",
+        "SETTINGS": "Settings",
+        "LANGUAGE": "Language",
+        "THEME": "Theme",
+        "SUPPORT": "Support",
+        "LOGOUT": "Logout",
+        "EXPLORE": "Explore",
+        "VENUE_NEAR_ME": "Venues Near Me",
+        "OFFERS": "Offers",
+        "MY_BOOKINGS": "My Bookings",
+        "WISHLIST": "Wishlist",
+        "RECENTLY_VIEWED": "Recently Viewed",
+        "DASHBOARD":"Dashboard",
+        "ADD_VENUE":"Add Venue",
+        "MY_VENUE":"My Venue",
+        "BOOKINGS":"Bookings",
+        "HELP_SUPPORT":"Help & Support"
+    },
+    "COLUMNS": {},
+    "MESSAGES": {
+        "VENUE_DESCRIPTION": "A beautiful beachfront venue perfect for weddings, parties and corporate events."
+    }
+}

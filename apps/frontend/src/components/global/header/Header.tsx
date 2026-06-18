@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { AppText } from "@/lib/language/LanguageHelper";
+import { Button } from "@/components/ui/button/Button";
 import NxtImage from "next/image";
 import ProfileDropdown from "../dropdown/ProfileDropdown";
 import { headerStyle } from "./HeaderStyles";
@@ -74,27 +76,23 @@ export default function Header() {
                     </div>
 
                     {/* Center Navigation */}
+                    
                     <nav className={headerStyle.navBar}>
-                        <button className={headerStyle.navBtnActive}>
-                            Explore
-
-                            <span className={headerStyle.activeIndicator} />
-                        </button>
-
-                        <button className={headerStyle.navBtn}>
-                            Venues Near Me
-                        </button>
-
-                        <button className={headerStyle.navBtnRelative}>
-                            Offers
-
+                        <Button className={headerStyle.navBtnActive}>
+                            <AppText textName="EXPLORE" textModule="MENUS" />
+                        </Button>
+                        <Button className={headerStyle.navBtnActive}>
+                            <AppText textName="VENUE_NEAR_ME" textModule="MENUS" />
+                        </Button>
+                        <Button className={headerStyle.navBtnActive}>
+                            <AppText textName="OFFERS" textModule="MENUS" />
                             <span
                                 className={headerStyle.offersBadge}
                                 style={{ backgroundColor: "#FF6B6B" }}
                             >
                                 12
                             </span>
-                        </button>
+                        </Button>
                     </nav>
 
                     {/* Right */}
@@ -117,7 +115,7 @@ export default function Header() {
                             ref={dropdownRef}
                             className={headerStyle.profileContainer}
                         >
-                            <button
+                            <Button
                                 onClick={() => {
                                     return setProfileOpen((prev) => {
                                         return !prev;
@@ -138,7 +136,7 @@ export default function Header() {
                                     className={`${headerStyle.chevron} ${profileOpen ? "rotate-180" : ""
                                     }`}
                                 />
-                            </button>
+                            </Button>
 
                             <ProfileDropdown isOpen={profileOpen} />
                         </div>
@@ -175,7 +173,7 @@ export default function Header() {
                     {/* Drawer Header */}
                     <div className={headerStyle.mobileDrawerHeader}>
                         <h2 className={headerStyle.mobileDrawerTitle}>
-                            Menu
+                            <AppText textName="MENU" textModule="LABEL" />
                         </h2>
 
                         <button
@@ -191,35 +189,35 @@ export default function Header() {
 
                     {/* Menu */}
                     <div className={headerStyle.mobileDrawerMenu}>
-                        <button className={headerStyle.mobileDrawerMenuItem}>
-                            Explore
-                        </button>
+                        <Button className={headerStyle.mobileDrawerMenuItem}>
+                            <AppText textName="EXPLORE" textModule="MENUS" />
+                        </Button>
 
-                        <button className={headerStyle.mobileDrawerMenuItem}>
-                            Venues Near Me
-                        </button>
+                        <Button className={headerStyle.mobileDrawerMenuItem}>
+                            <AppText textName="VENUE_NEAR_ME" textModule="MENUS" />
+                        </Button>
 
-                        <button className={headerStyle.mobileDrawerMenuItem}>
-                            Offers
-                        </button>
+                        <Button className={headerStyle.mobileDrawerMenuItem}>
+                            <AppText textName="OFFERS" textModule="MENUS" />
+                        </Button>
 
                         <hr className={headerStyle.mobileDrawerDivider} />
 
-                        <button className={headerStyle.mobileDrawerMenuItem}>
-                            My Bookings
-                        </button>
+                        <Button className={headerStyle.mobileDrawerMenuItem}>
+                            <AppText textName="MY_BOOKINGS" textModule="MENUS" />
+                        </Button>
 
-                        <button className={headerStyle.mobileDrawerMenuItem}>
-                            Wishlist
-                        </button>
+                        <Button className={headerStyle.mobileDrawerMenuItem}>
+                            <AppText textName="WISHLIST" textModule="MENUS" />
+                        </Button>
 
-                        <button className={headerStyle.mobileDrawerMenuItem}>
-                            Recently Viewed
-                        </button>
+                        <Button className={headerStyle.mobileDrawerMenuItem}>
+                            <AppText textName="RECENTLY_VIEWED" textModule="MENUS" />
+                        </Button>
 
-                        <button className={headerStyle.mobileDrawerMenuItem}>
-                            Support
-                        </button>
+                        <Button className={headerStyle.mobileDrawerMenuItem}>
+                            <AppText textName="SUPPORT" textModule="MENUS" />
+                        </Button>
                     </div>
                 </div>
             </div>
