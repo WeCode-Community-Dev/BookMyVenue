@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../../../core/gen/assets.gen.dart';
-import '../../../../core/utils/colors.dart';
 import '../../../../core/widgets/app_text.dart';
 
 class OwnerVerificationPage extends StatelessWidget {
@@ -254,7 +253,6 @@ class MarketplaceBanner extends StatelessWidget {
               children: <Widget>[
                 AppText(
                   'Building a safer marketplace.',
-                  color: AppColors.white,
                   variant: TextVariant.headingLarge,
                 ),
                 AppText(
