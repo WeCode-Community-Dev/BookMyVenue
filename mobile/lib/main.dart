@@ -6,6 +6,7 @@ import 'core/environment/app_env.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/ui/app_commands.dart';
+import 'feature/owner_dashboard_page/presentation/pages/owner_dashboard_page.dart';
 
 Future<void> main() async {
   Environment.init(AppEnvironment.dev);
@@ -28,6 +29,15 @@ class MyApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
       builder: (_, ThemeMode mode, _) {
+        return MaterialApp(
+          scaffoldMessengerKey: AppCommands.messengerKey,
+          navigatorKey: AppCommands.navigatorKey,
+          title: 'Book my venue',
+          themeMode: mode,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          home: OwnerDashboardPage(),
+        );
         return MaterialApp.router(
           scaffoldMessengerKey: AppCommands.messengerKey,
           title: 'Book my venue',
