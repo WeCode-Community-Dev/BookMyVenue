@@ -10,6 +10,7 @@ from app.model.venue_availability import VenueAvailability
 from app.api.user_routes import router as user_router
 from app.api.auth_routes import router as auth_router
 from app.api.venue_routes import router as venue_router
+from app.api.admin_routes import router as admin_router
 from fastapi.middleware.cors import CORSMiddleware
 
     
@@ -35,7 +36,7 @@ app.add_middleware(
 app.include_router(user_router)
 app.include_router(auth_router)
 app.include_router(venue_router)
-
+app.include_router(admin_router)
 
 @app.get("/")
 def read_root():

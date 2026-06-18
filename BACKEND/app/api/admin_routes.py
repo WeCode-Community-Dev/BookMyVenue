@@ -18,7 +18,7 @@ from app.services.cloudinary_service import upload_images
 
 router = APIRouter(
     prefix="/admin",
-    tags=["Venues"]
+    tags=["Admin"]
 )
 
 @router.post("/venue/{venue_id}")

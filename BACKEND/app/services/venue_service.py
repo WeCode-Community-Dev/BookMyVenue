@@ -16,7 +16,10 @@ def get_venues(
     try:
         offset = (page_no - 1) * limit
 
-        venues = db.query(Venue).offset(offset).limit(limit).all()
+        venues = db.query(Venue).filter(
+            Venue.is_available.is_(True),
+            Venue.is_approved.is_(True)
+        ).offset(offset).limit(limit).all()
         
         result = []
 
@@ -66,6 +69,8 @@ def get_venue_details_by_id(
             "message": "venues details is not present"
         }
 
+    venue_price = venue.venue_availability[0].venue_price if venue.venue_availability else None
+
     return {
         "id": venue.id,
         "venue_name": venue.venue_name,
@@ -74,12 +79,13 @@ def get_venue_details_by_id(
         "capacity": venue.capacity,
         "not_available_reason": venue.not_available_reason,
         "is_approved": venue.is_approved,
-        "venue_price": venue.venue_price,
+        "venue_price": venue_price,
         "is_available": venue.is_available,
         "created_at": venue.created_at,
         "updated_at": venue.updated_at,
         "amenities": venue.venue_amenities,
-        "images": venue.venue_images
+        "images": venue.venue_images,
+        "availability": venue.venue_availability
     }
 
 def add_venue(
@@ -221,10 +227,10 @@ def update_venue_active_status(
         raise Exception("Invalid venue")
 
     if status.lower() == "active":
-        venue.is_active = True
+        venue.is_available = True
 
     elif status.lower() == "inactive":
-        venue.is_active = False
+        venue.is_available = False
         venue.not_available_reason = reason
 
     else:
@@ -236,7 +242,7 @@ def update_venue_active_status(
     return {
         "message": f"Venue {status.lower()} successfully",
         "venue_id": venue.id,
-        "is_active": venue.is_active
+        "is_available": venue.is_available
     }
 
 
@@ -374,7 +380,10 @@ def search_venues(
     if ac is not None:
         query = query.filter(VenueAmenities.ac == ac)
     
-    venues = query.offset(offset).limit(limit).all()
+    venues = db.query(Venue).filter(
+        Venue.is_available.is_(True),
+        Venue.is_approved.is_(True)
+    ).offset(offset).limit(limit).all()
 
     result = []
 
