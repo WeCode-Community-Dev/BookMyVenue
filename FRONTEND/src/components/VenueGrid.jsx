@@ -29,14 +29,14 @@ function VenueCard({ venue }) {
     const imageSize = venue.isLarge ? "h-144" : "h-48";
 
     // Variables to change in API INTERGRATION PHASE
-    const venue_name = venue.title
-    const venue_image = venue.imageUrl
-    const venue_details = venue.details
-    const venue_price = venue.price
+    const venue_name = venue.venue_name
+    const venue_image = venue.image
+    const venue_details = venue.venue_description
+    const venue_price = venue.venue_price
 
   return (
     <div onClick={() => navigate(`/venues/${venue.id}`)}
-        className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 ease-in-out cursor-pointer ${gridSpan}`}
+        className={`bg-[#f9f9f7] rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 ease-in-out cursor-pointer ${gridSpan}`}
         >
             <img 
             src={venue_image} 
@@ -67,18 +67,18 @@ function VenueCard({ venue }) {
 
 export default function VenueGrid() {
     const {venues, isLoading, error} = useVenueGrid();
-    const Data = VENUE_DATA  // 'venues' for fetched api data [API INTEGRATION PHASE]
+    const Data = venues  // 'venues' for fetched api data [API INTEGRATION PHASE]
 
-    // if(error){
-    //     return (
-    //         <div className="flex flex-col items-center justify-center min-h-[50vh]" >
-    //             <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200" >
-    //                 <p className="font-bold">Oops! Something went wrong.</p>
-    //                 <p className="text-sm">{error.message}</p>
-    //             </div>
-    //         </div>
-    //     )
-    // }
+    if(error){
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh]" >
+                <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200" >
+                    <p className="font-bold">Oops! Something went wrong.</p>
+                    <p className="text-sm">{error.message}</p>
+                </div>
+            </div>
+        )
+    }
 
     if(isLoading){
         return (
@@ -91,10 +91,10 @@ export default function VenueGrid() {
 
     return (
         <div>
-            <GridHeader venueCount={VENUE_DATA.length} />
+            <GridHeader venueCount={Data.length} />
 
             <div
-                className="grid grid-cols-1 md:grid-cols-3 row-auto max-w-7xl min-h-screen gap-6 px-4 md:px-8 py-6 mx-auto"
+                className="grid grid-cols-1 md:grid-cols-3 row-auto max-w-7xl gap-6 px-4 md:px-8 py-6 mx-auto"
             >
                 {Data.map((venue) => (
                     <VenueCard key={venue.id} venue={venue} />

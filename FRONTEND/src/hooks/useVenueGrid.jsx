@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import apiService from "../services/apiService"
 
 export const useVenueGrid = () => { 
     const [venues, setVenues] = useState([])
@@ -8,21 +9,13 @@ export const useVenueGrid = () => {
     useEffect(() => {
         const fetchVenues = async () => {
             try{
-            const BASE_URL = "https://unsaving-channing-sisterly.ngrok-free.dev"
+                const data = await apiService.getAllVenues()
+                setVenues(data)
 
-            const response = await fetch(`${BASE_URL}/venues`)
-
-            if(!response.ok){
-                throw new Error("Failed to Fetch Venues from server!")
-            }
-
-            const data = await response.json()
-
-            setVenues(data)
-
-            } catch(err) {
+            } catch(err) { 
                 console.error("Something Went Wrong!", err)
                 setError(err)
+
             } finally {
                 setIsLoading(false)
             }

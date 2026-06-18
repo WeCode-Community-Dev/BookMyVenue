@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
+import apiService from "../services/apiService"
 
 export const useAuthForm = () => {
     const navigate = useNavigate();
@@ -25,76 +27,77 @@ export const useAuthForm = () => {
     }
 
     const toggleView = (e) => {
-    e.preventDefault();
-    setIsLoginView(!isLoginView);
-    setError('');
-    setSuccessMessage('')
-    setFormData({ name: '', email: '', password: ''});
+        if(e){
+            e.preventDefault();
+        }
+        setIsLoginView(!isLoginView);
+        setError('');
+        setSuccessMessage('');
+        setFormData({ name: '', email: '', password: ''});
     };
 
     const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('')
+        e.preventDefault();
+        setError('');
 
-    // validation for both login and sign up forms
-    if(!formData.email || !formData.password){
-        return setError('Please fill in all required fields.');
-    }
-
-    // validation for sign up form only
-    if(!isLoginView){
-        if(!formData.name) return setError('Please fill Your Name');
-        if(formData.password.length < 6) return setError('Password must be at least 6 characters long.');
-    }
-
-    setIsLoading(true);
-
-    try{
-        const BASE_URL = "https://unsaving-channing-sisterly.ngrok-free.dev"
-
-        const endpoint = isLoginView ? "/auth/login" : "/auth/signup";
-
-        const payload = isLoginView
-        ? {email: formData.email, password: formData.password}
-        : {name: formData.name, email: formData.email, password: formData.password, role: role}
-
-        const response = await fetch(BASE_URL + endpoint, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-        })
-
-        const data = await response.json();
-
-        if(!response.ok){
-        throw new Error(data.message || "Something went wrong. Please try again.");
-        }
-        
-        console.log("Success! Data sent to server: ", data);
-
-        if(data.access_token){
-            Cookies.set("authToken", data.access_token, {expires: 30, secure: true, sameSite: 'Lax'})
-            Cookies.set('userRole', data.user.role, {expires: 30, secure: true, sameSite: 'Lax'})
+        // validation for both login and sign up forms
+        if(!formData.email || !formData.password){
+            return setError('Please fill in all required fields.');
         }
 
-        setSuccessMessage(isLoginView ? 'Logged in successfully!' : 'Account created successfully!')
+        // validation for sign up form only
+        if(!isLoginView){
+            if(!formData.name) return setError('Please fill Your Name');
+            if(formData.password.length < 6) return setError('Password must be at least 6 characters long.');
+        }
 
-        setTimeout(() => {
-            if (data.user.role == "user"){
-                navigate("/")
-            } else if(data.user.role == "admin") {
-                navigate("/admin")
-            } else if(data.user.role == "owner"){
-                navigate("/host")
+        setIsLoading(true);
+
+        try{
+            let data;
+
+            if (isLoginView){
+                data = await apiService.login({
+                    email: formData.email,
+                    password: formData.password
+                })
+            } else {
+                data = await apiService.signup({
+                    name: formData.name,
+                    email: formData.email,
+                    password: formData.password,
+                    role: role
+                })
             }
-        }, 1000);
             
+            if(data.access_token){
+                Cookies.set("authToken", data.access_token, {expires: 30, secure: true, sameSite: 'Lax'})
+                Cookies.set('userRole', data.user.role, {expires: 30, secure: true, sameSite: 'Lax'})
+            }
+
+            setSuccessMessage(isLoginView ? 'Logged in successfully!' : 'Account created successfully!')
+
+            setTimeout(() => {
+                if(!isLoginView){
+                    toggleView();
+                    setSuccessMessage("Please Login with your new account.");
+                    return;
+                }
+
+                if (data.user.role == "user"){
+                    navigate("/")
+                    console.log(data.user.role)
+                } else if(data.user.role == "admin") {
+                    navigate("/admin")
+                } else if(data.user.role == "owner"){
+                    navigate("/host")
+                }
+            }, 1000);
 
         } catch (err) {
-            console.error("Error during form submission:", err);
-            setError(err.message)
+            console.error("Error during form submission:", err.response?.data);
+            const errMessage = err.response?.data?.detail || err.message || "An error Occured";
+            setError(errMessage);
 
         } finally {
             setIsLoading(false);
@@ -106,5 +109,6 @@ export const useAuthForm = () => {
         isLoginView, toggleView,
         formData, handleChange,
         error, isLoading, handleSubmit,
+        successMessage
     }
 }

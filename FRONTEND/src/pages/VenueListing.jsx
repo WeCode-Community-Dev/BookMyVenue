@@ -11,7 +11,6 @@ import { useParams } from 'react-router-dom';
 import { VENUE_DATA } from '../data/VenueCardData';
 import FormBooking from "../components/FormBooking"
 
-
 export default function SpaceListing() {
 
     const {id} = useParams();
