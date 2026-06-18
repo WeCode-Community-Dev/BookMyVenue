@@ -56,6 +56,24 @@ public class Users {
     @Column(name = "updated_by")
     private Long updatedBy;
 
+    @Column(name = "address_line1")
+    private String addressLine1;
+
+    @Column(name = "address_line2")
+    private String addressLine2;
+
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "district")
+    private String district;
+
+    @Column(name = "state")
+    private String state;
+
+    @Column(name = "pin_code")
+    private String pinCode;
+
     @PrePersist
     protected void prePersist() {
         createdAt = LocalDateTime.now();
