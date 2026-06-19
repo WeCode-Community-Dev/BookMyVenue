@@ -9,12 +9,12 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Post('signup')
-  // Swagger documentation for the signup endpoint  
+  // Swagger documentation for the signup endpoint
   @ApiOperation({ summary: 'User Sign Up' })
   @ApiResponse({ status: 201, description: 'User successfully registered.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
-  signup(@Body() singUpDto: SignUpDto) {
-    return this.authService.signUp(singUpDto);
+  signup(@Body() signUpDto: SignUpDto) {
+    return this.authService.signUp(signUpDto);
   }
 
   @Post('login')
@@ -25,5 +25,4 @@ export class AuthController {
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
-
 }

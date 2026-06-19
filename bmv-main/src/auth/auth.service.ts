@@ -3,10 +3,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {}
   //signup method to handle user registration
   async signUp(signUpDto: SignUpDto) {
     if (signUpDto.password !== signUpDto.confirmPassword) {
@@ -29,7 +33,7 @@ export class AuthService {
     return { message: 'User registered successfully', userId: user.id };
   }
 
-//login method to handle user login
+  //login method to handle user login
   async login(loginDto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
@@ -37,13 +41,31 @@ export class AuthService {
     if (!user || !user.passwordHash) {
       throw new BadRequestException('Invalid email or password');
     }
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
       throw new BadRequestException('Invalid email or password');
     }
-    return { message: 'User logged in successfully', userId: user.id };
+    const token = await this.getAccessToken(user.id, user.email, user.role);
+
+    return { message: 'User logged in successfully', userId: user.id, token };
   }
+   // Method to generate an access token for the user
+ private async getAccessToken(
+  userId: string,
+  email: string,
+  role: string,
+) {
+  const payload = {
+    sub: userId,
+    email,
+    role,
+  };
 
-
-
+  return this.jwtService.signAsync(
+    payload,
+  );
+}
 }
