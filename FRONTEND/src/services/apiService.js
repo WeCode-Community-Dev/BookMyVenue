@@ -1,3 +1,4 @@
+import { AsteriskWaves } from "@mynaui/icons-react";
 import axiosInstance from "./axiosInstance";
 
 const apiService = {
@@ -11,6 +12,10 @@ const apiService = {
     },
     getAllVenues: async () => {
         const response = await axiosInstance.get('/venues/')
+        return response.data
+    },
+    getVenueByID: async (id) => {
+        const response = await axiosInstance.get(`/venues/details/${id}`)
         return response.data
     }
 }

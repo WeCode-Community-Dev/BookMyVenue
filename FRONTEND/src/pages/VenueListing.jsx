@@ -5,22 +5,52 @@ import {
   Wifi, 
   Parking,
   Monitor, 
-  Coffee 
+  Coffee,
+  SpinnerOne
 } from '@mynaui/icons-react';
-import { useParams } from 'react-router-dom';
 import { VENUE_DATA } from '../data/VenueCardData';
 import FormBooking from "../components/FormBooking"
+import apiService from '../services/apiService';
+import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+
 
 export default function SpaceListing() {
 
-    const {id} = useParams();
-    const venue = VENUE_DATA.find((v) => String(v.id) === id)
+    const [venue, setVenue] = useState();
+    const [isLoading, setIsLoading] = useState(true);
 
-    const venue_name = venue.title
+    const {id} = useParams()
+    
+    useEffect(() => {
+        const FetchVenue =  async() => {
+            try {
+                const response = await apiService.getVenueByID(id)
+                console.log(response.data)
+                setVenue(response.data)
+            } catch (error) {
+                console.error(error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        FetchVenue();
+    }, [id])
+
+    const venue_name = venue.venue_name
     const venue_details = venue.details
     const venue_price = venue.price
     const venue_rating = venue.rating
     const venue_capacity = venue.capacity
+
+    if(isLoading){
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-[#2b5155]">
+                <SpinnerOne className="w-10 h-10 animate-spin mb-4" />
+                <p className="font-semibold text-lg">Loading, Please Wait!</p>
+            </div>
+        )
+    }
 
     if (!venue) {
         return <div className="p-8 text-center text-xl">Venue not found!</div>;
