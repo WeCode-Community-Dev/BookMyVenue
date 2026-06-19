@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Venue - BookMyVenue</title>
+</head>
+<body>
+    <h2>Delete Venue</h2>
+
+    <p>Are you sure you want to delete <strong>{{ venue.name }}</strong>?</p>
+    <p>This action cannot be undone.</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Yes, Delete</button>
+    </form>
+
+    <p><a href="{% url 'my_venues' %}">Cancel</a></p>
+</body>
+</html>

@@ -6,7 +6,7 @@
 <body>
     <h2>Welcome, Owner! 👋</h2>
     <p>You are logged in as an <strong>{{ role }}</strong></p>
-
+    <p><a href="{% url 'my_venues' %}">Manage My Venues</a></p>
     <a href="{% url 'logout' %}">Logout</a>
 </body>
 </html>

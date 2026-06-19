@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Venue - BookMyVenue</title>
+</head>
+<body>
+    <h2>Edit Venue: {{ venue.name }}</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <p><a href="{% url 'my_venues' %}">Back to My Venues</a></p>
+</body>
+</html>
