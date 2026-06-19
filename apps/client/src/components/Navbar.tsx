@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Menu, X } from "lucide-react";
+import {Menu, X } from "lucide-react";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import Link from "next/link";
+import Image from "next/image";
 
 export function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -10,12 +13,10 @@ export function Navbar() {
         <nav className="sticky top-0 z-50 bg-primary text-primary-foreground shadow-lg">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
-                            <MapPin className="w-4 h-4 text-white" />
-                        </div>
+                    <Link href="/" className="flex items-center gap-2">
+                            <Image src="/logo.svg" alt="BookMyVenue" width={40} height={40} />
                         <span className="text-xl font-bold tracking-tight">BookMyVenue</span>
-                    </div>
+                    </Link>
 
                     <div className="hidden md:flex items-center gap-8">
                         <a
@@ -45,18 +46,28 @@ export function Navbar() {
                     </div>
 
                     <div className="hidden md:flex items-center gap-3">
-                        <a
+                        {/* <a
                             href="#registervenue"
                             className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm font-medium"
                         >
                             Register Venue
-                        </a>
-                        <button className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors px-4 py-1.5 rounded-full border border-primary-foreground/30 hover:border-primary-foreground/60">
-                            Login
-                        </button>
-                        <button className="text-sm font-semibold bg-accent text-white px-4 py-1.5 rounded-full hover:bg-accent/90 transition-colors">
-                            Sign Up
-                        </button>
+                        </a> */}
+
+                        <Show when="signed-out">
+                            <SignInButton>
+                                <button className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors px-4 py-1.5 rounded-full border border-primary-foreground/30 hover:border-primary-foreground/60">
+                                    Sign In
+                                </button>
+                            </SignInButton>
+                            <SignUpButton>
+                                <button className="text-sm font-semibold bg-accent text-white px-4 py-1.5 rounded-full hover:bg-accent/90 transition-colors cursor-pointer">
+                                    Sign Up
+                                </button>
+                            </SignUpButton>
+                        </Show>
+                        <Show when="signed-in">
+                            <UserButton />
+                        </Show>
                     </div>
 
                     <button
@@ -83,12 +94,16 @@ export function Navbar() {
                         Contact
                     </a>
                     <div className="flex gap-2 pt-2">
-                        <button className="flex-1 text-sm border border-primary-foreground/30 text-primary-foreground rounded-full py-1.5">
-                            Login
-                        </button>
-                        <button className="flex-1 text-sm bg-accent text-white rounded-full py-1.5 font-semibold">
-                            Sign Up
-                        </button>
+                        <SignInButton>
+                            <button className="flex-1 text-sm border border-primary-foreground/30 text-primary-foreground rounded-full py-1.5">
+                                Login
+                            </button>
+                        </SignInButton>
+                        <SignUpButton>
+                            <button className="flex-1 text-sm bg-accent text-white rounded-full py-1.5 font-semibold">
+                                Sign Up
+                            </button>
+                        </SignUpButton>
                     </div>
                 </div>
             )}
