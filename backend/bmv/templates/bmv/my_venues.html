@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Venues - BookMyVenue</title>
+</head>
+<body>
+    <h2>My Venues</h2>
+
+    <p><a href="{% url 'add_venue' %}">+ Add New Venue</a></p>
+
+    {% if venues %}
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Location</th>
+                <th>Capacity</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+            {% for venue in venues %}
+            <tr>
+                <td>{{ venue.name }}</td>
+                <td>{{ venue.category }}</td>
+                <td>{{ venue.location }}</td>
+                <td>{{ venue.capacity }}</td>
+                <td>₹{{ venue.price }}</td>
+                <td>
+                    <a href="{% url 'edit_venue' venue.venueID %}">Edit</a> |
+                    <a href="{% url 'delete_venue' venue.venueID %}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>You haven't added any venues yet.</p>
+    {% endif %}
+
+    <p><a href="{% url 'owner_home' %}">Back to Home</a></p>
+</body>
+</html>
