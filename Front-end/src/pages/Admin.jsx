@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../css/Admin.css";
 
 const MOCK_DATA = {
@@ -51,6 +51,69 @@ const Toggle = ({ on }) => (
     {on ? "YES" : "NO"}
   </span>
 );
+
+function MenuPopUp({closeOn}) {
+  return (
+    <div className="addNewMenu">
+      <span>This is from menu PopUp</span>
+      <button type="button" onClick={closeOn}>Closeee</button>
+    </div>
+  )
+}
+
+function AddNewPopUp({onClose}) {
+  const [showMenus,openMenus] = useState(false);
+
+  const [formData,setFormData] = useState({
+    name:"",
+    code:""
+  })
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Name",formData.name);
+    console.log("Code",formData.code);
+  }
+  
+  return (
+    <div className="addNewAdmin">
+      <h1>Hello From admin</h1>
+      <button type="button" onClick={onClose}>Close</button>
+      <button type="button" onClick={() => openMenus(true)}>Open Menu</button>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Name</label>
+          <input type="text" 
+          value={formData.name}
+          onChange={(e) => 
+            setFormData({
+              ...formData,
+              name: e.target.value
+            })
+          }
+          />
+        </div>
+        <div>
+          <label>Code</label>
+          <input
+            type="text"
+            value={formData.code}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                code: e.target.value
+              })
+            }
+          />
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+      {showMenus && (
+        <MenuPopUp closeOn={()=>openMenus(false)} />
+      )}
+    </div>
+  )
+}
 
 function RequestsTable({ data }) {
   return (
@@ -189,6 +252,8 @@ export default function AdminPanel() {
     }
   };
 
+  const [showPopup,setShowPopup] = useState(false);
+
   return (
     <div className="admin-root">
       {/* Sidebar */}
@@ -232,8 +297,8 @@ export default function AdminPanel() {
             <p className="page-sub">Manage and monitor all {TABS.find((t) => t.id === activeTab)?.label.toLowerCase()}</p>
           </div>
           <div className="topbar__actions">
-            <button className="btn-primary">+ Add New</button>
-            <button className="btn-ghost">⬇ Export</button>
+            <button className="btn-primary" onClick={()=> setShowPopup(true)}>+ Add New</button>
+            {/* <button className="btn-ghost">⬇ Export</button> */}
           </div>
         </header>
 
@@ -262,6 +327,9 @@ export default function AdminPanel() {
           {renderContent()}
         </section>
       </main>
+      {showPopup && (
+        <AddNewPopUp onClose={()=> setShowPopup(false)}/>
+      )}
     </div>
   );
 }

@@ -8,7 +8,7 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const login = (userData) => {
+  const login = ( ) => {
     setUser(userData);
     localStorage.setItem("bmv_user", JSON.stringify(userData));
   };
