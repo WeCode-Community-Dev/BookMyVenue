@@ -1,21 +1,13 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import text
 from fastapi import HTTPException, status
 from datetime import datetime, timezone
 from app.models.booking import Booking
 from app.models.user import User
+from app.models.venue import Venue
 from app.schemas.booking import BookingCreate 
 
 def get_venue(db: Session, venue_id: int):
-
-    row = db.execute(
-        text(
-            "SELECT id, price_per_day, approval_status "
-            "FROM venues WHERE id = :vid"
-        ),
-        {"vid": venue_id},
-    ).fetchone()
-    return row 
+    return db.query(Venue).filter(Venue.id == venue_id).first()
 
 def create_booking(db: Session, current_user: User, data: BookingCreate): 
     # 1. only normal users can book

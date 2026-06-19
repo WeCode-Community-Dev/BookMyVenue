@@ -1,26 +1,29 @@
+from decimal import Decimal
+from datetime import date, datetime, time, timezone
+from typing import Optional
 from sqlalchemy import (
-    Column, Integer, String, Date, Time, Numeric, Text, DateTime,
+    Integer, String, Date, Time, Numeric, Text, DateTime,
     ForeignKey, UniqueConstraint, CheckConstraint,
 )
-from datetime import datetime, timezone
+from sqlalchemy.orm import Mapped, mapped_column
 from app.db.database import Base
 
 
 class Booking(Base):
     __tablename__ = "bookings"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    venue_id = Column(Integer, ForeignKey("venues.id", ondelete="CASCADE"), nullable=False)
-    booking_date = Column(Date, nullable=False)
-    time_slot = Column(Time, nullable=False)
-    notes = Column(Text, nullable=True)
-    amount = Column(Numeric(10, 2), nullable=False)
-    status = Column(String(20), nullable=False, default="pending_payment")
-    cancellation_reason = Column(Text, nullable=True)
-    cancelled_at = Column(DateTime(timezone=True), nullable=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    venue_id: Mapped[int] = mapped_column(Integer, ForeignKey("venues.id", ondelete="CASCADE"), nullable=False)
+    booking_date: Mapped[date] = mapped_column(Date, nullable=False)
+    time_slot: Mapped[time] = mapped_column(Time, nullable=False)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending_payment")
+    cancellation_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    cancelled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
