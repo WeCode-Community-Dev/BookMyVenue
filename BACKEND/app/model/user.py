@@ -20,3 +20,5 @@ class User(Base):
     )
     
     venues = relationship("Venue", back_populates="user", cascade="all, delete-orphan")
+    orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
+    bookings = relationship("Booking", back_populates="user", cascade="all, delete-orphan")

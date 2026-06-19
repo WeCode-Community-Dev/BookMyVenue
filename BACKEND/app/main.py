@@ -6,6 +6,8 @@ from app.model.venue import Venue
 from app.model.venue_amenities import VenueAmenities
 from app.model.venue_images import VenueImages
 from app.model.venue_availability import VenueAvailability
+from app.model.orders import Order
+from app.model.bookings import Booking
 
 from app.api.user_routes import router as user_router
 from app.api.auth_routes import router as auth_router
