@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - BookMyVenue</title>
+</head>
+<body>
+    <h2>Login</h2>
+
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <label>Email:</label><br>
+        <input type="email" name="email" required><br><br>
+
+        <label>Password:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <p>New User? <a href="{% url 'user_signup' %}">Sign Up here</a></p>
+    <p>Are you an Owner? <a href="{% url 'owner_signup' %}">Owner Sign Up</a></p>
+</body>
+</html>
