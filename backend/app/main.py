@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import Base, engine
 from app.models import user
-from app.routers import auth
+from app.routers import auth,bookings
+
+
 
 
 # Create all tables when the app starts
@@ -31,6 +33,7 @@ app.add_middleware(
 
 
 app.include_router(auth.router)
+app.include_router(bookings.router) 
 
 @app.get("/")
 def root():
