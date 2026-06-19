@@ -17,7 +17,8 @@ const apiService = {
     getVenueByID: async (id) => {
         const response = await axiosInstance.get(`/venues/details/${id}`)
         return response.data
-    }
+    },
+    
 }
 
 export default apiService
