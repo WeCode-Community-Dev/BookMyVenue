@@ -3,6 +3,7 @@ import Filters from "../components/Filters";
 import VenueGrid from "../components/VenueGrid";
 
 export default function HomePage() {
+    
     return (
         <>
             <NavBar />
