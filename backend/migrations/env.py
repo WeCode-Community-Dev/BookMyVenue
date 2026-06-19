@@ -3,14 +3,15 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from app.core.config import get_settings
-from app.db.base import Base
-import app.modules.auth.models
+from app.core.config import settings
+from app.db.database import Base
+
+# Import all models so they register on Base.metadata (needed for autogenerate)
+from app.models import user, venue, booking, payment  # noqa: F401
 
 config = context.config
-settings = get_settings()
 
-config.set_main_option("sqlalchemy.url", settings.database_url)
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
