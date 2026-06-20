@@ -1,290 +1,99 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-
-import MainLayout from "../../common/MainLayout";
-
-import VenueSetupModal from "../components/VenueSetupModal";
+import { NavLink } from "react-router-dom";
 
 import { fetchMyVenuesApi } from "../../venues/api/venue.api";
+import { fetchOwnerBookingsApi } from "../../bookings/api/bookings.api";
+
+import SetupAlert from "../components/SetupAlert";
 
 const OwnerDashboard = () => {
-   const [venues, setVenues] = useState([]);
-   const [selectedVenue, setSelectedVenue] = useState(null);
+  const [venues, setVenues] = useState([]);
+  const [bookings, setBookings] = useState([]);
 
-   const location = useLocation();
+  useEffect(() => {
+    loadData();
+  }, []);
 
-   useEffect(() => {
-      loadVenues();
-   }, []);
+  const loadData = async () => {
+    try {
+      const [
+        venuesResponse,
+        bookingsResponse,
+      ] = await Promise.all([
+        fetchMyVenuesApi(),
+        fetchOwnerBookingsApi(),
+      ]);
 
-   const loadVenues = async () => {
-      try {
-         const response = await fetchMyVenuesApi();
+      setVenues(venuesResponse.data || []);
+      setBookings(bookingsResponse.data || []);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-         const data = response.data || [];
+  const incompleteVenues = venues.filter(
+    (venue) =>
+      !venue.address ||
+      !venue.description ||
+      !venue.capacity ||
+      !venue.price ||
+      !venue.images?.length
+  );
 
-         setVenues(data);
+  const revenue = bookings.reduce(
+    (total, booking) =>
+      total + Number(booking.totalPrice || 0),
+    0
+  );
 
-         /*
-          * Open automatically only after
-          * signup redirect.
-          */
-         if (location.state?.openVenueSetup) {
-            const incompleteVenue =
-               data.find(isVenueIncomplete);
+  return (
+      <div className="max-w-7xl mx-auto px-5 py-10 mt-20">
+        <SetupAlert
+          incompleteVenues={incompleteVenues}
+        />
 
-            if (incompleteVenue) {
-               setSelectedVenue(incompleteVenue);
-            }
-         }
-      } catch (error) {
-         console.error(error);
-      }
-   };
+        <div className="grid md:grid-cols-3 gap-5">
 
-   const isVenueIncomplete = (venue) => {
-      return (
-         !venue.address ||
-         !venue.description ||
-         !venue.capacity ||
-         !venue.price ||
-         !venue.images ||
-         venue.images.length === 0
-      );
-   };
+          <div className="border rounded-2xl p-6">
 
-   return (
-      <MainLayout>
-         <div className="max-w-7xl mx-auto px-5 py-10 mt-20">
+            <p className="text-gray-500">
+              Total Venues
+            </p>
 
-            {/* Header */}
-            <div className="mb-8">
-               <h1 className="text-3xl font-bold">
-                  Owner Dashboard
-               </h1>
+            <h2 className="text-4xl font-bold mt-2">
+              {venues.length}
+            </h2>
 
-               <p className="text-gray-500 mt-2">
-                  Manage your venues and booking requests.
-               </p>
-            </div>
+          </div>
 
-            {/* Setup Alerts */}
-            <section className="mb-10">
-               <div className="flex items-center justify-between mb-4">
+          <div className="border rounded-2xl p-6">
 
-                  <h2 className="text-xl font-semibold">
-                     Setup Alerts
-                  </h2>
+            <p className="text-gray-500">
+              Total Bookings
+            </p>
 
-               </div>
+            <h2 className="text-4xl font-bold mt-2">
+              {bookings.length}
+            </h2>
 
-               <div className="space-y-4">
+          </div>
 
-                  {venues
-                     .filter(isVenueIncomplete)
-                     .length === 0 ? (
+          <div className="border rounded-2xl p-6">
 
-                     <div className="border rounded-2xl p-5 bg-green-50">
-                        <p className="text-green-700 font-medium">
-                           ✓ All your venues are fully configured.
-                        </p>
-                     </div>
+            <p className="text-gray-500">
+              Revenue
+            </p>
 
-                  ) : (
+            <h2 className="text-4xl font-bold mt-2">
+              ₹{revenue.toLocaleString()}
+            </h2>
 
-                     venues
-                        .filter(isVenueIncomplete)
-                        .map((venue) => (
-                           <div
-                              key={venue.id}
-                              className="
-                                 border
-                                 rounded-2xl
-                                 p-5
-                                 flex
-                                 flex-col
-                                 md:flex-row
-                                 md:items-center
-                                 md:justify-between
-                                 gap-4
-                              "
-                           >
-                              <div>
-                                 <h3 className="font-semibold">
-                                    {venue.name}
-                                 </h3>
+          </div>
 
-                                 <p className="text-gray-500 mt-1">
-                                    Setup incomplete
-                                 </p>
-                              </div>
+        </div>
 
-                              <button
-                                 onClick={() =>
-                                    setSelectedVenue(venue)
-                                 }
-                                 className="btn-primary"
-                              >
-                                 Complete Setup
-                              </button>
-                           </div>
-                        ))
-                  )}
-
-               </div>
-            </section>
-
-            {/* Recent Bookings */}
-            <section className="mb-10">
-
-               <h2 className="text-xl font-semibold mb-4">
-                  Recent Bookings
-               </h2>
-
-               <div className="border rounded-2xl p-8 text-center">
-
-                  <p className="text-gray-500">
-                     No booking requests yet.
-                  </p>
-
-               </div>
-
-            </section>
-
-            {/* My Venues */}
-            <section>
-
-               <h2 className="text-xl font-semibold mb-4">
-                  My Venues
-               </h2>
-
-               {venues.length === 0 ? (
-
-                  <div className="border rounded-2xl p-8 text-center">
-
-                     <p className="text-gray-500">
-                        No venues found.
-                     </p>
-
-                  </div>
-
-               ) : (
-
-                  <div className="grid gap-5">
-
-                     {venues.map((venue) => (
-                        <div
-                           key={venue.id}
-                           className="
-                              border
-                              rounded-2xl
-                              p-5
-                              flex
-                              flex-col
-                              md:flex-row
-                              md:items-center
-                              md:justify-between
-                              gap-4
-                           "
-                        >
-                           <div className="flex gap-4">
-
-                              <div
-                                 className="
-                                    w-24
-                                    h-24
-                                    rounded-xl
-                                    overflow-hidden
-                                    bg-gray-100
-                                    shrink-0
-                                 "
-                              >
-                                 {venue.images?.length > 0 ? (
-                                    <img
-                                       src={venue.images[0]}
-                                       alt={venue.name}
-                                       className="
-                                          w-full
-                                          h-full
-                                          object-cover
-                                       "
-                                    />
-                                 ) : (
-                                    <div
-                                       className="
-                                          w-full
-                                          h-full
-                                          flex
-                                          items-center
-                                          justify-center
-                                          text-3xl
-                                       "
-                                    >
-                                       🏢
-                                    </div>
-                                 )}
-                              </div>
-
-                              <div>
-                                 <h3 className="font-semibold text-lg">
-                                    {venue.name}
-                                 </h3>
-
-                                 <p className="text-gray-500">
-                                    {venue.city}
-                                 </p>
-
-                                 <p className="text-sm text-gray-400 mt-1">
-                                    {venue.price
-                                       ? `₹${venue.price} / day`
-                                       : "Price not set"}
-                                 </p>
-                              </div>
-
-                           </div>
-
-                           <button
-                              onClick={() =>
-                                 setSelectedVenue(venue)
-                              }
-                              className={
-                                 isVenueIncomplete(venue)
-                                    ? "btn-primary"
-                                    : "btn-outline"
-                              }
-                           >
-                              {isVenueIncomplete(venue)
-                                 ? "Complete Setup"
-                                 : "Manage"}
-                           </button>
-
-                        </div>
-                     ))}
-
-                  </div>
-
-               )}
-
-            </section>
-
-            {/* Venue Setup Modal */}
-            {selectedVenue && (
-               <VenueSetupModal
-                  venue={selectedVenue}
-                  onClose={() => {
-                     setSelectedVenue(null);
-
-                     /*
-                      * Reload venues after update.
-                      */
-                     loadVenues();
-                  }}
-               />
-            )}
-
-         </div>
-      </MainLayout>
-   );
+      </div>
+  );
 };
 
 export default OwnerDashboard;

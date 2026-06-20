@@ -159,70 +159,152 @@ const VenueSetupModal = ({ venue, onClose }) => {
 
                 <form
                     onSubmit={handleSubmit(onSubmit)}
-                    className="space-y-4"
+                    className="space-y-6"
                 >
-                    <input
-                        placeholder="Address"
-                        {...register("address")}
-                        className="inputClass"
-                    />
 
-                    <textarea
-                        rows={4}
-                        placeholder="Description"
-                        {...register(
-                            "description"
-                        )}
-                        className="
-              inputClass
-              py-3
-            "
-                    />
+                    {/* Venue Info */}
 
                     <div
                         className="
-            grid
-            grid-cols-2
-            md:grid-cols-3
-            gap-4
-          "
+      bg-gray-50
+      border
+      rounded-2xl
+      p-4
+    "
                     >
-                        <input
-                            type="number"
-                            placeholder="Capacity"
-                            {...register(
-                                "capacity"
-                            )}
-                            className="inputClass"
-                        />
+                        <h3 className="text-lg font-semibold">
+                            {venue.name}
+                        </h3>
+
+                        <p className="text-sm text-gray-500 mt-1">
+                            {venue.city}
+                        </p>
+
+                        <p className="text-xs text-gray-400 mt-2">
+                            Complete your venue details before accepting bookings.
+                        </p>
+                    </div>
+
+                    {/* Address */}
+
+                    <div>
+                        <label
+                            className="
+        block
+        text-sm
+        font-medium
+        text-gray-700
+        mb-2
+      "
+                        >
+                            Address
+                        </label>
 
                         <input
-                            type="number"
-                            placeholder="Price"
-                            {...register("price")}
+                            {...register("address")}
                             className="inputClass"
                         />
                     </div>
 
+                    {/* Description */}
+
+                    <div>
+                        <label
+                            className="
+        block
+        text-sm
+        font-medium
+        text-gray-700
+        mb-2
+      "
+                        >
+                            Description
+                        </label>
+
+                        <textarea
+                            rows={4}
+                            {...register("description")}
+                            className="inputClass py-3"
+                        />
+                    </div>
+
+                    {/* Capacity & Price */}
+
+                    <div
+                        className="
+      grid
+      grid-cols-1
+      md:grid-cols-2
+      gap-4
+    "
+                    >
+
+                        <div>
+                            <label
+                                className="
+          block
+          text-sm
+          font-medium
+          text-gray-700
+          mb-2
+        "
+                            >
+                                Capacity
+                            </label>
+
+                            <input
+                                type="number"
+                                {...register("capacity")}
+                                className="inputClass"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                className="
+          block
+          text-sm
+          font-medium
+          text-gray-700
+          mb-2
+        "
+                            >
+                                Price Per Day (₹)
+                            </label>
+
+                            <input
+                                type="number"
+                                {...register("price")}
+                                className="inputClass"
+                            />
+                        </div>
+
+                    </div>
+
                     {/* Existing Images */}
+
                     {images.length > 0 && (
                         <div>
-                            <p
-                                className="
-                  font-medium
-                  mb-2
-                "
-                            >
-                                Current Images
-                            </p>
+
+                            <div className="flex items-center justify-between mb-3">
+
+                                <h3 className="font-semibold">
+                                    Current Images
+                                </h3>
+
+                                <span className="text-xs text-gray-500">
+                                    Uploading new images will replace these.
+                                </span>
+
+                            </div>
 
                             <div
                                 className="
-                grid
-                grid-cols-2
-                md:grid-cols-3
-                gap-4
-              "
+          grid
+          grid-cols-2
+          md:grid-cols-3
+          gap-4
+        "
                             >
                                 {images.map((image) => (
                                     <img
@@ -230,77 +312,70 @@ const VenueSetupModal = ({ venue, onClose }) => {
                                         src={image}
                                         alt="Venue"
                                         className="
-                      h-32
-                      w-full
-                      object-cover
-                      rounded-xl
-                    "
+              h-32
+              w-full
+              object-cover
+              rounded-xl
+            "
                                     />
                                 ))}
                             </div>
 
-                            <p
-                                className="
-                  text-xs
-                  text-gray-500
-                  mt-2
-                "
-                            >
-                                Uploading new images
-                                will replace these
-                                images.
-                            </p>
                         </div>
                     )}
 
-                    {/* Upload */}
+                    {/* Upload Section */}
+
                     <div>
-                        <p className="font-medium mb-2">
+
+                        <h3 className="font-semibold mb-3">
                             Venue Photos
-                        </p>
+                        </h3>
 
                         <label
                             className={`
-      border-2
-      border-dashed
-      rounded-2xl
-      p-8
-      flex
-      flex-col
-      items-center
-      justify-center
-      text-center
-      cursor-pointer
-      transition
-      ${selectedFiles.length >= 5
+        border-2
+        border-dashed
+        rounded-2xl
+        p-8
+        flex
+        flex-col
+        items-center
+        justify-center
+        text-center
+        cursor-pointer
+        transition
+
+        ${selectedFiles.length >= 5
                                     ? "bg-gray-100 border-gray-200 cursor-not-allowed"
                                     : "hover:border-red-400 hover:bg-red-50"
                                 }
-    `}
+      `}
                         >
-                            <span className="text-4xl mb-3">
+
+                            <span className="text-5xl mb-3">
                                 📸
                             </span>
 
                             <p className="font-semibold">
-                                Add Venue Photos
+                                Upload Venue Photos
                             </p>
 
                             <p className="text-sm text-gray-500 mt-1">
-                                Upload up to 5 high-quality images
+                                Maximum 5 images
                             </p>
 
                             <span
                                 className="
-        mt-4
-        px-4
-        py-2
-        rounded-xl
-        bg-red-600
-        text-white
-        text-sm
-        font-medium
-      "
+          mt-4
+          px-4
+          py-2
+          rounded-xl
+          bg-red-600
+          text-white
+          text-sm
+          font-medium
+        "
                             >
                                 Choose Photos
                             </span>
@@ -310,84 +385,118 @@ const VenueSetupModal = ({ venue, onClose }) => {
                                 accept="image/*"
                                 multiple
                                 hidden
-                                disabled={
-                                    selectedFiles.length >= 5
-                                }
+                                disabled={selectedFiles.length >= 5}
                                 onChange={handleFileChange}
                             />
+
                         </label>
 
                         <p className="text-xs text-gray-500 mt-2">
                             {selectedFiles.length}/5 selected
                         </p>
+
                     </div>
 
-                    {/* New Preview */}
-                    {/* New Preview */}
+                    {/* New Images Preview */}
+
                     {selectedFiles.length > 0 && (
+
                         <div>
-                            <p className="font-medium mb-2">
+
+                            <h3 className="font-semibold mb-3">
                                 New Images
-                            </p>
+                            </h3>
 
                             <div
                                 className="
-        grid
-        grid-cols-2
-        gap-3
-      "
+          grid
+          grid-cols-2
+          md:grid-cols-3
+          gap-4
+        "
                             >
-                                {selectedFiles.map(
-                                    (file, index) => (
-                                        <div
-                                            key={index}
-                                            className="
+
+                                {selectedFiles.map((file, index) => (
+
+                                    <div
+                                        key={index}
+                                        className="
               relative
+              group
+              rounded-xl
+              overflow-hidden
+              border
             "
-                                        >
-                                            <img
-                                                src={URL.createObjectURL(file)}
-                                                alt=""
-                                                className="
-                h-32
+                                    >
+
+                                        <img
+                                            src={URL.createObjectURL(file)}
+                                            alt=""
+                                            className="
+                h-36
                 w-full
                 object-cover
-                rounded-xl
               "
-                                            />
+                                        />
 
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    removeSelectedFile(index)
-                                                }
-                                                className="
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                removeSelectedFile(index)
+                                            }
+                                            className="
                 absolute
                 top-2
                 right-2
-                bg-white
+                w-8
+                h-8
                 rounded-full
-                px-2
+                bg-white
                 shadow
               "
-                                            >
-                                                ✕
-                                            </button>
+                                        >
+                                            ✕
+                                        </button>
+
+                                        <div
+                                            className="
+                absolute
+                bottom-0
+                left-0
+                right-0
+                bg-black/50
+                text-white
+                text-xs
+                px-2
+                py-1
+                truncate
+              "
+                                        >
+                                            {file.name}
                                         </div>
-                                    )
-                                )}
+
+                                    </div>
+
+                                ))}
+
                             </div>
+
                         </div>
+
                     )}
+
+                    {/* Footer */}
 
                     <div
                         className="
-              flex
-              justify-end
-              gap-3
-              pt-4
-            "
+      flex
+      justify-end
+      gap-3
+      pt-4
+      border-t
+    "
                     >
+
                         <button
                             type="button"
                             onClick={onClose}
@@ -398,16 +507,16 @@ const VenueSetupModal = ({ venue, onClose }) => {
 
                         <button
                             type="submit"
-                            disabled={
-                                isSubmitting
-                            }
+                            disabled={isSubmitting}
                             className="btn-primary"
                         >
                             {isSubmitting
                                 ? "Saving..."
-                                : "Save"}
+                                : "Save Changes"}
                         </button>
+
                     </div>
+
                 </form>
             </div>
         </div>
