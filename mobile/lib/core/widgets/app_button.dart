@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_spacing.dart';
 import '../utils/colors.dart';
+import '../utils/shape_constants.dart';
 import 'app_text.dart';
 
 enum ButtonType { primary, success, warning, destructive, secondary, disabled }
@@ -210,6 +211,65 @@ class AppIconButton extends StatelessWidget {
       tooltip: tooltip,
       onPressed: onPressed,
       icon: Icon(icon, size: size, color: color ?? AppColors.primary),
+    );
+  }
+}
+
+class AppOutlinedButton extends StatelessWidget {
+  const AppOutlinedButton({
+    super.key,
+    required this.title,
+    required this.onPressed,
+    this.icon,
+    this.isLoading = false,
+    this.color,
+    this.padding,
+    this.width,
+  });
+
+  final String title;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+  final bool isLoading;
+  final Color? color;
+  final EdgeInsetsGeometry? padding;
+  final double? width;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color buttonColor = color ?? AppColors.primary;
+
+    return SizedBox(
+      width: width,
+      child: OutlinedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: buttonColor),
+          shape: RoundedRectangleBorder(borderRadius: AppShapes.defaultBorder),
+          padding:
+              padding ??
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        ),
+        child: isLoading
+            ? SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: buttonColor,
+                ),
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  if (icon != null) ...<Widget>[
+                    Icon(icon, size: 18, color: buttonColor),
+                    const SizedBox(width: 8),
+                  ],
+                  AppText(title, color: buttonColor),
+                ],
+              ),
+      ),
     );
   }
 }
