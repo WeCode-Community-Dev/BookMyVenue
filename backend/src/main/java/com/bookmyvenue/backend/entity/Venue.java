@@ -1,4 +1,5 @@
 package com.bookmyvenue.backend.entity;
+import com.bookmyvenue.backend.enums.EventType;
 import com.bookmyvenue.backend.enums.PricingType;
 import com.bookmyvenue.backend.enums.VenueStatus;
 import jakarta.persistence.*;
@@ -92,14 +93,14 @@ public class Venue {
     )
 private Set<Amenity> amenities;
 
-    @ManyToMany
-    @JoinTable(
-            name="venue_category_map",
-            joinColumns =@JoinColumn(name="venue_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "venue_event_types",
+            joinColumns = @JoinColumn(name = "venue_id")
     )
-    private Set<VenueCategory> venuCategories;
+    @Column(name = "event_type")
+    @Enumerated(EnumType.STRING)
+    private Set<EventType> supportedEventTypes;
 
     @OneToMany(mappedBy="venue",
             cascade=CascadeType.ALL,

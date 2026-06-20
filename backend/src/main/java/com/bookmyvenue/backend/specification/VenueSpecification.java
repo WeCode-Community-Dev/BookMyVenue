@@ -1,11 +1,13 @@
 package com.bookmyvenue.backend.specification;
 import com.bookmyvenue.backend.entity.Venue;
+import com.bookmyvenue.backend.enums.EventType;
+import com.bookmyvenue.backend.enums.VenueStatus;
 import org.springframework.data.jpa.domain.Specification;
 import java.math.BigDecimal;
 import com.bookmyvenue.backend.entity.VenueAvailability;
-import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Subquery;
 import java.time.LocalDate;
+import java.util.Set;
 
 public class VenueSpecification {
 
@@ -57,26 +59,34 @@ public class VenueSpecification {
     }
 
     /**
-     * Filter by Venue Category
+     * Filter by Venue Type
      */
-    public static Specification<Venue> hasCategory(
-            Long categoryId) {
+    public static Specification<Venue> hasSupportedEventTypes(
+            Set<EventType> venueType) {
+
+        return (root, query, cb) ->
+                venueType == null
+                        ? cb.conjunction()
+                        : cb.equal(
+                        root.join("supportedVenueTypes"),
+                        venueType);
+    }
+
+
+    public static Specification<Venue> hasSupportedEventType(
+            EventType eventType) {
 
         return (root, query, cb) -> {
 
-            if (categoryId == null) {
-                return null;
+            if (eventType == null) {
+                return cb.conjunction();
             }
 
-            Join<Object, Object> categoryJoin =
-                    root.join("venuCategories");
-
-            return cb.equal(
-                    categoryJoin.get("categoryId"),
-                    categoryId);
+            return cb.isMember(
+                    eventType,
+                    root.get("supportedEventType"));
         };
     }
-
     /**
      * Filter by Available Date
      */
@@ -113,4 +123,27 @@ public class VenueSpecification {
             return root.get("venueId").in(subQuery);
         };
     }
+    public static Specification<Venue> hasOwner(
+            Long ownerId) {
+
+        return (root, query, cb) ->
+                ownerId == null
+                        ? cb.conjunction()
+                        : cb.equal(
+                        root.get("owner")
+                                .get("userId"),
+                        ownerId);
+    }
+
+    public static Specification<Venue> hasStatus(
+            VenueStatus status) {
+
+        return (root, query, cb) ->
+                status == null
+                        ? cb.conjunction()
+                        : cb.equal(
+                        root.get("status"),
+                        status);
+    }
+
 }

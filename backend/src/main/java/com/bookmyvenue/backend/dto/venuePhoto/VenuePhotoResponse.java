@@ -17,6 +17,8 @@ public class VenuePhotoResponse {
 
     private Integer displayOrder;
 
+    private String photoUrl;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

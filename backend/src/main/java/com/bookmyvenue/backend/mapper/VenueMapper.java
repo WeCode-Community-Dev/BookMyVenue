@@ -4,7 +4,6 @@ import com.bookmyvenue.backend.dto.Venue.VenueRequest;
 import com.bookmyvenue.backend.dto.Venue.VenueResponse;
 import com.bookmyvenue.backend.entity.Amenity;
 import com.bookmyvenue.backend.entity.Venue;
-import com.bookmyvenue.backend.entity.VenueCategory;
 import org.mapstruct.Mapper;
 
 import java.util.Set;
@@ -24,10 +23,4 @@ public interface VenueMapper {
                 .collect(Collectors.toSet());
     }
 
-    default Set<String> mapCategories(Set<VenueCategory> categories) {
-        if (categories == null) return null;
-        return categories.stream()
-                .map(VenueCategory::getCategoryName)
-                .collect(Collectors.toSet());
-    }
 }
