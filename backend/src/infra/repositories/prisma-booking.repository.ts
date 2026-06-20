@@ -18,14 +18,30 @@ export class PrismaBookingRepository implements IBookingRepository {
       totalAmount: Number(dbBooking.total_amount),
       createdAt: dbBooking.created_at,
       updatedAt: dbBooking.updated_at,
-      venue: dbBooking.venue
+      venue: {
+        id: dbBooking.venue?.id,
+        title: dbBooking.venue?.title,
+        ownerId: dbBooking.venue?.owner_id,
+      },
+      user: {
+        id: dbBooking.user.id,
+        email: dbBooking.user.email,
+        phone: dbBooking.user.phone,
+        firstName: dbBooking.user.first_name,
+        lastName: dbBooking.user.last_name
+      }
     });
   }
 
   async findById(id: string): Promise<Booking | null> {
     const dbBooking = await this.prisma.bookings.findUnique({
       where: { id },
+      include: {
+        venue: true,
+        user: true,
+      }
     });
+
     if (!dbBooking) return null;
     return this.mapToDomain(dbBooking);
   }

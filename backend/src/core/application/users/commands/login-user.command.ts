@@ -6,6 +6,7 @@ import { type ITokenService } from '../services/token.interface';
 import { type IRefreshTokenRepository } from '../services/refresh-token-repository.interface';
 import { BusinessRuleException } from '../../../domain/_shared/exception/business-rule.exception';
 import { NotFoundException } from '../../../domain/_shared/exception/notfound.exception';
+import type { UserRole } from 'src/core/domain/_shared/enum/UserRole';
 
 export interface LoginUserDto {
   email: string;
@@ -67,7 +68,7 @@ export class LoginUserCommand {
     const payload = {
       userId: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as UserRole
     };
 
     const accessToken = this.tokenService.generateAccessToken(payload);

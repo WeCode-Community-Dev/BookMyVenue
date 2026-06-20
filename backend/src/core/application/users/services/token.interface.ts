@@ -1,7 +1,9 @@
+import type { UserRole } from "src/core/domain/_shared/enum/UserRole";
+
 export interface TokenPayload {
   userId: string;
   email: string;
-  role: string;
+  role: UserRole;
 }
 
 export interface ITokenService {

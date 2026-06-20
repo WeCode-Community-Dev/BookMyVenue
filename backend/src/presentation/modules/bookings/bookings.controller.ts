@@ -14,6 +14,7 @@ import { Roles } from 'src/presentation/decorators/roles.decorator';
 import { UserRole } from 'src/core/domain/_shared/enum/UserRole';
 import { GetBookingsByVenueQuery } from 'src/core/application/bookings/queries/get-venue-bookings.query';
 import { GetBookingsByOwnerQuery } from 'src/core/application/bookings/queries/get-bookings-for-owner.query';
+import { GetBookingDetailsQuery } from 'src/core/application/bookings/queries/get-booking-details.query';
 
 @ApiTags('bookings')
 @Controller({
@@ -29,6 +30,7 @@ export class BookingsController {
     private readonly getUserBookingsQuery: GetUserBookingsQuery,
     private readonly getBookingsByVenueQuery: GetBookingsByVenueQuery,
     private readonly getBookingsByOwnerQuery: GetBookingsByOwnerQuery,
+    private readonly getBookingDetailsQuery: GetBookingDetailsQuery,
   ) { }
 
   @Post()
@@ -44,12 +46,28 @@ export class BookingsController {
     });
   }
 
+  @Get(':bookingId')
+  @Roles(UserRole.USER, UserRole.VENUE_OWNER)
+  @ApiOperation({ summary: 'Get current user bookings' })
+  @ApiResponse({ status: 200, description: 'Bookings retrieved successfully' })
+  getBookingDetails(
+    @Param('bookingId', ParseUUIDPipe) bookingId: string,
+    @CurrentUser() user: TokenPayload,
+  ) {
+    return this.getBookingDetailsQuery.execute({
+      bookingId,
+      userId: user.userId,
+      role: user.role
+    });
+  }
+
   @Get('user/my-bookings')
   @ApiOperation({ summary: 'Get current user bookings' })
   @ApiResponse({ status: 200, description: 'Bookings retrieved successfully' })
   findMine(@CurrentUser() user: TokenPayload) {
     return this.getUserBookingsQuery.execute(user.userId);
   }
+
 
   @Delete(':id')
   @ApiOperation({ summary: 'Cancel a booking' })

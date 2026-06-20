@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { InfraModule } from '../../../infra/infra.module';
 import { GetBookingsByVenueQuery } from 'src/core/application/bookings/queries/get-venue-bookings.query';
 import { GetBookingsByOwnerQuery } from 'src/core/application/bookings/queries/get-bookings-for-owner.query';
+import { GetBookingDetailsQuery } from 'src/core/application/bookings/queries/get-booking-details.query';
 
 @Module({
   imports: [InfraModule],
@@ -17,7 +18,8 @@ import { GetBookingsByOwnerQuery } from 'src/core/application/bookings/queries/g
     GetUserBookingsQuery,
     JwtAuthGuard,
     GetBookingsByVenueQuery,
-    GetBookingsByOwnerQuery
+    GetBookingsByOwnerQuery,
+    GetBookingDetailsQuery
   ],
 })
 export class BookingsModule { }

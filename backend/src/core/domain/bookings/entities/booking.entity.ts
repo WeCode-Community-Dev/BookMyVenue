@@ -1,6 +1,5 @@
 import { AggregateRoot } from '../../_shared/entity/aggregate-root';
 import { DomainException } from '../../_shared/exception/domain.exception';
-import type { Venue } from '../../venues/entities/venue.entity';
 import { DateRange } from '../value-objects/date-range.vo';
 
 export interface BookingProps {
@@ -11,7 +10,18 @@ export interface BookingProps {
   totalAmount: number;
   createdAt?: Date;
   updatedAt?: Date;
-  venue?: Venue
+  venue?: {
+    id: string,
+    title: string
+    ownerId: string
+  },
+  user?: {
+    id: string,
+    firstName: string,
+    lastName: string,
+    email: string,
+    phone?: string | null
+  }
 }
 
 export class Booking extends AggregateRoot<string> {
@@ -71,8 +81,12 @@ export class Booking extends AggregateRoot<string> {
     return this.props.updatedAt!;
   }
 
-  get venue(): Venue | undefined {
+  get venue(): BookingProps['venue'] {
     return this.props.venue
+  }
+
+  get user(): BookingProps['user'] {
+    return this.props.user
   }
 
   public calculateTotalAmount(pricePerDay: number): void {
