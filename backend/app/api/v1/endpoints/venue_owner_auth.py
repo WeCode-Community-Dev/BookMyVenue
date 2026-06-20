@@ -58,7 +58,7 @@ def verify_otp(
 def update_status(
     data: UpdateOwnerStatusRequest,
     db: Session = Depends(get_db),
-    current_admin=Depends(get_current_admin),
+    # current_admin=Depends(get_current_admin),
 ):
     result = venue_owner_auth_service.update_status(
         db=db,
@@ -70,6 +70,31 @@ def update_status(
         message="Owner status updated successfully",
         data=result,
     )
+
+
+# Get all Venue owner details
+@router.get(
+    "/profile",
+    response_model=SuccessResponse[VenueOwnerResponse],
+    summary="Get owner profile",
+    description="Get owner details based on token",
+)
+def get_owner_profile(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    owner_profile = venue_owner_auth_service.get_owner_profile(
+        db=db, owner_id=current_user.id
+    )
+    return SuccessResponse(
+        message="Owner profile retrieved successfully",
+        data=owner_profile,
+    )
+
+
+"""
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODE5ODkzNTAsInN1YiI6ImYwMDJhOTQ2LTlkOTgtNDAzMy1hMDQ1LTA3NWM3NGM3YTRmNCIsInR5cGUiOiJhY2Nlc3MifQ.6-XbSImeBQA3d19xFwuULZCAN8maCrxHE8BCiC4eyik
+"""
 
 
 # Get all Venue owner details

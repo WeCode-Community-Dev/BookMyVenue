@@ -219,6 +219,27 @@ class VenueOwnerAuthService:
                 detail=str(e),
             )
 
+    def get_owner_profile(
+        self,
+        db: Session,
+        owner_id: str,
+    ) -> VenueOwnerResponse:
+        try:
+            user = user_service.get_user_by_id(
+                db=db,
+                user_id=owner_id,
+            )
+            return VenueOwnerResponse.model_validate(user)
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail=str(e),
+            )
+
     def get_all_venue_owners(
         self,
         db: Session,
