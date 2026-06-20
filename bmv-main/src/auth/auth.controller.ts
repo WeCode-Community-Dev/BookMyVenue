@@ -3,6 +3,7 @@ import { JwtAuthGuard } from 'src/guard/jwt.guard';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
+import { GoogleAuthGuard } from 'src/guard/google.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('auth') // Groups the endpoints under "Auth" in Swagger
@@ -28,7 +29,7 @@ export class AuthController {
   }
 @Get('me')
 @ApiBearerAuth()
-@ApiOperation({ summary: 'Get current authenticated user' })
+@ApiOperation({ summary: 'Get current authenticated user for testing purposes' })
 @ApiResponse({ status: 200, description: 'Authenticated user returned successfully.' })
 @ApiResponse({ status: 401, description: 'Unauthorized.' })
 @UseGuards(JwtAuthGuard)
@@ -36,5 +37,16 @@ getMe(@Req() req) {
   console.log('Controller reached');
   return req.user;
 }
+
+@Get('google')
+@UseGuards(GoogleAuthGuard)
+googleLogin() {}
+
+@Get('google/callback')
+@UseGuards(GoogleAuthGuard)
+googleCallback(@Req() req) {
+  return req.user;
+}
+
 }
 

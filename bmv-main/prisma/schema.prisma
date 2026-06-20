@@ -25,6 +25,8 @@ model User {
   googleId          String?  @unique
   role              Role     @default(USER)
   isEmailVerified   Boolean  @default(false)
+  emailVerifyExpiry DateTime?
+  emailVerifyOtp    String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
