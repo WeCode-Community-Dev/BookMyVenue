@@ -1,8 +1,9 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body ,Get , UseGuards ,Req } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/guard/jwt.guard';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('auth') // Groups the endpoints under "Auth" in Swagger
 @Controller('auth')
@@ -25,4 +26,15 @@ export class AuthController {
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
+@Get('me')
+@ApiBearerAuth()
+@ApiOperation({ summary: 'Get current authenticated user' })
+@ApiResponse({ status: 200, description: 'Authenticated user returned successfully.' })
+@ApiResponse({ status: 401, description: 'Unauthorized.' })
+@UseGuards(JwtAuthGuard)
+getMe(@Req() req) {
+  console.log('Controller reached');
+  return req.user;
 }
+}
+
