@@ -30,7 +30,14 @@ export class AuthService {
         passwordHash: hashedpassword,
       },
     });
-    return { message: 'User registered successfully', userId: user.id };
+    await this.prisma.profile.create({
+      data: {
+        name: signUpDto.name,
+        userId: user.id,
+      },
+    });
+    const token = await this.getAccessToken(user.id, user.email, user.role);
+    return { message: 'User registered successfully', userId: user.id, token };
   }
 
   //login method to handle user login
@@ -52,20 +59,14 @@ export class AuthService {
 
     return { message: 'User logged in successfully', userId: user.id, token };
   }
-   // Method to generate an access token for the user
- private async getAccessToken(
-  userId: string,
-  email: string,
-  role: string,
-) {
-  const payload = {
-    sub: userId,
-    email,
-    role,
-  };
+  // Method to generate an access token for the user
+  private async getAccessToken(userId: string, email: string, role: string) {
+    const payload = {
+      sub: userId,
+      email,
+      role,
+    };
 
-  return this.jwtService.signAsync(
-    payload,
-  );
-}
+    return this.jwtService.signAsync(payload);
+  }
 }
