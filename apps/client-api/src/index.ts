@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import { clerkPlugin } from "@clerk/fastify";
-import { clerkClient, getAuth } from "@clerk/fastify";
 import { userAuthMiddleware } from "./middleware/authmiddleware.js";
+import { prisma } from "@bookmyvenue/database";
 
 const app = Fastify({ logger: true });
 app.register(clerkPlugin);
@@ -18,6 +18,28 @@ app.get("/protected", { preHandler: userAuthMiddleware }, (request, reply) => {
     } catch (error) {
         app.log.error(error);
         return reply.code(500).send({ error: "Failed to retrieve user" });
+    }
+});
+
+app.post("/users", { preHandler: userAuthMiddleware }, async (request, reply) => {
+    try {
+        const { email, role } = request.body as { email: string; role?: "ADMIN" | "OWNER" | "USER" };
+
+        if (!email) {
+            return reply.code(400).send({ error: "email is required" });
+        }
+
+        const user = await prisma.user.create({
+            data: { email, ...(role && { role }) },
+        });
+
+        return reply.code(201).send({ message: "User created successfully", user });
+    } catch (error: any) {
+        if (error?.code === "P2002") {
+            return reply.code(409).send({ error: "User with this email already exists" });
+        }
+        app.log.error(error);
+        return reply.code(500).send({ error: "Failed to create user" });
     }
 });
 
