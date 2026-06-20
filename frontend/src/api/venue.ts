@@ -2,7 +2,6 @@ import { axiosClient } from "src/lib/axios";
 
 import type { VenueCard } from "./types/venue.type";
 
-
 export class VenueApiService {
 
     /**
@@ -12,4 +11,15 @@ export class VenueApiService {
         const response = await axiosClient.get('/venues/my-venues');
         return response.data as VenueCard[]
     }
+
+    /**
+    * Get list of users with pagination
+    */
+    static async createVenue(data: any) {
+        console.log(data);
+
+        const response = await axiosClient.post('/venues', data);
+        return response.data as VenueCard[]
+    }
+
 }

@@ -1,6 +1,7 @@
 import { CONFIG } from 'src/config-global';
 
-import { CreateVenueForm } from 'src/sections/venue-owner/venues/create';
+import { BookingDetails } from 'src/sections/venue-owner/booking/details';
+
 
 
 // ----------------------------------------------------------------------
@@ -8,8 +9,8 @@ import { CreateVenueForm } from 'src/sections/venue-owner/venues/create';
 export default function Page() {
     return (
         <>
-            <title>{`Create Venue | ${CONFIG.appName}`}</title>
-            <CreateVenueForm />
+            <title>{`Venue Bookings | ${CONFIG.appName}`}</title>
+            <BookingDetails />
         </>
     );
 }

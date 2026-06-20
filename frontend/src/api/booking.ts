@@ -11,4 +11,13 @@ export class BookingApiService {
         return response.data
     }
 
+    /**
+     * Get list of users with pagination
+     */
+    static async getBookingDetailsForOwner(bookingId: string) {
+        const response = await axiosClient.get('/bookings/' + bookingId);
+        return response.data
+    }
+
+
 }

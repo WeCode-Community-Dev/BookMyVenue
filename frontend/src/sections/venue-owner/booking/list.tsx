@@ -1,6 +1,11 @@
+import { Link } from "react-router-dom";
+
+import { Tooltip } from "@mui/material";
+
 import { BookingApiService } from "src/api/booking";
 
 import { Label } from "src/components/label";
+import { Iconify } from "src/components/iconify";
 import { DataTable } from "src/components/data-table";
 
 
@@ -44,7 +49,20 @@ export function ListBookings() {
                             {data.status || 'NO status please add'}
                         </Label>
                     },
-                }
+                },
+                {
+                    id: 'action',
+                    label: 'Action',
+                    component(data) {
+                        return (
+                            <Link to={`/owner/bookings/${data.id}`}>
+                                <Tooltip title='View Booking'>
+                                    <Iconify color='dodgerblue' icon='maki:arrow' />
+                                </Tooltip>
+                            </Link>
+                        )
+                    },
+                },
             ]}
         />
     )

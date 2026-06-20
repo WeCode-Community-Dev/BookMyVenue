@@ -111,7 +111,7 @@ export function DataTable({
                 </Scrollbar>
                 <TablePagination
                     component="div"
-                    page={1}
+                    page={0}
                     count={data?.data.length || 0}
                     rowsPerPage={table.rowsPerPage}
                     onPageChange={table.onChangePage}

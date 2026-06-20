@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom';
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import { Button } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
@@ -13,6 +15,7 @@ import { _users } from 'src/_mock';
 import { VenueApiService } from 'src/api/venue';
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
 import { emptyRows } from '../utils';
@@ -52,6 +55,15 @@ export function VenueView() {
         <Typography variant="h4" sx={{ flexGrow: 1 }}>
           My Venues
         </Typography>
+        <Link to='/owner/venues/create'>
+          <Button
+            variant="contained"
+            color="inherit"
+            startIcon={<Iconify icon="mingcute:add-line" />}
+          >
+            Add Venue
+          </Button>
+        </Link>
       </Box>
 
       <Card>
