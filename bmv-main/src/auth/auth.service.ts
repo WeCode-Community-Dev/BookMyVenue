@@ -33,6 +33,60 @@ export class AuthService {
     return { message: 'User registered successfully', userId: user.id };
   }
 
+  //Google login method to handle user login via Google OAuth
+  async googleLogin(googleUser: any) {
+    let user = await this.prisma.user.findUnique({
+      where: {
+        email: googleUser.email,
+      },
+    });
+
+    // First Google login
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email: googleUser.email,
+          googleId: googleUser.googleId,
+          isEmailVerified: true,
+        },
+      });
+
+      await this.prisma.profile.create({
+        data: {
+          name: googleUser.name,
+          profilePicture: googleUser.picture,
+          userId: user.id,
+        },
+      });
+    }
+
+    // Email user later logs in with Google
+    else if (!user.googleId) {
+      user = await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          googleId: googleUser.googleId,
+        },
+      });
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const token = await this.jwtService.signAsync(payload);
+
+    return {
+      message: 'Google login successful',
+      userId: user.id,
+      token,
+    };
+  }
+
   //login method to handle user login
   async login(loginDto: LoginDto) {
     const user = await this.prisma.user.findUnique({
@@ -52,20 +106,15 @@ export class AuthService {
 
     return { message: 'User logged in successfully', userId: user.id, token };
   }
-   // Method to generate an access token for the user
- private async getAccessToken(
-  userId: string,
-  email: string,
-  role: string,
-) {
-  const payload = {
-    sub: userId,
-    email,
-    role,
-  };
 
-  return this.jwtService.signAsync(
-    payload,
-  );
-}
+  // Method to generate an access token for the user
+  private async getAccessToken(userId: string, email: string, role: string) {
+    const payload = {
+      sub: userId,
+      email,
+      role,
+    };
+
+    return this.jwtService.signAsync(payload);
+  }
 }

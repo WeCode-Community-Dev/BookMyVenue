@@ -45,7 +45,9 @@ googleLogin() {}
 @Get('google/callback')
 @UseGuards(GoogleAuthGuard)
 googleCallback(@Req() req) {
-  return req.user;
+  return this.authService.googleLogin(
+    req.user,
+  );
 }
 
 }
