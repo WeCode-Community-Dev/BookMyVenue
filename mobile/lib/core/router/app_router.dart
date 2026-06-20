@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../feature/add_new_venue/presentation/pages/add_new_venue_page.dart';
 import '../../feature/auth/domain/enums/approval_status.dart';
 import '../../feature/auth/domain/enums/role_base.dart';
 import '../../feature/auth/presentation/bloc/owner/owner_auth_bloc.dart';
@@ -9,7 +10,10 @@ import '../../feature/auth/presentation/bloc/user/auth_bloc.dart';
 import '../../feature/auth/presentation/pages/user_login/signin_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_signup_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/verify_otp_page.dart';
-import '../../feature/home/presentation/pages/home_page.dart';
+import '../../feature/bottom_nav_bar/venue_owner_bottom_nav/venue_owner_bottom_navigation_bar.dart';
+import '../../feature/owner_dashboard_page/presentation/pages/owner_dashboard_page.dart';
+import '../../feature/owner_payout_history/presentation/pages/owner_payout_page.dart';
+import '../../feature/owner_profile/presentation/pages/owner_profile.dart';
 import '../../feature/owner_verification_page/presentation/pages/owner_verification_page.dart';
 import '../auth/auth_session.dart';
 import '../di/injection.dart';
@@ -60,20 +64,13 @@ class AppRouter {
       ),
 
       GoRoute(
-        path: '/${AppRouteNames.home}',
-        name: AppRouteNames.home,
-        builder: (BuildContext context, GoRouterState state) {
-          final String role = state.extra! as String;
-          return HomePage(role: role);
-        },
-      ),
-      GoRoute(
         path: '/${AppRouteNames.ownerVerification}',
         name: AppRouteNames.ownerVerification,
         builder: (BuildContext context, GoRouterState state) {
           return const OwnerVerificationPage();
         },
       ),
+
       // GoRoute(
       //   path: '/signup2',
       //   name: AppRouteNames.signup2,
@@ -86,97 +83,59 @@ class AppRouter {
       //   builder: (BuildContext context, GoRouterState state) =>
       //       const SignUpPage1(),
       // ),
-
-      // StatefulShellRoute.indexedStack(
-      //   builder:
-      //       (
-      //         BuildContext context,
-      //         GoRouterState state,
-      //         StatefulNavigationShell navigationShell,
-      //       ) {
-      //         // This is the wrapper that contains the BottomNavBar
-      //         return MainScreen(navigationShell: navigationShell);
-      //       },
-      //   branches: <StatefulShellBranch>[
-      //     StatefulShellBranch(
-      //       routes: <RouteBase>[
-      //         GoRoute(
-      //           path: '/home',
-      //           name: AppRouteNames.dashboard,
-      //           builder: (BuildContext context, GoRouterState state) =>
-      //               const DashboardPage(),
-      //         ),
-      //       ],
-      //     ),
-      //     StatefulShellBranch(
-      //       routes: <RouteBase>[
-      //         GoRoute(
-      //           path: '/sessions',
-      //           name: AppRouteNames.session,
-      //           builder: (BuildContext context, GoRouterState state) =>
-      //               const SessionsPage(),
-      //         ),
-      //       ],
-      //     ),
-      //     StatefulShellBranch(
-      //       routes: <RouteBase>[
-      //         GoRoute(
-      //           path: '/subject',
-      //           name: AppRouteNames.subject,
-      //           builder: (BuildContext context, GoRouterState state) =>
-      //               BlocProvider<SubjectBloc>(
-      //                 create: (BuildContext context) => sl<SubjectBloc>(),
-      //                 child: const SubjectsPage(),
-      //               ),
-      //         ),
-      //       ],
-      //     ),
-      //     StatefulShellBranch(
-      //       routes: <RouteBase>[
-      //         GoRoute(
-      //           path: '/analytics',
-      //           name: AppRouteNames.analytics,
-      //           builder: (BuildContext context, GoRouterState state) =>
-      //               const AnalyticsPage(),
-      //         ),
-      //       ],
-      //     ),
-      //     StatefulShellBranch(
-      //       routes: <RouteBase>[
-      //         GoRoute(
-      //           path: '/profile',
-      //           name: AppRouteNames.profile,
-      //           builder: (BuildContext context, GoRouterState state) =>
-      //               const ProfilePage(),
-      //         ),
-      //       ],
-      //     ),
-      //   ],
-      // ),
-      // GoRoute(
-      //   path: '/setup-session',
-      //   name: AppRouteNames.setupSession,
-      //   builder: (BuildContext context, GoRouterState state) =>
-      //       const SetupSessionPage(),
-      // ),
-      // GoRoute(
-      //   path: '/live-session',
-      //   name: AppRouteNames.liveSession,
-      //   builder: (BuildContext context, GoRouterState state) =>
-      //       const LiveSessionPage(),
-      // ),
-      // GoRoute(
-      //   path: '/help-support',
-      //   name: AppRouteNames.helpSupport,
-      //   builder: (BuildContext context, GoRouterState state) =>
-      //       const HelpSupport(),
-      // ),
-      // GoRoute(
-      //   path: '/edit-profile',
-      //   name: AppRouteNames.editProfile,
-      //   builder: (BuildContext context, GoRouterState state) =>
-      //       const EditProfilePage(),
-      // ),
+      StatefulShellRoute.indexedStack(
+        builder:
+            (
+              BuildContext context,
+              GoRouterState state,
+              StatefulNavigationShell navigationShell,
+            ) {
+              // This is the wrapper that contains the BottomNavBar
+              return ResponsiveAppShell(navigationShell: navigationShell);
+            },
+        branches: <StatefulShellBranch>[
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/${AppRouteNames.ownerDashboard}',
+                name: AppRouteNames.ownerDashboard,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const OwnerDashboardPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/${AppRouteNames.addNewVenue}',
+                name: AppRouteNames.addNewVenue,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const OwnerVenuesListPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/${AppRouteNames.payout}',
+                name: AppRouteNames.payout,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const OwnerPayoutPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/${AppRouteNames.ownerProfile}',
+                name: AppRouteNames.ownerProfile,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const OwnerProfileSettingsScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
     ],
 
     // Error page for unknown routes (Production standard)

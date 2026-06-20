@@ -12,14 +12,14 @@ import '../widgets/build_step_3_media.dart';
 import '../widgets/build_step_4_pricing.dart';
 import '../widgets/build_stepper.dart';
 
-class OwnerVenuesListScreen extends StatefulWidget {
-  const OwnerVenuesListScreen({super.key});
+class OwnerVenuesListPage extends StatefulWidget {
+  const OwnerVenuesListPage({super.key});
 
   @override
-  State<OwnerVenuesListScreen> createState() => _OwnerVenuesListScreenState();
+  State<OwnerVenuesListPage> createState() => _OwnerVenuesListPageState();
 }
 
-class _OwnerVenuesListScreenState extends State<OwnerVenuesListScreen> {
+class _OwnerVenuesListPageState extends State<OwnerVenuesListPage> {
   bool _isWizardOpen = true;
 
   @override
