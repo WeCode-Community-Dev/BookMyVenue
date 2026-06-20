@@ -1,7 +1,7 @@
 package com.bookmyvenue.backend.entity;
+import com.bookmyvenue.backend.enums.EventType;
 import com.bookmyvenue.backend.enums.PricingType;
 import com.bookmyvenue.backend.enums.VenueStatus;
-import com.bookmyvenue.backend.enums.VenueType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -93,8 +93,14 @@ public class Venue {
     )
 private Set<Amenity> amenities;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "venue_event_types",
+            joinColumns = @JoinColumn(name = "venue_id")
+    )
+    @Column(name = "event_type")
     @Enumerated(EnumType.STRING)
-    private VenueType venueType;
+    private Set<EventType> supportedEventTypes;
 
     @OneToMany(mappedBy="venue",
             cascade=CascadeType.ALL,

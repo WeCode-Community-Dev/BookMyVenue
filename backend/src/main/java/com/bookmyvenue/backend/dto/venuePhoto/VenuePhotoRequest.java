@@ -13,6 +13,7 @@ public class VenuePhotoRequest {
 
     private Integer displayOrder;
 
+    private String photoUrl;
     @NotNull
     private Long createdBy;
 

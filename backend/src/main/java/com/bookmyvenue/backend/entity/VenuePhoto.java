@@ -23,6 +23,13 @@ public class VenuePhoto {
     @Column(name = "is_primary",nullable = false)
     private Boolean isPrimary=false;
 
+    @Column(name = "photo_url", nullable = false)
+    private String photoUrl;
+
+//    @Lob
+//    @Column(name = "image_data")
+//    private byte[] imageData;
+
     @Column(name = "display_Order")
     private Integer displayOrder=1;
 

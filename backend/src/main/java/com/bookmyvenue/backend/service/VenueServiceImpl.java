@@ -172,8 +172,8 @@ public class VenueServiceImpl implements VenueService {
     public List<VenueResponse> searchVenues(
             VenueSearchRequest request) {
         Specification<Venue> spec = Specification.allOf(
-//                VenueSpecification.hasCategory(
-//                        request.getCategoryId()),
+              VenueSpecification.hasSupportedEventType(
+                      request.getEventType()),
                 VenueSpecification.hasMinPrice(
                         request.getMinPrice()),
                 VenueSpecification.hasMaxPrice(
@@ -185,6 +185,8 @@ public class VenueServiceImpl implements VenueService {
                 VenueSpecification.isAvailableOn(
                         request.getAvailableDate())
         );
+
+
         return venueRepository.findAll(spec)
                 .stream()
                 .map(venueMapper::toResponse)

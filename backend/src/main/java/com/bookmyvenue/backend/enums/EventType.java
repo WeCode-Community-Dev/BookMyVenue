@@ -1,6 +1,6 @@
 package com.bookmyvenue.backend.enums;
 
-public enum VenueType {
+public enum EventType {
     WEDDING,
     CORPORATE,
     BIRTHDAY,

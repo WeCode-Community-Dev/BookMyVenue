@@ -1,13 +1,13 @@
 package com.bookmyvenue.backend.specification;
 import com.bookmyvenue.backend.entity.Venue;
+import com.bookmyvenue.backend.enums.EventType;
 import com.bookmyvenue.backend.enums.VenueStatus;
-import com.bookmyvenue.backend.enums.VenueType;
 import org.springframework.data.jpa.domain.Specification;
 import java.math.BigDecimal;
 import com.bookmyvenue.backend.entity.VenueAvailability;
-import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Subquery;
 import java.time.LocalDate;
+import java.util.Set;
 
 public class VenueSpecification {
 
@@ -61,21 +61,32 @@ public class VenueSpecification {
     /**
      * Filter by Venue Type
      */
-    public static Specification<Venue> hasVenueType(
-            VenueType venueType) {
+    public static Specification<Venue> hasSupportedEventTypes(
+            Set<EventType> venueType) {
+
+        return (root, query, cb) ->
+                venueType == null
+                        ? cb.conjunction()
+                        : cb.equal(
+                        root.join("supportedVenueTypes"),
+                        venueType);
+    }
+
+
+    public static Specification<Venue> hasSupportedEventType(
+            EventType eventType) {
 
         return (root, query, cb) -> {
 
-            if (venueType == null) {
+            if (eventType == null) {
                 return cb.conjunction();
             }
 
-            return cb.equal(
-                    root.get("venueType"),
-                    venueType);
+            return cb.isMember(
+                    eventType,
+                    root.get("supportedEventType"));
         };
     }
-
     /**
      * Filter by Available Date
      */
@@ -135,7 +146,4 @@ public class VenueSpecification {
                         status);
     }
 
-
-//    public static Specification<Venue> hasCategory(Long categoryId) {
-//    }
 }

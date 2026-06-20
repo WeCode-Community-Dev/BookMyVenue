@@ -1,5 +1,6 @@
 package com.bookmyvenue.backend.dto.Venue;
 
+import com.bookmyvenue.backend.enums.EventType;
 import com.bookmyvenue.backend.enums.PricingType;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -56,7 +57,7 @@ public class VenueRequest {
 
     private Set<Long> amenityIds;
 
-    private Set<Long> categoryIds;
+    private Set<EventType> supportedEventTypes;
 
     @NotNull
     private Long createdBy;

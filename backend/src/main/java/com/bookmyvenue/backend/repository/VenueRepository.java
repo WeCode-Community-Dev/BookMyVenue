@@ -1,5 +1,4 @@
 package com.bookmyvenue.backend.repository;
-import com.bookmyvenue.backend.dto.venueCategory.VenueCategoryResponse;
 import com.bookmyvenue.backend.entity.Venue;
 import com.bookmyvenue.backend.entity.VenueAvailability;
 import com.bookmyvenue.backend.enums.VenueStatus;

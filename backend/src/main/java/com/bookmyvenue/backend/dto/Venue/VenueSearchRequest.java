@@ -1,18 +1,17 @@
 package com.bookmyvenue.backend.dto.Venue;
 
-import com.bookmyvenue.backend.enums.VenueType;
+import com.bookmyvenue.backend.enums.EventType;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class VenueSearchRequest {
 
-    private Long categoryId;
-
-    private BigDecimal minPrice;
+      private BigDecimal minPrice;
 
     private BigDecimal maxPrice;
 
@@ -22,8 +21,7 @@ public class VenueSearchRequest {
 
     private String city;
 
-
-    private VenueType eventType;
+    private EventType eventType;
 
     private Integer guestCount;
 
