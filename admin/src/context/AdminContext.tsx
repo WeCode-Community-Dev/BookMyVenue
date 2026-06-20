@@ -22,7 +22,7 @@ import {
   initialNotifications,
   defaultSettings
 } from '../data/mockStore';
-import { fetchAdminDirectoryData, hasDirectoryApiConfig } from '../api/adminApi';
+import { fetchAdminDirectoryData, hasDirectoryApiConfig, updateVenueOwnerApprovalStatus } from '../api/adminApi';
 
 interface ApiResourceState {
   loading: boolean;
@@ -51,8 +51,8 @@ interface AdminContextProps {
   deleteCustomer: (id: string) => void;
   
   // Handlers for Owners
-  approveOwnerKYC: (id: string) => void;
-  rejectOwnerKYC: (id: string) => void;
+  approveOwnerKYC: (id: string) => Promise<VenueOwner['kycStatus']>;
+  rejectOwnerKYC: (id: string) => Promise<VenueOwner['kycStatus']>;
   blockOwner: (id: string) => void;
   unblockOwner: (id: string) => void;
   
@@ -216,14 +216,22 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   // OWNERS HANDLERS
-  const approveOwnerKYC = (id: string) => {
-    setOwners(prev => prev.map(o => o.id === id ? { ...o, kycStatus: 'verified', status: 'active' } : o));
-    sendNotification('KYC Verification Successful', `KYC and business proof for owner ${id} have been verified.`, 'owners', 'approval');
+  const applyOwnerKycStatus = (id: string, kycStatus: VenueOwner['kycStatus']) => {
+    setOwners(prev => prev.map(o => o.id === id ? { ...o, kycStatus, status: kycStatus === 'verified' ? 'active' : o.status } : o));
   };
 
-  const rejectOwnerKYC = (id: string) => {
-    setOwners(prev => prev.map(o => o.id === id ? { ...o, kycStatus: 'rejected' } : o));
-    sendNotification('KYC Verification Rejected', `KYC documents for owner ${id} did not satisfy requirements.`, 'owners', 'approval');
+  const approveOwnerKYC = async (id: string) => {
+    const update = await updateVenueOwnerApprovalStatus(id, 0);
+    applyOwnerKycStatus(update.ownerId, update.approvalStatus);
+    sendNotification('KYC Verification Successful', `KYC and business proof for owner ${update.ownerId} have been verified.`, 'owners', 'approval');
+    return update.approvalStatus;
+  };
+
+  const rejectOwnerKYC = async (id: string) => {
+    const update = await updateVenueOwnerApprovalStatus(id, 1);
+    applyOwnerKycStatus(update.ownerId, update.approvalStatus);
+    sendNotification('KYC Verification Rejected', `KYC documents for owner ${update.ownerId} did not satisfy requirements.`, 'owners', 'approval');
+    return update.approvalStatus;
   };
 
   const blockOwner = (id: string) => {

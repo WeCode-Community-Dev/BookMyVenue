@@ -3,12 +3,21 @@ import type { Customer, VenueOwner } from '../data/mockStore';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() ?? '';
 const USERS_ENDPOINT = import.meta.env.VITE_USERS_ENDPOINT?.trim() ?? '';
 const VENUE_OWNERS_ENDPOINT = import.meta.env.VITE_VENUE_OWNERS_ENDPOINT?.trim() ?? '';
+const VENUE_OWNER_STATUS_ENDPOINT =
+  import.meta.env.VITE_VENUE_OWNER_STATUS_ENDPOINT?.trim() ?? '/api/v1/auth/venue-owner/update-status';
 
 type ApiEntity = Record<string, unknown>;
 
 export interface AdminDirectoryData {
   customers?: Customer[];
   owners?: VenueOwner[];
+}
+
+export type VenueOwnerStatusCode = 0 | 1 | 2;
+
+export interface VenueOwnerStatusUpdate {
+  ownerId: string;
+  approvalStatus: VenueOwner['kycStatus'];
 }
 
 export const hasDirectoryApiConfig = Boolean(
@@ -160,6 +169,23 @@ const getJson = async (endpoint: string) => {
   return response.json() as Promise<unknown>;
 };
 
+const patchJson = async (endpoint: string, body: unknown) => {
+  const response = await fetch(buildUrl(endpoint), {
+    method: 'PATCH',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed with ${response.status}`);
+  }
+
+  return response.json() as Promise<unknown>;
+};
+
 export const fetchAdminDirectoryData = async (): Promise<AdminDirectoryData> => {
   const [usersPayload, ownersPayload] = await Promise.all([
     USERS_ENDPOINT ? getJson(USERS_ENDPOINT) : Promise.resolve(null),
@@ -169,5 +195,24 @@ export const fetchAdminDirectoryData = async (): Promise<AdminDirectoryData> => 
   return {
     customers: usersPayload ? readArray(usersPayload).map(normalizeCustomer) : undefined,
     owners: ownersPayload ? readArray(ownersPayload).map(normalizeOwner) : undefined
+  };
+};
+
+export const updateVenueOwnerApprovalStatus = async (
+  ownerId: string,
+  status: VenueOwnerStatusCode
+): Promise<VenueOwnerStatusUpdate> => {
+  const payload = await patchJson(VENUE_OWNER_STATUS_ENDPOINT, {
+    owner_id: ownerId,
+    status
+  });
+  const record = payload !== null && typeof payload === 'object' ? payload as ApiEntity : {};
+  const data = readRecord(record, 'data');
+  const responseOwnerId = readString(data, ['owner_id', 'ownerId', 'user_id'], ownerId);
+  const fallbackStatus = status === 0 ? 'approved' : status === 1 ? 'rejected' : 'pending';
+
+  return {
+    ownerId: responseOwnerId,
+    approvalStatus: normalizeKycStatus(readString(data, ['approval_status', 'kycStatus', 'verificationStatus'], fallbackStatus))
   };
 };

@@ -29,6 +29,8 @@ export const UsersView: React.FC<UsersViewProps> = ({ initialTab = 'customers', 
   // Modal details state
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [selectedOwner, setSelectedOwner] = useState<VenueOwner | null>(null);
+  const [ownerStatusSubmitting, setOwnerStatusSubmitting] = useState<'approve' | 'reject' | null>(null);
+  const [ownerStatusError, setOwnerStatusError] = useState<string | null>(null);
 
   // Format currency
   const formatCurrency = (val: number) => {
@@ -73,6 +75,23 @@ export const UsersView: React.FC<UsersViewProps> = ({ initialTab = 'customers', 
   // Get Owner Venues
   const getOwnerVenues = (ownerId: string) => {
     return venues.filter(v => v.ownerId === ownerId);
+  };
+
+  const handleOwnerKycDecision = async (owner: VenueOwner, decision: 'approve' | 'reject') => {
+    setOwnerStatusSubmitting(decision);
+    setOwnerStatusError(null);
+
+    try {
+      const nextStatus = decision === 'approve'
+        ? await approveOwnerKYC(owner.id)
+        : await rejectOwnerKYC(owner.id);
+
+      setSelectedOwner(prev => prev && prev.id === owner.id ? { ...prev, kycStatus: nextStatus } : prev);
+    } catch (error) {
+      setOwnerStatusError(error instanceof Error ? error.message : 'Unable to update venue owner status.');
+    } finally {
+      setOwnerStatusSubmitting(null);
+    }
   };
 
   const shimmerCell = (width = 'w-24') => (
@@ -372,7 +391,7 @@ export const UsersView: React.FC<UsersViewProps> = ({ initialTab = 'customers', 
                       </td>
                       <td className="p-4 text-right space-x-1.5 whitespace-nowrap">
                         <button
-                          onClick={() => setSelectedOwner(owner)}
+                          onClick={() => { setSelectedOwner(owner); setOwnerStatusError(null); setOwnerStatusSubmitting(null); }}
                           className="p-1.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition"
                           title="View Owner Profile"
                         >
@@ -562,7 +581,7 @@ export const UsersView: React.FC<UsersViewProps> = ({ initialTab = 'customers', 
         <div className="modal-overlay">
           <div className="glass-panel border border-slate-800 rounded-xl max-w-4xl w-full max-h-[85vh] overflow-y-auto space-y-6 p-6 relative">
             <button 
-              onClick={() => setSelectedOwner(null)}
+              onClick={() => { setSelectedOwner(null); setOwnerStatusError(null); }}
               className="absolute top-4 right-4 text-slate-500 hover:text-white p-1 hover:bg-slate-950 rounded-full transition"
             >
               <X className="w-5 h-5" />
@@ -655,19 +674,28 @@ export const UsersView: React.FC<UsersViewProps> = ({ initialTab = 'customers', 
                   </div>
                 )}
 
+                {ownerStatusError && (
+                  <div className="bg-red-500/5 border border-red-500/10 p-3 rounded text-xs text-red-400 flex items-start gap-2">
+                    <ShieldAlert className="w-4 h-4 mt-0.5 shrink-0" />
+                    <p>{ownerStatusError}</p>
+                  </div>
+                )}
+
                 {selectedOwner.kycStatus === 'pending' && (
                   <div className="flex gap-2">
                     <button
-                      onClick={() => { rejectOwnerKYC(selectedOwner.id); setSelectedOwner(null); }}
-                      className="flex-1 py-2 font-bold text-xs bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 hover:border-red-500 rounded-lg transition"
+                      onClick={() => void handleOwnerKycDecision(selectedOwner, 'reject')}
+                      disabled={ownerStatusSubmitting !== null}
+                      className="flex-1 py-2 font-bold text-xs bg-red-500/10 hover:bg-red-500 disabled:hover:bg-red-500/10 disabled:opacity-60 text-red-400 hover:text-white disabled:hover:text-red-400 border border-red-500/20 hover:border-red-500 rounded-lg transition"
                     >
-                      Reject Documents
+                      {ownerStatusSubmitting === 'reject' ? 'Rejecting...' : 'Reject Documents'}
                     </button>
                     <button
-                      onClick={() => { approveOwnerKYC(selectedOwner.id); setSelectedOwner(null); }}
-                      className="flex-1 py-2 font-bold text-xs bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 hover:border-emerald-500 rounded-lg transition"
+                      onClick={() => void handleOwnerKycDecision(selectedOwner, 'approve')}
+                      disabled={ownerStatusSubmitting !== null}
+                      className="flex-1 py-2 font-bold text-xs bg-emerald-500/10 hover:bg-emerald-500 disabled:hover:bg-emerald-500/10 disabled:opacity-60 text-emerald-400 hover:text-white disabled:hover:text-emerald-400 border border-emerald-500/20 hover:border-emerald-500 rounded-lg transition"
                     >
-                      Approve & Verify KYC
+                      {ownerStatusSubmitting === 'approve' ? 'Approving...' : 'Approve & Verify KYC'}
                     </button>
                   </div>
                 )}
@@ -726,7 +754,7 @@ export const UsersView: React.FC<UsersViewProps> = ({ initialTab = 'customers', 
                 </button>
               )}
               <button
-                onClick={() => setSelectedOwner(null)}
+                onClick={() => { setSelectedOwner(null); setOwnerStatusError(null); }}
                 className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 font-semibold text-xs rounded-lg transition"
               >
                 Close Profile
