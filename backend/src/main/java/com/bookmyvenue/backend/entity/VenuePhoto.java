@@ -2,36 +2,32 @@ package com.bookmyvenue.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "venuePhoto")
+@Table(name = "venue_photo")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class VenuePhoto {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "photo_id")
     private Long photoId;
 
-    @ManyToOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "venue_id", nullable = false)
     private Venue venue;
 
-    @Column(name = "is_primary",nullable = false)
-    private Boolean isPrimary=false;
+    @Column(name = "is_primary", nullable = false)
+    private Boolean isPrimary = false;
 
     @Column(name = "photo_url", nullable = false)
     private String photoUrl;
 
-//    @Lob
-//    @Column(name = "image_data")
-//    private byte[] imageData;
-
-    @Column(name = "display_Order")
-    private Integer displayOrder=1;
+    @Column(name = "display_order")
+    private Integer displayOrder = 1;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -42,21 +38,20 @@ public class VenuePhoto {
     @Column(name = "created_by", nullable = false, updatable = false)
     private Long createdBy;
 
-    @Column(name = "updated_by",nullable = false)
+    @Column(name = "updated_by", nullable = false)
     private Long updatedBy;
-
 
     @PrePersist
     protected void prePersist() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        if(this.isPrimary==null)
-        {
-            this.isPrimary=false;
+
+        if (isPrimary == null) {
+            isPrimary = false;
         }
-        if(this.displayOrder==null)
-        {
-            this.displayOrder=1;
+
+        if (displayOrder == null) {
+            displayOrder = 1;
         }
     }
 
@@ -64,5 +59,4 @@ public class VenuePhoto {
     protected void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
 }

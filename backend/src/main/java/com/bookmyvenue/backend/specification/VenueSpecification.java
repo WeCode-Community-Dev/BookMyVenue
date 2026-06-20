@@ -1,6 +1,6 @@
 package com.bookmyvenue.backend.specification;
 import com.bookmyvenue.backend.entity.Venue;
-import com.bookmyvenue.backend.enums.EventType;
+import com.bookmyvenue.backend.entity.EventCategory;
 import com.bookmyvenue.backend.enums.VenueStatus;
 import org.springframework.data.jpa.domain.Specification;
 import java.math.BigDecimal;
@@ -62,29 +62,29 @@ public class VenueSpecification {
      * Filter by Venue Type
      */
     public static Specification<Venue> hasSupportedEventTypes(
-            Set<EventType> venueType) {
+            Set<Long> venueTypeIds) {
 
         return (root, query, cb) ->
-                venueType == null
+                venueTypeIds == null || venueTypeIds.isEmpty()
                         ? cb.conjunction()
-                        : cb.equal(
-                        root.join("supportedVenueTypes"),
-                        venueType);
+                                : root.join("supportedEventCategories")
+                                        .get("eventCategoryId").in(venueTypeIds);
     }
 
 
     public static Specification<Venue> hasSupportedEventType(
-            EventType eventType) {
+            Long eventCategoryId) {
 
         return (root, query, cb) -> {
 
-            if (eventType == null) {
+            if (eventCategoryId == null) {
                 return cb.conjunction();
             }
 
-            return cb.isMember(
-                    eventType,
-                    root.get("supportedEventType"));
+            return cb.equal(
+                    root.join("supportedEventCategories")
+                            .get("eventCategoryId"),
+                    eventCategoryId);
         };
     }
     /**

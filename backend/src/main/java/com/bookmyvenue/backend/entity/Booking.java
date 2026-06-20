@@ -71,6 +71,7 @@ public class Booking {
             scale = 2)
     private BigDecimal balanceAmount;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "booking_status",
             nullable = false,

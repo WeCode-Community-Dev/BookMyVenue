@@ -1,15 +1,13 @@
 package com.bookmyvenue.backend.service;
 
 
-import com.bookmyvenue.backend.dto.Venue.VenueRequest;
-import com.bookmyvenue.backend.dto.Venue.VenueResponse;
-import com.bookmyvenue.backend.dto.Venue.VenueSearchRequest;
-import com.bookmyvenue.backend.dto.Venue.VenueStatusRequest;
-import com.bookmyvenue.backend.entity.Users;
-import com.bookmyvenue.backend.entity.Venue;
+import com.bookmyvenue.backend.dto.Venue.*;
+import com.bookmyvenue.backend.dto.venuePhoto.VenuePhotoRequest;
+import com.bookmyvenue.backend.entity.*;
 import com.bookmyvenue.backend.enums.VenueStatus;
 import com.bookmyvenue.backend.exception.ResourceNotFoundException;
 import com.bookmyvenue.backend.mapper.VenueMapper;
+import com.bookmyvenue.backend.repository.AmenityRepository;
 import com.bookmyvenue.backend.repository.UserRepository;
 import com.bookmyvenue.backend.repository.VenueRepository;
 import com.bookmyvenue.backend.specification.VenueSpecification;
@@ -18,7 +16,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,9 +29,11 @@ public class VenueServiceImpl implements VenueService {
     private final VenueRepository venueRepository;
     private final UserRepository userRepository;
     private final VenueMapper venueMapper;
+    private final AmenityRepository amenityRepository;
+    private final com.bookmyvenue.backend.repository.EventCategoryRepository eventCategoryRepository;
 
     @Override
-    public VenueResponse createVenue(VenueRequest request) {
+    public VenueCreationResponse createVenue(VenueCreationRequest request) {
 
         Users owner = userRepository.findById(request.getOwnerUserId())
                 .orElseThrow(() ->
@@ -57,13 +60,57 @@ public class VenueServiceImpl implements VenueService {
         venue.setAdvancePercentage(
                 request.getAdvancePercentage());
         venue.setContactName(
-                request.getContactName());
+                owner.getFirstName());
         venue.setContactEmail(
-                request.getContactEmail());
+                owner.getEmail());
         venue.setCreatedBy(
                 request.getCreatedBy());
         venue.setUpdatedBy(
                 request.getCreatedBy());
+
+          if (request.getAmenityIds() != null &&
+                !request.getAmenityIds().isEmpty()) {
+
+            Set<Amenity> amenities = request.getAmenityIds()
+                    .stream()
+                    .map(amenityId -> amenityRepository.findById(amenityId)
+                            .orElseThrow(() ->
+                                    new ResourceNotFoundException(
+                                            "Amenity not found with id : "
+                                                    + amenityId)))
+                    .collect(Collectors.toSet());
+
+            venue.setAmenities(amenities);
+        }
+
+        if (request.getSupportedEventCategoryIds() != null && !request.getSupportedEventCategoryIds().isEmpty()) {
+            var categories = request.getSupportedEventCategoryIds().stream()
+                    .map(catId -> eventCategoryRepository.findById(catId)
+                            .orElseThrow(() -> new ResourceNotFoundException("EventCategory not found with id : " + catId)))
+                    .collect(Collectors.toSet());
+
+            venue.setSupportedEventCategories(categories);
+        }
+
+
+        List<VenuePhoto> venuePhotos = new ArrayList<>();
+
+        if (request.getPhotos() != null) {
+
+            for (VenuePhotoRequest photoRequest : request.getPhotos()) {
+
+                VenuePhoto photo = new VenuePhoto();
+
+                photo.setPhotoUrl(photoRequest.getPhotoUrl());
+                photo.setIsPrimary(photoRequest.getIsPrimary());
+                photo.setDisplayOrder(photoRequest.getDisplayOrder());
+                photo.setVenue(venue);
+
+                venuePhotos.add(photo);
+            }
+        }
+
+        venue.setVenuePhotos(venuePhotos);
 
         Venue savedVenue =
                 venueRepository.save(venue);
@@ -71,9 +118,10 @@ public class VenueServiceImpl implements VenueService {
         return venueMapper.toResponse(savedVenue);
     }
 
+
     @Override
     @Transactional(readOnly = true)
-    public VenueResponse getVenueById(Long venueId) {
+    public VenueCreationResponse getVenueById(Long venueId) {
 
         Venue venue = venueRepository.findById(venueId)
                 .orElseThrow(() ->
@@ -86,7 +134,7 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<VenueResponse> getAllVenues() {
+    public List<VenueCreationResponse> getAllVenues() {
 
         return venueRepository.findAll()
                 .stream()
@@ -96,7 +144,7 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<VenueResponse> getVenuesByOwner(Long ownerId) {
+    public List<VenueCreationResponse> getVenuesByOwner(Long ownerId) {
 
         return venueRepository
                 .findByOwnerUserUserId(ownerId)
@@ -107,7 +155,7 @@ public class VenueServiceImpl implements VenueService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<VenueResponse> getVenuesByStatus(
+    public List<VenueCreationResponse> getVenuesByStatus(
             VenueStatus status) {
 
         return venueRepository
@@ -117,10 +165,12 @@ public class VenueServiceImpl implements VenueService {
                 .toList();
     }
 
+
+
     @Override
-    public VenueResponse updateVenue(
+    public VenueCreationResponse updateVenue(
             Long venueId,
-            VenueRequest request) {
+            VenueCreationRequest request) {
 
         Venue venue = venueRepository.findById(venueId)
                 .orElseThrow(() ->
@@ -128,6 +178,14 @@ public class VenueServiceImpl implements VenueService {
                                 "Venue not found with id : "
                                         + venueId));
 
+        Users owner = userRepository.findById(
+                        request.getOwnerUserId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Owner not found with id : "
+                                        + request.getOwnerUserId()));
+
+        venue.setOwnerUser(owner);
         venue.setVenueName(request.getVenueName());
         venue.setAddressLine1(request.getAddressLine1());
         venue.setAddressLine2(request.getAddressLine2());
@@ -143,12 +201,75 @@ public class VenueServiceImpl implements VenueService {
         venue.setBasePrice(request.getBasePrice());
         venue.setAdvancePercentage(
                 request.getAdvancePercentage());
-        venue.setContactName(
-                request.getContactName());
-        venue.setContactEmail(
-                request.getContactEmail());
-        venue.setUpdatedBy(
-                request.getCreatedBy());
+
+        venue.setContactName(owner.getFirstName());
+        venue.setContactEmail(owner.getEmail());
+
+        venue.setUpdatedBy(request.getCreatedBy());
+
+        // Update Amenities
+        if (request.getAmenityIds() != null) {
+
+            Set<Amenity> amenities =
+                    request.getAmenityIds()
+                            .stream()
+                            .map(id -> amenityRepository.findById(id)
+                                    .orElseThrow(() ->
+                                            new ResourceNotFoundException(
+                                                    "Amenity not found with id : "
+                                                            + id)))
+                            .collect(Collectors.toSet());
+
+            venue.setAmenities(amenities);
+        }
+
+        // Update Event Categories
+        if (request.getSupportedEventCategoryIds() != null) {
+
+            Set<EventCategory> categories =
+                    request.getSupportedEventCategoryIds()
+                            .stream()
+                            .map(id -> eventCategoryRepository.findById(id)
+                                    .orElseThrow(() ->
+                                            new ResourceNotFoundException(
+                                                    "Event Category not found with id : "
+                                                            + id)))
+                            .collect(Collectors.toSet());
+
+            venue.setSupportedEventCategories(categories);
+        }
+
+        // Update Photos
+        venue.getVenuePhotos().clear();
+
+        if (request.getPhotos() != null) {
+
+            List<VenuePhoto> photos = new ArrayList<>();
+
+            for (VenuePhotoRequest photoRequest :
+                    request.getPhotos()) {
+
+                VenuePhoto photo = new VenuePhoto();
+
+                photo.setVenue(venue);
+                photo.setPhotoUrl(
+                        photoRequest.getPhotoUrl());
+                photo.setIsPrimary(
+                        photoRequest.getIsPrimary());
+                photo.setDisplayOrder(
+                        photoRequest.getDisplayOrder());
+
+                photo.setCreatedBy(
+                        request.getCreatedBy());
+
+                photo.setUpdatedBy(
+                        request.getCreatedBy());
+
+                photos.add(photo);
+            }
+
+            venue.getVenuePhotos().addAll(photos);
+        }
 
         Venue updatedVenue =
                 venueRepository.save(venue);
@@ -169,11 +290,11 @@ public class VenueServiceImpl implements VenueService {
     }
 
     @Override
-    public List<VenueResponse> searchVenues(
+    public List<VenueCreationResponse> searchVenues(
             VenueSearchRequest request) {
         Specification<Venue> spec = Specification.allOf(
               VenueSpecification.hasSupportedEventType(
-                      request.getEventType()),
+                      request.getEventCategoryId()),
                 VenueSpecification.hasMinPrice(
                         request.getMinPrice()),
                 VenueSpecification.hasMaxPrice(
@@ -194,7 +315,7 @@ public class VenueServiceImpl implements VenueService {
     }
 
     @Override
-    public VenueResponse updateVenueStatus(
+    public VenueCreationResponse updateVenueStatus(
             Long venueId,
             VenueStatusRequest request) {
 
