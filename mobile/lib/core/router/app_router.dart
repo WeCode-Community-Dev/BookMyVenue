@@ -12,6 +12,8 @@ import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/verify_otp_page.dart';
 import '../../feature/bottom_nav_bar/venue_owner_bottom_nav/venue_owner_bottom_navigation_bar.dart';
 import '../../feature/owner_dashboard_page/presentation/pages/owner_dashboard_page.dart';
+import '../../feature/owner_payout_history/presentation/pages/owner_payout_details.dart';
+import '../../feature/owner_payout_history/presentation/pages/owner_payout_history_page.dart';
 import '../../feature/owner_payout_history/presentation/pages/owner_payout_page.dart';
 import '../../feature/owner_profile/presentation/pages/owner_profile.dart';
 import '../../feature/owner_verification_page/presentation/pages/owner_verification_page.dart';
@@ -25,7 +27,7 @@ class AppRouter {
       GlobalKey<NavigatorState>();
 
   static final GoRouter router = GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/${AppRouteNames.signin}',
     // initialLocation: AppRouteNames.ownerVerification,
     navigatorKey: navigatorKey,
     debugLogDiagnostics: true, // Useful for development
@@ -71,18 +73,6 @@ class AppRouter {
         },
       ),
 
-      // GoRoute(
-      //   path: '/signup2',
-      //   name: AppRouteNames.signup2,
-      //   builder: (BuildContext context, GoRouterState state) =>
-      //       const SignUpPage1(),
-      // ),
-      // GoRoute(
-      //   path: '/signup3',
-      //   name: AppRouteNames.signup3,
-      //   builder: (BuildContext context, GoRouterState state) =>
-      //       const SignUpPage1(),
-      // ),
       StatefulShellRoute.indexedStack(
         builder:
             (
@@ -136,6 +126,20 @@ class AppRouter {
           ),
         ],
       ),
+      GoRoute(
+        path: '/${AppRouteNames.payoutHistory}',
+        name: AppRouteNames.payoutHistory,
+        builder: (BuildContext context, GoRouterState state) {
+          return const OwnerPayoutHistoryPage();
+        },
+      ),
+      GoRoute(
+        path: '/${AppRouteNames.payoutOutDetails}',
+        name: AppRouteNames.payoutOutDetails,
+        builder: (BuildContext context, GoRouterState state) {
+          return const OwnerPayoutDetails();
+        },
+      ),
     ],
 
     // Error page for unknown routes (Production standard)
@@ -156,27 +160,37 @@ class AppRouter {
         '/${AppRouteNames.signin}',
         '/${AppRouteNames.venueOwnerSignup}',
         '/${AppRouteNames.venueOwnerVerify}',
-        // '/${AppRouteNames.ownerVerification}',
       ].contains(location);
 
+      // Not logged in
       if (!loggedIn) {
         return authRoutes ? null : '/${AppRouteNames.signin}';
       }
 
+      // Owner flow
       if (role == UserRole.venueOwner) {
         final bool approved = status == ApprovalStatus.approved;
 
+        // Pending verification
         if (!approved && location != '/${AppRouteNames.ownerVerification}') {
           return '/${AppRouteNames.ownerVerification}';
         }
 
+        // Approved owner
         if (approved && location == '/${AppRouteNames.ownerVerification}') {
           return '/${AppRouteNames.ownerDashboard}';
         }
       }
 
+      // Logged-in users should never visit auth pages
       if (authRoutes) {
-        return '/home';
+        if (role == UserRole.venueOwner) {
+          return status == ApprovalStatus.approved
+              ? '/${AppRouteNames.ownerDashboard}'
+              : '/${AppRouteNames.ownerVerification}';
+        }
+
+        return '/${AppRouteNames.ownerDashboard}';
       }
 
       return null;

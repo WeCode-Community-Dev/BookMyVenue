@@ -8,8 +8,8 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 
-class PayoutTransactionDetailsScreen extends StatelessWidget {
-  const PayoutTransactionDetailsScreen({super.key});
+class OwnerPayoutDetails extends StatelessWidget {
+  const OwnerPayoutDetails({super.key});
 
   @override
   Widget build(BuildContext context) {

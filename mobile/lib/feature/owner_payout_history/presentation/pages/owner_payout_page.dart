@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/extension/date_extension.dart';
+import '../../../../core/router/route_name.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
@@ -39,13 +41,7 @@ class OwnerPayoutPage extends StatelessWidget {
                 ),
                 AppTextButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute<OwnerPayoutHistoryPage>(
-                        builder: (BuildContext context) =>
-                            const OwnerPayoutHistoryPage(),
-                      ),
-                    );
+                    context.pushNamed(AppRouteNames.payoutHistory);
                   },
                   title: 'View All',
                 ),
@@ -156,12 +152,7 @@ class BuildPayoutItem extends StatelessWidget {
       padding: AppSpacing.pLg,
       child: GestureDetector(
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute<PayoutTransactionDetailsScreen>(
-              builder: (BuildContext context) =>
-                  const PayoutTransactionDetailsScreen(),
-            ),
-          );
+          context.pushNamed(AppRouteNames.payoutOutDetails);
         },
         child: Column(
           spacing: AppSpacing.spaceMd,
