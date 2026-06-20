@@ -16,5 +16,10 @@ export const API_ROUTES = {
   ADMIN: {
     LOGIN: "/auth/admin/login",
   },
-  
+
+  BOOKINGS: {
+    BASE: "/bookings",
+    MY_BOOKINGS: "/bookings/my",
+    OWNER_BOOKINGS: "/bookings/owner",
+  },
 };

@@ -1,21 +1,20 @@
-import { Outlet } from "react-router-dom";
 
 import { ROUTES } from "../../shared/constants/routes";
 
 import OwnerDashboard from "./pages/OwnerDashboard";
+import OwnerVenuesPage from "./pages/OwnerVenuesPage";
+import OwnerBookingsPage from "./pages/OwnerBookingsPage";
+import OwnerLayout from "./components/OwnerLayout";
 
 const ownerRoutes = [
    {
       path: ROUTES.OWNER,
-      element: <Outlet />,
+      element: <OwnerLayout />,
       children: [
          {
             index: true,
             element: <OwnerDashboard />,
          },
-
-         /*
-         Future routes
 
          {
             path: "venues",
@@ -26,12 +25,6 @@ const ownerRoutes = [
             path: "bookings",
             element: <OwnerBookingsPage />,
          },
-
-         {
-            path: "calendar",
-            element: <OwnerCalendarPage />,
-         },
-         */
       ],
    },
 ];

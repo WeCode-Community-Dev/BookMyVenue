@@ -11,7 +11,7 @@ const router = createBrowserRouter([
    ...authRoutes,
    ...venueRoutes,
    ...ownerRoutes,
-   ...adminRoutes
+   ...adminRoutes,
 ]);
 
 export default router;
