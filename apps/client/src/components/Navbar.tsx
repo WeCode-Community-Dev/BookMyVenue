@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import {Menu, X } from "lucide-react";
-import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { Show, SignInButton, SignUpButton } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
+import ProfileButton from "./ProfileButton";
 
 export function Navbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -66,7 +67,7 @@ export function Navbar() {
                             </SignUpButton>
                         </Show>
                         <Show when="signed-in">
-                            <UserButton />
+                            <ProfileButton />
                         </Show>
                     </div>
 
