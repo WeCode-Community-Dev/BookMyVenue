@@ -1,11 +1,13 @@
 package com.bookmyvenue.backend.service;
 
+import com.bookmyvenue.backend.dto.authentication.LoginRequest;
+import com.bookmyvenue.backend.dto.authentication.LoginResponse;
 import com.bookmyvenue.backend.dto.authentication.RegisterRequest;
 import com.bookmyvenue.backend.dto.authentication.RegisterResponse;
 import com.bookmyvenue.backend.entity.Users;
 import com.bookmyvenue.backend.enums.UserRole;
 import com.bookmyvenue.backend.enums.UserStatus;
-import com.bookmyvenue.backend.exception.BadrequestException;
+import com.bookmyvenue.backend.exception.BadRequestException;
 import com.bookmyvenue.backend.exception.DuplicateResourceException;
 import com.bookmyvenue.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +22,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final JwtService jwtService;
+
     @Override
-    public RegisterResponse registerResponse(RegisterRequest registerRequest) {
+    public RegisterResponse register(RegisterRequest registerRequest) {
 
         if(UserRole.ADMIN.equals(registerRequest.getRole())){
-            throw new BadrequestException("Admin Registration is not allowed");
+            throw new BadRequestException("Admin Registration is not allowed");
         }
 
         if(userRepository.existsByEmail(registerRequest.getEmail())){
@@ -62,5 +66,40 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return registerResponse;
     }
 
+    @Override
+    public LoginResponse login(LoginRequest loginRequest) {
+        Users user;
+
+        if(loginRequest.getUserName().contains("@")){
+          user = userRepository.findByEmail(loginRequest.getUserName())
+                  .orElseThrow(()-> new BadRequestException("Invalid Credentials"));
+        }
+        else if(loginRequest.getUserName().matches(("^[6-9][0-9]{9}$"))){
+             user = userRepository.findByPhone(loginRequest.getUserName())
+                    .orElseThrow(()-> new BadRequestException("Invalid Credentials"));
+        }
+        else{
+            throw new BadRequestException("Invalid Credentials");
+        }
+
+        if(!passwordEncoder.matches(loginRequest.getPassword(),user.getPasswordHash())){
+            throw new BadRequestException("Invalid Credentials ");
+        }
+
+        LoginResponse loginResponse = new LoginResponse();
+
+        String token = jwtService.generateToken(user);
+        loginResponse.setToken(token);
+
+        loginResponse.setUserId(user.getUserId());
+        loginResponse.setFirstName(user.getFirstName());
+        loginResponse.setEmail(user.getEmail());
+        loginResponse.setPhone(user.getPhone());
+        loginResponse.setCity(user.getCity());
+        loginResponse.setRole(user.getRole());
+        loginResponse.setMessage("Login Successful");
+
+        return loginResponse;
+    }
 
 }
