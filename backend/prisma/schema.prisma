@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/infra/database/prisma/generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/infra/database/prisma/generated/prisma"
   moduleFormat = "cjs"
 }
 
@@ -34,12 +34,6 @@ enum payment_status {
   REFUNDED
 }
 
-enum refund_status {
-  PENDING
-  COMPLETED
-  REJECTED
-}
-
 model users {
   id            String           @id @default(uuid()) @db.Uuid
   email         String           @unique @db.VarChar(255)
@@ -55,9 +49,7 @@ model users {
   deleted_at    DateTime?        @db.Timestamptz
   venues        venues[]
   bookings      bookings[]
-  reviews       reviews[]
   refreshTokens refresh_tokens[]
-  savedVenues   saved_venues[]
 
   @@index([role])
   @@index([status])
@@ -92,8 +84,6 @@ model venues {
   owner          users             @relation(fields: [owner_id], references: [id])
   images         venue_images[]
   bookings       bookings[]
-  reviews        reviews[]
-  savedVenues    saved_venues[]
   venueAmenities venue_amenities[]
 
   @@index([owner_id])
@@ -164,54 +154,10 @@ model payments {
   paid_at             DateTime?      @db.Timestamptz
   created_at          DateTime       @default(now()) @db.Timestamptz
   booking             bookings       @relation(fields: [booking_id], references: [id])
-  refund              refunds?
 
   @@index([status])
   @@index([provider])
   @@index([paid_at])
-}
-
-model refunds {
-  id         String        @id @default(uuid()) @db.Uuid
-  payment_id String        @unique @db.Uuid
-  amount     Decimal       @db.Decimal(12, 2)
-  reason     String?       @db.Text
-  status     refund_status @default(PENDING)
-  created_at DateTime      @default(now()) @db.Timestamptz
-  payment    payments      @relation(fields: [payment_id], references: [id])
-
-  @@index([status])
-}
-
-model reviews {
-  id         String   @id @default(uuid()) @db.Uuid
-  venue_id   String   @db.Uuid
-  user_id    String   @db.Uuid
-  rating     Int      @db.SmallInt
-  comment    String?  @db.Text
-  created_at DateTime @default(now()) @db.Timestamptz
-  venue      venues   @relation(fields: [venue_id], references: [id], onDelete: Cascade)
-  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@unique([venue_id, user_id])
-  @@index([venue_id])
-  @@index([user_id])
-  @@index([rating])
-}
-
-model audit_logs {
-  id          String   @id @default(uuid()) @db.Uuid
-  user_id     String   @db.Uuid
-  action      String   @db.VarChar(100)
-  entity_type String   @db.VarChar(100)
-  entity_id   String   @db.Uuid
-  metadata    Json?
-  created_at  DateTime @default(now()) @db.Timestamptz
-
-  @@index([user_id])
-  @@index([entity_type])
-  @@index([entity_id])
-  @@index([created_at])
 }
 
 model refresh_tokens {
@@ -224,17 +170,4 @@ model refresh_tokens {
 
   @@index([user_id])
   @@index([expires_at])
-}
-
-model saved_venues {
-  id         String   @id @default(uuid()) @db.Uuid
-  user_id    String   @db.Uuid
-  venue_id   String   @db.Uuid
-  created_at DateTime @default(now()) @db.Timestamptz
-  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  venue      venues   @relation(fields: [venue_id], references: [id], onDelete: Cascade)
-
-  @@unique([user_id, venue_id])
-  @@index([user_id])
-  @@index([venue_id])
 }
