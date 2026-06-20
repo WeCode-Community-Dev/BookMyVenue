@@ -40,32 +40,39 @@ class AppText extends StatelessWidget {
 
     switch (variant) {
       case TextVariant.headerText:
-        style = AppTypography.headerText;
+        style = Theme.of(context).textTheme.headlineLarge;
         break;
+
       case TextVariant.headingLarge:
-        style = AppTypography.headingLarge;
+        style = Theme.of(context).textTheme.headlineMedium;
         break;
+
       case TextVariant.headingMedium:
-        style = AppTypography.headingMedium;
+        style = Theme.of(context).textTheme.headlineSmall;
         break;
 
       case TextVariant.bodyMedium:
-        style = AppTypography.bodyMedium;
+        style = Theme.of(context).textTheme.bodyLarge;
         break;
 
       case TextVariant.labelMedium:
-        style = AppTypography.labelMedium;
+        style = Theme.of(context).textTheme.bodyMedium;
         break;
+
       case TextVariant.labelSmall:
-        style = AppTypography.labelSmall;
+        style = Theme.of(context).textTheme.labelLarge;
         break;
 
       case TextVariant.captionRegular:
-        style = AppTypography.captionRegular;
+        style = AppTypography.captionRegular.copyWith(
+          color: Theme.of(context).colorScheme.onSurface,
+        );
         break;
 
       case TextVariant.captionMedium:
-        style = AppTypography.captionMedium;
+        style = AppTypography.captionMedium.copyWith(
+          color: Theme.of(context).colorScheme.onSurface,
+        );
         break;
     }
 
@@ -74,7 +81,7 @@ class AppText extends StatelessWidget {
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
-      style: style.copyWith(
+      style: style!.copyWith(
         color: color,
         fontWeight: fontWeight,
         decoration: decoration,

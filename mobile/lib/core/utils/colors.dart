@@ -73,6 +73,10 @@ class AppColors {
   static const Color outlineFocus = Color(0xFFE63946); // Focus outline color
 
   // Text colors
+  static const Color textPrimary = Color(0xFF111827);
+  static const Color textSecondary = Color(0xFF6B7280);
+  static const Color darkTextPrimary = Color(0xFFF9FAFB);
+  static const Color darkTextSecondary = Color(0xFFD1D5DB);
   static Color get onSurface => _isDark
       ? const Color(0xFFF8FAFC)
       : const Color(0xFF191C1E); // Dark charcoal for primary body/headings

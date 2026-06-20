@@ -21,8 +21,8 @@ class AppTheme {
         : Colors.white;
 
     final Color currentOnSurface = isDark
-        ? const Color(0xFFF8FAFC)
-        : const Color(0xFF191C1E);
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
 
     final Color currentOutline = isDark
         ? const Color(0xFF334155)

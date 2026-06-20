@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../utils/app_spacing.dart';
+import '../utils/colors.dart';
+import 'app_text.dart';
+
 enum ButtonType { primary, success, warning, destructive, secondary, disabled }
 
 enum ButtonSize { small, medium, large }
@@ -134,6 +138,78 @@ class AppButton extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class AppTextButton extends StatelessWidget {
+  const AppTextButton({
+    super.key,
+    required this.title,
+    required this.onPressed,
+    this.icon,
+    this.color,
+    this.isLoading = false,
+  });
+
+  final String title;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+  final Color? color;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color buttonColor = color ?? AppColors.primary;
+
+    return TextButton(
+      onPressed: isLoading ? null : onPressed,
+      style: TextButton.styleFrom(foregroundColor: buttonColor),
+      child: isLoading
+          ? SizedBox(
+              height: 18,
+              width: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: buttonColor,
+              ),
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                if (icon != null) ...<Widget>[
+                  Icon(icon, size: AppSpacing.iconLg),
+                  AppSpacing.h8,
+                ],
+                AppText(title, color: buttonColor),
+              ],
+            ),
+    );
+  }
+}
+
+class AppIconButton extends StatelessWidget {
+  const AppIconButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+    this.color,
+    this.tooltip,
+    this.size = AppSpacing.spaceLg,
+  });
+
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final Color? color;
+  final String? tooltip;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      icon: Icon(icon, size: size, color: color ?? AppColors.primary),
     );
   }
 }

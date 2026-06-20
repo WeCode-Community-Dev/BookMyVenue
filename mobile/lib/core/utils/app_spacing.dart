@@ -25,6 +25,7 @@ class AppSpacing {
   static const Widget h32 = SizedBox(height: 32);
 
   // Padding
+  static EdgeInsets get p0 => EdgeInsets.zero;
   static EdgeInsets get pXs => const EdgeInsets.all(spaceXs);
   static EdgeInsets get pSm => const EdgeInsets.all(spaceSm);
   static EdgeInsets get pMd => const EdgeInsets.all(spaceMd);

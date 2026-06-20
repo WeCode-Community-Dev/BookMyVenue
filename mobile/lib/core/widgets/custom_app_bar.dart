@@ -9,7 +9,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.leading,
     this.centerTitle = false,
     this.backgroundColor,
-    this.elevation = 0,
+    this.elevation = 3,
+    this.showBottomBorder = true,
+    this.borderColor,
   });
 
   final String title;
@@ -19,19 +21,22 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool centerTitle;
   final Color? backgroundColor;
   final double elevation;
+  final bool showBottomBorder;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return AppBar(
-      title:
-          titleWidget ??
-          Text(title, style: Theme.of(context).textTheme.titleLarge),
+      title: titleWidget ?? Text(title, style: theme.textTheme.titleLarge),
       centerTitle: centerTitle,
       leading: leading,
       actions: actions,
       elevation: elevation,
-      backgroundColor:
-          backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+      scrolledUnderElevation: elevation,
+      shadowColor: Colors.black38,
+      backgroundColor: backgroundColor ?? theme.scaffoldBackgroundColor,
       surfaceTintColor: Colors.transparent,
     );
   }
