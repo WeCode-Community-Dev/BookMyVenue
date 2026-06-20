@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import logo from "../../assets/bookmyvenue.webp";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../shared/context/AuthContext";
+
 const MainLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -33,6 +34,17 @@ const MainLayout = ({ children }) => {
 
   const NAV_LINKS = ["Venues", "How It Works", "For Owners", "Pricing"];
 
+  const getInitials = (name) => {
+    if (!name) return "?";
+    return name
+      .trim()
+      .split(" ")
+      .map((word) => word[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  };
+
   return (
     <>
       <nav
@@ -40,11 +52,11 @@ const MainLayout = ({ children }) => {
           scrolled ? "bg-white/95 backdrop-blur-[12px]" : "bg-white"
         }`}
       >
-        <div className="flex items-center justify-between h-[68px] px-5 sm:px-8 lg:px-[6%]">
+        <div className="flex items-center justify-between h-[68px] px-5 sm:px-8 ">
           {/* Logo */}
           <div className="flex items-center gap-2 font-extrabold text-lg tracking-tight shrink-0">
             <div className="w-20 h-auto bg-gray-900 rounded-[10px] flex items-center justify-center text-base">
-              <img src={logo} alt="BookMyVenue" className="" />
+              <img src={logo} alt="BookMyVenue" className="h-16 w-20" />
             </div>
 
             <span>BookMyVenue</span>
@@ -81,6 +93,15 @@ const MainLayout = ({ children }) => {
               </>
             ) : (
               <>
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                    {getInitials(user.name)}
+                  </div>
+                  <span className="font-medium text-gray-700">
+                    Hi, {user.name}
+                  </span>
+                </div>
+
                 {isUser && !isOwner && (
                   <button
                     onClick={() => {
@@ -111,7 +132,7 @@ const MainLayout = ({ children }) => {
                     navigate("/");
                     setMenuOpen(false);
                   }}
-                  className="btn-outline"
+                  className="btn-outline !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]"
                 >
                   Logout
                 </button>
@@ -231,39 +252,22 @@ const MainLayout = ({ children }) => {
       </nav>
       <main>{children}</main>
       {/* ── FOOTER ── */}
-      <footer className="bg-white border-t border-gray-100 py-12 px-5 sm:px-8 lg:px-[6%]">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-8 sm:gap-10 lg:gap-12 mb-10 sm:mb-12">
-            <div className="col-span-2 lg:col-span-1">
-              <div className="flex items-center gap-2 mb-3.5">
-                <div className="w-20 h-auto bg-gray-900 rounded-[10px] flex items-center justify-center text-base">
-                  <img src={logo} alt="BookMyVenue" className="" />
-                </div>
-                <span className="font-extrabold text-[1.1rem] tracking-tight">
-                  BookMyVenue
-                </span>
-              </div>
-              <p className="text-gray-400 text-[0.85rem] leading-[1.7] max-w-[240px]">
-                India's most trusted venue booking platform for every occasion.
-              </p>
+      <footer className="border-t border-gray-100 py-8 px-5 sm:px-8 lg:px-[6%]">
+        <div className="max-w-[1200px] mx-auto flex flex-col items-center gap-4 text-center">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-gray-900 rounded-lg flex items-center justify-center overflow-hidden">
+              <img src={logo} alt="" className="w-9 h-9 object-cover" />
             </div>
+            <span className="font-medium text-[0.95rem]">BookMyVenue</span>
           </div>
 
-          <div className="border-t border-gray-100 pt-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <span className="text-[0.82rem] text-gray-400">
-              © 2026 BookMyVenue.
-            </span>
-            {/* <div className="flex flex-wrap gap-4 sm:gap-6">
-              {["Privacy Policy", "Terms of Use", "Support"].map((l) => (
-                <span
-                  key={l}
-                  className="text-[0.82rem] text-gray-400 cursor-pointer hover:text-gray-700 transition-colors"
-                >
-                  {l}
-                </span>
-              ))}
-            </div> */}
-          </div>
+          <p className="text-gray-400 text-[0.82rem] leading-[1.7] max-w-[240px]">
+            India's most trusted platform for booking venues for every occasion.
+          </p>
+
+          <span className="text-[0.75rem] text-gray-300">
+            © 2026 BookMyVenue. All rights reserved.
+          </span>
         </div>
       </footer>
     </>
