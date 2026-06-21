@@ -18,7 +18,6 @@ class OwnerPayoutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const Drawer(),
       appBar: const CustomAppBar(title: 'Payouts'),
       body: SingleChildScrollView(
         padding: AppSpacing.screenPadding,

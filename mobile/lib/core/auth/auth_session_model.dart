@@ -13,6 +13,7 @@ abstract class AuthSessionModel with _$AuthSessionModel {
     required String refreshToken,
     required UserRole role,
     ApprovalStatus? status,
+    String? fullName,
   }) = _AuthSessionModel;
 
   factory AuthSessionModel.fromJson(Map<String, dynamic> json) =>

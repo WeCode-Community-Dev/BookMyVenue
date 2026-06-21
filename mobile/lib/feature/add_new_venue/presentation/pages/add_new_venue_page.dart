@@ -35,7 +35,6 @@ class _OwnerVenuesListPageState extends State<OwnerVenuesListPage> {
     }
 
     return Scaffold(
-      drawer: const Drawer(),
       appBar: const CustomAppBar(title: 'Add new venue'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),

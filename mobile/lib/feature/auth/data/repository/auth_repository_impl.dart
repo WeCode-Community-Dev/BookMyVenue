@@ -1,7 +1,6 @@
 import '../../../../core/auth/auth_session.dart';
 import '../../../../core/auth/auth_session_model.dart';
 import '../../../../core/di/injection.dart';
-import '../../../../core/logger/app_logger.dart';
 import '../../../../core/model/api_response.dart';
 import '../../../../core/network/base_repository.dart';
 import '../../../../core/storage/secure_storage_service.dart';
@@ -124,6 +123,7 @@ class OwnerAuthRepositoryImpl extends BaseRepository
           accessToken: response.data!.accessToken,
           refreshToken: response.data!.refreshToken,
           role: response.data!.user.role,
+          fullName: response.data!.user.fullName,
           status:
               response.data!.user.ownerProfile?.approvalStatus ??
               ApprovalStatus.pending,

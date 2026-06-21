@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/auth/auth_session.dart';
 import '../../../../../core/gen/assets.gen.dart';
 import '../../../../../core/logger/app_logger.dart';
 import '../../../../../core/router/route_name.dart';
@@ -92,10 +93,12 @@ class _HeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    final String firstName = AuthSession.ownerName?.split(' ').first ?? 'jiyad';
+
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row(
+        const Row(
           spacing: 4,
           children: <Widget>[
             Icon(Icons.pending_actions, color: Colors.red),
@@ -104,12 +107,14 @@ class _HeaderSection extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 16),
-        AppText('Profile Under Verification', variant: TextVariant.headerText),
-        SizedBox(height: 16),
-        // TODO(Jiyad): update the Alex with venue owner name
+        const SizedBox(height: 16),
+        const AppText(
+          'Profile Under Verification',
+          variant: TextVariant.headerText,
+        ),
+        const SizedBox(height: 16),
         AppText(
-          "Welcome to the VenueHub family, Alex! We're excited to have you on board. To maintain the highest quality for our guests, all new host profiles undergo a manual security screening.",
+          "Welcome to the VenueHub family, $firstName! We're excited to have you on board. To maintain the highest quality for our guests, all new host profiles undergo a manual security screening.",
         ),
       ],
     );

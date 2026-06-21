@@ -12,6 +12,7 @@ _AuthSessionModel _$AuthSessionModelFromJson(Map<String, dynamic> json) =>
       refreshToken: json['refreshToken'] as String,
       role: $enumDecode(_$UserRoleEnumMap, json['role']),
       status: $enumDecodeNullable(_$ApprovalStatusEnumMap, json['status']),
+      fullName: json['fullName'] as String?,
     );
 
 Map<String, dynamic> _$AuthSessionModelToJson(_AuthSessionModel instance) =>
@@ -20,6 +21,7 @@ Map<String, dynamic> _$AuthSessionModelToJson(_AuthSessionModel instance) =>
       'refreshToken': instance.refreshToken,
       'role': _$UserRoleEnumMap[instance.role]!,
       'status': _$ApprovalStatusEnumMap[instance.status],
+      'fullName': instance.fullName,
     };
 
 const _$UserRoleEnumMap = {

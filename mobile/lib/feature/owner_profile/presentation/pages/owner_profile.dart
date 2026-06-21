@@ -48,7 +48,6 @@ class _OwnerProfileSettingsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const Drawer(),
       appBar: const CustomAppBar(title: 'Profile & Settings'),
       body: SingleChildScrollView(
         padding: AppSpacing.screenPadding,

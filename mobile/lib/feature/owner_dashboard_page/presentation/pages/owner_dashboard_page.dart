@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/auth/auth_session.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/widgets/app_text.dart';
@@ -14,8 +15,8 @@ class OwnerDashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String firstName = AuthSession.ownerName?.split(' ').first ?? 'jiyad';
     return Scaffold(
-      drawer: const Drawer(),
       appBar: const CustomAppBar(title: 'Venue hub'),
       body: SingleChildScrollView(
         padding: AppSpacing.screenPadding,
@@ -24,8 +25,8 @@ class OwnerDashboardPage extends StatelessWidget {
           crossAxisAlignment: .start,
           children: <Widget>[
             // Welcome Header
-            const AppText(
-              'Welcome back, Alex.',
+            AppText(
+              'Welcome back, $firstName.',
               variant: TextVariant.headerText,
             ),
 
