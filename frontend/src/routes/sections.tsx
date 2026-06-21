@@ -10,24 +10,34 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { AuthLayout } from 'src/layouts/auth';
 import { RoleGuard } from 'src/guards/role.guard';
 import { AuthGuard } from 'src/guards/auth-guard';
+import { GuestGuard } from 'src/guards/guest-guard';
 import { UserRole } from 'src/context/auth/auth.types';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
 // ----------------------------------------------------------------------
 
-export const DashboardPage = lazy(() => import('src/pages/dashboard'));
-export const BlogPage = lazy(() => import('src/pages/blog'));
-export const UserPage = lazy(() => import('src/pages/user'));
+// Public / Consumer Pages
+export const LandingPage = lazy(() => import('src/pages/user/landing'));
+export const SearchPage = lazy(() => import('src/pages/user/search'));
+export const VenueDetailsPage = lazy(() => import('src/pages/user/venue-details'));
+export const BookingPage = lazy(() => import('src/pages/user/booking'));
+
+// Authenticated User Pages
+export const MyBookingsPage = lazy(() => import('src/pages/user/my-bookings'));
+export const BookingDetailsPage = lazy(() => import('src/pages/user/booking-details'));
+export const FavoritesPage = lazy(() => import('src/pages/user/favorites'));
+export const ProfilePage = lazy(() => import('src/pages/user/profile'));
+
+// Auth Pages
 export const SignInPage = lazy(() => import('src/pages/sign-in'));
-export const ProductsPage = lazy(() => import('src/pages/products'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
-// admin pages 
+// Admin pages
 export const AdminVenuesPage = lazy(() => import('src/pages/admin/venues/list'));
 export const AdminUsersPage = lazy(() => import('src/pages/admin/users/list'));
 export const CreateUsersPage = lazy(() => import('src/pages/admin/users/create'));
 
-// owner pages 
+// Owner pages
 export const OwnerVenuesPage = lazy(() => import('src/pages/venue-owner/venues/list'));
 export const CreateVenuePage = lazy(() => import('src/pages/venue-owner/venues/create'));
 export const OwnerBookingPage = lazy(() => import('src/pages/venue-owner/booking/list'));
@@ -40,6 +50,7 @@ const renderFallback = () => (
       flex: '1 1 auto',
       alignItems: 'center',
       justifyContent: 'center',
+      minHeight: '50vh',
     }}
   >
     <LinearProgress
@@ -54,80 +65,111 @@ const renderFallback = () => (
 );
 
 export const routesSection: RouteObject[] = [
-  /**
-   * Authenticated Routes
-   */
+  // ─────────────────────────────────────────────
+  // PUBLIC ROUTES (no auth required)
+  // ─────────────────────────────────────────────
   {
-    element: <AuthGuard />,
+    path: '/',
+    element: (
+      <Suspense fallback={renderFallback()}>
+        <LandingPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'search',
+    element: (
+      <Suspense fallback={renderFallback()}>
+        <SearchPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'venues/:venueId',
+    element: (
+      <Suspense fallback={renderFallback()}>
+        <VenueDetailsPage />
+      </Suspense>
+    ),
+  },
 
+  // ─────────────────────────────────────────────
+  // GUEST ONLY (redirect if already authenticated)
+  // ─────────────────────────────────────────────
+  {
+    element: <GuestGuard />,
     children: [
       {
+        path: 'sign-in',
         element: (
-          <RoleGuard
-            roles={[UserRole.USER]}
-          />
+          <AuthLayout>
+            <Suspense fallback={renderFallback()}>
+              <SignInPage />
+            </Suspense>
+          </AuthLayout>
         ),
-        children: [
-          {
-            element: (
-              <DashboardLayout>
-                <Suspense fallback={renderFallback()}>
-                  <Outlet />
-                </Suspense>
-              </DashboardLayout>
-            ),
-
-            children: [
-              {
-                index: true,
-                element: <DashboardPage />,
-              },
-
-              {
-                path: 'users',
-                element: <UserPage />
-              },
-
-              {
-                path: 'products',
-                element: <ProductsPage />,
-              },
-
-              {
-                path: 'blog',
-                element: <BlogPage />,
-              },
-              {
-                path: 'profile',
-                // element: <ProfilePage />,
-                element: <h1>Profile Page</h1>,
-              },
-
-              {
-                path: 'bookings',
-                // element: <MyBookingsPage />,
-                element: <h1>My Bookings Page</h1>,
-              },
-
-              {
-                path: 'favorites',
-                // element: <FavoritesPage />,
-                element: <h1>Favorites Page</h1>,
-              },
-            ],
-          },
-        ]
       },
-      /**
-       * Venue Owner Routes
-       */
-      {
-        element: (
-          <RoleGuard
-            roles={[UserRole.VENUE_OWNER]}
-          />
-        ),
+    ],
+  },
 
+  // ─────────────────────────────────────────────
+  // AUTHENTICATED USER ROUTES (any logged-in user)
+  // ─────────────────────────────────────────────
+  {
+    element: <AuthGuard />,
+    children: [
+      // Booking flow — accessible to any authenticated user
+      {
+        path: 'booking/:venueId',
+        element: (
+          <Suspense fallback={renderFallback()}>
+            <BookingPage />
+          </Suspense>
+        ),
+      },
+
+      // USER role — consumer pages
+      {
+        element: <RoleGuard roles={[UserRole.USER]} />,
+        children: [
+          {
+            path: 'my/bookings',
+            element: (
+              <Suspense fallback={renderFallback()}>
+                <MyBookingsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'my/bookings/:bookingId',
+            element: (
+              <Suspense fallback={renderFallback()}>
+                <BookingDetailsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'my/favorites',
+            element: (
+              <Suspense fallback={renderFallback()}>
+                <FavoritesPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'my/profile',
+            element: (
+              <Suspense fallback={renderFallback()}>
+                <ProfilePage />
+              </Suspense>
+            ),
+          },
+        ],
+      },
+
+      // ─── VENUE OWNER ROUTES ───────────────────
+      {
+        element: <RoleGuard roles={[UserRole.VENUE_OWNER]} />,
         children: [
           {
             element: (
@@ -137,47 +179,35 @@ export const routesSection: RouteObject[] = [
                 </Suspense>
               </DashboardLayout>
             ),
-
             children: [
               {
                 path: 'owner',
-                // element: <OwnerDashboardPage />,
                 element: <h1>Owner Dashboard Page</h1>,
               },
-
               {
                 path: 'owner/venues',
                 element: <OwnerVenuesPage />,
               },
-
               {
                 path: 'owner/venues/create',
                 element: <CreateVenuePage />,
               },
-
               {
                 path: 'owner/bookings',
                 element: <OwnerBookingPage />,
               },
               {
                 path: 'owner/bookings/:bookingId',
-                element: <OwnerBookingDetailsPage />
-              }
+                element: <OwnerBookingDetailsPage />,
+              },
             ],
           },
         ],
       },
 
-      /**
-       * Admin Routes
-       */
+      // ─── ADMIN ROUTES ─────────────────────────
       {
-        element: (
-          <RoleGuard
-            roles={[UserRole.ADMIN]}
-          />
-        ),
-
+        element: <RoleGuard roles={[UserRole.ADMIN]} />,
         children: [
           {
             element: (
@@ -187,24 +217,19 @@ export const routesSection: RouteObject[] = [
                 </Suspense>
               </DashboardLayout>
             ),
-
             children: [
               {
                 path: 'admin',
-                // element: <AdminDashboardPage />,
                 element: <h1>Admin Dashboard Page</h1>,
               },
-
               {
                 path: 'admin/users',
                 element: <AdminUsersPage />,
               },
-
               {
                 path: 'admin/venues',
                 element: <AdminVenuesPage />,
               },
-
               {
                 path: 'admin/users/create',
                 element: <CreateUsersPage />,
@@ -216,56 +241,20 @@ export const routesSection: RouteObject[] = [
     ],
   },
 
-
-  // /**
-  //  * Guest Only
-  //  */
-  // {
-  //   element: <GuestGuard />,
-
-  //   children: [
-  //     {
-  //       path: 'sign-in',
-  //       element: (
-  //         <AuthLayout>
-  //           <SignInPage />
-  //         </AuthLayout>
-  //       ),
-  //     },
-
-  //     {
-  //       path: 'sign-up',
-  //       element: (
-  //         <AuthLayout>
-  //           <SignUpPage />
-  //         </AuthLayout>
-  //       ),
-  //     },
-  //   ],
-  // },
-
-  /**
-   * Errors
-   */
-  // {
-  //   path: '403',
-  //   element: <Page403 />,
-  // },
-
+  // ─────────────────────────────────────────────
+  // ERROR ROUTES
+  // ─────────────────────────────────────────────
   {
     path: '404',
-    element: <Page404 />,
+    element: (
+      <Suspense fallback={renderFallback()}>
+        <Page404 />
+      </Suspense>
+    ),
   },
 
   {
     path: '*',
     element: <Navigate to="/404" replace />,
-  },
-
-  {
-    path: 'sign-in',
-    element: <AuthLayout>
-      <SignInPage />,
-    </AuthLayout>
   },
 ];

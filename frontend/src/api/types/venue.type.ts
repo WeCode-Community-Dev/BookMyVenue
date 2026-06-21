@@ -114,9 +114,12 @@ export interface VenueCard {
     capacity: number;
     pricePerDay: number;
     thumbnail?: string;
-    averageRating: number;
-    reviewCount: number;
-    isSaved: boolean;
+    images?: string[];
+    averageRating?: number;
+    reviewCount?: number;
+    isSaved?: boolean;
+    status?: string;
+    amenities?: string[];
 }
 
 // ======================================================
@@ -125,21 +128,32 @@ export interface VenueCard {
 
 export interface VenueDetails {
     id: string;
+    ownerId?: string;
     title: string;
     description: string;
     venueType: VenueType | string;
-    status: VenueStatus;
-    address: Address;
+    status: string;
+    // flat address fields returned by API
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    postalCode?: string;
+    latitude?: number;
+    longitude?: number;
+    // nested address (optional, for backward compat)
+    address?: Address;
     location?: Coordinates;
     capacity: number;
     pricePerDay: number;
-    owner: VenueOwner;
-    amenities: Amenity[];
-    images: VenueImage[];
-    averageRating: number;
-    reviewCount: number;
+    owner?: VenueOwner;
+    amenities: string[];
+    images: string[];
+    averageRating?: number;
+    reviewCount?: number;
     createdAt: string;
-    updatedAt: string;
+    updatedAt?: string;
 }
 
 // ======================================================
@@ -210,13 +224,13 @@ export enum BookingStatus {
 
 export interface BookingSummary {
     id: string;
-    venueId: string;
     venueName: string;
     startDate: string;
     endDate: string;
     totalAmount: number;
     status: BookingStatus;
     createdAt: string;
+    venue: VenueCard;
 }
 
 // ======================================================
