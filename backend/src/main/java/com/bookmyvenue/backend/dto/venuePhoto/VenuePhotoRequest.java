@@ -6,14 +6,14 @@ import lombok.Data;
 @Data
 public class VenuePhotoRequest {
 
-    @NotNull
     private Long venueId;
-
+    @NotNull
     private Boolean isPrimary;
 
     private Integer displayOrder;
 
-    @NotNull
+    private String photoUrl;
+
     private Long createdBy;
 
     private Long updatedBy;

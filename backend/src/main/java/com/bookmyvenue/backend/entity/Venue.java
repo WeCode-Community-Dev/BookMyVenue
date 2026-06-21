@@ -1,4 +1,5 @@
 package com.bookmyvenue.backend.entity;
+import com.bookmyvenue.backend.entity.EventCategory;
 import com.bookmyvenue.backend.enums.PricingType;
 import com.bookmyvenue.backend.enums.VenueStatus;
 import jakarta.persistence.*;
@@ -83,27 +84,29 @@ public class Venue {
     @Column(name = "contact_email",length = 150)
     private String contactEmail;
 
+
+
     @ManyToMany
     @JoinTable(
-            name="venue_amenity",
-            joinColumns =@JoinColumn(name="venue_id"),
+            name = "venue_event_category",
+            joinColumns = @JoinColumn(name = "venue_id"),
+            inverseJoinColumns = @JoinColumn(name = "event_category_id")
+    )
+    private Set<EventCategory> supportedEventCategories;
+
+    @ManyToMany
+    @JoinTable(
+            name = "venue_amenity",
+            joinColumns = @JoinColumn(name = "venue_id"),
             inverseJoinColumns = @JoinColumn(name = "amenity_id")
-
     )
-private Set<Amenity> amenities;
+    private Set<Amenity> amenities;
 
-    @ManyToMany
-    @JoinTable(
-            name="venue_category_map",
-            joinColumns =@JoinColumn(name="venue_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-
+    @OneToMany(
+            mappedBy = "venue",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
-    private Set<VenueCategory> venuCategories;
-
-    @OneToMany(mappedBy="venue",
-            cascade=CascadeType.ALL,
-            orphanRemoval = true)
     private List<VenuePhoto> venuePhotos;
 
     @Column(name = "created_at", nullable = false, updatable = false)

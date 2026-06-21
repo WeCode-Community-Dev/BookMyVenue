@@ -40,6 +40,7 @@ public class Users {
     @Column(name="role",nullable = false,length = 30)
     private UserRole role;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name="status",nullable = false,length = 30)
     private UserStatus status =UserStatus.ACTIVE;

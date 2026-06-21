@@ -1,6 +1,6 @@
 package com.bookmyvenue.backend.service;
 
-import com.bookmyvenue.backend.dto.admin.AdminUserResponse;
+import com.bookmyvenue.backend.dto.adminDashboard.AdminUserResponse;
 
 import java.util.List;
 

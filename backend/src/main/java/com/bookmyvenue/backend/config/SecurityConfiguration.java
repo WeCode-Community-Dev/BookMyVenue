@@ -1,7 +1,7 @@
 package com.bookmyvenue.backend.config;
 
-import com.bookmyvenue.backend.security.CustomUserDetailsService;
 import com.bookmyvenue.backend.security.JwtAuthenticationFilter;
+import com.bookmyvenue.backend.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

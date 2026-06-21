@@ -1,7 +1,7 @@
 package com.bookmyvenue.backend.controller;
 
-import com.bookmyvenue.backend.dto.Venue.VenueRequest;
-import com.bookmyvenue.backend.dto.Venue.VenueResponse;
+import com.bookmyvenue.backend.dto.Venue.VenueCreationRequest;
+import com.bookmyvenue.backend.dto.Venue.VenueCreationResponse;
 import com.bookmyvenue.backend.service.VenueService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,10 +21,10 @@ public class VenueController {
 
     @PostMapping
     @Operation(summary = "Create Venue")
-    public ResponseEntity<VenueResponse>
+    public ResponseEntity<VenueCreationResponse>
     createVenue(
             @Valid
-            @RequestBody VenueRequest request) {
+            @RequestBody VenueCreationRequest request) {
 
         return ResponseEntity.ok(
                         venueService.createVenue(request));
@@ -32,7 +32,7 @@ public class VenueController {
 
     @GetMapping("/{venueId}")
     @Operation(summary = "Get Venue By Id")
-    public ResponseEntity<VenueResponse>
+    public ResponseEntity<VenueCreationResponse>
     getVenue(
             @PathVariable Long venueId) {
 
@@ -43,7 +43,7 @@ public class VenueController {
 
     @GetMapping
     @Operation(summary = "Get All Venues")
-    public ResponseEntity<List<VenueResponse>>
+    public ResponseEntity<List<VenueCreationResponse>>
     getAllVenues() {
 
         return ResponseEntity.ok(
@@ -52,10 +52,10 @@ public class VenueController {
 
     @PutMapping("/{venueId}")
     @Operation(summary = "Update Venue")
-    public ResponseEntity<VenueResponse>
+    public ResponseEntity<VenueCreationResponse>
     updateVenue(
             @PathVariable Long venueId,
-            @RequestBody VenueRequest request) {
+            @RequestBody VenueCreationRequest request) {
 
         return ResponseEntity.ok(
                         venueService.updateVenue(

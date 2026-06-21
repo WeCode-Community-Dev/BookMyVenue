@@ -1,6 +1,6 @@
 package com.bookmyvenue.backend.controller;
 
-import com.bookmyvenue.backend.dto.admin.AdminUserResponse;
+import com.bookmyvenue.backend.dto.adminDashboard.AdminUserResponse;
 import com.bookmyvenue.backend.service.AdminUserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

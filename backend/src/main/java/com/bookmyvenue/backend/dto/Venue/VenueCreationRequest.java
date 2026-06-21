@@ -1,36 +1,38 @@
 package com.bookmyvenue.backend.dto.Venue;
 
+import com.bookmyvenue.backend.dto.venuePhoto.VenuePhotoRequest;
 import com.bookmyvenue.backend.enums.PricingType;
-import com.bookmyvenue.backend.enums.VenueStatus;
-import lombok.Builder;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data
-@Builder
-public class VenueResponse {
+public class VenueCreationRequest {
 
-    private Long venueId;
-
+    @NotNull
     private Long ownerUserId;
 
-    private String ownerName;
-
+    @NotBlank
     private String venueName;
 
+    @NotBlank
     private String addressLine1;
 
     private String addressLine2;
 
+    @NotBlank
     private String city;
 
+    @NotBlank
     private String district;
 
+    @NotBlank
     private String state;
 
+    @NotBlank
     private String country;
 
     private String pincode;
@@ -39,27 +41,23 @@ public class VenueResponse {
 
     private BigDecimal longitude;
 
+    @NotNull
     private Integer capacity;
 
+    @NotNull
     private PricingType pricingType;
 
+    @NotNull
     private BigDecimal basePrice;
 
     private BigDecimal advancePercentage;
 
-    private VenueStatus status;
+    private Set<Long> amenityIds;
 
-    private String approvalRemarks;
+    private Set<Long> supportedEventCategoryIds;
 
-    private String contactName;
+    private List<VenuePhotoRequest> photos;
 
-    private String contactEmail;
-
-    private Set<String> amenities;
-
-    private Set<String> categories;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
+    @NotNull
+    private Long createdBy;
 }

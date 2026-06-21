@@ -1,11 +1,11 @@
 package com.bookmyvenue.backend.service;
 
-import com.bookmyvenue.backend.dto.admin.AdminVenueOwnerResponse;
-import com.bookmyvenue.backend.dto.admin.AdminVenueOwnerSearchRequest;
+import com.bookmyvenue.backend.dto.adminDashboard.AdminVenueOwnerResponse;
+import com.bookmyvenue.backend.dto.adminDashboard.AdminVenueOwnerSearchRequest;
 import com.bookmyvenue.backend.entity.Users;
 import com.bookmyvenue.backend.enums.UserStatus;
 import com.bookmyvenue.backend.exception.ResourceNotFoundException;
-import com.bookmyvenue.backend.repository.PaymentRepository;
+import com.bookmyvenue.backend.repository.BookingRepository;
 import com.bookmyvenue.backend.repository.UserRepository;
 import com.bookmyvenue.backend.repository.VenueRepository;
 import com.bookmyvenue.backend.specification.VenueOwnerSpecification;
@@ -22,7 +22,7 @@ public class AdminVenueOwnerServiceImpl
 
     private final UserRepository userRepository;
     private final VenueRepository venueRepository;
-    private final PaymentRepository paymentRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
     public List<AdminVenueOwnerResponse>
@@ -106,7 +106,7 @@ public class AdminVenueOwnerServiceImpl
                         owner.getUserId());
 
         java.math.BigDecimal revenue =
-                paymentRepository
+                bookingRepository
                         .getRevenueByOwnerId(
                                 owner.getUserId());
 

@@ -1,31 +1,31 @@
 package com.bookmyvenue.backend.service;
 
-import com.bookmyvenue.backend.dto.Venue.VenueRequest;
-import com.bookmyvenue.backend.dto.Venue.VenueResponse;
-import com.bookmyvenue.backend.dto.Venue.VenueSearchRequest;
+import com.bookmyvenue.backend.dto.Venue.*;
 import com.bookmyvenue.backend.enums.VenueStatus;
 
 import java.util.List;
 
 public interface VenueService {
 
-    VenueResponse createVenue(VenueRequest request);
+    VenueCreationResponse createVenue(VenueCreationRequest request);
 
-    VenueResponse getVenueById(Long venueId);
+    VenueCreationResponse getVenueById(Long venueId);
 
-    List<VenueResponse> getAllVenues();
+    List<VenueCreationResponse> getAllVenues();
 
-    VenueResponse updateVenue(Long venueId,
-                              VenueRequest request);
+    VenueCreationResponse updateVenue(Long venueId,
+                                      VenueCreationRequest request);
 
     void deleteVenue(Long venueId);
 
-    public List<VenueResponse> searchVenues(
+    public List<VenueCreationResponse> searchVenues(
             VenueSearchRequest request);
 
-    List<VenueResponse> getVenuesByOwner(Long ownerId);
+    List<VenueCreationResponse> getVenuesByOwner(Long ownerId);
 
-    List<VenueResponse> getVenuesByStatus(VenueStatus status);
+    List<VenueCreationResponse> getVenuesByStatus(VenueStatus status);
 
-
+    VenueCreationResponse updateVenueStatus(
+            Long venueId,
+            VenueStatusRequest request);
 }

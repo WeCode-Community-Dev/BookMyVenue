@@ -1,5 +1,6 @@
 package com.bookmyvenue.backend.dto.Book;
 
+import com.bookmyvenue.backend.enums.BookingStatus;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -20,5 +21,7 @@ public class BookingRequest {
     private Integer guestCount;
 
     private String remarks;
+
+    private BookingStatus bookingStatus;
 
 }

@@ -8,70 +8,53 @@ import java.time.LocalDate;
 
 public class BookingSpecification {
 
-    public static Specification<Booking>
-    hasVenue(Long venueId) {
-
+    public static Specification<Booking> hasVenue(Long venueId) {
         return (root, query, cb) ->
                 venueId == null
-                        ? null
-                        : cb.equal(
-                        root.get("venue")
-                                .get("venueId"),
-                        venueId);
+                        ? cb.conjunction()
+                        : cb.equal(root.get("venue").get("venueId"), venueId);
     }
 
-    public static Specification<Booking>
-    hasUser(Long userId) {
-
+    public static Specification<Booking> hasUser(Long userId) {
         return (root, query, cb) ->
                 userId == null
-                        ? null
-                        : cb.equal(
-                        root.get("user")
-                                .get("userId"),
-                        userId);
+                        ? cb.conjunction()
+                        : cb.equal(root.get("user").get("userId"), userId);
     }
 
-    public static Specification<Booking>
-    hasStatus(
-            BookingStatus status) {
-
+    public static Specification<Booking> hasStatus(BookingStatus status) {
         return (root, query, cb) ->
                 status == null
-                        ? null
-                        : cb.equal(
-                        root.get("bookingStatus"),
-                        status);
+                        ? cb.conjunction()
+                        : cb.equal(root.get("bookingStatus"), status);
     }
 
-    public static Specification<Booking>
-    hasBookingDate(
-            LocalDate bookingDate) {
-
+    public static Specification<Booking> hasBookingDate(LocalDate bookingDate) {
         return (root, query, cb) ->
                 bookingDate == null
-                        ? null
-                        : cb.equal(
-                        root.get("bookingDate"),
-                        bookingDate);
+                        ? cb.conjunction()
+                        : cb.equal(root.get("bookingDate"), bookingDate);
     }
 
-    public static Specification<Booking>
-    betweenDates(
-            LocalDate fromDate,
-            LocalDate toDate) {
-
+    public static Specification<Booking> betweenDates(LocalDate fromDate, LocalDate toDate) {
         return (root, query, cb) -> {
-
-            if (fromDate == null ||
-                    toDate == null) {
-                return null;
+            if (fromDate == null || toDate == null) {
+                return cb.conjunction();
             }
-
-            return cb.between(
-                    root.get("bookingDate"),
-                    fromDate,
-                    toDate);
+            return cb.between(root.get("bookingDate"), fromDate, toDate);
         };
+    }
+
+    // ⭐ NEW: clean builder method (recommended)
+    public static Specification<Booking> build(
+            Long venueId,
+            Long userId,
+            BookingStatus status,
+            LocalDate bookingDate
+    ) {
+        return Specification.where(hasVenue(venueId))
+                .and(hasUser(userId))
+                .and(hasStatus(status))
+                .and(hasBookingDate(bookingDate));
     }
 }
