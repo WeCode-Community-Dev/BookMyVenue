@@ -6,11 +6,13 @@ import '../storage/secure_storage_service.dart';
 import 'auth_session_model.dart';
 
 class AuthSession {
+  AuthSession._();
   static bool isLoggedIn = false;
   static UserRole? role;
   static ApprovalStatus ownerVerified = ApprovalStatus.pending;
 
   static Future<void> init() async {
+    // await sl<SecureStorageService>().clearAll();
     final AuthSessionModel? user = await sl<SecureStorageService>()
         .getSession();
 

@@ -4,6 +4,7 @@ import '../../../../core/storage/secure_storage_service.dart';
 abstract class IAuthLocalDatasource {
   Future<void> saveToken(AuthSessionModel token);
   Future<AuthSessionModel?> getToken();
+  Future<void> deleteToken();
 }
 
 class AuthLocalDatasourceImpl implements IAuthLocalDatasource {
@@ -18,5 +19,10 @@ class AuthLocalDatasourceImpl implements IAuthLocalDatasource {
   @override
   Future<AuthSessionModel?> getToken() {
     return storage.getSession();
+  }
+
+  @override
+  Future<void> deleteToken() async {
+    return storage.clearSession();
   }
 }

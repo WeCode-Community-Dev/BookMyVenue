@@ -19,5 +19,5 @@ abstract interface class IOwnerAuthRepository {
   ResultFuture<VerifyOwnerOtpResponseResult> verifyOtp({
     required VerifyOwnerOtpParams params,
   });
-  ResultFuture<VerifyOwnerOtpResponseResult> getOwnerProfile();
+  ResultFuture<OwnerProfileResponseResult> getOwnerProfile();
 }

@@ -5,8 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/gen/assets.gen.dart';
+import '../../../../../core/logger/app_logger.dart';
 import '../../../../../core/router/route_name.dart';
 import '../../../../../core/utils/ui/snackbar_command.dart';
+import '../../../../../core/widgets/app_button.dart';
 import '../../../../../core/widgets/app_text.dart';
 import '../../../domain/enums/approval_status.dart';
 import '../../bloc/owner/owner_auth_bloc.dart';
@@ -18,7 +20,7 @@ class OwnerVerificationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const VenueHubAppBar(),
-      body: BlocListener<OwnerAuthBloc, OwnerAuthState>(
+      body: BlocConsumer<OwnerAuthBloc, OwnerAuthState>(
         listener: (BuildContext context, OwnerAuthState state) {
           if (state.isVerificationError) {
             SnackbarCommand.show(
@@ -26,50 +28,60 @@ class OwnerVerificationPage extends StatelessWidget {
               title: state.verificationErrorMessage!,
             );
           } else if (state.verificationSuccessMessage != null) {
+            AppLogger.info('user statget aproved ${state.approvalStatus}');
             SnackbarCommand.show(
               type: ToastType.success,
               title: state.verificationSuccessMessage!,
             );
             if (state.approvalStatus == ApprovalStatus.approved) {
-              context.goNamed(AppRouteNames.ownerDashboard);
+              AppLogger.info('user statget aproved ${state.approvalStatus}');
+              Future.delayed(const Duration(seconds: 2), () {
+                if (!context.mounted) {
+                  return;
+                }
+                context.goNamed(AppRouteNames.ownerDashboard);
+              });
             }
           }
         },
-        child: const SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                _HeaderSection(),
-                SizedBox(height: 24),
-                VerificationStatusCard(),
-                SizedBox(height: 20),
+        builder: (BuildContext context, OwnerAuthState state) {
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const _HeaderSection(),
+                  const SizedBox(height: 24),
+                  VerificationStatusCard(ownerState: state),
+                  const SizedBox(height: 20),
 
-                LockedFeatureCard(
-                  icon: Icons.add_circle_outline,
-                  title: 'Add Your Venue',
-                ),
-                SizedBox(height: 16),
-                LockedFeatureCard(
-                  icon: Icons.grid_view_outlined,
-                  title: 'Venue Listings',
-                ),
-                SizedBox(height: 16),
-                LockedFeatureCard(
-                  icon: Icons.history,
-                  title: 'Booking History',
-                ),
-                SizedBox(height: 20),
-                MarketplaceBanner(),
-                SizedBox(height: 20),
-                SupportCard(),
-                SizedBox(height: 40),
-              ],
+                  const LockedFeatureCard(
+                    icon: Icons.add_circle_outline,
+                    title: 'Add Your Venue',
+                  ),
+                  const SizedBox(height: 16),
+                  const LockedFeatureCard(
+                    icon: Icons.grid_view_outlined,
+                    title: 'Venue Listings',
+                  ),
+                  const SizedBox(height: 16),
+                  const LockedFeatureCard(
+                    icon: Icons.history,
+                    title: 'Booking History',
+                  ),
+                  const SizedBox(height: 20),
+                  const MarketplaceBanner(),
+                  const SizedBox(height: 20),
+                  const SupportCard(),
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
+
       // bottomNavigationBar: const _BottomNav(),
     );
   }
@@ -105,7 +117,9 @@ class _HeaderSection extends StatelessWidget {
 }
 
 class VerificationStatusCard extends StatelessWidget {
-  const VerificationStatusCard({super.key});
+  const VerificationStatusCard({super.key, required this.ownerState});
+
+  final OwnerAuthState ownerState;
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +155,7 @@ class VerificationStatusCard extends StatelessWidget {
 
                     const Expanded(
                       child: AppText(
-                        'Status: ',
+                        'Status: Pending',
                         variant: TextVariant.headingLarge,
                         fontWeight: FontWeight.w700,
                       ),
@@ -156,14 +170,32 @@ class VerificationStatusCard extends StatelessWidget {
                   variant: TextVariant.labelMedium,
                 ),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.refresh),
-                    label: const AppText('Refresh Status'),
-                  ),
+                AppOutlinedButton(
+                  isLoading: ownerState.isVerificationRequestLoading,
+                  title: 'Refresh Status',
+                  icon: Icons.refresh,
+                  onPressed:
+                      ownerState.approvalStatus == ApprovalStatus.approved
+                      ? null
+                      : () {
+                          context.read<OwnerAuthBloc>().add(
+                            const OwnerAuthEvent.getOwnerProfile(),
+                          );
+                        },
                 ),
+
+                // SizedBox(
+                //   width: double.infinity,
+                //   child: OutlinedButton.icon(
+                //     onPressed: () {
+                //       context.read<OwnerAuthBloc>().add(
+                //         const OwnerAuthEvent.getOwnerProfile(),
+                //       );
+                //     },
+                //     icon: const Icon(Icons.refresh),
+                //     label: const AppText('Refresh Status'),
+                //   ),
+                // ),
               ],
             ),
           ),

@@ -74,6 +74,16 @@ class VerifyOtpDataEntity extends Equatable {
   ];
 }
 
+class OwnerProfileResponseResult extends Equatable {
+  const OwnerProfileResponseResult({required this.user, required this.message});
+
+  final UserEntity user;
+  final String message;
+
+  @override
+  List<Object?> get props => <Object?>[user, message];
+}
+
 class UserEntity extends Equatable {
   const UserEntity({
     required this.id,

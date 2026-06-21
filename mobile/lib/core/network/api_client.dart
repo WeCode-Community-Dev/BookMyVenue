@@ -1,12 +1,14 @@
 import 'package:dio/dio.dart';
 
+import '../../feature/auth/data/datasource/auth_local_datasource.dart';
 import '../environment/app_env.dart';
 import '../environment/config_env.dart';
+import 'interceptors/auth_interceptor.dart';
 import 'interceptors/error_interceptor.dart';
 import 'interceptors/logging_interceptor.dart';
 
 class ApiClient {
-  ApiClient() {
+  ApiClient(this.storage) {
     dio = Dio(
       BaseOptions(
         baseUrl: AppConfig.baseUrl,
@@ -20,10 +22,11 @@ class ApiClient {
     );
 
     dio.interceptors.addAll(<Interceptor>[
+      AuthInterceptor(tokenStorage: storage, dio: dio),
       if (Environment.current == AppEnvironment.dev) LoggingInterceptor(),
       ErrorInterceptor(),
     ]);
   }
-
+  final IAuthLocalDatasource storage;
   late final Dio dio;
 }

@@ -133,7 +133,7 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
       ),
     );
 
-    final Either<Failure, VerifyOwnerOtpResponseResult> result =
+    final Either<Failure, OwnerProfileResponseResult> result =
         await _ownerProfileUseCase(const NoParams());
 
     result.fold(
@@ -146,13 +146,12 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
           ),
         );
       },
-      (VerifyOwnerOtpResponseResult verifyOtpResult) {
+      (OwnerProfileResponseResult verifyOtpResult) {
         emit(
           state.copyWith(
             isVerificationRequestLoading: false,
             approvalStatus:
                 verifyOtpResult
-                    .user
                     .user
                     .ownerBusinessProfileEntity
                     ?.approvalStatus ??

@@ -18,5 +18,5 @@ abstract interface class IAuthOwnerDataSource {
   Future<ApiResponse<VerifyOwnerOtpResponseModel>> verifyOwnerOtp(
     VerifyOwnerOtpRequest request,
   );
-  Future<ApiResponse<VerifyOwnerOtpResponseModel>> getOwnerProfile();
+  Future<ApiResponse<UserModel>> getOwnerProfile();
 }

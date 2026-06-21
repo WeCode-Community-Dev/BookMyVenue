@@ -4,13 +4,13 @@ import '../entity/owner_entity.dart';
 import '../repository/i_auth_repository.dart';
 
 class GetOwnerProfileUseCase
-    implements UseCase<ResultFuture<VerifyOwnerOtpResponseResult>, NoParams> {
+    implements UseCase<ResultFuture<OwnerProfileResponseResult>, NoParams> {
   GetOwnerProfileUseCase({required this.ownerAuthRepository});
 
   final IOwnerAuthRepository ownerAuthRepository;
 
   @override
-  ResultFuture<VerifyOwnerOtpResponseResult> call(NoParams params) async {
+  ResultFuture<OwnerProfileResponseResult> call(NoParams params) async {
     return ownerAuthRepository.getOwnerProfile();
   }
 }

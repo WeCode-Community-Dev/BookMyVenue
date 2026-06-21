@@ -1,5 +1,7 @@
+import '../../../../core/auth/auth_session.dart';
 import '../../../../core/auth/auth_session_model.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/logger/app_logger.dart';
 import '../../../../core/model/api_response.dart';
 import '../../../../core/network/base_repository.dart';
 import '../../../../core/storage/secure_storage_service.dart';
@@ -127,6 +129,7 @@ class OwnerAuthRepositoryImpl extends BaseRepository
               ApprovalStatus.pending,
         );
         await localDatasource.saveToken(sessionModel);
+        await AuthSession.init();
       }
 
       return VerifyOwnerOtpResponseResult(
@@ -137,23 +140,24 @@ class OwnerAuthRepositoryImpl extends BaseRepository
   }
 
   @override
-  ResultFuture<VerifyOwnerOtpResponseResult> getOwnerProfile() {
+  ResultFuture<OwnerProfileResponseResult> getOwnerProfile() {
     return handleRequest(() async {
-      final ApiResponse<VerifyOwnerOtpResponseModel> response =
-          await remoteDataSource.getOwnerProfile();
+      final ApiResponse<UserModel> response = await remoteDataSource
+          .getOwnerProfile();
 
       if (response.data != null) {
         AuthSessionModel? authSession = await sl<SecureStorageService>()
             .getSession();
         if (authSession != null) {
           authSession = authSession.copyWith(
-            status: response.data?.user.ownerProfile?.approvalStatus,
+            status: response.data?.ownerProfile?.approvalStatus,
           );
           await localDatasource.saveToken(authSession);
+          await AuthSession.init();
         }
       }
 
-      return VerifyOwnerOtpResponseResult(
+      return OwnerProfileResponseResult(
         user: response.data!.toEntity(),
         message: response.message ?? '',
       );

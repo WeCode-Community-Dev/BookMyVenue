@@ -6,8 +6,6 @@ import 'core/environment/app_env.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/ui/app_commands.dart';
-import 'feature/owner_payout_history/presentation/pages/owner_payout_page.dart';
-import 'feature/owner_profile/presentation/pages/owner_profile.dart';
 
 Future<void> main() async {
   Environment.init(AppEnvironment.dev);
