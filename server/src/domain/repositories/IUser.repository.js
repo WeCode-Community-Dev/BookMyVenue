@@ -6,12 +6,9 @@ export class IUserRepository {
     async findAllFiltered(query={}) {
         throw new Error('Method not implemented');
     }
-
-    async blockUser(id) {
-        throw new Error('Method not implemented');
-    }
-
-    async unblockUser(id) {
+     
+    //Admin block/unblock user
+    async updateBlockStatus(id,isBlocked) {
         throw new Error('Method not implemented');
     }
 

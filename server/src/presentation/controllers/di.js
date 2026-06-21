@@ -13,8 +13,8 @@ import RefreshTokenUseCase from '../../application/user/usecases/RefreshTokenUse
 
 // AdminUserUsecases
 import { AdminGetAllUsersUsecase } from '../../application/admin/usecases/user/admin.getAllUsers.usecase.js'
-import { AdminBlockUserUsecase } from '../../application/admin/usecases/user/admin.blockUser.usecase.js'
-import { AdminUnblockUserUsecase } from '../../application/admin/usecases/user/admin.unblockUser.usecase.js'
+import { AdminUpdateUserStatusUsecase } from '../../application/admin/usecases/user/admin.updateUserStatus.usecase.js'
+
 
 import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
 import { UserVenueController } from '../controllers/user/user.venueController.js'
@@ -52,15 +52,11 @@ const iAdminGetAllUsersUsecase =
         iUserRepository
     )
 
-const iAdminBlockUserUsecase =
-    new AdminBlockUserUsecase(
+const iAdminUpdateUserStatusUsecase =
+    new AdminUpdateUserStatusUsecase(
         iUserRepository
     )
 
-const iAdminUnblockUserUsecase =
-    new AdminUnblockUserUsecase(
-        iUserRepository
-    )
 
 //auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(iUserRepository, HashService)
@@ -132,8 +128,7 @@ export const iVendorVenueController = new VendorVenueController (
 export const iAdminUserController =
     new AdminUserController(
         iAdminGetAllUsersUsecase,
-        iAdminBlockUserUsecase,
-        iAdminUnblockUserUsecase
+        iAdminUpdateUserStatusUsecase,
     )
 
 export const iUserVenueController = new UserVenueController (

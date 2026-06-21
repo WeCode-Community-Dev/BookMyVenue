@@ -4,8 +4,7 @@ export const ROUTES = {
     },
     ADMIN: {
         USERS: '/users',
-        BLOCK_USER: '/users/block/:userId',
-        UNBLOCK_USER: '/users/unblock/:userId'
+        UPDATE_USER_STATUS: '/users/:userId/status',
     },
     OWNER: {
         VENUE: {
