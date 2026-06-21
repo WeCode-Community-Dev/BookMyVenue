@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Literal
 from datetime import datetime
 
@@ -6,8 +6,8 @@ from datetime import datetime
 
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str
-    role: Literal["user","host"] = "user"
+    password: str = Field(min_length=6)
+    role: Literal["user","owner"] = "user"
     
     
 # What react send when logging in
