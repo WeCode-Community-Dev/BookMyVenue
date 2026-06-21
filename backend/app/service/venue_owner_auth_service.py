@@ -11,13 +11,22 @@ from app.schema.venue_owner_auth_schema import (
     VenueOwnerOTPResponse,
     VenueOwnerResponse,
 )
-from app.config.security import create_access_token, create_refresh_token
+from app.config.security import (
+    create_access_token,
+    create_refresh_token,
+    refresh_tokens,
+)
 from app.config.redis import redis_client
 from app.core.config import settings
 from app.service.user_service import user_service
 from app.service.sms_service import sms_service
 from app.model.user import User, UserRole
-from app.schema.user_auth_schema import OTPVerifyRequest, TokenResponse
+from app.schema.user_auth_schema import (
+    OTPVerifyRequest,
+    RefreshTokenRequest,
+    RefreshTokenResponse,
+    TokenResponse,
+)
 from app.model.owner_profile import ApprovalStatus, OwnerProfile
 
 
@@ -170,6 +179,24 @@ class VenueOwnerAuthService:
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
+    def refresh_token_user(self, data: RefreshTokenRequest):
+        try:
+            tokens = refresh_tokens(data.refresh_token)
+
+            return tokens
+
+        except ValueError:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or expired refresh token",
+            )
+
+        except HTTPException:
+            raise
+
+        except Exception:
+            raise HTTPException(status_code=500, detail="Failed to refresh token")
 
     def update_status(
         self,

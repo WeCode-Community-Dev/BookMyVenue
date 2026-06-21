@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Union, Optional
 import jwt
 from app.core.config import settings
+from app.schema.user_auth_schema import RefreshTokenResponse
 
 
 def create_access_token(
@@ -51,3 +52,25 @@ def verify_token(token: str, expected_type: str = "access") -> Optional[str]:
         return payload.get("sub")
     except jwt.PyJWTError:
         return None
+
+
+def refresh_tokens(refresh_token: str) -> RefreshTokenResponse:
+    """
+    Generate new access and refresh tokens.
+    """
+
+    user_id = verify_token(
+        token=refresh_token,
+        expected_type="refresh",
+    )
+
+    if not user_id:
+        raise ValueError("Invalid or expired refresh token")
+
+    new_access_token = create_access_token(subject=user_id)
+    new_refresh_token = create_refresh_token(subject=user_id)
+
+    return RefreshTokenResponse(
+        access_token=new_access_token,
+        refresh_token=new_refresh_token,
+    )

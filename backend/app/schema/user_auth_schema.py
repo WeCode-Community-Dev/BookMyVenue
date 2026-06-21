@@ -1,13 +1,10 @@
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict,  Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from datetime import datetime
 
 from app.config.constant import PHONE_REGEX
 from app.model.user import UserRole, UserStatus
-
-
-
 
 
 ## Admin Auth Schema
@@ -20,6 +17,7 @@ class AdminAuthResponse(BaseModel):
     email: str
     is_authenticated: bool
 
+
 # ====================================================================
 
 ## User/Customer Auth Schema
@@ -28,7 +26,6 @@ class UserProfileUpdate(BaseModel):
     full_name: Optional[str] = Field(None, max_length=100)
     email: Optional[EmailStr] = None
 """
-
 
 
 class OTPRequest(BaseModel):
@@ -88,7 +85,6 @@ class OTPVerifyRequest(BaseModel):
         return cleaned
 
 
-
 class UserResponse(BaseModel):
     """
     Serialized view of the User model.
@@ -110,9 +106,7 @@ class UserResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(
-        from_attributes=True
-    )
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TokenResponse(BaseModel):
@@ -132,3 +126,9 @@ class RefreshTokenRequest(BaseModel):
     """
 
     refresh_token: str
+
+
+class RefreshTokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"

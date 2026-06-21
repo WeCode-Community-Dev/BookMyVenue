@@ -10,7 +10,12 @@ from app.schema.venue_owner_auth_schema import (
 )
 from app.schema.base_schema import SuccessResponse
 from app.service.venue_owner_auth_service import venue_owner_auth_service
-from app.schema.user_auth_schema import OTPVerifyRequest, TokenResponse
+from app.schema.user_auth_schema import (
+    OTPVerifyRequest,
+    RefreshTokenRequest,
+    RefreshTokenResponse,
+    TokenResponse,
+)
 from app.config.database import get_db
 from app.config.dependencies import get_current_admin, get_current_user
 from app.model.user import User
@@ -48,6 +53,16 @@ def verify_otp(
 ) -> SuccessResponse:
     result = venue_owner_auth_service.verify_otp(db=db, data=data)
     return SuccessResponse(message="OTP sent Successfully", data=result)
+
+
+@router.post(
+    "/refresh-token",
+    response_model=SuccessResponse[RefreshTokenResponse],
+    status_code=status.HTTP_201_CREATED,
+)
+async def refresh_token(data: RefreshTokenRequest):
+    user = await venue_owner_auth_service.refresh_token_user(data)
+    return SuccessResponse(message="Token refreshed successfully", data=user)
 
 
 @router.patch(
@@ -90,11 +105,6 @@ def get_owner_profile(
         message="Owner profile retrieved successfully",
         data=owner_profile,
     )
-
-
-"""
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODE5ODkzNTAsInN1YiI6ImYwMDJhOTQ2LTlkOTgtNDAzMy1hMDQ1LTA3NWM3NGM3YTRmNCIsInR5cGUiOiJhY2Nlc3MifQ.6-XbSImeBQA3d19xFwuULZCAN8maCrxHE8BCiC4eyik
-"""
 
 
 # Get all Venue owner details
