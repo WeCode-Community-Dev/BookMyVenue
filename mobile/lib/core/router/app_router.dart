@@ -16,7 +16,7 @@ import '../../feature/owner_payout_history/presentation/pages/owner_payout_detai
 import '../../feature/owner_payout_history/presentation/pages/owner_payout_history_page.dart';
 import '../../feature/owner_payout_history/presentation/pages/owner_payout_page.dart';
 import '../../feature/owner_profile/presentation/pages/owner_profile.dart';
-import '../../feature/owner_verification_page/presentation/pages/owner_verification_page.dart';
+import '../../feature/auth/presentation/pages/venue_owner_account_creation/owner_verification_page.dart';
 import '../auth/auth_session.dart';
 import '../di/injection.dart';
 import 'route_name.dart';
@@ -69,7 +69,10 @@ class AppRouter {
         path: '/${AppRouteNames.ownerVerification}',
         name: AppRouteNames.ownerVerification,
         builder: (BuildContext context, GoRouterState state) {
-          return const OwnerVerificationPage();
+          return BlocProvider<OwnerAuthBloc>(
+            create: (BuildContext context) => sl<OwnerAuthBloc>(),
+            child: const OwnerVerificationPage(),
+          );
         },
       ),
 

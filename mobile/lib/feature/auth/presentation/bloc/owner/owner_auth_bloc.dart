@@ -7,8 +7,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../../../core/errors/failures.dart';
 import '../../../../../core/notifications/notification_model.dart';
 import '../../../../../core/notifications/notification_service.dart';
+import '../../../../../core/usecase/usecase.dart';
 import '../../../domain/entity/owner_entity.dart';
+import '../../../domain/enums/approval_status.dart';
 import '../../../domain/params/auth_param.dart';
+import '../../../domain/usecase/get_owner_profile_usecase.dart';
 import '../../../domain/usecase/register_account_usecase.dart';
 import '../../../domain/usecase/verify_owner_otp_usecase.dart';
 
@@ -21,17 +24,21 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
     required RegisterAccountUseCase registerAccountUseCase,
     required VerifyOwnerOtpUseCase verifyOwnerOtpUseCase,
     required NotificationService notificationService,
-  }) : _registerAccountUseCase = registerAccountUseCase,
+    required GetOwnerProfileUseCase ownerProfileUseCase,
+  }) : _ownerProfileUseCase = ownerProfileUseCase,
+       _registerAccountUseCase = registerAccountUseCase,
        _verifyOwnerOtpUseCase = verifyOwnerOtpUseCase,
        _notificationService = notificationService,
        super(const _OwnerAuthState()) {
     on<_RegisterAccountEvent>(_onRegisterAccountEvent);
     on<_VerifyOwnerOtpEvent>(_onVerifyOwnerOtp);
+    on<_GetOwnerProfile>(_onGetOwnerProfile);
   }
 
   final RegisterAccountUseCase _registerAccountUseCase;
   final VerifyOwnerOtpUseCase _verifyOwnerOtpUseCase;
   final NotificationService _notificationService;
+  final GetOwnerProfileUseCase _ownerProfileUseCase;
 
   FutureOr<void> _onRegisterAccountEvent(
     _RegisterAccountEvent event,
@@ -107,6 +114,50 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
             isError: false,
             successMessage: verifyOtpResult.message,
             verifyOtpResponse: verifyOtpResult.user,
+          ),
+        );
+      },
+    );
+  }
+
+  FutureOr<void> _onGetOwnerProfile(
+    _GetOwnerProfile event,
+    Emitter<OwnerAuthState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        isVerificationRequestLoading: true,
+        isVerificationError: false,
+        verificationErrorMessage: null,
+        verificationSuccessMessage: null,
+      ),
+    );
+
+    final Either<Failure, VerifyOwnerOtpResponseResult> result =
+        await _ownerProfileUseCase(const NoParams());
+
+    result.fold(
+      (Failure failure) {
+        emit(
+          state.copyWith(
+            isVerificationRequestLoading: false,
+            isVerificationError: true,
+            verificationErrorMessage: failure.message,
+          ),
+        );
+      },
+      (VerifyOwnerOtpResponseResult verifyOtpResult) {
+        emit(
+          state.copyWith(
+            isVerificationRequestLoading: false,
+            approvalStatus:
+                verifyOtpResult
+                    .user
+                    .user
+                    .ownerBusinessProfileEntity
+                    ?.approvalStatus ??
+                ApprovalStatus.pending,
+            verificationSuccessMessage: verifyOtpResult.message,
           ),
         );
       },

@@ -90,4 +90,19 @@ class AuthOwnerRemoteDataSourceImpl extends BaseRemoteDataSourceImpl
       );
     });
   }
+
+  @override
+  Future<ApiResponse<VerifyOwnerOtpResponseModel>> getOwnerProfile() {
+    return safeApiCall(() async {
+      final Response<dynamic> res = await dio.get(
+        AuthOwnerEndpoints.ownerProfile,
+      );
+
+      return ApiResponseMapper.fromJson(
+        res.data as Map<String, dynamic>,
+        (Object? data) =>
+            VerifyOwnerOtpResponseModel.fromJson(data! as Map<String, dynamic>),
+      );
+    });
+  }
 }

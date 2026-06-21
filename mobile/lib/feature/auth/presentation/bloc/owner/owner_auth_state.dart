@@ -9,5 +9,12 @@ abstract class OwnerAuthState with _$OwnerAuthState {
     String? successMessage,
     @Default(false) bool isError,
     String? errorMessage,
+
+    /// Owner verification
+    @Default(false) bool isVerificationRequestLoading,
+    String? verificationSuccessMessage,
+    @Default(false) bool isVerificationError,
+    String? verificationErrorMessage,
+    @Default(ApprovalStatus.pending) ApprovalStatus approvalStatus,
   }) = _OwnerAuthState;
 }

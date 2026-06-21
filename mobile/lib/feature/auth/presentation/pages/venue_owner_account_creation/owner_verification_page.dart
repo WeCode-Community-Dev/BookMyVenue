@@ -1,46 +1,72 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/gen/assets.gen.dart';
-import '../../../../core/widgets/app_text.dart';
+import '../../../../../core/gen/assets.gen.dart';
+import '../../../../../core/router/route_name.dart';
+import '../../../../../core/utils/ui/snackbar_command.dart';
+import '../../../../../core/widgets/app_text.dart';
+import '../../../domain/enums/approval_status.dart';
+import '../../bloc/owner/owner_auth_bloc.dart';
 
 class OwnerVerificationPage extends StatelessWidget {
   const OwnerVerificationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFFF7F8FA),
-      appBar: VenueHubAppBar(),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _HeaderSection(),
-              SizedBox(height: 24),
-              VerificationStatusCard(),
-              SizedBox(height: 20),
+    return Scaffold(
+      appBar: const VenueHubAppBar(),
+      body: BlocListener<OwnerAuthBloc, OwnerAuthState>(
+        listener: (BuildContext context, OwnerAuthState state) {
+          if (state.isVerificationError) {
+            SnackbarCommand.show(
+              type: ToastType.error,
+              title: state.verificationErrorMessage!,
+            );
+          } else if (state.verificationSuccessMessage != null) {
+            SnackbarCommand.show(
+              type: ToastType.success,
+              title: state.verificationSuccessMessage!,
+            );
+            if (state.approvalStatus == ApprovalStatus.approved) {
+              context.goNamed(AppRouteNames.ownerDashboard);
+            }
+          }
+        },
+        child: const SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                _HeaderSection(),
+                SizedBox(height: 24),
+                VerificationStatusCard(),
+                SizedBox(height: 20),
 
-              LockedFeatureCard(
-                icon: Icons.add_circle_outline,
-                title: 'Add Your Venue',
-              ),
-              SizedBox(height: 16),
-              LockedFeatureCard(
-                icon: Icons.grid_view_outlined,
-                title: 'Venue Listings',
-              ),
-              SizedBox(height: 16),
-              LockedFeatureCard(icon: Icons.history, title: 'Booking History'),
-              SizedBox(height: 20),
-              MarketplaceBanner(),
-              SizedBox(height: 20),
-              SupportCard(),
-              SizedBox(height: 40),
-            ],
+                LockedFeatureCard(
+                  icon: Icons.add_circle_outline,
+                  title: 'Add Your Venue',
+                ),
+                SizedBox(height: 16),
+                LockedFeatureCard(
+                  icon: Icons.grid_view_outlined,
+                  title: 'Venue Listings',
+                ),
+                SizedBox(height: 16),
+                LockedFeatureCard(
+                  icon: Icons.history,
+                  title: 'Booking History',
+                ),
+                SizedBox(height: 20),
+                MarketplaceBanner(),
+                SizedBox(height: 20),
+                SupportCard(),
+                SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),
@@ -115,7 +141,7 @@ class VerificationStatusCard extends StatelessWidget {
 
                     const Expanded(
                       child: AppText(
-                        'Status: Pending Review',
+                        'Status: ',
                         variant: TextVariant.headingLarge,
                         fontWeight: FontWeight.w700,
                       ),
