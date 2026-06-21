@@ -29,6 +29,11 @@ export class PrismaVenueRepository implements IVenueRepository {
       capacity: dbVenue.capacity,
       pricePerDay: Number(dbVenue.price_per_day),
       status: dbVenue.status as VenueStatus,
+      amenities: dbVenue.amenities,
+      images: dbVenue.images.map(img => ({
+        id: img.id,
+        url: img.image_url
+      })),
       createdAt: dbVenue.created_at,
       updatedAt: dbVenue.updated_at,
     });
@@ -62,6 +67,7 @@ export class PrismaVenueRepository implements IVenueRepository {
 
     const dbVenues = await this.prisma.venues.findMany({
       where,
+      include: { images: true },
       orderBy: { created_at: 'desc' },
     });
 

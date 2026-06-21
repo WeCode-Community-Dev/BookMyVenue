@@ -18,6 +18,7 @@ export interface CreateVenueDto {
   longitude?: number | null;
   capacity: number;
   pricePerDay: number;
+  amenities: string[]
 }
 
 @Injectable()
@@ -48,6 +49,8 @@ export class CreateVenueCommand {
       capacity: dto.capacity,
       pricePerDay: dto.pricePerDay,
       status: 'PENDING',
+      amenities: dto.amenities,
+      images: []
     });
 
     await this.venueRepository.save(venue);

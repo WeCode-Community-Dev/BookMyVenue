@@ -15,6 +15,12 @@ export interface VenueProps {
   status: VenueStatus;
   createdAt?: Date;
   updatedAt?: Date;
+  amenities: string[]
+  images: {
+    id: string,
+    url: string,
+    createdAt: Date
+  }[]
 }
 
 export class Venue extends AggregateRoot<string> {
@@ -91,6 +97,14 @@ export class Venue extends AggregateRoot<string> {
     return this.props.createdAt!;
   }
 
+  get amenities(): string[] {
+    return this.props.amenities;
+  }
+
+  get images(): VenueProps['images'] {
+    return this.props.images;
+  }
+
   get updatedAt(): Date {
     return this.props.updatedAt!;
   }
@@ -126,6 +140,7 @@ export class Venue extends AggregateRoot<string> {
     address: Address,
     capacity: number,
     pricePerDay: number,
+    amenities: string[]
   ): void {
     if (!title || title.trim().length === 0) {
       throw new DomainException('Title cannot be empty');
@@ -146,6 +161,7 @@ export class Venue extends AggregateRoot<string> {
     this.props.address = address;
     this.props.capacity = capacity;
     this.props.pricePerDay = pricePerDay;
+    this.props.amenities = amenities
     this.props.updatedAt = new Date();
   }
 }

@@ -2,6 +2,7 @@ import 'dotenv/config';
 import * as crypto from 'crypto';
 import { PrismaClient } from '../src/infra/database/prisma/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { AMENITIES } from '../src/constants/amenities';
 
 // ──────────────────────────────────────────────────────────
 // Password hashing (mirrors CryptoPasswordHasher in the app)
@@ -30,25 +31,8 @@ function daysAgo(days: number): Date {
 }
 
 // ──────────────────────────────────────────────────────────
-// Seed data definitions
+// Venue image sets
 // ──────────────────────────────────────────────────────────
-const AMENITY_NAMES = [
-  'WiFi',
-  'Parking',
-  'Air Conditioning',
-  'Projector & Screen',
-  'Catering Services',
-  'Sound System',
-  'Fully Equipped Kitchen',
-  'Stage & Podium',
-  '24/7 Security',
-  'Swimming Pool',
-  'Generator Backup',
-  'Wheelchair Access',
-  'Valet Parking',
-  'Bridal Suite',
-];
-
 const VENUE_IMAGES: Record<string, string[]> = {
   grand_hall: [
     'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200',
@@ -80,6 +64,27 @@ const VENUE_IMAGES: Record<string, string[]> = {
   ],
 };
 
+// ──────────────────────────────────────────────────────────
+// Per-venue amenity selections (values must exist in AMENITIES)
+// ──────────────────────────────────────────────────────────
+const [
+  WiFi, Parking, AC, Projector, Catering, Sound,
+  Kitchen, Stage, Security, Pool, Generator,
+  Wheelchair, Valet, Bridal, Lockers, DanceFloor,
+  OpenBar, PhotoBooth, Terrace, GreenRoom,
+] = AMENITIES;
+
+const VENUE_AMENITIES = {
+  grand_hall:  [WiFi, Parking, AC, Catering, Sound, Stage, Security, Generator, Valet, Bridal, DanceFloor, OpenBar],
+  conference:  [WiFi, Parking, AC, Projector, Catering, Sound, Generator, Wheelchair],
+  wedding:     [WiFi, Parking, AC, Catering, Sound, Kitchen, Stage, Security, Pool, Generator, Valet, Bridal, DanceFloor, OpenBar, PhotoBooth, GreenRoom],
+  elite_biz:   [WiFi, Parking, AC, Projector, Catering, Sound, Wheelchair],
+  rooftop:     [WiFi, AC, Sound, Security, Generator, OpenBar, Terrace],
+  tech_park:   [WiFi, Parking, AC, Projector, Catering, Sound, Stage, Security, Generator, Wheelchair],
+  garden:      [WiFi, Parking, Catering, Sound, Stage, Security, Generator, Terrace, PhotoBooth],
+  banquet:     [WiFi, Parking, AC, Catering, Sound, Generator, DanceFloor],
+};
+
 async function main() {
   const adapter = new PrismaPg({
     connectionString: process.env.DATABASE_URL!,
@@ -89,23 +94,20 @@ async function main() {
   try {
     console.log('🌱  Starting database seed…\n');
 
-    // ── 1. Amenities ──────────────────────────────────────────────
-    console.log('📦  Seeding amenities…');
-    const amenityRecords = await Promise.all(
-      AMENITY_NAMES.map((name) =>
-        prisma.amenities.create({ data: { name } }),
-      ),
-    );
-    const amenityMap = Object.fromEntries(
-      amenityRecords.map((a) => [a.name, a.id]),
-    );
-    console.log(`✅  ${amenityRecords.length} amenities created.\n`);
+    // ── 0. Clean existing data ─────────────────────────────────────
+    console.log('🗑   Cleaning existing data…');
+    await prisma.payments.deleteMany();
+    await prisma.bookings.deleteMany();
+    await prisma.venue_images.deleteMany();
+    await prisma.venues.deleteMany();
+    await prisma.refresh_tokens.deleteMany();
+    await prisma.users.deleteMany();
+    console.log('✅  Cleaned.\n');
 
-    // ── 2. Users ──────────────────────────────────────────────────
+    // ── 1. Users ───────────────────────────────────────────────────
     console.log('👤  Seeding users…');
     const hashedPassword = await hashPassword('Password123');
 
-    // Admin
     const admin = await prisma.users.create({
       data: {
         email: 'admin@bmv.com',
@@ -118,7 +120,6 @@ async function main() {
       },
     });
 
-    // Venue Owners
     const owner1 = await prisma.users.create({
       data: {
         email: 'owner@bmv.com',
@@ -155,7 +156,6 @@ async function main() {
       },
     });
 
-    // Regular Users
     const user1 = await prisma.users.create({
       data: {
         email: 'user@bmv.com',
@@ -216,11 +216,9 @@ async function main() {
       },
     });
 
-    console.log(
-      `✅  9 users created (1 admin, 3 owners, 5 users).\n`,
-    );
+    console.log('✅  9 users created (1 admin, 3 owners, 5 users).\n');
 
-    // ── 3. Venues ─────────────────────────────────────────────────
+    // ── 2. Venues (amenities stored as String[] on the venue) ──────
     console.log('🏛   Seeding venues…');
 
     // Owner 1 – Mumbai
@@ -241,6 +239,7 @@ async function main() {
         capacity: 500,
         price_per_day: 120000.0,
         status: 'APPROVED',
+        amenities: VENUE_AMENITIES.grand_hall,
       },
     });
 
@@ -261,6 +260,7 @@ async function main() {
         capacity: 200,
         price_per_day: 55000.0,
         status: 'APPROVED',
+        amenities: VENUE_AMENITIES.conference,
       },
     });
 
@@ -282,6 +282,7 @@ async function main() {
         capacity: 800,
         price_per_day: 250000.0,
         status: 'APPROVED',
+        amenities: VENUE_AMENITIES.wedding,
       },
     });
 
@@ -302,6 +303,7 @@ async function main() {
         capacity: 150,
         price_per_day: 38000.0,
         status: 'APPROVED',
+        amenities: VENUE_AMENITIES.elite_biz,
       },
     });
 
@@ -322,6 +324,7 @@ async function main() {
         capacity: 100,
         price_per_day: 45000.0,
         status: 'PENDING',
+        amenities: VENUE_AMENITIES.rooftop,
       },
     });
 
@@ -343,6 +346,7 @@ async function main() {
         capacity: 600,
         price_per_day: 95000.0,
         status: 'APPROVED',
+        amenities: VENUE_AMENITIES.tech_park,
       },
     });
 
@@ -363,6 +367,7 @@ async function main() {
         capacity: 350,
         price_per_day: 70000.0,
         status: 'APPROVED',
+        amenities: VENUE_AMENITIES.garden,
       },
     });
 
@@ -383,13 +388,15 @@ async function main() {
         capacity: 250,
         price_per_day: 58000.0,
         status: 'REJECTED',
+        amenities: VENUE_AMENITIES.banquet,
       },
     });
 
-    console.log(`✅  8 venues created.\n`);
+    console.log('✅  8 venues created.\n');
 
-    // ── 4. Venue Images ───────────────────────────────────────────
+    // ── 3. Venue Images ────────────────────────────────────────────
     console.log('🖼   Seeding venue images…');
+
     const imageInserts: Array<{
       venue_id: string;
       image_url: string;
@@ -416,87 +423,9 @@ async function main() {
     await prisma.venue_images.createMany({ data: imageInserts });
     console.log(`✅  ${imageInserts.length} venue images created.\n`);
 
-    // ── 5. Venue Amenities ────────────────────────────────────────
-    console.log('🏷   Seeding venue amenities…');
-
-    const venueAmenityMap: Array<[string, string[]]> = [
-      [
-        venue1.id,
-        [
-          'WiFi', 'Parking', 'Air Conditioning', 'Catering Services',
-          'Sound System', 'Stage & Podium', '24/7 Security',
-          'Generator Backup', 'Valet Parking', 'Bridal Suite',
-        ],
-      ],
-      [
-        venue2.id,
-        [
-          'WiFi', 'Parking', 'Air Conditioning', 'Projector & Screen',
-          'Catering Services', 'Sound System', 'Generator Backup', 'Wheelchair Access',
-        ],
-      ],
-      [
-        venue3.id,
-        [
-          'WiFi', 'Parking', 'Air Conditioning', 'Catering Services',
-          'Sound System', 'Fully Equipped Kitchen', 'Stage & Podium',
-          '24/7 Security', 'Swimming Pool', 'Generator Backup',
-          'Valet Parking', 'Bridal Suite',
-        ],
-      ],
-      [
-        venue4.id,
-        [
-          'WiFi', 'Parking', 'Air Conditioning', 'Projector & Screen',
-          'Catering Services', 'Sound System', 'Wheelchair Access',
-        ],
-      ],
-      [
-        venue5.id,
-        [
-          'WiFi', 'Air Conditioning', 'Sound System',
-          '24/7 Security', 'Generator Backup',
-        ],
-      ],
-      [
-        venue6.id,
-        [
-          'WiFi', 'Parking', 'Air Conditioning', 'Projector & Screen',
-          'Catering Services', 'Sound System', 'Stage & Podium',
-          '24/7 Security', 'Generator Backup', 'Wheelchair Access',
-        ],
-      ],
-      [
-        venue7.id,
-        [
-          'WiFi', 'Parking', 'Catering Services', 'Sound System',
-          'Stage & Podium', '24/7 Security', 'Generator Backup',
-        ],
-      ],
-      [
-        venue8.id,
-        [
-          'WiFi', 'Parking', 'Air Conditioning', 'Catering Services',
-          'Sound System', 'Generator Backup',
-        ],
-      ],
-    ];
-
-    const amenityInserts: Array<{ venue_id: string; amenity_id: string }> = [];
-    for (const [venueId, names] of venueAmenityMap) {
-      for (const name of names) {
-        const amenityId = amenityMap[name];
-        if (amenityId) amenityInserts.push({ venue_id: venueId, amenity_id: amenityId });
-      }
-    }
-
-    await prisma.venue_amenities.createMany({ data: amenityInserts });
-    console.log(`✅  ${amenityInserts.length} venue-amenity associations created.\n`);
-
-    // ── 6. Bookings ───────────────────────────────────────────────
+    // ── 4. Bookings ────────────────────────────────────────────────
     console.log('📅  Seeding bookings…');
 
-    // Booking 1 – Past, paid (user1 at venue1)
     const booking1 = await prisma.bookings.create({
       data: {
         user_id: user1.id,
@@ -509,7 +438,6 @@ async function main() {
       },
     });
 
-    // Booking 2 – Past, paid (user2 at venue3 – Royal Garden Palace)
     const booking2 = await prisma.bookings.create({
       data: {
         user_id: user2.id,
@@ -522,7 +450,6 @@ async function main() {
       },
     });
 
-    // Booking 3 – Upcoming (user3 at venue6 – Tech Park)
     const booking3 = await prisma.bookings.create({
       data: {
         user_id: user3.id,
@@ -535,7 +462,6 @@ async function main() {
       },
     });
 
-    // Booking 4 – Upcoming (user4 at venue7 – Garden Grove)
     const booking4 = await prisma.bookings.create({
       data: {
         user_id: user4.id,
@@ -548,7 +474,6 @@ async function main() {
       },
     });
 
-    // Booking 5 – Past, refunded (user5 at venue2)
     const booking5 = await prisma.bookings.create({
       data: {
         user_id: user5.id,
@@ -561,7 +486,6 @@ async function main() {
       },
     });
 
-    // Booking 6 – Upcoming, payment pending (user1 at venue4)
     const booking6 = await prisma.bookings.create({
       data: {
         user_id: user1.id,
@@ -574,9 +498,9 @@ async function main() {
       },
     });
 
-    console.log(`✅  6 bookings created.\n`);
+    console.log('✅  6 bookings created.\n');
 
-    // ── 7. Payments ───────────────────────────────────────────────
+    // ── 5. Payments ────────────────────────────────────────────────
     console.log('💳  Seeding payments…');
 
     await prisma.payments.createMany({
@@ -632,25 +556,24 @@ async function main() {
       ],
     });
 
-    console.log(`✅  6 payment records created.\n`);
+    console.log('✅  6 payment records created.\n');
 
-    // ── Summary ───────────────────────────────────────────────────
+    // ── Summary ────────────────────────────────────────────────────
     console.log('─'.repeat(50));
     console.log('🎉  Seed complete! Summary:');
-    console.log(`    • ${amenityRecords.length} amenities`);
+    console.log(`    • ${AMENITIES.length} amenities available (from constants)`);
     console.log(`    • 9 users`);
-    console.log(`        - admin@bookmyvenue.com        (Admin@123)`);
-    console.log(`        - rahul.sharma@bmv.com     (Owner@123)`);
-    console.log(`        - priya.patel@bmv.com      (Owner@123)`);
-    console.log(`        - amit.verma@bmv.com       (Owner@123)`);
-    console.log(`        - john.doe@bmv.com         (User@123)`);
-    console.log(`        - sneha.gupta@bmv.com      (User@123)`);
-    console.log(`        - aryan.mehta@bmv.com      (User@123)`);
-    console.log(`        - deepika.nair@bmv.com     (User@123)`);
-    console.log(`        - vikram.singh@bmv.com     (User@123)`);
+    console.log(`        - admin@bmv.com          (Password123)`);
+    console.log(`        - owner@bmv.com          (Password123)`);
+    console.log(`        - priya.patel@bmv.com    (Password123)`);
+    console.log(`        - amit.verma@bmv.com     (Password123)`);
+    console.log(`        - user@bmv.com           (Password123)`);
+    console.log(`        - sneha.gupta@bmv.com    (Password123)`);
+    console.log(`        - aryan.mehta@bmv.com    (Password123)`);
+    console.log(`        - deepika.nair@bmv.com   (Password123)`);
+    console.log(`        - vikram.singh@bmv.com   (Password123)`);
     console.log(`    • 8 venues (5 approved, 1 pending, 1 rejected)`);
     console.log(`    • ${imageInserts.length} venue images`);
-    console.log(`    • ${amenityInserts.length} venue-amenity links`);
     console.log(`    • 6 bookings`);
     console.log(`    • 6 payments (4 paid, 1 refunded, 1 pending)`);
     console.log('─'.repeat(50));

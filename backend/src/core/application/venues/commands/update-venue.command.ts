@@ -20,6 +20,7 @@ export interface UpdateVenueDto {
   longitude?: number | null;
   capacity: number;
   pricePerDay: number;
+  amenities: string[],
 }
 
 @Injectable()
@@ -57,6 +58,7 @@ export class UpdateVenueCommand {
       address,
       dto.capacity,
       dto.pricePerDay,
+      dto.amenities
     );
 
     await this.venueRepository.save(venue);

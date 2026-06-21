@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { type IVenueRepository } from '../../../domain/venues/repositories/venue-repository.interface';
+import { Pagination } from '../../_shared/dto/pagination';
 
 export interface SearchVenuesFilter {
   city?: string;
@@ -25,6 +26,8 @@ export interface VenueResponseDto {
   pricePerDay: number;
   status: string;
   createdAt: Date;
+  amenities: string[]
+  images: string[]
 }
 
 @Injectable()
@@ -34,10 +37,10 @@ export class SearchVenuesQuery {
     private readonly venueRepository: IVenueRepository,
   ) { }
 
-  async execute(filter?: SearchVenuesFilter): Promise<VenueResponseDto[]> {
+  async execute(filter?: SearchVenuesFilter): Promise<Pagination<VenueResponseDto>> {
     const venues = await this.venueRepository.findAll(filter);
 
-    return venues.map((v) => ({
+    const docs = venues.map((v) => ({
       id: v.id,
       ownerId: v.ownerId,
       title: v.title,
@@ -52,8 +55,12 @@ export class SearchVenuesQuery {
       longitude: v.address.longitude || null,
       capacity: v.capacity,
       pricePerDay: v.pricePerDay,
+      amenities: v.amenities,
+      images: v.images.map(img => img.url),
       status: v.status,
       createdAt: v.createdAt,
     }));
+
+    return new Pagination(docs, docs.length, 1, docs.length)
   }
 }

@@ -49,18 +49,15 @@ export class VenuesController {
   @ApiQuery({ name: 'city', required: false })
   @ApiQuery({ name: 'venueType', required: false })
   @ApiQuery({ name: 'capacity', required: false, type: Number })
-  @ApiQuery({ name: 'status', required: false })
   findAll(
     @Query('city') city?: string,
     @Query('venueType') venueType?: string,
     @Query('capacity') capacity?: string,
-    @Query('status') status?: string,
   ) {
     return this.searchVenuesQuery.execute({
       city,
       venueType,
       capacity: capacity ? parseInt(capacity, 10) : undefined,
-      status,
     });
   }
 

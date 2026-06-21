@@ -31,6 +31,8 @@ export class GetVenueDetailsQuery {
       longitude: v.address.longitude || null,
       capacity: v.capacity,
       pricePerDay: v.pricePerDay,
+      amenities: v.amenities,
+      images: v.images.map(img => img.url),
       status: v.status,
       createdAt: v.createdAt,
     };

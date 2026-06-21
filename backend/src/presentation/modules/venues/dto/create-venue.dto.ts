@@ -36,4 +36,7 @@ export class CreateVenueDto {
 
   @ApiProperty({ example: 500 })
   pricePerDay!: number;
+
+  @ApiProperty({ example: ['AC', 'WiFi'] })
+  amenities!: string[];
 }
