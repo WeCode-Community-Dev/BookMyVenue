@@ -35,12 +35,22 @@ import { GetVendorProfileUsecase } from '../../application/vendor/usecases/profi
 import { VendorUpdateProfileUsecase } from '../../application/vendor/usecases/profile/updateVendorProfile.usecase.js'
 import { VendorProfileController } from './vendor/vendorProfileController.js'
 
+//Vendorbookingmanagement
+
+import BookingRepositoryImpl from "../../infrastructure/repositories/booking.repository.js";
+import { GetVendorBookingsUsecase }from "../../application/vendor/usecases/booking/getVendorBookingsUsecase.js";
+import { GetBookingByIdUsecase }from "../../application/vendor/usecases/booking/getBookingByIdUsecase.js";
+import { AcceptBookingUsecase }from "../../application/vendor/usecases/booking/acceptBookingUsecase.js";
+import { RejectBookingUsecase }from "../../application/vendor/usecases/booking/rejectBookingUsecase.js";
+import { VendorBookingController }from "./vendor/VendorBookingController.js";
+
 
 
 //repository
 const iVenueRepository = new VenueRepository()
 const iUserRepository = new UserRepository()
 const iVendorRepository = new VendorRepository()
+const bookingRepository = new BookingRepositoryImpl();
 
 
 //service
@@ -106,6 +116,26 @@ export const iVendorProfileController =
     )
 
 
+//vendorbookingmanagement
+
+const getVendorBookingsUsecase =
+    new GetVendorBookingsUsecase(
+        bookingRepository
+    );
+const getBookingByIdUsecase =
+    new GetBookingByIdUsecase(
+        bookingRepository
+    );
+const acceptBookingUsecase =
+    new AcceptBookingUsecase(
+        bookingRepository
+    );
+const rejectBookingUsecase =
+    new RejectBookingUsecase(
+        bookingRepository
+    );
+
+
 //user
 const iUserGetAllVenues = new UserGetAllVenuesUsecase (
     iVenueRepository
@@ -113,6 +143,7 @@ const iUserGetAllVenues = new UserGetAllVenuesUsecase (
 const iUserGetVenueById = new UserGetVenueByIdUsecase (
     iVenueRepository
 )
+
 
 //controller
 export const iVendorVenueController = new VendorVenueController (
@@ -142,3 +173,12 @@ export const iAuthController = new AuthController(
     iLogoutUseCase,
     iRefreshTokenUseCase,
 )
+
+export const iVendorBookingController =
+
+    new VendorBookingController(
+        getVendorBookingsUsecase,
+        getBookingByIdUsecase,
+        acceptBookingUsecase,
+        rejectBookingUsecase
+    );
