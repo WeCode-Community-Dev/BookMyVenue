@@ -20,7 +20,8 @@ export interface BookingDetailsResponseDto {
     venue: {
         id: string
         title: string,
-        address: string
+        address: string,
+        images: string[]
     }
 }
 
@@ -74,6 +75,7 @@ export class GetBookingDetailsQuery {
                 id: booking.venue!.id,
                 title: booking.venue!.title,
                 address: '',
+                images: booking.venue!.images
             }
         }
     }

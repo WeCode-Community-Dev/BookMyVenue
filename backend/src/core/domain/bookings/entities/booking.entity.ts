@@ -14,6 +14,7 @@ export interface BookingProps {
     id: string,
     title: string
     ownerId: string
+    images: string[]
   },
   user?: {
     id: string,

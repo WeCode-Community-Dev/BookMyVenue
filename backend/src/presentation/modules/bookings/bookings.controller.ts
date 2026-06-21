@@ -46,6 +46,13 @@ export class BookingsController {
     });
   }
 
+  @Get('my-bookings')
+  @ApiOperation({ summary: 'Get current user bookings' })
+  @ApiResponse({ status: 200, description: 'Bookings retrieved successfully' })
+  findMine(@CurrentUser() user: TokenPayload) {
+    return this.getUserBookingsQuery.execute(user.userId);
+  }
+
   @Get(':bookingId')
   @Roles(UserRole.USER, UserRole.VENUE_OWNER)
   @ApiOperation({ summary: 'Get current user bookings' })
@@ -60,14 +67,6 @@ export class BookingsController {
       role: user.role
     });
   }
-
-  @Get('user/my-bookings')
-  @ApiOperation({ summary: 'Get current user bookings' })
-  @ApiResponse({ status: 200, description: 'Bookings retrieved successfully' })
-  findMine(@CurrentUser() user: TokenPayload) {
-    return this.getUserBookingsQuery.execute(user.userId);
-  }
-
 
   @Delete(':id')
   @ApiOperation({ summary: 'Cancel a booking' })

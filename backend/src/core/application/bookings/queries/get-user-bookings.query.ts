@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { type IBookingRepository } from '../../../domain/bookings/repositories/booking-repository.interface';
+import { Pagination } from '../../_shared/dto/pagination';
 
 export interface BookingResponseDto {
   id: string;
@@ -12,6 +13,7 @@ export interface BookingResponseDto {
   venue: {
     id: string;
     title: string
+    images: string[]
   }
 }
 
@@ -22,10 +24,10 @@ export class GetUserBookingsQuery {
     private readonly bookingRepository: IBookingRepository,
   ) { }
 
-  async execute(userId: string): Promise<BookingResponseDto[]> {
+  async execute(userId: string): Promise<Pagination<BookingResponseDto>> {
     const bookings = await this.bookingRepository.findByUserId(userId);
 
-    return bookings.map((b) => ({
+    const docs = bookings.map((b) => ({
       id: b.id,
       userId: b.userId,
       startDate: b.dateRange?.startDate,
@@ -35,8 +37,11 @@ export class GetUserBookingsQuery {
       createdAt: b.createdAt,
       venue: {
         id: b.venue!.id,
-        title: b.venue!.title
+        title: b.venue!.title,
+        images: b.venue!.images
       }
     }));
+
+    return new Pagination(docs, docs.length, 1, docs.length)
   }
 }

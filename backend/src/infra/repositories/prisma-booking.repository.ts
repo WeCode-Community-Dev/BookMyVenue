@@ -22,14 +22,15 @@ export class PrismaBookingRepository implements IBookingRepository {
         id: dbBooking.venue?.id,
         title: dbBooking.venue?.title,
         ownerId: dbBooking.venue?.owner_id,
+        images: (dbBooking.venue?.images || []).map(img => img.image_url),
       },
-      user: {
+      user: dbBooking.user ? {
         id: dbBooking.user.id,
         email: dbBooking.user.email,
         phone: dbBooking.user.phone,
         firstName: dbBooking.user.first_name,
         lastName: dbBooking.user.last_name
-      }
+      } : undefined
     });
   }
 
@@ -37,7 +38,9 @@ export class PrismaBookingRepository implements IBookingRepository {
     const dbBooking = await this.prisma.bookings.findUnique({
       where: { id },
       include: {
-        venue: true,
+        venue: {
+          include: { images: true }
+        },
         user: true,
       }
     });
@@ -59,7 +62,9 @@ export class PrismaBookingRepository implements IBookingRepository {
       where: { user_id: userId },
       orderBy: { booking_start: 'asc' },
       include: {
-        venue: true
+        venue: {
+          include: { images: true }
+        }
       }
     });
 
