@@ -1,5 +1,5 @@
 import express from "express";
-import { forgotPassword, getMe, login, logout, register, resendOtp, resetPassword, verifyEmail} from "../controllers/authController.js";
+import { becomeProvider, forgotPassword, getMe, login, logout, register, resendOtp, resetPassword, verifyEmail} from "../controllers/authController.js";
 import authMiddleware from "../middleware/userAuthMiddleware.js";
 
 
@@ -14,7 +14,7 @@ authRouter.post("/reset-password", resetPassword);
 authRouter.get("/me", authMiddleware, getMe);
 authRouter.post("/logout", logout); 
 
-
+authRouter.patch("/become-provider", authMiddleware,becomeProvider)
 
 
 export default authRouter;

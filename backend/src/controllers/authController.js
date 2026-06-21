@@ -468,5 +468,39 @@ const logout = (req, res) => {
 }
 
 
+//become provider , initially custumer-then provider in one click
 
-export { register, verifyEmail, resendOtp, login, forgotPassword, resetPassword, getMe, logout };
+const becomeProvider = async (req, res) => {
+    try {
+
+        const user = req.user;
+
+        if (user.roles.includes("provider")) {
+            return res.status(400).json({
+                success: false,
+                message: "You are already a provider",
+            });
+        }
+
+        user.roles.push("provider");
+
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Provider role added successfully",
+            roles: user.roles,
+        });
+
+    } catch (error) {
+        console.error("Become provider error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+
+export { register, verifyEmail, resendOtp, login, forgotPassword, resetPassword, getMe, logout,becomeProvider };
