@@ -39,10 +39,17 @@ getMe(@Req() req) {
 }
 
 @Get('google')
+// Swagger documentation for the Google OAuth login endpoint
+@ApiOperation({ summary: 'Initiate Google OAuth login' })
+@ApiResponse({ status: 200, description: 'Google OAuth login initiated.' })
 @UseGuards(GoogleAuthGuard)
 googleLogin() {}
 
 @Get('google/callback')
+// Swagger documentation for the Google OAuth callback endpoint
+@ApiOperation({ summary: 'Handle Google OAuth callback' })
+@ApiResponse({ status: 200, description: 'Google OAuth login successful.' })
+@ApiResponse({ status: 401, description: 'Unauthorized.' })
 @UseGuards(GoogleAuthGuard)
 googleCallback(@Req() req) {
   return this.authService.googleLogin(

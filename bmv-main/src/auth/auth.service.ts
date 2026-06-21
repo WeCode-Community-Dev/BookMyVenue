@@ -30,7 +30,8 @@ export class AuthService {
         passwordHash: hashedpassword,
       },
     });
-    return { message: 'User registered successfully', userId: user.id };
+    const token = await this.getAccessToken(user.id, user.email, user.role);
+    return { message: 'User registered successfully', userId: user.id, token };
   }
 
   //Google login method to handle user login via Google OAuth
