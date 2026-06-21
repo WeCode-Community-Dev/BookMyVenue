@@ -24,6 +24,16 @@ def create_order(payload: CreateOrderRequest):
 
         order = client.order.create(data=order_data)
 
+        order = add_order_details(
+            db,
+            user_id=payload.user_id,    
+            venue_id=payload.venue_id,
+            razorpay_order_id=order["id"],
+            amount=order_data["amount"],
+            currency=order_data["currency"],
+            status="pending",
+        )
+        
         return {
             "order_id": order["id"],
             "amount": order["amount"],
@@ -43,6 +53,23 @@ def verify_payment(payload: VerifyPaymentRequest):
             "razorpay_payment_id": payload.razorpay_payment_id,
             "razorpay_signature": payload.razorpay_signature
         })
+
+        update_order_payment_status(
+            db,
+            razorpay_order_id=payload.razorpay_order_id,
+            razorpay_payment_id=payload.razorpay_payment_id,
+            status="paid"
+        )
+
+        create_booking(
+            db,
+            user_id=payload.user_id,
+            venue_id=payload.venue_id,
+            order_id=payload.razorpay_order_id,
+            booking_date=datetime.now().date(),
+            booking_time=datetime.now().strftime("%H:%M:%S"),
+            status="confirmed"
+        )
 
         return {
             "success": True,
