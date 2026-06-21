@@ -38,7 +38,10 @@ export class SearchVenuesQuery {
   ) { }
 
   async execute(filter?: SearchVenuesFilter): Promise<Pagination<VenueResponseDto>> {
-    const venues = await this.venueRepository.findAll(filter);
+    const venues = await this.venueRepository.findAll({
+      ...filter,
+      status: 'APPROVED'
+    });
 
     const docs = venues.map((v) => ({
       id: v.id,

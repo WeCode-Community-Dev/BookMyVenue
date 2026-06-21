@@ -42,6 +42,7 @@ export class PrismaVenueRepository implements IVenueRepository {
   async findById(id: string): Promise<Venue | null> {
     const dbVenue = await this.prisma.venues.findUnique({
       where: { id },
+      include: { images: true }
     });
     if (!dbVenue) return null;
     return this.mapToDomain(dbVenue);
