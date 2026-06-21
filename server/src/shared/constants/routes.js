@@ -19,6 +19,14 @@ export const ROUTES = {
         PROFILE: {
             GET: '/profile',
             UPDATE: '/profile'
+        },
+        BOOKING: {
+
+            GET_ALL: '/bookings',
+            GET_BY_ID: '/bookings/:bookingId',
+            ACCEPT: '/bookings/:bookingId/accept',
+            REJECT: '/bookings/:bookingId/reject'
+
         }
     },
     USER: {

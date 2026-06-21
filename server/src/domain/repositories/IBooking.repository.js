@@ -19,7 +19,7 @@ export class BookingRepository {
       throw new Error("Method not implemented");
     }
   
-    async update(booking) {
+    async update(id, booking) {
       throw new Error("Method not implemented");
     }
   }
