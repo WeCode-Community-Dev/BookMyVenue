@@ -222,6 +222,8 @@ class AddVenueWizardFlow extends StatefulWidget {
 }
 
 class _AddVenueWizardFlowState extends State<AddVenueWizardFlow> {
+  int index = 1;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -230,7 +232,7 @@ class _AddVenueWizardFlowState extends State<AddVenueWizardFlow> {
       body: Column(
         children: <Widget>[
           // Step timeline indicators
-          const BuildStepper(step: 2),
+          BuildStepper(step: index),
 
           Expanded(
             child: SingleChildScrollView(
@@ -238,14 +240,21 @@ class _AddVenueWizardFlowState extends State<AddVenueWizardFlow> {
               child: Center(
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 800),
-                  child: _buildStepContent(4),
+                  child: _buildStepContent(index),
                 ),
               ),
             ),
           ),
 
           // Fixed bottom action bar
-          const BuildActionButton(step: 2),
+          BuildActionButton(
+            step: index,
+            onTap: (int index) {
+              setState(() {
+                this.index = index;
+              });
+            },
+          ),
         ],
       ),
     );

@@ -23,7 +23,7 @@ sealed class User with _$User {
   const factory User({
     required String id,
     @JsonKey(name: 'mobile_number') required String mobileNumber,
-    @JsonKey(name: 'full_name') required String fullName,
+    @JsonKey(name: 'full_name') String? fullName,
     required String? email,
     @JsonKey(name: 'mobile_verified') required bool mobileVerified,
     @JsonKey(name: 'email_verified') required bool emailVerified,

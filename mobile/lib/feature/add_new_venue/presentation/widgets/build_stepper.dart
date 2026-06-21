@@ -92,7 +92,7 @@ class _BuildStepIndicator extends StatelessWidget {
             color: current
                 ? AppColors.primary
                 : active
-                ? AppColors.secondary
+                ? AppColors.success
                 : AppColors.surfaceHighest,
             shape: BoxShape.circle,
             boxShadow: current
@@ -106,7 +106,7 @@ class _BuildStepIndicator extends StatelessWidget {
                 : null,
           ),
           alignment: Alignment.center,
-          child: AppText('$number'),
+          child: AppText('$number', color: Colors.white),
         ),
         const SizedBox(height: 6),
         AppText(label),

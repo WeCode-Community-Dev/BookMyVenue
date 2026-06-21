@@ -25,7 +25,7 @@ Map<String, dynamic> _$VerifyOtpResponseToJson(_VerifyOtpResponse instance) =>
 _User _$UserFromJson(Map<String, dynamic> json) => _User(
   id: json['id'] as String,
   mobileNumber: json['mobile_number'] as String,
-  fullName: json['full_name'] as String,
+  fullName: json['full_name'] as String?,
   email: json['email'] as String?,
   mobileVerified: json['mobile_verified'] as bool,
   emailVerified: json['email_verified'] as bool,

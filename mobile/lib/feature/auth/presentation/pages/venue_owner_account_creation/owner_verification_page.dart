@@ -20,7 +20,6 @@ class OwnerVerificationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const VenueHubAppBar(),
       body: BlocConsumer<OwnerAuthBloc, OwnerAuthState>(
         listener: (BuildContext context, OwnerAuthState state) {
           if (state.isVerificationError) {
@@ -377,31 +376,4 @@ class SupportCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class VenueHubAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const VenueHubAppBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      elevation: 0,
-      title: const Text(
-        'VenueHub',
-        style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-      ),
-      actions: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: FilledButton(
-            onPressed: () {},
-            child: const Text('Become a Host'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(60);
 }

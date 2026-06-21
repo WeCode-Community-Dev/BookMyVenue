@@ -6,8 +6,9 @@ import '../../../../core/utils/shape_constants.dart';
 import '../../../../core/widgets/app_text.dart';
 
 class BuildActionButton extends StatelessWidget {
-  const BuildActionButton({super.key, required this.step});
+  const BuildActionButton({super.key, required this.step, required this.onTap});
   final int step;
+  final Function(int) onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +38,7 @@ class BuildActionButton extends StatelessWidget {
                 if (step == 1) {
                   // widget.onClose();
                 } else {
+                  onTap(step - 1);
                   // appState.setWizardStep(step - 1);
                 }
               },
@@ -98,6 +100,7 @@ class BuildActionButton extends StatelessWidget {
                   //   ),
                   // );
                 }
+                onTap(step + 1);
               },
               child: AppText(step == 4 ? 'Publish Venue' : 'Next'),
             ),

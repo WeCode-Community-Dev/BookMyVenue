@@ -9,8 +9,6 @@ import '../../../../core/utils/shape_constants.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
-import 'owner_payout_details.dart';
-import 'owner_payout_history_page.dart';
 
 class OwnerPayoutPage extends StatelessWidget {
   const OwnerPayoutPage({super.key});

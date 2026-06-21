@@ -87,7 +87,7 @@ class UserEntity extends Equatable {
   final String id;
   final String mobileNumber;
   final String? email;
-  final String fullName;
+  final String? fullName;
   final bool mobileVerified;
   final bool emailVerified;
   final UserRole role;

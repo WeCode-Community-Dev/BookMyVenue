@@ -11,6 +11,7 @@ class AppConst {
 
   /*
   1. Marriage Hall or Auditorium ->
+    Multiple slot selection -> Optional
     Morning Session
     09:00 AM - 03:00 PM
     Evening Session
@@ -27,7 +28,7 @@ class AppConst {
     3.2 slot (4 hours)
     3.3 slot (6 hours)
     3.4 slot (8 hours)
-    3.5 Full Day
+    3.5 Full Day (9-9)
   4. Sports Ground
     4.1. slot (1 hours)
     4.2. slot (2 hours)
