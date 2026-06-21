@@ -5,16 +5,13 @@ const TestPage = async () => {
     const token = await getToken();
     const user = await currentUser();
 
-    const res = await fetch("http://127.0.0.1:4000/users", {
-        method: "POST",
+    console.log({ token, user });
+
+    const res = await fetch("http://127.0.0.1:4000/protected", {
+        method: "GET",
         headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-            email: "test2email.com",
-            role: "ADMIN"
-        }),
     });
 
     const data = await res.json();
