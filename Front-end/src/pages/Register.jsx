@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirm: "" });
+  const [cusForm, setCusForm] = useState({name: "", email : "", phone : "", businessName : "", password: "", confirm : ""});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -11,6 +12,7 @@ export default function Register() {
   const [role,setRole] = useState("User");
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+  const setCus = (r) => (e) => setCusForm(k => ({ ...k, [r]: e.target.value }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -18,10 +20,34 @@ export default function Register() {
     if (!form.name || !form.email || !form.phone || !form.password) { setError("All fields are required."); return; }
     if (form.password.length < 6) { setError("Password must be at least 6 characters."); return; }
     if (form.password !== form.confirm) { setError("Passwords do not match."); return; }
-
+    console.log(form.name);
+    console.log(form.email);
+    console.log(form.phone);
+    console.log(form.password);
+    console.log(form.confirm);
     setLoading(true);
     setTimeout(() => {
       login({ name: form.name, email: form.email, phone: form.phone });
+      navigate("/");
+      setLoading(false);
+    }, 800);
+  };
+
+  const handleCusSubmit = (e) => {
+    e.preventDefault();
+    setError("");
+    if (!cusForm.name || !cusForm.email || !cusForm.phone || !cusForm.businessName || !cusForm.password || !cusForm.confirm) { setError("All fields are required."); return; }
+    if (cusForm.password.length < 6) { setError("Password must be at least 6 characters."); return; }
+    if (cusForm.password !== cusForm.confirm) { setError("Passwords do not match."); return; }
+    console.log(cusForm.name);
+    console.log(cusForm.email);
+    console.log(cusForm.phone);
+    console.log(cusForm.businessName);
+    console.log(cusForm.password);
+    console.log(cusForm.confirm);
+    setLoading(true);
+    setTimeout(() => {
+      login({ name: cusForm.name, email: cusForm.email, phone: cusForm.phone });
       navigate("/");
       setLoading(false);
     }, 800);
@@ -95,31 +121,31 @@ export default function Register() {
             </>
           ) : (
             <>
-            <form onSubmit={handleSubmit} className="auth-form">
+            <form onSubmit={handleCusSubmit} className="auth-form">
               <div className="form-group">
                 <label>Venue Name</label>
-                <input type="text" placeholder="Rahul Sharma" value={form.name} onChange={set("name")} className="form-input" />
+                <input type="text" placeholder="Rahul Sharma" value={cusForm.name} onChange={setCus("name")} className="form-input" />
               </div>
               <div className="form-group">
                 <label>Email Address</label>
-                <input type="email" placeholder="you@example.com" value={form.email} onChange={set("email")} className="form-input" />
+                <input type="email" placeholder="you@example.com" value={cusForm.email} onChange={setCus("email")} className="form-input" />
               </div>
               <div className="form-group">
                 <label>Phone Number</label>
-                <input type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={set("phone")} className="form-input" />
+                <input type="tel" placeholder="+91 98765 43210" value={cusForm.phone} onChange={setCus("phone")} className="form-input" />
               </div>
               <div className="form-group">
                 <label>Business Name</label>
-                <input type="text" placeholder="The Heritage Hall" value={form.businessName} onChange={set("businessName")} className="form-input" />
+                <input type="text" placeholder="The Heritage Hall" value={cusForm.businessName} onChange={setCus("businessName")} className="form-input" />
               </div>
               <div className="form-row">
                 <div className="form-group">
                   <label>Password</label>
-                  <input type="password" placeholder="••••••••" value={form.password} onChange={set("password")} className="form-input" />
+                  <input type="password" placeholder="••••••••" value={cusForm.password} onChange={setCus("password")} className="form-input" />
                 </div>
                 <div className="form-group">
                   <label>Confirm Password</label>
-                  <input type="password" placeholder="••••••••" value={form.confirm} onChange={set("confirm")} className="form-input" />
+                  <input type="password" placeholder="••••••••" value={cusForm.confirm} onChange={setCus("confirm")} className="form-input" />
                 </div>
               </div>
 

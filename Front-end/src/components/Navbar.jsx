@@ -17,6 +17,29 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [role,setPage] = useState("Login");
   const cityRef = useRef(null);
+  const userMenuRef = useRef(null);
+
+  useEffect( () => {
+    const handleUserMenuOutside = (event) => {
+      if(
+        userMenuRef.current && !userMenuRef.current.contains(event.target)
+      ) {
+        setShowUserMenu(false)
+      }
+    };
+
+    document.addEventListener(
+      "mousedown",
+      handleUserMenuOutside
+    );
+
+    return () => {
+      document.addEventListener(
+        "mousedown",
+        handleUserMenuOutside
+      );
+    };
+  }, []);
 
   useEffect( ()=> {
     const handleClickOutside = (event) => {
@@ -76,7 +99,7 @@ export default function Navbar() {
         {/* Auth Section */}
         <div className="nav-auth">
           {user ? (
-            <div className="user-menu-wrap" onClick={() => setShowUserMenu(!showUserMenu)}>
+            <div className="user-menu-wrap" ref={userMenuRef} onClick={() => setShowUserMenu(!showUserMenu)}>
               <div className="user-avatar">{user.name?.charAt(0).toUpperCase()}</div>
               <span className="user-name-short">{user.name?.split(" ")[0]}</span>
               {showUserMenu && (

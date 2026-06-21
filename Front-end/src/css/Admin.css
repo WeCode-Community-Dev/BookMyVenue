@@ -456,6 +456,27 @@ body {
 .toggle--on  { color: var(--green); background: var(--green-bg); }
 .toggle--off { color: var(--text-muted); background: var(--surface-3); }
 
+.addNewAdmin {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  background: #22c55e;
+}
+
+.addNewMenu {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  position: absolute;
+  background: #300cbe;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1100px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }

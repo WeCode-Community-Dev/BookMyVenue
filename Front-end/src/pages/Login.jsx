@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [userID, setUserID] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,11 +15,12 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!email || !password) { setError("Please fill in all fields."); return; }
+    if (!userID || !password) { setError("Please fill in all fields."); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
+    console.log(userID);
+    console.log(password);
 
     setLoading(true);
-    // Simulate API call
     setTimeout(() => {
       login({ name: email.split("@")[0].replace(".", " "), email });
       navigate(from, { replace: true });
@@ -54,12 +55,12 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
-              <label>Email Address</label>
+              <label>User ID</label>
               <input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                type="text"
+                placeholder="013@04"
+                value={userID}
+                onChange={e => setUserID(e.target.value)}
                 className="form-input"
                 autoFocus
               />
