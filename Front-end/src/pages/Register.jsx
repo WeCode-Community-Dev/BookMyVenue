@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { registerUser } from "../services/api";
 
 export default function Register() {
-  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ fname: "", lname: "", email: "", phone: "", password: "", confirm: "" });
   const [cusForm, setCusForm] = useState({name: "", email : "", phone : "", businessName : "", password: "", confirm : ""});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,23 +15,39 @@ export default function Register() {
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
   const setCus = (r) => (e) => setCusForm(k => ({ ...k, [r]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!form.name || !form.email || !form.phone || !form.password) { setError("All fields are required."); return; }
+    if (!form.fname || !form.lname || !form.email || !form.phone || !form.password) { setError("All fields are required."); return; }
     if (form.password.length < 6) { setError("Password must be at least 6 characters."); return; }
     if (form.password !== form.confirm) { setError("Passwords do not match."); return; }
-    console.log(form.name);
+    console.log(form.fname);
+    console.log(form.lname);
     console.log(form.email);
     console.log(form.phone);
     console.log(form.password);
     console.log(form.confirm);
     setLoading(true);
-    setTimeout(() => {
-      login({ name: form.name, email: form.email, phone: form.phone });
+
+    try {
+      const data = await registerUser({
+        firstName: form.fname,
+        lastName: form.lname,
+        phone: form.phone,
+        password: form.password,
+        email: form.email,
+        role: "END_USER"
+      });
+      login(data);
       navigate("/");
+      console.log(data);
+    } catch (err) {
+      console.log(err);
+      setError(err.message);
+    } finally {
+      console.log(err.message);
       setLoading(false);
-    }, 800);
+    }
   };
 
   const handleCusSubmit = (e) => {
@@ -87,16 +104,20 @@ export default function Register() {
             <>
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="form-group">
-                <label>Full Name</label>
-                <input type="text" placeholder="Rahul Sharma" value={form.name} onChange={set("name")} className="form-input" />
+                <label>First Name</label>
+                <input type="text" placeholder="Rahul" value={form.fname} onChange={set("fname")} className="form-input" />
               </div>
               <div className="form-group">
-                <label>Email Address</label>
-                <input type="email" placeholder="you@example.com" value={form.email} onChange={set("email")} className="form-input" />
+                <label>Last Name</label>
+                <input type="text" placeholder="Sharma" value={form.lname} onChange={set("lname")} className="form-input" />
               </div>
               <div className="form-group">
                 <label>Phone Number</label>
                 <input type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={set("phone")} className="form-input" />
+              </div>
+              <div className="form-group">
+                <label>Email Address</label>
+                <input type="email" placeholder="you@example.com" value={form.email} onChange={set("email")} className="form-input" />
               </div>
               <div className="form-row">
                 <div className="form-group">
