@@ -3,8 +3,8 @@
 **Project:** Venue Booking Platform
 **Module:** 1 of 6 — Authentication
 **Status:** ✅ Approved for Phase 1
-**Version:** 1.1
-**Last Updated:** 2026-06-19
+**Version:** 1.2
+**Last Updated:** 2026-06-20
 
 ---
 
@@ -37,7 +37,7 @@ This module covers user authentication via **Email OTP** and **Google OAuth**, J
 
 > 🔗 **Cross-module dependency:** Role auto-upgrade (`User → Venue Owner`) is owned by this module but **triggered externally** by the Venue module when a user adds their first listing.
 
-> 📦 **Module boundary note:** In-app notifications (the bell-icon feed seen in the UI) are deliberately **excluded** from this module. Notification storage/delivery is event-driven from Venue, Booking, and Admin modules — it does not belong to Authentication and is documented separately as its own module (`notification-module-lld.md`).
+> 📦 **Module boundary note:** In-app notification **logic** (creating, listing, marking as read) is deliberately **excluded** from this module — it lives in its own standalone Notification module (`notification-module-lld.md`), since Venue, Booking, and Admin all trigger notifications, not just Auth. The only thing Authentication's schema needs is the `notifications Notification[]` relation on `User`, since `Notification.userId` points back to `User.id`. This is a one-line relation, not ownership of the feature.
 
 ---
 
@@ -75,6 +75,7 @@ model User {
   venues        Venue[]
   bookings      Booking[]
   wishlist      Wishlist[]
+  notifications Notification[]
 
   @@index([email])
   @@index([role])
@@ -92,7 +93,7 @@ enum Role {
 }
 ```
 
-> Note: `venues`, `bookings`, and `wishlist` relations are declared here because they live on `User`, but their models (`Venue`, `Booking`, `Wishlist`) are defined and owned by their respective modules' LLDs.
+> Note: `venues`, `bookings`, `wishlist`, and `notifications` relations are declared here because they live on `User`, but their models (`Venue`, `Booking`, `Wishlist`, `Notification`) are defined and owned by their respective modules' LLDs. `Notification.userId → User.id` is the **only** schema relation the Notification module has — it has no foreign key to `Venue`, `Booking`, or any other table. Other modules trigger notifications via a direct service call (`NotificationService.create(...)`), not through a schema relation.
 
 ---
 
@@ -239,7 +240,7 @@ auth/
     └── jwt-payload.interface.ts
 ```
 
-> 📌 **Design decision:** This module exposes a single public method, `upgradeToVenueOwner(userId)`, that other modules (Venue) call directly. It does **not** import or depend on the Notification module — if Auth needs to trigger a notification in future, it will do so through an event emitter, not a direct import, to keep module boundaries clean.
+> 📌 **Design decision:** This module exposes a single public method, `upgradeToVenueOwner(userId)`, that other modules (Venue) call directly. The `auth/` module does **not** import `NotificationModule` — Authentication only updates the `User.role` field and re-issues the JWT. Any resulting notification (e.g. "You're now a Venue Owner") is dispatched by whichever module triggered the upgrade (Venue), keeping Auth itself notification-agnostic.
 
 ---
 
@@ -370,7 +371,7 @@ Frontend → Browser: redirect to dashboard
 - JWT / session blacklist for forced logout — no flow requires this in Phase 1
 - Detailed per-issue messaging for `profileIssues` — Phase 2 enhancement
 - Password reset flow — not applicable; Email OTP doubles as the only password-less recovery path
-- **In-app notifications** — moved out entirely; see `notification-module-lld.md`
+- **In-app notification logic** (create/list/mark-as-read, delivery) — lives in its own module; see `notification-module-lld.md`. Auth's schema only holds the one-line `notifications` relation on `User`
 
 ---
 
@@ -382,6 +383,8 @@ Frontend → Browser: redirect to dashboard
 | 2026-06-19 | Use Upstash for OTP storage, rate limiting, and booking slot locks only | Justified, low-risk use cases. General caching and session blacklist remain deferred to Phase 2 |
 | 2026-06-19 | No dedicated OTP table in PostgreSQL | Redis TTL handles expiry natively; avoids manual cleanup jobs |
 | 2026-06-19 | Notification model & endpoints removed from this module | Notifications are event-driven from Venue/Booking/Admin modules, not an Authentication concern — moved to its own LLD to keep module boundaries clean |
+| 2026-06-20 | Restored `notifications Notification[]` relation on `User` | Notification module is now being built in Phase 1 (not deferred); `Notification.userId → User.id` is its only schema relation, so `User` needs the mirrored relation field. No other change to Auth — Notification's logic, endpoints, and module folder remain entirely separate |
+| 2026-06-20 | Confirmed: other modules call Notification via direct service call, not a schema relation or message queue | Booking, Venue, and Admin all run in the same NestJS process; a direct `NotificationService.create(...)` call achieves the same result as RabbitMQ/event-driven patterns without the added infrastructure a single-process monolith doesn't need |
 
 ---
 
@@ -389,4 +392,3 @@ Frontend → Browser: redirect to dashboard
 
 - [ ] Confirm Privacy Policy + Terms page is added to the **pre-launch checklist** before Razorpay/Google OAuth go live (not required for Phase 1 demo/test mode)
 - [ ] Confirm whether Admin accounts need their own login flow distinct from OTP/Google, or reuse the same flow with role pre-seeded
-- [ ] Decide how Auth module will signal events (e.g. role upgraded) to the Notification module — direct call vs. event emitter — once Notification LLD is written
