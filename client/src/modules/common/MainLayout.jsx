@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import logo from "../../assets/bookmyvenue.webp";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "../../shared/context/AuthContext";
 
 const MainLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const isOwnerArea = location.pathname.startsWith("/owner");
 
   const isOwner = user?.roles?.includes("OWNER");
   const isUser = user?.roles?.includes("USER");
@@ -34,23 +35,11 @@ const MainLayout = ({ children }) => {
 
   const NAV_LINKS = ["Venues", "How It Works", "For Owners", "Pricing"];
 
-  const getInitials = (name) => {
-    if (!name) return "?";
-    return name
-      .trim()
-      .split(" ")
-      .map((word) => word[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
-  };
-
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 border-b border-gray-100 transition-all duration-300 ${
-          scrolled ? "bg-white/95 backdrop-blur-[12px]" : "bg-white"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 border-b border-gray-100 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-[12px]" : "bg-white"
+          }`}
       >
         <div className="flex items-center justify-between h-[68px] px-5 sm:px-8 ">
           {/* Logo */}
@@ -94,9 +83,6 @@ const MainLayout = ({ children }) => {
             ) : (
               <>
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
-                    {getInitials(user.name)}
-                  </div>
                   <span className="font-medium text-gray-700">
                     Hi, {user.name}
                   </span>
@@ -114,15 +100,31 @@ const MainLayout = ({ children }) => {
                   </button>
                 )}
 
+                {isUser && (
+                  <button
+                    onClick={() => navigate("/account")}
+                    className="btn-outline !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]"
+                  >
+                    My Account
+                  </button>
+                )}
+
                 {isOwner && (
                   <button
-                    className="btn-primary !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]"
                     onClick={() => {
-                      navigate("/owner");
+                      navigate(
+                        isOwnerArea
+                          ? "/"
+                          : "/owner"
+                      );
+
                       setMenuOpen(false);
                     }}
+                    className="btn-primary !py-[9px] !px-5 !text-[0.88rem] !rounded-[10px]"
                   >
-                    Owner Dashboard
+                    {isOwnerArea
+                      ? "Customer Dashboard"
+                      : "Owner Dashboard"}
                   </button>
                 )}
 
@@ -161,9 +163,8 @@ const MainLayout = ({ children }) => {
         {/* Mobile menu dropdown */}
 
         <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            menuOpen ? "max-h-[600px]" : "max-h-0"
-          } bg-white border-t border-gray-100`}
+          className={`lg:hidden overflow-hidden transition-all duration-300 ${menuOpen ? "max-h-[600px]" : "max-h-0"
+            } bg-white border-t border-gray-100`}
         >
           <div className="px-5 py-4 flex flex-col gap-1">
             {NAV_LINKS.map((l) => (
@@ -222,18 +223,36 @@ const MainLayout = ({ children }) => {
                     </button>
                   )}
 
+                  {isUser && (
+                    <button
+                      onClick={() => {
+                        navigate("/account");
+                        setMenuOpen(false);
+                      }}
+                      className="btn-outline"
+                    >
+                      My Account
+                    </button>
+                  )}
+
                   {isOwner && (
                     <button
                       onClick={() => {
-                        navigate("/venue/dashboard");
+                        navigate(
+                          isOwnerArea
+                            ? "/"
+                            : "/owner"
+                        );
+
                         setMenuOpen(false);
                       }}
                       className="btn-primary"
                     >
-                      Owner Dashboard
+                      {isOwnerArea
+                        ? "Customer Dashboard"
+                        : "Owner Dashboard"}
                     </button>
                   )}
-
                   <button
                     onClick={() => {
                       logout();
