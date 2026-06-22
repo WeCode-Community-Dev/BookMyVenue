@@ -61,6 +61,9 @@ export class PrismaVenueRepository implements IVenueRepository {
       if (filters.capacity) {
         where.capacity = { gte: filters.capacity };
       }
+      if (filters.ownerId) {
+        where.owner_id = filters.ownerId;
+      }
       if (filters.status) {
         where.status = filters.status as PrismaVenueStatus;
       }

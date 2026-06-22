@@ -4,9 +4,11 @@ import { AppModule } from './presentation/app.module';
 import { NestjsConsoleLogger } from './infra/logger/console.logger';
 import { DomainExceptionFilter } from './presentation/filters/domain-exception.filter';
 import { VersioningType } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule,);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule,);
 
   app.useLogger(new NestjsConsoleLogger());
   app.useGlobalFilters(new DomainExceptionFilter());
@@ -21,6 +23,13 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
+  app.useStaticAssets(
+    join(process.cwd(), 'uploads'),
+    {
+      prefix: '/uploads',
+    },
+  );
 
   app.setGlobalPrefix('api');
 

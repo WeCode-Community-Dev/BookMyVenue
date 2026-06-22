@@ -6,6 +6,8 @@ import { PrismaBookingRepository } from './repositories/prisma-booking.repositor
 import { PrismaRefreshTokenRepository } from './repositories/prisma-refresh-token.repository';
 import { CryptoPasswordHasher } from './services/crypto-password-hasher';
 import { JwtTokenService } from './services/jwt-token.service';
+import { PrismaVenueImageRepository } from './repositories/prisma-venue-image.repository';
+import { LocalFileStorageService } from './storage/local-file.storage';
 
 @Module({
   imports: [DatabaseModule],
@@ -19,12 +21,20 @@ import { JwtTokenService } from './services/jwt-token.service';
       useClass: CryptoPasswordHasher,
     },
     {
+      provide: 'IFileStorage',
+      useClass: LocalFileStorageService,
+    },
+    {
       provide: 'ITokenService',
       useClass: JwtTokenService,
     },
     {
       provide: 'IVenueRepository',
       useClass: PrismaVenueRepository,
+    },
+    {
+      provide: 'IVenueImageRepository',
+      useClass: PrismaVenueImageRepository,
     },
     {
       provide: 'IBookingRepository',
@@ -36,12 +46,14 @@ import { JwtTokenService } from './services/jwt-token.service';
     },
   ],
   exports: [
+    'IFileStorage',
     'IUserRepository',
     'IPasswordHasher',
     'ITokenService',
     'IVenueRepository',
+    'IVenueImageRepository',
     'IBookingRepository',
     'IRefreshTokenRepository',
   ],
 })
-export class InfraModule {}
+export class InfraModule { }

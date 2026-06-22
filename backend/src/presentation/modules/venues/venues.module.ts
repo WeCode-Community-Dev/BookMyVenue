@@ -7,6 +7,7 @@ import { FindMyVenuesQuery } from '../../../core/application/venues/queries/find
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import { InfraModule } from '../../../infra/infra.module';
+import { UploadVenueImagesCommand } from 'src/core/application/venues/commands/upload-venue-images.command';
 
 @Module({
   imports: [InfraModule],
@@ -16,6 +17,7 @@ import { InfraModule } from '../../../infra/infra.module';
     CreateVenueCommand,
     SearchVenuesQuery,
     GetVenueDetailsQuery,
+    UploadVenueImagesCommand,
     JwtAuthGuard,
     RolesGuard,
   ],
