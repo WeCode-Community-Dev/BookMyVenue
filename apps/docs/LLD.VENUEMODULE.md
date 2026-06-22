@@ -3,8 +3,8 @@
 **Project:** Venue Booking Platform
 **Module:** 2 of 7 — Venue
 **Status:** ✅ Approved for Phase 1
-**Version:** 2.1
-**Last Updated:** 2026-06-20
+**Version:** 2.2
+**Last Updated:** 2026-06-21
 
 ---
 
@@ -34,13 +34,15 @@
 
 ## 1. Scope
 
-This module covers venue creation and management by Venue Owners, public search/filter/discovery for Users, venue detail retrieval, image handling via Cloudinary, location pinning via OpenLayers + OpenStreetMap, owner-defined slot templates with per-slot tiered pricing, and manual date blocking for offline/multi-day bookings. It also owns the approval `status` field that the Admin module reads and updates.
+This module covers venue creation and management by Venue Owners, public search/filter/discovery for Users, venue detail retrieval, image handling via Cloudinary, location pinning via OpenLayers + OpenStreetMap, owner-defined slot templates with per-slot tiered pricing, and manual date blocking for genuinely offline arrangements (e.g. maintenance, or anything agreed entirely outside the app). It also owns the approval `status` field that the Admin module reads and updates.
 
-> 🔗 **Cross-module dependency:** Creating a venue calls `AuthService.upgradeToVenueOwner(userId)` (owned by the Authentication module). Once Admin approves/rejects a venue, the Admin module calls `NotificationService.create(...)` — a direct in-process service call to the standalone Notification module, not a schema relation on `Venue`. The Booking module reads `VenueSlotTemplate` and `VenuePricingTier` data and writes computed `occupiedFrom`/`occupiedTo` ranges back via `Booking`, which this module's availability queries must also check against.
+> 🔗 **Cross-module dependency:** Creating a venue calls `AuthService.upgradeToVenueOwner(userId)` (owned by the Authentication module). Once Admin approves/rejects a venue, the Admin module calls `NotificationService.create(...)` — a direct in-process service call to the standalone Notification module, not a schema relation on `Venue`. The Booking module calls `VenueAvailabilityService.checkSlotAvailability()` and `computeOccupiedWindow()` before creating any lock, and **reads `VenueSlotPricing` rows directly by ID** to source each booked slot's price — it does not go through a generic pricing-lookup service. Booking writes computed `occupiedFrom`/`occupiedTo` ranges back via its own `BookedSlot` rows, which this module's availability queries must also check against.
 
 > 📦 **Module boundary note:** Reviews & Ratings are **not** part of this module in Phase 1. No `Review` model exists. Venue cards and detail pages show no star rating — this was a deliberate decision to stay consistent with Reviews being deferred to Phase 2, even though early UI mockups showed ratings.
 
 > 🔁 **Design evolution note:** This module's availability design went through three iterations during scoping — plain date-based, then fixed Morning/Evening slots with separate kitchen-overlap tracking, before arriving at the final model below: fully owner-defined slot **templates** with datetime offsets (allowing cross-day spans like "previous evening to event-day afternoon" to cover caterer/kitchen prep), unified under one overlap check. This single mechanism replaced what would otherwise have been two separate systems (slot conflict + kitchen conflict). See Decision Log for the full reasoning trail.
+
+> 🔄 **Booking-module update note (2026-06-21):** Multi-day and multi-slot bookings are now fully self-service, handled entirely within the Booking module via multiple `BookedSlot` rows under one payment — they are **no longer** routed through manual owner contact. `VenueBlockedDate` (Section 7a) remains, but strictly for genuinely offline scenarios (maintenance, arrangements made entirely outside the app), not as the answer to multi-day booking. See Decision Log for the reversal and reasoning.
 
 ---
 
@@ -175,7 +177,6 @@ model VenueSlotTemplate {
   isActive      Boolean  @default(true)
 
   pricingTiers  VenueSlotPricing[]
-  bookings      Booking[]
 
   @@index([venueId])
 }
@@ -188,6 +189,8 @@ model VenueSlotPricing {
   minGuests       Int
   maxGuests       Int
   price           Decimal            @db.Decimal(10, 2)
+
+  bookedSlots     BookedSlot[]       // Booking module's rows referencing this exact tier
 
   @@index([slotTemplateId])
 }
@@ -208,9 +211,9 @@ model VenueBlockedDate {
 
 > **Note on `Amenity`:** Although venue type and event category are fixed enums per your decision, `Amenity` is kept as its own table rather than an enum — amenities are a checklist-style multi-select that's likely to need additions (e.g. "Pet Friendly", "Wheelchair Access") without a schema migration. This is a narrower, lower-risk exception to the "fixed enum" decision.
 
-> **Note on pricing:** `Venue.pricePerDay` was removed. Pricing now lives per slot template via `VenueSlotPricing` (guest-count tiers) or `customRatePerGuestPerHour` for custom slots — since price genuinely depends on which slot is booked, not a single venue-wide number.
+> **Note on pricing:** `Venue.pricePerDay` was removed. Pricing now lives per slot template via `VenueSlotPricing` (guest-count tiers) or `customRatePerGuestPerHour` for custom slots — since price genuinely depends on which slot is booked, not a single venue-wide number. The Booking module's `BookedSlot` rows reference a `VenueSlotPricing` row **directly by ID** (`slotPricingTierId`) — there is no generic "get price for this slot and guest count" lookup; the user selects the exact tier they want, and Booking simply reads its `price` field at booking time, copying it into a permanent snapshot (`BookedSlot.slotPrice`).
 
-> **Note on `Booking.occupiedFrom`/`occupiedTo`:** These fields live in the Booking module's schema, not here, but this module's availability checks (Section 7) read from `Booking` directly. A booking's actual occupied window is computed at booking time from the chosen `VenueSlotTemplate`'s offsets applied to the user's selected event date.
+> **Note on `Booking`/`BookedSlot`:** These models live in the Booking module's schema, not here, but this module's availability checks (Section 7) read from `BookedSlot` directly (via its `occupiedFrom`/`occupiedTo` fields) to determine whether a slot is free. A booking's actual occupied window is computed at booking time from the chosen `VenueSlotTemplate`'s offsets applied to the user's selected event date — one `BookedSlot` row per date/tier the user selects, since a single booking can now cover multiple dates and slots at once.
 
 ---
 
@@ -257,7 +260,7 @@ All endpoints versioned under `/api/v1/`.
       "name": "Lagoona Beach Resort",
       "venueType": "RESORT",
       "city": "Kochi",
-      "pricePerDay": 18000,
+      "startingPrice": 25000,
       "primaryImage": "https://res.cloudinary.com/.../main.jpg",
       "distanceKm": 12.0,
       "isAvailableOnRequestedDate": true,
@@ -267,6 +270,8 @@ All endpoints versioned under `/api/v1/`.
   ]
 }
 ```
+
+> `startingPrice` is the lowest `price` across all of the venue's active `VenueSlotPricing` tiers — a quick "from ₹X" preview for the search results list. It is computed at query time for display only; it is never stored, and it has no relationship to `BookedSlot.slotPrice`, which is a separate, permanent snapshot taken only when a specific tier is actually booked.
 
 ### GET `/api/v1/venues/:id`
 
@@ -391,19 +396,6 @@ All endpoints versioned under `/api/v1/`.
 }
 ```
 
-### PATCH `/api/v1/venues/:id/availability`
-
-```jsonc
-// Request
-{
-  "dates": ["2026-07-15", "2026-07-16"],
-  "isBooked": true
-}
-
-// Response 200
-{ "updated": 2 }
-```
-
 ---
 
 ## 6. Search & Filter Logic
@@ -414,9 +406,9 @@ All endpoints versioned under `/api/v1/`.
 | Venue type | `WHERE venueType = ?` (enum exact match) |
 | Event category | `JOIN VenueCategory WHERE category = ?` |
 | Capacity | `WHERE capacityMin <= ? AND capacityMax >= ?` |
-| Price range | Checked against `VenueSlotPricing` — "show venues with at least one slot tier under ₹X" |
+| Price range | Checked against `VenueSlotPricing` — "show venues with at least one slot tier under ₹X" (this is the same data source as `startingPrice` in Section 5) |
 | Amenities | `JOIN VenueAmenity` filtered by selected `amenityId`s |
-| Availability on a date | For each candidate venue, compute whether **any** active `VenueSlotTemplate`, applied to the requested date, would produce an `occupiedFrom`/`occupiedTo` that does *not* overlap an existing `Booking` or `VenueBlockedDate` |
+| Availability on a date | For each candidate venue, compute whether **any** active `VenueSlotTemplate`, applied to the requested date, would produce an `occupiedFrom`/`occupiedTo` that does *not* overlap an existing `BookedSlot` or `VenueBlockedDate` |
 | Distance / map radius | Haversine formula computed in the query (`lat`/`lng` vs venue's `latitude`/`longitude`), or PostGIS `ST_DWithin` if PostGIS extension is enabled |
 | Rating | **Not implemented** — no `Review` model exists in Phase 1 |
 
@@ -427,22 +419,24 @@ All endpoints versioned under `/api/v1/`.
 ## 7. Availability & Slot Logic
 
 - **Slots are owner-defined templates**, not fixed system-wide types. Each `VenueSlotTemplate` stores relative offsets (`startDayOffset`/`startTime`, `endDayOffset`/`endTime`) rather than absolute dates — this lets one template be reused against any future event date, and lets a template span across midnight (e.g. `startDayOffset: -1` = previous evening, to cover caterer/kitchen prep time, through to `endDayOffset: 0` = event-day afternoon).
-- **One unified overlap check replaces what would otherwise be separate slot-conflict and kitchen-conflict systems.** When a user requests a slot template for a given event date, the backend computes the concrete `occupiedFrom`/`occupiedTo` for that booking, then checks it against:
-  1. Existing `CONFIRMED` `Booking` rows for the same venue (their own computed `occupiedFrom`/`occupiedTo`)
+- **One unified overlap check replaces what would otherwise be separate slot-conflict and kitchen-conflict systems.** When a user requests a specific `VenueSlotPricing` tier for a given event date, the backend computes the concrete `occupiedFrom`/`occupiedTo` for that request, then checks it against:
+  1. Existing `BookedSlot` rows belonging to a `CONFIRMED` `Booking`, for the same venue (their own computed `occupiedFrom`/`occupiedTo`)
   2. Existing `VenueBlockedDate` ranges for the same venue
   - If either overlaps, the slot is unavailable for that date and the user is shown alternative dates.
-- **Custom slots** (`isCustom = true`) skip `VenueSlotPricing` tiers entirely and price as `guestCount × customRatePerGuestPerHour × duration`.
-- This availability/overlap computation is shared logic — exposed by this module as `VenueAvailabilityService.checkSlotAvailability(venueId, slotTemplateId, eventDate)` — and called by the Booking module before confirming any booking.
+- **Custom slots** (`isCustom = true`) skip `VenueSlotPricing` tiers entirely and price as `customRatePerGuestPerHour × duration`, with the actual guest count entered directly by the user at booking time for this slot type only — this is the one case where a number is typed rather than a fixed tier selected, since custom slots have no pre-defined guest bands to pick from.
+- This availability/overlap computation is shared logic — exposed by this module as `VenueAvailabilityService.checkSlotAvailability(venueId, slotPricingTierId, eventDate)` — and called by the Booking module **once per booked slot** before confirming any booking, since a single booking can now request multiple slot+date combinations at once (see Booking Module LLD, Section 6).
 
 ---
 
 ## 7a. Manual Date Blocking & Owner Contact Fallback
 
-For scenarios outside the standard slot-booking flow — multi-day events, exhibitions, or any offline arrangement the owner has made directly with a customer — Phase 1 deliberately does **not** attempt to model these as bookings:
+> 🔄 **Updated 2026-06-21:** Multi-day and multi-slot events are **no longer** handled through this section. The Booking module now supports them natively and self-service, via multiple `BookedSlot` rows under one payment (see Booking Module LLD, Section 6 — "The All-or-Nothing Multi-Slot Booking Flow"). This section now covers only genuinely offline scenarios that have nothing to do with how many days or slots are involved.
 
-- The owner manually creates a `VenueBlockedDate` range (e.g. `2026-08-01` to `2026-08-05`) directly from their dashboard. No slot, no price, no guest count — just an occupied flag.
-- These blocked ranges participate in the same overlap check described above, so the venue correctly shows as unavailable to all users for those dates.
-- Every venue detail page displays the owner's contact details (`owner.phone`, `owner.email`) so a user with a non-standard request (multi-day, custom negotiation) can reach out directly. No in-app messaging exists in Phase 1 — this is explicitly deferred to Phase 2.
+For scenarios that fall entirely outside the in-app booking flow — venue maintenance, an arrangement the owner made with a customer through some channel other than the platform, or any reason a date needs to be marked unavailable without an actual `Booking` behind it — Phase 1 provides a simple manual block:
+
+- The owner manually creates a `VenueBlockedDate` range (e.g. `2026-08-01` to `2026-08-05`) directly from their dashboard. No slot, no price — just an occupied flag.
+- These blocked ranges participate in the same overlap check described in Section 7, so the venue correctly shows as unavailable to all users for those dates.
+- Every venue detail page still displays the owner's contact details (`owner.phone`, `owner.email`) for any non-standard request the booking flow genuinely can't express — but **multi-day events are no longer one of those cases**, since a user can now select multiple dates and slots directly in the booking flow itself. No in-app messaging exists in Phase 1 for whatever residual contact need remains — this is deferred to Phase 2.
 
 ---
 
@@ -507,8 +501,9 @@ amenity/
 | Direction | Call | Purpose |
 |---|---|---|
 | Venue → Auth | `AuthService.upgradeToVenueOwner(userId)` | Called on first successful `POST /venues` by a `USER` role |
-| Booking → Venue | `VenueAvailabilityService.checkSlotAvailability(venueId, slotTemplateId, eventDate)` | Called before confirming any booking, to check overlap against existing `Booking` and `VenueBlockedDate` rows |
-| Booking → Venue | `VenueAvailabilityService.computeOccupiedWindow(slotTemplateId, eventDate)` | Resolves a slot template's relative offsets into concrete `occupiedFrom`/`occupiedTo` datetimes for a specific booking |
+| Booking → Venue | `VenueAvailabilityService.checkSlotAvailability(venueId, slotPricingTierId, eventDate)` | Called **once per booked slot** in a request, to check overlap against existing `BookedSlot` (under a `CONFIRMED` `Booking`) and `VenueBlockedDate` rows. A multi-slot booking calls this multiple times before any lock is acquired |
+| Booking → Venue | `VenueAvailabilityService.computeOccupiedWindow(slotTemplateId, eventDate)` | Resolves a slot template's relative offsets into concrete `occupiedFrom`/`occupiedTo` datetimes for one specific `BookedSlot` row |
+| Booking → Venue | *(direct read, not a service call)* `VenueSlotPricing` row by `slotPricingTierId` | Source of `BookedSlot.slotPrice` — Booking reads the tier's `price` field directly rather than calling a pricing-lookup service, since the user already selected the exact tier |
 | Admin → Venue | `VenueService.updateStatus(venueId, status, rejectionNote?)` | Called when Admin approves/rejects a pending venue |
 | Venue → Notification | `NotificationService.create({ userId, type: 'VENUE_APPROVAL', title, message })` | Called by the Admin module (not this one) after it calls `VenueService.updateStatus()` — a direct in-process service call, not a schema relation or message queue. Notification's only schema relation is `Notification.userId → User.id`; it has no foreign key to `Venue` |
 
@@ -568,20 +563,21 @@ Frontend → Backend: GET /api/v1/venues?city=...&category=...&date=...
 Backend → PostgreSQL: query Venue JOIN VenueCategory, VenueAmenity
 Backend → Backend: for each candidate venue + each active VenueSlotTemplate,
                     compute occupiedFrom/occupiedTo for the requested date,
-                    check overlap against Booking + VenueBlockedDate
+                    check overlap against BookedSlot (of CONFIRMED Bookings) + VenueBlockedDate
 Backend → Backend: compute distanceKm if lat/lng provided
 Backend → Frontend: 200 { items: [...], total }
 Frontend → User: render list + map pins (OpenLayers)
 ```
 
-### Owner Blocks Dates for an Offline Booking
+### Owner Blocks Dates for an Offline Reason
 
 ```
 Owner → Frontend: "Block Dates" action on venue dashboard
 Frontend → Backend: POST /api/v1/venues/:id/blocked-dates { fromDate, toDate, note }
 Backend → PostgreSQL: insert VenueBlockedDate
 Backend → Frontend: 201 { id }
-// These dates now show as unavailable in all future search/availability queries
+// These dates now show as unavailable in all future search/availability queries.
+// Note: multi-day customer bookings no longer use this flow — see Section 7a.
 ```
 
 ---
@@ -593,13 +589,13 @@ Backend → Frontend: 201 { id }
 | Owner tries to edit a venue they don't own | 403 Forbidden |
 | Owner edits an `APPROVED` venue's core details | Status resets to `PENDING` — re-approval required (prevents bait-and-switch listings) |
 | Search with no matching venues | 200 with empty `items: []`, not an error |
-| Requested slot's computed window overlaps an existing `Booking` or `VenueBlockedDate` | Slot shown as unavailable for that date; user prompted to pick another date |
+| Requested slot's computed window overlaps an existing `BookedSlot` or `VenueBlockedDate` | Slot shown as unavailable for that date; user prompted to pick another date |
 | Owner uploads an 11th image | 400, "Maximum 10 images per venue" |
 | Owner deletes the primary image | Next image in `sortOrder` automatically promoted to `isPrimary` |
-| Venue soft-deleted (`isActive = false`) | Excluded from search and detail endpoints, but historical bookings referencing it remain intact |
+| Venue soft-deleted (`isActive = false`) | Excluded from search and detail endpoints, but historical `BookedSlot`/`Booking` records referencing it remain intact |
 | Owner creates a slot template with no pricing tiers and `isCustom = false` | 400, "At least one pricing tier required for non-custom slots" |
 | Owner's pricing tiers have gaps or overlaps in guest ranges | 400, validated at creation — tiers must be contiguous and non-overlapping |
-| Venue has zero active slot templates | Venue appears in search but detail page shows "Contact owner to arrange booking" instead of a bookable slot list |
+| Venue has zero active slot templates | Venue appears in search but detail page shows "Contact owner to arrange booking" instead of a bookable slot list — this is about an owner not having configured any slots yet, unrelated to multi-day booking, which is now self-service whenever slots do exist |
 
 ---
 
@@ -616,8 +612,7 @@ Backend → Frontend: 201 { id }
 ## 16. Explicitly Out of Scope (Phase 1)
 
 - **Reviews & Ratings** — no `Review` model; ratings removed from UI entirely for Phase 1, per decision log
-- **Multi-day bookings as a system feature** — not modelled as `Booking` rows at all. Owners block these dates manually via `VenueBlockedDate`; the actual arrangement happens off-platform between owner and customer
-- **In-app messaging** — owner contact details (phone/email) are shown directly on the venue page instead; Phase 2 will add proper in-app messaging
+- **In-app messaging** — owner contact details (phone/email) are shown directly on the venue page for any residual non-standard request; Phase 2 will add proper in-app messaging
 - Admin-editable `VenueType` / `EventCategory` lists — both are fixed enums per current decision; converting to DB-backed tables is a Phase 2 option if new types are needed often
 - Detailed rejection reason shown to owner — `rejectionNote` field exists in schema but is not yet surfaced in any UI flow (Phase 2, per earlier discussion)
 - Venue analytics (views, click-through) — Phase 2
@@ -638,8 +633,12 @@ Backend → Frontend: 201 { id }
 | 2026-06-20 | **Adopted: owner-defined `VenueSlotTemplate` with relative day/time offsets** | Lets one owner-created template (e.g. "previous evening to event-day afternoon") cover real scenarios like overnight catering prep, without needing a separate kitchen-specific system. Templates are reusable across any future event date since offsets are relative, not absolute |
 | 2026-06-20 | **Adopted: pricing moved to `VenueSlotPricing`, scoped per slot template** | Price genuinely depends on which slot is booked and how many guests attend — not a single venue-wide number |
 | 2026-06-20 | **Adopted: single unified overlap check** (`Booking` + `VenueBlockedDate` vs. computed `occupiedFrom`/`occupiedTo`) | Replaces what would otherwise be two separate systems (slot conflict + kitchen conflict) with one mechanism reused everywhere |
-| 2026-06-20 | **Rejected (for Phase 1): automated multi-day booking as its own `Booking` type** | Given the open-source MVP timeline, multi-day/exhibition-style bookings are handled by the owner manually blocking dates (`VenueBlockedDate`) rather than building dedicated pricing/booking logic for an infrequent case |
-| 2026-06-20 | **Adopted: owner contact details shown on venue page as the fallback for non-standard requests** | Simple, zero-schema-cost way to support multi-day/custom negotiation without building in-app messaging in Phase 1 |
+| 2026-06-20 | ~~Rejected (for Phase 1): automated multi-day booking as its own `Booking` type~~ — **superseded 2026-06-21** | Originally deferred for the MVP timeline. Reversed once the Booking module's design matured — see below |
+| 2026-06-20 | **Adopted: owner contact details shown on venue page as the fallback for non-standard requests** | Still valid for genuinely offline scenarios (Section 7a), even though it no longer covers multi-day bookings specifically |
+| 2026-06-21 | **Reversed: multi-day and multi-slot bookings are now self-service, not "contact owner manually"** | The manual-contact approach undermined the platform's actual purpose — a user shouldn't need to leave the app to book multiple days. The Booking module now supports this natively via multiple `BookedSlot` rows under one payment, with all-or-nothing locking. This module's role didn't need to change structurally — `VenueSlotTemplate`/`VenueSlotPricing` already supported per-slot pricing; only Section 7a's framing and a few stale cross-references needed correcting |
+| 2026-06-21 | Booking reads `VenueSlotPricing` rows directly by ID, not through a pricing-lookup service | The user selects an exact tier (which already encodes the guest range and price); there is nothing for this module to calculate or look up on Booking's behalf |
+| 2026-06-21 | Removed stale `pricePerDay` field from the venue search response contract | Leftover from before pricing moved to `VenueSlotPricing`; replaced with a computed `startingPrice` (lowest active tier price) for the search results list |
+| 2026-06-21 | Removed the stale `PATCH /venues/:id/availability` (`isBooked`) contract | Leftover from the earlier date-based availability model, superseded by slot templates; no such endpoint exists in this module's actual API table |
 
 ---
 
