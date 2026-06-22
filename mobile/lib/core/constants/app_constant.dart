@@ -40,6 +40,12 @@ class AppConst {
     5.4. slot (8 hours)
   */
 
+  static const List<String> amenities = <String>[
+    'Wifi',
+    'parking',
+    'Kitchen utils',
+    'security',
+  ];
   static const List<String> cancellationPolicy = <String>[
     'Flexible: Full refund 24 hours prior',
     'Moderate: Full refund 5 days prior',
@@ -74,5 +80,21 @@ class AppConst {
     'OCT',
     'NOV',
     'DEC',
+  ];
+
+  static const List<String> minCapacity = <String>[
+    'Any',
+    '50+',
+    '100+',
+    '250+',
+    '500+',
+    '1000+',
+    '1500+',
+    '2000+',
+    '3000+',
+    '5000+',
+    '10000+',
+    '150000+',
+    '200000+',
   ];
 }

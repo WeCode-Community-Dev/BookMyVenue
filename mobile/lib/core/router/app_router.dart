@@ -10,6 +10,7 @@ import '../../feature/auth/presentation/bloc/user/auth_bloc.dart';
 import '../../feature/auth/presentation/pages/user_login/signin_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_signup_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/verify_otp_page.dart';
+import '../../feature/bottom_nav_bar/user_bottom_nav/user_bottom_navigation_bar.dart';
 import '../../feature/bottom_nav_bar/venue_owner_bottom_nav/venue_owner_bottom_navigation_bar.dart';
 import '../../feature/owner_dashboard_page/presentation/pages/owner_dashboard_page.dart';
 import '../../feature/owner_payout_history/presentation/pages/owner_payout_details.dart';
@@ -17,18 +18,48 @@ import '../../feature/owner_payout_history/presentation/pages/owner_payout_histo
 import '../../feature/owner_payout_history/presentation/pages/owner_payout_page.dart';
 import '../../feature/owner_profile/presentation/pages/owner_profile.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/owner_verification_page.dart';
+import '../../feature/user_dashboard.dart/presentation/pages/user_dashboard.dart';
+import '../../feature/user_venue_listing/presentation/pages/venue_list_page.dart';
 import '../auth/auth_session.dart';
 import '../di/injection.dart';
 import 'route_name.dart';
 
 class AppRouter {
+  static Route<PageRouteBuilder> createHeroPageRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder:
+          (
+            BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+          ) => page,
+      transitionDuration: const Duration(milliseconds: 550),
+      reverseTransitionDuration: const Duration(milliseconds: 550),
+      transitionsBuilder:
+          (
+            BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+            Widget child,
+          ) {
+            final Animation<double> fadeAnimation = animation.drive(
+              Tween<double>(
+                begin: 0.0,
+                end: 1.0,
+              ).chain(CurveTween(curve: Curves.easeInOutCubic)),
+            );
+            return FadeTransition(opacity: fadeAnimation, child: child);
+          },
+    );
+  }
+
   // Global key for navigation without context
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
   static final GoRouter router = GoRouter(
-    initialLocation: '/${AppRouteNames.signin}',
-    // initialLocation: AppRouteNames.ownerVerification,
+    // initialLocation: '/${AppRouteNames.signin}',
+    initialLocation: AppRouteNames.userDashboard,
     navigatorKey: navigatorKey,
     debugLogDiagnostics: true, // Useful for development
     // --- Deep Linking Configuration ---
@@ -76,6 +107,7 @@ class AppRouter {
         },
       ),
 
+      /// Venue owner shell route
       StatefulShellRoute.indexedStack(
         builder:
             (
@@ -84,7 +116,9 @@ class AppRouter {
               StatefulNavigationShell navigationShell,
             ) {
               // This is the wrapper that contains the BottomNavBar
-              return ResponsiveAppShell(navigationShell: navigationShell);
+              return VenueOwnerBottomNavigationBar(
+                navigationShell: navigationShell,
+              );
             },
         branches: <StatefulShellBranch>[
           StatefulShellBranch(
@@ -129,6 +163,61 @@ class AppRouter {
           ),
         ],
       ),
+
+      /// User shell route
+      StatefulShellRoute.indexedStack(
+        builder:
+            (
+              BuildContext context,
+              GoRouterState state,
+              StatefulNavigationShell navigationShell,
+            ) {
+              // This is the wrapper that contains the BottomNavBar
+              return UserBottomNavigationBar(navigationShell: navigationShell);
+            },
+        branches: <StatefulShellBranch>[
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/${AppRouteNames.userDashboard}',
+                name: AppRouteNames.userDashboard,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const UserDashboard(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/${AppRouteNames.listVenue}',
+                name: AppRouteNames.listVenue,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const UserVenueListPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/${AppRouteNames.favoriteVenue}',
+                name: AppRouteNames.favoriteVenue,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const Scaffold(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/${AppRouteNames.userProfile}',
+                name: AppRouteNames.userProfile,
+                builder: (BuildContext context, GoRouterState state) =>
+                    const Scaffold(),
+              ),
+            ],
+          ),
+        ],
+      ),
       GoRoute(
         path: '/${AppRouteNames.payoutHistory}',
         name: AppRouteNames.payoutHistory,
@@ -137,8 +226,8 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: '/${AppRouteNames.payoutOutDetails}',
-        name: AppRouteNames.payoutOutDetails,
+        path: '/${AppRouteNames.payoutDetails}',
+        name: AppRouteNames.payoutDetails,
         builder: (BuildContext context, GoRouterState state) {
           return const OwnerPayoutDetails();
         },

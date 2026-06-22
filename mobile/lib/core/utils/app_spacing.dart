@@ -64,6 +64,7 @@ class AppSpacing {
       const EdgeInsets.fromLTRB(spaceLg, spaceLg, spaceLg, spaceXl);
 
   // Icon Sizes
+  static const double iconXs = 12;
   static const double iconSm = 16;
   static const double iconMd = 20;
   static const double iconLg = 24;

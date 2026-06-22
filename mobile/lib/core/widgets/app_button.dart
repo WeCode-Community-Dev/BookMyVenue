@@ -17,12 +17,14 @@ class AppButton extends StatelessWidget {
     this.size = ButtonSize.medium,
     super.key,
     this.isLoading = false,
+    this.borderRadius,
   });
   final String label;
   final VoidCallback? onPressed;
   final ButtonType type;
   final ButtonSize size;
   final bool isLoading;
+  final BorderRadiusGeometry? borderRadius;
 
   // Helper to get colors from the current theme
   Color _getBackgroundColor(BuildContext context) {
@@ -94,7 +96,7 @@ class AppButton extends StatelessWidget {
                 foregroundColor: _getTextColor(context),
                 elevation: type == ButtonType.secondary ? 0 : 2,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: borderRadius ?? AppShapes.md,
                   side: type == ButtonType.secondary
                       ? BorderSide(color: Theme.of(context).colorScheme.primary)
                       : BorderSide.none,

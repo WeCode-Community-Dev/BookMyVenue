@@ -149,7 +149,7 @@ class BuildPayoutItem extends StatelessWidget {
       padding: AppSpacing.pLg,
       child: GestureDetector(
         onTap: () {
-          context.pushNamed(AppRouteNames.payoutOutDetails);
+          context.pushNamed(AppRouteNames.payoutDetails);
         },
         child: Column(
           spacing: AppSpacing.spaceMd,

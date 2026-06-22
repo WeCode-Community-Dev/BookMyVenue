@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class VenueOwnerBottomNavigationBar extends StatelessWidget {
-  const VenueOwnerBottomNavigationBar({
-    super.key,
-    required this.navigationShell,
-  });
+class UserBottomNavigationBar extends StatelessWidget {
+  const UserBottomNavigationBar({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 

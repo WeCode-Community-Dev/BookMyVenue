@@ -29,14 +29,14 @@ class MyApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
       builder: (_, ThemeMode mode, _) {
-        return MaterialApp(
-          scaffoldMessengerKey: AppCommands.messengerKey,
-          title: 'Book my venue',
-          themeMode: mode,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          home: VenueListPage(),
-        );
+        // return MaterialApp(
+        //   scaffoldMessengerKey: AppCommands.messengerKey,
+        //   title: 'Book my venue',
+        //   themeMode: mode,
+        //   theme: AppTheme.lightTheme,
+        //   darkTheme: AppTheme.darkTheme,
+        //   home: UserVenueListPage(),
+        // );
         return MaterialApp.router(
           scaffoldMessengerKey: AppCommands.messengerKey,
           title: 'Book my venue',
