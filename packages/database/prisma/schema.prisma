@@ -70,7 +70,7 @@ model User {
 
   venues   Venue[]
   bookings Booking[]
-  reviews   Review[]
+  reviews  Review[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -100,7 +100,7 @@ model Venue {
 
   sessions VenueSession[]
   bookings Booking[]
-  reviews   Review[]
+  reviews  Review[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -140,6 +140,8 @@ model Booking {
 
   venue   Venue @relation(fields: [venueId], references: [id])
   venueId Int
+
+  purpose String?
 
   status BookingStatus @default(CONFIRMED)
 
