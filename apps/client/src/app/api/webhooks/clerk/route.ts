@@ -55,7 +55,7 @@ export async function POST(req: Request) {
 
         // Save user to DB
         await prisma.user.create({
-            data: { id, email, role },
+            data: { clerkId: id, email, role },
         });
     }
 
