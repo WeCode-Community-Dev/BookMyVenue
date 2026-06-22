@@ -20,6 +20,7 @@
     },
     "devDependencies": {
         "@bookmyvenue/typescript-config": "workspace:*",
+        "@bookmyvenue/types": "workspace:*",
         "tsx": "^4.22.4"
     }
 }

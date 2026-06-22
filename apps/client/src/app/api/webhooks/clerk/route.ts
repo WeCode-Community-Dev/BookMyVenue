@@ -45,7 +45,6 @@ export async function POST(req: Request) {
 
         const role = (unsafe_metadata?.role as string) === "OWNER" ? "OWNER" : "USER";
 
-        // Set publicMetadata so role is available in the JWT
         if (role === "USER") {
             const clerk = await clerkClient();
             await clerk.users.updateUserMetadata(id, {
@@ -53,7 +52,6 @@ export async function POST(req: Request) {
             });
         }
 
-        // Save user to DB
         await prisma.user.create({
             data: { clerkId: id, email, role },
         });

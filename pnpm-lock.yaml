@@ -106,6 +106,9 @@ importers:
         specifier: ^5.8.5
         version: 5.8.5
     devDependencies:
+      '@bookmyvenue/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@bookmyvenue/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -171,7 +174,11 @@ importers:
         specifier: ^8.50.0
         version: 8.61.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.2)
 
-  packages/types: {}
+  packages/types:
+    devDependencies:
+      '@bookmyvenue/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
 
   packages/typescript-config: {}
 
