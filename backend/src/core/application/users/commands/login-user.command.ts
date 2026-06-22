@@ -74,8 +74,6 @@ export class LoginUserCommand {
     const accessToken = this.tokenService.generateAccessToken(payload);
     const refreshToken = this.tokenService.generateRefreshToken(payload);
 
-    await this.refreshTokenRepository.deleteByUserId(user.id);
-
     const decoded = jwt.decode(refreshToken) as jwt.JwtPayload;
     const expiresAt = decoded.exp
       ? new Date(decoded.exp * 1000)
