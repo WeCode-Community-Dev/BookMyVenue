@@ -13,7 +13,19 @@ enum Role {
   ADMIN
 }
 
-//user model
+enum VenueStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+// User model
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
@@ -27,25 +39,27 @@ model User {
 }
 
 model Venue {
-  id           String    @id @default(uuid())
-  name         String
-  location     String
-  description  String?
-  pricePerHour Float
-  amenities    String[]  
-  
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  ownerId      String
-  owner        User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  bookings     Booking[]
+  id                     String      @id @default(uuid())
+  name                   String
+  location               String
+  description            String?
+  pricePerHour           Float
+  rating                 Float       @default(0.0)
+  imageUrl               String?     
+  amenities              String[]   
+  status                 VenueStatus @default(PENDING)
+  cancellationWindowDays Int         @default(2)
+  bufferHours            Int       @default(2)
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  ownerId                String
+  owner                  User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  bookings               Booking[]
 }
 
-
 model Booking {
-  id          String        @id @default(uuid())
-  date        DateTime
-  startTime   DateTime
+  id          String        @id @default(uuid())      
+  startTime   DateTime 
   endTime     DateTime
   totalPrice  Float
   status      BookingStatus @default(PENDING)
@@ -55,10 +69,6 @@ model Booking {
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   venueId     String
   venue       Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
-}
 
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
+  @@index([venueId, startTime, endTime, status]) 
 }

@@ -1,5 +1,4 @@
 package com.example.bookmyvenue.ui_layout
-
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -12,21 +11,24 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.bookmyvenue.R
-import com.example.bookmyvenue.data.LoginRequest
-import com.example.bookmyvenue.data.NetworkClient
-import kotlinx.coroutines.launch
+import com.example.bookmyvenue.data.LoginUiState
 
 @Composable
 fun LoginScreen(
+    uiState: LoginUiState,
     onNavigateToRegister: () -> Unit,
     onNavigateToForgotPassword: () -> Unit,
-    onLoginSuccess: (String) -> Unit
+    onLoginClick: (String, String) -> Unit
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+    val isLoading = uiState is LoginUiState.Loading
+    LaunchedEffect(uiState) {
+        if (uiState is LoginUiState.Error) {
+            Toast.makeText(context, uiState.message, Toast.LENGTH_LONG).show()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -93,27 +95,7 @@ fun LoginScreen(
                     Toast.makeText(context, "Please fill out all fields", Toast.LENGTH_SHORT).show()
                     return@Button
                 }
-
-                isLoading = true
-                coroutineScope.launch {
-                    try {
-                        val request = LoginRequest(email = email, password = password)
-                        val response = NetworkClient.authService.loginUser(request)
-
-                        isLoading = false
-                        if (response.isSuccessful && response.body()?.success == true) {
-                            Toast.makeText(context, "Login Success!", Toast.LENGTH_SHORT).show()
-                            val userRole = response.body()?.data?.user?.role ?: "USER"
-                            onLoginSuccess(userRole)
-                        } else {
-                            val errorMsg = response.body()?.message ?: "Invalid Credentials"
-                            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
-                        }
-                    } catch (e: Exception) {
-                        isLoading = false
-                        Toast.makeText(context, "Network Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                    }
-                }
+                onLoginClick(email, password)
             },
             modifier = Modifier
                 .fillMaxWidth()

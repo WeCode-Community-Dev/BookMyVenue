@@ -7,6 +7,8 @@ import { RedisModule } from './shared/redis/redis.module';
 import { JwtModule } from './shared/jwt/jwt.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
+import { VenueModule } from './modules/venue/venue.module';
+import { BookingModule } from './modules/booking/booking.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
     JwtModule,
     UserModule,
     AuthModule,
+    VenueModule,
+    BookingModule,
   ],
   providers: [
     {
