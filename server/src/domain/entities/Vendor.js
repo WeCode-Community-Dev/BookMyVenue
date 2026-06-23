@@ -21,10 +21,10 @@ export class VendorEntity {
     businessName,
     isVerified = false,
     isBlocked = false,
-    isDeleted = false,
-    
-    
+    isDeleted = false, 
     isAdminApproved = false, 
+    approvalStatus,
+    rejectionReason,
   }) {
     this.id = id;
     this.fullName = fullName;

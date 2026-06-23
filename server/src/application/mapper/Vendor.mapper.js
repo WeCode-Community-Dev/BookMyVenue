@@ -21,7 +21,9 @@ export class VendorMapper {
             isDeleted: doc.isDeleted,
             refreshToken: doc.refreshToken,
             createdAt: doc.createdAt,
-            updatedAt: doc.updatedAt
+            updatedAt: doc.updatedAt,
+            approvalStatus:doc.approvalStatus,
+            rejectionReason:doc.rejectionReason,
         });
     }
 
@@ -41,7 +43,9 @@ export class VendorMapper {
             role: entity.role,
             isApproved: entity.isApproved,
             isDeleted: entity.isDeleted,
-            refreshToken: entity.refreshToken
+            refreshToken: entity.refreshToken,
+            approvalStatus:entity.approvalStatus,
+            rejectionReason:entity.rejectionReason,
         };
     }
 }

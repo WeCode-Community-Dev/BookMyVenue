@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import {UserRole} from "../../../domain/enums/UserRole.enum.js";
+import { UserRole } from "../../../domain/enums/UserRole.enum.js";
 
 const vendorSchema = new mongoose.Schema(
     {
@@ -74,7 +74,18 @@ const vendorSchema = new mongoose.Schema(
         isDeleted: {
             type: Boolean,
             default: false
+        },
+        approvalStatus: {
+            type: String,
+            enum: ["PENDING", "APPROVED", "REJECTED"],
+            default: "PENDING"
+        },
+
+        rejectionReason: {
+            type: String,
+            default: ""
         }
+
     },
     {
         timestamps: true
