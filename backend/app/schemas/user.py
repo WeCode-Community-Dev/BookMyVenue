@@ -1,12 +1,14 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Literal
 from datetime import datetime
 
 # What react sends when registering
 
 class UserCreate(BaseModel):
+    name: str
     email: EmailStr
-    password: str
+    phone_number: str
+    password: str = Field(..., min_length=8, max_length=72)
     role: Literal["user","host"] = "user"
     
     
@@ -21,9 +23,12 @@ class UserLogin(BaseModel):
 
 class UserOut(BaseModel):
     id: int
+    name: str | None = None
     email: EmailStr
+    phone_number: str | None = None
     role: str
     is_active: bool
+    auth_provider: str
     created_at: datetime
     
     model_config = {"from_attributes": True}
@@ -34,3 +39,8 @@ class UserOut(BaseModel):
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    
+ 
+# Schema to validate the incoming request.   
+class GoogleAuthRequest(BaseModel):
+    id_token: str

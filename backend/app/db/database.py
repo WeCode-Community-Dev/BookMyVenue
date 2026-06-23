@@ -6,7 +6,7 @@ from app.core.config import settings
 
 # Creating the engine - the single connection to database
 engine = create_engine(
-    settings.DATABASE_URL
+    settings.DATABASE_URL,
 )
 
 # Session factory - creating individual sessions per request

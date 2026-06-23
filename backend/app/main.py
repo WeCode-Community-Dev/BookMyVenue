@@ -35,3 +35,7 @@ app.include_router(auth.router)
 @app.get("/")
 def root():
     return {"message": "BookMyVenue API is running"}
+
+@app.get("/health")
+def health():
+    return {"message": "This service is healthy"}
