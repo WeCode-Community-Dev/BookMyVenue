@@ -6,9 +6,10 @@ import { AuthModule } from './modules/auth/auth.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { VenuesModule } from './modules/venues/venues.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
-  imports: [AuthModule, AdminModule, BookingsModule, VenuesModule, UsersModule],
+  imports: [AuthModule, DashboardModule, AdminModule, BookingsModule, VenuesModule, UsersModule],
   controllers: [AppController],
   providers: [AppService],
 })
