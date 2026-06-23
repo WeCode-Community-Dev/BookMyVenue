@@ -42,6 +42,7 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+    const setImages = (images: string[]) => setForm((f) => ({ ...f, images }));
     const setAmenities = (amenities: string[]) => setForm((f) => ({ ...f, amenities }));
     const setSessions = (sessions: Session[]) => setForm((f) => ({ ...f, sessions }));
 
@@ -150,7 +151,7 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
                 </div>
 
                 <div className="overflow-y-auto flex-1 px-6 py-6">
-                    {step === 1 && <Step1BasicDetails form={form} errors={errors} set={set} />}
+                    {step === 1 && <Step1BasicDetails form={form} errors={errors} set={set} setImages={setImages} />}
                     {step === 2 && (
                         <Step2AmenitiesInfo
                             form={form}

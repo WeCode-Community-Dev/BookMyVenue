@@ -88,7 +88,7 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
                 </div>
                 <div>
                     <label className="block text-xs text-muted-foreground mb-1">
-                        Session Price (₹) — leave blank to use base price
+                        Session Price (₹)
                     </label>
                     <input
                         type="number"

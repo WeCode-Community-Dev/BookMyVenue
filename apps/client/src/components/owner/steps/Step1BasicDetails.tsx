@@ -1,6 +1,6 @@
 import { DISTRICTS, VENUE_CATEGORIES } from "@bookmyvenue/types";
-import { ChevronDown, Upload } from "lucide-react";
-
+import { ChevronDown } from "lucide-react";
+import { ImageUpload } from "../ImageUpload";
 
 function formatEnum(value: string) {
     return value
@@ -16,12 +16,14 @@ interface Step1Props {
         category: string;
         capacity: string;
         location: string;
+        images: string[];
     };
     errors: Record<string, string>;
     set: (k: string, v: string) => void;
+    setImages: (images: string[]) => void;
 }
 
-export function Step1BasicDetails({ form, errors, set }: Step1Props) {
+export function Step1BasicDetails({ form, errors, set, setImages }: Step1Props) {
     return (
         <div className="space-y-4">
             <div>
@@ -114,21 +116,7 @@ export function Step1BasicDetails({ form, errors, set }: Step1Props) {
                 {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
             </div>
 
-            <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">
-                    Venue Photos
-                </label>
-                <div className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                    <Upload className="w-7 h-7 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                        Drag & drop photos or{" "}
-                        <span className="text-primary font-medium">browse</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground/60 mt-1">
-                        JPG, PNG up to 10MB each (max 20 photos)
-                    </p>
-                </div>
-            </div>
+            <ImageUpload images={form.images} setImages={setImages} />
         </div>
     );
 }
