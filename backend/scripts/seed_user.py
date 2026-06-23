@@ -7,7 +7,7 @@ sys.path.insert(0, str(BACKEND_DIR))
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from app.db.session import SessionLocal
+from app.db.database import SessionLocal
 from app.modules.auth.models import User, UserRole
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
