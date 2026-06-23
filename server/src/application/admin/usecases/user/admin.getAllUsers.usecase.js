@@ -5,11 +5,12 @@ export class AdminGetAllUsersUsecase {
         this._userRepository = userRepository
     }
 
-    async execute(search, page, limit){
+    async execute(search, isBlocked,page, limit){
 
         const { data, totalPages, totalCount } =
             await this._userRepository.findAllFiltered({
                 search,
+                isBlocked,
                 page,
                 limit
             })
