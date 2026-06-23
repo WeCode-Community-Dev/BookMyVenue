@@ -14,7 +14,7 @@ import { venueStyle } from "../styles/VenueStyle";
 const AddVenue = () => {
     const [
         isOpen, setIsOpen
-    ] = useState(true);
+    ] = useState(false);
 
     return (
         <div className={venueStyle.pageWrapper}>

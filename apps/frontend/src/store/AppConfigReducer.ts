@@ -6,8 +6,8 @@ import { createSlice } from "@reduxjs/toolkit";
 interface AppConfigProps {
   theme: string;
   language: string;
+  devMode: boolean;
 }
-
 
 const initialState: AppConfigProps = {
     theme:
@@ -18,6 +18,7 @@ const initialState: AppConfigProps = {
     typeof window !== "undefined"
         ? localStorage.getItem(LOCAL_STORAGE.APP_LANG) || DEFAULT_LANGUAGE
         : DEFAULT_LANGUAGE,
+    devMode:typeof window !== "undefined"? localStorage.getItem(LOCAL_STORAGE.DEV_MODE) === "true" :false
 };
 
 const AppConfigSlice = createSlice({
@@ -31,11 +32,20 @@ const AppConfigSlice = createSlice({
         storeLanguage: (state, action) => {
             localStorage.setItem(LOCAL_STORAGE.APP_LANG, action.payload);
             return Object.assign({}, state, { language: action.payload });
-        }
+        },
+        enableDevMode: (state) => {
+            localStorage.setItem(LOCAL_STORAGE.DEV_MODE, "true");
+            state.devMode = true;
+        },
+        disableDevMode: (state) => {
+            localStorage.setItem(LOCAL_STORAGE.DEV_MODE, "false");
+            state.devMode = false;
+        },
     },
 });
 
-export const { storeTheme, storeLanguage } = AppConfigSlice.actions;
+export const { storeTheme, storeLanguage, enableDevMode, disableDevMode } =
+  AppConfigSlice.actions;
 
 export const useConfigTheme = (state: { AppConfigReducer: AppConfigProps }) => {
     return state.AppConfigReducer.theme;
@@ -43,6 +53,10 @@ export const useConfigTheme = (state: { AppConfigReducer: AppConfigProps }) => {
 
 export const useLanguage = (state: { AppConfigReducer: AppConfigProps }) => {
     return state.AppConfigReducer.language;
+};
+
+export const useDevMode = (state: { AppConfigReducer: AppConfigProps }) => {
+    return state.AppConfigReducer.devMode;
 };
 
 export default AppConfigSlice.reducer;

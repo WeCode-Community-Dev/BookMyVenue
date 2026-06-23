@@ -6,6 +6,7 @@ export const THEME = {
 export const LOCAL_STORAGE = {
     APP_LANG: "APP_LANG",
     APP_THEME: "APP_THEME",
+    DEV_MODE: "DEV_MODE"
 };
 
 export enum LoginStatus {
