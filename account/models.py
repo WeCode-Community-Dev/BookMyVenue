@@ -11,7 +11,11 @@ class User(AbstractUser):
         OWNER = "OWNER"
         CUSTOMER = "CUSTOMER"
         
-
+        
     role = models.CharField(max_length=20,choices=Role.choices,default=Role.CUSTOMER)
+    address = models.TextField()
+    phone_no = models.CharField(max_length=13)
+
+
     
 

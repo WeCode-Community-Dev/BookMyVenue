@@ -1,4 +1,3 @@
-from rest_framework.views import Response
 from rest_framework.generics import CreateAPIView
 
 from .models import State

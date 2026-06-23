@@ -8,15 +8,14 @@ class Venue(models.Model):
     City = models.ForeignKey(City,on_delete=models.CASCADE)
     name = models.CharField(max_length=225)
     address = models.TextField()
-    # price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return self.name
    
-
-class Image(models.Model):
-    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='images')
-    venue_image = models.ImageField(upload_to='media/')
+class VenueMedia(models.Model):
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='media')
+    image = models.ImageField(upload_to="media/images/")
+    video = models.FileField(upload_to="media/videos/")
 
 
 class Service(models.Model):
