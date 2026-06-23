@@ -1,8 +1,10 @@
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import { clerkPlugin } from "@clerk/fastify";
 import { venueRoute } from "./routes/venue.js";
 
 const app = Fastify({ logger: true });
+app.register(cors, { origin: true });
 app.register(clerkPlugin);
 
 app.register(venueRoute, { prefix: "/owner" });

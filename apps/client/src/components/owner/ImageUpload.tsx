@@ -1,82 +1,58 @@
-import { Upload, X, Loader2 } from "lucide-react";
+import { Upload, X } from "lucide-react";
+import Image from "next/image";
 import { useRef, useState } from "react";
 
 const MAX_IMAGES = 5;
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
-const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
 
-interface UploadingFile {
+interface PendingFile {
     id: string;
+    file: File;
     preview: string;
-    progress: "uploading" | "error";
 }
 
 interface ImageUploadProps {
     images: string[];
     setImages: (images: string[]) => void;
+    onPendingChange?: (files: File[]) => void;
+    error?: string;
 }
 
-export function ImageUpload({ images, setImages }: ImageUploadProps) {
-    const [uploading, setUploading] = useState<UploadingFile[]>([]);
+export function ImageUpload({ images, setImages, onPendingChange, error }: ImageUploadProps) {
+    const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
     const [dragOver, setDragOver] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const canAddMore = images.length + uploading.length < MAX_IMAGES;
+    const canAddMore = images.length + pendingFiles.length < MAX_IMAGES;
 
-    async function uploadFile(file: File): Promise<string | null> {
-        const data = new FormData();
-        data.append("file", file);
-        data.append("upload_preset", UPLOAD_PRESET);
-
-        const res = await fetch(
-            `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-            { method: "POST", body: data }
-        );
-
-        if (!res.ok) return null;
-        const json = await res.json() as { secure_url: string };
-        return json.secure_url;
+    function updatePending(updater: (prev: PendingFile[]) => PendingFile[]) {
+        setPendingFiles((prev) => {
+            const next = updater(prev);
+            onPendingChange?.(next.map((p) => p.file));
+            return next;
+        });
     }
 
-    async function handleFiles(files: FileList | File[]) {
+    function handleFiles(files: FileList | File[]) {
         const arr = Array.from(files).filter((f) => f.type.startsWith("image/"));
-        const slots = MAX_IMAGES - images.length - uploading.length;
-        const toUpload = arr.slice(0, slots);
-        if (!toUpload.length) return;
+        const slots = MAX_IMAGES - images.length - pendingFiles.length;
+        const toAdd = arr.slice(0, slots);
+        if (!toAdd.length) return;
 
-        const entries: UploadingFile[] = toUpload.map((f) => ({
+        const entries: PendingFile[] = toAdd.map((f) => ({
             id: crypto.randomUUID(),
+            file: f,
             preview: URL.createObjectURL(f),
-            progress: "uploading" as const,
         }));
 
-        setUploading((prev) => [...prev, ...entries]);
-
-        await Promise.all(
-            toUpload.map(async (file, i) => {
-                const entry = entries[i]!;
-                const url = await uploadFile(file);
-                if (url) {
-                    setImages([...images, url]);
-                    setUploading((prev) => prev.filter((u) => u.id !== entry.id));
-                    URL.revokeObjectURL(entry.preview);
-                } else {
-                    setUploading((prev) =>
-                        prev.map((u) =>
-                            u.id === entry.id ? { ...u, progress: "error" as const } : u
-                        )
-                    );
-                }
-            })
-        );
+        updatePending((prev) => [...prev, ...entries]);
     }
 
     function removeUploaded(url: string) {
         setImages(images.filter((u) => u !== url));
     }
 
-    function removeUploading(id: string) {
-        setUploading((prev) => {
+    function removePending(id: string) {
+        updatePending((prev) => {
             const entry = prev.find((u) => u.id === id);
             if (entry) URL.revokeObjectURL(entry.preview);
             return prev.filter((u) => u.id !== id);
@@ -92,23 +68,20 @@ export function ImageUpload({ images, setImages }: ImageUploadProps) {
     return (
         <div>
             <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-semibold text-foreground">
-                    Venue Photos
-                </label>
+                <label className="block text-sm font-semibold text-foreground">Venue Photos</label>
                 <span className="text-xs text-muted-foreground">
-                    {images.length + uploading.length}/{MAX_IMAGES}
+                    {images.length + pendingFiles.length}/{MAX_IMAGES}
                 </span>
             </div>
 
-            {(images.length > 0 || uploading.length > 0) && (
+            {(images.length > 0 || pendingFiles.length > 0) && (
                 <div className="grid grid-cols-5 gap-2 mb-3">
                     {images.map((url) => (
                         <div
                             key={url}
                             className="relative group aspect-square rounded-lg overflow-hidden border border-border"
                         >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={url} alt="venue" className="w-full h-full object-cover" />
+                            <Image fill src={url} alt="venue" className="object-cover" />
                             <button
                                 onClick={() => removeUploaded(url)}
                                 className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
@@ -117,30 +90,18 @@ export function ImageUpload({ images, setImages }: ImageUploadProps) {
                             </button>
                         </div>
                     ))}
-                    {uploading.map((u) => (
+                    {pendingFiles.map((p) => (
                         <div
-                            key={u.id}
-                            className="relative aspect-square rounded-lg overflow-hidden border border-border"
+                            key={p.id}
+                            className="relative group aspect-square rounded-lg overflow-hidden border border-border"
                         >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src={u.preview}
-                                alt="uploading"
-                                className="w-full h-full object-cover opacity-50"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                {u.progress === "uploading" ? (
-                                    <Loader2 className="w-5 h-5 text-white animate-spin" />
-                                ) : (
-                                    <button
-                                        onClick={() => removeUploading(u.id)}
-                                        className="flex flex-col items-center gap-1"
-                                    >
-                                        <X className="w-4 h-4 text-red-400" />
-                                        <span className="text-red-400 text-[10px]">Failed</span>
-                                    </button>
-                                )}
-                            </div>
+                            <Image fill src={p.preview} alt="pending" className="object-cover" />
+                            <button
+                                onClick={() => removePending(p.id)}
+                                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                            >
+                                <X className="w-4 h-4 text-white" />
+                            </button>
                         </div>
                     ))}
                 </div>
@@ -149,19 +110,19 @@ export function ImageUpload({ images, setImages }: ImageUploadProps) {
             {canAddMore && (
                 <div
                     onClick={() => inputRef.current?.click()}
-                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragOver(true);
+                    }}
                     onDragLeave={() => setDragOver(false)}
                     onDrop={onDrop}
                     className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-                        dragOver
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/50"
+                        dragOver ? "border-primary bg-primary/5" : error ? "border-red-400" : "border-border hover:border-primary/50"
                     }`}
                 >
                     <Upload className="w-7 h-7 text-muted-foreground mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground">
-                        Drag & drop photos or{" "}
-                        <span className="text-primary font-medium">browse</span>
+                        Drag & drop photos or <span className="text-primary font-medium">browse</span>
                     </p>
                     <p className="text-xs text-muted-foreground/60 mt-1">
                         JPG, PNG up to 10MB · max {MAX_IMAGES} photos

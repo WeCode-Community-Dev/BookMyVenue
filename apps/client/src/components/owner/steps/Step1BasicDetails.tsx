@@ -1,13 +1,9 @@
 import { DISTRICTS, VENUE_CATEGORIES } from "@bookmyvenue/types";
 import { ChevronDown } from "lucide-react";
 import { ImageUpload } from "../ImageUpload";
+import { formatEnum } from "@/lib/utils";
 
-function formatEnum(value: string) {
-    return value
-        .split("_")
-        .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
-        .join(" ");
-}
+
 
 interface Step1Props {
     form: {
@@ -21,9 +17,10 @@ interface Step1Props {
     errors: Record<string, string>;
     set: (k: string, v: string) => void;
     setImages: (images: string[]) => void;
+    onPendingChange: (files: File[]) => void;
 }
 
-export function Step1BasicDetails({ form, errors, set, setImages }: Step1Props) {
+export function Step1BasicDetails({ form, errors, set, setImages, onPendingChange }: Step1Props) {
     return (
         <div className="space-y-4">
             <div>
@@ -116,7 +113,8 @@ export function Step1BasicDetails({ form, errors, set, setImages }: Step1Props) 
                 {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
             </div>
 
-            <ImageUpload images={form.images} setImages={setImages} />
+            <ImageUpload images={form.images} setImages={setImages} onPendingChange={onPendingChange} error={errors.images} />
+            {errors.images && <p className="text-red-500 text-xs mt-1">{errors.images}</p>}
         </div>
     );
 }

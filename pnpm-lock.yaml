@@ -108,6 +108,9 @@ importers:
       '@clerk/fastify':
         specifier: ^3.1.39
         version: 3.1.40(fastify@5.8.5)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@fastify/cors':
+        specifier: ^11.2.0
+        version: 11.2.0
       fastify:
         specifier: ^5.8.5
         version: 5.8.5
@@ -608,6 +611,9 @@ packages:
 
   '@fastify/ajv-compiler@4.0.5':
     resolution: {integrity: sha512-KoWKW+MhvfTRWL4qrhUwAAZoaChluo0m0vbiJlGMt2GXvL4LVPQEjt8kSpHI3IBq5Rez8fg+XeH3cneztq+C7A==}
+
+  '@fastify/cors@11.2.0':
+    resolution: {integrity: sha512-LbLHBuSAdGdSFZYTLVA3+Ch2t+sA6nq3Ejc6XLAKiQ6ViS2qFnvicpj0htsx03FyYeLs04HfRNBsz/a8SvbcUw==}
 
   '@fastify/error@4.2.0':
     resolution: {integrity: sha512-RSo3sVDXfHskiBZKBPRgnQTtIqpi/7zhJOEmAxCiBcM7d0uwdGdxLlsCaLzGs8v8NnxIRlfG0N51p5yFaOentQ==}
@@ -5076,6 +5082,11 @@ snapshots:
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       fast-uri: 3.1.2
+
+  '@fastify/cors@11.2.0':
+    dependencies:
+      fastify-plugin: 5.1.0
+      toad-cache: 3.7.1
 
   '@fastify/error@4.2.0': {}
 

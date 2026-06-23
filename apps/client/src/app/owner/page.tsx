@@ -20,16 +20,12 @@ export default function OwnerDashboard() {
 
     const [activeTab, setActiveTab] = useState<Tab>("overview");
     const [showModal, setShowModal] = useState(false);
-    const [venues, setVenues] = useState<Venue[]>(VENUES);
+    const [venues, ] = useState<Venue[]>(VENUES);
     const [bookingFilter, setBookingFilter] = useState<BookingStatus | "All">("All");
     const [searchQ, setSearchQ] = useState("");
-    const [successToast, setSuccessToast] = useState(false);
+    const [successToast, ] = useState(false);
 
-    const addVenue = (v: Venue) => {
-        setVenues((prev) => [v, ...prev]);
-        setSuccessToast(true);
-        setTimeout(() => setSuccessToast(false), 3500);
-    };
+
 
     const filteredBookings = BOOKINGS.filter((b) => {
         const matchStatus = bookingFilter === "All" || b.status === bookingFilter;

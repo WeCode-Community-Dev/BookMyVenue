@@ -1,9 +1,26 @@
 import { useState } from "react";
 import { z } from "zod";
-import { X, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Step1BasicDetails } from "./steps/Step1BasicDetails";
 import { Step2AmenitiesInfo } from "./steps/Step2AmenitiesInfo";
 import { Step3Sessions, type Session } from "./steps/Step3Sessions";
+import { useCreateVenue } from "@/hooks/useCreateVenue";
+
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
+const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
+
+async function uploadFile(file: File): Promise<string | null> {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", UPLOAD_PRESET);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: data,
+    });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { secure_url: string };
+    return json.secure_url;
+}
 
 const step1Schema = z.object({
     name: z.string().min(1, "Venue name is required"),
@@ -27,7 +44,11 @@ const step3Schema = z.object({
 const STEP_LABELS = ["Basic Details", "Amenities & Info", "Sessions"];
 
 function AddVenueModal({ onClose }: { onClose: () => void }) {
+    const { mutate: createVenue, isPending, error } = useCreateVenue();
+
     const [step, setStep] = useState<number>(1);
+    const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+    const [uploadingImages, setUploadingImages] = useState(false);
     const [form, setForm] = useState({
         name: "",
         district: "",
@@ -55,6 +76,10 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
                 if (!e[key]) e[key] = issue.message;
             }
             setErrors(e);
+            return false;
+        }
+        if (form.images.length + pendingFiles.length === 0) {
+            setErrors({ images: "At least one photo is required" });
             return false;
         }
         setErrors({});
@@ -91,16 +116,31 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
         setStep((s) => s - 1);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!validate3()) return;
-        const payload = {
+
+        let imageUrls = [...form.images];
+
+        if (pendingFiles.length > 0) {
+            setUploadingImages(true);
+            const results = await Promise.all(pendingFiles.map(uploadFile));
+            setUploadingImages(false);
+
+            const failed = results.some((url) => url === null);
+            if (failed) {
+                setErrors({ submit: "Some images failed to upload. Please try again." });
+                return;
+            }
+            imageUrls = [...imageUrls, ...(results as string[])];
+        }
+        console.log({
             name: form.name,
             description: form.description,
             capacity: Number(form.capacity),
             category: form.category,
             location: form.location,
             district: form.district,
-            images: form.images,
+            images: imageUrls,
             amenities: form.amenities,
             sessions: form.sessions.map(({ label, startTime, endTime, price }) => ({
                 label,
@@ -108,10 +148,30 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
                 endTime,
                 price: Number(price),
             })),
-        };
-        console.log({ payload });
-        onClose();
+        });
+
+        createVenue(
+            {
+                name: form.name,
+                description: form.description,
+                capacity: Number(form.capacity),
+                category: form.category,
+                location: form.location,
+                district: form.district,
+                images: imageUrls,
+                amenities: form.amenities,
+                sessions: form.sessions.map(({ label, startTime, endTime, price }) => ({
+                    label,
+                    startTime,
+                    endTime,
+                    price: Number(price),
+                })),
+            },
+            { onSuccess: onClose },
+        );
     };
+
+    const isSubmitting = uploadingImages || isPending;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -151,7 +211,15 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
                 </div>
 
                 <div className="overflow-y-auto flex-1 px-6 py-6">
-                    {step === 1 && <Step1BasicDetails form={form} errors={errors} set={set} setImages={setImages} />}
+                    {step === 1 && (
+                        <Step1BasicDetails
+                            form={form}
+                            errors={errors}
+                            set={set}
+                            setImages={setImages}
+                            onPendingChange={setPendingFiles}
+                        />
+                    )}
                     {step === 2 && (
                         <Step2AmenitiesInfo
                             form={form}
@@ -166,38 +234,56 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-border bg-muted/30 flex justify-between shrink-0">
-                    {step === 1 ? (
-                        <button
-                            onClick={onClose}
-                            className="text-muted-foreground text-sm font-medium hover:text-foreground transition-colors px-4 py-2"
-                        >
-                            Cancel
-                        </button>
-                    ) : (
-                        <button
-                            onClick={handleBack}
-                            className="flex items-center gap-1.5 text-muted-foreground text-sm font-medium hover:text-foreground transition-colors px-4 py-2"
-                        >
-                            <ChevronLeft className="w-4 h-4" /> Back
-                        </button>
+                <div className="px-6 py-4 border-t border-border bg-muted/30 flex flex-col gap-2 shrink-0">
+                    {(error || errors.submit) && (
+                        <p className="text-xs text-destructive text-center">
+                            {error?.message ?? errors.submit}
+                        </p>
                     )}
+                    <div className="flex justify-between">
+                        {step === 1 ? (
+                            <button
+                                onClick={onClose}
+                                className="text-muted-foreground text-sm font-medium hover:text-foreground transition-colors px-4 py-2"
+                            >
+                                Cancel
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleBack}
+                                disabled={isSubmitting}
+                                className="flex items-center gap-1.5 text-muted-foreground text-sm font-medium hover:text-foreground transition-colors px-4 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                <ChevronLeft className="w-4 h-4" /> Back
+                            </button>
+                        )}
 
-                    {step < 3 ? (
-                        <button
-                            onClick={handleNext}
-                            className="bg-primary text-primary-foreground px-6 py-2 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center gap-1.5"
-                        >
-                            Next <ChevronRight className="w-4 h-4" />
-                        </button>
-                    ) : (
-                        <button
-                            onClick={handleSubmit}
-                            className="bg-accent text-white px-6 py-2 rounded-xl text-sm font-semibold hover:bg-accent/90 transition-colors flex items-center gap-1.5"
-                        >
-                            <CheckCircle2 className="w-4 h-4" /> Publish Venue
-                        </button>
-                    )}
+                        {step < 3 ? (
+                            <button
+                                onClick={handleNext}
+                                className="bg-primary text-primary-foreground px-6 py-2 rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                            >
+                                Next <ChevronRight className="w-4 h-4" />
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isSubmitting}
+                                className="bg-accent text-white px-6 py-2 rounded-xl text-sm font-semibold hover:bg-accent/90 transition-colors flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                {isSubmitting ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <CheckCircle2 className="w-4 h-4" />
+                                )}
+                                {uploadingImages
+                                    ? "Uploading images..."
+                                    : isPending
+                                      ? "Publishing..."
+                                      : "Publish Venue"}
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

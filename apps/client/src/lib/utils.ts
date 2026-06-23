@@ -13,3 +13,10 @@ export const fmt12h = (t: string) => {
     const ampm = h >= 12 ? "PM" : "AM";
     return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${ampm}`;
 };
+
+export const formatEnum = (value: string) => {
+    return value
+        .split("_")
+        .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+        .join(" ");
+};
