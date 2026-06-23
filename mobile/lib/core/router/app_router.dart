@@ -8,6 +8,7 @@ import '../../feature/auth/domain/enums/role_base.dart';
 import '../../feature/auth/presentation/bloc/owner/owner_auth_bloc.dart';
 import '../../feature/auth/presentation/bloc/user/auth_bloc.dart';
 import '../../feature/auth/presentation/pages/user_login/signin_page.dart';
+import '../../feature/auth/presentation/pages/venue_owner_account_creation/owner_verification_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_signup_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/verify_otp_page.dart';
 import '../../feature/bottom_nav_bar/user_bottom_nav/user_bottom_navigation_bar.dart';
@@ -17,8 +18,8 @@ import '../../feature/owner_payout_history/presentation/pages/owner_payout_detai
 import '../../feature/owner_payout_history/presentation/pages/owner_payout_history_page.dart';
 import '../../feature/owner_payout_history/presentation/pages/owner_payout_page.dart';
 import '../../feature/owner_profile/presentation/pages/owner_profile.dart';
-import '../../feature/auth/presentation/pages/venue_owner_account_creation/owner_verification_page.dart';
-import '../../feature/user_dashboard.dart/presentation/pages/user_dashboard.dart';
+import '../../feature/user_dashbaord/presentation/pages/user_dashboard.dart';
+import '../../feature/user_profile/presentation/pages/user_profile_page.dart';
 import '../../feature/user_venue_listing/presentation/pages/venue_list_page.dart';
 import '../auth/auth_session.dart';
 import '../di/injection.dart';
@@ -212,7 +213,7 @@ class AppRouter {
                 path: '/${AppRouteNames.userProfile}',
                 name: AppRouteNames.userProfile,
                 builder: (BuildContext context, GoRouterState state) =>
-                    const Scaffold(),
+                    const UserProfileScreen(),
               ),
             ],
           ),
