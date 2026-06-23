@@ -3,8 +3,8 @@
 **Project:** Venue Booking Platform
 **Module:** 2 of 7 — Venue
 **Status:** ✅ Approved for Phase 1
-**Version:** 2.2
-**Last Updated:** 2026-06-21
+**Version:** 2.3
+**Last Updated:** 2026-06-22
 
 ---
 
@@ -77,7 +77,7 @@ model Venue {
   longitude     Float
 
   status        VenueStatus     @default(PENDING)
-  rejectionNote String?         // populated only if status = REJECTED (Phase 2 detail; field reserved now)
+  rejectionNote String?         // populated only if status = REJECTED — surfaced to the owner via the Admin module
 
   isActive      Boolean         @default(true)
   createdAt     DateTime        @default(now())
@@ -207,6 +207,20 @@ model VenueBlockedDate {
 
   @@index([venueId, fromDate, toDate])
 }
+
+// A user's saved venues. Structurally identical to VenueAmenity/VenueCategory —
+// a plain many-to-many join with no extra attributes in Phase 1.
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  venueId   String
+  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, venueId])
+  @@index([userId])
+}
 ```
 
 > **Note on `Amenity`:** Although venue type and event category are fixed enums per your decision, `Amenity` is kept as its own table rather than an enum — amenities are a checklist-style multi-select that's likely to need additions (e.g. "Pet Friendly", "Wheelchair Access") without a schema migration. This is a narrower, lower-risk exception to the "fixed enum" decision.
@@ -214,6 +228,8 @@ model VenueBlockedDate {
 > **Note on pricing:** `Venue.pricePerDay` was removed. Pricing now lives per slot template via `VenueSlotPricing` (guest-count tiers) or `customRatePerGuestPerHour` for custom slots — since price genuinely depends on which slot is booked, not a single venue-wide number. The Booking module's `BookedSlot` rows reference a `VenueSlotPricing` row **directly by ID** (`slotPricingTierId`) — there is no generic "get price for this slot and guest count" lookup; the user selects the exact tier they want, and Booking simply reads its `price` field at booking time, copying it into a permanent snapshot (`BookedSlot.slotPrice`).
 
 > **Note on `Booking`/`BookedSlot`:** These models live in the Booking module's schema, not here, but this module's availability checks (Section 7) read from `BookedSlot` directly (via its `occupiedFrom`/`occupiedTo` fields) to determine whether a slot is free. A booking's actual occupied window is computed at booking time from the chosen `VenueSlotTemplate`'s offsets applied to the user's selected event date — one `BookedSlot` row per date/tier the user selects, since a single booking can now cover multiple dates and slots at once.
+
+> **Note on `Wishlist`:** This table is owned by the Venue module rather than a separate "User module," which was considered and deliberately not created — see Decision Log. A standalone User module would have had almost nothing else to contain: profile fields are already owned by Authentication (`GET/PATCH /auth/me`), and booking history is already owned by Booking (`GET /bookings/my-bookings`). Wishlist was the only piece of data without an existing home, so it was added here instead of justifying a new module for one small table.
 
 ---
 
@@ -238,6 +254,11 @@ All endpoints versioned under `/api/v1/`.
 | POST | `/api/v1/venues/:id/blocked-dates` | Manually block a date range (offline booking) | Yes (Owner only) |
 | DELETE | `/api/v1/venues/:id/blocked-dates/:blockId` | Remove a manual block | Yes (Owner only) |
 | GET | `/api/v1/amenities` | List all amenities (for filter UI / add-venue form) | No |
+| GET | `/api/v1/users/wishlist` | List current user's wishlisted venues | Yes |
+| POST | `/api/v1/users/wishlist/:venueId` | Add a venue to wishlist | Yes |
+| DELETE | `/api/v1/users/wishlist/:venueId` | Remove a venue from wishlist | Yes |
+
+> The three wishlist endpoints are implemented inside this module's NestJS folder (Section 10) but are deliberately exposed under the `/users/wishlist` URL path rather than `/venues/...` — conceptually a user is managing *their own saved list*, not modifying a venue, even though the underlying table lives here.
 
 ---
 
@@ -396,6 +417,49 @@ All endpoints versioned under `/api/v1/`.
 }
 ```
 
+### GET `/api/v1/users/wishlist`
+
+```jsonc
+{
+  "items": [
+    {
+      "venueId": "uuid",
+      "venueName": "Lagoona Beach Resort",
+      "venueType": "RESORT",
+      "city": "Kochi",
+      "startingPrice": 25000,
+      "primaryImage": "https://res.cloudinary.com/.../main.jpg",
+      "savedAt": "2026-06-15T10:00:00Z"
+    }
+  ]
+}
+```
+
+> `venueName`, `startingPrice`, and `primaryImage` are read live from `Venue` at request time, not stored on `Wishlist` itself — if a venue's price changes, the wishlist entry reflects the current value. This is the opposite principle from `BookedSlot.slotPrice` in the Booking module, which is deliberately a permanent snapshot — wishlist protects no transaction, so live data is correct here.
+
+### POST `/api/v1/users/wishlist/:venueId`
+
+```jsonc
+// Response 201
+{ "message": "Venue added to wishlist" }
+
+// Response 409 (already wishlisted)
+{ "statusCode": 409, "message": "Venue is already in your wishlist" }
+
+// Response 404 (venue doesn't exist or isn't APPROVED)
+{ "statusCode": 404, "message": "Venue not found" }
+```
+
+### DELETE `/api/v1/users/wishlist/:venueId`
+
+```jsonc
+// Response 200
+{ "message": "Venue removed from wishlist" }
+
+// Response 404 (wasn't wishlisted)
+{ "statusCode": 404, "message": "Venue is not in your wishlist" }
+```
+
 ---
 
 ## 6. Search & Filter Logic
@@ -478,6 +542,9 @@ venue/
 │   ├── images.controller.ts
 │   ├── images.service.ts
 │   └── cloudinary.provider.ts
+├── wishlist/
+│   ├── wishlist.controller.ts
+│   └── wishlist.service.ts
 ├── dto/
 │   ├── create-venue.dto.ts
 │   ├── update-venue.dto.ts
@@ -492,7 +559,7 @@ amenity/
 └── amenity.service.ts
 ```
 
-> Amenity kept as its own small module since it's a shared reference list, not exclusively a Venue concern — Booking or Admin filters may query it independently later.
+> Amenity kept as its own small module since it's a shared reference list, not exclusively a Venue concern — Booking or Admin filters may query it independently later. `Wishlist`, by contrast, lives as a sub-folder *inside* the Venue module rather than its own module — it's small enough (3 endpoints, one table, no logic shared with anything else) that a dedicated module would be unnecessary ceremony. See Decision Log.
 
 ---
 
@@ -596,6 +663,9 @@ Backend → Frontend: 201 { id }
 | Owner creates a slot template with no pricing tiers and `isCustom = false` | 400, "At least one pricing tier required for non-custom slots" |
 | Owner's pricing tiers have gaps or overlaps in guest ranges | 400, validated at creation — tiers must be contiguous and non-overlapping |
 | Venue has zero active slot templates | Venue appears in search but detail page shows "Contact owner to arrange booking" instead of a bookable slot list — this is about an owner not having configured any slots yet, unrelated to multi-day booking, which is now self-service whenever slots do exist |
+| User wishlists the same venue twice (double-tap) | Second request gets `409`; `@@unique([userId, venueId])` constraint prevents a duplicate row even under a race condition |
+| User tries to wishlist a `PENDING` or `REJECTED` venue | `404` — not yet a real, bookable listing |
+| Wishlisted venue is later soft-deleted or rejected | `Wishlist` row remains; not actively cleaned up in Phase 1 (acceptable at this scale rather than building cleanup logic) |
 
 ---
 
@@ -614,7 +684,6 @@ Backend → Frontend: 201 { id }
 - **Reviews & Ratings** — no `Review` model; ratings removed from UI entirely for Phase 1, per decision log
 - **In-app messaging** — owner contact details (phone/email) are shown directly on the venue page for any residual non-standard request; Phase 2 will add proper in-app messaging
 - Admin-editable `VenueType` / `EventCategory` lists — both are fixed enums per current decision; converting to DB-backed tables is a Phase 2 option if new types are needed often
-- Detailed rejection reason shown to owner — `rejectionNote` field exists in schema but is not yet surfaced in any UI flow (Phase 2, per earlier discussion)
 - Venue analytics (views, click-through) — Phase 2
 
 ---
@@ -639,6 +708,7 @@ Backend → Frontend: 201 { id }
 | 2026-06-21 | Booking reads `VenueSlotPricing` rows directly by ID, not through a pricing-lookup service | The user selects an exact tier (which already encodes the guest range and price); there is nothing for this module to calculate or look up on Booking's behalf |
 | 2026-06-21 | Removed stale `pricePerDay` field from the venue search response contract | Leftover from before pricing moved to `VenueSlotPricing`; replaced with a computed `startingPrice` (lowest active tier price) for the search results list |
 | 2026-06-21 | Removed the stale `PATCH /venues/:id/availability` (`isBooked`) contract | Leftover from the earlier date-based availability model, superseded by slot templates; no such endpoint exists in this module's actual API table |
+| 2026-06-22 | **Wishlist added to this module rather than a separate "User module"** | A standalone User module was considered and rejected — almost everything it would have contained already exists elsewhere (profile fields in Authentication's `GET/PATCH /auth/me`, booking history in Booking's `GET /bookings/my-bookings`). Wishlist was the only piece of data without an existing home, so it was added here instead of creating a new module to justify one small table. Implemented as a sub-folder inside this module (not merged into `venue.service.ts` itself) and exposed under the `/users/wishlist` URL path, since conceptually a user manages their own saved list rather than modifying a venue |
 
 ---
 
