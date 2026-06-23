@@ -7,14 +7,10 @@ from datetime import datetime
 class UserCreate(BaseModel):
     name: str
     email: EmailStr
-<<<<<<< HEAD
     phone_number: str
     password: str = Field(..., min_length=8, max_length=72)
     role: Literal["user","host"] = "user"
-=======
-    password: str = Field(min_length=6)
-    role: Literal["user","owner"] = "user"
->>>>>>> 4329fcd499b498647156fece3c74f059231d8863
+
     
     
 # What react send when logging in

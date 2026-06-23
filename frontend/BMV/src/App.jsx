@@ -1,11 +1,12 @@
-<<<<<<< HEAD
-import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import DashboardPage from "./pages/DashboardPage";
 import RequireAuth from "./components/RequireAuth";
+import MyBookingsPage from "./pages/MyBookingsPage";
+import BookingDetailPage from "./pages/BookingDetailPage";
+import CheckoutPage from "./pages/CheckoutPage";
 
 function ForgotPasswordPlaceholder() {
   return (
@@ -13,28 +14,7 @@ function ForgotPasswordPlaceholder() {
       Forgot Password page coming soon.
     </div>
   );
-=======
-import { Routes, Route, Navigate } from 'react-router-dom'
-import LoginPage from './pages/LoginPage'
-import RegisterPage from './pages/RegisterPage'
-import MyBookingsPage from './pages/MyBookingsPage'
-import BookingDetailPage from './pages/BookingDetailPage'
-import CheckoutPage from './pages/CheckoutPage'
-
-function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/my-bookings" replace />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/my-bookings" element={<MyBookingsPage />} />
-      <Route path="/bookings/:id" element={<BookingDetailPage />} />
-      <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
-    </Routes>
-  )
->>>>>>> 4329fcd499b498647156fece3c74f059231d8863
 }
-
 
 function App() {
   return (
@@ -51,6 +31,9 @@ function App() {
           <Route element={<RequireAuth />}>
             <Route path="/dashboard" element={<DashboardPage />} />
           </Route>
+          <Route path="/my-bookings" element={<MyBookingsPage />} />
+          <Route path="/bookings/:id" element={<BookingDetailPage />} />
+          <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
         </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>
