@@ -1,6 +1,6 @@
-import {IVendorRepository} from "../../domain/repositories/IVendor.repository.js";
+import { IVendorRepository } from "../../domain/repositories/IVendor.repository.js";
 import VendorModel from "../database/models/Vendor.model.js";
-import {VendorMapper} from "../../application/mapper/Vendor.mapper.js";
+import { VendorMapper } from "../../application/mapper/Vendor.mapper.js";
 
 class VendorRepositoryImpl extends IVendorRepository {
 
@@ -17,6 +17,75 @@ class VendorRepositoryImpl extends IVendorRepository {
     async findAll() {
         const docs = await VendorModel.find({ isDeleted: false });
         return docs.map((doc) => VendorMapper.mapToEntity(doc));
+    }
+
+    async findAllFiltered(query = {}) {
+
+        const filter = {}
+
+        if (query.search) {
+            filter.$or = [
+                {
+                    name: {
+                        $regex: query.search,
+                        $options: "i"
+                    }
+                }
+            ]
+        }
+
+        if (query.status) {
+            filter.approvalStatus = query.status
+        }
+
+        const skip =
+            query.limit * (query.page - 1)
+
+        const totalCount =
+            await VendorModel.countDocuments(filter)
+
+        const totalPages =
+            Math.ceil(totalCount / query.limit)
+
+        const documents =
+            await VendorModel.find(filter)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(query.limit)
+
+        return {
+            data: documents.map(doc =>
+                VenueMapper.mapToEntity(doc)
+            ),
+            totalCount,
+            totalPages
+        }
+    }
+
+    async updateApprovalStatus(
+        vendorId,
+        status,
+        reason
+    ) {
+
+        const document =
+            await VendorModel.findByIdAndUpdate(
+                vendorId,
+                {
+                    approvalStatus: status,
+                    rejectionReason:
+                        status === "REJECTED"
+                            ? reason
+                            : null
+                },
+                {
+                    returnDocument: "after"
+                }
+            )
+
+        if (!document) return null
+
+        return VenueMapper.mapToEntity(document)
     }
 
     async update(id, entity) {

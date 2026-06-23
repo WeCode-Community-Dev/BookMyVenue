@@ -11,6 +11,14 @@ export class IVendorRepository {
         throw new Error('Method not implemented');
     }
 
+    async findAllFiltered(query={}) {
+        throw new Error('Method not implemented');
+    }
+
+    async updateApprovalStatus(id,status,reason){
+        throw new Error('Method not implemented');
+    }
+
     async update(id, data) {
         throw new Error('Method not implemented');
     }
