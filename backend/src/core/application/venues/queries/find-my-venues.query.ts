@@ -48,6 +48,7 @@ export class FindMyVenuesQuery {
             pricePerDay: v.pricePerDay,
             status: v.status,
             createdAt: v.createdAt,
+            images: v.images.map(img => img.url)
         }));
     }
 }

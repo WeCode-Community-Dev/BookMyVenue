@@ -74,6 +74,7 @@ export class VenuesController {
       10,
     ),
   )
+  @ApiOperation({ summary: 'Venue images upload api' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
