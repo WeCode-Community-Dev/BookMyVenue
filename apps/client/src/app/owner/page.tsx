@@ -4,7 +4,6 @@ import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { Building2, CalendarCheck, CheckCircle2, Clock, IndianRupee, Plus } from "lucide-react";
 import { ensureOwnerRole } from "./actions";
-import AddVenueModal from "./AddVenueModal";
 
 import { BOOKINGS, VENUES, fmt, type BookingStatus, type Venue } from "./types";
 import StatCards from "@/components/owner/StatCards";
@@ -12,6 +11,7 @@ import NavTabs from "@/components/owner/NavTabs";
 import OverviewTab from "@/components/owner/OverviewTab";
 import BookingsTab from "@/components/owner/BookingsTab";
 import VenuesTab from "@/components/owner/VenuesTab";
+import AddVenueModal from "@/components/owner/AddVenueModal";
 
 type Tab = "overview" | "bookings" | "venues";
 
@@ -80,7 +80,7 @@ export default function OwnerDashboard() {
     }, [getToken]);
 
     return (
-        <div className="min-h-screen bg-background" style={{ fontFamily: "'Nunito', sans-serif" }}>
+        <div className="min-h-screen bg-background" >
             {successToast && (
                 <div className="fixed top-5 right-5 z-100 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2.5 text-sm font-medium animate-pulse">
                     <CheckCircle2 className="w-4 h-4" />
@@ -88,7 +88,7 @@ export default function OwnerDashboard() {
                 </div>
             )}
 
-            {showModal && <AddVenueModal onClose={() => setShowModal(false)} onAdd={addVenue} />}
+            {showModal && <AddVenueModal onClose={() => setShowModal(false)}  />}
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">

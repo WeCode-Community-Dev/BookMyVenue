@@ -19,8 +19,8 @@
         "fastify": "^5.8.5"
     },
     "devDependencies": {
-        "@bookmyvenue/typescript-config": "workspace:*",
         "@bookmyvenue/types": "workspace:*",
+        "@bookmyvenue/typescript-config": "workspace:*",
         "tsx": "^4.22.4"
     }
 }

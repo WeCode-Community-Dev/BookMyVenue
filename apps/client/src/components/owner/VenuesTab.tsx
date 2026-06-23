@@ -50,7 +50,6 @@ export default function VenuesTab({ venues, onShowModal }: VenuesTabProps) {
                         <div className="p-5">
                             <h3
                                 className="font-bold text-foreground text-base mb-1"
-                                style={{ fontFamily: "'Playfair Display', serif" }}
                             >
                                 {v.name}
                             </h3>

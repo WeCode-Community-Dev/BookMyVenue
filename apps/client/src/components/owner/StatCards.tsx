@@ -29,7 +29,6 @@ export default function StatCards({ stats }: StatCardsProps) {
                     </div>
                     <p
                         className="text-2xl font-bold text-foreground"
-                        style={{ fontFamily: "'Playfair Display', serif" }}
                     >
                         {value}
                     </p>

@@ -19,7 +19,6 @@ export default function OverviewTab({ venues, pending, onSetActiveTab, onShowMod
                 <div className="px-5 py-4 border-b border-border flex items-center justify-between">
                     <h2
                         className="font-bold text-foreground"
-                        style={{ fontFamily: "'Playfair Display', serif" }}
                     >
                         Recent Bookings
                     </h2>
@@ -65,7 +64,6 @@ export default function OverviewTab({ venues, pending, onSetActiveTab, onShowMod
                     <div className="px-5 py-4 border-b border-border flex items-center justify-between">
                         <h2
                             className="font-bold text-foreground"
-                            style={{ fontFamily: "'Playfair Display', serif" }}
                         >
                             My Venues
                         </h2>
@@ -136,7 +134,6 @@ export default function OverviewTab({ venues, pending, onSetActiveTab, onShowMod
                 <div className="bg-card border border-border rounded-2xl p-5">
                     <h3
                         className="font-bold text-foreground mb-4"
-                        style={{ fontFamily: "'Playfair Display', serif" }}
                     >
                         Revenue Breakdown
                     </h3>
