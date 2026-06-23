@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useForm, Controller } from 'react-hook-form';
 
@@ -8,6 +8,7 @@ import {
     Card,
     Grid,
     Stack,
+    Alert,
     Button,
     MenuItem,
     TextField,
@@ -19,6 +20,7 @@ import {
 import { VenueApiService } from 'src/api/venue';
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { Iconify } from 'src/components/iconify';
 
 export interface CreateVenueFormValues {
     title: string;
@@ -37,9 +39,22 @@ export interface CreateVenueFormValues {
     capacity: number;
     pricePerDay: number;
 
-    imageUrls: string[];
     amenityIds: string[];
 }
+
+const DEFAULT_VALUES: CreateVenueFormValues = {
+    title: '',
+    description: '',
+    venueType: '',
+    addressLine1: '',
+    city: '',
+    state: '',
+    country: '',
+    postalCode: '',
+    capacity: 0,
+    pricePerDay: 0,
+    amenityIds: [],
+};
 
 const venueTypes = [
     'HOTEL',
@@ -51,62 +66,95 @@ const venueTypes = [
 ];
 
 export function CreateVenueForm() {
-    const [imageUrl, setImageUrl] = useState('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [imageError, setImageError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
     const {
         control,
         register,
-        watch,
-        setValue,
+        reset,
         handleSubmit,
         formState: { errors },
     } = useForm<CreateVenueFormValues>({
-        defaultValues: {
-            title: '',
-            description: '',
-            venueType: '',
-            addressLine1: '',
-            city: '',
-            state: '',
-            country: '',
-            postalCode: '',
-            capacity: 0,
-            pricePerDay: 0,
-            imageUrls: [],
-            amenityIds: [],
+        defaultValues: DEFAULT_VALUES,
+    });
+
+    const { mutateAsync, isPending } = useMutation({
+        mutationFn: async ({
+            venueData,
+            files,
+        }: {
+            venueData: Record<string, unknown>;
+            files: File[];
+        }) => {
+            const result = await VenueApiService.createVenue(venueData);
+
+            if (files.length > 0) {
+                await VenueApiService.uploadVenueImages(result.venueId, files);
+            }
+
+            return result;
         },
     });
 
-    const images = watch('imageUrls');
-
-    const { mutateAsync, isPending } = useMutation({
-        mutationFn: VenueApiService.createVenue,
-    });
-
     const onSubmit = async (data: CreateVenueFormValues) => {
-        await mutateAsync(data);
-    };
+        setSuccessMessage('');
 
-    const addImage = () => {
-        if (!imageUrl.trim()) {
+        if (imageFiles.length === 0) {
+            setImageError('At least one image is required');
             return;
         }
 
-        setValue('imageUrls', [...images, imageUrl]);
+        const { amenityIds, ...rest } = data;
 
-        setImageUrl('');
+        await mutateAsync({
+            venueData: {
+                ...rest,
+                amenities: amenityIds,
+            },
+            files: imageFiles,
+        });
+
+        reset(DEFAULT_VALUES);
+        setImageFiles([]);
+        setImageError('');
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+        setSuccessMessage('Venue created successfully.');
     };
 
-    const removeImage = (url: string) => {
-        setValue(
-            'imageUrls',
-            images.filter((x) => x !== url)
-        );
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selected = event.target.files;
+        if (!selected?.length) return;
+
+        const nextFiles = [...imageFiles, ...Array.from(selected)].slice(0, 10);
+        setImageFiles(nextFiles);
+        setImageError('');
+        event.target.value = '';
+    };
+
+    const removeImage = (index: number) => {
+        setImageFiles((prev) => {
+            const next = prev.filter((_, i) => i !== index);
+            if (next.length === 0) {
+                setImageError('At least one image is required');
+            }
+            return next;
+        });
     };
 
     return (
         <DashboardContent>
             <form onSubmit={handleSubmit(onSubmit)}>
+                {successMessage && (
+                    <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
+                        {successMessage}
+                    </Alert>
+                )}
+
                 <Grid container spacing={3}>
                     <Grid size={{ xs: 12, md: 8 }}>
                         <Card>
@@ -127,7 +175,11 @@ export function CreateVenueForm() {
                                         label="Description"
                                         multiline
                                         minRows={4}
-                                        {...register('description')}
+                                        {...register('description', {
+                                            required: 'Description is required',
+                                        })}
+                                        error={!!errors.description}
+                                        helperText={errors.description?.message}
                                     />
 
                                     <Controller
@@ -151,7 +203,7 @@ export function CreateVenueForm() {
                                                         key={type}
                                                         value={type}
                                                     >
-                                                        {type}
+                                                        {type.replace(/_/g, ' ')}
                                                     </MenuItem>
                                                 ))}
                                             </TextField>
@@ -163,7 +215,11 @@ export function CreateVenueForm() {
                                             <TextField
                                                 fullWidth
                                                 label="Address"
-                                                {...register('addressLine1')}
+                                                {...register('addressLine1', {
+                                                    required: 'Address is required',
+                                                })}
+                                                error={!!errors.addressLine1}
+                                                helperText={errors.addressLine1?.message}
                                             />
                                         </Grid>
 
@@ -171,7 +227,11 @@ export function CreateVenueForm() {
                                             <TextField
                                                 fullWidth
                                                 label="City"
-                                                {...register('city')}
+                                                {...register('city', {
+                                                    required: 'City is required',
+                                                })}
+                                                error={!!errors.city}
+                                                helperText={errors.city?.message}
                                             />
                                         </Grid>
 
@@ -179,7 +239,11 @@ export function CreateVenueForm() {
                                             <TextField
                                                 fullWidth
                                                 label="State"
-                                                {...register('state')}
+                                                {...register('state', {
+                                                    required: 'State is required',
+                                                })}
+                                                error={!!errors.state}
+                                                helperText={errors.state?.message}
                                             />
                                         </Grid>
 
@@ -187,7 +251,11 @@ export function CreateVenueForm() {
                                             <TextField
                                                 fullWidth
                                                 label="Country"
-                                                {...register('country')}
+                                                {...register('country', {
+                                                    required: 'Country is required',
+                                                })}
+                                                error={!!errors.country}
+                                                helperText={errors.country?.message}
                                             />
                                         </Grid>
 
@@ -195,7 +263,11 @@ export function CreateVenueForm() {
                                             <TextField
                                                 fullWidth
                                                 label="Postal Code"
-                                                {...register('postalCode')}
+                                                {...register('postalCode', {
+                                                    required: 'Postal code is required',
+                                                })}
+                                                error={!!errors.postalCode}
+                                                helperText={errors.postalCode?.message}
                                             />
                                         </Grid>
                                     </Grid>
@@ -208,7 +280,14 @@ export function CreateVenueForm() {
                                                 label="Capacity"
                                                 {...register('capacity', {
                                                     valueAsNumber: true,
+                                                    required: 'Capacity is required',
+                                                    min: {
+                                                        value: 1,
+                                                        message: 'Capacity must be at least 1',
+                                                    },
                                                 })}
+                                                error={!!errors.capacity}
+                                                helperText={errors.capacity?.message}
                                             />
                                         </Grid>
 
@@ -219,7 +298,14 @@ export function CreateVenueForm() {
                                                 label="Price Per Day"
                                                 {...register('pricePerDay', {
                                                     valueAsNumber: true,
+                                                    required: 'Price is required',
+                                                    min: {
+                                                        value: 1,
+                                                        message: 'Price must be greater than 0',
+                                                    },
                                                 })}
+                                                error={!!errors.pricePerDay}
+                                                helperText={errors.pricePerDay?.message}
                                             />
                                         </Grid>
                                     </Grid>
@@ -229,65 +315,85 @@ export function CreateVenueForm() {
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 4 }}>
-                        <Card>
+                        <Card
+                            sx={{
+                                borderColor: imageError ? 'error.main' : undefined,
+                                borderWidth: imageError ? 1 : undefined,
+                                borderStyle: imageError ? 'solid' : undefined,
+                            }}
+                        >
                             <CardHeader title="Venue Images" />
 
                             <CardContent>
                                 <Stack spacing={2}>
-                                    <Stack
-                                        direction="row"
-                                        spacing={1}
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        hidden
+                                        onChange={handleFileChange}
+                                    />
+
+                                    <Button
+                                        variant="outlined"
+                                        fullWidth
+                                        startIcon={<Iconify icon="mdi:image-plus" />}
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={imageFiles.length >= 10}
                                     >
-                                        <TextField
-                                            fullWidth
-                                            label="Image URL"
-                                            value={imageUrl}
-                                            onChange={(e) =>
-                                                setImageUrl(
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
+                                        Choose Images
+                                    </Button>
 
-                                        <Button
-                                            variant="contained"
-                                            onClick={addImage}
-                                        >
-                                            Add
-                                        </Button>
-                                    </Stack>
+                                    <Typography variant="caption" color="text.secondary">
+                                        At least 1 image required · up to 10 (JPG, PNG, WEBP)
+                                    </Typography>
 
-                                    {images.map((url) => (
+                                    {imageError && (
+                                        <Typography variant="caption" color="error">
+                                            {imageError}
+                                        </Typography>
+                                    )}
+
+                                    {imageFiles.map((file, index) => (
                                         <Box
-                                            key={url}
+                                            key={`${file.name}-${index}`}
                                             sx={{
                                                 p: 1,
                                                 border: 1,
-                                                borderColor:
-                                                    'divider',
+                                                borderColor: 'divider',
                                                 borderRadius: 1,
                                             }}
                                         >
                                             <Stack
                                                 direction="row"
-                                                justifyContent="space-between"
+                                                spacing={1.5}
                                                 alignItems="center"
                                             >
+                                                <Box
+                                                    component="img"
+                                                    src={URL.createObjectURL(file)}
+                                                    alt={file.name}
+                                                    sx={{
+                                                        width: 48,
+                                                        height: 48,
+                                                        borderRadius: 1,
+                                                        objectFit: 'cover',
+                                                        flexShrink: 0,
+                                                    }}
+                                                />
                                                 <Typography
                                                     variant="body2"
                                                     noWrap
+                                                    flex={1}
                                                 >
-                                                    {url}
+                                                    {file.name}
                                                 </Typography>
 
                                                 <Button
                                                     color="error"
                                                     size="small"
-                                                    onClick={() =>
-                                                        removeImage(
-                                                            url
-                                                        )
-                                                    }
+                                                    onClick={() => removeImage(index)}
                                                 >
                                                     Remove
                                                 </Button>

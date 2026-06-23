@@ -43,12 +43,15 @@ export function VenueTableRow({ row, selected, onSelectRow }: VenueTableRowProps
 
   return (
     <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
-        <TableCell>{row.title}</TableCell>
-        <TableCell>{row.venueType}</TableCell>
-        <TableCell>{row.addressLine1}</TableCell>
-        <TableCell>
-          <Label color={(status === VenueStatus.APPROVED && 'success') || 'error'}>{status}</Label>
-        </TableCell>
-      </TableRow>
+      <TableCell>
+        <img src={row.images?.[0]} alt={row.title} width={100} height={60} />
+      </TableCell>
+      <TableCell>{row.title}</TableCell>
+      <TableCell>{row.venueType}</TableCell>
+      <TableCell>{row.addressLine1}</TableCell>
+      <TableCell>
+        <Label color={(status === VenueStatus.APPROVED && 'success') || 'error'}>{status}</Label>
+      </TableCell>
+    </TableRow>
   );
 }

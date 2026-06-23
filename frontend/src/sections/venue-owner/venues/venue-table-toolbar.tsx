@@ -38,7 +38,7 @@ export function VenueTableToolbar({ numSelected, filterName, onFilterName }: Ven
           fullWidth
           value={filterName}
           onChange={onFilterName}
-          placeholder="Search user..."
+          placeholder="Search venue..."
           startAdornment={
             <InputAdornment position="start">
               <Iconify width={20} icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
