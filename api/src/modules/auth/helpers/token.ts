@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { UserRole } from '../../../generated/prisma/enums.js';
+import { UserRole } from '../../../../generated/prisma/enums.js';
 
 export type AccessTokenPayload = {
   sub: string;

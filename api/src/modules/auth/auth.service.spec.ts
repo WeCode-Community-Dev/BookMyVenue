@@ -5,7 +5,7 @@ jest.mock('../prisma/prisma.service', () => ({
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 describe('AuthService', () => {
   let service: AuthService;

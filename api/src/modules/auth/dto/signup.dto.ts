@@ -9,7 +9,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { UserRole } from '../../../generated/prisma/enums.js';
+import { UserRole } from '../../../../generated/prisma/enums.js';
 import {
   normalizeEmail,
   trimOptionalString,
