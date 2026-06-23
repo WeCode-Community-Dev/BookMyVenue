@@ -2,10 +2,9 @@ import "../styles/global.css";
 
 import { LANGUAGE, LOCAL_STORAGE, THEME } from "@/lib/Constants";
 
-import Header from "@/components/global/header/Header";
+import AppShell from "./AppShell";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import SidebarWrapper from "@/components/global/SideBarWrapper";
 import StoreProvider from "@/components/global/StoreProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -47,13 +46,9 @@ export default function RootLayout({ children, }: { children: React.ReactNode; }
             </head>
             <body className={`${plusJakarta.className} min-h-screen`}>
                 <StoreProvider>
-                    <Header />
-                    <div className="flex">
-                        <SidebarWrapper />
-                        <main className="flex-1">
-                            {children}
-                        </main>
-                    </div>
+                    <AppShell>
+                        {children}
+                    </AppShell>
                 </StoreProvider>
             </body>
         </html>
