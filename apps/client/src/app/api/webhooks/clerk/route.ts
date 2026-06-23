@@ -53,7 +53,7 @@ export async function POST(req: Request) {
         }
 
         await prisma.user.create({
-            data: { clerkId: id, email, role },
+            data: { id, email, role },
         });
     }
 

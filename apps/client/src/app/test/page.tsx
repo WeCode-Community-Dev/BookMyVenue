@@ -7,7 +7,7 @@ const TestPage = async () => {
 
     console.log({ token, user });
 
-    const res = await fetch("http://127.0.0.1:4000/owner/protected", {
+    const res = await fetch("http://127.0.0.1:4000/health", {
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`,

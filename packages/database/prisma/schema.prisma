@@ -64,7 +64,6 @@ enum BookingStatus {
 
 model User {
   id      String @id @default(uuid())
-  clerkId String @unique
   email   String @unique
   role    Role   @default(USER)
 

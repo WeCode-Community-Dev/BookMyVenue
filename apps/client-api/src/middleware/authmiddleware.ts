@@ -8,17 +8,16 @@ declare module "fastify" {
     }
 }
 
-export const userAuthMiddleware = async (request: FastifyRequest, reply: FastifyReply, next: () => void) => {
+export const userAuthMiddleware = async (request: FastifyRequest, reply: FastifyReply) => {
     const auth = getAuth(request);
     const userId = auth?.userId;
     if (!userId) {
         return reply.status(401).send({ message: "User not authenticated" });
     }
     request.userId = auth.userId;
-    next();
 };
 
-export const ownerAuthMiddleware = async (request: FastifyRequest, reply: FastifyReply, next: () => void) => {
+export const ownerAuthMiddleware = async (request: FastifyRequest, reply: FastifyReply) => {
     const auth = getAuth(request);
     const userId = auth?.userId;
     const isAuthenticated = auth?.isAuthenticated;
@@ -32,7 +31,6 @@ export const ownerAuthMiddleware = async (request: FastifyRequest, reply: Fastif
     }
 
     request.userId = auth.userId;
-    next();
 };
 
 // export const adminAuthMiddleware = async (request: FastifyRequest, reply: FastifyReply, next: () => void) => {
