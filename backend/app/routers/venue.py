@@ -9,7 +9,9 @@ from app.services.venue_service import(
     get_venue_by_id,
     update_venue,
     delete_venue,
-    get_my_venues
+    get_my_venues,
+    approve_venue,
+    get_pending_venues
 
 )
 
@@ -20,9 +22,17 @@ router = APIRouter(prefix="/venues", tags=["Venues"])
 def list_my_venues(
     db: Session = Depends(get_db)
 ):
-    return get_my_venues(db)
+    return get_my_venues(
+        db,
+        owner_id=1
+    )
 
 
+@router.get("/pending", response_model=list[VenueOut])
+def list_pending_venues(
+    db: Session = Depends(get_db)
+):
+    return get_pending_venues(db)
 @router.post("/", response_model=VenueOut)
 def create_new_venue(
     venue: VenueCreate,
@@ -84,3 +94,14 @@ def check_availability(
         "venue_id": venue_id,
         "available": True
     }
+
+@router.put("/{venue_id}/approve", response_model=VenueOut)
+def approve_existing_venue(
+    venue_id: int,
+    db: Session = Depends(get_db)
+):
+    return approve_venue(
+        db,
+        venue_id
+    )
+
