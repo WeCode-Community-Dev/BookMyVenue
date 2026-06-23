@@ -60,3 +60,7 @@ app.include_router(payments.router)
 @app.get("/")
 def root():
     return {"message": "BookMyVenue API is running"}
+
+@app.get("/health")
+def health():
+    return {"message": "This service is healthy"}
