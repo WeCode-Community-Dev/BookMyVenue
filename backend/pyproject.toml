@@ -1,0 +1,10 @@
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+extraPaths = ["."]
+pythonVersion = "3.11"
+
+[tool.basedpyright]
+venvPath = "."
+venv = ".venv"
+extraPaths = ["."]
