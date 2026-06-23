@@ -33,11 +33,13 @@ export const SignInPage = lazy(() => import('src/pages/sign-in'));
 export const Page404 = lazy(() => import('src/pages/page-not-found'));
 
 // Admin pages
+export const AdminDashboardPage = lazy(() => import('src/pages/admin/dashboard'));
 export const AdminVenuesPage = lazy(() => import('src/pages/admin/venues/list'));
 export const AdminUsersPage = lazy(() => import('src/pages/admin/users/list'));
 export const CreateUsersPage = lazy(() => import('src/pages/admin/users/create'));
 
 // Owner pages
+export const OwnerDashboardPage = lazy(() => import('src/pages/venue-owner/dashboard'));
 export const OwnerVenuesPage = lazy(() => import('src/pages/venue-owner/venues/list'));
 export const CreateVenuePage = lazy(() => import('src/pages/venue-owner/venues/create'));
 export const OwnerBookingPage = lazy(() => import('src/pages/venue-owner/booking/list'));
@@ -182,7 +184,7 @@ export const routesSection: RouteObject[] = [
             children: [
               {
                 path: 'owner',
-                element: <h1>Owner Dashboard Page</h1>,
+                element: <OwnerDashboardPage />,
               },
               {
                 path: 'owner/venues',
@@ -220,7 +222,7 @@ export const routesSection: RouteObject[] = [
             children: [
               {
                 path: 'admin',
-                element: <h1>Admin Dashboard Page</h1>,
+                element: <AdminDashboardPage />,
               },
               {
                 path: 'admin/users',
