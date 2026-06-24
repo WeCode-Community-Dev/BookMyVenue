@@ -1,5 +1,5 @@
-import { VenuesPage } from "../../../components/tabs/Venues";
+import { VenuesPage as VenuesTab } from "../../../components/tabs/Venues";
 
 export default function VenuesPage() {
-    return <VenuesPage />;
+    return <VenuesTab />;
 }

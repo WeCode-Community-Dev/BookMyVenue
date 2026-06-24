@@ -1,5 +1,5 @@
-import { BookingsPage } from "../../../components/tabs/Bookings";
+import { BookingsPage as BookingsTab } from "../../../components/tabs/Bookings";
 
 export default function BookingsPage() {
-    return <BookingsPage />;
+    return <BookingsTab />;
 }
