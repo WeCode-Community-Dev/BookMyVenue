@@ -75,14 +75,14 @@ const [
 ] = AMENITIES;
 
 const VENUE_AMENITIES = {
-  grand_hall:  [WiFi, Parking, AC, Catering, Sound, Stage, Security, Generator, Valet, Bridal, DanceFloor, OpenBar],
-  conference:  [WiFi, Parking, AC, Projector, Catering, Sound, Generator, Wheelchair],
-  wedding:     [WiFi, Parking, AC, Catering, Sound, Kitchen, Stage, Security, Pool, Generator, Valet, Bridal, DanceFloor, OpenBar, PhotoBooth, GreenRoom],
-  elite_biz:   [WiFi, Parking, AC, Projector, Catering, Sound, Wheelchair],
-  rooftop:     [WiFi, AC, Sound, Security, Generator, OpenBar, Terrace],
-  tech_park:   [WiFi, Parking, AC, Projector, Catering, Sound, Stage, Security, Generator, Wheelchair],
-  garden:      [WiFi, Parking, Catering, Sound, Stage, Security, Generator, Terrace, PhotoBooth],
-  banquet:     [WiFi, Parking, AC, Catering, Sound, Generator, DanceFloor],
+  grand_hall: [WiFi, Parking, AC, Catering, Sound, Stage, Security, Generator, Valet, Bridal, DanceFloor, OpenBar],
+  conference: [WiFi, Parking, AC, Projector, Catering, Sound, Generator, Wheelchair],
+  wedding: [WiFi, Parking, AC, Catering, Sound, Kitchen, Stage, Security, Pool, Generator, Valet, Bridal, DanceFloor, OpenBar, PhotoBooth, GreenRoom],
+  elite_biz: [WiFi, Parking, AC, Projector, Catering, Sound, Wheelchair],
+  rooftop: [WiFi, AC, Sound, Security, Generator, OpenBar, Terrace],
+  tech_park: [WiFi, Parking, AC, Projector, Catering, Sound, Stage, Security, Generator, Wheelchair],
+  garden: [WiFi, Parking, Catering, Sound, Stage, Security, Generator, Terrace, PhotoBooth],
+  banquet: [WiFi, Parking, AC, Catering, Sound, Generator, DanceFloor],
 };
 
 async function main() {
@@ -106,7 +106,7 @@ async function main() {
 
     // ── 1. Users ───────────────────────────────────────────────────
     console.log('👤  Seeding users…');
-    const hashedPassword = await hashPassword('Password123');
+    const hashedPassword = await hashPassword('password123');
 
     const admin = await prisma.users.create({
       data: {
@@ -228,7 +228,7 @@ async function main() {
         title: 'Grand Celebration Hall',
         description:
           'A stunning 5-star banquet hall nestled in the heart of Mumbai, ideal for grand weddings, corporate galas, and milestone celebrations. Features floor-to-ceiling windows with panoramic sea views, state-of-the-art lighting, and a dedicated bridal suite.',
-        venue_type: 'Banquet Hall',
+        venue_type: 'BANQUET_HALL',
         address_line_1: '14, Marine Drive',
         city: 'Mumbai',
         state: 'Maharashtra',
@@ -249,7 +249,7 @@ async function main() {
         title: 'Seaside Conference Centre',
         description:
           'A modern, fully-equipped conference centre overlooking the Arabian Sea. Perfect for corporate seminars, product launches, and executive off-sites. High-speed fibre internet, modular breakout rooms, and in-house catering available.',
-        venue_type: 'Conference Hall',
+        venue_type: 'CONFERENCE_HALL',
         address_line_1: '7, Nariman Point',
         city: 'Mumbai',
         state: 'Maharashtra',
@@ -271,7 +271,7 @@ async function main() {
         title: 'Royal Garden Palace',
         description:
           'An opulent wedding palace spread across 3 acres in South Delhi, featuring lush manicured gardens, an ornate ballroom, and a heritage courtyard. Our in-house décor team crafts bespoke experiences for each event.',
-        venue_type: 'Wedding Hall',
+        venue_type: 'WEDDING_HALL',
         address_line_1: '22, Mehrauli Road',
         city: 'Delhi',
         state: 'Delhi',
@@ -292,7 +292,7 @@ async function main() {
         title: 'Elite Business Hub',
         description:
           'Premium co-working and event space in Connaught Place offering flexible conference rooms, a large training hall, and networking lounges. Ideal for workshops, board meetings, and company town halls.',
-        venue_type: 'Conference Hall',
+        venue_type: 'CONFERENCE_HALL',
         address_line_1: 'Block A, Connaught Place',
         city: 'Delhi',
         state: 'Delhi',
@@ -313,7 +313,7 @@ async function main() {
         title: 'The Rooftop Lounge & Events',
         description:
           'Chic open-air rooftop venue perched 14 floors above Delhi with a breathtaking city skyline backdrop. Ideal for sunset cocktail parties, private celebrations, and intimate corporate evenings.',
-        venue_type: 'Party Hall',
+        venue_type: 'PARTY_HALL',
         address_line_1: '45, Cyber City Tower',
         city: 'Delhi',
         state: 'Delhi',
@@ -335,7 +335,7 @@ async function main() {
         title: 'Tech Park Convention Centre',
         description:
           'A cutting-edge convention centre located in Whitefield, designed for large-scale tech conferences, hackathons, and corporate summits. Features 4K laser projection, simultaneous interpretation booths, and enterprise-grade AV infrastructure.',
-        venue_type: 'Conference Hall',
+        venue_type: 'CONFERENCE_HALL',
         address_line_1: 'ITPL Road, Whitefield',
         city: 'Bangalore',
         state: 'Karnataka',
@@ -356,7 +356,7 @@ async function main() {
         title: 'Garden Grove Outdoor Events',
         description:
           'A serene 2-acre garden retreat in South Bangalore, perfect for open-air receptions, themed celebrations, and nature-inspired weddings. Features a covered pavilion, ambient lighting, and on-site parking for 150 vehicles.',
-        venue_type: 'Outdoor Garden',
+        venue_type: 'GARDEN_VENUE',
         address_line_1: '88, Bannerghatta Road',
         city: 'Bangalore',
         state: 'Karnataka',
@@ -377,7 +377,7 @@ async function main() {
         title: 'Skyline Banquet & Events',
         description:
           'A modern banquet hall in Indiranagar with a contemporary design aesthetic. Accommodates up to 250 guests with flexible seating arrangements. Pending re-inspection after recent renovations.',
-        venue_type: 'Banquet Hall',
+        venue_type: 'BANQUET_HALL',
         address_line_1: '12, 100 Feet Road, Indiranagar',
         city: 'Bangalore',
         state: 'Karnataka',
@@ -563,15 +563,15 @@ async function main() {
     console.log('🎉  Seed complete! Summary:');
     console.log(`    • ${AMENITIES.length} amenities available (from constants)`);
     console.log(`    • 9 users`);
-    console.log(`        - admin@bmv.com          (Password123)`);
-    console.log(`        - owner@bmv.com          (Password123)`);
-    console.log(`        - priya.patel@bmv.com    (Password123)`);
-    console.log(`        - amit.verma@bmv.com     (Password123)`);
-    console.log(`        - user@bmv.com           (Password123)`);
-    console.log(`        - sneha.gupta@bmv.com    (Password123)`);
-    console.log(`        - aryan.mehta@bmv.com    (Password123)`);
-    console.log(`        - deepika.nair@bmv.com   (Password123)`);
-    console.log(`        - vikram.singh@bmv.com   (Password123)`);
+    console.log(`        - admin@bmv.com          (password123)`);
+    console.log(`        - owner@bmv.com          (password123)`);
+    console.log(`        - priya.patel@bmv.com    (password123)`);
+    console.log(`        - amit.verma@bmv.com     (password123)`);
+    console.log(`        - user@bmv.com           (password123)`);
+    console.log(`        - sneha.gupta@bmv.com    (password123)`);
+    console.log(`        - aryan.mehta@bmv.com    (password123)`);
+    console.log(`        - deepika.nair@bmv.com   (password123)`);
+    console.log(`        - vikram.singh@bmv.com   (password123)`);
     console.log(`    • 8 venues (5 approved, 1 pending, 1 rejected)`);
     console.log(`    • ${imageInserts.length} venue images`);
     console.log(`    • 6 bookings`);

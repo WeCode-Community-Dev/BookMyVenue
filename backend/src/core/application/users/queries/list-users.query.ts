@@ -34,7 +34,12 @@ export class ListUsersQuery {
             createdAt: user.createdAt,
         }))
 
-        return new Pagination(users, data.length, 1, data.length);
+        return new Pagination({
+            data: users,
+            total: data.length,
+            offset: 0,
+            limit: data.length
+        });
 
     }
 }

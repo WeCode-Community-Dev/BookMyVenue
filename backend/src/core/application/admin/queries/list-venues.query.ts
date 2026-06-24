@@ -47,7 +47,12 @@ export class ListVenueQuery {
             updatedAt: item.updatedAt
         }))
 
-        return new Pagination(venues, response.length, 1, params.limit)
+        return new Pagination({
+            data: venues,
+            total: response.length,
+            offset: 0,
+            limit: params.limit
+        })
 
     }
 }

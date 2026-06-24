@@ -3,10 +3,12 @@ import { type IVenueRepository } from '../../../domain/venues/repositories/venue
 import { Pagination } from '../../_shared/dto/pagination';
 
 export interface SearchVenuesFilter {
+  limit: number,
+  offset: number,
+  search?: string,
   city?: string;
   venueType?: string;
   capacity?: number;
-  status?: string;
 }
 
 export interface VenueResponseDto {
@@ -37,8 +39,8 @@ export class SearchVenuesQuery {
     private readonly venueRepository: IVenueRepository,
   ) { }
 
-  async execute(filter?: SearchVenuesFilter): Promise<Pagination<VenueResponseDto>> {
-    const venues = await this.venueRepository.findAll({
+  async execute(filter: SearchVenuesFilter): Promise<Pagination<VenueResponseDto>> {
+    const { count, venues } = await this.venueRepository.findAndCountAll({
       ...filter,
       status: 'APPROVED'
     });
@@ -64,6 +66,11 @@ export class SearchVenuesQuery {
       createdAt: v.createdAt,
     }));
 
-    return new Pagination(docs, docs.length, 1, docs.length)
+    return new Pagination({
+      data: docs,
+      limit: filter.limit,
+      offset: filter.offset,
+      total: count,
+    })
   }
 }

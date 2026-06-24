@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma/prisma.service';
 import { Venue, type VenueStatus } from '../../core/domain/venues/entities/venue.entity';
 import { Address } from '../../core/domain/venues/value-objects/address.vo';
-import type { IVenueRepository, VenueFilters } from '../../core/domain/venues/repositories/venue-repository.interface';
+import type { IVenueRepository, VenueFilters, VenuePaginationFilters } from '../../core/domain/venues/repositories/venue-repository.interface';
 import { venue_status as PrismaVenueStatus } from '../database/prisma/generated/prisma/client';
 
 @Injectable()
@@ -76,6 +76,45 @@ export class PrismaVenueRepository implements IVenueRepository {
     });
 
     return dbVenues.map((dbVenue) => this.mapToDomain(dbVenue));
+  }
+
+  async findAndCountAll(filters: VenuePaginationFilters): Promise<{ count: number; venues: Venue[]; }> {
+
+    const where: any = {};
+
+    if (filters) {
+      if (filters.city) {
+        where.city = { contains: filters.city, mode: 'insensitive' };
+      }
+      if (filters.venueType) {
+        where.venue_type = filters.venueType;
+      }
+      if (filters.capacity) {
+        where.capacity = { gte: filters.capacity };
+      }
+      if (filters.ownerId) {
+        where.owner_id = filters.ownerId;
+      }
+      if (filters.status) {
+        where.status = filters.status as PrismaVenueStatus;
+      }
+    }
+
+    const dbVenues = await this.prisma.venues.findMany({
+      where,
+      include: { images: true },
+      orderBy: { created_at: 'desc' },
+      take: filters.limit,
+      skip: filters.offset
+    });
+    const count = await this.prisma.venues.count({ where })
+
+    const venues = dbVenues.map((dbVenue) => this.mapToDomain(dbVenue));
+
+    return {
+      venues,
+      count
+    }
   }
 
   async save(venue: Venue): Promise<void> {

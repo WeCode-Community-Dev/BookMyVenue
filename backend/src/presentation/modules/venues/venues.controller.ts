@@ -16,6 +16,8 @@ import { UserRole } from 'src/core/domain/_shared/enum/UserRole';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { UploadVenueImagesCommand } from 'src/core/application/venues/commands/upload-venue-images.command';
 import { Express } from 'express'
+import type { SearchPaginationDto } from './dto/search-pagination.dto';
+import { searchPaginationSchema } from 'src/presentation/validation/venues/search-pagination';
 
 @ApiTags('venues')
 @Controller({
@@ -53,16 +55,8 @@ export class VenuesController {
   @ApiQuery({ name: 'city', required: false })
   @ApiQuery({ name: 'venueType', required: false })
   @ApiQuery({ name: 'capacity', required: false, type: Number })
-  findAll(
-    @Query('city') city?: string,
-    @Query('venueType') venueType?: string,
-    @Query('capacity') capacity?: string,
-  ) {
-    return this.searchVenuesQuery.execute({
-      city,
-      venueType,
-      capacity: capacity ? parseInt(capacity, 10) : undefined,
-    });
+  findAll(@Query(new ZodValidationPipe(searchPaginationSchema)) query: SearchPaginationDto) {
+    return this.searchVenuesQuery.execute(query);
   }
 
   @Post(':venueId/images')

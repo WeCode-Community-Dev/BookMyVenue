@@ -42,6 +42,11 @@ export class GetUserBookingsQuery {
       }
     }));
 
-    return new Pagination(docs, docs.length, 1, docs.length)
+    return new Pagination({
+      data: docs,
+      total: docs.length,
+      offset: 0,
+      limit: docs.length
+    })
   }
 }
