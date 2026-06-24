@@ -7,6 +7,7 @@ import { errorHandler } from "./middlewares/errorHandler.middleware";
 import { Env } from "./config/env.config";
 import { asyncHandler } from "./middlewares/asyncHandler.middleware";
 import { HTTP_STATUS } from "./config/http.config";
+import connectDatabase from "./config/database";
 
 const app = express();
 
@@ -30,7 +31,8 @@ app.get(
   }),
 );
 
-app.listen(Env.PORT, () => {
+app.listen(Env.PORT, async () => {
+  await connectDatabase();
   console.log(`Server is running on port:${Env.PORT} in ${Env.NODE_ENV} mode`);
 });
 
