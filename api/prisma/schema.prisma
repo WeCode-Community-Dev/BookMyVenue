@@ -86,3 +86,208 @@ model VerificationToken {
   @@index([expiresAt])
   @@map("verification_tokens")
 }
+
+// =========================
+// VENUES
+// =========================
+
+model Venue {
+  id      String @id @default(uuid())
+  ownerId String
+
+  name        String
+  description String?
+
+  address    String
+  city       String
+  state      String?
+  country    String
+  postalCode String?
+
+  latitude  Decimal? @db.Decimal(10, 8)
+  longitude Decimal? @db.Decimal(11, 8)
+  timezone  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  spaces    Space[]
+  amenities VenueAmenity[]
+  images    VenueImage[]
+
+  @@index([ownerId])
+  @@index([city])
+  @@map("venues")
+}
+
+// =========================
+// SPACE CATEGORY
+// =========================
+
+model SpaceCategory {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  spaces Space[]
+
+  @@map("space_categories")
+}
+
+// =========================
+// SPACES
+// =========================
+
+model Space {
+  id String @id @default(uuid())
+
+  venueId    String
+  categoryId String
+
+  name        String
+  description String?
+
+  capacityValue Decimal?
+  capacityType  CapacityType?
+
+  isActive Boolean @default(true)
+  rules    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  venue    Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  category SpaceCategory @relation(fields: [categoryId], references: [id])
+
+  amenities SpaceAmenity[]
+  images    SpaceImage[]
+
+  @@index([venueId])
+  @@index([categoryId])
+  @@map("spaces")
+}
+
+// =========================
+// AMENITIES
+// =========================
+
+model Amenity {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  venueAmenities VenueAmenity[]
+  spaceAmenities SpaceAmenity[]
+
+  @@map("amenities")
+}
+
+// =========================
+// VENUE AMENITIES
+// =========================
+
+model VenueAmenity {
+  venueId   String
+  amenityId String
+
+  venue   Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  amenity Amenity @relation(fields: [amenityId], references: [id])
+
+  @@id([venueId, amenityId])
+  @@index([amenityId])
+  @@map("venue_amenities")
+}
+
+// =========================
+// SPACE AMENITIES
+// =========================
+
+model SpaceAmenity {
+  spaceId   String
+  amenityId String
+
+  space   Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  amenity Amenity @relation(fields: [amenityId], references: [id])
+
+  @@id([spaceId, amenityId])
+  @@index([amenityId])
+  @@map("space_amenities")
+}
+
+// =========================
+// IMAGES
+// =========================
+
+model Image {
+  id String @id @default(uuid())
+
+  url     String
+  altText String?
+
+  width  Int?
+  height Int?
+
+  createdAt DateTime @default(now())
+
+  venueImages VenueImage[]
+  spaceImages SpaceImage[]
+
+  @@map("images")
+}
+
+// =========================
+// VENUE IMAGES
+// =========================
+
+model VenueImage {
+  venueId String
+  imageId String
+
+  sortOrder Int     @default(0)
+  isCover   Boolean @default(false)
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  image Image @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@id([venueId, imageId])
+  @@index([imageId])
+  @@map("venue_images")
+}
+
+// =========================
+// SPACE IMAGES
+// =========================
+
+model SpaceImage {
+  spaceId String
+  imageId String
+
+  sortOrder Int     @default(0)
+  isCover   Boolean @default(false)
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  image Image @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@id([spaceId, imageId])
+  @@index([imageId])
+  @@map("space_images")
+}
+
+// =========================
+// ENUMS
+// =========================
+
+enum CapacityType {
+  PEOPLE
+  SEATS
+  PLAYERS
+  CARS
+  SQFT
+  SQM
+}

@@ -19,3 +19,17 @@ export function createAccessToken(
 
   return jwtService.sign(payload);
 }
+
+export function verifyAccessToken(
+  jwtService: JwtService,
+  token: string,
+): AccessTokenPayload {
+  return jwtService.verify(token);
+}
+
+// export function decodeAccessToken(
+//   jwtService: JwtService,
+//   token: string,
+// ): AccessTokenPayload {
+//   return jwtService.decode(token);
+// }
