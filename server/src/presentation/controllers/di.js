@@ -14,14 +14,19 @@ import RefreshTokenUseCase from '../../application/user/usecases/RefreshTokenUse
 // AdminUserUsecases
 import { AdminGetAllUsersUsecase } from '../../application/admin/usecases/user/admin.getAllUsers.usecase.js'
 import { AdminUpdateUserStatusUsecase } from '../../application/admin/usecases/user/admin.updateUserStatus.usecase.js'
-
+//AdminVendorUsecases
+import { AdminGetAllVendorsUsecase } from '../../application/admin/usecases/vendor/admin.getAllVendors.usecase.js'
+import { AdminGetVendorByIdUsecase } from '../../application/admin/usecases/vendor/admin.getVendorById.usecase.js'
+import { AdminUpdateVendorApprovalStatusUsecase } from '../../application/admin/usecases/vendor/admin.updateVendorApprovalStatus.usecase.js'
+// AdminUserController
+import { AdminUserController } from '../controllers/admin/admin.userController.js'
+//AdminVendorController
+import { AdminVendorController } from '../controllers/admin/admin.vendorController.js'
 
 import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
 import { UserVenueController } from '../controllers/user/user.venueController.js'
 import { AuthController } from '../controllers/user/AuthController.js'
 
-// AdminController
-import { AdminUserController } from '../controllers/admin/admin.userController.js'
 
 import { VenueRepository } from '../../infrastructure/repositories/venue.repository.js'
 import { VendorGetAllVenuesUsecase } from '../../application/vendor/usecases/venue/vendor.getAllVenues.usecase.js'
@@ -66,7 +71,10 @@ const iAdminUpdateUserStatusUsecase =
     new AdminUpdateUserStatusUsecase(
         iUserRepository
     )
-
+//adminVendorUsecases
+const iAdminGetAllVendorsUsecase = new AdminGetAllVendorsUsecase(iVendorRepository)
+const iAdminGetVendorByIdUsecase = new AdminGetVendorByIdUsecase(iVendorRepository)
+const iAdminUpdateVendorApprovalStatusUsecase = new AdminUpdateVendorApprovalStatusUsecase(iVendorRepository)
 
 //auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(iUserRepository, HashService)
@@ -161,7 +169,13 @@ export const iAdminUserController =
         iAdminGetAllUsersUsecase,
         iAdminUpdateUserStatusUsecase,
     )
-
+//adminVendorController
+export const iAdminVendorControlller = 
+    new AdminVendorController(
+        iAdminGetAllVendorsUsecase,
+        iAdminGetVendorByIdUsecase,
+        iAdminUpdateVendorApprovalStatusUsecase,
+    )
 export const iUserVenueController = new UserVenueController (
     iUserGetAllVenues,
     iUserGetVenueById,

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { UserRole } from "../../../domain/enums/UserRole.enum.js";
+import { VendorApprovalStatus } from '../../../domain/enums/VendorApprovalStatus.enum.js'
 
 const vendorSchema = new mongoose.Schema(
     {
@@ -77,8 +78,8 @@ const vendorSchema = new mongoose.Schema(
         },
         approvalStatus: {
             type: String,
-            enum: ["PENDING", "APPROVED", "REJECTED"],
-            default: "PENDING"
+            enum: Object.values(VendorApprovalStatus),
+            default: VendorApprovalStatus.PENDING,
         },
 
         rejectionReason: {

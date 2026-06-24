@@ -9,6 +9,7 @@ export const VendorMessages = {
         VENDOR_NOT_FOUND: 'Vendor not found',
         PROFILE_UPDATE_FAILED: 'Failed to update profile',
         LICENSE_UPLOAD_FAILED: 'Failed to upload license',
-        PHONE_ALREADY_EXISTS: 'Phone number alredy exist'
+        PHONE_ALREADY_EXISTS: 'Phone number alredy exist',
+        REJECTION_REASON_REQUIRED:'Rejection reason is required'
     }
 };

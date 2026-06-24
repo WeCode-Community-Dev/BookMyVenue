@@ -9,9 +9,11 @@ class VendorRepositoryImpl extends IVendorRepository {
         return VendorMapper.mapToEntity(doc);
     }
 
-    async findById(id) {
-        const doc = await VendorModel.findOne({ _id: id, isDeleted: false });
-        return doc ? VendorMapper.mapToEntity(doc) : null;
+    async findById(id){
+        const document = await VendorModel.findById(id)
+
+        if(!document) return null
+        return VendorMapper.mapToEntity(document)
     }
 
     async findAll() {
@@ -55,7 +57,7 @@ class VendorRepositoryImpl extends IVendorRepository {
 
         return {
             data: documents.map(doc =>
-                VenueMapper.mapToEntity(doc)
+                VendorMapper.mapToEntity(doc)
             ),
             totalCount,
             totalPages
@@ -85,7 +87,7 @@ class VendorRepositoryImpl extends IVendorRepository {
 
         if (!document) return null
 
-        return VenueMapper.mapToEntity(document)
+        return VendorMapper.mapToEntity(document)
     }
 
     async update(id, entity) {

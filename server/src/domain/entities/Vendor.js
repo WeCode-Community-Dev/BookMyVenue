@@ -41,6 +41,8 @@ export class VendorEntity {
     this.isAdminApproved = isAdminApproved;
     this.role = role;
     this.isDeleted = isDeleted;
+    this.approvalStatus = approvalStatus;
+    this.rejectionReason = rejectionReason;
     
   }
 }

@@ -3,8 +3,19 @@ export const ROUTES = {
         LOGOUT: '/logout'
     },
     ADMIN: {
-        USERS: '/users',
-        UPDATE_USER_STATUS: '/users/:userId/status',
+        //USERS: '/users',
+        //UPDATE_USER_STATUS: '/users/:userId/status',
+        USER:{
+            GET_ALL:'/users',
+            UPDATE_STATUS: '/users/:userId/status',
+        },
+        VENDOR:{
+            GET_ALL:'/vendors',
+            GET_BY_ID:'/vendors/:vendorId',
+            UPDATE_APPROVAL_STATUS:'/vendors/:vendorId/approval-status',
+            UPDATE_STATUS:'/vendors/:vendorId/status'
+
+        }
     },
     OWNER: {
         VENUE: {
