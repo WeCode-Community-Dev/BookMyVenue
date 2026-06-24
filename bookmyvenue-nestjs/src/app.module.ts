@@ -24,10 +24,11 @@ import { BookingModule } from './modules/booking/booking.module';
     BookingModule,
   ],
   providers: [
-    {
+    { 
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
+    
   ],
 })
 export class AppModule { }

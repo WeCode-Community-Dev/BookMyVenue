@@ -1,11 +1,15 @@
-import { Injectable, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, ConflictException, NotFoundException, Inject } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { BookingStatus } from '@prisma/client';
+import Redis from 'ioredis';
 
 @Injectable()
 export class BookingService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject('REDIS_CLIENT') private readonly redis: Redis,
+  ) {}
 
   async createBooking(createBookingDto: CreateBookingDto, userId: string) {
     const { venueId, startTime, endTime } = createBookingDto;
@@ -20,56 +24,73 @@ export class BookingService {
     if (start >= end) {
       throw new BadRequestException('End time must be after start time.');
     }
+    const lockKey = `lock:venue:${venueId}:slot:${start.getTime()}-${end.getTime()}`;
+    const lockToken = `${userId}-${Date.now()}`;
+    const lockTimeoutMs = 10000;
+    const acquired = await this.redis.set(lockKey, lockToken, 'PX', lockTimeoutMs, 'NX');
 
-    return this.prisma.$transaction(async (tx) => {
-      const venue = await tx.venue.findUnique({ where: { id: venueId } });
-      if (!venue) throw new NotFoundException('Venue not found.');
+    if (!acquired) {
+      throw new ConflictException(
+        'This specific venue slot is not available at the moment. Please try again in a few moments.'
+      );
+    }
 
-      if (venue.ownerId === userId) {
-        throw new BadRequestException('You cannot book your own venue!');
-      }
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const venue = await tx.venue.findUnique({ where: { id: venueId } });
+        if (!venue) throw new NotFoundException('Venue not found.');
 
-      const overlappingBooking = await tx.booking.findFirst({
-        where: {
-          venueId,
-          status: BookingStatus.CONFIRMED,
-          OR: [
-            {
-              startTime: { lte: start },
-              endTime: { gt: start },
-            },
-            {
-              startTime: { lt: end },
-              endTime: { gte: end },
-            },
-            {
-              startTime: { gte: start },
-              endTime: { lte: end },
-            },
-          ],
-        },
+        if (venue.ownerId === userId) {
+          throw new BadRequestException('You cannot book your own venue!');
+        }
+
+        const overlappingBooking = await tx.booking.findFirst({
+          where: {
+            venueId,
+            status: BookingStatus.CONFIRMED,
+            OR: [
+              {
+                startTime: { lte: start },
+                endTime: { gt: start },
+              },
+              {
+                startTime: { lt: end },
+                endTime: { gte: end },
+              },
+              {
+                startTime: { gte: start },
+                endTime: { lte: end },
+              },
+            ],
+          },
+        });
+
+        if (overlappingBooking) {
+          throw new ConflictException(
+            'This venue has already booked during this slot.'
+          );
+        }
+
+        const totalHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+        const totalPrice = totalHours * venue.pricePerHour;
+
+        return tx.booking.create({
+          data: {
+            venueId,
+            userId,
+            startTime: start,
+            endTime: end,
+            totalPrice,
+            status: BookingStatus.CONFIRMED,
+          },
+        });
       });
-
-      if (overlappingBooking) {
-        throw new ConflictException(
-          'This venue has already been booked during this slot.'
-        );
+    } finally {
+      const currentToken = await this.redis.get(lockKey);
+      if (currentToken === lockToken) {
+        await this.redis.del(lockKey);
       }
-
-      const totalHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-      const totalPrice = totalHours * venue.pricePerHour;
-
-      return tx.booking.create({
-        data: {
-          venueId,
-          userId,
-          startTime: start,
-          endTime: end,
-          totalPrice,
-          status: BookingStatus.CONFIRMED,
-        },
-      });
-    });
+    }
   }
 
   async cancelBooking(bookingId: string, userId: string) {
