@@ -68,7 +68,7 @@ export class VendorBookingController {
             const { bookingId }
                 = req.params
 
-                const ownerId = '6a2d96f9bd24251e9e502c04'
+                const ownerId = req.user.id
 
             const booking =
                 await this._acceptBookingUsecase

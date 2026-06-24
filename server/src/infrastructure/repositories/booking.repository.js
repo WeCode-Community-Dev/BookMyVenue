@@ -4,140 +4,110 @@ import BookingModel from "../database/models/BookingModel.js";
 
 import { BookingMapper } from "../../application/mapper/Booking.mapper.js";
 
-
 class BookingRepositoryImpl extends BookingRepository {
+  async create(entity) {
+    const doc = await BookingModel.create(
+      BookingMapper.mapToPersistence(entity)
+    );
 
-    async create(entity) {
+    return BookingMapper.mapToEntity(doc);
+  }
 
-        const doc = await BookingModel.create(
+  async findById(id) {
+    console.log("id :", id);
+    const doc = await BookingModel.findById(id);
+    console.log("doc :", doc);
 
-            BookingMapper.mapToPersistence(entity)
+    return BookingMapper.mapToEntity(doc);
+  }
 
-        );
+  async findByUserId(userId) {
+    const docs = await BookingModel.find({
+      userId,
+    });
 
-        return BookingMapper.mapToEntity(doc);
+    return docs.map((doc) => BookingMapper.mapToEntity(doc));
+  }
 
+  async findByOwnerId(ownerId, { page = 1, limit = 10, status }) {
+    const skip = (page - 1) * limit;
+    const filter = { ownerId };
+
+    if (status) {
+      filter.status = status;
     }
 
+    const docs = await BookingModel.find({
+      ownerId,
+    })
+      .sort({
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(limit);
 
-    async findById(id) {
+    const total = await BookingModel.countDocuments({ ownerId });
 
-        console.log("id :", id);
-        const doc = await BookingModel.findById(id);
-        console.log("doc :", doc);
+    return {
+      bookings: docs.map((doc) => BookingMapper.mapToEntity(doc)),
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 
-        return BookingMapper.mapToEntity(doc);
+  async findByVenueAndDate(
+    venueId,
 
-    }
+    bookingDate
+  ) {
+    const docs = await BookingModel.find({
+      venueId,
 
+      bookingDate,
+    });
 
-    async findByUserId(userId) {
+    return docs.map((doc) => BookingMapper.mapToEntity(doc));
+  }
 
-        const docs = await BookingModel.find({
+  async update(
+    id,
 
-            userId
+    entity
+  ) {
+    const doc = await BookingModel.findByIdAndUpdate(
+      id,
 
-        });
+      BookingMapper.mapToPersistence(entity),
 
-        return docs.map(doc =>
+      {
+        new: true,
+      }
+    );
 
-            BookingMapper.mapToEntity(doc)
+    return BookingMapper.mapToEntity(doc);
+  }
 
-        );
+  async countByOwnerId(ownerId) {
+    return await BookingModel.countDocuments({
+      ownerId,
+    });
+  }
 
-    }
+  async countByOwnerIdAndStatus(
+    ownerId,
 
+    status
+  ) {
+    return await BookingModel.countDocuments({
+      ownerId,
 
-    async findByOwnerId(ownerId, {page = 1, limit = 10, status}) {
-
-        const skip = (page - 1) * limit
-        const filter = {ownerId}
-       
-        if (status) {
-
-            filter.status = status
-    
-        }
-
-        const docs = await BookingModel
-            .find({
-                ownerId
-            })
-            .sort({
-                createdAt : -1
-            })
-            .skip(skip)
-            .limit(limit)
-
-        const total = await BookingModel
-            .countDocuments({ownerId})
-
-            return{
-                bookings:
-                docs.map(doc => BookingMapper.mapToEntity(doc)),
-                pagination:{
-                    total, page, limit,
-                    totalPages : Math.ceil(total / limit)
-                }
-            }
-
-    }
-
-
-    async findByVenueAndDate(
-
-        venueId,
-
-        bookingDate
-
-    ) {
-
-        const docs = await BookingModel.find({
-
-            venueId,
-
-            bookingDate
-
-        });
-
-        return docs.map(doc =>
-
-            BookingMapper.mapToEntity(doc)
-
-        );
-
-    }
-
-
-    async update(
-
-        id,
-
-        entity
-
-    ) {
-
-        const doc =
-
-            await BookingModel.findByIdAndUpdate(
-
-                id,
-
-                BookingMapper.mapToPersistence(entity),
-
-                {
-
-                    new: true
-
-                }
-
-            );
-
-        return BookingMapper.mapToEntity(doc);
-
-    }
-
+      status,
+    });
+  }
 }
-
 
 export default BookingRepositoryImpl;

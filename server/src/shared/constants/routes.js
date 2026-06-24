@@ -27,7 +27,8 @@ export const ROUTES = {
             ACCEPT: '/bookings/:bookingId/accept',
             REJECT: '/bookings/:bookingId/reject'
 
-        }
+        },
+        DASHBOARD: '/dashboard'
     },
     USER: {
         VENUE: {

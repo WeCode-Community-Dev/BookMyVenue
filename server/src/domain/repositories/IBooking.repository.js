@@ -22,4 +22,12 @@ export class BookingRepository {
     async update(id, booking) {
       throw new Error("Method not implemented");
     }
+
+    async countByOwnerId(ownerId) {
+      throw new Error("Method not implemented")
+  }
+  
+  async countByOwnerIdAndStatus(ownerId, status) {
+      throw new Error("Method not implemented")
+  }
   }
