@@ -1,7 +1,6 @@
 import { axiosClient } from 'src/lib/axios';
 
 import type {
-    VenueCard,
     VenueReview,
     VenueDetails,
     VenueListResponse,
@@ -25,8 +24,8 @@ export class VenuePublicApiService {
         return response.data;
     }
 
-    static async getFeaturedVenues(): Promise<VenueCard[]> {
-        const response = await axiosClient.get('/venues/featured');
+    static async getFeaturedVenues(): Promise<VenueListResponse> {
+        const response = await axiosClient.get('/venues', { params: { limit: 6 } });
         return response.data;
     }
 

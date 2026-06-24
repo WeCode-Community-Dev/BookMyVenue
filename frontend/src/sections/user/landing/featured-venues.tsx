@@ -114,7 +114,7 @@ function VenueCardItem({ venue }: VenueCardItemProps) {
                 <Box sx={{ position: 'relative', height: 220, overflow: 'hidden' }}>
                     <Box
                         component="img"
-                        src={venue.thumbnail || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=75'}
+                        src={venue.images?.[0] || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=75'}
                         alt={venue.title}
                         sx={{
                             width: '100%',
@@ -211,7 +211,7 @@ export function FeaturedVenues() {
         retry: false,
     });
 
-    const displayVenues = venues && venues.length > 0 ? venues : MOCK_VENUES;
+    const displayVenues = venues?.data && venues.data.length > 0 ? venues.data : MOCK_VENUES;
 
     return (
         <Box sx={{ py: { xs: 8, md: 10 }, bgcolor: 'grey.50' }}>

@@ -25,7 +25,7 @@ export function SignInView() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('user@bmv.com');
-  const [password, setPassword] = useState('password1234');
+  const [password, setPassword] = useState('password123');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = useCallback(async () => {
