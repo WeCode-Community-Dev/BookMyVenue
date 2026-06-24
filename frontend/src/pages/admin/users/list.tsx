@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { UserView } from 'src/sections/admin/user/view';
+import { ListUsers } from 'src/sections/admin/user/list';
 
 // ----------------------------------------------------------------------
 
@@ -9,7 +9,7 @@ export default function Page() {
         <>
             <title>{`Users - ${CONFIG.appName}`}</title>
 
-            <UserView />
+            <ListUsers />
         </>
     );
 }

@@ -2,6 +2,8 @@
 // BOOK MY VENUE - FRONTEND TYPES
 // ======================================================
 
+import type { Pagination } from "./common";
+
 export enum VenueStatus {
     PENDING = "PENDING",
     APPROVED = "APPROVED",

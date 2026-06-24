@@ -1,5 +1,7 @@
+import type { Pagination } from 'src/api/types/common';
+
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
@@ -17,6 +19,8 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
+import { TableToolbar } from './table-toolbar';
+
 
 // ----------------------------------------------------------------------
 export type DataTableProps = {
@@ -32,7 +36,8 @@ export type DataTableProps = {
         align?: TableCellProps['align']
     }[]
     dataKey: string
-    fetchData: () => Promise<Pagination<any>>
+    fetchData: (query: { search?: string, page: number, limit: number }) => Promise<Pagination<any>>
+    searchPlaceHolder?: string
 }
 
 export function DataTable({
@@ -40,14 +45,16 @@ export function DataTable({
     addBtn,
     headings,
     dataKey,
+    searchPlaceHolder,
     fetchData
 }: DataTableProps) {
-    const table = useTable();
 
-    const [filterName, setFilterName] = useState('');
+    const [search, setSearch] = useState('');
+    const [page, setPage] = useState(0)
+    const [limit, setLimit] = useState(10)
     const { data } = useQuery({
-        queryKey: [dataKey],
-        queryFn: fetchData
+        queryKey: [dataKey, page, search, limit],
+        queryFn: () => fetchData({ search, page, limit })
     })
 
 
@@ -78,6 +85,13 @@ export function DataTable({
             </Box>
 
             <Card>
+                <TableToolbar
+                    searchValue={search}
+                    onSearch={(event: React.ChangeEvent<HTMLInputElement>) => {
+                        setSearch(event.target.value);
+                    }}
+                    searchPlaceHolder={searchPlaceHolder}
+                />
                 <Scrollbar>
                     <TableContainer sx={{ overflow: 'unset' }}>
                         <Table sx={{ minWidth: 800 }}>
@@ -94,7 +108,7 @@ export function DataTable({
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {(data?.data || []).map((row) => (
+                                {(data?.data || []).map((row: any) => (
                                     <TableRow key={row.id}>
                                         {
                                             headings.map(head => (
@@ -111,82 +125,14 @@ export function DataTable({
                 </Scrollbar>
                 <TablePagination
                     component="div"
-                    page={0}
+                    page={page}
                     count={data?.data.length || 0}
-                    rowsPerPage={table.rowsPerPage}
-                    onPageChange={table.onChangePage}
+                    rowsPerPage={limit}
+                    onPageChange={(_, p) => setPage(p)}
                     rowsPerPageOptions={[5, 10, 25]}
-                    onRowsPerPageChange={table.onChangeRowsPerPage}
+                    onRowsPerPageChange={(e) => setLimit(parseInt(e.target.value || '10'))}
                 />
             </Card>
         </DashboardContent>
     );
-}
-
-// ----------------------------------------------------------------------
-
-export function useTable() {
-    const [page, setPage] = useState(0);
-    const [orderBy, setOrderBy] = useState('name');
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [selected, setSelected] = useState<string[]>([]);
-    const [order, setOrder] = useState<'asc' | 'desc'>('asc');
-
-    const onSort = useCallback(
-        (id: string) => {
-            const isAsc = orderBy === id && order === 'asc';
-            setOrder(isAsc ? 'desc' : 'asc');
-            setOrderBy(id);
-        },
-        [order, orderBy]
-    );
-
-    const onSelectAllRows = useCallback((checked: boolean, newSelecteds: string[]) => {
-        if (checked) {
-            setSelected(newSelecteds);
-            return;
-        }
-        setSelected([]);
-    }, []);
-
-    const onSelectRow = useCallback(
-        (inputValue: string) => {
-            const newSelected = selected.includes(inputValue)
-                ? selected.filter((value) => value !== inputValue)
-                : [...selected, inputValue];
-
-            setSelected(newSelected);
-        },
-        [selected]
-    );
-
-    const onResetPage = useCallback(() => {
-        setPage(0);
-    }, []);
-
-    const onChangePage = useCallback((event: unknown, newPage: number) => {
-        setPage(newPage);
-    }, []);
-
-    const onChangeRowsPerPage = useCallback(
-        (event: React.ChangeEvent<HTMLInputElement>) => {
-            setRowsPerPage(parseInt(event.target.value, 10));
-            onResetPage();
-        },
-        [onResetPage]
-    );
-
-    return {
-        page,
-        order,
-        onSort,
-        orderBy,
-        selected,
-        rowsPerPage,
-        onSelectRow,
-        onResetPage,
-        onChangePage,
-        onSelectAllRows,
-        onChangeRowsPerPage,
-    };
 }

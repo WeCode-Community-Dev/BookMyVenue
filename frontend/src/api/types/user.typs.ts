@@ -1,3 +1,4 @@
+import type { Pagination } from "./common";
 import type { UserRole } from "./auth.type";
 
 interface User {

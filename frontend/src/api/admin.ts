@@ -1,5 +1,6 @@
 import { axiosClient } from "src/lib/axios";
 
+import type { PaginationFilter } from "./types/common";
 import type { ListUserResponse } from "./types/user.typs";
 import type { VenueListResponse } from "./types/venue.type";
 
@@ -9,12 +10,12 @@ export class AdminApiService {
     /**
      * Get list of users with pagination
      */
-    static async listUsers(page: number = 1, limit: number = 10) {
+    static async listUsers({ page, limit, search }: PaginationFilter) {
         const response =
             await axiosClient.get(
                 '/users',
                 {
-                    params: { page, limit },
+                    params: { offset: page * limit, limit, search },
                 }
             );
         return response.data as ListUserResponse
