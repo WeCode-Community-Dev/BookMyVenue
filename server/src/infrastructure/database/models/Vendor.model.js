@@ -64,10 +64,6 @@ const vendorSchema = new mongoose.Schema(
             enum: Object.values(UserRole),
             default: UserRole.VENDOR
         },
-        isApproved: {
-            type: Boolean,
-            default: false
-        },
         isBlocked: {
             type: Boolean,
             default: false

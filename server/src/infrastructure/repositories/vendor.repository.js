@@ -9,10 +9,10 @@ class VendorRepositoryImpl extends IVendorRepository {
         return VendorMapper.mapToEntity(doc);
     }
 
-    async findById(id){
+    async findById(id) {
         const document = await VendorModel.findById(id)
 
-        if(!document) return null
+        if (!document) return null
         return VendorMapper.mapToEntity(document)
     }
 
@@ -88,6 +88,25 @@ class VendorRepositoryImpl extends IVendorRepository {
         if (!document) return null
 
         return VendorMapper.mapToEntity(document)
+    }
+
+
+    async updateBlockStatus(vendorId, isBlocked) {
+        const document =
+            await VendorModel.findByIdAndUpdate(
+                vendorId,
+                {
+                    isBlocked:isBlocked
+                },
+                {
+                    new: true
+                }
+            );
+
+        if (!document) return null;
+        console.log(document)
+
+        return VendorMapper.mapToEntity(document);
     }
 
     async update(id, entity) {

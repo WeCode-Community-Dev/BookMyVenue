@@ -18,6 +18,7 @@ import { AdminUpdateUserStatusUsecase } from '../../application/admin/usecases/u
 import { AdminGetAllVendorsUsecase } from '../../application/admin/usecases/vendor/admin.getAllVendors.usecase.js'
 import { AdminGetVendorByIdUsecase } from '../../application/admin/usecases/vendor/admin.getVendorById.usecase.js'
 import { AdminUpdateVendorApprovalStatusUsecase } from '../../application/admin/usecases/vendor/admin.updateVendorApprovalStatus.usecase.js'
+import { AdminUpdateVendorStatusUsecase } from '../../application/admin/usecases/vendor/admin.updateVendorStatus.js'
 // AdminUserController
 import { AdminUserController } from '../controllers/admin/admin.userController.js'
 //AdminVendorController
@@ -75,6 +76,7 @@ const iAdminUpdateUserStatusUsecase =
 const iAdminGetAllVendorsUsecase = new AdminGetAllVendorsUsecase(iVendorRepository)
 const iAdminGetVendorByIdUsecase = new AdminGetVendorByIdUsecase(iVendorRepository)
 const iAdminUpdateVendorApprovalStatusUsecase = new AdminUpdateVendorApprovalStatusUsecase(iVendorRepository)
+const iAdminUpdateVendorStatusUsecase = new AdminUpdateVendorStatusUsecase(iVendorRepository)
 
 //auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(iUserRepository, HashService)
@@ -175,6 +177,7 @@ export const iAdminVendorControlller =
         iAdminGetAllVendorsUsecase,
         iAdminGetVendorByIdUsecase,
         iAdminUpdateVendorApprovalStatusUsecase,
+        iAdminUpdateVendorStatusUsecase
     )
 export const iUserVenueController = new UserVenueController (
     iUserGetAllVenues,

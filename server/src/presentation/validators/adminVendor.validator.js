@@ -1,5 +1,5 @@
 import { z } from "zod"
-import {  VendorApprovalStatus } from '../../domain/enums/VendorApprovalStatus.enum.js'
+import { VendorApprovalStatus } from '../../domain/enums/VendorApprovalStatus.enum.js'
 
 export const getAllVendorsQuerySchema =
     z.object({
@@ -8,8 +8,8 @@ export const getAllVendorsQuerySchema =
             z.string().optional(),
 
         status:
-        z.nativeEnum(VendorApprovalStatus)
-            .optional(),
+            z.nativeEnum(VendorApprovalStatus)
+                .optional(),
 
         page:
             z.coerce.number()
@@ -22,14 +22,20 @@ export const getAllVendorsQuerySchema =
                 .default(10)
     })
 
-    export const updateVendorApprovalSchema =
+export const updateVendorApprovalSchema =
     z.object({
 
         status:
-        z.nativeEnum(VendorApprovalStatus)
-            .optional(),
+            z.nativeEnum(VendorApprovalStatus)
+                .optional(),
 
         reason:
             z.string()
                 .optional()
     })
+
+export const updateVendorStatusSchema = z.object({
+
+    isBlocked: z.boolean()
+
+});

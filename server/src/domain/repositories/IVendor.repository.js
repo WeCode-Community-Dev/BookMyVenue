@@ -19,6 +19,11 @@ export class IVendorRepository {
         throw new Error('Method not implemented');
     }
 
+    //Admin block/unblock vendor
+    async updateBlockStatus(vendorId, isBlocked) {
+        throw new Error('Method not implemented');
+    }
+
     async update(id, data) {
         throw new Error('Method not implemented');
     }
