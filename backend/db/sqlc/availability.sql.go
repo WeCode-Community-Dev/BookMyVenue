@@ -14,7 +14,7 @@ import (
 const createNewSlot = `-- name: CreateNewSlot :one
 INSERT INTO availability (venue_id, start_time, end_time)
 VALUES ($1, $2, $3)
-RETURNING id, venue_id, start_time, end_time
+RETURNING id, venue_id, start_time, end_time, is_booked
 `
 
 type CreateNewSlotParams struct {
@@ -31,6 +31,7 @@ func (q *Queries) CreateNewSlot(ctx context.Context, arg CreateNewSlotParams) (A
 		&i.VenueID,
 		&i.StartTime,
 		&i.EndTime,
+		&i.IsBooked,
 	)
 	return i, err
 }
@@ -46,8 +47,8 @@ func (q *Queries) DeleteSlot(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getAvailableSlotsByVenueID = `-- name: GetAvailableSlotsByVenueID :many
-SELECT id, venue_id, start_time, end_time FROM availability
-WHERE venue_id = $1
+SELECT id, venue_id, start_time, end_time, is_booked FROM availability
+WHERE venue_id = $1 AND is_booked = FALSE
 `
 
 func (q *Queries) GetAvailableSlotsByVenueID(ctx context.Context, venueID pgtype.UUID) ([]Availability, error) {
@@ -64,6 +65,7 @@ func (q *Queries) GetAvailableSlotsByVenueID(ctx context.Context, venueID pgtype
 			&i.VenueID,
 			&i.StartTime,
 			&i.EndTime,
+			&i.IsBooked,
 		); err != nil {
 			return nil, err
 		}
@@ -73,4 +75,52 @@ func (q *Queries) GetAvailableSlotsByVenueID(ctx context.Context, venueID pgtype
 		return nil, err
 	}
 	return items, nil
+}
+
+const getSlotByID = `-- name: GetSlotByID :one
+SELECT id, venue_id, start_time, end_time, is_booked FROM availability
+WHERE id = $1
+`
+
+func (q *Queries) GetSlotByID(ctx context.Context, id pgtype.UUID) (Availability, error) {
+	row := q.db.QueryRow(ctx, getSlotByID, id)
+	var i Availability
+	err := row.Scan(
+		&i.ID,
+		&i.VenueID,
+		&i.StartTime,
+		&i.EndTime,
+		&i.IsBooked,
+	)
+	return i, err
+}
+
+const getSlotForUpdate = `-- name: GetSlotForUpdate :one
+SELECT id, venue_id, start_time, end_time, is_booked FROM availability
+WHERE id = $1
+FOR UPDATE
+`
+
+func (q *Queries) GetSlotForUpdate(ctx context.Context, id pgtype.UUID) (Availability, error) {
+	row := q.db.QueryRow(ctx, getSlotForUpdate, id)
+	var i Availability
+	err := row.Scan(
+		&i.ID,
+		&i.VenueID,
+		&i.StartTime,
+		&i.EndTime,
+		&i.IsBooked,
+	)
+	return i, err
+}
+
+const markSlotBooked = `-- name: MarkSlotBooked :exec
+UPDATE availability
+SET is_booked = TRUE
+WHERE id = $1
+`
+
+func (q *Queries) MarkSlotBooked(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, markSlotBooked, id)
+	return err
 }

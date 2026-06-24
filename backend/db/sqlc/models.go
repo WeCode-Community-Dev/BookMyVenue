@@ -64,6 +64,7 @@ type Availability struct {
 	VenueID   pgtype.UUID      `json:"venue_id"`
 	StartTime pgtype.Timestamp `json:"start_time"`
 	EndTime   pgtype.Timestamp `json:"end_time"`
+	IsBooked  bool             `json:"is_booked"`
 }
 
 type User struct {
