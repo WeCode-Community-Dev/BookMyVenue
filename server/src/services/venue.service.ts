@@ -1,10 +1,11 @@
+import { VenueTypeEnumType } from "../enums/venue-enum";
 import VenueModel from "../models/venue.model";
 
 interface CreateVenueParams {
   owner: string;
   name: string;
   description?: string;
-  venueType: string;
+  venueType: VenueTypeEnumType;
   address?: string;
   city?: string;
   capacity?: number;
@@ -16,7 +17,6 @@ interface CreateVenueParams {
 }
 
 export const createVenueService = async (data: CreateVenueParams) => {
-
   const venue = await VenueModel.create(data);
   return venue;
 };

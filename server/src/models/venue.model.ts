@@ -1,10 +1,11 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { VenueTypeEnum, VenueTypeEnumType } from "../enums/venue-enum";
 
 export interface VenueDocument extends Document {
   owner: mongoose.Types.ObjectId;
   name: string;
   description?: string;
-  venueType: string;
+  venueType: VenueTypeEnumType;
   address?: string;
   city?: string;
   capacity?: number;
@@ -32,6 +33,7 @@ const venueSchema = new Schema<VenueDocument>(
     description: String,
     venueType: {
       type: String,
+      enum: Object.values(VenueTypeEnum),
       required: true,
     },
     address: String,
