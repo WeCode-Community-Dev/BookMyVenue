@@ -8,24 +8,24 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
+import Link from "next/link";
 import {
   fmt, REVENUE_DATA, CATEGORY_DATA, DISTRICT_DATA, BOOKINGS,
-  BOOKING_STATUS_STYLE, Tab, Venue, User,
+  BOOKING_STATUS_STYLE, Venue, User,
 } from "../data";
 import { ChartTooltip } from "../ChartTooltip";
 
-interface OverviewTabProps {
+interface OverviewPageProps {
   venues: Venue[];
   users: User[];
   totalRevenue: number;
-  setTab: (t: Tab) => void;
 }
 
-export function OverviewTab({ venues, users, totalRevenue, setTab }: OverviewTabProps) {
+export function OverviewPage({ venues, users, totalRevenue }: OverviewPageProps) {
   const STATS = [
     { label: "Total Revenue", value: fmt(totalRevenue), change: "+18%", up: true, icon: IndianRupee, color: "text-emerald-600 bg-emerald-50" },
     { label: "Total Bookings", value: BOOKINGS.length, change: "+12%", up: true, icon: CalendarCheck, color: "text-blue-600 bg-blue-50" },
-    { label: "Active Venues", value: venues.filter(v => v.status === "Active").length, change: "+5%", up: true, icon: Building2, color: "text-primary bg-primary/10" },
+    { label: "Approved Venues", value: venues.filter(v => v.status === "Approved").length, change: "+5%", up: true, icon: Building2, color: "text-primary bg-primary/10" },
     { label: "Registered Users", value: users.length, change: "+23%", up: true, icon: Users, color: "text-purple-600 bg-purple-50" },
   ];
 
@@ -130,7 +130,7 @@ export function OverviewTab({ venues, users, totalRevenue, setTab }: OverviewTab
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-border flex items-center justify-between">
             <h2 className="font-bold text-foreground" >Recent Activity</h2>
-            <button onClick={() => setTab("bookings")} className="text-xs text-primary font-semibold hover:underline">View all</button>
+            <Link href="/bookings" className="text-xs text-primary font-semibold hover:underline">View all</Link>
           </div>
           <div className="divide-y divide-border">
             {BOOKINGS.slice(0, 5).map((b) => (

@@ -1,28 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Sidebar } from "../components/Sidebar";
-import { TopBar } from "../components/TopBar";
-import { OverviewTab } from "../components/tabs/Overview";
+import { Sidebar } from "../../components/Sidebar";
+import { TopBar } from "../../components/TopBar";
 
-import { Venue, User, USERS, BOOKINGS } from "../components/data";
-
-export default function App() {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-
-    const [venues, setVenues] = useState<Venue[]>([]);
-    const [users, setUsers] = useState<User[]>(USERS);
-
-    const totalRevenue = BOOKINGS.filter((b) => b.status === "Confirmed").reduce((s, b) => s + b.amount, 0);
 
     return (
         <div className="h-screen flex overflow-hidden bg-background">
-            {/* Sidebar desktop */}
             <div className="w-56 shrink-0 hidden lg:block">
                 <Sidebar setSidebarOpen={setSidebarOpen} />
             </div>
 
-            {/* Mobile sidebar overlay */}
             {sidebarOpen && (
                 <div className="fixed inset-0 z-50 flex lg:hidden">
                     <div className="absolute inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
@@ -34,9 +24,8 @@ export default function App() {
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <TopBar setSidebarOpen={setSidebarOpen} />
-
                 <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-6">
-                    <OverviewTab venues={venues} users={users} totalRevenue={totalRevenue} />
+                    {children}
                 </main>
             </div>
         </div>

@@ -1,18 +1,24 @@
 "use client";
 
-import { Bell, AlertTriangle, Menu } from "lucide-react";
-import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
+import { usePathname } from "next/navigation";
+import { Menu } from "lucide-react";
+import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 
-import { Tab } from "./data";
+const TITLES: Record<string, string> = {
+    "/": "Dashboard",
+    "/venues": "Venues",
+    "/users": "Users",
+    "/bookings": "Bookings",
+};
 
 interface TopBarProps {
-    tab: Tab;
-    setTab: (t: Tab) => void;
     setSidebarOpen: (open: boolean) => void;
-    pendingVenues: number;
 }
 
-export function TopBar({ tab, setTab, setSidebarOpen, pendingVenues }: TopBarProps) {
+export function TopBar({ setSidebarOpen }: TopBarProps) {
+    const pathname = usePathname();
+    const title = TITLES[pathname] ?? "Dashboard";
+
     return (
         <header className="bg-card border-b border-border px-4 sm:px-6 h-14 flex items-center justify-between shrink-0 z-30">
             <div className="flex items-center gap-3">
@@ -23,9 +29,7 @@ export function TopBar({ tab, setTab, setSidebarOpen, pendingVenues }: TopBarPro
                     <Menu className="w-5 h-5 text-foreground" />
                 </button>
                 <div>
-                    <h1 className="font-bold text-foreground text-base capitalize">
-                        {tab === "overview" ? "Dashboard" : tab}
-                    </h1>
+                    <h1 className="font-bold text-foreground text-base">{title}</h1>
                     <p className="text-xs text-muted-foreground hidden sm:block">
                         {new Date().toLocaleDateString("en-IN", {
                             weekday: "long",
@@ -38,15 +42,6 @@ export function TopBar({ tab, setTab, setSidebarOpen, pendingVenues }: TopBarPro
             </div>
 
             <div className="flex items-center gap-2">
-                {pendingVenues > 0 && (
-                    <button
-                        onClick={() => setTab("venues")}
-                        className="hidden sm:flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-amber-100 transition-colors"
-                    >
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                        {pendingVenues} pending approval
-                    </button>
-                )}
                 <Show when="signed-out">
                     <SignInButton />
                 </Show>

@@ -1,24 +1,29 @@
 "use client";
 
+import { useState } from "react";
 import { Search, Eye, Ban, UserCheck, Users, ChevronLeft, ChevronRight } from "lucide-react";
-import { fmt, UserRole, User } from "../data";
+import { fmt, UserRole, User, USERS } from "../data";
 
-interface UsersTabProps {
-  users: User[];
-  filteredUsers: User[];
-  userSearch: string;
-  setUserSearch: (v: string) => void;
-  userRoleFilter: UserRole | "All";
-  setUserRoleFilter: (r: UserRole | "All") => void;
-  suspendUser: (id: string) => void;
-}
+export function UsersPage() {
+  const [users, setUsers] = useState<User[]>(USERS);
+  const [userSearch, setUserSearch] = useState("");
+  const [userRoleFilter, setUserRoleFilter] = useState<UserRole | "All">("All");
 
-export function UsersTab({
-  users, filteredUsers,
-  userSearch, setUserSearch,
-  userRoleFilter, setUserRoleFilter,
-  suspendUser,
-}: UsersTabProps) {
+  const suspendUser = (id: string) =>
+    setUsers((u) =>
+      u.map((x) =>
+        x.id === id ? { ...x, status: x.status === "Suspended" ? "Active" : "Suspended" } : x,
+      ),
+    );
+
+  const filteredUsers = users.filter((u) => {
+    const mr = userRoleFilter === "All" || u.role === userRoleFilter;
+    const mq =
+      u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+      u.email.toLowerCase().includes(userSearch.toLowerCase());
+    return mr && mq;
+  });
+
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
       {/* Filters */}

@@ -1,21 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import { Search, Download, CalendarCheck, ChevronLeft, ChevronRight } from "lucide-react";
-import { fmt, BOOKINGS, BOOKING_STATUS_STYLE, BookingStatus, Booking } from "../data";
+import { fmt, BOOKINGS, BOOKING_STATUS_STYLE, BookingStatus } from "../data";
 
-interface BookingsTabProps {
-  filteredBookings: Booking[];
-  bookingSearch: string;
-  setBookingSearch: (v: string) => void;
-  bookingFilter: BookingStatus | "All";
-  setBookingFilter: (f: BookingStatus | "All") => void;
-}
+export function BookingsPage() {
+  const [bookingSearch, setBookingSearch] = useState("");
+  const [bookingFilter, setBookingFilter] = useState<BookingStatus | "All">("All");
 
-export function BookingsTab({
-  filteredBookings,
-  bookingSearch, setBookingSearch,
-  bookingFilter, setBookingFilter,
-}: BookingsTabProps) {
+  const filteredBookings = BOOKINGS.filter((b) => {
+    const ms = bookingFilter === "All" || b.status === bookingFilter;
+    const mq =
+      b.client.toLowerCase().includes(bookingSearch.toLowerCase()) ||
+      b.venue.toLowerCase().includes(bookingSearch.toLowerCase()) ||
+      b.id.toLowerCase().includes(bookingSearch.toLowerCase());
+    return ms && mq;
+  });
+
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
       <div className="px-5 py-4 border-b border-border flex flex-col sm:flex-row gap-3">

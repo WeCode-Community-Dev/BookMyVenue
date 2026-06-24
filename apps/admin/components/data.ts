@@ -1,8 +1,8 @@
-export type VenueStatus = "Pending" | "Active" | "Rejected" | "Suspended";
+export type VenueStatus = "Pending" | "Approved" | "Rejected" | "Inactive";
 export type UserRole = "Owner" | "Customer";
 export type UserStatus = "Active" | "Suspended";
 export type BookingStatus = "Confirmed" | "Pending" | "Cancelled";
-export type Tab = "overview" | "venues" | "users" | "bookings" | "reports";
+export type Tab = "overview" | "venues" | "users" | "bookings";
 
 export interface Venue {
   id: string; name: string; owner: string; location: string;
@@ -23,10 +23,10 @@ export interface Booking {
 export function fmt(n: number) { return "₹" + n.toLocaleString("en-IN"); }
 
 export const VENUE_STATUS_STYLE: Record<VenueStatus, string> = {
-  Active:    "bg-emerald-50 text-emerald-700 border-emerald-200",
+  Approved:  "bg-emerald-50 text-emerald-700 border-emerald-200",
   Pending:   "bg-amber-50 text-amber-700 border-amber-200",
   Rejected:  "bg-red-50 text-red-600 border-red-200",
-  Suspended: "bg-gray-100 text-gray-600 border-gray-200",
+  Inactive: "bg-gray-100 text-gray-600 border-gray-200",
 };
 
 export const BOOKING_STATUS_STYLE: Record<BookingStatus, string> = {
@@ -63,13 +63,13 @@ export const DISTRICT_DATA = [
 ];
 
 export const VENUES: Venue[] = [
-  { id: "V001", name: "The Grand Pavilion", owner: "Suresh Nair", location: "Thrissur", category: "Wedding", capacity: 800, price: 28000, status: "Active", submitted: "2024-05-10", rating: 4.8, bookings: 34, image: "https://images.unsplash.com/photo-1717680281618-442cb9c12b6c?w=60&h=60&fit=crop&auto=format" },
-  { id: "V002", name: "Lakeview Conference Centre", owner: "Priya Menon", location: "Ernakulam", category: "Conference", capacity: 350, price: 15000, status: "Active", submitted: "2024-05-14", rating: 4.6, bookings: 21, image: "https://images.unsplash.com/photo-1780337092608-aad7948d7a60?w=60&h=60&fit=crop&auto=format" },
+  { id: "V001", name: "The Grand Pavilion", owner: "Suresh Nair", location: "Thrissur", category: "Wedding", capacity: 800, price: 28000, status: "Approved", submitted: "2024-05-10", rating: 4.8, bookings: 34, image: "https://images.unsplash.com/photo-1717680281618-442cb9c12b6c?w=60&h=60&fit=crop&auto=format" },
+  { id: "V002", name: "Lakeview Conference Centre", owner: "Priya Menon", location: "Ernakulam", category: "Conference", capacity: 350, price: 15000, status: "Approved", submitted: "2024-05-14", rating: 4.6, bookings: 21, image: "https://images.unsplash.com/photo-1780337092608-aad7948d7a60?w=60&h=60&fit=crop&auto=format" },
   { id: "V003", name: "Emerald Garden", owner: "Rajan Pillai", location: "Kozhikode", category: "Wedding", capacity: 700, price: 32000, status: "Pending", submitted: "2024-07-01", rating: 0, bookings: 0, image: "https://images.unsplash.com/photo-1779308936221-89739e035a53?w=60&h=60&fit=crop&auto=format" },
   { id: "V004", name: "Royal Mahal Banquets", owner: "Anil Kumar", location: "Palakkad", category: "Wedding", capacity: 1200, price: 45000, status: "Pending", submitted: "2024-07-03", rating: 0, bookings: 0, image: "https://images.unsplash.com/photo-1763553113332-800519753e40?w=60&h=60&fit=crop&auto=format" },
-  { id: "V005", name: "Chandrabhavan Palace", owner: "Sreeja Nambiar", location: "Thrissur", category: "Wedding", capacity: 1000, price: 40000, status: "Active", submitted: "2024-04-20", rating: 4.9, bookings: 48, image: "https://images.unsplash.com/photo-1768851142332-75f3d1b47452?w=60&h=60&fit=crop&auto=format" },
+  { id: "V005", name: "Chandrabhavan Palace", owner: "Sreeja Nambiar", location: "Thrissur", category: "Wedding", capacity: 1000, price: 40000, status: "Approved", submitted: "2024-04-20", rating: 4.9, bookings: 48, image: "https://images.unsplash.com/photo-1768851142332-75f3d1b47452?w=60&h=60&fit=crop&auto=format" },
   { id: "V006", name: "Seaview Party Lawn", owner: "Biju Thomas", location: "Alappuzha", category: "Party", capacity: 400, price: 18000, status: "Rejected", submitted: "2024-06-12", rating: 0, bookings: 0, image: "https://images.unsplash.com/photo-1780682571078-242672d1dd59?w=60&h=60&fit=crop&auto=format" },
-  { id: "V007", name: "Prestige Business Hub", owner: "Deepa Krishnan", location: "Ernakulam", category: "Corporate", capacity: 150, price: 20000, status: "Suspended", submitted: "2024-03-05", rating: 3.8, bookings: 9, image: "https://images.unsplash.com/photo-1768508951405-10e83c4a2872?w=60&h=60&fit=crop&auto=format" },
+  { id: "V007", name: "Prestige Business Hub", owner: "Deepa Krishnan", location: "Ernakulam", category: "Corporate", capacity: 150, price: 20000, status: "Inactive", submitted: "2024-03-05", rating: 3.8, bookings: 9, image: "https://images.unsplash.com/photo-1768508951405-10e83c4a2872?w=60&h=60&fit=crop&auto=format" },
 ];
 
 export const USERS: User[] = [
@@ -93,12 +93,11 @@ export const BOOKINGS: Booking[] = [
   { id: "BK-1034", client: "Cochin Startups", venue: "Lakeview Conference", owner: "Priya Menon", date: "2024-06-15", amount: 9000, status: "Pending", district: "Ernakulam", category: "Conference" },
 ];
 
-import { Home, Building2, Users, CalendarCheck, BarChart3 } from "lucide-react";
+import { Home, Building2, Users, CalendarCheck } from "lucide-react";
 
 export const NAV = [
-  { key: "overview" as Tab, label: "Overview", icon: Home },
-  { key: "venues" as Tab, label: "Venues", icon: Building2, badge: VENUES.filter(v => v.status === "Pending").length },
-  { key: "users" as Tab, label: "Users", icon: Users },
-  { key: "bookings" as Tab, label: "Bookings", icon: CalendarCheck },
-  { key: "reports" as Tab, label: "Reports", icon: BarChart3 },
+  { key: "overview" as Tab, label: "Overview", icon: Home, href: "/" },
+  { key: "venues" as Tab, label: "Venues", icon: Building2, href: "/venues" },
+  { key: "users" as Tab, label: "Users", icon: Users, href: "/users" },
+  { key: "bookings" as Tab, label: "Bookings", icon: CalendarCheck, href: "/bookings" },
 ];
