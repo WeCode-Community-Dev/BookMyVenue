@@ -67,6 +67,17 @@ type Availability struct {
 	IsBooked  bool             `json:"is_booked"`
 }
 
+type Booking struct {
+	ID          pgtype.UUID      `json:"id"`
+	UserID      pgtype.UUID      `json:"user_id"`
+	VenueID     pgtype.UUID      `json:"venue_id"`
+	SlotID      pgtype.UUID      `json:"slot_id"`
+	Status      string           `json:"status"`
+	TotalAmount pgtype.Numeric   `json:"total_amount"`
+	CreatedAt   pgtype.Timestamp `json:"created_at"`
+	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+}
+
 type User struct {
 	ID        pgtype.UUID      `json:"id"`
 	Name      string           `json:"name"`
