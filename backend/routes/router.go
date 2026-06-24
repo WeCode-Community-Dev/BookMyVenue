@@ -8,10 +8,11 @@ import (
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/users"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/venues"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/web"
+	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/redis"
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(r *gin.Engine, db *sqlc.Queries) {
+func SetupRouter(r *gin.Engine, db *sqlc.Queries, rediClient *redis.Client) {
 	adminWebRoutes := r.Group("/admin")
 	userWebRoutes := r.Group("/user")
 

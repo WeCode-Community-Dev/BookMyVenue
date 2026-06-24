@@ -5,6 +5,7 @@ import (
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/config"
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
+	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/redis"
 	"github.com/WeCode-Community-Dev/BookMyVenue/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -24,6 +25,12 @@ func main() {
 	}
 	defer db.Close()
 
+	redisClient, err := redis.NewClient()
+	if err != nil {
+		slog.Error("failed to connect to redis", "err", err)
+	}
+	defer redisClient.Close()
+
 	queries := sqlc.New(db)
 
 	// Create a Gin router with default middleware (logger and recovery)
@@ -31,7 +38,7 @@ func main() {
 	r.LoadHTMLGlob("../frontend/*")
 	r.Static("/uploads", "./internal/venues/uploads")
 
-	routes.SetupRouter(r, queries)
+	routes.SetupRouter(r, queries, redisClient)
 
 	// Start server on port 8080 (default)
 	// Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)
