@@ -30,7 +30,7 @@ def get_venues(
 
         for venue in venues:
             first_image = venue.venue_images[0] if venue.venue_images else None
-            price = venue.venue_availability[0].venue_price if venue.venue_availability else None
+            price = venue.venue_availability.venue_price if venue.venue_availability else None
 
             result.append({
                 "id": venue.id,
@@ -69,7 +69,7 @@ def get_venue_details_by_id(
             "message": "venues details is not present"
         }
 
-    venue_price = venue.venue_availability[0].venue_price if venue.venue_availability else None
+    venue_price = venue.venue_availability.venue_price if venue.venue_availability else None
 
     return {
         "id": venue.id,
@@ -253,8 +253,6 @@ def edit_venue(
     venue_description: str = None,
     location: str = None,
     capacity: int = None,
-    venue_price: int = None,
-    venue_availabilty: str = None,
 ):
     
     venue = (
@@ -277,12 +275,6 @@ def edit_venue(
 
     if capacity is not None:
         venue.capacity = capacity
-
-    if venue_price is not None:
-        venue.venue_price = venue_price
-
-    if venue_availabilty is not None:
-        venue.venue_availabilty = venue_availabilty
 
     db.commit()
     db.refresh(venue)
@@ -394,7 +386,7 @@ def search_venues(
 
     for venue in venues:
         first_image = venue.venue_images[0] if venue.venue_images else None
-        price = venue.venue_availability[0].venue_price if venue.venue_availability else None
+        price = venue.venue_availability.venue_price if venue.venue_availability else None
 
     result.append({
         "id": venue.id,

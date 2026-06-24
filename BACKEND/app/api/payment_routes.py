@@ -2,6 +2,20 @@ import os
 import razorpay
 from fastapi import APIRouter, HTTPException
 from app.core.config import settings
+from app.db.session import get_db
+from sqlalchemy.orm import Session
+from app.schema.payment import (
+    CreateOrderRequest,
+    VerifyPaymentRequest,
+    PaymentFailedRequest
+)
+from app.services.order_service import (
+    add_order_details,
+    update_order_payment_status,
+)
+from app.services.booking_service import create_booking
+from datetime import datetime
+
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
@@ -13,7 +27,7 @@ client = razorpay.Client(
 )
 
 @router.post("/create-order")
-def create_order(payload: CreateOrderRequest):
+def create_order(payload: CreateOrderRequest, db: Session = Depends(get_db)):
     try:
         order_data = {
             "amount": payload.amount * 100,  # ₹500 => 50000 paise
@@ -46,7 +60,7 @@ def create_order(payload: CreateOrderRequest):
 
 
 @router.post("/verify-payment")
-def verify_payment(payload: VerifyPaymentRequest):
+def verify_payment(payload: VerifyPaymentRequest, db: Session = Depends(get_db)):
     try:
         client.utility.verify_payment_signature({
             "razorpay_order_id": payload.razorpay_order_id,

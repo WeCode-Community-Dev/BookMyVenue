@@ -7,7 +7,6 @@ class VenueDetailsCreate(BaseModel):
     venue_description: str = Field(..., min_length=1)
     location: str = Field(..., min_length=1)
     capacity: int = Field(..., gt=0)
-    venue_availabilty: Literal["hourly", "daily"]
 
 class VenueAmenitiesCreate(BaseModel):
     wifi: bool = False
@@ -32,7 +31,6 @@ class VenueDetailsUpdate(BaseModel):
     location: Optional[str] = None
     capacity: Optional[int] = None
     venue_price: Optional[int] = None
-    venue_availabilty: Optional[str] = None
 
 class VenueAmenitiesUpdate(BaseModel):
     wifi: bool = False
