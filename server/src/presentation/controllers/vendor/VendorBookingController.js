@@ -25,10 +25,13 @@ export class VendorBookingController {
     getBookings = asyncHandler(
 
         async (req, res) => {
+
             const ownerId = req.user.id
+            const {page, limit, status} = req.query
+
             const bookings =
                 await this._getVendorBookingsUsecase
-                    .execute(ownerId)
+                    .execute({ownerId, page, limit, status})
             return sendSuccess(
                 res,
                 statusCode.OK,
@@ -65,7 +68,7 @@ export class VendorBookingController {
             const { bookingId }
                 = req.params
 
-                const ownerId = req.user.id
+                const ownerId = '6a2d96f9bd24251e9e502c04'
 
             const booking =
                 await this._acceptBookingUsecase
@@ -83,14 +86,14 @@ export class VendorBookingController {
     rejectBooking = asyncHandler(
 
         async (req, res) => {
-            const { bookingId }
-                = req.params
+            const { bookingId } = req.params
+            const {reason} = req.body
 
-                const ownerId = req.user.id
+                const ownerId = '6a2fa28f085f125ab80560b6'
 
             const booking =
                 await this._rejectBookingUsecase
-                    .execute({bookingId, ownerId})
+                    .execute({bookingId, ownerId, reason})
             return sendSuccess(
                 res,
                 statusCode.OK,

@@ -44,6 +44,11 @@ import { AcceptBookingUsecase }from "../../application/vendor/usecases/booking/a
 import { RejectBookingUsecase }from "../../application/vendor/usecases/booking/rejectBookingUsecase.js";
 import { VendorBookingController }from "./vendor/VendorBookingController.js";
 
+//notification
+
+import { NotificationRepositoryImpl } from '../../infrastructure/repositories/notification.repository.js';
+import { CreateNotificationUsecase } from '../../application/vendor/usecases/notification/CreateNotificationUsecase.js'
+
 
 
 //repository
@@ -51,6 +56,8 @@ const iVenueRepository = new VenueRepository()
 const iUserRepository = new UserRepository()
 const iVendorRepository = new VendorRepository()
 const bookingRepository = new BookingRepositoryImpl();
+
+const notificationRepository = new NotificationRepositoryImpl()
 
 
 //service
@@ -119,6 +126,13 @@ export const iVendorProfileController =
 
     )
 
+// notification
+
+const createNotificationUsecase =
+    new CreateNotificationUsecase(
+        notificationRepository
+    )
+
 
 //vendorbookingmanagement
 
@@ -132,12 +146,14 @@ const getBookingByIdUsecase =
     );
 const acceptBookingUsecase =
     new AcceptBookingUsecase(
-        bookingRepository
+        bookingRepository, createNotificationUsecase
     );
 const rejectBookingUsecase =
     new RejectBookingUsecase(
-        bookingRepository
+        bookingRepository, createNotificationUsecase
     );
+
+
 
 
 //user

@@ -48,19 +48,38 @@ class BookingRepositoryImpl extends BookingRepository {
     }
 
 
-    async findByOwnerId(ownerId) {
+    async findByOwnerId(ownerId, {page = 1, limit = 10, status}) {
 
-        const docs = await BookingModel.find({
+        const skip = (page - 1) * limit
+        const filter = {ownerId}
+       
+        if (status) {
 
-            ownerId
+            filter.status = status
+    
+        }
 
-        });
+        const docs = await BookingModel
+            .find({
+                ownerId
+            })
+            .sort({
+                createdAt : -1
+            })
+            .skip(skip)
+            .limit(limit)
 
-        return docs.map(doc =>
+        const total = await BookingModel
+            .countDocuments({ownerId})
 
-            BookingMapper.mapToEntity(doc)
-
-        );
+            return{
+                bookings:
+                docs.map(doc => BookingMapper.mapToEntity(doc)),
+                pagination:{
+                    total, page, limit,
+                    totalPages : Math.ceil(total / limit)
+                }
+            }
 
     }
 

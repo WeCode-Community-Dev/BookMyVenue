@@ -11,7 +11,7 @@ export class BookingRepository {
       throw new Error("Method not implemented");
     }
   
-    async findByOwnerId(ownerId) {
+    async findByOwnerId(ownerId, {page, limit, status}) {
       throw new Error("Method not implemented");
     }
   

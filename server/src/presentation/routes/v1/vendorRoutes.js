@@ -5,9 +5,9 @@ import {iVendorVenueController, iVendorProfileController, iVendorBookingControll
 import { validate } from '../../middlewares/validator.js'
 import { createVenueSchema, VenueParamsSchema, VenueQuerySchema, VenueUpdateStatusSchema } from '../../validators/VenderVenue.validator.js'
 
-import { GetVendorProfileSchema, UpdateVendorProfileSchema } from '../../validators/vendorProfile.validator.js'
+import { UpdateVendorProfileSchema } from '../../validators/vendorProfile.validator.js'
 
-import {BookingParamsSchema, BookingQuerySchema} from '../../validators/vendorBooking.validator.js'
+import {BookingParamsSchema, BookingQuerySchema, RejectBookingSchema} from '../../validators/vendorBooking.validator.js'
 
 
 const router = Express.Router()
@@ -58,6 +58,7 @@ router.patch(
 router.patch(
     ROUTES.OWNER.BOOKING.REJECT,
     validate(BookingParamsSchema,'params'),
+    validate(RejectBookingSchema, 'body'),
     iVendorBookingController.rejectBooking
 )
 

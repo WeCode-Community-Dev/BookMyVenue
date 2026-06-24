@@ -18,6 +18,7 @@ export class Booking {
     status = BookingStatus.PENDING,
     paymentStatus = PaymentStatus.PENDING,
     cancellationReason = null,
+    rejectionReason = null,
     createdAt = new Date(),
     updatedAt = new Date(),
   }) {
@@ -36,6 +37,7 @@ export class Booking {
     this.status = status;
     this.paymentStatus = paymentStatus;
     this.cancellationReason = cancellationReason;
+    this.rejectionReason = rejectionReason;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
@@ -101,7 +103,7 @@ export class Booking {
     this.touch();
   }
 
-  reject() {
+  reject(reason) {
     if (this.status === BookingStatus.COMPLETED) {
       throw new Error("Completed booking cannot be rejected");
     }
@@ -115,6 +117,7 @@ export class Booking {
     }
 
     this.status = BookingStatus.REJECTED;
+    this.rejectionReason = reason;
     this.touch();
   }
 

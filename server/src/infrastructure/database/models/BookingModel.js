@@ -5,7 +5,6 @@ import { PaymentStatus } from "../../../domain/enums/Payment.enum.js";
 const bookingSchema = new mongoose.Schema(
 
     {
-
         userId: {
 
             type: mongoose.Schema.Types.ObjectId,
@@ -126,6 +125,14 @@ const bookingSchema = new mongoose.Schema(
 
             default: null
 
+        },
+
+        rejectionReason: {
+
+            type : String,
+
+            default : null
+            
         }
 
     },
