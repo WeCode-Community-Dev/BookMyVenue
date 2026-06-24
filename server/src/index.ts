@@ -8,8 +8,12 @@ import { Env } from "./config/env.config";
 import { asyncHandler } from "./middlewares/asyncHandler.middleware";
 import { HTTP_STATUS } from "./config/http.config";
 import connectDatabase from "./config/database";
+import authRoute from "./routes/auth.routes";
+import venueRoute from "./routes/venue.routes";
 
 const app = express();
+
+const BASE_PATH = Env.BASE_PATH;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -31,9 +35,12 @@ app.get(
   }),
 );
 
-app.listen(Env.PORT, async () => {
-  await connectDatabase();
-  console.log(`Server is running on port:${Env.PORT} in ${Env.NODE_ENV} mode`);
-});
+app.use(`${BASE_PATH}/auth`, authRoute);
+app.use(`${BASE_PATH}/venue`, venueRoute);
 
 app.use(errorHandler);
+
+app.listen(Env.PORT, async () => {
+  await connectDatabase();
+  console.log(`Server is running on port ${Env.PORT} in ${Env.NODE_ENV} mode`);
+});
