@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Users } from "lucide-react";
+import { Search, Users, Eye } from "lucide-react";
 import { UserRole } from "../data";
 import { fetchOwners, fetchCustomers } from "../../app/actions/user";
 import type { Owner, Customer } from "../../app/actions/user";
@@ -104,7 +104,7 @@ export function UsersPage() {
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50 hover:bg-muted/50 border-b border-border">
-            {["Name", "Email", "Role", "Joined", isOwner ? "Venues" : "Bookings"].map(h => (
+            {["Name", "Email", "Role", "Joined", isOwner ? "Venues" : "Bookings", "Actions"].map(h => (
               <TableHead key={h} className="px-5 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">{h}</TableHead>
             ))}
           </TableRow>
@@ -129,6 +129,14 @@ export function UsersPage() {
               <TableCell className="px-5 py-3.5 text-foreground/70">{u.joined}</TableCell>
               <TableCell className="px-5 py-3.5 text-foreground/70">
                 {"venues" in u ? `${u.venues} venues` : `${u.bookings} bookings`}
+              </TableCell>
+              <TableCell className="px-5 py-3.5">
+                <button
+                  className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-secondary transition-colors"
+                  title="View"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
               </TableCell>
             </TableRow>
           ))}
