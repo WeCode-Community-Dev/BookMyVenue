@@ -25,6 +25,10 @@ class Order(Base):
     )  
     # status can be "pending", "paid", "failed", "refunded"
 
+    refunded_amount = Column(Integer, nullable=False, default=0)  # store paise, not rupees
+    refund_reason = Column(String(255), nullable=True)
+    refund_percentage = Column(Integer, nullable=True)  # store percentage as an integer (e.g., 50 for 50%)
+
     payment_time = Column(DateTime(timezone=True), nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())

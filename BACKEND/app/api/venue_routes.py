@@ -82,8 +82,6 @@ def upload_venue_details(
             venue_description=payload.venue_description,
             location=payload.location,
             capacity=payload.capacity,
-            venue_price=payload.venue_price,
-            venue_availabilty=payload.venue_availabilty,
         )
     except Exception as e:
         raise HTTPException(
@@ -176,8 +174,6 @@ def update_venue_basic_details(
             venue_description=payload.venue_description,
             location=payload.location,
             capacity=payload.capacity,
-            venue_price=payload.venue_price,
-            venue_availabilty=payload.venue_availabilty,
         )
     except Exception as e:
         raise HTTPException(

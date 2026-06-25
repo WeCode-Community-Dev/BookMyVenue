@@ -39,9 +39,9 @@ class Venue(Base):
     )
 
     user = relationship("User", back_populates="venues")
-    venue_amenities = relationship("VenueAmenities", back_populates="venue", cascade="all, delete-orphan")
+    venue_amenities = relationship("VenueAmenities", back_populates="venue", uselist=False, cascade="all, delete-orphan")
     venue_images = relationship("VenueImages", back_populates="venue", cascade="all, delete-orphan")
-    venue_availability = relationship("VenueAvailability", back_populates="venue", cascade="all, delete-orphan")
+    venue_availability = relationship("VenueAvailability", back_populates="venue", uselist=False, cascade="all, delete-orphan")
     orders = relationship("Order", back_populates="venue", cascade="all, delete-orphan")
     bookings = relationship("Booking", back_populates="venue", cascade="all, delete-orphan")
 
