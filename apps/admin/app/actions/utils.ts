@@ -1,7 +1,8 @@
-import { VenueCategory, VerificationStatus } from "@bookmyvenue/database";
+import { VenueCategory, VerificationStatus, Role } from "@bookmyvenue/database";
 import { Venue } from "./venue";
+import { Owner, Customer } from "./user";
 
-export const SELECT_VENUE= {
+export const SELECT_VENUE = {
     id: true,
     name: true,
     description: true,
@@ -30,7 +31,7 @@ export const SELECT_VENUE= {
     _count: { select: { bookings: true } },
 } as const;
 
-export function mapVenue(v: {
+export const mapVenue = (v: {
     id: number;
     name: string;
     description: string;
@@ -44,10 +45,17 @@ export function mapVenue(v: {
     verificationStatus: VerificationStatus;
     createdAt: Date;
     owner: { email: string };
-    sessions: { id: number; label: string; startTime: string; endTime: string; price: number; isActive: boolean }[];
+    sessions: {
+        id: number;
+        label: string;
+        startTime: string;
+        endTime: string;
+        price: number;
+        isActive: boolean;
+    }[];
     reviews: { rating: number }[];
     _count: { bookings: number };
-}): Venue {
+}): Venue  => {
     return {
         id: String(v.id),
         name: v.name,
@@ -67,3 +75,57 @@ export function mapVenue(v: {
         sessions: v.sessions,
     };
 }
+
+export const SELECT_OWNER = {
+    id: true,
+    email: true,
+    name: true,
+    role: true,
+    createdAt: true,
+    _count: { select: { venues: true } },
+} as const;
+
+export const mapOwner = (u: {
+    id: string;
+    email: string;
+    name: string | null;
+    role: Role;
+    createdAt: Date;
+    _count: { venues: number };
+}): Owner => {
+    return {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        joined: u.createdAt.toISOString().split("T")[0]!,
+        venues: u._count.venues,
+    };
+};
+
+export const SELECT_CUSTOMER = {
+    id: true,
+    email: true,
+    name: true,
+    role: true,
+    createdAt: true,
+    _count: { select: { bookings: true } },
+} as const;
+
+export const mapCustomer = (u: {
+    id: string;
+    email: string;
+    name: string | null;
+    role: Role;
+    createdAt: Date;
+    _count: { bookings: number };
+}): Customer => {
+    return {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        joined: u.createdAt.toISOString().split("T")[0]!,
+        bookings: u._count.bookings,
+    };
+};

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Users } from "lucide-react";
-import { fmt, UserRole, User, USERS } from "../data";
+import { UserRole } from "../data";
+import { fetchOwners, fetchCustomers } from "../../app/actions/user";
+import type { Owner, Customer } from "../../app/actions/user";
 import {
   Table,
   TableBody,
@@ -22,24 +24,56 @@ import {
 
 const PAGE_SIZE = 10;
 
+type Row = Owner | Customer;
+
 export function UsersPage() {
-  const [users] = useState<User[]>(USERS);
+  const [rows, setRows] = useState<Row[]>([]);
+  const [total, setTotal] = useState(0);
   const [userSearch, setUserSearch] = useState("");
   const [userRoleFilter, setUserRoleFilter] = useState<UserRole>("Owner");
   const [page, setPage] = useState(1);
 
-  const filteredUsers = users.filter((u) => {
-    const mr = u.role === userRoleFilter;
-    const mq =
-      u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-      u.email.toLowerCase().includes(userSearch.toLowerCase());
-    return mr && mq;
+  const fetchPage = async (role: UserRole, p: number) => {
+    if (role === "Owner") {
+      const result = await fetchOwners(p, PAGE_SIZE);
+      setRows(result.owners);
+      setTotal(result.total);
+    } else {
+      const result = await fetchCustomers(p, PAGE_SIZE);
+      setRows(result.customers);
+      setTotal(result.total);
+    }
+  };
+
+  useEffect(() => {
+    fetchOwners(1, PAGE_SIZE).then((result) => {
+      setRows(result.owners);
+      setTotal(result.total);
+    });
+  }, []);
+
+  const handleRoleChange = async (role: UserRole) => {
+    setUserRoleFilter(role);
+    setPage(1);
+    await fetchPage(role, 1);
+  };
+
+  const handlePageChange = async (p: number) => {
+    setPage(p);
+    await fetchPage(userRoleFilter, p);
+  };
+
+  const isOwner = userRoleFilter === "Owner";
+
+  const filteredRows = rows.filter((u) => {
+    const q = userSearch.toLowerCase();
+    return (
+      (u.name?.toLowerCase().includes(q) ?? false) ||
+      u.email.toLowerCase().includes(q)
+    );
   });
 
-  const pageCount = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
-  // Clamp during render so the page stays valid when the result set shrinks.
-  const currentPage = Math.min(page, pageCount);
-  const pagedUsers = filteredUsers.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
@@ -51,14 +85,14 @@ export function UsersPage() {
             className="w-full pl-9 pr-4 py-2 bg-input-background border border-border rounded-xl text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="Search by name or email…"
             value={userSearch}
-            onChange={e => { setUserSearch(e.target.value); setPage(1); }}
+            onChange={e => setUserSearch(e.target.value)}
           />
         </div>
         <div className="flex gap-2">
           {(["Owner", "Customer"] as const).map(r => (
             <button
               key={r}
-              onClick={() => { setUserRoleFilter(r); setPage(1); }}
+              onClick={() => handleRoleChange(r)}
               className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all ${userRoleFilter === r ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-secondary"}`}
             >
               {r}
@@ -70,42 +104,37 @@ export function UsersPage() {
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50 hover:bg-muted/50 border-b border-border">
-            {["Name", "Email", "Role", "Joined", userRoleFilter === "Owner" ? "Venues" : "Bookings", ...(userRoleFilter === "Owner" ? ["Revenue"] : [])].map(h => (
+            {["Name", "Email", "Role", "Joined", isOwner ? "Venues" : "Bookings"].map(h => (
               <TableHead key={h} className="px-5 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">{h}</TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody className="divide-y divide-border">
-          {pagedUsers.map(u => (
+          {filteredRows.map(u => (
             <TableRow key={u.id} className="hover:bg-muted/30 transition-colors">
               <TableCell className="px-5 py-3.5">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
-                    {u.name.slice(0, 1)}
+                    {(u.name ?? u.email).slice(0, 1).toUpperCase()}
                   </div>
-                  <p className="font-semibold text-foreground">{u.name}</p>
+                  <p className="font-semibold text-foreground">{u.name ?? "—"}</p>
                 </div>
               </TableCell>
               <TableCell className="px-5 py-3.5 text-foreground/70">{u.email}</TableCell>
               <TableCell className="px-5 py-3.5">
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${u.role === "Owner" ? "bg-primary/10 text-primary" : "bg-blue-50 text-blue-600"}`}>
-                  {u.role}
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isOwner ? "bg-primary/10 text-primary" : "bg-blue-50 text-blue-600"}`}>
+                  {userRoleFilter}
                 </span>
               </TableCell>
               <TableCell className="px-5 py-3.5 text-foreground/70">{u.joined}</TableCell>
               <TableCell className="px-5 py-3.5 text-foreground/70">
-                {u.role === "Owner" ? `${u.venues} venues` : `${u.bookings} bookings`}
+                {"venues" in u ? `${u.venues} venues` : `${u.bookings} bookings`}
               </TableCell>
-              {userRoleFilter === "Owner" && (
-                <TableCell className="px-5 py-3.5 font-semibold text-foreground">
-                  {u.revenue > 0 ? fmt(u.revenue) : "—"}
-                </TableCell>
-              )}
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      {filteredUsers.length === 0 && (
+      {filteredRows.length === 0 && (
         <div className="text-center py-16 text-muted-foreground">
           <Users className="w-10 h-10 mx-auto mb-3 opacity-25" />
           <p className="font-medium">No users match your filter.</p>
@@ -114,26 +143,26 @@ export function UsersPage() {
 
       <div className="px-5 py-3.5 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
         <span>
-          {filteredUsers.length === 0
+          {total === 0
             ? "Showing 0 users"
-            : `Showing ${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(currentPage * PAGE_SIZE, filteredUsers.length)} of ${filteredUsers.length} users`}
+            : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} of ${total} users`}
         </span>
         <Pagination className="mx-0 w-auto justify-end">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
                 href="#"
-                aria-disabled={currentPage <= 1}
-                className={currentPage <= 1 ? "pointer-events-none opacity-50" : undefined}
-                onClick={e => { e.preventDefault(); setPage(p => Math.max(1, p - 1)); }}
+                aria-disabled={page <= 1}
+                className={page <= 1 ? "pointer-events-none opacity-50" : undefined}
+                onClick={e => { e.preventDefault(); handlePageChange(Math.max(1, page - 1)); }}
               />
             </PaginationItem>
             {Array.from({ length: pageCount }, (_, i) => i + 1).map(p => (
               <PaginationItem key={p}>
                 <PaginationLink
                   href="#"
-                  isActive={p === currentPage}
-                  onClick={e => { e.preventDefault(); setPage(p); }}
+                  isActive={p === page}
+                  onClick={e => { e.preventDefault(); handlePageChange(p); }}
                 >
                   {p}
                 </PaginationLink>
@@ -142,9 +171,9 @@ export function UsersPage() {
             <PaginationItem>
               <PaginationNext
                 href="#"
-                aria-disabled={currentPage >= pageCount}
-                className={currentPage >= pageCount ? "pointer-events-none opacity-50" : undefined}
-                onClick={e => { e.preventDefault(); setPage(p => Math.min(pageCount, p + 1)); }}
+                aria-disabled={page >= pageCount}
+                className={page >= pageCount ? "pointer-events-none opacity-50" : undefined}
+                onClick={e => { e.preventDefault(); handlePageChange(Math.min(pageCount, page + 1)); }}
               />
             </PaginationItem>
           </PaginationContent>
