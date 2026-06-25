@@ -3,8 +3,6 @@ export const ROUTES = {
         LOGOUT: '/logout'
     },
     ADMIN: {
-        //USERS: '/users',
-        //UPDATE_USER_STATUS: '/users/:userId/status',
         USER:{
             GET_ALL:'/users',
             UPDATE_STATUS: '/users/:userId/status',
@@ -12,7 +10,8 @@ export const ROUTES = {
         VENDOR:{
             GET_ALL:'/vendors',
             GET_BY_ID:'/vendors/:vendorId',
-            UPDATE_APPROVAL_STATUS:'/vendors/:vendorId/approval-status',
+            APPROVE_VENDOR:"/vendors/:vendorId/approve",
+            REJECT_VENDOR:"/vendors/:vendorId/reject",
             UPDATE_STATUS:'/vendors/:vendorId/status'
 
         }

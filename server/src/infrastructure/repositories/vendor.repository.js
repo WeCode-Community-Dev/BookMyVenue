@@ -1,6 +1,7 @@
 import { IVendorRepository } from "../../domain/repositories/IVendor.repository.js";
 import VendorModel from "../database/models/Vendor.model.js";
 import { VendorMapper } from "../../application/mapper/Vendor.mapper.js";
+import { VendorApprovalStatus } from "../../domain/enums/VendorApprovalStatus.enum.js";
 
 class VendorRepositoryImpl extends IVendorRepository {
 
@@ -64,33 +65,41 @@ class VendorRepositoryImpl extends IVendorRepository {
         }
     }
 
-    async updateApprovalStatus(
-        vendorId,
-        status,
-        reason
-    ) {
+    async approveVendor(vendorId) {
+    const updatedVendor =
+        await VendorModel.findByIdAndUpdate(
+            vendorId,
+            {
+                approvalStatus:VendorApprovalStatus.APPROVED,
+                rejectionReason: null
+            },
+            {
+                new: true
+            }
+        );
 
-        const document =
-            await VendorModel.findByIdAndUpdate(
-                vendorId,
-                {
-                    approvalStatus: status,
-                    rejectionReason:
-                        status === "REJECTED"
-                            ? reason
-                            : null
-                },
-                {
-                    returnDocument: "after"
-                }
-            )
-            console.log(document)
+    if (!updatedVendor) return null;
 
-        if (!document) return null
+    return VendorMapper.mapToEntity(updatedVendor);
+}
 
-        return VendorMapper.mapToEntity(document)
-    }
+async rejectVendor(vendorId, reason) {
+    const updatedVendor =
+        await VendorModel.findByIdAndUpdate(
+            vendorId,
+            {
+                approvalStatus: VendorApprovalStatus.REJECTED,
+                rejectionReason: reason
+            },
+            {
+                new: true
+            }
+        );
 
+    if (!updatedVendor) return null;
+
+    return VendorMapper.mapToEntity(updatedVendor);
+}
 
     async updateBlockStatus(vendorId, isBlocked) {
         const document =

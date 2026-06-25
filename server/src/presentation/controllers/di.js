@@ -14,13 +14,17 @@ import RefreshTokenUseCase from '../../application/user/usecases/RefreshTokenUse
 // AdminUserUsecases
 import { AdminGetAllUsersUsecase } from '../../application/admin/usecases/user/admin.getAllUsers.usecase.js'
 import { AdminUpdateUserStatusUsecase } from '../../application/admin/usecases/user/admin.updateUserStatus.usecase.js'
+
 //AdminVendorUsecases
 import { AdminGetAllVendorsUsecase } from '../../application/admin/usecases/vendor/admin.getAllVendors.usecase.js'
 import { AdminGetVendorByIdUsecase } from '../../application/admin/usecases/vendor/admin.getVendorById.usecase.js'
-import { AdminUpdateVendorApprovalStatusUsecase } from '../../application/admin/usecases/vendor/admin.updateVendorApprovalStatus.usecase.js'
+import { AdminApproveVendorUsecase } from '../../application/admin/usecases/vendor/admin.approveVendor.usecase.js'
+import { AdminRejectVendorUsecase } from '../../application/admin/usecases/vendor/admin.rejectVendor.usecase.js'
 import { AdminUpdateVendorStatusUsecase } from '../../application/admin/usecases/vendor/admin.updateVendorStatus.js'
+
 // AdminUserController
 import { AdminUserController } from '../controllers/admin/admin.userController.js'
+
 //AdminVendorController
 import { AdminVendorController } from '../controllers/admin/admin.vendorController.js'
 
@@ -72,10 +76,12 @@ const iAdminUpdateUserStatusUsecase =
     new AdminUpdateUserStatusUsecase(
         iUserRepository
     )
+
 //adminVendorUsecases
 const iAdminGetAllVendorsUsecase = new AdminGetAllVendorsUsecase(iVendorRepository)
 const iAdminGetVendorByIdUsecase = new AdminGetVendorByIdUsecase(iVendorRepository)
-const iAdminUpdateVendorApprovalStatusUsecase = new AdminUpdateVendorApprovalStatusUsecase(iVendorRepository)
+const iAdminApproveVendorUsecase = new AdminApproveVendorUsecase(iVendorRepository)
+const iAdminRejectVendorUsecase = new AdminRejectVendorUsecase(iVendorRepository)
 const iAdminUpdateVendorStatusUsecase = new AdminUpdateVendorStatusUsecase(iVendorRepository)
 
 //auth usecases
@@ -176,7 +182,8 @@ export const iAdminVendorControlller =
     new AdminVendorController(
         iAdminGetAllVendorsUsecase,
         iAdminGetVendorByIdUsecase,
-        iAdminUpdateVendorApprovalStatusUsecase,
+        iAdminApproveVendorUsecase,
+        iAdminRejectVendorUsecase,
         iAdminUpdateVendorStatusUsecase
     )
 export const iUserVenueController = new UserVenueController (

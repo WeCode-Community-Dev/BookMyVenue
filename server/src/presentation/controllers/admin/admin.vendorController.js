@@ -7,12 +7,14 @@ export class AdminVendorController {
     constructor(
         AdminGetAllVendorsUsecase,
         AdminGetVendorByIdUsecase,
-        AdminUpdateVendorApprovalStatusUsecase,
+        AdminApproveVendorUsecase,
+        AdminRejectVendorUsecase,
         AdminUpdateVendorStatusUsecase,
     ) {
         this._adminGetAllVendorsUsecase = AdminGetAllVendorsUsecase
         this._adminGetVendorByIdUsecase = AdminGetVendorByIdUsecase
-        this._adminUpdateVendorApprovalStatusUsecase = AdminUpdateVendorApprovalStatusUsecase
+        this._adminApproveVendorUsecase = AdminApproveVendorUsecase
+        this._adminRejectVendorUsecase = AdminRejectVendorUsecase
         this._adminUpdateVendorStatusUsecase = AdminUpdateVendorStatusUsecase
     }
 
@@ -39,20 +41,36 @@ export class AdminVendorController {
         return sendSuccess(res, statusCode.OK, '', vendor)
     })
 
-    updateApprovalStatus = asyncHandler(async (req, res) => {
+     approveVendor = asyncHandler(async (req, res) => {
         const vendorId = req.params.vendorId
-        const { status, reason } = req.body
-
         const vendor =
-            await this._adminUpdateVendorApprovalStatusUsecase.execute({
-                vendorId,
-                status,
-                reason
-            })
-            console.log(vendor)
+            await this._adminApproveVendorUsecase.execute(vendorId);
 
-        return sendSuccess(res, statusCode.OK, '', vendor)
-    })
+        return sendSuccess(
+            res,
+            statusCode.OK,
+            VendorMessages.success.VENDOR_APPROVED,
+            vendor
+        );
+    });
+
+    rejectVendor = asyncHandler(async (req, res) => {
+        const vendorId = req.params.vendorId
+        const reason = req.body.reason
+        const vendor =
+            await this._adminRejectVendorUsecase.execute(
+                vendorId,
+                reason
+            );
+
+        return sendSuccess(
+            res,
+            statusCode.OK,
+            VendorMessages.success.VENDOR_REJECTED,
+            vendor
+        );
+    });
+
 
     updateVendorStatus = asyncHandler(async (req, res) => {
 

@@ -22,17 +22,12 @@ export const getAllVendorsQuerySchema =
                 .default(10)
     })
 
-export const updateVendorApprovalSchema =
-    z.object({
-
-        status:
-            z.nativeEnum(VendorApprovalStatus)
-                .optional(),
-
-        reason:
-            z.string()
-                .optional()
-    })
+export const rejectVendorBodySchema = z.object({
+    reason: z
+        .string()
+        .trim()
+        .min(1, "Rejection reason is required")
+});
 
 export const updateVendorStatusSchema = z.object({
 
