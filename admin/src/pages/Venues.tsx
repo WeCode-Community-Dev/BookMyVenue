@@ -13,12 +13,12 @@ interface VenuesViewProps {
 
 export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSelectBooking }) => {
   const { 
-    venues, bookings,
+    venues, bookings, apiState,
     approveVenue, rejectVenue, blockVenue, unblockVenue, 
     toggleFeaturedVenue, editVenueDetails, deleteVenue 
   } = useAdmin();
 
-  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'blocked'>(initialTab);
+  const activeTab = initialTab;
   
   // Search & Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,8 +45,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
     let list = venues;
     
     if (activeTab === 'all') {
-      // all approved venues (or both approved and pending, but let's show all except deleted)
-      list = venues.filter(v => v.status !== 'blocked');
+      list = venues;
     } else if (activeTab === 'pending') {
       list = venues.filter(v => v.status === 'pending');
     } else if (activeTab === 'blocked') {
@@ -123,6 +122,40 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
     }
   };
 
+  const renderVenueSkeletonCards = () => (
+    Array.from({ length: 6 }).map((_, idx) => (
+      <div key={`venue-loading-${idx}`} className="glass-panel border border-slate-850 rounded-xl overflow-hidden flex flex-col">
+        <div className="h-44 shimmer-surface" />
+        <div className="p-4 space-y-4">
+          <div className="grid grid-cols-2 gap-3 border-b border-slate-900 pb-3">
+            <div className="space-y-2">
+              <div className="h-2 w-12 rounded shimmer-surface" />
+              <div className="h-3 w-24 rounded shimmer-surface" />
+            </div>
+            <div className="space-y-2">
+              <div className="h-2 w-12 rounded shimmer-surface" />
+              <div className="h-3 w-20 rounded shimmer-surface" />
+            </div>
+          </div>
+          <div className="flex justify-between items-center">
+            <div className="space-y-2">
+              <div className="h-2 w-14 rounded shimmer-surface" />
+              <div className="h-4 w-28 rounded shimmer-surface" />
+            </div>
+            <div className="space-y-2">
+              <div className="h-2 w-14 rounded shimmer-surface" />
+              <div className="h-3 w-20 rounded shimmer-surface" />
+            </div>
+          </div>
+          <div className="flex gap-2 pt-3 border-t border-slate-900">
+            <div className="h-8 flex-1 rounded-lg shimmer-surface" />
+            <div className="h-8 w-20 rounded-lg shimmer-surface" />
+          </div>
+        </div>
+      </div>
+    ))
+  );
+
   return (
     <div className="space-y-6">
       {/* Upper header */}
@@ -130,39 +163,6 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white">Venue Management</h1>
           <p className="text-slate-400 mt-1">Review event spaces, approve pending listings, and moderate terms.</p>
-        </div>
-
-        {/* Tab switchers */}
-        <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-900">
-          <button
-            onClick={() => { setActiveTab('all'); setSearchTerm(''); }}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition ${
-              activeTab === 'all' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            All Spaces ({venues.filter(v => v.status !== 'blocked').length})
-          </button>
-          <button
-            onClick={() => { setActiveTab('pending'); setSearchTerm(''); }}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition relative ${
-              activeTab === 'pending' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Pending approvals
-            {venues.filter(v => v.status === 'pending').length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-amber-500 text-slate-950 font-extrabold text-[9px] w-4.5 h-4.5 rounded-full flex justify-center items-center">
-                {venues.filter(v => v.status === 'pending').length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => { setActiveTab('blocked'); setSearchTerm(''); }}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition ${
-              activeTab === 'blocked' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Blocked Spaces ({venues.filter(v => v.status === 'blocked').length})
-          </button>
         </div>
       </div>
 
@@ -208,9 +208,11 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
 
       {/* Grid of venue cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredVenues.length === 0 ? (
+        {apiState.venues.loading ? (
+          renderVenueSkeletonCards()
+        ) : filteredVenues.length === 0 ? (
           <div className="col-span-full py-16 text-center text-slate-500 bg-slate-950/20 rounded-xl border border-slate-900 border-dashed">
-            No venue listings found matching filter selections.
+            {apiState.venues.error ? `API sync failed: ${apiState.venues.error}` : 'No venue listings found matching filter selections.'}
           </div>
         ) : (
           filteredVenues.map(venue => (

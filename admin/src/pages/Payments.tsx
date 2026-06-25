@@ -3,9 +3,14 @@ import { useAdmin } from '../context/AdminContext';
 import { 
   Search, Download, TrendingUp, RefreshCw
 } from 'lucide-react';
-export const PaymentsView: React.FC = () => {
+
+interface PaymentsViewProps {
+  initialTab?: 'transactions' | 'payouts';
+}
+
+export const PaymentsView: React.FC<PaymentsViewProps> = ({ initialTab = 'transactions' }) => {
   const { bookings, owners, settings, stats, sendNotification } = useAdmin();
-  const [activeSubTab, setActiveSubTab] = useState<'transactions' | 'payouts'>('transactions');
+  const activeSubTab = initialTab;
   const [searchTerm, setSearchTerm] = useState('');
   
   // Simulated action states
@@ -78,26 +83,6 @@ export const PaymentsView: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white">Revenue & Payouts</h1>
           <p className="text-slate-400 mt-1">Audit cash flows, platform commission earnings, and outstanding venue payouts.</p>
-        </div>
-
-        {/* Tab switchers */}
-        <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-900">
-          <button
-            onClick={() => setActiveSubTab('transactions')}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition ${
-              activeSubTab === 'transactions' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Transaction Ledger ({bookings.length})
-          </button>
-          <button
-            onClick={() => setActiveSubTab('payouts')}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition ${
-              activeSubTab === 'payouts' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Owner Payouts Summary
-          </button>
         </div>
       </div>
 

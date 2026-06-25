@@ -14,8 +14,9 @@ import type { Booking } from './data/mockStore';
 import { CustomCursor } from './components/CustomCursor';
 
 // Lucide icons
-import { 
-  Users as UsersIcon,
+import {
+  Users as UsersIcon, Building, Calendar, DollarSign, ShieldAlert,
+  Settings as SettingsIcon, Image,
   Bell, Menu, X, ChevronDown, ChevronRight,
   LayoutDashboard, LogOut, Sun, Moon
 } from 'lucide-react';
@@ -78,6 +79,9 @@ function AppContent() {
 
   // Collapsible Sidebar folder states
   const [usersExpanded, setUsersExpanded] = useState(true);
+  const [venuesExpanded, setVenuesExpanded] = useState(true);
+  const [bookingsExpanded, setBookingsExpanded] = useState(true);
+  const [paymentsExpanded, setPaymentsExpanded] = useState(true);
 
   // Drilldown states for quick modal displays from Dashboard
   const [drilldownBookingId, setDrilldownBookingId] = useState<string | null>(null);
@@ -313,7 +317,7 @@ function AppContent() {
           </div>
 
           {/* Collapsible Section 2: Venues */}
-          {/* <div className="space-y-1">
+          <div className="space-y-1">
             <button
               onClick={() => setVenuesExpanded(!venuesExpanded)}
               className="flex items-center justify-between w-full px-3 py-1 text-left transition text-slate-500 hover:text-white"
@@ -357,10 +361,10 @@ function AppContent() {
                 </button>
               </div>
             )}
-          </div> */}
+          </div>
 
           {/* Collapsible Section 3: Bookings */}
-          {/* <div className="space-y-1">
+          <div className="space-y-1">
             <button
               onClick={() => setBookingsExpanded(!bookingsExpanded)}
               className="flex items-center justify-between w-full px-3 py-1 text-left transition text-slate-500 hover:text-white"
@@ -405,10 +409,10 @@ function AppContent() {
                 </button>
               </div>
             )}
-          </div> */}
+          </div>
 
           {/* Collapsible Section 4: Payments */}
-          {/* <div className="space-y-1">
+          <div className="space-y-1">
             <button
               onClick={() => setPaymentsExpanded(!paymentsExpanded)}
               className="flex items-center justify-between w-full px-3 py-1 text-left transition text-slate-500 hover:text-white"
@@ -429,10 +433,10 @@ function AppContent() {
                 </button>
               </div>
             )}
-          </div> */}
+          </div>
 
           {/* Flat Sections */}
-          {/* <div className="space-y-1.5 pt-2 border-t border-slate-900">
+          <div className="space-y-1.5 pt-2 border-t border-slate-900">
             <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider pl-3 block">Administration</span>
 
             <button
@@ -467,7 +471,7 @@ function AppContent() {
               <SettingsIcon className="w-4 h-4" />
               <span>Platform Settings</span>
             </button>
-          </div> */}
+          </div>
 
           {/* Footer logout */}
           <div className="pt-8 mt-auto">

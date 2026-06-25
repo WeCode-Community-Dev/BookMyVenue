@@ -21,7 +21,7 @@ export const BookingsView: React.FC<BookingsViewProps> = ({
     cancelBooking, updateBookingStatus 
   } = useAdmin();
 
-  const [activeTab, setActiveTab] = useState<'all' | 'upcoming' | 'completed' | 'cancelled'>(initialTab);
+  const activeTab = initialTab;
   
   // Search & Filters state
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,42 +86,6 @@ export const BookingsView: React.FC<BookingsViewProps> = ({
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white">Booking Management</h1>
           <p className="text-slate-400 mt-1">Audit guest bookings, verify transaction statuses, and handle cancellation requests.</p>
-        </div>
-
-        {/* Tab switchers */}
-        <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-900">
-          <button
-            onClick={() => { setActiveTab('all'); setSearchTerm(''); }}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition ${
-              activeTab === 'all' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            All Bookings ({bookings.length})
-          </button>
-          <button
-            onClick={() => { setActiveTab('upcoming'); setSearchTerm(''); }}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition ${
-              activeTab === 'upcoming' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Upcoming ({bookings.filter(b => b.status === 'upcoming').length})
-          </button>
-          <button
-            onClick={() => { setActiveTab('completed'); setSearchTerm(''); }}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition ${
-              activeTab === 'completed' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Completed ({bookings.filter(b => b.status === 'completed').length})
-          </button>
-          <button
-            onClick={() => { setActiveTab('cancelled'); setSearchTerm(''); }}
-            className={`px-4 py-2 text-sm font-semibold rounded-md transition ${
-              activeTab === 'cancelled' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Cancelled ({bookings.filter(b => b.status === 'cancelled').length})
-          </button>
         </div>
       </div>
 

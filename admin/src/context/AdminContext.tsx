@@ -22,7 +22,13 @@ import {
   initialNotifications,
   defaultSettings
 } from '../data/mockStore';
-import { fetchAdminDirectoryData, hasDirectoryApiConfig, updateVenueOwnerApprovalStatus } from '../api/adminApi';
+import {
+  fetchAdminDirectoryData,
+  fetchAdminVenuesData,
+  hasDirectoryApiConfig,
+  hasVenuesApiConfig,
+  updateVenueOwnerApprovalStatus
+} from '../api/adminApi';
 
 interface ApiResourceState {
   loading: boolean;
@@ -42,8 +48,10 @@ interface AdminContextProps {
   promotions: Promotion[];
   apiState: {
     users: ApiResourceState;
+    venues: ApiResourceState;
   };
   refreshUsers: () => Promise<void>;
+  refreshVenues: () => Promise<void>;
   
   // Handlers for Customers
   blockCustomer: (id: string) => void;
@@ -130,6 +138,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     error: null,
     usingMockData: !hasDirectoryApiConfig
   });
+  const [venuesApiState, setVenuesApiState] = useState<ApiResourceState>({
+    loading: hasVenuesApiConfig,
+    error: null,
+    usingMockData: !hasVenuesApiConfig
+  });
 
   const refreshUsers = useCallback(async () => {
     if (!hasDirectoryApiConfig) {
@@ -171,6 +184,39 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
+  const refreshVenues = useCallback(async () => {
+    if (!hasVenuesApiConfig) {
+      setVenuesApiState({
+        loading: false,
+        error: null,
+        usingMockData: true
+      });
+      return;
+    }
+
+    setVenuesApiState(prev => ({
+      ...prev,
+      loading: true,
+      error: null
+    }));
+
+    try {
+      const venuesData = await fetchAdminVenuesData();
+      setVenues(venuesData.venues);
+      setVenuesApiState({
+        loading: false,
+        error: null,
+        usingMockData: false
+      });
+    } catch (error) {
+      setVenuesApiState({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unable to load venues from API.',
+        usingMockData: true
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (!hasDirectoryApiConfig) {
       return;
@@ -195,6 +241,29 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setUsersApiState({
           loading: false,
           error: error instanceof Error ? error.message : 'Unable to load users from API.',
+          usingMockData: true
+        });
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!hasVenuesApiConfig) {
+      return;
+    }
+
+    fetchAdminVenuesData()
+      .then((venuesData) => {
+        setVenues(venuesData.venues);
+        setVenuesApiState({
+          loading: false,
+          error: null,
+          usingMockData: false
+        });
+      })
+      .catch((error: unknown) => {
+        setVenuesApiState({
+          loading: false,
+          error: error instanceof Error ? error.message : 'Unable to load venues from API.',
           usingMockData: true
         });
       });
@@ -441,9 +510,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         banners,
         promotions,
         apiState: {
-          users: usersApiState
+          users: usersApiState,
+          venues: venuesApiState
         },
         refreshUsers,
+        refreshVenues,
         blockCustomer,
         unblockCustomer,
         deleteCustomer,

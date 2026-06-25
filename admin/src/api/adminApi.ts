@@ -1,16 +1,23 @@
-import type { Customer, VenueOwner } from '../data/mockStore';
+import type { Customer, Venue, VenueOwner } from '../data/mockStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() ?? '';
 const USERS_ENDPOINT = import.meta.env.VITE_USERS_ENDPOINT?.trim() ?? '';
 const VENUE_OWNERS_ENDPOINT = import.meta.env.VITE_VENUE_OWNERS_ENDPOINT?.trim() ?? '';
+const VENUES_ENDPOINT = import.meta.env.VITE_VENUES_ENDPOINT?.trim() ?? '/api/v1/venue-owner/venue';
 const VENUE_OWNER_STATUS_ENDPOINT =
   import.meta.env.VITE_VENUE_OWNER_STATUS_ENDPOINT?.trim() ?? '/api/v1/auth/venue-owner/update-status';
+
+const DEFAULT_VENUE_PHOTO = 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800';
 
 type ApiEntity = Record<string, unknown>;
 
 export interface AdminDirectoryData {
   customers?: Customer[];
   owners?: VenueOwner[];
+}
+
+export interface AdminVenuesData {
+  venues: Venue[];
 }
 
 export type VenueOwnerStatusCode = 0 | 1 | 2;
@@ -23,6 +30,8 @@ export interface VenueOwnerStatusUpdate {
 export const hasDirectoryApiConfig = Boolean(
   API_BASE_URL && (USERS_ENDPOINT || VENUE_OWNERS_ENDPOINT)
 );
+
+export const hasVenuesApiConfig = Boolean(API_BASE_URL && VENUES_ENDPOINT);
 
 const buildUrl = (endpoint: string) => {
   const base = API_BASE_URL.replace(/\/+$/, '');
@@ -47,6 +56,11 @@ const readString = (entity: ApiEntity, keys: string[], fallback = '') => {
 const readRecord = (entity: ApiEntity, key: string): ApiEntity => {
   const value = entity[key];
   return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as ApiEntity : {};
+};
+
+const readEntityArray = (entity: ApiEntity, key: string): ApiEntity[] => {
+  const value = entity[key];
+  return Array.isArray(value) ? value.filter((item): item is ApiEntity => item !== null && typeof item === 'object') : [];
 };
 
 const readNumber = (entity: ApiEntity, keys: string[], fallback = 0) => {
@@ -92,6 +106,17 @@ const normalizeKycStatus = (status: string): VenueOwner['kycStatus'] => {
   }
   if (value === 'rejected' || value === 'declined') {
     return 'rejected';
+  }
+  return 'pending';
+};
+
+const normalizeVenueStatus = (status: string): Venue['status'] => {
+  const value = status.toLowerCase();
+  if (value === 'approved') {
+    return 'approved';
+  }
+  if (value === 'rejected' || value === 'suspended' || value === 'blocked') {
+    return 'blocked';
   }
   return 'pending';
 };
@@ -155,6 +180,54 @@ const normalizeOwner = (entity: ApiEntity, index: number): VenueOwner => {
   };
 };
 
+const normalizeVenue = (entity: ApiEntity, index: number): Venue => {
+  const location = readRecord(entity, 'location');
+  const slots = readEntityArray(entity, 'slots');
+  const galleryImages = readEntityArray(entity, 'gallery_images');
+  const amenities = readEntityArray(entity, 'amenities')
+    .map((amenity) => readString(amenity, ['name']))
+    .filter(Boolean);
+  const locationLabel = [
+    readString(location, ['address']),
+    readString(location, ['city']),
+    readString(location, ['state']),
+    readString(location, ['country']),
+    readString(location, ['pincode'])
+  ].filter(Boolean).join(', ');
+  const coverImage = readString(entity, ['cover_image_url', 'coverImageUrl']);
+  const photos = [
+    coverImage,
+    ...galleryImages.map((image) => readString(image, ['image_url', 'imageUrl']))
+  ].filter((photo) => photo && photo !== 'string');
+  const slotPrices = slots
+    .map((slot) => readNumber(slot, ['price']))
+    .filter((price) => price > 0);
+  const lowestSlotPrice = slotPrices.length > 0 ? Math.min(...slotPrices) : 0;
+  const venueName = readString(entity, ['venue_name', 'venueName', 'name'], `Venue ${index + 1}`);
+  const ownerId = readString(entity, ['owner_id', 'ownerId']);
+
+  return {
+    id: readString(entity, ['id', '_id', 'venueId'], `VEN-${String(index + 1).padStart(3, '0')}`),
+    name: venueName,
+    ownerId,
+    ownerName: readString(entity, ['owner_name', 'ownerName'], ownerId || 'Unassigned Owner'),
+    location: locationLabel || readString(entity, ['location'], 'Location not available'),
+    capacity: readNumber(entity, ['max_capacity', 'maxCapacity', 'capacity']),
+    pricePerDay: lowestSlotPrice,
+    amenities: amenities.length > 0 ? amenities : ['Amenities not listed'],
+    photos: photos.length > 0 ? photos : [DEFAULT_VENUE_PHOTO],
+    status: normalizeVenueStatus(readString(entity, ['status', 'verification_status'], 'draft')),
+    featured: Boolean(entity.is_featured ?? entity.featured),
+    availability: {
+      days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      bookedDates: []
+    },
+    reviews: [],
+    bookingCount: readNumber(entity, ['booking_count', 'bookingCount']),
+    revenue: 0
+  };
+};
+
 const getJson = async (endpoint: string) => {
   const response = await fetch(buildUrl(endpoint), {
     headers: {
@@ -195,6 +268,14 @@ export const fetchAdminDirectoryData = async (): Promise<AdminDirectoryData> => 
   return {
     customers: usersPayload ? readArray(usersPayload).map(normalizeCustomer) : undefined,
     owners: ownersPayload ? readArray(ownersPayload).map(normalizeOwner) : undefined
+  };
+};
+
+export const fetchAdminVenuesData = async (): Promise<AdminVenuesData> => {
+  const venuesPayload = await getJson(VENUES_ENDPOINT);
+
+  return {
+    venues: readArray(venuesPayload).map(normalizeVenue)
   };
 };
 
