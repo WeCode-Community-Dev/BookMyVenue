@@ -14,6 +14,7 @@ import {
   BOOKING_STATUS_STYLE, Venue, User,
 } from "../data";
 import { ChartTooltip } from "../ChartTooltip";
+import { VerificationStatus } from "@bookmyvenue/database/enums";
 
 interface OverviewPageProps {
   venues: Venue[];
@@ -25,7 +26,7 @@ export function OverviewPage({ venues, users, totalRevenue }: OverviewPageProps)
   const STATS = [
     { label: "Total Revenue", value: fmt(totalRevenue), change: "+18%", up: true, icon: IndianRupee, color: "text-emerald-600 bg-emerald-50" },
     { label: "Total Bookings", value: BOOKINGS.length, change: "+12%", up: true, icon: CalendarCheck, color: "text-blue-600 bg-blue-50" },
-    { label: "Approved Venues", value: venues.filter(v => v.status === "Approved").length, change: "+5%", up: true, icon: Building2, color: "text-primary bg-primary/10" },
+    { label: "Approved Venues", value: venues.filter(v => v.status === VerificationStatus.APPROVED).length, change: "+5%", up: true, icon: Building2, color: "text-primary bg-primary/10" },
     { label: "Registered Users", value: users.length, change: "+23%", up: true, icon: Users, color: "text-purple-600 bg-purple-50" },
   ];
 

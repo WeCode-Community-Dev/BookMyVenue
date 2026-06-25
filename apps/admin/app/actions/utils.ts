@@ -1,8 +1,7 @@
 import { VenueCategory, VerificationStatus } from "@bookmyvenue/database";
-import { VenueStatus } from "../../components/data";
 import { Venue } from "./venue";
 
-export const SELECT = {
+export const SELECT_VENUE= {
     id: true,
     name: true,
     description: true,
@@ -12,8 +11,8 @@ export const SELECT = {
     capacity: true,
     images: true,
     amenities: true,
-    verificationStatus: true,
     isActive: true,
+    verificationStatus: true,
     createdAt: true,
     owner: { select: { email: true } },
     sessions: {
@@ -31,13 +30,6 @@ export const SELECT = {
     _count: { select: { bookings: true } },
 } as const;
 
-function deriveStatus(verificationStatus: VerificationStatus, isActive: boolean): VenueStatus {
-    if (verificationStatus === VerificationStatus.REJECTED) return "Rejected";
-    if (!isActive) return "Inactive";
-    if (verificationStatus === VerificationStatus.PENDING) return "Pending";
-    return "Approved";
-}
-
 export function mapVenue(v: {
     id: number;
     name: string;
@@ -48,14 +40,14 @@ export function mapVenue(v: {
     capacity: number;
     images: string[];
     amenities: string[];
-    verificationStatus: VerificationStatus;
     isActive: boolean;
+    verificationStatus: VerificationStatus;
     createdAt: Date;
     owner: { email: string };
     sessions: { id: number; label: string; startTime: string; endTime: string; price: number; isActive: boolean }[];
     reviews: { rating: number }[];
     _count: { bookings: number };
-}, status?: VenueStatus): Venue {
+}): Venue {
     return {
         id: String(v.id),
         name: v.name,
@@ -65,7 +57,8 @@ export function mapVenue(v: {
         district: v.district,
         category: v.category,
         capacity: v.capacity,
-        status: status ?? deriveStatus(v.verificationStatus, v.isActive),
+        isActive: v.isActive,
+        status: v.verificationStatus,
         submitted: v.createdAt.toISOString().split("T")[0]!,
         rating: v.reviews.length ? v.reviews.reduce((sum, r) => sum + r.rating, 0) / v.reviews.length : 0,
         bookings: v._count.bookings,

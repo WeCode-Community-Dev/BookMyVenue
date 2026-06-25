@@ -9,7 +9,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "./ui/dialog";
-import { VENUE_STATUS_STYLE } from "./data";
+import { VENUE_STATUS_STYLE, VENUE_STATUS_LABEL } from "./data";
 import type { Venue } from "../app/actions/venue";
 
 interface Props {
@@ -66,7 +66,7 @@ export function VenueDetailModal({ venue, onClose }: Props) {
                         <div className="flex items-start justify-between gap-3 pr-6">
                             <DialogTitle className="text-xl">{venue.name}</DialogTitle>
                             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border shrink-0 ${VENUE_STATUS_STYLE[venue.status]}`}>
-                                {venue.status}
+                                {VENUE_STATUS_LABEL[venue.status]}
                             </span>
                         </div>
                     </DialogHeader>

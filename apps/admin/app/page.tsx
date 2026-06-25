@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Sidebar } from "../components/Sidebar";
 import { TopBar } from "../components/TopBar";
-import { OverviewTab } from "../components/tabs/Overview";
+import { OverviewPage } from "../components/tabs/Overview";
 
 import { Venue, User, USERS, BOOKINGS } from "../components/data";
 
@@ -36,7 +36,7 @@ export default function App() {
                 <TopBar setSidebarOpen={setSidebarOpen} />
 
                 <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-6">
-                    <OverviewTab venues={venues} users={users} totalRevenue={totalRevenue} />
+                    <OverviewPage venues={venues} users={users} totalRevenue={totalRevenue} />
                 </main>
             </div>
         </div>
