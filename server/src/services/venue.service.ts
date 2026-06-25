@@ -1,11 +1,17 @@
 import VenueModel from "../models/venue.model";
-import { NotFoundException } from "../utils/appError";
-import { CreateVenueInput } from "../validator/venue.validator";
+import { ForbiddenException, NotFoundException } from "../utils/appError";
+import { RoleEnum, RoleEnumType } from "../enums/user-enum";
+import { CreateVenueInput, UpdateVenueInput } from "../validator/venue.validator";
 
-// Validated venue fields (from the zod schema) plus the owner, which is set
-// from the authenticated user in the controller rather than the request body.
 type CreateVenueParams = CreateVenueInput & {
   owner: string;
+};
+
+type UpdateVenueParams = {
+  venueId: string;
+  userId: string;
+  role: RoleEnumType;
+  data: UpdateVenueInput;
 };
 
 export const createVenueService = async (data: CreateVenueParams) => {
@@ -18,6 +24,25 @@ export const getVenueByIdService = async (venueId: string) => {
   if (!venue) {
     throw new NotFoundException("Venue not found");
   }
+
+  return venue;
+};
+
+export const updateVenueService = async ({ venueId, userId, role, data }: UpdateVenueParams) => {
+  const venue = await VenueModel.findById(venueId);
+  if (!venue) {
+    throw new NotFoundException("Venue not found");
+  }
+
+  // Owners can only update their own venue and admin can update any venue.
+  const isOwner = venue.owner.toString() === userId;
+  const isAdmin = role === RoleEnum.ADMIN;
+  if (!isOwner && !isAdmin) {
+    throw new ForbiddenException("You can only update your own venue");
+  }
+
+  Object.assign(venue, data);
+  await venue.save();
 
   return venue;
 };

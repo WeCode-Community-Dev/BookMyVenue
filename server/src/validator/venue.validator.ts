@@ -9,23 +9,36 @@ const timeOfDay = z
   .min(0, "cannot be before 00:00")
   .max(MINUTES_IN_DAY, "cannot be after 24:00");
 
-export const createVenueSchema = z
-  .object({
-    name: z.string().trim().min(1, "name is required"),
-    description: z.string().trim().optional(),
-    venueType: z.enum(VenueTypeEnum, { message: "venueType is invalid" }),
-    address: z.string().trim().optional(),
-    city: z.string().trim().optional(),
-    capacity: z.number().int().positive("capacity must be a positive number").optional(),
-    pricePerHour: z.number().nonnegative("pricePerHour must be zero or greater"),
-    openingTime: timeOfDay,
-    closingTime: timeOfDay,
-    images: z.array(z.url("each image must be a valid URL")).optional(),
-    amenities: z.array(z.string().trim().min(1)).optional(),
-  })
-  .refine((data) => data.openingTime < data.closingTime, {
-    message: "openingTime must be before closingTime",
-    path: ["closingTime"],
-  });
+const venueFields = {
+  name: z.string().trim().min(1, "name is required"),
+  description: z.string().trim().optional(),
+  venueType: z.enum(VenueTypeEnum, { message: "venueType is invalid" }),
+  address: z.string().trim().optional(),
+  city: z.string().trim().optional(),
+  capacity: z.number().int().positive("capacity must be a positive number").optional(),
+  pricePerHour: z.number().nonnegative("pricePerHour must be zero or greater"),
+  openingTime: timeOfDay,
+  closingTime: timeOfDay,
+  images: z.array(z.url("each image must be a valid URL")).optional(),
+  amenities: z.array(z.string().trim().min(1)).optional(),
+};
+
+export const createVenueSchema = z.object(venueFields).refine(
+  (data) => data.openingTime < data.closingTime,
+  { message: "openingTime must be before closingTime", path: ["closingTime"] },
+);
+
+// All fields optional for updates; the time check only applies when both are sent.
+export const updateVenueSchema = z
+  .object(venueFields)
+  .partial()
+  .refine(
+    (data) =>
+      data.openingTime === undefined ||
+      data.closingTime === undefined ||
+      data.openingTime < data.closingTime,
+    { message: "openingTime must be before closingTime", path: ["closingTime"] },
+  );
 
 export type CreateVenueInput = z.infer<typeof createVenueSchema>;
+export type UpdateVenueInput = z.infer<typeof updateVenueSchema>;
