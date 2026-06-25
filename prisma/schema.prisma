@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  OWNER
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String
+  email        String   @unique
+  mobileNumber String   @map("mobile_number")
+  passwordHash String   @map("password_hash")
+  role         Role     @default(CUSTOMER)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  venues   Venue[]
+  bookings Booking[]
+
+  @@map("users")
+}
+
+model Venue {
+  id           Int      @id @default(autoincrement())
+  ownerId      Int      @map("owner_id")
+  name         String
+  description  String?
+  pricePerHour Decimal  @map("price_per_hour") @db.Decimal(10, 2)
+  city         String
+  district     String
+  state        String
+  latitude     Decimal  @db.Decimal(10, 7)
+  longitude    Decimal  @db.Decimal(10, 7)
+  country      String
+  capacity     Int
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  owner     User             @relation(fields: [ownerId], references: [id])
+  amenities VenueAmenities?
+  bookings  Booking[]
+
+  @@index([ownerId])
+  @@map("venues")
+}
+
+model VenueAmenities {
+  id                 Int     @id @default(autoincrement())
+  venueId            Int     @unique @map("venue_id")
+  parking            Boolean @default(false)
+  parkingSize        Int?    @map("parking_size")
+  airConditioning    Boolean @default(false)
+  petsAllowed        Boolean @default(false) @map("pets_allowed")
+  outsideFoodAllowed Boolean @default(false) @map("outside_food_allowed")
+  catering           Boolean @default(false)
+  cafeteria          Boolean @default(false)
+  stage              Boolean @default(false)
+  swimmingPool       Boolean @default(false) @map("swimming_pool")
+  wifi               Boolean @default(false)
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@map("venue_amenities")
+}
+
+model Booking {
+  id          Int           @id @default(autoincrement())
+  userId      Int           @map("user_id")
+  venueId     Int           @map("venue_id")
+  bookingFrom DateTime      @map("booking_from")
+  bookingTo   DateTime      @map("booking_to")
+  totalPrice  Decimal       @map("total_price") @db.Decimal(10, 2)
+  status      BookingStatus @default(CONFIRMED)
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id])
+  venue Venue @relation(fields: [venueId], references: [id])
+
+  @@index([venueId, bookingFrom, bookingTo])
+  @@map("bookings")
+}
