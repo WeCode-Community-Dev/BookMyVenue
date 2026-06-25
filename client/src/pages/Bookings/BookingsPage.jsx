@@ -72,23 +72,8 @@ export default function BookingsPage() {
       const bRes = await bookingService.getMyBookings();
       setBookings(bRes.data.bookings || []);
 
-      const savedLat = localStorage.getItem('user_latitude');
-      const savedLng = localStorage.getItem('user_longitude');
-      const savedName = localStorage.getItem('user_location_name');
-
-      if (savedLat && savedLng) {
-        const lat = parseFloat(savedLat);
-        const lng = parseFloat(savedLng);
-        setGeoLoc({ lat, lng });
-        setUseGeo(true);
-        setLocationSearch(savedName || 'My Location');
-        setSelectedLocationName(savedName || 'My Location');
-        const vRes = await venueService.getNearby(lat, lng, radius);
-        setVenues(vRes.data || []);
-      } else {
-        const vRes = await venueService.getAll();
-        setVenues(vRes.data.venues || []);
-      }
+      const vRes = await venueService.getAll();
+      setVenues(vRes.data.venues || []);
       setLoading(false);
     } catch {
       toast.error('Failed to load accounts and listings data');
@@ -273,9 +258,9 @@ export default function BookingsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-20 flex">
+    <div className="min-h-screen bg-slate-50 pt-16 flex">
       {/* Left Sidebar Layout */}
-      <aside className="w-64 bg-white border-r border-slate-200/80 hidden md:flex flex-col shrink-0 fixed bottom-0 top-20 left-0 z-10">
+      <aside className="w-64 bg-white border-r border-slate-200/80 hidden md:flex flex-col shrink-0 fixed bottom-0 top-16 left-0 z-10">
         <div className="p-6 border-b border-slate-100 flex items-center gap-2.5">
           <div className="p-2 bg-primary/10 text-primary rounded-xl">
             <MdDashboard className="text-xl" />
@@ -319,11 +304,10 @@ export default function BookingsPage() {
         </nav>
       </aside>
 
-      {/* Mobile Top Tabs (Visible only on mobile devices) */}
-      <div className="md:hidden w-full bg-white border-b border-slate-200/80 fixed top-20 left-0 right-0 z-10 flex overflow-x-auto gap-2 p-3">
+      <div className="md:hidden w-full bg-white border-b border-slate-200/80 fixed top-16 left-0 right-0 z-10 flex overflow-x-auto no-scrollbar gap-2 p-3">
         <button
           onClick={() => navigate('?tab=venues')}
-          className={`py-2 px-4 text-xs font-bold rounded-lg border transition-all shrink-0 ${
+          className={`flex-1 text-center py-2 px-3 text-xs font-bold rounded-lg border transition-all shrink-0 ${
             activeTab === 'venues'
               ? 'bg-primary text-white border-primary shadow-sm'
               : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
@@ -333,7 +317,7 @@ export default function BookingsPage() {
         </button>
         <button
           onClick={() => navigate('?tab=bookings')}
-          className={`py-2 px-4 text-xs font-bold rounded-lg border transition-all shrink-0 ${
+          className={`flex-1 text-center py-2 px-3 text-xs font-bold rounded-lg border transition-all shrink-0 ${
             activeTab === 'bookings'
               ? 'bg-primary text-white border-primary shadow-sm'
               : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
@@ -343,7 +327,7 @@ export default function BookingsPage() {
         </button>
         <button
           onClick={() => navigate('?tab=spending')}
-          className={`py-2 px-4 text-xs font-bold rounded-lg border transition-all shrink-0 ${
+          className={`flex-1 text-center py-2 px-3 text-xs font-bold rounded-lg border transition-all shrink-0 ${
             activeTab === 'spending'
               ? 'bg-primary text-white border-primary shadow-sm'
               : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
@@ -354,7 +338,7 @@ export default function BookingsPage() {
       </div>
 
       {/* Right Content Frame */}
-      <main className="flex-grow md:ml-64 p-6 sm:p-10 overflow-x-hidden pt-36 md:pt-10">
+      <main className="flex-grow md:ml-64 p-6 sm:p-10 overflow-x-hidden pt-20 md:pt-10">
         
         {/* Tab 1: Discover Venues */}
         {activeTab === 'venues' && (
@@ -415,7 +399,7 @@ export default function BookingsPage() {
                     <input
                       type="text"
                       className="w-full py-2.5 pl-9 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all placeholder:text-slate-400"
-                      placeholder="e.g. Manimala, Charuvely..."
+                      placeholder="kochi,kochi"
                       value={locationSearch}
                       onChange={e => handleLocationSearchChange(e.target.value)}
                     />
@@ -448,7 +432,7 @@ export default function BookingsPage() {
                 </div>
 
                 {/* Row 2: Space Type + Min Seating + Max Price + Radius + Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 pt-3 border-t border-slate-100 items-end">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-slate-100 items-end">
                   {/* Space Type */}
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Space Type</label>
@@ -517,11 +501,13 @@ export default function BookingsPage() {
                   </div>
 
                   {/* Device GPS Discovery + Reset Actions */}
-                  <div className="flex gap-2 items-center justify-end h-10">
+                  <div className={`flex gap-2 items-center justify-end h-10 ${
+                    !(searchQuery || venueType || minCapacity || maxPrice || locationSearch || radius !== 50) ? 'md:hidden' : ''
+                  }`}>
                     <button
                       type="button"
                       onClick={handleGeoDiscovery}
-                      className="h-10 py-2.5 px-4 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shadow-primary/10 border border-primary w-full"
+                      className="md:hidden h-10 py-2.5 px-4 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shadow-primary/10 border border-primary w-full"
                       title="Find venues near me using browser GPS"
                     >
                       <MdMyLocation className="text-sm animate-pulse" /> Location
@@ -708,8 +694,17 @@ export default function BookingsPage() {
                               <h3 className="text-lg font-black text-slate-900 mb-3">{booking.venue?.venueName}</h3>
 
                               <div className="flex flex-wrap gap-4 text-xs text-slate-500">
-                                <span className="flex items-center gap-1.5"><MdCalendarToday className="text-primary" /> {booking.bookingDate}</span>
-                                <span className="flex items-center gap-1.5"><MdOutlineAccessTime className="text-secondary" /> {formatTime12Hour(booking.startTime)} - {formatTime12Hour(booking.endTime)}</span>
+                                <span className="flex items-center gap-1.5">
+                                  <MdCalendarToday className="text-primary" /> 
+                                  {booking.bookingDate}
+                                  {booking.endDate && booking.endDate !== booking.bookingDate ? ` to ${booking.endDate}` : ''}
+                                </span>
+                                {booking.venue?.pricingUnit !== 'day' && (
+                                  <span className="flex items-center gap-1.5">
+                                    <MdOutlineAccessTime className="text-secondary" /> 
+                                    {formatTime12Hour(booking.startTime)} - {formatTime12Hour(booking.endTime)}
+                                  </span>
+                                )}
                                 <span className="flex items-center gap-1.5"><MdCurrencyRupee className="text-emerald-600 font-bold text-sm" />{Number(booking.totalAmount).toLocaleString('en-IN')}</span>
                               </div>
 
@@ -758,48 +753,78 @@ export default function BookingsPage() {
             </div>
 
             <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/50 border-b border-slate-200/60">
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Venue Name</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Date Scheduled</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Time Slot</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Cost Paid</th>
-                      <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {confirmedBookings.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-12 text-center text-slate-400 text-xs italic">
-                          No spent transactions registered yet.
-                        </td>
-                      </tr>
-                    ) : (
-                      confirmedBookings.map((b) => (
-                        <tr key={b.id} className="hover:bg-slate-50/40">
-                          <td className="px-6 py-4 text-xs font-semibold text-slate-900">
-                            {b.venue?.venueName}
-                          </td>
-                          <td className="px-6 py-4 text-xs text-slate-500">
-                            {b.bookingDate}
-                          </td>
-                          <td className="px-6 py-4 text-xs text-slate-400 font-mono">
-                            {formatTime12Hour(b.startTime)} - {formatTime12Hour(b.endTime)}
-                          </td>
-                          <td className="px-6 py-4 text-xs text-slate-900 font-bold">
+              {confirmedBookings.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 text-xs italic">
+                  No spent transactions registered yet.
+                </div>
+              ) : (
+                <>
+                  {/* Mobile & Tablet Card View */}
+                  <div className="block md:hidden divide-y divide-slate-100">
+                    {confirmedBookings.map((b) => (
+                      <div key={b.id} className="p-4 flex flex-col gap-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="text-xs font-bold text-slate-900">{b.venue?.venueName}</h4>
+                            <p className="text-[10px] text-slate-500 mt-1">
+                              {b.bookingDate}
+                              {b.endDate && b.endDate !== b.bookingDate ? ` to ${b.endDate}` : ''}
+                            </p>
+                          </div>
+                          <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold uppercase shrink-0">
+                            Paid
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center mt-1 pt-1 border-t border-slate-50">
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            {b.venue?.pricingUnit === 'day' ? 'Full Day' : `${formatTime12Hour(b.startTime)} - ${formatTime12Hour(b.endTime)}`}
+                          </span>
+                          <span className="text-xs font-black text-slate-950">
                             ₹{Number(b.totalAmount).toLocaleString('en-IN')}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold uppercase">Paid</span>
-                          </td>
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50/50 border-b border-slate-200/60">
+                          <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Venue Name</th>
+                          <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Date Scheduled</th>
+                          <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Time Slot</th>
+                          <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Cost Paid</th>
+                          <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {confirmedBookings.map((b) => (
+                          <tr key={b.id} className="hover:bg-slate-50/40">
+                            <td className="px-6 py-4 text-xs font-semibold text-slate-900">
+                              {b.venue?.venueName}
+                            </td>
+                            <td className="px-6 py-4 text-xs text-slate-500">
+                              {b.bookingDate}
+                              {b.endDate && b.endDate !== b.bookingDate ? ` to ${b.endDate}` : ''}
+                            </td>
+                            <td className="px-6 py-4 text-xs text-slate-400 font-mono">
+                              {b.venue?.pricingUnit === 'day' ? 'Full Day' : `${formatTime12Hour(b.startTime)} - ${formatTime12Hour(b.endTime)}`}
+                            </td>
+                            <td className="px-6 py-4 text-xs text-slate-900 font-bold">
+                              ₹{Number(b.totalAmount).toLocaleString('en-IN')}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold uppercase">Paid</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

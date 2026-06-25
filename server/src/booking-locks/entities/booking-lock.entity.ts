@@ -31,6 +31,9 @@ export class BookingLock {
   @Column({ type: 'date' })
   bookingDate: string;
 
+  @Column({ type: 'date', nullable: true })
+  endDate: string;
+
   @Column({ type: 'time' })
   startTime: string;
 

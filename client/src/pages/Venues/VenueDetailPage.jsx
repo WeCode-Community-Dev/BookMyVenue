@@ -53,6 +53,7 @@ export default function VenueDetailPage() {
 
   // Booking / Locking States
   const [bookingDate, setBookingDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [startTime, setStartTime] = useState('10:00');
   const [endTime, setEndTime] = useState('12:00');
   const [guestCount, setGuestCount] = useState(1);
@@ -70,14 +71,20 @@ export default function VenueDetailPage() {
 
   // Custom Interactive Calendar dropdown states & refs
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [endCalendarOpen, setEndCalendarOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [endCurrentMonth, setEndCurrentMonth] = useState(new Date());
   const calendarRef = useRef(null);
+  const endCalendarRef = useRef(null);
 
   // Click outside custom calendar listener
   useEffect(() => {
     function handleClickOutside(event) {
       if (calendarRef.current && !calendarRef.current.contains(event.target)) {
         setCalendarOpen(false);
+      }
+      if (endCalendarRef.current && !endCalendarRef.current.contains(event.target)) {
+        setEndCalendarOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -344,6 +351,16 @@ export default function VenueDetailPage() {
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  const getNextDayStr = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + 1);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
   const handleDateChange = (val) => {
     if (!val) {
       setBookingDate('');
@@ -362,7 +379,7 @@ export default function VenueDetailPage() {
     const dateObj = new Date(val);
     const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
-    // Check if venue is open on this day
+    // Check if venue is open on this day (only check start date)
     const isWorkingDay = venue?.workingDays?.some(d => {
       if (typeof d === 'string') return d.toLowerCase() === dayName;
       if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
@@ -380,6 +397,11 @@ export default function VenueDetailPage() {
       return;
     }
 
+    setBookingDate(val);
+    if (!endDate || endDate < val) {
+      setEndDate(val);
+    }
+
     // Pre-populate time inputs based on venue operating hours for this specific day
     const dayConfig = venue?.workingDays?.find(d => {
       if (typeof d === 'string') return d.toLowerCase() === dayName;
@@ -394,8 +416,29 @@ export default function VenueDetailPage() {
       setStartTime('09:00');
       setEndTime('22:00');
     }
+  };
 
-    setBookingDate(val);
+  const handleEndDateChange = (val) => {
+    if (!val) {
+      setEndDate('');
+      return;
+    }
+
+    const d = new Date();
+    const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (val < todayStr) {
+      toast.error('Cannot book a date in the past');
+      setEndDate('');
+      return;
+    }
+
+    if (bookingDate && val < bookingDate) {
+      toast.error('End date cannot be before start date');
+      setEndDate('');
+      return;
+    }
+
+    setEndDate(val);
   };
 
   const handleAcquireLock = async () => {
@@ -404,10 +447,25 @@ export default function VenueDetailPage() {
       return navigate('/login');
     }
     if (!bookingDate) return toast.error('Please choose a date first');
-    if (!startTime || !endTime) return toast.error('Please choose time slots');
 
-    if (startTime >= endTime) {
-      return toast.error('Start time must be before end time');
+    let finalEndDate = bookingDate;
+    let finalStartTime = startTime;
+    let finalEndTime = endTime;
+
+    if (venue?.pricingUnit === 'day') {
+      if (!endDate) return toast.error('Please choose an end date first');
+      if (endDate < bookingDate) {
+        return toast.error('End date cannot be before start date');
+      }
+      finalEndDate = endDate;
+      finalStartTime = venue.openingTime || '00:00';
+      finalEndTime = venue.closingTime || '23:59';
+    } else {
+      if (!startTime || !endTime) return toast.error('Please choose time slots');
+      if (endTime < startTime) {
+        // Overnight booking: end date is next day
+        finalEndDate = getNextDayStr(bookingDate);
+      }
     }
 
     // Validate that the slot is not in the past
@@ -421,7 +479,7 @@ export default function VenueDetailPage() {
       return toast.error('Cannot book a slot in the past');
     }
 
-    if (bookingDate === todayStr) {
+    if (bookingDate === todayStr && venue?.pricingUnit !== 'day') {
       const currentHours = String(now.getHours()).padStart(2, '0');
       const currentMinutes = String(now.getMinutes()).padStart(2, '0');
       const currentTimeStr = `${currentHours}:${currentMinutes}`;
@@ -436,48 +494,60 @@ export default function VenueDetailPage() {
       return toast.error('This date is temporarily blocked by the venue owner.');
     }
 
-    // Retrieve allowed timings for the selected date
-    const dateObj = new Date(bookingDate);
-    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-    
-    const dayConfig = venue?.workingDays?.find(d => {
-      if (typeof d === 'string') return d.toLowerCase() === dayName;
-      if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
-      return false;
-    });
-
-    let allowedStart = '09:00';
-    let allowedEnd = '22:00';
-
-    if (dayConfig && typeof dayConfig === 'object' && dayConfig !== null) {
-      allowedStart = dayConfig.start || allowedStart;
-      allowedEnd = dayConfig.end || allowedEnd;
-    } else {
-      allowedStart = venue?.openingTime || allowedStart;
-      allowedEnd = venue?.closingTime || allowedEnd;
+    // Verify end date is not blocked (if multi-day)
+    if (finalEndDate !== bookingDate) {
+      const isEndBlocked = blockedDates.some(bd => bd.blockedDate === finalEndDate);
+      if (isEndBlocked) {
+        return toast.error('The end date is temporarily blocked by the venue owner.');
+      }
     }
 
-    if (startTime < allowedStart || endTime > allowedEnd) {
-      const formatTime12 = (timeStr) => {
-        if (!timeStr) return '';
-        const [hStr, mStr] = timeStr.split(':');
-        const h = parseInt(hStr, 10);
-        const ampm = h >= 12 ? 'pm' : 'am';
-        const displayH = h % 12 === 0 ? 12 : h % 12;
-        return `${displayH}:${mStr} ${ampm}`;
-      };
+    // Retrieve allowed timings for the selected date (only for single-day hourly bookings)
+    const isSingleDay = finalEndDate === bookingDate;
+    if (isSingleDay && venue?.pricingUnit !== 'day') {
+      const dateObj = new Date(bookingDate);
+      const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      
+      const dayConfig = venue?.workingDays?.find(d => {
+        if (typeof d === 'string') return d.toLowerCase() === dayName;
+        if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
+        return false;
+      });
 
-      return toast.error(
-        `Selected timings must be within operational hours: ${formatTime12(allowedStart)} to ${formatTime12(allowedEnd)}`
-      );
+      let allowedStart = '09:00';
+      let allowedEnd = '22:00';
+
+      if (dayConfig && typeof dayConfig === 'object' && dayConfig !== null) {
+        allowedStart = dayConfig.start || allowedStart;
+        allowedEnd = dayConfig.end || allowedEnd;
+      } else {
+        allowedStart = venue?.openingTime || allowedStart;
+        allowedEnd = venue?.closingTime || allowedEnd;
+      }
+
+      if (startTime < allowedStart || endTime > allowedEnd) {
+        const formatTime12 = (timeStr) => {
+          if (!timeStr) return '';
+          const [hStr, mStr] = timeStr.split(':');
+          const h = parseInt(hStr, 10);
+          const ampm = h >= 12 ? 'pm' : 'am';
+          const displayH = h % 12 === 0 ? 12 : h % 12;
+          return `${displayH}:${mStr} ${ampm}`;
+        };
+
+        return toast.error(
+          `Selected timings must be within operational hours: ${formatTime12(allowedStart)} to ${formatTime12(allowedEnd)}`
+        );
+      }
     }
 
     try {
       const res = await bookingService.lockSlot({
         venueId: id,
         bookingDate,
-        startTime,
-        endTime,
+        endDate: finalEndDate,
+        startTime: finalStartTime,
+        endTime: finalEndTime,
       });
       startLockTimer(res.data);
       toast.success('Slot locked! Complete your booking details.');
@@ -509,9 +579,10 @@ export default function VenueDetailPage() {
     try {
       await bookingService.create({
         venueId: id,
-        bookingDate,
-        startTime,
-        endTime,
+        bookingDate: activeLock.bookingDate,
+        endDate: activeLock.endDate || activeLock.bookingDate,
+        startTime: activeLock.startTime,
+        endTime: activeLock.endTime,
         guestCount,
         lockId: activeLock.id,
         purpose: purpose.trim(),
@@ -519,7 +590,7 @@ export default function VenueDetailPage() {
       clearInterval(timerRef.current);
       updateActiveLock(null);
       setPurpose('');
-      toast.success('Booking requested successfully!');
+      toast.success('Booking confirmed successfully!');
       navigate('/bookings?tab=bookings');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Booking failed.');
@@ -608,17 +679,28 @@ export default function VenueDetailPage() {
   // Calculate dynamic hour estimation and total price
   let estimatedHours = 0;
   let estimatedPrice = 0;
-  if (startTime && endTime) {
-    const [startH, startM] = startTime.split(':').map(Number);
-    const [endH, endM] = endTime.split(':').map(Number);
-    const startDec = startH + (startM || 0) / 60;
-    const endDec = endH + (endM || 0) / 60;
-    if (endDec > startDec) {
-      estimatedHours = endDec - startDec;
-      if (venue?.pricingUnit === 'day') {
-        estimatedPrice = Number(venue?.pricePerDay || 0);
-      } else {
-        estimatedPrice = estimatedHours * (venue?.pricePerHour || 0);
+  let calculatedDays = 1;
+
+  if (venue?.pricingUnit === 'day') {
+    if (bookingDate && endDate) {
+      const startMs = new Date(`${bookingDate}T00:00:00`).getTime();
+      const endMs = new Date(`${endDate}T00:00:00`).getTime();
+      if (endMs >= startMs) {
+        calculatedDays = Math.round((endMs - startMs) / (1000 * 60 * 60 * 24)) + 1;
+        estimatedPrice = calculatedDays * Number(venue?.pricePerDay || 0);
+      }
+    } else if (bookingDate) {
+      estimatedPrice = Number(venue?.pricePerDay || 0);
+    }
+  } else {
+    // Hourly
+    if (bookingDate && startTime && endTime) {
+      const finalEndDate = endTime < startTime ? getNextDayStr(bookingDate) : bookingDate;
+      const startMs = new Date(`${bookingDate}T${startTime}`).getTime();
+      const endMs = new Date(`${finalEndDate}T${endTime}`).getTime();
+      if (endMs > startMs) {
+        estimatedHours = (endMs - startMs) / (1000 * 60 * 60);
+        estimatedPrice = estimatedHours * Number(venue?.pricePerHour || 0);
       }
     }
   }
@@ -808,16 +890,19 @@ export default function VenueDetailPage() {
                       <option value="1">⭐ (1)</option>
                     </select>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <input
                       type="text"
-                      className="flex-1 py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:border-primary"
+                      className="flex-1 min-w-0 py-2.5 px-3 bg-white border border-slate-200 rounded-xl text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:border-primary"
                       placeholder="Share your experience booking this venue..."
                       value={newComment}
                       onChange={e => setNewComment(e.target.value)}
                     />
-                    <button type="submit" className="p-2.5 rounded-lg bg-primary hover:bg-primary-dark text-white transition-colors cursor-pointer">
-                      <MdSend />
+                    <button
+                      type="submit"
+                      className="w-10 h-10 rounded-xl bg-primary hover:bg-primary-dark text-white transition-colors flex items-center justify-center shrink-0 cursor-pointer"
+                    >
+                      <MdSend className="text-sm" />
                     </button>
                   </div>
                 </form>
@@ -887,144 +972,321 @@ export default function VenueDetailPage() {
 
               {!activeLock ? (
                 <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-1 relative" ref={calendarRef}>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Booking Date</label>
-                    <div 
-                      className="relative cursor-pointer select-none"
-                      onClick={() => setCalendarOpen(!calendarOpen)}
-                    >
-                      <MdCalendarToday className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
-                      <div className="w-full py-2.5 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-all duration-200 min-h-[38px] flex items-center">
-                        {bookingDate ? formatSelectedDate(bookingDate) : <span className="text-slate-400">Choose booking date...</span>}
-                      </div>
-                    </div>
-
-                    {/* Custom Calendar Dropdown Card */}
-                    {calendarOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-4 select-none animate-in fade-in slide-in-from-top-1 duration-200">
-                        
-                        {/* Month Header Nav */}
-                        <div className="flex justify-between items-center mb-3">
-                          <button
-                            type="button"
-                            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 font-bold transition-colors cursor-pointer text-xs"
-                            onClick={() => {
-                              const prev = new Date(currentMonth);
-                              prev.setMonth(prev.getMonth() - 1);
-                              setCurrentMonth(prev);
-                            }}
-                          >
-                            ←
-                          </button>
-                          <span className="text-xs font-bold text-slate-800">
-                            {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                          </span>
-                          <button
-                            type="button"
-                            className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 font-bold transition-colors cursor-pointer text-xs"
-                            onClick={() => {
-                              const next = new Date(currentMonth);
-                              next.setMonth(next.getMonth() + 1);
-                              setCurrentMonth(next);
-                            }}
-                          >
-                            →
-                          </button>
+                  
+                  {venue?.pricingUnit === 'day' ? (
+                    <div className="flex flex-col gap-3">
+                      {/* Daily pricing: Start and End Dates */}
+                      <div className="flex flex-col gap-1 relative" ref={calendarRef}>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Start Date</label>
+                        <div 
+                          className="relative cursor-pointer select-none"
+                          onClick={() => setCalendarOpen(!calendarOpen)}
+                        >
+                          <MdCalendarToday className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                          <div className="w-full py-2.5 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-all duration-200 min-h-[38px] flex items-center">
+                            {bookingDate ? formatSelectedDate(bookingDate) : <span className="text-slate-400">Choose start date...</span>}
+                          </div>
                         </div>
 
-                        {/* Weekday headers */}
-                        <div className="grid grid-cols-7 text-center gap-1.5 mb-2">
-                          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d, i) => (
-                            <span key={i} className="text-[10px] font-bold text-slate-400">{d}</span>
-                          ))}
-                        </div>
-
-                        {/* Grid Days */}
-                        <div className="grid grid-cols-7 gap-1 text-center">
-                          {getDaysInMonth(currentMonth).map((dayDate, idx) => {
-                            if (!dayDate) return <div key={idx} />;
-
-                            const isOperational = isDateOperational(dayDate);
-                            const yearStr = dayDate.getFullYear();
-                            const monthStr = String(dayDate.getMonth() + 1).padStart(2, '0');
-                            const dayStrNum = String(dayDate.getDate()).padStart(2, '0');
-                            const dateStr = `${yearStr}-${monthStr}-${dayStrNum}`;
-                            const isSelected = bookingDate === dateStr;
-
-                            return (
+                        {/* Start Date Custom Calendar */}
+                        {calendarOpen && (
+                          <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-4 select-none animate-in fade-in slide-in-from-top-1 duration-200">
+                            <div className="flex justify-between items-center mb-3">
                               <button
-                                key={idx}
                                 type="button"
-                                disabled={!isOperational}
-                                className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
-                                  isSelected 
-                                    ? 'bg-primary text-white font-bold shadow-md shadow-primary/20 scale-105' 
-                                    : isOperational
-                                      ? 'hover:bg-slate-100 text-slate-800 hover:scale-105'
-                                      : 'opacity-15 text-slate-400 pointer-events-none bg-slate-50/50'
-                                }`}
+                                className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 font-bold transition-colors cursor-pointer text-xs"
                                 onClick={() => {
-                                  handleDateChange(dateStr);
-                                  setCalendarOpen(false);
+                                  const prev = new Date(currentMonth);
+                                  prev.setMonth(prev.getMonth() - 1);
+                                  setCurrentMonth(prev);
                                 }}
                               >
-                                {dayDate.getDate()}
+                                ←
                               </button>
-                            );
-                          })}
+                              <span className="text-xs font-bold text-slate-800">
+                                {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                              </span>
+                              <button
+                                type="button"
+                                className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 font-bold transition-colors cursor-pointer text-xs"
+                                onClick={() => {
+                                  const next = new Date(currentMonth);
+                                  next.setMonth(next.getMonth() + 1);
+                                  setCurrentMonth(next);
+                                }}
+                              >
+                                →
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-7 text-center gap-1.5 mb-2">
+                              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d, i) => (
+                                <span key={i} className="text-[10px] font-bold text-slate-400">{d}</span>
+                              ))}
+                            </div>
+
+                            <div className="grid grid-cols-7 gap-1 text-center">
+                              {getDaysInMonth(currentMonth).map((dayDate, idx) => {
+                                if (!dayDate) return <div key={idx} />;
+
+                                const isOperational = isDateOperational(dayDate);
+                                const yearStr = dayDate.getFullYear();
+                                const monthStr = String(dayDate.getMonth() + 1).padStart(2, '0');
+                                const dayStrNum = String(dayDate.getDate()).padStart(2, '0');
+                                const dateStr = `${yearStr}-${monthStr}-${dayStrNum}`;
+                                const isSelected = bookingDate === dateStr;
+
+                                return (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    disabled={!isOperational}
+                                    className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
+                                      isSelected 
+                                        ? 'bg-primary text-white font-bold shadow-md shadow-primary/20 scale-105' 
+                                        : isOperational
+                                          ? 'hover:bg-slate-100 text-slate-800 hover:scale-105'
+                                          : 'opacity-15 text-slate-400 pointer-events-none bg-slate-50/50'
+                                    }`}
+                                    onClick={() => {
+                                      handleDateChange(dateStr);
+                                      setCalendarOpen(false);
+                                    }}
+                                  >
+                                    {dayDate.getDate()}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-1 relative" ref={endCalendarRef}>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">End Date</label>
+                        <div 
+                          className="relative cursor-pointer select-none"
+                          onClick={() => setEndCalendarOpen(!endCalendarOpen)}
+                        >
+                          <MdCalendarToday className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                          <div className="w-full py-2.5 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-all duration-200 min-h-[38px] flex items-center">
+                            {endDate ? formatSelectedDate(endDate) : <span className="text-slate-400">Choose end date...</span>}
+                          </div>
+                        </div>
+
+                        {/* End Date Custom Calendar */}
+                        {endCalendarOpen && (
+                          <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-4 select-none animate-in fade-in slide-in-from-top-1 duration-200">
+                            <div className="flex justify-between items-center mb-3">
+                              <button
+                                type="button"
+                                className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 font-bold transition-colors cursor-pointer text-xs"
+                                onClick={() => {
+                                  const prev = new Date(endCurrentMonth);
+                                  prev.setMonth(prev.getMonth() - 1);
+                                  setEndCurrentMonth(prev);
+                                }}
+                              >
+                                ←
+                              </button>
+                              <span className="text-xs font-bold text-slate-800">
+                                {endCurrentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                              </span>
+                              <button
+                                type="button"
+                                className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 font-bold transition-colors cursor-pointer text-xs"
+                                onClick={() => {
+                                  const next = new Date(endCurrentMonth);
+                                  next.setMonth(next.getMonth() + 1);
+                                  setEndCurrentMonth(next);
+                                }}
+                              >
+                                →
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-7 text-center gap-1.5 mb-2">
+                              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d, i) => (
+                                <span key={i} className="text-[10px] font-bold text-slate-400">{d}</span>
+                              ))}
+                            </div>
+
+                            <div className="grid grid-cols-7 gap-1 text-center">
+                              {getDaysInMonth(endCurrentMonth).map((dayDate, idx) => {
+                                if (!dayDate) return <div key={idx} />;
+
+                                const isOperational = isDateOperational(dayDate);
+                                const yearStr = dayDate.getFullYear();
+                                const monthStr = String(dayDate.getMonth() + 1).padStart(2, '0');
+                                const dayStrNum = String(dayDate.getDate()).padStart(2, '0');
+                                const dateStr = `${yearStr}-${monthStr}-${dayStrNum}`;
+                                const isSelected = endDate === dateStr;
+                                const isBeforeStart = bookingDate && dateStr < bookingDate;
+
+                                return (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    disabled={!isOperational || isBeforeStart}
+                                    className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
+                                      isSelected 
+                                        ? 'bg-primary text-white font-bold shadow-md shadow-primary/20 scale-105' 
+                                        : isOperational && !isBeforeStart
+                                          ? 'hover:bg-slate-100 text-slate-800 hover:scale-105'
+                                          : 'opacity-15 text-slate-400 pointer-events-none bg-slate-50/50'
+                                    }`}
+                                    onClick={() => {
+                                      handleEndDateChange(dateStr);
+                                      setEndCalendarOpen(false);
+                                    }}
+                                  >
+                                    {dayDate.getDate()}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      {/* Hourly pricing: Single date + start/end times */}
+                      <div className="flex flex-col gap-1 relative" ref={calendarRef}>
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Booking Date</label>
+                        <div 
+                          className="relative cursor-pointer select-none"
+                          onClick={() => setCalendarOpen(!calendarOpen)}
+                        >
+                          <MdCalendarToday className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                          <div className="w-full py-2.5 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-all duration-200 min-h-[38px] flex items-center">
+                            {bookingDate ? formatSelectedDate(bookingDate) : <span className="text-slate-400">Choose booking date...</span>}
+                          </div>
+                        </div>
+
+                        {calendarOpen && (
+                          <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-4 select-none animate-in fade-in slide-in-from-top-1 duration-200">
+                            <div className="flex justify-between items-center mb-3">
+                              <button
+                                type="button"
+                                className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 font-bold transition-colors cursor-pointer text-xs"
+                                onClick={() => {
+                                  const prev = new Date(currentMonth);
+                                  prev.setMonth(prev.getMonth() - 1);
+                                  setCurrentMonth(prev);
+                                }}
+                              >
+                                ←
+                              </button>
+                              <span className="text-xs font-bold text-slate-800">
+                                {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                              </span>
+                              <button
+                                type="button"
+                                className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 font-bold transition-colors cursor-pointer text-xs"
+                                onClick={() => {
+                                  const next = new Date(currentMonth);
+                                  next.setMonth(next.getMonth() + 1);
+                                  setCurrentMonth(next);
+                                }}
+                              >
+                                →
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-7 text-center gap-1.5 mb-2">
+                              {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d, i) => (
+                                <span key={i} className="text-[10px] font-bold text-slate-400">{d}</span>
+                              ))}
+                            </div>
+
+                            <div className="grid grid-cols-7 gap-1 text-center">
+                              {getDaysInMonth(currentMonth).map((dayDate, idx) => {
+                                if (!dayDate) return <div key={idx} />;
+
+                                const isOperational = isDateOperational(dayDate);
+                                const yearStr = dayDate.getFullYear();
+                                const monthStr = String(dayDate.getMonth() + 1).padStart(2, '0');
+                                const dayStrNum = String(dayDate.getDate()).padStart(2, '0');
+                                const dateStr = `${yearStr}-${monthStr}-${dayStrNum}`;
+                                const isSelected = bookingDate === dateStr;
+
+                                return (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    disabled={!isOperational}
+                                    className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-all cursor-pointer ${
+                                      isSelected 
+                                        ? 'bg-primary text-white font-bold shadow-md shadow-primary/20 scale-105' 
+                                        : isOperational
+                                          ? 'hover:bg-slate-100 text-slate-800 hover:scale-105'
+                                          : 'opacity-15 text-slate-400 pointer-events-none bg-slate-50/50'
+                                    }`}
+                                    onClick={() => {
+                                      handleDateChange(dateStr);
+                                      setCalendarOpen(false);
+                                    }}
+                                  >
+                                    {dayDate.getDate()}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Start Time</label>
+                          <div className="relative">
+                            <MdOutlineAccessTime className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none z-10" />
+                            <select
+                              className="w-full py-2.5 pl-9 pr-6 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors appearance-none cursor-pointer"
+                              value={startTime}
+                              onChange={e => setStartTime(e.target.value)}
+                            >
+                              <option value="">Select start</option>
+                              {generateTimeOptions(allowedMinTime, allowedMaxTime).map(opt => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[9px]">▼</div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">End Time</label>
+                          <div className="relative">
+                            <MdOutlineAccessTime className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none z-10" />
+                            <select
+                              className="w-full py-2.5 pl-9 pr-6 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors appearance-none cursor-pointer"
+                              value={endTime}
+                              onChange={e => setEndTime(e.target.value)}
+                            >
+                              <option value="">Select end</option>
+                              {generateTimeOptions(allowedMinTime, allowedMaxTime).map(opt => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[9px]">▼</div>
+                          </div>
                         </div>
                       </div>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Start Time</label>
-                      <div className="relative">
-                        <MdOutlineAccessTime className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none z-10" />
-                        <select
-                          className="w-full py-2.5 pl-9 pr-6 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors appearance-none cursor-pointer"
-                          value={startTime}
-                          onChange={e => setStartTime(e.target.value)}
-                        >
-                          <option value="">Select start</option>
-                          {generateTimeOptions(allowedMinTime, allowedMaxTime).map(opt => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[9px]">▼</div>
-                      </div>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">End Time</label>
-                      <div className="relative">
-                        <MdOutlineAccessTime className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none z-10" />
-                        <select
-                          className="w-full py-2.5 pl-9 pr-6 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors appearance-none cursor-pointer"
-                          value={endTime}
-                          onChange={e => setEndTime(e.target.value)}
-                        >
-                          <option value="">Select end</option>
-                          {generateTimeOptions(allowedMinTime, allowedMaxTime).map(opt => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[9px]">▼</div>
-                      </div>
-                    </div>
-                  </div>
+                  )}
 
-                  {estimatedHours > 0 && (
+                  {estimatedPrice > 0 && (
                     <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex justify-between items-center text-xs animate-in fade-in duration-200 mt-1 mb-2 shadow-sm">
                       <div>
                         <span className="text-[10px] text-slate-400 font-bold block uppercase leading-none mb-1">Pricing Breakdown</span>
                         <span className="text-slate-600 font-semibold">
                           {venue?.pricingUnit === 'day' 
-                            ? `Full Day Access` 
+                            ? `${calculatedDays} ${calculatedDays === 1 ? 'Day' : 'Days'} Access` 
                             : `${estimatedHours.toFixed(1)} hrs @ ₹${Number(venue?.pricePerHour).toLocaleString('en-IN')}/hr`}
                         </span>
                       </div>
@@ -1094,17 +1356,24 @@ export default function VenueDetailPage() {
                     <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1 text-[10px] text-slate-600">
                       <div className="flex justify-between">
                         <span>Date:</span>
-                        <span className="text-slate-950 font-bold">{bookingDate}</span>
+                        <span className="text-slate-950 font-bold">
+                          {activeLock.bookingDate}
+                          {activeLock.endDate && activeLock.endDate !== activeLock.bookingDate ? ` to ${activeLock.endDate}` : ''}
+                        </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span>Time:</span>
-                        <span className="text-slate-950 font-bold">{startTime} - {endTime}</span>
-                      </div>
+                      
+                      {venue?.pricingUnit !== 'day' && (
+                        <div className="flex justify-between">
+                          <span>Time:</span>
+                          <span className="text-slate-950 font-bold">{activeLock.startTime} - {activeLock.endTime}</span>
+                        </div>
+                      )}
+                      
                       <div className="flex justify-between">
                         <span>Duration:</span>
                         <span className="text-slate-950 font-bold">
                           {venue?.pricingUnit === 'day' 
-                            ? `1 Day (₹${Number(venue?.pricePerDay || 0).toLocaleString('en-IN')}/day)` 
+                            ? `${calculatedDays} ${calculatedDays === 1 ? 'Day' : 'Days'} (₹${Number(venue?.pricePerDay || 0).toLocaleString('en-IN')}/day)` 
                             : `${estimatedHours.toFixed(1)} ${estimatedHours === 1 ? 'Hour' : 'Hours'} (₹${Number(venue?.pricePerHour || 0).toLocaleString('en-IN')}/hr)`}
                         </span>
                       </div>

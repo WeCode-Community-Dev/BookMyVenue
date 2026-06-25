@@ -222,7 +222,7 @@ export default function VenuesPage() {
                     <input
                       type="text"
                       className="w-full py-2 pl-9 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:border-primary focus:bg-white transition-colors"
-                      placeholder="e.g. Manimala, Charuvely..."
+                      placeholder="kochi,kochi"
                       value={locationSearch}
                       onChange={e => handleLocationSearchChange(e.target.value)}
                     />

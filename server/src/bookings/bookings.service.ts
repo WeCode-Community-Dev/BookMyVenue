@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Booking, BookingStatus } from './entities/booking.entity';
+import { Booking, BookingStatus, PaymentStatus } from './entities/booking.entity';
 import { BookingLock, LockStatus } from '../booking-locks/entities/booking-lock.entity';
 import { Venue, VenueStatus, PricingUnit } from '../venues/entities/venue.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -28,7 +28,7 @@ export class BookingsService {
   ) {}
 
   async create(createBookingDto: CreateBookingDto, userId: string) {
-    const { venueId, bookingDate, startTime, endTime, guestCount, lockId, purpose } = createBookingDto;
+    const { venueId, bookingDate, endDate, startTime, endTime, guestCount, lockId, purpose } = createBookingDto;
 
     const venue = await this.venuesRepository.findOne({ where: { id: venueId } });
     if (!venue) throw new NotFoundException('Venue not found');
@@ -57,11 +57,14 @@ export class BookingsService {
       throw new BadRequestException('This venue has been suspended by the platform administrator and is not accepting bookings.');
     }
 
-    const overlapBooking = await this.getConflictingBooking(venue, bookingDate, startTime, endTime);
+    const overlapBooking = await this.getConflictingBooking(venue, bookingDate, startTime, endTime, undefined, endDate);
     if (overlapBooking) {
       const formattedStart = this.formatTime12Hour(overlapBooking.startTime);
       const formattedEnd = this.formatTime12Hour(overlapBooking.endTime);
-      throw new ConflictException(`This slot is already booked from ${formattedStart} to ${formattedEnd}`);
+      const formattedDate = overlapBooking.endDate && overlapBooking.endDate !== overlapBooking.bookingDate
+        ? `${overlapBooking.bookingDate} to ${overlapBooking.endDate}`
+        : overlapBooking.bookingDate;
+      throw new ConflictException(`This slot is already booked on ${formattedDate} from ${formattedStart} to ${formattedEnd}`);
     }
 
     if (lockId) {
@@ -74,12 +77,16 @@ export class BookingsService {
     }
 
     let totalAmount = 0;
+    const finalEndDate = endDate || bookingDate;
     if (venue.pricingUnit === PricingUnit.DAY) {
-      totalAmount = Number(venue.pricePerDay || (venue.pricePerHour * 8));
+      const startMs = new Date(`${bookingDate}T00:00:00`).getTime();
+      const endMs = new Date(`${finalEndDate}T00:00:00`).getTime();
+      const days = Math.round((endMs - startMs) / (1000 * 60 * 60 * 24)) + 1;
+      totalAmount = days * Number(venue.pricePerDay || (venue.pricePerHour * 8));
     } else {
-      const startHour = this.parseTime(startTime);
-      const endHour = this.parseTime(endTime);
-      const hours = endHour - startHour;
+      const startMs = new Date(`${bookingDate}T${startTime}`).getTime();
+      const endMs = new Date(`${finalEndDate}T${endTime}`).getTime();
+      const hours = (endMs - startMs) / (1000 * 60 * 60);
       totalAmount = hours * Number(venue.pricePerHour);
     }
 
@@ -90,11 +97,13 @@ export class BookingsService {
       userId,
       venueId,
       bookingDate,
+      endDate: finalEndDate,
       startTime,
       endTime,
       guestCount: guestCount || 1,
       totalAmount,
-      bookingStatus: BookingStatus.PENDING,
+      bookingStatus: BookingStatus.CONFIRMED,
+      paymentStatus: PaymentStatus.PAID,
       purpose,
     });
 
@@ -219,18 +228,35 @@ export class BookingsService {
     return { bookedSlots: bookings, date: bookingDate };
   }
 
-  private async getConflictingBooking(venue: Venue, bookingDate: string, startTime: string, endTime: string, excludeId?: string): Promise<Booking | null> {
+  private async getConflictingBooking(
+    venue: Venue,
+    bookingDate: string,
+    startTime: string,
+    endTime: string,
+    excludeId?: string,
+    endDate?: string,
+  ): Promise<Booking | null> {
     const qb = this.bookingsRepository.createQueryBuilder('booking')
       .where('booking.venueId = :venueId', { venueId: venue.id })
-      .andWhere('booking.bookingDate = :bookingDate', { bookingDate })
       .andWhere('booking.bookingStatus IN (:...statuses)', { statuses: [BookingStatus.PENDING, BookingStatus.CONFIRMED] });
 
-    if (venue.pricingUnit !== PricingUnit.DAY) {
-      qb.andWhere('(booking.startTime < :endTime AND booking.endTime > :startTime)', { startTime, endTime });
+    if (excludeId) qb.andWhere('booking.id != :excludeId', { excludeId });
+
+    const bookings = await qb.getMany();
+
+    const reqStart = new Date(`${bookingDate}T${startTime}`);
+    const reqEnd = new Date(`${endDate || bookingDate}T${endTime}`);
+
+    for (const booking of bookings) {
+      const bookingStart = new Date(`${booking.bookingDate}T${booking.startTime}`);
+      const bookingEnd = new Date(`${booking.endDate || booking.bookingDate}T${booking.endTime}`);
+
+      if (reqStart < bookingEnd && reqEnd > bookingStart) {
+        return booking;
+      }
     }
 
-    if (excludeId) qb.andWhere('booking.id != :excludeId', { excludeId });
-    return qb.getOne();
+    return null;
   }
 
   private formatTime12Hour(timeStr: string): string {

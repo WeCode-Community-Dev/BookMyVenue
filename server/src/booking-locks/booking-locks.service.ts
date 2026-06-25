@@ -29,6 +29,7 @@ export class BookingLocksService {
     startTime: string,
     endTime: string,
     userId: string,
+    endDate?: string,
   ) {
     // Verify venue exists
     const venue = await this.venuesRepository.findOne({ where: { id: venueId } });
@@ -56,81 +57,84 @@ export class BookingLocksService {
       }
     }
 
-    // Validate booking date and times against venue operational schedule
-    const dateObj = new Date(bookingDate);
-    if (!isNaN(dateObj.getTime()) && venue.workingDays && Array.isArray(venue.workingDays) && venue.workingDays.length > 0) {
-      const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    // Validate booking date and times against venue operational schedule (only for single-day hourly bookings)
+    const isSingleDay = !endDate || endDate === bookingDate;
+    if (isSingleDay && venue.pricingUnit !== PricingUnit.DAY) {
+      const dateObj = new Date(bookingDate);
+      if (!isNaN(dateObj.getTime()) && venue.workingDays && Array.isArray(venue.workingDays) && venue.workingDays.length > 0) {
+        const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
-      // Find if venue is open on this day of the week
-      const workingDay = venue.workingDays.find((d: any) => {
-        if (typeof d === 'string') return d.toLowerCase() === dayName;
-        if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
-        return false;
-      });
+        // Find if venue is open on this day of the week
+        const workingDay = venue.workingDays.find((d: any) => {
+          if (typeof d === 'string') return d.toLowerCase() === dayName;
+          if (typeof d === 'object' && d !== null) return d.day?.toLowerCase() === dayName;
+          return false;
+        });
 
-      if (!workingDay) {
-        throw new BadRequestException(
-          `This venue is closed on ${dayName.charAt(0).toUpperCase() + dayName.slice(1)}s`,
-        );
-      }
+        if (!workingDay) {
+          throw new BadRequestException(
+            `This venue is closed on ${dayName.charAt(0).toUpperCase() + dayName.slice(1)}s`,
+          );
+        }
 
-      // Check selected hours are within opening/closing hours for this working day
-      if (typeof workingDay === 'object' && workingDay !== null) {
-        const { start, end } = workingDay as any;
-        if (start && end) {
-          if (startTime < start || endTime > end) {
-            throw new BadRequestException(
-              `Selected times (${startTime} - ${endTime}) are outside the venue's operating hours for this day (${start} - ${end})`,
-            );
+        // Check selected hours are within opening/closing hours for this working day
+        if (typeof workingDay === 'object' && workingDay !== null) {
+          const { start, end } = workingDay as any;
+          if (start && end) {
+            if (startTime < start || endTime > end) {
+              throw new BadRequestException(
+                `Selected times (${startTime} - ${endTime}) are outside the venue's operating hours for this day (${start} - ${end})`,
+              );
+            }
           }
         }
       }
     }
 
+    // Parse requested interval
+    const reqStart = new Date(`${bookingDate}T${startTime}`);
+    const reqEnd = new Date(`${endDate || bookingDate}T${endTime}`);
+
+    if (reqEnd <= reqStart) {
+      throw new BadRequestException('End date/time must be after start date/time');
+    }
+
     // Check for existing active locks on this slot
-    const existingLock = await this.locksRepository.findOne({
-      where: {
-        venueId,
-        bookingDate,
-        status: LockStatus.ACTIVE,
-      },
+    const activeLocks = await this.locksRepository.find({
+      where: { venueId, status: LockStatus.ACTIVE },
     });
 
-    if (existingLock) {
-      // Check if the lock overlaps
-      const isDaily = venue.pricingUnit === PricingUnit.DAY;
-      if (isDaily || this.timesOverlap(existingLock.startTime, existingLock.endTime, startTime, endTime)) {
-        if (new Date() < new Date(existingLock.expiresAt)) {
+    for (const lock of activeLocks) {
+      const lockStart = new Date(`${lock.bookingDate}T${lock.startTime}`);
+      const lockEnd = new Date(`${lock.endDate || lock.bookingDate}T${lock.endTime}`);
+
+      if (reqStart < lockEnd && reqEnd > lockStart) {
+        if (new Date() < new Date(lock.expiresAt)) {
           throw new ConflictException('This slot is temporarily locked by another user');
         }
         // Lock expired, mark it
-        existingLock.status = LockStatus.EXPIRED;
-        await this.locksRepository.save(existingLock);
+        lock.status = LockStatus.EXPIRED;
+        await this.locksRepository.save(lock);
       }
     }
 
     // Check for existing confirmed or pending bookings
-    const existingBooking = await this.bookingsRepository.findOne({
-      where: [
-        {
-          venueId,
-          bookingDate,
-          bookingStatus: BookingStatus.CONFIRMED,
-        },
-        {
-          venueId,
-          bookingDate,
-          bookingStatus: BookingStatus.PENDING,
-        },
-      ],
-    });
+    const bookings = await this.bookingsRepository.createQueryBuilder('booking')
+      .where('booking.venueId = :venueId', { venueId })
+      .andWhere('booking.bookingStatus IN (:...statuses)', { statuses: [BookingStatus.CONFIRMED, BookingStatus.PENDING] })
+      .getMany();
 
-    if (existingBooking) {
-      const isDaily = venue.pricingUnit === PricingUnit.DAY;
-      if (isDaily || this.timesOverlap(existingBooking.startTime, existingBooking.endTime, startTime, endTime)) {
-        const formattedStart = this.formatTime12Hour(existingBooking.startTime);
-        const formattedEnd = this.formatTime12Hour(existingBooking.endTime);
-        throw new ConflictException(`This slot is already booked from ${formattedStart} to ${formattedEnd}`);
+    for (const booking of bookings) {
+      const bookingStart = new Date(`${booking.bookingDate}T${booking.startTime}`);
+      const bookingEnd = new Date(`${booking.endDate || booking.bookingDate}T${booking.endTime}`);
+
+      if (reqStart < bookingEnd && reqEnd > bookingStart) {
+        const formattedStart = this.formatTime12Hour(booking.startTime);
+        const formattedEnd = this.formatTime12Hour(booking.endTime);
+        const formattedDate = booking.endDate && booking.endDate !== booking.bookingDate
+          ? `${booking.bookingDate} to ${booking.endDate}`
+          : booking.bookingDate;
+        throw new ConflictException(`This slot is already booked on ${formattedDate} from ${formattedStart} to ${formattedEnd}`);
       }
     }
 
@@ -141,6 +145,7 @@ export class BookingLocksService {
     const lock = this.locksRepository.create({
       venueId,
       bookingDate,
+      endDate: endDate || bookingDate,
       startTime,
       endTime,
       lockedByUserId: userId,

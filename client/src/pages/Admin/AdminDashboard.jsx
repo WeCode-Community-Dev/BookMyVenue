@@ -319,9 +319,9 @@ export default function AdminDashboard() {
   const adminPlatformCommissions = globalTurnover * 0.15;
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-20 flex">
+    <div className="min-h-screen bg-slate-50 pt-16 flex">
       {/* 1. Left Essential Admin Sidebar */}
-      <aside className="w-64 bg-white border-r border-slate-200/80 hidden md:flex flex-col shrink-0 fixed bottom-0 top-20 left-0 z-10">
+      <aside className="w-64 bg-white border-r border-slate-200/80 hidden md:flex flex-col shrink-0 fixed bottom-0 top-16 left-0 z-10">
         <div className="p-6 border-b border-slate-100 flex items-center gap-2.5">
           <div className="p-2 bg-primary/10 text-primary rounded-xl">
             <MdOutlineSecurity className="text-xl" />

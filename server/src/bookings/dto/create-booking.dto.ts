@@ -18,6 +18,11 @@ export class CreateBookingDto {
   @IsNotEmpty()
   bookingDate: string;
 
+  @ApiPropertyOptional({ example: '2025-06-16', description: 'Booking end date (YYYY-MM-DD)' })
+  @IsString()
+  @IsOptional()
+  endDate?: string;
+
   @ApiProperty({ example: '10:00', description: 'Start time (HH:mm)' })
   @IsString()
   @IsNotEmpty()

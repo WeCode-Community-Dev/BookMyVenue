@@ -41,6 +41,7 @@ export class BookingLocksController {
       properties: {
         venueId: { type: 'string', example: 'uuid-of-venue' },
         bookingDate: { type: 'string', example: '2025-06-15' },
+        endDate: { type: 'string', example: '2025-06-16' },
         startTime: { type: 'string', example: '10:00' },
         endTime: { type: 'string', example: '14:00' },
       },
@@ -48,10 +49,10 @@ export class BookingLocksController {
     },
   })
   async lockSlot(
-    @Body() body: { venueId: string; bookingDate: string; startTime: string; endTime: string },
+    @Body() body: { venueId: string; bookingDate: string; endDate?: string; startTime: string; endTime: string },
     @CurrentUser() user: User,
   ) {
-    return this.locksService.lockSlot(body.venueId, body.bookingDate, body.startTime, body.endTime, user.id);
+    return this.locksService.lockSlot(body.venueId, body.bookingDate, body.startTime, body.endTime, user.id, body.endDate);
   }
 
   @Delete(':id')
