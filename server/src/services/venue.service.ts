@@ -14,6 +14,12 @@ type UpdateVenueParams = {
   data: UpdateVenueInput;
 };
 
+type DeleteVenueParams = {
+  venueId: string;
+  userId: string;
+  role: RoleEnumType;
+};
+
 export const createVenueService = async (data: CreateVenueParams) => {
   const venue = await VenueModel.create(data);
   return venue;
@@ -43,6 +49,24 @@ export const updateVenueService = async ({ venueId, userId, role, data }: Update
 
   Object.assign(venue, data);
   await venue.save();
+
+  return venue;
+};
+
+export const deleteVenueService = async ({ venueId, userId, role }: DeleteVenueParams) => {
+  const venue = await VenueModel.findById(venueId);
+  if (!venue) {
+    throw new NotFoundException("Venue not found");
+  }
+
+  // Owners can only delete their own venue and admin can delete any venue.
+  const isOwner = venue.owner.toString() === userId;
+  const isAdmin = role === RoleEnum.ADMIN;
+  if (!isOwner && !isAdmin) {
+    throw new ForbiddenException("You can only delete your own venue");
+  }
+
+  await venue.deleteOne();
 
   return venue;
 };

@@ -8,6 +8,7 @@ import {
   createVenueService,
   getVenueByIdService,
   updateVenueService,
+  deleteVenueService,
 } from "../services/venue.service";
 import { createVenueSchema, updateVenueSchema } from "../validator/venue.validator";
 
@@ -68,3 +69,25 @@ export const updateVenueController = asyncHandler(async (req: Request, res: Resp
   });
 });
 
+export const deleteVenueController = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.userId;
+  const role = req.user?.role;
+  if (!userId || !role) {
+    throw new UnauthorizedException("Unauthorized. Please log in");
+  }
+
+  const venueId = req.params.venueId;
+  if (typeof venueId !== "string" || !isValidObjectId(venueId)) {
+    throw new BadRequestException("Invalid venue id");
+  }
+
+  await deleteVenueService({
+    venueId,
+    userId,
+    role: role as RoleEnumType,
+  });
+
+  return res.status(HTTP_STATUS.OK).json({
+    message: "Venue deleted successfully",
+  });
+});

@@ -6,6 +6,7 @@ import {
   createVenueController,
   getVenueByIdController,
   updateVenueController,
+  deleteVenueController,
 } from "../controllers/venue.controller";
 
 const venueRoute = Router();
@@ -24,6 +25,13 @@ venueRoute.patch(
   isAuthenticated,
   authorize(Permissions.UPDATE_VENUE),
   updateVenueController,
+);
+
+venueRoute.delete(
+  "/delete/:venueId",
+  isAuthenticated,
+  authorize(Permissions.DELETE_VENUE),
+  deleteVenueController,
 );
 
 export default venueRoute;
