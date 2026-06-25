@@ -1,5 +1,6 @@
 import { MapPin, Phone, Mail, Table } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
+import Image from "next/image";
 
 export function Footer() {
     return (
@@ -8,14 +9,14 @@ export function Footer() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
                     <div>
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
-                                <MapPin className="w-4 h-4 text-white" />
+                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                                <Image src="/logo.svg" alt="BookMyVenue" width={40} height={40} />
                             </div>
                             <span className="text-xl font-bold text-background">BookMyVenue</span>
                         </div>
                         <p className="text-sm leading-relaxed mb-5">
-                            Kerala&apos;s most trusted venue discovery and booking platform. Covering all 14 districts
-                            from Kasaragod to Thiruvananthapuram.
+                            Kerala&apos;s most trusted venue discovery and booking platform. Covering all 14
+                            districts from Kasaragod to Thiruvananthapuram.
                         </p>
                         <div className="flex gap-3">
                             {[Table, Table, Table].map((Icon, i) => (
@@ -70,7 +71,10 @@ export function Footer() {
                             </li>
                             <li className="flex items-center gap-2">
                                 <Mail className="w-4 h-4 text-accent shrink-0" />
-                                <a href="mailto:hello@BookMyVenue.co.in" className="hover:text-accent transition-colors">
+                                <a
+                                    href="mailto:hello@BookMyVenue.co.in"
+                                    className="hover:text-accent transition-colors"
+                                >
                                     hello@BookMyVenue.co.in
                                 </a>
                             </li>
@@ -81,9 +85,15 @@ export function Footer() {
                 <div className="border-t border-background/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-background/40">
                     <span>© 2026 BookMyVenue. All rights reserved.</span>
                     <div className="flex gap-4">
-                        <a href="#" className="hover:text-background/70 transition-colors">Privacy Policy</a>
-                        <a href="#" className="hover:text-background/70 transition-colors">Terms of Service</a>
-                        <a href="#" className="hover:text-background/70 transition-colors">Cookie Policy</a>
+                        <a href="#" className="hover:text-background/70 transition-colors">
+                            Privacy Policy
+                        </a>
+                        <a href="#" className="hover:text-background/70 transition-colors">
+                            Terms of Service
+                        </a>
+                        <a href="#" className="hover:text-background/70 transition-colors">
+                            Cookie Policy
+                        </a>
                     </div>
                     <span>English (IN) · INR ₹</span>
                 </div>

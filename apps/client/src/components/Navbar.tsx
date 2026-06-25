@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Show, SignInButton } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
@@ -19,7 +19,7 @@ export function Navbar() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     <Link href="/" className="flex items-center gap-2">
-                            <Image src="/logo.svg" alt="BookMyVenue" width={40} height={40} />
+                        <Image src="/logo.svg" alt="BookMyVenue" width={40} height={40} />
                         <span className="text-xl font-bold tracking-tight">BookMyVenue</span>
                     </Link>
 
@@ -50,6 +50,12 @@ export function Navbar() {
                                 >
                                     Contact
                                 </a>
+                                <a
+                                    href="#register_venue"
+                                    className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm font-medium"
+                                >
+                                    List Venue
+                                </a>
                             </div>
 
                             <div className="hidden md:flex items-center gap-3">
@@ -65,12 +71,12 @@ export function Navbar() {
                                     >
                                         Sign Up
                                     </Link>
-                                    <Link
+                                    {/* <Link
                                         href="/sign-up/owner"
                                         className="text-sm font-semibold bg-primary-foreground text-primary px-4 py-1.5 rounded-full hover:bg-primary-foreground/90 transition-colors"
                                     >
                                         List Your Venue
-                                    </Link>
+                                    </Link> */}
                                 </Show>
                                 <Show when="signed-in">
                                     <ProfileButton />

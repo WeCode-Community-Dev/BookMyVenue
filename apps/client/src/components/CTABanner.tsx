@@ -1,8 +1,8 @@
-import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export function CTABanner() {
     return (
-        <section className="relative overflow-hidden bg-primary py-20">
+        <section id="register_venue" className="relative overflow-hidden bg-primary py-20">
             <div className="absolute top-0 left-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
             <div className="absolute bottom-0 right-0 w-80 h-80 bg-accent/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
 
@@ -20,10 +20,12 @@ export function CTABanner() {
                     across the state within days.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <button className="bg-accent text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-accent/90 transition-colors">
+                    <Link
+                        href="/sign-up/owner"
+                        className="bg-accent text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-accent/90 transition-colors"
+                    >
                         List Your Venue — Free
-                    </button>
-
+                    </Link>
                 </div>
             </div>
         </section>
