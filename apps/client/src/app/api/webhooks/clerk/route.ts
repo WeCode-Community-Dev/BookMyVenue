@@ -36,12 +36,14 @@ export async function POST(req: Request) {
     }
 
     if (event.type === "user.created") {
-        const { id, email_addresses, unsafe_metadata } = event.data;
+        const { id, email_addresses, first_name, last_name, unsafe_metadata } = event.data;
 
         const email = email_addresses[0]?.email_address;
         if (!email) {
             return new Response("No email found", { status: 400 });
         }
+
+        const name = [first_name, last_name].filter(Boolean).join(" ") || email.split("@")[0];
 
         const role = (unsafe_metadata?.role as string) === "OWNER" ? "OWNER" : "USER";
 
@@ -53,7 +55,7 @@ export async function POST(req: Request) {
         }
 
         await prisma.user.create({
-            data: { id, email, role },
+            data: { id, email, name, role },
         });
     }
 

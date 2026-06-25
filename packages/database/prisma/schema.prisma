@@ -63,9 +63,10 @@ enum BookingStatus {
 }
 
 model User {
-  id      String @id @default(uuid())
-  email   String @unique
-  role    Role   @default(USER)
+  id      String  @id @default(uuid())
+  email   String  @unique
+  name    String?
+  role    Role    @default(USER)
 
   venues   Venue[]
   bookings Booking[]
