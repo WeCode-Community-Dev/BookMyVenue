@@ -9,6 +9,7 @@ import com.bookmyvenue.dto.AuthResponse;
 import com.bookmyvenue.dto.LoginRequest;
 import com.bookmyvenue.dto.RegisterRequest;
 import com.bookmyvenue.exception.UserAlreadyExistsException;
+import com.bookmyvenue.exception.UserDeactivatedException;
 import com.bookmyvenue.model.User;
 import com.bookmyvenue.repository.UserRepository;
 import com.bookmyvenue.security.JwtUtil;
@@ -48,7 +49,9 @@ public class AuthService {
     public AuthResponse login(LoginRequest request){
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword()));
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
-
+        if(!user.getActive()){
+            throw new UserDeactivatedException();
+        }
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
         return new AuthResponse(token, user.getName(), user.getEmail(), user.getRole().name());
     }

@@ -32,7 +32,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**","/api/owner/**").permitAll()
+                .requestMatchers("/api/auth/**","/api/owner/**","/api/admin/**","/api/user/**").permitAll()
                 //.requestMatchers(HttpMethod.DELETE, "/api/owner/**").hasRole("OWNER")
                 //.requestMatchers("/api/owner/**").authenticated()
                 .anyRequest().authenticated()

@@ -28,6 +28,8 @@ public class VenueResponse {
     private String ownerName;
     private String ownerEmail;
     private LocalDateTime createdAt;
+    private LocalDateTime approvedOn;
+    private String approverMessage;
 
     public static VenueResponse from(Venues venue) {
         return VenueResponse.builder()
@@ -45,6 +47,8 @@ public class VenueResponse {
                 .ownerName(venue.getUser().getName())
                 .ownerEmail(venue.getUser().getEmail())
                 .createdAt(venue.getCreatedAt())
+                .approvedOn(venue.getApprovedOn())
+                .approverMessage(venue.getApproverMessage())
                 .build();
     }
 }

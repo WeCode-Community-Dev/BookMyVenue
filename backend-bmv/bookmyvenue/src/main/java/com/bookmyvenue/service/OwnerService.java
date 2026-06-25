@@ -5,11 +5,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.bookmyvenue.dto.BookingResponse;
 import com.bookmyvenue.dto.VenueRequest;
 import com.bookmyvenue.dto.VenueResponse;
 import com.bookmyvenue.dto.VenueUpdateRequest;
 import com.bookmyvenue.model.User;
 import com.bookmyvenue.model.Venues;
+import com.bookmyvenue.repository.BookingRepository;
 import com.bookmyvenue.repository.UserRepository;
 import com.bookmyvenue.repository.VenueRepository;
 
@@ -20,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 public class OwnerService {
     public final VenueRepository venueRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+
 
     public VenueResponse createVenue(VenueRequest request, String userEmail ){
         User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("User not found"));
@@ -69,6 +73,7 @@ public class OwnerService {
         if(request.getParkingAvailable() != null) venue.setParkingAvailable(request.getParkingAvailable());
         if(request.getImageUrl() != null) venue.setImageUrl(request.getImageUrl());
 
+        venue.setApproverMessage(null);
         venue.setStatus(Venues.VenueStatus.PENDING);
 
         Venues updated = venueRepository.save(venue);
@@ -84,6 +89,10 @@ public class OwnerService {
         }
 
         venueRepository.deleteById(venueId);
+    }
+
+    public List<BookingResponse> getBookings(){
+        return bookingRepository.findAll().stream().map(BookingResponse::from).collect(Collectors.toList());
     }
     
 }

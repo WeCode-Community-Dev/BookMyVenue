@@ -73,6 +73,12 @@ public class Venues {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "approved_on")
+    private LocalDateTime approvedOn;
+
+    @Column(name = "approver_message", length=500)
+    private String approverMessage;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

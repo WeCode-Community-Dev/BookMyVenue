@@ -914,6 +914,14 @@
   font-size: 13px;
   color: var(--text);
 }
+.review-message {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text);
+}
 
 .accent-text { color: var(--accent); font-weight: 600; }
 

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bookmyvenue.dto.BookingResponse;
 import com.bookmyvenue.dto.VenueRequest;
 import com.bookmyvenue.dto.VenueResponse;
 import com.bookmyvenue.dto.VenueUpdateRequest;
@@ -52,5 +53,10 @@ public class OwnerController {
     public ResponseEntity<String>deleteVenue(@PathVariable Integer id, @AuthenticationPrincipal UserDetails userDetails){
         ownerService.deleteVenue(id, userDetails.getUsername());
         return ResponseEntity.ok("Venue Deleted successfully");
+    }
+
+    @GetMapping("/bookings")
+    public ResponseEntity<List<BookingResponse>> getBookings(){
+        return ResponseEntity.ok(ownerService.getBookings());
     }
 }
