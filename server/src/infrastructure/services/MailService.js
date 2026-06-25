@@ -19,7 +19,7 @@ export const sendMail=async (to,subject,html)=>{
         subject,
         html
     })
-    console.log("Masil send successfully")
+    console.log("Mail send successfully")
    } 
    catch(error){
     console.log(error)

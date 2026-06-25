@@ -84,6 +84,7 @@ class VendorRepositoryImpl extends IVendorRepository {
                     returnDocument: "after"
                 }
             )
+            console.log(document)
 
         if (!document) return null
 

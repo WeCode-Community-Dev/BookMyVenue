@@ -49,6 +49,7 @@ export class AdminVendorController {
                 status,
                 reason
             })
+            console.log(vendor)
 
         return sendSuccess(res, statusCode.OK, '', vendor)
     })
