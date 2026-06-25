@@ -1,12 +1,13 @@
 import React from 'react';
 import VendorSidebar from '@/presentation/components/vendor/VendorSidebar';
 import VendorNavbar from '@/presentation/components/vendor/VendorNavbar';
-import DashboardCard from '@/presentation/components/vendor/DashboardCard';
-import RecentBookings from '@/presentation/components/vendor/RecentBookings';
-import TopVenues from '@/presentation/components/vendor/TopVenues';
-import QuickActions from '@/presentation/components/vendor/QuickActions';
-import BookingTrends from '@/presentation/components/vendor/BookingTrends';
-import RevenueChart from '@/presentation/components/vendor/RevenueChart';
+import DashboardCard from '@/presentation/components/vendor/dashboard/DashboardCard';
+import RecentBookings from '@/presentation/components/vendor/dashboard/RecentBookings';
+import TopVenues from '@/presentation/components/vendor/dashboard/TopVenues';
+import QuickActions from '@/presentation/components/vendor/dashboard/QuickActions';
+import BookingTrends from '@/presentation/components/vendor/dashboard/BookingTrends';
+import RevenueChart from '@/presentation/components/vendor/dashboard/RevenueChart';
+import WelcomeBanner from "@/presentation/components/vendor/WelcomeBanner";
 
 
 const Dashboard = () => {
@@ -20,6 +21,7 @@ const Dashboard = () => {
           <h1 className='text-3xl font-bold mb-6'>
             Vendor Dashboard
           </h1>
+          <WelcomeBanner />
 
           <div className='grid grid-cols-4 gap-4'>
             <DashboardCard title="Total venues" value="12"/> 
