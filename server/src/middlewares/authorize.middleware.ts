@@ -5,8 +5,6 @@ import { ErrorCodeEnum } from "../enums/error-code.enum";
 import { hasPermission, PermissionType } from "../utils/role-permission";
 import { RoleEnumType } from "../enums/user-enum";
 
-// Factory: returns a middleware that allows the request through only if the
-// authenticated user's role has the given permission. Use after isAuthenticated.
 export const authorize = (permission: PermissionType) =>
   asyncHandler(async (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user) {
