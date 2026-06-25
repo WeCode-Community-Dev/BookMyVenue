@@ -4,6 +4,7 @@ import { VendorMessages } from "../../../../shared/constants/messages/vendorMess
 import { VendorApprovalStatus } from "../../../../domain/enums/VendorApprovalStatus.enum.js";
 import { vendorApprovalTemplate } from "../../../../infrastructure/emailTemplates/admin.vendorApprovalTemplate.js";
 import { sendMail } from "../../../../infrastructure/services/MailService.js";
+import { vendorRejectionTemplate } from "../../../../infrastructure/emailTemplates/admin.vendorRejectionTemplate.js";
 export class AdminUpdateVendorApprovalStatusUsecase {
 
     constructor(vendorRepository) {
