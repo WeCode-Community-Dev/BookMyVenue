@@ -10,7 +10,7 @@ import {
     DialogTitle,
 } from "./ui/dialog";
 import { VENUE_STATUS_STYLE } from "./data";
-import type { Venue } from "../app/actions/venues";
+import type { Venue } from "../app/actions/venue";
 
 interface Props {
     venue: Venue | null;

@@ -1,6 +1,6 @@
 import { VenueCategory, VerificationStatus } from "@bookmyvenue/database";
 import { VenueStatus } from "../../components/data";
-import { Venue } from "./venues";
+import { Venue } from "./venue";
 
 export const SELECT = {
     id: true,

@@ -70,7 +70,7 @@ export function UsersPage() {
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50 hover:bg-muted/50 border-b border-border">
-            {["User", "Role", "Joined", "Venues / Bookings", "Revenue"].map(h => (
+            {["Name", "Email", "Role", "Joined", userRoleFilter === "Owner" ? "Venues" : "Bookings", ...(userRoleFilter === "Owner" ? ["Revenue"] : [])].map(h => (
               <TableHead key={h} className="px-5 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">{h}</TableHead>
             ))}
           </TableRow>
@@ -83,12 +83,10 @@ export function UsersPage() {
                   <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
                     {u.name.slice(0, 1)}
                   </div>
-                  <div>
-                    <p className="font-semibold text-foreground">{u.name}</p>
-                    <p className="text-xs text-muted-foreground">{u.email}</p>
-                  </div>
+                  <p className="font-semibold text-foreground">{u.name}</p>
                 </div>
               </TableCell>
+              <TableCell className="px-5 py-3.5 text-foreground/70">{u.email}</TableCell>
               <TableCell className="px-5 py-3.5">
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${u.role === "Owner" ? "bg-primary/10 text-primary" : "bg-blue-50 text-blue-600"}`}>
                   {u.role}
@@ -98,9 +96,11 @@ export function UsersPage() {
               <TableCell className="px-5 py-3.5 text-foreground/70">
                 {u.role === "Owner" ? `${u.venues} venues` : `${u.bookings} bookings`}
               </TableCell>
-              <TableCell className="px-5 py-3.5 font-semibold text-foreground">
-                {u.revenue > 0 ? fmt(u.revenue) : "—"}
-              </TableCell>
+              {userRoleFilter === "Owner" && (
+                <TableCell className="px-5 py-3.5 font-semibold text-foreground">
+                  {u.revenue > 0 ? fmt(u.revenue) : "—"}
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

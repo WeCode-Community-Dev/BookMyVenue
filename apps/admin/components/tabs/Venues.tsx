@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { Search, AlertTriangle, CheckCircle2, XCircle, Eye, Ban, Building2 } from "lucide-react";
 import { VENUE_STATUS_STYLE, VenueStatus } from "../data";
-import { fetchAllVenues, fetchPendingVenues, fetchApproved, approveVenue as approveVenueAction, rejectVenue as rejectVenueAction } from "../../app/actions/venues";
-import type { Venue } from "../../app/actions/venues";
+import { fetchAllVenues, fetchPendingVenues, fetchApproved, approveVenue as approveVenueAction, rejectVenue as rejectVenueAction } from "../../app/actions/venue";
+import type { Venue } from "../../app/actions/venue";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../ui/table";
 import {
     Pagination,
@@ -142,14 +142,6 @@ export function VenuesPage() {
             </div>
         )}
         <div className="space-y-4">
-            {pendingCount > 0 && (
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 flex items-center gap-3">
-                    <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-                    <p className="text-sm text-amber-800 font-medium">
-                        <span className="font-bold">{pendingCount} venues</span> are awaiting your approval.
-                    </p>
-                </div>
-            )}
 
             <div className="bg-card border border-border rounded-2xl overflow-hidden">
                 {/* Filters */}
@@ -173,7 +165,7 @@ export function VenuesPage() {
                                 {s}
                                 {s === "Pending" && pendingCount > 0 && (
                                     <span
-                                        className={`ml-1.5  text- text-xs px-1 rounded-full ${venueFilter === s ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-secondary"}`}
+                                        className={`ml-1.5   text-xs px-1 rounded-full border ${venueFilter === s ? "bg-primary text-primary-foreground " : "bg-muted text-muted-foreground hover:bg-secondary border-muted-foreground"}`}
                                     >
                                         {pendingCount}
                                     </span>
