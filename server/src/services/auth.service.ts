@@ -4,18 +4,13 @@ import { HTTP_STATUS } from "../config/http.config";
 import { ErrorCodeEnum } from "../enums/error-code.enum";
 import { RoleEnumType } from "../enums/user-enum";
 import { signAccessToken } from "../utils/jwt";
+import { RegisterInput, LoginInput } from "../validator/auth.validator";
 
-interface RegisterParams {
-  name: string;
-  email: string;
-  password: string;
+type RegisterParams = Omit<RegisterInput, "role"> & {
   role?: RoleEnumType;
-}
+};
 
-interface LoginParams {
-  email: string;
-  password: string;
-}
+type LoginParams = LoginInput;
 
 export const registerService = async ({ name, email, password, role }: RegisterParams) => {
   const existingUser = await UserModel.findOne({ email });
@@ -40,10 +35,7 @@ export const loginService = async ({ email, password }: LoginParams) => {
   const user = await UserModel.findOne({ email });
 
   if (!user) {
-    throw new UnauthorizedException(
-      "Invalid email or password",
-      ErrorCodeEnum.AUTH_USER_NOT_FOUND,
-    );
+    throw new UnauthorizedException("Invalid email or password", ErrorCodeEnum.AUTH_USER_NOT_FOUND);
   }
 
   const isPasswordValid = await user.comparePassword(password);

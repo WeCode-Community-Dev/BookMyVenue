@@ -1,27 +1,21 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../middlewares/asyncHandler.middleware";
 import { HTTP_STATUS } from "../config/http.config";
-import { BadRequestException } from "../utils/appError";
 import { Env } from "../config/env.config";
 import { RoleEnum } from "../enums/user-enum";
 import { registerService, loginService } from "../services/auth.service";
+import { registerSchema, loginSchema } from "../validator/auth.validator";
 
 export const registerController = asyncHandler(async (req: Request, res: Response) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role } = registerSchema.parse(req.body);
 
-  if (!name || !email || !password) {
-    throw new BadRequestException("Name, email and password are required");
-  }
-
-  if (password.length < 6) {
-    throw new BadRequestException("Password must be at least 6 characters long");
-  }
-
-  // Public signup may only create a CUSTOMER or an OWNER.
-  // Anything else (e.g. ADMIN) is ignored and falls back to CUSTOMER.
-  const allowedRole = role === RoleEnum.OWNER ? RoleEnum.OWNER : RoleEnum.CUSTOMER;
-
-  const user = await registerService({ name, email, password, role: allowedRole });
+  // Schema guarantees role is OWNER, CUSTOMER, or undefined; default to CUSTOMER.
+  const user = await registerService({
+    name,
+    email,
+    password,
+    role: role ?? RoleEnum.CUSTOMER,
+  });
 
   return res.status(HTTP_STATUS.CREATED).json({
     message: "User registered successfully",
@@ -30,11 +24,7 @@ export const registerController = asyncHandler(async (req: Request, res: Respons
 });
 
 export const loginController = asyncHandler(async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    throw new BadRequestException("Email and password are required");
-  }
+  const { email, password } = loginSchema.parse(req.body);
 
   const { user, accessToken } = await loginService({ email, password });
 

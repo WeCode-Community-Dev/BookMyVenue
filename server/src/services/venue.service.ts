@@ -1,20 +1,11 @@
-import { VenueTypeEnumType } from "../enums/venue-enum";
 import VenueModel from "../models/venue.model";
+import { CreateVenueInput } from "../validator/venue.validator";
 
-interface CreateVenueParams {
+// Validated venue fields (from the zod schema) plus the owner, which is set
+// from the authenticated user in the controller rather than the request body.
+type CreateVenueParams = CreateVenueInput & {
   owner: string;
-  name: string;
-  description?: string;
-  venueType: VenueTypeEnumType;
-  address?: string;
-  city?: string;
-  capacity?: number;
-  pricePerHour: number;
-  openingTime: number; // minutes from midnight
-  closingTime: number; // minutes from midnight
-  images?: string[];
-  amenities?: string[];
-}
+};
 
 export const createVenueService = async (data: CreateVenueParams) => {
   const venue = await VenueModel.create(data);
