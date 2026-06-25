@@ -1,6 +1,7 @@
 import { axiosClient } from "src/lib/axios";
 
 import type { VenueCard } from "./types/venue.type";
+import type { Pagination, PaginationFilter } from "./types/common";
 
 export interface CreateVenueResponse {
     venueId: string;
@@ -15,9 +16,15 @@ export class VenueApiService {
     /**
      * Get list of venues owned by the current user
      */
-    static async listMyVenues() {
-        const response = await axiosClient.get('/venues/my-venues');
-        return response.data as VenueCard[]
+    static async listMyVenues({ limit, page, search }: PaginationFilter) {
+        const response = await axiosClient.get('/venues/my-venues', {
+            params: {
+                offset: page * limit,
+                limit,
+                search
+            }
+        });
+        return response.data as Pagination<VenueCard>
     }
 
     static async createVenue(data: Record<string, unknown>) {

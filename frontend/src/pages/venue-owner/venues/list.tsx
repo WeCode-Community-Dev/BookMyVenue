@@ -1,6 +1,7 @@
 import { CONFIG } from 'src/config-global';
 
-import { VenueView } from 'src/sections/venue-owner/venues/view';
+import { ListVenues } from 'src/sections/venue-owner/venues/list';
+
 
 // ----------------------------------------------------------------------
 
@@ -8,7 +9,7 @@ export default function Page() {
     return (
         <>
             <title>{`My Venues | ${CONFIG.appName}`}</title>
-            <VenueView />
+            <ListVenues />
         </>
     );
 }
