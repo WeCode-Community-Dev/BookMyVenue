@@ -20,6 +20,17 @@ export interface CreateVenueBody {
     sessions: SessionInput[];
 }
 
+export interface EditVenueBody {
+    name?: string;
+    description?: string;
+    capacity?: number;
+    category?: VenueCategory;
+    location?: string;
+    district?: District;
+    images?: string[];
+    amenities?: string[];
+}
+
 export interface GetVenuesQuery {
     district?: District;
     category?: VenueCategory;
@@ -168,4 +179,45 @@ export const createVenue = async (
     });
 
     return reply.status(201).send({ venue });
+};
+
+export const editVenue = async (
+    request: FastifyRequest<{ Params: { id: string }; Body: EditVenueBody }>,
+    reply: FastifyReply,
+) => {
+    const id = Number(request.params.id);
+    if (isNaN(id)) return reply.status(400).send({ message: "Invalid venue id" });
+
+    const existing = await prisma.venue.findUnique({
+        where: { id },
+        select: { id: true, ownerId: true },
+    });
+
+    if (!existing) {
+        return reply.status(404).send({ message: "Venue not found" });
+    }
+
+    if (existing.ownerId !== request.userId) {
+        return reply.status(403).send({ message: "Not authorized to edit this venue" });
+    }
+
+    const { name, description, capacity, category, location, district, images, amenities } =
+        request.body;
+
+    const venue = await prisma.venue.update({
+        where: { id },
+        data: {
+            ...(name !== undefined && { name }),
+            ...(description !== undefined && { description }),
+            ...(capacity !== undefined && { capacity }),
+            ...(category !== undefined && { category }),
+            ...(location !== undefined && { location }),
+            ...(district !== undefined && { district }),
+            ...(images !== undefined && { images }),
+            ...(amenities !== undefined && { amenities }),
+        },
+        include: { sessions: true },
+    });
+
+    return reply.send({ venue });
 };
