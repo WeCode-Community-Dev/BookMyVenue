@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { type IVenueRepository } from '../../../domain/venues/repositories/venue-repository.interface';
+import { Pagination } from '../../_shared/dto/pagination';
 
 
 export interface VenueResponseDto {
@@ -28,10 +29,10 @@ export class FindMyVenuesQuery {
         private readonly venueRepository: IVenueRepository,
     ) { }
 
-    async execute(ownerId: string): Promise<VenueResponseDto[]> {
+    async execute(ownerId: string): Promise<Pagination<VenueResponseDto>> {
         const venues = await this.venueRepository.findAll({ ownerId });
 
-        return venues.map((v) => ({
+        const docs = venues.map((v) => ({
             id: v.id,
             ownerId: v.ownerId,
             title: v.title,
@@ -50,5 +51,12 @@ export class FindMyVenuesQuery {
             createdAt: v.createdAt,
             images: v.images.map(img => img.url)
         }));
+
+        return new Pagination({
+            data: docs,
+            limit: docs.length,
+            offset: 0,
+            total: docs.length
+        })
     }
 }
