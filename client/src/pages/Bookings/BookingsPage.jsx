@@ -85,46 +85,11 @@ export default function BookingsPage() {
         setSelectedLocationName(savedName || 'My Location');
         const vRes = await venueService.getNearby(lat, lng, radius);
         setVenues(vRes.data || []);
-        setLoading(false);
-      } else if (navigator.geolocation) {
-        await new Promise((resolve) => {
-          navigator.geolocation.getCurrentPosition(
-            async (pos) => {
-              const lat = pos.coords.latitude;
-              const lng = pos.coords.longitude;
-              setGeoLoc({ lat, lng });
-              setUseGeo(true);
-              setLocationSearch('My Location');
-              setSelectedLocationName('My Location');
-              
-              localStorage.setItem('user_latitude', lat);
-              localStorage.setItem('user_longitude', lng);
-              localStorage.setItem('user_location_name', 'My Location');
-              
-              try {
-                const vRes = await venueService.getNearby(lat, lng, radius);
-                setVenues(vRes.data || []);
-              } catch {
-                toast.error('Failed to load nearby spaces');
-              }
-              resolve();
-            },
-            async () => {
-              try {
-                const vRes = await venueService.getAll();
-                setVenues(vRes.data.venues || []);
-              } catch {}
-              resolve();
-            },
-            { timeout: 5000 }
-          );
-        });
-        setLoading(false);
       } else {
         const vRes = await venueService.getAll();
         setVenues(vRes.data.venues || []);
-        setLoading(false);
       }
+      setLoading(false);
     } catch {
       toast.error('Failed to load accounts and listings data');
       setLoading(false);
@@ -396,7 +361,11 @@ export default function BookingsPage() {
           <div className="flex flex-col gap-6 animate-fade-in">
             <div>
               <h3 className="text-lg font-bold text-slate-900 tracking-tight">Discover Verified Venues</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Search and reserve prime meeting spaces, party halls, or wedding spots instantly.</p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {useGeo
+                  ? `Showing nearby spaces within ${radius}km, sorted by distance.`
+                  : 'Browse all available spaces. Set your location for distance-based results.'}
+              </p>
             </div>
 
             {/* Main Search Row with Filters Toggle Button */}

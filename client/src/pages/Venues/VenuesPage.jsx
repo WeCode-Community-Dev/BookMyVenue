@@ -37,23 +37,6 @@ export default function VenuesPage() {
       setUseGeo(true);
       setLocationSearch(savedName || 'My Location');
       setSelectedLocationName(savedName || 'My Location');
-    } else if (navigator.geolocation && !searchParams.get('search')) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          setGeoLoc({ lat, lng });
-          setUseGeo(true);
-          setLocationSearch('My Location');
-          setSelectedLocationName('My Location');
-          
-          localStorage.setItem('user_latitude', lat);
-          localStorage.setItem('user_longitude', lng);
-          localStorage.setItem('user_location_name', 'My Location');
-        },
-        () => {},
-        { timeout: 5000 }
-      );
     }
   }, []);
 
@@ -354,9 +337,9 @@ export default function VenuesPage() {
                 {selectedLocationName ? (
                   <span>Showing spaces within {radius}km of <strong className="text-primary">{selectedLocationName.split(',')[0]}</strong> ({total} found)</span>
                 ) : useGeo ? (
-                  <span>Showing spaces within {radius}km of <strong className="text-primary">Detected Location</strong> ({total} found)</span>
+                  <span>Showing spaces within {radius}km of <strong className="text-primary">My Location</strong> ({total} found)</span>
                 ) : (
-                  <span>{total} event spaces found</span>
+                  <span>{total} spaces available. Set your location for distance-sorted results.</span>
                 )}
               </p>
             </div>
