@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { venueService } from '../../services';
 import { MdSearch, MdLocationOn, MdStar, MdPeople, MdTune, MdMyLocation } from 'react-icons/md';
@@ -26,6 +26,8 @@ export default function VenuesPage() {
   const [locationSearch, setLocationSearch] = useState('');
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [selectedLocationName, setSelectedLocationName] = useState('');
+  const latestQueryRef = useRef('');
+  const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
     const savedLat = localStorage.getItem('user_latitude');
@@ -89,18 +91,35 @@ export default function VenuesPage() {
     setUseGeo(false);
   };
 
-  const handleLocationSearchChange = async (val) => {
+  const handleLocationSearchChange = (val) => {
     setLocationSearch(val);
+    latestQueryRef.current = val;
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
     if (val.trim().length < 3) {
       setLocationSuggestions([]);
       return;
     }
-    try {
-      const res = await venueService.geocode(val);
-      setLocationSuggestions(res.data || []);
-    } catch (err) {
-      console.error('Failed to geocode location:', err);
-    }
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const currentQuery = val;
+        const res = await venueService.geocode(val, geoLoc.lat || undefined, geoLoc.lng || undefined);
+        
+        if (currentQuery !== latestQueryRef.current) {
+          return;
+        }
+
+        setLocationSuggestions(res.data || []);
+      } catch (err) {
+        if (val === latestQueryRef.current) {
+          console.error('Failed to geocode location:', err);
+        }
+      }
+    }, 400);
   };
 
   const handleSelectSuggestion = (suggestion) => {

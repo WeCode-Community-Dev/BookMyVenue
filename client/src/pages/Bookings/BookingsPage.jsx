@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { bookingService, userService, venueService } from '../../services';
 import { thumbnailUrl } from '../../utils/cloudinaryUrl';
@@ -61,6 +61,8 @@ export default function BookingsPage() {
   const [cancelConfirmId, setCancelConfirmId] = useState(null);
   const [bookingFilter, setBookingFilter] = useState('all');
   const [bookingSortOrder, setBookingSortOrder] = useState('desc');
+  const latestQueryRef = useRef('');
+  const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -75,8 +77,10 @@ export default function BookingsPage() {
       const vRes = await venueService.getAll();
       setVenues(vRes.data.venues || []);
       setLoading(false);
-    } catch {
-      toast.error('Failed to load accounts and listings data');
+    } catch (err) {
+      if (err.response?.status !== 401) {
+        toast.error('Failed to load accounts and listings data');
+      }
       setLoading(false);
     }
   };
@@ -91,23 +95,42 @@ export default function BookingsPage() {
         res = await venueService.getAll();
         setVenues(res.data.venues || []);
       }
-    } catch {
-      toast.error('Failed to load spaces listing');
+    } catch (err) {
+      if (err.response?.status !== 401) {
+        toast.error('Failed to load spaces listing');
+      }
     }
   };
 
-  const handleLocationSearchChange = async (val) => {
+  const handleLocationSearchChange = (val) => {
     setLocationSearch(val);
+    latestQueryRef.current = val;
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
     if (val.trim().length < 3) {
       setLocationSuggestions([]);
       return;
     }
-    try {
-      const res = await venueService.geocode(val);
-      setLocationSuggestions(res.data || []);
-    } catch (err) {
-      console.error('Failed to geocode location:', err);
-    }
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const currentQuery = val;
+        const res = await venueService.geocode(val, geoLoc.lat || undefined, geoLoc.lng || undefined);
+        
+        if (currentQuery !== latestQueryRef.current) {
+          return;
+        }
+
+        setLocationSuggestions(res.data || []);
+      } catch (err) {
+        if (val === latestQueryRef.current) {
+          console.error('Failed to geocode location:', err);
+        }
+      }
+    }, 400);
   };
 
   const handleSelectSuggestion = async (suggestion) => {
@@ -266,8 +289,8 @@ export default function BookingsPage() {
             <MdDashboard className="text-xl" />
           </div>
           <div>
-            <h2 className="text-sm font-black text-slate-900 tracking-tight">User Space Center</h2>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Guest Account</span>
+            <h2 className="text-sm font-black text-slate-900 tracking-tight">Explorer Portal</h2>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bookings & Insights</span>
           </div>
         </div>
 
@@ -432,7 +455,7 @@ export default function BookingsPage() {
                 </div>
 
                 {/* Row 2: Space Type + Min Seating + Max Price + Radius + Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-slate-100 items-end">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 pt-3 border-t border-slate-100 items-end">
                   {/* Space Type */}
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Space Type</label>
@@ -501,7 +524,7 @@ export default function BookingsPage() {
                   </div>
 
                   {/* Device GPS Discovery + Reset Actions */}
-                  <div className={`flex gap-2 items-center justify-end h-10 ${
+                  <div className={`w-full flex gap-2 items-center h-10 ${
                     !(searchQuery || venueType || minCapacity || maxPrice || locationSearch || radius !== 50) ? 'md:hidden' : ''
                   }`}>
                     <button
@@ -524,7 +547,7 @@ export default function BookingsPage() {
                           setRadius(50);
                           handleClearLocation();
                         }}
-                        className="h-10 py-2.5 px-4 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all border border-slate-200 cursor-pointer"
+                        className="w-full h-10 py-2.5 px-4 text-xs font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all border border-slate-200 cursor-pointer"
                       >
                         Reset
                       </button>

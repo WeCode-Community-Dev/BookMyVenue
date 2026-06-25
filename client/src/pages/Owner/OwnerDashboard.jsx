@@ -92,8 +92,10 @@ export default function OwnerDashboard() {
         phone: uRes.data.phone || '',
       });
       fetchAllBlockedDates(venuesData);
-    } catch {
-      toast.error('Failed to load dashboard data');
+    } catch (err) {
+      if (err.response?.status !== 401) {
+        toast.error('Failed to load dashboard data');
+      }
     } finally {
       setLoading(false);
     }
@@ -482,61 +484,7 @@ export default function OwnerDashboard() {
               {/* Bookings Lists */}
               <div className="lg:col-span-2 flex flex-col gap-8">
                 
-                {/* Pending Approvals */}
-                <div className="flex flex-col gap-4">
-                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    Pending Requests
-                    {bookings.filter(b => b.bookingStatus === 'pending').length > 0 && (
-                      <span className="px-2 py-0.5 text-xs bg-amber-500 text-white rounded-full font-bold">
-                        {bookings.filter(b => b.bookingStatus === 'pending').length}
-                      </span>
-                    )}
-                  </h3>
-                  {bookings.filter(b => b.bookingStatus === 'pending').length === 0 ? (
-                    <div className="bg-white border border-slate-100 p-6 rounded-2xl text-center text-slate-400 text-xs italic shadow-sm">
-                      🔔 No pending booking requests.
-                    </div>
-                  ) : (
-                    bookings.filter(b => b.bookingStatus === 'pending').map((b) => (
-                      <div key={b.id} className="bg-white border border-slate-100 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm animate-in fade-in-50 duration-200">
-                        <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="px-2 py-0.5 rounded bg-amber-50 border border-amber-100 text-amber-600 text-[10px] font-bold uppercase">Pending Approval</span>
-                            <span className="text-xs text-slate-500 font-bold">{b.bookingCode}</span>
-                          </div>
-                          <h4 className="font-bold text-slate-900 text-sm leading-tight mb-1">{b.venue?.venueName}</h4>
-                          <p className="text-xs text-slate-500">Guest: <span className="font-semibold text-slate-700">{b.user?.name}</span> ({b.guestCount} pax)</p>
-                          <p className="text-xs text-slate-500">Date: <span className="font-semibold text-slate-700">{b.bookingDate}</span> ({formatTime12Hour(b.startTime)} - {formatTime12Hour(b.endTime)})</p>
-                          {b.purpose && (
-                            <div className="mt-2 pt-2 border-t border-slate-100/50 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-slate-400">
-                              <span>Purpose: <strong className="text-slate-600">{b.purpose}</strong></span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex flex-col items-end gap-2.5 w-full sm:w-auto shrink-0">
-                          <div className="text-right">
-                            <span className="text-xs font-black text-slate-950 block">₹{Number(b.totalAmount).toLocaleString('en-IN')}</span>
-                            <span className="text-[10px] text-slate-400">Total Price</span>
-                          </div>
-                          <div className="flex gap-2 w-full sm:w-auto mt-1 sm:mt-0">
-                            <button
-                              onClick={() => handleUpdateStatus(b.id, 'confirmed')}
-                              className="flex-1 sm:flex-none py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer"
-                            >
-                              Accept
-                            </button>
-                            <button
-                              onClick={() => handleUpdateStatus(b.id, 'rejected')}
-                              className="flex-1 sm:flex-none py-1.5 px-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer"
-                            >
-                              Decline
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
+
 
                 {/* Confirmed bookings list */}
                 <div className="flex flex-col gap-4">

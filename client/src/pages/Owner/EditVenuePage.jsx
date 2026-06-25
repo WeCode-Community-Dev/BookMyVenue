@@ -49,6 +49,8 @@ export default function EditVenuePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [searchingNetwork, setSearchingNetwork] = useState(false);
+  const latestQueryRef = useRef('');
+  const searchTimeoutRef = useRef(null);
   
   // Map and Leaflet integration states
   const [leafletLoaded, setLeafletLoaded] = useState(false);
@@ -231,45 +233,59 @@ export default function EditVenuePage() {
   };
 
   // Dynamic network geocoder using backend proxy API to prevent browser CORS/Rate-limit blocking
-  const handleCustomLocationChange = async (val) => {
+  const handleCustomLocationChange = (val) => {
     setLocationSearch(val);
     setShowLocationDropdown(true);
+    latestQueryRef.current = val;
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
 
     if (val.trim().length >= 3) {
       setSearchingNetwork(true);
-      try {
-        const response = await venueService.geocode(val);
-        const data = response.data;
-        
-        if (data && data.length > 0) {
-          const results = data.map(item => {
-            const parts = item.display_name.split(',');
-            const shortName = parts[0] + (parts[1] ? ', ' + parts[1].trim() : '') + (parts[2] ? ', ' + parts[2].trim() : '');
-            return {
-              name: shortName,
-              lat: parseFloat(item.lat),
-              lng: parseFloat(item.lon),
-              address: item.display_name,
-            };
-          });
-          setSearchResults(results);
-          setCustomLocationFallback(false);
-        } else {
-          // No results from search
-          setSearchResults([]);
-          setCustomLocationFallback(true);
+      searchTimeoutRef.current = setTimeout(async () => {
+        try {
+          const currentQuery = val;
+          const response = await venueService.geocode(val, form.latitude, form.longitude);
+          
+          if (currentQuery !== latestQueryRef.current) {
+            return;
+          }
+
+          const data = response.data;
+          if (data && data.length > 0) {
+            const results = data.map(item => {
+              const parts = item.display_name.split(',');
+              const shortName = parts[0] + (parts[1] ? ', ' + parts[1].trim() : '') + (parts[2] ? ', ' + parts[2].trim() : '');
+              return {
+                name: shortName,
+                lat: parseFloat(item.lat),
+                lng: parseFloat(item.lon),
+                address: item.display_name,
+              };
+            });
+            setSearchResults(results);
+            setCustomLocationFallback(false);
+          } else {
+            setSearchResults([]);
+            setCustomLocationFallback(true);
+          }
+        } catch (err) {
+          if (val === latestQueryRef.current) {
+            const localMatches = locationPresets.filter(preset =>
+              preset.name.toLowerCase().includes(val.toLowerCase())
+            );
+            setSearchResults(localMatches);
+          }
+        } finally {
+          if (val === latestQueryRef.current) {
+            setSearchingNetwork(false);
+          }
         }
-      } catch (err) {
-        // Fallback filter locally
-        const localMatches = locationPresets.filter(preset =>
-          preset.name.toLowerCase().includes(val.toLowerCase())
-        );
-        setSearchResults(localMatches);
-      } finally {
-        setSearchingNetwork(false);
-      }
+      }, 400);
     } else {
-      // Empty or short query shows local defaults
+      setSearchingNetwork(false);
       const localMatches = locationPresets.filter(preset =>
         preset.name.toLowerCase().includes(val.toLowerCase())
       );

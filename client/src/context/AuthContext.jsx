@@ -61,7 +61,9 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await authService.logout();
+      authService.logout().catch((err) => {
+        console.error('Failed to log out from backend', err);
+      });
     } catch (err) {
       console.error('Failed to log out from backend', err);
     }

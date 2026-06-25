@@ -35,7 +35,7 @@ async function bootstrap() {
   // Global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // Automatic Database Seeding
+  // Database Seeding
   await seedDatabase(app);
 
   // Swagger Documentation

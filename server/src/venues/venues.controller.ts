@@ -109,8 +109,14 @@ export class VenuesController {
   @Get('geocode')
   @ApiOperation({ summary: 'Geocode an address', description: 'Safely geocode address string via backend proxy' })
   @ApiQuery({ name: 'q', required: true, type: String })
-  async geocode(@Query('q') query: string) {
-    return this.venuesService.geocode(query);
+  @ApiQuery({ name: 'lat', required: false, type: Number })
+  @ApiQuery({ name: 'lon', required: false, type: Number })
+  async geocode(
+    @Query('q') query: string,
+    @Query('lat') lat?: number,
+    @Query('lon') lon?: number,
+  ) {
+    return this.venuesService.geocode(query, lat ? +lat : undefined, lon ? +lon : undefined);
   }
 
   @Get(':id')

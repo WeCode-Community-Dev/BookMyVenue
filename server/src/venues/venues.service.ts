@@ -295,60 +295,218 @@ export class VenuesService {
     return { venues, total, page, totalPages: Math.ceil(total / limit) };
   }
 
-  async geocode(query: string): Promise<any[]> {
-    return new Promise((resolve) => {
+  private cleanGeocodeQuery(query: string): string {
+    let cleaned = query.replace(/[&,-]/g, ' ');
+    const stopPatterns = [
+      /\bconvention\s+centre\b/gi,
+      /\bconvention\s+center\b/gi,
+      /\bbanquet\s+hall\b/gi,
+      /\bevent\s+space\b/gi,
+      /\bwedding\s+hall\b/gi,
+      /\bmeetup\s+space\b/gi,
+      /\bconference\s+room\b/gi,
+      /\bhotel\b/gi,
+      /\bresort\b/gi,
+    ];
+    for (const pattern of stopPatterns) {
+      cleaned = cleaned.replace(pattern, '');
+    }
+    return cleaned.replace(/\s+/g, ' ').trim();
+  }
+
+  private getDiceSimilarity(str1: string, str2: string): number {
+    const s1 = str1.toLowerCase();
+    const s2 = str2.toLowerCase();
+    if (s1 === s2) return 1.0;
+    if (s1.includes(s2) || s2.includes(s1)) return 0.9;
+    
+    const bigrams1 = new Set<string>();
+    for (let i = 0; i < s1.length - 1; i++) {
+      bigrams1.add(s1.substring(i, i + 2));
+    }
+    
+    const bigrams2 = new Set<string>();
+    for (let i = 0; i < s2.length - 1; i++) {
+      bigrams2.add(s2.substring(i, i + 2));
+    }
+    
+    let intersection = 0;
+    for (const b of bigrams2) {
+      if (bigrams1.has(b)) {
+        intersection++;
+      }
+    }
+    
+    if (bigrams1.size + bigrams2.size === 0) return 0;
+    return (2.0 * intersection) / (bigrams1.size + bigrams2.size);
+  }
+
+  async geocode(query: string, biasLat?: number, biasLon?: number): Promise<any[]> {
+    return new Promise(async (resolve) => {
       if (!query || query.trim().length < 3) {
         return resolve([]);
       }
-      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=10`;
-      
+
+      // Default to Kochi, Kerala, India coordinate if no bias is provided
+      const lat = biasLat !== undefined ? biasLat : 9.9880;
+      const lon = biasLon !== undefined ? biasLon : 76.3023;
+
+      const urlsToTry = [
+        // 1. Direct query with bias
+        `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lat=${lat}&lon=${lon}&limit=15`
+      ];
+
+      const cleaned = this.cleanGeocodeQuery(query);
+      if (cleaned !== query && cleaned.length >= 3) {
+        // 2. Cleaned query with bias
+        urlsToTry.push(`https://photon.komoot.io/api/?q=${encodeURIComponent(cleaned)}&lat=${lat}&lon=${lon}&limit=15`);
+      }
+
+      // 3. Significant individual words
+      const words = cleaned.split(' ').filter(w => w.length >= 3);
+      if (words.length >= 2) {
+        for (const word of words) {
+          urlsToTry.push(`https://photon.komoot.io/api/?q=${encodeURIComponent(word)}&lat=${lat}&lon=${lon}&limit=15`);
+        }
+      }
+
       const options = {
         headers: {
           'User-Agent': 'BookMyVenue/1.0',
         },
       };
 
-      https.get(url, options, (res) => {
-        let data = '';
-        res.on('data', (chunk) => {
-          data += chunk;
-        });
-
-        res.on('end', () => {
-          try {
-            const parsed = JSON.parse(data);
-            const features = parsed.features || [];
-            
-            const results = features.map((feature: any) => {
-              const props = feature.properties || {};
-              const name = props.name || '';
-              const street = props.street ? `${props.street}, ` : '';
-              const city = props.city ? `${props.city}, ` : '';
-              const county = props.county ? `${props.county}, ` : '';
-              const state = props.state ? `${props.state}, ` : '';
-              const country = props.country || '';
-
-              let displayName = `${street}${name}, ${city}${county}${state}${country}`
-                .replace(/,\s*,/g, ',')
-                .replace(/^,\s*/, '')
-                .replace(/,\s*$/, '')
-                .trim();
-
-              return {
-                display_name: displayName,
-                lat: feature.geometry?.coordinates?.[1] || 13.0827,
-                lon: feature.geometry?.coordinates?.[0] || 80.2707,
-              };
+      try {
+        const fetchPromises = urlsToTry.map((url) => {
+          return new Promise<any[]>((resolveFetch) => {
+            https.get(url, options, (res) => {
+              let data = '';
+              res.on('data', (chunk) => { data += chunk; });
+              res.on('end', () => {
+                try {
+                  const parsed = JSON.parse(data);
+                  resolveFetch(parsed.features || []);
+                } catch {
+                  resolveFetch([]);
+                }
+              });
+            }).on('error', () => {
+              resolveFetch([]);
             });
-
-            resolve(results);
-          } catch (e) {
-            resolve([]);
-          }
+          });
         });
-      }).on('error', () => {
+
+        const allResults = await Promise.all(fetchPromises);
+        
+        // Merge and deduplicate by osm_id
+        const features: any[] = [];
+        const existingIds = new Set<number>();
+
+        for (const list of allResults) {
+          for (const f of list) {
+            const id = f.properties?.osm_id;
+            if (id && !existingIds.has(id)) {
+              features.push(f);
+              existingIds.add(id);
+            }
+          }
+        }
+
+        // Rank features
+        const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length >= 3);
+
+        features.sort((a, b) => {
+          const propsA = a.properties || {};
+          const propsB = b.properties || {};
+          const nameA = (propsA.name || '').toLowerCase();
+          const nameB = (propsB.name || '').toLowerCase();
+          const cityA = (propsA.city || '').toLowerCase();
+          const cityB = (propsB.city || '').toLowerCase();
+          const stateA = (propsA.state || '').toLowerCase();
+          const stateB = (propsB.state || '').toLowerCase();
+          const countryA = (propsA.country || '').toLowerCase();
+          const countryB = (propsB.country || '').toLowerCase();
+
+          let scoreA = 0;
+          let scoreB = 0;
+
+          const wordsA = nameA.split(/\s+/).filter((w: string) => w.length >= 3);
+          const wordsB = nameB.split(/\s+/).filter((w: string) => w.length >= 3);
+
+          for (const qw of queryWords) {
+            let maxSimA = 0;
+            for (const wa of wordsA) {
+              const sim = this.getDiceSimilarity(qw, wa);
+              if (sim > maxSimA) maxSimA = sim;
+            }
+            scoreA += maxSimA * 20;
+
+            let maxSimB = 0;
+            for (const wb of wordsB) {
+              const sim = this.getDiceSimilarity(qw, wb);
+              if (sim > maxSimB) maxSimB = sim;
+            }
+            scoreB += maxSimB * 20;
+
+            if (cityA.includes(qw)) scoreA += 5;
+            if (cityB.includes(qw)) scoreB += 5;
+            if (stateA.includes(qw)) scoreA += 3;
+            if (stateB.includes(qw)) scoreB += 3;
+          }
+
+          // Country bias (India)
+          const isIndiaA = countryA === 'india' || propsA.countrycode === 'IN';
+          const isIndiaB = countryB === 'india' || propsB.countrycode === 'IN';
+          if (isIndiaA && !isIndiaB) scoreA += 30;
+          if (isIndiaB && !isIndiaA) scoreB += 30;
+
+          // State bias (Kerala)
+          const isKeralaA = stateA === 'kerala';
+          const isKeralaB = stateB === 'kerala';
+          if (isKeralaA && !isKeralaB) scoreA += 15;
+          if (isKeralaB && !isKeralaA) scoreB += 15;
+
+          // Distance bias
+          const coordA = a.geometry?.coordinates;
+          const coordB = b.geometry?.coordinates;
+
+          if (coordA && coordB) {
+            const distA = Math.sqrt(Math.pow(coordA[1] - lat, 2) + Math.pow(coordA[0] - lon, 2));
+            const distB = Math.sqrt(Math.pow(coordB[1] - lat, 2) + Math.pow(coordB[0] - lon, 2));
+            if (distA < distB) scoreA += 5;
+            if (distB < distA) scoreB += 5;
+          }
+
+          return scoreB - scoreA;
+        });
+
+        // Format to simplified model expected by frontend
+        const formatted = features.slice(0, 10).map((feature: any) => {
+          const props = feature.properties || {};
+          const name = props.name || '';
+          const street = props.street ? `${props.street}, ` : '';
+          const city = props.city ? `${props.city}, ` : '';
+          const county = props.county ? `${props.county}, ` : '';
+          const state = props.state ? `${props.state}, ` : '';
+          const country = props.country || '';
+
+          const displayName = `${street}${name}, ${city}${county}${state}${country}`
+            .replace(/,\s*,/g, ',')
+            .replace(/^,\s*/, '')
+            .replace(/,\s*$/, '')
+            .trim();
+
+          return {
+            display_name: displayName,
+            lat: feature.geometry?.coordinates?.[1] || lat,
+            lon: feature.geometry?.coordinates?.[0] || lon,
+          };
+        });
+
+        resolve(formatted);
+      } catch {
         resolve([]);
-      });
+      }
     });
   }
 }

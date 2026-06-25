@@ -29,7 +29,7 @@ export const venueService = {
   getBlockedDates: (id) => api.get(`/venues/${id}/blocked-dates`),
   addBlockedDate: (id, data) => api.post(`/venues/${id}/blocked-dates`, data),
   removeBlockedDate: (id) => api.delete(`/venues/blocked-dates/${id}`),
-  geocode: (query) => api.get('/venues/geocode', { params: { q: query } }),
+  geocode: (query, lat, lon) => api.get('/venues/geocode', { params: { q: query, lat, lon } }),
 };
 
 export const bookingService = {
