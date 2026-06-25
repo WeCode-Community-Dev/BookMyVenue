@@ -299,8 +299,13 @@ class CreateVenueRequest(BaseModel):
         return self
 
 
-class VenueSlotResponse(VenueSlotCreate):
+class VenueSlotResponse(BaseModel):
     id: UUID
+    slot_name: str
+    start_time: time
+    end_time: time
+    capacity: Optional[int]
+    price: float
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -312,8 +317,10 @@ class AmenityResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class VenueServiceResponse(VenueServiceCreate):
+class VenueServiceResponse(BaseModel):
     id: UUID
+    service_name: str
+    price: float
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -321,8 +328,7 @@ class VenueServiceResponse(VenueServiceCreate):
 class VenueImageResponse(BaseModel):
     id: UUID
     image_url: str
-    is_cover: bool = False
-    sort_order: int = 0
+    sort_order: int
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -330,7 +336,7 @@ class VenueImageResponse(BaseModel):
 
 class VenueResponse(BaseModel):
     id: UUID
-    owner_profile_id: UUID
+    owner_id: UUID
     venue_name: str
     slug: str
     category: VenueCategory
@@ -358,6 +364,16 @@ class VenueResponse(BaseModel):
     published_at: Optional[datetime]
     created_at: datetime
     updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CreateVenueResponse(BaseModel):
+    id: UUID
+    venue_name: str
+    slug: str
+    status: str
+    verification_status: str
 
     model_config = ConfigDict(from_attributes=True)
 

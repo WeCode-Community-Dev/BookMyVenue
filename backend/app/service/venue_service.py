@@ -1,16 +1,118 @@
 import re
+from typing import List
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 
-from app.schema.venue_schema import CreateVenueRequest, VenueResponse
-from app.model.venue_model import Venue
+from app.schema.venue_schema import (
+    AmenityResponse,
+    CreateVenueRequest,
+    CreateVenueResponse,
+    VenueImageResponse,
+    VenueLocation,
+    VenueResponse,
+    VenueServiceResponse,
+    VenueSlotResponse,
+)
+from app.model.venue_model import (
+    Venue,
+    VenueAmenity,
+    VenueImage,
+    VenueServiceSchema,
+    VenueSlot,
+)
 
 
 class VenueService:
 
-    def generate_slug(text: str) -> str:
+    def map_venue_to_response(self, venue: Venue) -> VenueResponse:
+        return VenueResponse(
+            id=venue.id,
+            owner_id=venue.owner_id,
+            venue_name=venue.venue_name,
+            slug=venue.slug,
+            category=venue.category,
+            description=venue.description,
+            location=VenueLocation(
+                address=venue.address,
+                city=venue.city,
+                state=venue.state,
+                country=venue.country,
+                pincode=venue.pincode,
+                latitude=venue.latitude,
+                longitude=venue.longitude,
+            ),
+            min_capacity=venue.min_capacity,
+            max_capacity=venue.max_capacity,
+            cover_image_url=venue.cover_image_url,
+            virtual_tour_url=venue.virtual_tour_url,
+            # amenities=[
+            #     AmenityResponse(
+            #         id=a.id,
+            #         name=a.name,
+            #     )
+            #     for a in venue.amenities
+            # ],
+            # gallery_images=[
+            #     VenueImageResponse(
+            #         id=image.id,
+            #         image_url=image.image_url,
+            #         sort_order=image.sort_order,
+            #         created_at=image.created_at,
+            #     )
+            #     for image in venue.images
+            # ],
+            # slots=[
+            #     VenueSlotResponse(
+            #         id=slot.id,
+            #         slot_name=slot.slot_name,
+            #         start_time=slot.start_time,
+            #         end_time=slot.end_time,
+            #         capacity=slot.capacity,
+            #         price=slot.price,
+            #     )
+            #     for slot in venue.slots
+            # ],
+            # services=[
+            #     VenueServiceResponse(
+            #         id=service.id,
+            #         service_name=service.service_name,
+            #         price=service.price,
+            #     )
+            #     for service in venue.services
+            # ],
+            # amenities=[AmenityResponse.model_validate(a.ame) for a in venue.amenities],
+            amenities=[
+                AmenityResponse.model_validate(a.amenity)
+                for a in venue.amenities
+                if a.amenity
+            ],
+            slots=[VenueSlotResponse.model_validate(slot) for slot in venue.slots],
+            services=[
+                VenueServiceResponse.model_validate(service)
+                for service in venue.services
+            ],
+            gallery_images=[
+                VenueImageResponse.model_validate(image) for image in venue.images
+            ],
+            instant_booking=venue.instant_booking,
+            status=venue.status,
+            verification_status=venue.verification_status,
+            average_rating=venue.average_rating,
+            total_reviews=venue.total_reviews,
+            view_count=venue.view_count,
+            booking_count=venue.booking_count,
+            is_featured=venue.is_featured,
+            approved_by=venue.approved_by,
+            approved_at=venue.approved_at,
+            rejection_reason=venue.rejection_reason,
+            published_at=venue.published_at,
+            created_at=venue.created_at,
+            updated_at=venue.updated_at,
+        )
+
+    def generate_slug(self, text: str) -> str:
         try:
             """
             Convert:
@@ -41,13 +143,13 @@ class VenueService:
         db: Session,
         owner_id: str,
         data: CreateVenueRequest,
-    ) -> VenueResponse:
+    ) -> CreateVenueResponse:
         try:
 
-            venue_slug = self.generate_slug(data.venue_name)
+            venue_slug = self.generate_slug(text=data.venue_name)
 
             new_venue = Venue(
-                owner_profile_id=owner_id,
+                owner_id=owner_id,
                 venue_name=data.venue_name,
                 slug=venue_slug,
                 category=data.category,
@@ -69,11 +171,108 @@ class VenueService:
             )
 
             db.add(new_venue)
+
+            # Generate venue ID before commit
+            db.flush()
+
+            # ---------------------------
+            # Gallery Images
+            # ---------------------------
+            for index, image_url in enumerate(data.gallery_images):
+                db.add(
+                    VenueImage(
+                        venue_id=new_venue.id,
+                        image_url=str(image_url),
+                        sort_order=index + 1,
+                    )
+                )
+
+            # ---------------------------
+            # Slots
+            # ---------------------------
+            for slot in data.slots:
+                db.add(
+                    VenueSlot(
+                        venue_id=new_venue.id,
+                        slot_name=slot.slot_name,
+                        start_time=slot.start_time,
+                        end_time=slot.end_time,
+                        capacity=slot.capacity,
+                        price=slot.price,
+                    )
+                )
+
+            # ---------------------------
+            # Services
+            # ---------------------------
+            for service in data.services:
+                db.add(
+                    VenueServiceSchema(
+                        venue_id=new_venue.id,
+                        service_name=service.service_name,
+                        price=service.price,
+                    )
+                )
+
+            # ---------------------------
+            # Amenities
+            # ---------------------------
+            for amenity_id in data.amenity_ids:
+                db.add(
+                    VenueAmenity(
+                        venue_id=new_venue.id,
+                        amenity_id=amenity_id,
+                    )
+                )
+
             db.commit()
             db.refresh(new_venue)
 
-            return VenueResponse.model_validate(new_venue)
+            return CreateVenueResponse.model_validate(new_venue)
 
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail=str(e),
+            )
+
+    def get_all_venues(
+        self,
+        db: Session,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> List[VenueResponse]:
+
+        try:
+
+            venues = (
+                db.query(Venue)
+                .options(
+                    joinedload(Venue.images),
+                    joinedload(Venue.slots),
+                    joinedload(Venue.services),
+                    joinedload(Venue.amenities).joinedload(VenueAmenity.amenity),
+                )
+                .order_by(Venue.created_at.desc())
+                .offset(skip)
+                .limit(limit)
+                .all()
+            )
+
+            for venue in venues:
+                print("Venue:", venue.id)
+                print("Images:", len(venue.images))
+                print("Slots:", len(venue.slots))
+                print("Services:", len(venue.services))
+                print("Amenities:", len(venue.amenities))
+
+            # return venues
+
+            return [self.map_venue_to_response(v) for v in venues]
         except HTTPException:
             raise
 

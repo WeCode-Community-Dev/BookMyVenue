@@ -34,9 +34,9 @@ class Venue(Base):
         default=uuid4,
     )
 
-    owner_profile_id: Mapped[UUID] = mapped_column(
+    owner_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("owner_profiles.id"),
+        ForeignKey("users.id"),
         nullable=False,
         index=True,
     )
@@ -209,7 +209,7 @@ class Venue(Base):
     )
 
     services = relationship(
-        "VenueService",
+        "VenueServiceSchema",
         back_populates="venue",
         cascade="all, delete-orphan",
     )
@@ -331,7 +331,7 @@ class VenueSlot(Base):
     )
 
 
-class VenueService(Base):
+class VenueServiceSchema(Base):
     __tablename__ = "venue_services"
 
     id: Mapped[UUID] = mapped_column(
