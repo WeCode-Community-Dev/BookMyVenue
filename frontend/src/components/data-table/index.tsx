@@ -1,13 +1,11 @@
 import type { Pagination } from 'src/api/types/common';
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
-import Button from '@mui/material/Button';
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
@@ -16,10 +14,10 @@ import { TableRow, TableCell, TableHead, type TableCellProps } from '@mui/materi
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 
 import { TableToolbar } from './table-toolbar';
+import { BlueButton } from '../buttons/blue-button';
 
 
 // ----------------------------------------------------------------------
@@ -72,15 +70,7 @@ export function DataTable({
                 </Typography>
                 {
                     addBtn &&
-                    <Link to={addBtn.url}>
-                        <Button
-                            variant="contained"
-                            color="inherit"
-                            startIcon={<Iconify icon="mingcute:add-line" />}
-                        >
-                            {addBtn.title}
-                        </Button>
-                    </Link>
+                    <BlueButton href={addBtn.url} label={addBtn.title} />
                 }
             </Box>
 

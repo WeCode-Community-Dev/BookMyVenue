@@ -17,6 +17,10 @@ export function ListUsers() {
             fetchData={AdminApiService.listUsers}
             title='All Users'
             searchPlaceHolder="Search User..."
+            addBtn={{
+                title: "Add User",
+                url: '/admin/users/create'
+            }}
             headings={[
                 {
                     id: 'name',

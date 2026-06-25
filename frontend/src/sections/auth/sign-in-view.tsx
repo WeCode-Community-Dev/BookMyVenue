@@ -3,7 +3,8 @@ import { Navigate, useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
-import Button from '@mui/material/Button';
+import { Alert } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
@@ -27,12 +28,14 @@ export function SignInView() {
   const [email, setEmail] = useState('user@bmv.com');
   const [password, setPassword] = useState('password123');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleSignIn = useCallback(async () => {
 
     setIsLoading(true);
 
     try {
+      setErrorMessage('')
       const response = await AuthApiService.login({ email, password });
       login(
         {
@@ -60,7 +63,7 @@ export function SignInView() {
           break;
       }
     } catch (error) {
-      console.error(error);
+      setErrorMessage((error as any).response?.data?.message)
     } finally {
       setIsLoading(false);
     }
@@ -76,6 +79,9 @@ export function SignInView() {
         flexDirection: 'column',
       }}
     >
+      {
+        errorMessage && <Alert sx={{ width: '100%', mb: 4 }} severity='error'>{errorMessage}</Alert>
+      }
       <TextField
         fullWidth
         name="email"
@@ -114,7 +120,8 @@ export function SignInView() {
         sx={{ mb: 3 }}
       />
 
-      <Button
+      <LoadingButton
+        loading={isLoading}
         fullWidth
         size="large"
         type="submit"
@@ -123,7 +130,7 @@ export function SignInView() {
         onClick={handleSignIn}
       >
         Sign in
-      </Button>
+      </LoadingButton>
     </Box>
   );
 

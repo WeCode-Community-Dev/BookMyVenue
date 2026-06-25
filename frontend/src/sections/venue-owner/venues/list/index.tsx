@@ -12,6 +12,10 @@ export function ListVenues() {
             dataKey='venues-for-owners-list'
             fetchData={VenueApiService.listMyVenues}
             title='My Venues'
+            addBtn={{
+                title: 'Add Venue',
+                url: '/owner/venues/create'
+            }}
             headings={[
                 {
                     id: 'name',

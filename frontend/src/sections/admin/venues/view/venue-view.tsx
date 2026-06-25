@@ -30,7 +30,7 @@ export function VenueView() {
   const table = useTable();
 
   const [filterName, setFilterName] = useState('');
-  const { data, isLoading, error } = useQuery({
+  const { data } = useQuery({
     queryKey: ['users'],
     queryFn: () => AdminApiService.listVenues(table.page + 1, table.rowsPerPage),
   });

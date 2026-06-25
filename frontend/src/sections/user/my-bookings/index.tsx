@@ -42,7 +42,6 @@ interface BookingCardProps {
 }
 
 function BookingCard({ booking, onCancel }: BookingCardProps) {
-    const navigate = useNavigate();
     const statusCfg = STATUS_CONFIG[booking.status];
     const nights = Math.max(1, dayjs(booking.endDate).diff(dayjs(booking.startDate), 'day'));
 

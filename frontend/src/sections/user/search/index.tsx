@@ -2,7 +2,7 @@ import type { VenueSearchFilters } from 'src/api/types/venue.type';
 
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 import {
     Box,
@@ -186,7 +186,6 @@ function FiltersPanel({
 }
 
 export function SearchView() {
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));

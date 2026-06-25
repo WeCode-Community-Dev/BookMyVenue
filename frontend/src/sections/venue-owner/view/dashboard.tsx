@@ -24,6 +24,7 @@ import { DashboardApiService } from 'src/api/dashboard';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Iconify } from 'src/components/iconify';
+import { BlueButton } from 'src/components/buttons/blue-button';
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 
@@ -103,18 +104,7 @@ export function OwnerDashboard() {
                         Welcome back — {dayjs().format('dddd, D MMMM YYYY')}
                     </Typography>
                 </Box>
-                <Button
-                    variant="contained"
-                    startIcon={<Iconify icon="mdi:plus" />}
-                    onClick={() => navigate('/owner/venues/create')}
-                    sx={{
-                        borderRadius: 2.5,
-                        fontWeight: 700,
-                        background: 'linear-gradient(135deg, #1877F2 0%, #8E33FF 100%)',
-                    }}
-                >
-                    Add Venue
-                </Button>
+                <BlueButton href='/owner/venues/create' label='Add Venue' />
             </Stack>
 
             {isLoading ? (
