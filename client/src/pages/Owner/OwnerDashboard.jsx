@@ -14,7 +14,8 @@ import {
   MdCurrencyRupee, 
   MdCheck, 
   MdClose,
-  MdAdd
+  MdAdd,
+  MdMoreVert
 } from 'react-icons/md';
 import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -72,6 +73,18 @@ export default function OwnerDashboard() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedVenueToDelete, setSelectedVenueToDelete] = useState(null);
   const [selectedVenueNameToDelete, setSelectedVenueNameToDelete] = useState('');
+
+  const [activeMenuVenueId, setActiveMenuVenueId] = useState(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (activeMenuVenueId && !event.target.closest('.venue-menu-container')) {
+        setActiveMenuVenueId(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [activeMenuVenueId]);
 
   useEffect(() => {
     fetchOwnerData();
@@ -613,20 +626,20 @@ export default function OwnerDashboard() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 items-start">
                 {venues.map((v) => (
-                  <div key={v.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
-                    <div className="h-44 w-full bg-slate-100 overflow-hidden relative">
+                  <div key={v.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                    <div className="h-32 w-full bg-slate-100 overflow-hidden relative">
                       {v.status === 'suspended' ? (
-                        <div className="absolute top-3 left-3 bg-rose-600 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                        <div className="absolute top-2.5 left-2.5 bg-rose-600 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-md z-10 flex items-center gap-1">
                           ⚠️ Suspended
                         </div>
                       ) : v.status === 'pending' ? (
-                        <div className="absolute top-3 left-3 bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                        <div className="absolute top-2.5 left-2.5 bg-amber-500 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-md z-10 flex items-center gap-1">
                           ⏳ Pending Approval
                         </div>
                       ) : v.status === 'rejected' ? (
-                        <div className="absolute top-3 left-3 bg-slate-500 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                        <div className="absolute top-2.5 left-2.5 bg-slate-500 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-md z-10 flex items-center gap-1">
                           ❌ Rejected
                         </div>
                       ) : null}
@@ -640,57 +653,80 @@ export default function OwnerDashboard() {
                         />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 text-slate-300">
-                          <span className="text-4xl mb-1">🏢</span>
-                          <span className="text-[10px] font-semibold uppercase tracking-wider">No image</span>
+                          <span className="text-3xl mb-0.5">🏢</span>
+                          <span className="text-[9px] font-semibold uppercase tracking-wider">No image</span>
                         </div>
                       )}
                     </div>
-                    <div className="p-5 flex-grow">
-                      <h4 className="font-black text-slate-900 text-lg leading-tight mb-1">{v.venueName}</h4>
-                      <p className="text-xs text-slate-400 mb-3 truncate">📍 {v.address}</p>
+                    <div className="p-4 flex flex-col gap-2.5">
+                      <div className="flex justify-between items-start gap-2 relative venue-menu-container">
+                        <h4 className="font-black text-slate-900 text-sm leading-tight truncate flex-grow" title={v.venueName}>
+                          {v.venueName}
+                        </h4>
+                        <div className="relative shrink-0">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveMenuVenueId(activeMenuVenueId === v.id ? null : v.id);
+                            }}
+                            className="p-1 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-700 transition-colors cursor-pointer flex items-center justify-center"
+                          >
+                            <MdMoreVert className="text-lg" />
+                          </button>
+
+                          {activeMenuVenueId === v.id && (
+                            <div className="absolute right-0 mt-1 w-32 bg-white border border-slate-100 rounded-xl shadow-lg z-20 py-1.5">
+                              <button
+                                onClick={() => {
+                                  setActiveMenuVenueId(null);
+                                  navigate(`/venues/${v.id}`);
+                                }}
+                                className="w-full px-3 py-1.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <span>👁️</span> View Details
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setActiveMenuVenueId(null);
+                                  navigate(`/owner/venues/edit/${v.id}`);
+                                }}
+                                className="w-full px-3 py-1.5 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <span>✏️</span> Edit Space
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setActiveMenuVenueId(null);
+                                  handleDeleteVenue(v);
+                                }}
+                                className="w-full px-3 py-1.5 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <span>🗑️</span> Delete Space
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-slate-400 truncate">📍 {v.address}</p>
 
                       {v.status === 'suspended' && v.suspensionReason && (
-                        <div className="mb-3.5 p-3 bg-rose-50 border border-rose-100/70 rounded-xl text-left">
-                          <span className="text-[10px] uppercase font-bold text-rose-700 block mb-0.5 tracking-wider">Suspension Reason:</span>
-                          <p className="text-xs text-rose-600 font-semibold italic leading-normal">"{v.suspensionReason}"</p>
+                        <div className="p-2 bg-rose-50 border border-rose-100/70 rounded-xl text-left">
+                          <span className="text-[9px] uppercase font-bold text-rose-700 block mb-0.5 tracking-wider">Suspension Reason:</span>
+                          <p className="text-[11px] text-rose-600 font-semibold italic leading-normal">"{v.suspensionReason}"</p>
                         </div>
                       )}
                       
-                      <div className="flex flex-wrap gap-2.5 mb-4">
+                      <div className="flex flex-wrap gap-1.5">
                         {v.amenities?.slice(0, 3).map((am, i) => (
-                          <span key={i} className="py-1 px-2 bg-slate-50 border border-slate-100 rounded-md text-[10px] text-slate-500 font-semibold">{am}</span>
+                          <span key={i} className="py-0.5 px-1.5 bg-slate-50 border border-slate-100 rounded text-[9px] text-slate-500 font-semibold">{am}</span>
                         ))}
                       </div>
                       
-                      <div className="flex items-center justify-between text-xs text-slate-600 pt-3 border-t border-slate-50">
+                      <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-100/70 mt-1">
                         <span>
-                          {v.pricingUnit === 'day' ? 'Daily:' : 'Hourly:'} <span className="font-bold text-slate-900">₹{v.pricingUnit === 'day' ? v.pricePerDay : v.pricePerHour}</span>
+                          {v.pricingUnit === 'day' ? 'Daily:' : 'Hourly:'} <span className="font-bold text-slate-900">₹{Number(v.pricingUnit === 'day' ? v.pricePerDay : v.pricePerHour).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </span>
-                        <span>Seating: <span className="font-bold text-slate-900">{v.capacity} pax</span></span>
-                      </div>
-
-                      <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100">
-                        <button
-                          onClick={() => navigate(`/venues/${v.id}`)}
-                          className="flex-1 py-2 px-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-lg border border-slate-200/60 transition-all text-center cursor-pointer flex items-center justify-center gap-1"
-                          title="View live public page"
-                        >
-                          <span>👁️</span> View
-                        </button>
-                        <button
-                          onClick={() => navigate(`/owner/venues/edit/${v.id}`)}
-                          className="flex-1 py-2 px-2.5 bg-primary hover:bg-primary-dark text-white font-bold text-xs rounded-lg transition-all text-center cursor-pointer shadow-sm flex items-center justify-center gap-1"
-                          title="Edit space details"
-                        >
-                          <span>✏️</span> Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteVenue(v)}
-                          className="flex-1 py-2 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-lg border border-rose-200/50 transition-all text-center cursor-pointer flex items-center justify-center gap-1"
-                          title="Delete space listing"
-                        >
-                          <span>🗑️</span> Delete
-                        </button>
+                        <span>Seating: <span className="font-bold text-slate-900">{Number(v.capacity).toLocaleString('en-IN')} pax</span></span>
                       </div>
                     </div>
                   </div>
