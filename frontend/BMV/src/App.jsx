@@ -1,6 +1,7 @@
 
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -23,12 +24,18 @@ function ForgotPasswordPlaceholder() {
   );
 }
 
+// the root page should depend on login, logged in users go to dashboard, others go to login
+function RootRedirect() {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+}
+
 function App() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/venues" replace />} />
+          <Route path="/" element={<RootRedirect />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route
