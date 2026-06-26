@@ -29,11 +29,8 @@ import { UserBookingApiService } from 'src/api/user-booking';
 import { Iconify } from 'src/components/iconify';
 
 const STATUS_CONFIG: Record<BookingStatus, { label: string; color: 'default' | 'warning' | 'success' | 'error' | 'info'; icon: string }> = {
-    PENDING: { label: 'Pending', color: 'warning', icon: 'mdi:clock-outline' },
-    CONFIRMED: { label: 'Confirmed', color: 'success', icon: 'mdi:check-circle-outline' },
+    BOOKED: { label: 'Booked', color: 'success', icon: 'mdi:check-circle-outline' },
     CANCELLED: { label: 'Cancelled', color: 'error', icon: 'mdi:close-circle-outline' },
-    COMPLETED: { label: 'Completed', color: 'info', icon: 'mdi:flag-checkered' },
-    REFUNDED: { label: 'Refunded', color: 'default', icon: 'mdi:cash-refund' },
 };
 
 interface BookingCardProps {

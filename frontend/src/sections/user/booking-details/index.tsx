@@ -30,11 +30,8 @@ import { UserBookingApiService } from 'src/api/user-booking';
 import { Iconify } from 'src/components/iconify';
 
 const STATUS_CONFIG: Record<BookingStatus, { label: string; color: 'default' | 'warning' | 'success' | 'error' | 'info'; icon: string; bg: string; text: string }> = {
-    PENDING: { label: 'Pending Confirmation', color: 'warning', icon: 'mdi:clock-outline', bg: '#FFF8E1', text: '#F59E0B' },
-    CONFIRMED: { label: 'Confirmed', color: 'success', icon: 'mdi:check-circle-outline', bg: '#F0FDF4', text: '#16A34A' },
+    BOOKED: { label: 'Booked', color: 'success', icon: 'mdi:check-circle-outline', bg: '#F0FDF4', text: '#16A34A' },
     CANCELLED: { label: 'Cancelled', color: 'error', icon: 'mdi:close-circle-outline', bg: '#FEF2F2', text: '#DC2626' },
-    COMPLETED: { label: 'Completed', color: 'info', icon: 'mdi:flag-checkered', bg: '#EFF6FF', text: '#2563EB' },
-    REFUNDED: { label: 'Refunded', color: 'default', icon: 'mdi:cash-refund', bg: '#F9FAFB', text: '#6B7280' },
 };
 
 function InfoRow({ label, value, icon }: { label: string; value: string; icon?: string }) {
@@ -105,7 +102,7 @@ export function BookingDetailsView() {
         );
     }
 
-    const statusCfg = STATUS_CONFIG[booking.status] ?? STATUS_CONFIG.PENDING;
+    const statusCfg = STATUS_CONFIG[booking.status] ?? STATUS_CONFIG.BOOKED;
     const bookingRef = (booking.bookingId ?? booking.id ?? '').slice(-8).toUpperCase();
     const nights = Math.max(1, dayjs(booking.endDate).diff(dayjs(booking.startDate), 'day'));
     const baseAmount = booking.totalAmount ? Math.round(booking.totalAmount / 1.1) : 0;
@@ -346,11 +343,11 @@ export function BookingDetailsView() {
                                     </Typography>
                                 </Stack>
                                 <Typography variant="body2" color="text.secondary">
-                                    {booking.status === 'PENDING' && 'Your booking is awaiting confirmation from the venue host.'}
-                                    {booking.status === 'CONFIRMED' && 'Your booking is confirmed. Enjoy your event!'}
+                                    {/* {booking.status === 'PENDING' && 'Your booking is awaiting confirmation from the venue host.'} */}
+                                    {booking.status === 'BOOKED' && 'Your booking is confirmed. Enjoy your event!'}
                                     {booking.status === 'CANCELLED' && 'This booking has been cancelled.'}
-                                    {booking.status === 'COMPLETED' && 'This booking has been completed. Thank you!'}
-                                    {booking.status === 'REFUNDED' && 'A refund has been processed for this booking.'}
+                                    {/* {booking.status === 'COMPLETED' && 'This booking has been completed. Thank you!'} */}
+                                    {/* {booking.status === 'REFUNDED' && 'A refund has been processed for this booking.'} */}
                                 </Typography>
                             </Paper>
 

@@ -217,11 +217,8 @@ export interface SavedVenue {
 // ======================================================
 
 export enum BookingStatus {
-    PENDING = "PENDING",
-    CONFIRMED = "CONFIRMED",
+    BOOKED = "BOOKED",
     CANCELLED = "CANCELLED",
-    COMPLETED = "COMPLETED",
-    REFUNDED = "REFUNDED",
 }
 
 export interface BookingSummary {
