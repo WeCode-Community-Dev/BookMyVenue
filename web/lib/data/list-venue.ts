@@ -134,10 +134,12 @@ export const listVenueDefaultForm = {
   name: "",
   description: "",
   address: "",
-  coordinates: "",
+  latitude: "",
+  longitude: "",
   country: "United Kingdom",
   state: "Greater London",
   city: "London",
+  postalCode: "",
   timezone: "Europe/London",
 };
 

@@ -3,7 +3,6 @@
 import { MapPin } from "lucide-react";
 
 import { IconInput } from "@/components/auth/icon-input";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,6 +15,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { ListVenueBasicsForm } from "@/lib/data/list-venue";
 import { timezoneOptions } from "@/lib/data/list-venue";
+import MapDialogBox from "@/components/map/map-dialogbox";
 
 type ListVenueStepOneFormProps = {
   value: ListVenueBasicsForm;
@@ -32,6 +32,7 @@ export function ListVenueStepOneForm({
   ) {
     onChange({ ...value, [field]: fieldValue });
   }
+  console.log('value', value);
 
   return (
     <div className="flex flex-col gap-5">
@@ -71,21 +72,18 @@ export function ListVenueStepOneForm({
           Location Coordinates
         </Label>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-10 shrink-0"
-            onClick={() => {}}
-          >
-            Fetch Location
-          </Button>
+          <MapDialogBox 
+          onLocationSelect={(lat: number, lng: number) => {
+            onChange({ ...value, latitude: lat.toString(), longitude: lng.toString() });
+          }} 
+          initialLocation={{ lat: parseFloat(value.latitude), lng: parseFloat(value.longitude) }} />
           <Input
             id="coordinates"
             name="coordinates"
             placeholder="Latitude, Longitude"
-            value={value.coordinates}
-            onChange={(e) => updateField("coordinates", e.target.value)}
+            value={ value.latitude && value.longitude ? `${value.latitude},${value.longitude}` : ""}
             className="h-10"
+            disabled
           />
         </div>
       </div>
@@ -127,25 +125,38 @@ export function ListVenueStepOneForm({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="timezone" className="text-sm font-medium text-on-surface">
-            Timezone
+          <Label htmlFor="city" className="text-sm font-medium text-on-surface">
+            Postal Code
           </Label>
-          <Select
-            value={value.timezone}
-            onValueChange={(timezone) => updateField("timezone", timezone)}
-          >
-            <SelectTrigger id="timezone" className="h-10 w-full">
-              <SelectValue placeholder="Select timezone" />
-            </SelectTrigger>
-            <SelectContent>
-              {timezoneOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input
+            id="postalCode"
+            name="postalCode"
+            value={value.postalCode}
+            onChange={(e) => updateField("postalCode", e.target.value)}
+            className="h-10"
+            placeholder="pin code"
+          />
         </div>
+      </div>
+      <div className="flex flex-col gap-2 mb-2">
+        <Label htmlFor="timezone" className="text-sm font-medium text-on-surface">
+          Timezone
+        </Label>
+        <Select
+          value={value.timezone}
+          onValueChange={(timezone) => updateField("timezone", timezone)}
+        >
+          <SelectTrigger id="timezone" className="h-14 w-full">
+            <SelectValue placeholder="Select timezone" />
+          </SelectTrigger>
+          <SelectContent>
+            {timezoneOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
