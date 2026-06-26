@@ -12,9 +12,9 @@ import LogoutUseCase from "../../application/user/usecases/LogoutUseCase.js";
 import RefreshTokenUseCase from "../../application/user/usecases/RefreshTokenUseCase.js";
 
 // AdminUserUsecases
-import { AdminGetAllUsersUsecase } from "../../application/admin/usecases/user/admin.getAllUsers.usecase.js";
-import { AdminBlockUserUsecase } from "../../application/admin/usecases/user/admin.blockUser.usecase.js";
-import { AdminUnblockUserUsecase } from "../../application/admin/usecases/user/admin.unblockUser.usecase.js";
+
+import { AdminGetAllUsersUsecase } from '../../application/admin/usecases/user/admin.getAllUsers.usecase.js'
+import { AdminUpdateUserStatusUsecase } from '../../application/admin/usecases/user/admin.updateUserStatus.usecase.js'
 
 import { VendorVenueController } from "../controllers/vendor/vendor.venueController.js";
 import { UserVenueController } from "../controllers/user/user.venueController.js";
@@ -61,9 +61,10 @@ const iCloudinaryService = new CloudinaryService();
 //adminUserUsecases
 const iAdminGetAllUsersUsecase = new AdminGetAllUsersUsecase(iUserRepository);
 
-const iAdminBlockUserUsecase = new AdminBlockUserUsecase(iUserRepository);
-
-const iAdminUnblockUserUsecase = new AdminUnblockUserUsecase(iUserRepository);
+const iAdminUpdateUserStatusUsecase =
+    new AdminUpdateUserStatusUsecase(
+        iUserRepository
+    )
 
 //auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(
@@ -127,11 +128,13 @@ export const iVendorVenueController = new VendorVenueController(
 );
 
 //adminUserController
-export const iAdminUserController = new AdminUserController(
-  iAdminGetAllUsersUsecase,
-  iAdminBlockUserUsecase,
-  iAdminUnblockUserUsecase
-);
+
+export const iAdminUserController =
+    new AdminUserController(
+        iAdminGetAllUsersUsecase,
+        iAdminUpdateUserStatusUsecase,
+    )
+
 
 export const iUserVenueController = new UserVenueController(
   iUserGetAllVenues,

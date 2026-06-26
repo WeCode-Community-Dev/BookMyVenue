@@ -1,69 +1,113 @@
-import React from 'react'
-import { NavLink } from 'react-router-dom';
+import React from "react";
+import { NavLink } from "react-router-dom";
+import SidebarProfileCard from "./SidebarProfileCard";
+
+import {
+  LayoutDashboard,
+  Building2,
+  PlusSquare,
+  CalendarDays,
+  User,
+  Settings,
+  LogOut,
+  MapPin,
+} from "lucide-react";
 
 const VendorSidebar = () => {
+  const menuItems = [
+    {
+      name: "Dashboard",
+      path: "/",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "My Venues",
+      path: "/venues",
+      icon: Building2,
+    },
+    {
+      name: "Add Venue",
+      path: "/addvenue",
+      icon: PlusSquare,
+    },
+    {
+      name: "Bookings",
+      path: "/bookings",
+      icon: CalendarDays,
+    },
+    {
+      name: "Profile",
+      path: "/profile",
+      icon: User,
+    },
+    {
+      name: "Settings",
+      path: "/settings",
+      icon: Settings,
+    },
+  ];
+
   return (
-    <aside className='w-64 min-h-screen bg-gray-900 text-white p-6'>
-      <h1 className='text-2xl font-bold mb-8'>  BookMyVenue  </h1> 
+    <aside className="w-64 min-h-screen bg-slate-900 text-white p-6 flex flex-col">
 
-      <ul className='space-y-4'>
-        <li>
-          < NavLink to="/" className={({isActive})=>
-            isActive
-            ?"text-indigo-400"
-            :"hover:text-indigo-400"}>
-              Dashboard
-          </NavLink> 
-        </li>  
-        
-        <li>
-          < NavLink to="/venues" className={({isActive})=>
-            isActive
-            ?"text-indigo-400"
-            :"hover:text-indigo-400"}>
-              My Venues
-          </NavLink> 
-        </li>  
-        
-        <li>
-          < NavLink to="/addvenue" className={({isActive})=>
-            isActive
-            ?"text-indigo-400"
-            :"hover:text-indigo-400"}>
-              Add Venue
-          </NavLink> 
-        </li>  
-        
-        <li>
-          < NavLink to="/bookings" className={({isActive})=>
-            isActive
-            ?"text-indigo-400"
-            :"hover:text-indigo-400"}>
-              Bookings
-          </NavLink> 
-        </li>  
-        
-        <li>
-          < NavLink to="/profile" className={({isActive})=>
-            isActive
-            ?"text-indigo-400"
-            :"hover:text-indigo-400"}>
-              Profile
-          </NavLink> 
-        </li>  
-        
-        <li>
-          < NavLink to="/settings" className={({isActive})=>
-            isActive
-            ?"text-indigo-400"
-            :"hover:text-indigo-400"}>
-              Settings
-          </NavLink> 
-        </li>  
+      {/* Logo Section */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+          <MapPin size={20} />
+        </div>
 
-      </ul>     
+        <div>
+          <h1 className="font-bold text-lg">
+            BookMyVenue
+          </h1>
+
+          <p className="text-xs text-gray-400 uppercase tracking-wide">
+            Vendor Portal
+          </p>
+        </div>
+      </div>
+
+      {/* Profile Card */}
+      <SidebarProfileCard />
+
+      {/* Menu Label */}
+      <p className="text-xs uppercase text-gray-400 tracking-wider mt-6 mb-3">
+        Main Menu
+      </p>
+
+      {/* Navigation */}
+      <ul className="space-y-2">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <li key={item.path}>
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  isActive
+                    ? "flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-600 text-white font-medium"
+                    : "flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-slate-800 hover:text-white transition"
+                }
+              >
+                <Icon size={18} />
+                {item.name}
+              </NavLink>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* Logout */}
+      <div className="mt-auto pt-8 border-t border-slate-800">
+        <button className="flex items-center gap-3 text-gray-300 hover:text-red-400 transition">
+          <LogOut size={18} />
+          Logout
+        </button>
+      </div>
+
     </aside>
   );
 };
 
-export default VendorSidebar
+export default VendorSidebar;

@@ -10,13 +10,8 @@ router.get(
 )
 
 router.patch(
-    ROUTES.ADMIN.BLOCK_USER,
-    iAdminUserController.blockUser
-)
-
-router.patch(
-    ROUTES.ADMIN.UNBLOCK_USER,
-    iAdminUserController.unblockUser
+    ROUTES.ADMIN.UPDATE_USER_STATUS,
+    iAdminUserController.updateUserStatus
 )
 
 export default router

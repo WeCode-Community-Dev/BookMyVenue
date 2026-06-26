@@ -62,14 +62,12 @@ export class UserRepository extends IUserRepository {
         };
     }
 
-    async blockUser(id) {
-        console.log("blocked repo")
-
+    async updateBlockStatus(id, isBlocked) {
         const document =
             await UserModel.findByIdAndUpdate(
                 id,
                 {
-                    isBlocked: true
+                    isBlocked
                 },
                 {
                     new: true
@@ -78,24 +76,6 @@ export class UserRepository extends IUserRepository {
 
         if (!document) return null;
         console.log(document)
-
-        return UserMapper.mapToEntity(document);
-    }
-
-    async unblockUser(id) {
-
-        const document =
-            await UserModel.findByIdAndUpdate(
-                id,
-                {
-                    isBlocked: false
-                },
-                {
-                    new: true
-                }
-            );
-
-        if (!document) return null;
 
         return UserMapper.mapToEntity(document);
     }

@@ -17,6 +17,9 @@ import("@/presentation/pages/vendor/Profile"))
 const AddVenue=lazy(()=>
 import("@/presentation/pages/vendor/AddVenue"))
 
+const Settings=lazy(()=>
+import("@/presentation/pages/vendor/Settings"))
+
 
 
 function App() {
@@ -29,6 +32,7 @@ function App() {
           <Route path="/bookings" element={<Bookings/>}/>
           <Route path="/addvenue" element={<AddVenue/>}/>
           <Route path="/profile" element={<Profile/>}/>
+          <Route path="/settings" element={<Settings />}/>
 
       </Routes>
     </Suspense>

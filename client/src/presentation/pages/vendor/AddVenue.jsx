@@ -1,14 +1,31 @@
-import React from 'react'
+import VendorSidebar from "@/presentation/components/vendor/VendorSidebar";
+import VendorNavbar from "@/presentation/components/vendor/VendorNavbar";
+
+import AddVenueHeader from "@/presentation/components/vendor/addVenue/AddVenueHeader";
+import StepIndicator from "@/presentation/components/vendor/addVenue/StepIndicator";
+import VenueDetailsForm from "@/presentation/components/vendor/addVenue/VenueDetailsForm";
+import FormActions from "@/presentation/components/vendor/addVenue/FormActions";
 
 const AddVenue = () => {
   return (
-    <div>
-        <h1>Add Venue page
-            
-        </h1>
-      
-    </div>
-  )
-}
+    <div className="flex bg-slate-50 min-h-screen">
+      <VendorSidebar />
 
-export default AddVenue
+      <div className="flex-1">
+        <VendorNavbar />
+
+        <main className="p-6">
+          <AddVenueHeader />
+
+          <StepIndicator currentStep={1} />
+
+          <VenueDetailsForm />
+
+          <FormActions />
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default AddVenue;
