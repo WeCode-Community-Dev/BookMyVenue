@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin, Star, Users } from "lucide-react";
-import type { Venue } from "@/lib/api/venue";
+import type { Venue } from "@/lib/api/venueApi";
 import { formatEnum } from "@/lib/utils";
 
 interface VenueCardProps {

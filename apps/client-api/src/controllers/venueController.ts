@@ -1,42 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { prisma, District, VenueCategory, VerificationStatus } from "@bookmyvenue/database";
-
-interface SessionInput {
-    label: string;
-    startTime: string;
-    endTime: string;
-    price: number;
-}
-
-export interface CreateVenueBody {
-    name: string;
-    description: string;
-    capacity: number;
-    category: VenueCategory;
-    location: string;
-    district: District;
-    images: string[];
-    amenities: string[];
-    sessions: SessionInput[];
-}
-
-export interface EditVenueBody {
-    name?: string;
-    description?: string;
-    capacity?: number;
-    category?: VenueCategory;
-    location?: string;
-    district?: District;
-    images?: string[];
-    amenities?: string[];
-}
-
-export interface GetVenuesQuery {
-    district?: District;
-    category?: VenueCategory;
-    page?: number;
-    limit?: number;
-}
+import { prisma, VerificationStatus } from "@bookmyvenue/database";
+import { CreateVenueBody, EditVenueBody, GetVenuesQuery, SessionInput } from "@bookmyvenue/types";
 
 export const getVenues = async (
     request: FastifyRequest<{ Querystring: GetVenuesQuery }>,
@@ -183,6 +147,7 @@ export const createVenue = async (
 
 export const editVenue = async (
     request: FastifyRequest<{ Params: { id: string }; Body: EditVenueBody }>,
+    
     reply: FastifyReply,
 ) => {
     const id = Number(request.params.id);

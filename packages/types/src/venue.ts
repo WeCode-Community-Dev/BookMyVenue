@@ -1,3 +1,6 @@
+import { District, VenueCategory } from "@bookmyvenue/database";
+
+
 export const DISTRICTS = [
     "THIRUVANANTHAPURAM",
     "KOLLAM",
@@ -28,3 +31,111 @@ export const VENUE_CATEGORIES = [
     "OTHER",
 ] as const;
 
+export interface SessionInput {
+    label: string;
+    startTime: string;
+    endTime: string;
+    price: number;
+}
+
+export interface CreateVenuePayload {
+    name: string;
+    description: string;
+    capacity: number;
+    category: string;
+    location: string;
+    district: string;
+    images: string[];
+    amenities: string[];
+    sessions: SessionInput[];
+}
+
+export interface VenueSession {
+    id: number;
+    label: string;
+    startTime: string;
+    endTime: string;
+    price: number;
+}
+
+export interface Venue {
+    id: number;
+    name: string;
+    description: string;
+    capacity: number;
+    images: string[];
+    amenities: string[];
+    category: string;
+    location: string;
+    district: string;
+    sessions: VenueSession[];
+    averageRating: number | null;
+    reviewCount: number;
+    createdAt: string;
+}
+
+export interface Pagination {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
+export interface GetVenuesResponse {
+    venues: Venue[];
+    pagination: Pagination;
+}
+
+export interface VenueReview {
+    id: number;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    user: { id: number; email: string };
+}
+
+export interface VenueDetail extends Venue {
+    reviews: VenueReview[];
+    owner: { id: number; email: string };
+}
+
+export interface GetVenueByIdResponse {
+    venue: VenueDetail;
+}
+
+export interface GetVenuesParams {
+    district?: string;
+    category?: string;
+    page?: number;
+    limit?: number;
+}
+
+export interface CreateVenueBody {
+    name: string;
+    description: string;
+    capacity: number;
+    category: VenueCategory;
+    location: string;
+    district: District;
+    images: string[];
+    amenities: string[];
+    sessions: SessionInput[];
+}
+
+export interface EditVenueBody {
+    name?: string;
+    description?: string;
+    capacity?: number;
+    category?: VenueCategory;
+    location?: string;
+    district?: District;
+    images?: string[];
+    amenities?: string[];
+}
+
+export interface GetVenuesQuery {
+    district?: District;
+    category?: VenueCategory;
+    page?: number;
+    limit?: number;
+}

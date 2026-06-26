@@ -1,15 +1,8 @@
 import { FastifyInstance } from "fastify";
 import { ownerAuthMiddleware } from "../middleware/authmiddleware.js";
 import { VenueCategory, District } from "@bookmyvenue/database";
-import {
-    createVenue,
-    CreateVenueBody,
-    getVenues,
-    GetVenuesQuery,
-    getVenueById,
-    editVenue,
-    EditVenueBody,
-} from "../controllers/venue.js";
+import { createVenue, getVenues, getVenueById, editVenue } from "../controllers/venueController.js";
+import { CreateVenueBody, EditVenueBody, GetVenuesQuery } from "@bookmyvenue/types";
 
 const createVenueSchema = {
     body: {
