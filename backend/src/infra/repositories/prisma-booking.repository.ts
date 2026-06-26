@@ -16,6 +16,7 @@ export class PrismaBookingRepository implements IBookingRepository {
       dateRange,
       guestsCount: dbBooking.guests_count,
       totalAmount: Number(dbBooking.total_amount),
+      status: dbBooking.status,
       createdAt: dbBooking.created_at,
       updatedAt: dbBooking.updated_at,
       venue: {

@@ -550,7 +550,7 @@ async function main() {
           provider: 'razorpay',
           provider_payment_id: null,
           amount: 38000.0,
-          status: 'PENDING',
+          status: 'INITIATED',
           paid_at: null,
         },
       ],

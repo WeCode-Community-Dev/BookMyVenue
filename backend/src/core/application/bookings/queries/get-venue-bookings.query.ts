@@ -3,6 +3,7 @@ import { type IBookingRepository } from '../../../domain/bookings/repositories/b
 import type { IVenueRepository } from 'src/core/domain/venues/repositories/venue-repository.interface';
 import { NotFoundException } from 'src/core/domain/_shared/exception/notfound.exception';
 import { BusinessRuleException } from 'src/core/domain/_shared/exception/business-rule.exception';
+import type { BookingStatus } from 'src/core/domain/bookings/enum/booking-status.enum';
 
 export interface BookingResponseDto {
     id: string;
@@ -12,6 +13,7 @@ export interface BookingResponseDto {
     endDate: Date;
     guestsCount: number;
     totalAmount: number;
+    status: BookingStatus
     createdAt: Date;
 }
 
@@ -41,6 +43,7 @@ export class GetBookingsByVenueQuery {
             endDate: b.dateRange.endDate,
             guestsCount: b.guestsCount,
             totalAmount: b.totalAmount,
+            status: b.status,
             createdAt: b.createdAt,
         }));
     }

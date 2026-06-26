@@ -2,6 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { type IBookingRepository } from '../../../domain/bookings/repositories/booking-repository.interface';
 import { NotFoundException } from 'src/core/domain/_shared/exception/notfound.exception';
 import { UserRole } from 'src/core/domain/_shared/enum/UserRole';
+import type { BookingStatus } from 'src/core/domain/bookings/enum/booking-status.enum';
 
 export interface BookingDetailsResponseDto {
     id: string;
@@ -9,6 +10,7 @@ export interface BookingDetailsResponseDto {
     endDate: Date;
     guestsCount: number;
     totalAmount: number;
+    status: BookingStatus,
     createdAt: Date;
     user: {
         id: string
@@ -63,6 +65,7 @@ export class GetBookingDetailsQuery {
             endDate: booking.dateRange.endDate,
             guestsCount: booking.guestsCount,
             totalAmount: booking.totalAmount,
+            status: booking.status,
             createdAt: booking.createdAt,
             user: {
                 id: booking.user!.id,

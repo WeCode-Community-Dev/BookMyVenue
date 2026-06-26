@@ -1,5 +1,6 @@
 import { AggregateRoot } from '../../_shared/entity/aggregate-root';
 import { DomainException } from '../../_shared/exception/domain.exception';
+import type { BookingStatus } from '../enum/booking-status.enum';
 import { DateRange } from '../value-objects/date-range.vo';
 
 export interface BookingProps {
@@ -8,6 +9,7 @@ export interface BookingProps {
   dateRange: DateRange;
   guestsCount: number;
   totalAmount: number;
+  status: BookingStatus
   createdAt?: Date;
   updatedAt?: Date;
   venue?: {
@@ -72,6 +74,10 @@ export class Booking extends AggregateRoot<string> {
 
   get totalAmount(): number {
     return this.props.totalAmount;
+  }
+
+  get status(): BookingStatus {
+    return this.props.status;
   }
 
   get createdAt(): Date {
