@@ -1,14 +1,17 @@
 package com.bookmyvenue.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.bookmyvenue.dto.BookingResponse;
+import com.bookmyvenue.dto.BookingReviewRequest;
 import com.bookmyvenue.dto.VenueRequest;
 import com.bookmyvenue.dto.VenueResponse;
 import com.bookmyvenue.dto.VenueUpdateRequest;
+import com.bookmyvenue.model.Booking;
 import com.bookmyvenue.model.User;
 import com.bookmyvenue.model.Venues;
 import com.bookmyvenue.repository.BookingRepository;
@@ -91,8 +94,28 @@ public class OwnerService {
         venueRepository.deleteById(venueId);
     }
 
-    public List<BookingResponse> getBookings(){
-        return bookingRepository.findAll().stream().map(BookingResponse::from).collect(Collectors.toList());
+    public List<BookingResponse> getBookingsReviews(String userEmail){
+        User owner = userRepository.findByEmail(userEmail).orElseThrow(()->new  RuntimeException("User not found"));
+        return bookingRepository.findByVenueUserId(owner.getId()).stream().map(BookingResponse::from).collect(Collectors.toList());
+
     }
     
+    public BookingResponse reviewBooking(Integer bookingId, BookingReviewRequest request){
+
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(()-> new RuntimeException("Booking Not Found:" + bookingId));
+
+        if(booking.getBookingStatus() != Booking.BookingStatus.PENDING){
+            throw new RuntimeException("booking is alredy "+booking.getBookingStatus());
+        }
+
+        booking.setBookingStatus(Booking.BookingStatus.valueOf(request.getBookingStatus()));
+
+        booking.setOwnerComments(request.getOwnerComments());
+
+        booking.setReviewedOn(LocalDateTime.now());
+
+        bookingRepository.save(booking);
+        return BookingResponse.from(booking);
+    }
+
 }

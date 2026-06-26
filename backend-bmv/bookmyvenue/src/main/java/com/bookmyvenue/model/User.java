@@ -55,6 +55,7 @@ public class User {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         if (this.role == null) this.role = Role.user;
+        if (this.active == null) this.active = true;
     }
 
     public enum Role {

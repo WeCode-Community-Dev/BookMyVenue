@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyvenue.dto.BookingResponse;
+import com.bookmyvenue.dto.BookingReviewRequest;
 import com.bookmyvenue.dto.VenueRequest;
 import com.bookmyvenue.dto.VenueResponse;
 import com.bookmyvenue.dto.VenueUpdateRequest;
@@ -55,8 +57,13 @@ public class OwnerController {
         return ResponseEntity.ok("Venue Deleted successfully");
     }
 
-    @GetMapping("/bookings")
-    public ResponseEntity<List<BookingResponse>> getBookings(){
-        return ResponseEntity.ok(ownerService.getBookings());
+    @GetMapping("/bookings/reviews")
+    public ResponseEntity<List<BookingResponse>> getBookingsReviews(@AuthenticationPrincipal UserDetails userDetails){
+        return ResponseEntity.ok(ownerService.getBookingsReviews(userDetails.getUsername()));
+    }
+
+    @PatchMapping("/bookings/{id}/review")
+    public ResponseEntity<BookingResponse> reviewBooking(@PathVariable Integer id, @RequestBody BookingReviewRequest request){
+        return ResponseEntity.ok(ownerService.reviewBooking(id, request));
     }
 }
