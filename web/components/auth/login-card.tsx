@@ -22,14 +22,14 @@ export function LoginCard({ className }: { className?: string }) {
         <CardTitle className="text-headline-md font-semibold text-on-surface">
           Welcome Back
         </CardTitle>
-        <CardDescription className="text-body-sm text-on-surface-variant">
+        {/* <CardDescription className="text-body-sm text-on-surface-variant">
           Login to manage your venues and bookings
-        </CardDescription>
+        </CardDescription> */}
       </CardHeader>
       <CardContent className="flex flex-col gap-6 px-6 pt-6 pb-6">
         <LoginForm />
-        <AuthDivider />
-        <SocialLoginButtons />
+        {/* <AuthDivider /> */}
+        {/* <SocialLoginButtons /> */}
       </CardContent>
     </Card>
   );

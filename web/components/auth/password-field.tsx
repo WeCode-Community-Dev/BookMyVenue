@@ -9,18 +9,14 @@ import { cn } from "@/lib/utils";
 
 type PasswordFieldProps = Omit<
   React.ComponentProps<typeof Input>,
-  "type" | "value" | "onChange"
+  "type" 
 > & {
   label?: string;
-  value: string;
-  onChange: (value: string) => void;
   showForgotPassword?: boolean;
 };
 
 export function PasswordField({
   label = "Password",
-  value,
-  onChange,
   showForgotPassword = true,
   className,
   id,
@@ -52,8 +48,6 @@ export function PasswordField({
         <Input
           id={inputId}
           type={showPassword ? "text" : "password"}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
           className={cn("h-10 pr-10 pl-9", className)}
           {...props}
         />
