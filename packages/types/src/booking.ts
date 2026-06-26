@@ -32,16 +32,12 @@ export type OwnerBooking = {
     createdAt: Date;
 
     customer: {
-        id: string;
         name: string | null;
         email: string;
     };
 
     venue: {
-        id: number;
         name: string;
-        location: string;
-        district: District;
     };
 
     totalAmount: number;
@@ -50,7 +46,39 @@ export type OwnerBooking = {
         eventDate: Date;
         pricePaid: number;
         session: {
-            id: number;
+            label: string;
+        };
+    }[];
+};
+export type UserBookingsResponse = {
+    bookings: UserBooking[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
+};
+
+export type UserBooking = {
+    id: string;
+    status: BookingStatus;
+    phone: string | null;
+    purpose: string | null;
+    createdAt: Date;
+
+    venue: {
+        name: string;
+        district: District;
+        location: string;
+    };
+
+    totalAmount: number;
+
+    sessions: {
+        eventDate: Date;
+        pricePaid: number;
+        session: {
             label: string;
             startTime: string;
             endTime: string;

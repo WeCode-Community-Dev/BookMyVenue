@@ -60,7 +60,7 @@ export const getBookingsByOwnerId = async (
     const { status, page = 1, limit = 10 } = request.query;
     const skip = (Number(page) - 1) * limit;
 
-    const where = { venue: { ownerId: request.userId } };
+    const where = { venue: { ownerId: request.userId }, ...(status && { status }) };
 
     const [bookings, total] = await Promise.all([
         prisma.booking.findMany({
@@ -70,27 +70,20 @@ export const getBookingsByOwnerId = async (
             include: {
                 user: {
                     select: {
-                        id: true,
                         name: true,
                         email: true,
                     },
                 },
                 venue: {
                     select: {
-                        id: true,
                         name: true,
-                        location: true,
-                        district: true,
                     },
                 },
                 bookingSessions: {
                     include: {
                         session: {
                             select: {
-                                id: true,
                                 label: true,
-                                startTime: true,
-                                endTime: true,
                             },
                         },
                     },
@@ -134,15 +127,45 @@ export const getBookingsByOwnerId = async (
 };
 
 export const getBookingByUserId = async (
-    request: FastifyRequest<{ Params: { id: string } }>,
+    request: FastifyRequest<{ Querystring: GetBookingQuery }>,
     reply: FastifyReply,
 ) => {
-    const id = Number(request.params.id);
+    const { status, page = 1, limit = 10 } = request.query;
+    const skip = (Number(page) - 1) * limit;
 
-    const bookings = await prisma.booking.findMany({
-        where: {
-            userId: request.userId,
-        },
-        // TODO
-    });
+    const where = {
+        userId: request.userId,
+    };
+
+    const [bookings, total] = await Promise.all([
+        prisma.booking.findMany({
+            where,
+            skip,
+            take: limit,
+            include: {
+                venue: {
+                    select: {
+                        name: true,
+                        district: true,
+                        location: true,
+                    },
+                },
+                bookingSessions: {
+                    include: {
+                        session: {
+                            select: {
+                                label: true,
+                                startTime: true,
+                                endTime: true,
+                            },
+                        },
+                    },
+                    orderBy: {
+                        eventDate: "asc",
+                    },
+                },
+            },
+        }),
+        prisma.booking.count({ where }),
+    ]);
 };
