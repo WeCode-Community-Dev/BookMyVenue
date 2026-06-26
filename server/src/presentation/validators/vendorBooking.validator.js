@@ -9,7 +9,6 @@ export const BookingParamsSchema = z.object({
 
 })
 
-
 export const BookingQuerySchema = z.object({
 
     status: z
@@ -29,18 +28,11 @@ export const BookingQuerySchema = z.object({
         
     status: z
         .enum(Object.values(BookingStatus))
+        .optional(),
+    
+    search: z
+        .string()
+        .trim()
         .optional()
 
 })
-
-export const RejectBookingSchema =
-
-    z.object({
-        reason:
-            z.string()
-                .trim()
-                .min(
-                    5,
-                    'Reason must contain atleast 5 characters'
-                )
-    })

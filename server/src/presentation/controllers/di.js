@@ -40,14 +40,8 @@ import { VendorProfileController } from "./vendor/vendorProfileController.js";
 import BookingRepositoryImpl from "../../infrastructure/repositories/booking.repository.js";
 import { GetVendorBookingsUsecase } from "../../application/vendor/usecases/booking/getVendorBookingsUsecase.js";
 import { GetBookingByIdUsecase } from "../../application/vendor/usecases/booking/getBookingByIdUsecase.js";
-import { AcceptBookingUsecase } from "../../application/vendor/usecases/booking/acceptBookingUsecase.js";
-import { RejectBookingUsecase } from "../../application/vendor/usecases/booking/rejectBookingUsecase.js";
 import { VendorBookingController } from "./vendor/VendorBookingController.js";
 
-//notification
-
-import { NotificationRepositoryImpl } from "../../infrastructure/repositories/notification.repository.js";
-import { CreateNotificationUsecase } from "../../application/vendor/usecases/notification/CreateNotificationUsecase.js";
 
 //dashboard
 
@@ -60,7 +54,6 @@ const iUserRepository = new UserRepository();
 const iVendorRepository = new VendorRepository();
 const bookingRepository = new BookingRepositoryImpl();
 
-const notificationRepository = new NotificationRepositoryImpl();
 
 //service
 const iCloudinaryService = new CloudinaryService();
@@ -104,12 +97,6 @@ export const iVendorProfileController = new VendorProfileController(
   iUpdateVendorProfileUsecase
 );
 
-// notification
-
-const createNotificationUsecase = new CreateNotificationUsecase(
-  notificationRepository
-);
-
 //dashboard
 
 const getDashboardStatsUsecase = new GetDashboardStatsUsecase(
@@ -124,14 +111,6 @@ const getVendorBookingsUsecase = new GetVendorBookingsUsecase(
   bookingRepository
 );
 const getBookingByIdUsecase = new GetBookingByIdUsecase(bookingRepository);
-const acceptBookingUsecase = new AcceptBookingUsecase(
-  bookingRepository,
-  createNotificationUsecase
-);
-const rejectBookingUsecase = new RejectBookingUsecase(
-  bookingRepository,
-  createNotificationUsecase
-);
 
 //user
 const iUserGetAllVenues = new UserGetAllVenuesUsecase(iVenueRepository);
@@ -168,9 +147,7 @@ export const iAuthController = new AuthController(
 
 export const iVendorBookingController = new VendorBookingController(
   getVendorBookingsUsecase,
-  getBookingByIdUsecase,
-  acceptBookingUsecase,
-  rejectBookingUsecase
+  getBookingByIdUsecase
 );
 
 export const iVendorDashboardController = new VendorDashboardController(

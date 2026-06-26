@@ -20,7 +20,6 @@ import { UpdateVendorProfileSchema } from "../../validators/vendorProfile.valida
 import {
   BookingParamsSchema,
   BookingQuerySchema,
-  RejectBookingSchema,
 } from "../../validators/vendorBooking.validator.js";
 
 const router = Express.Router();
@@ -84,19 +83,6 @@ router.get(
   ROUTES.OWNER.BOOKING.GET_BY_ID,
   validate(BookingParamsSchema, "params"),
   iVendorBookingController.getBookingById
-);
-
-router.patch(
-  ROUTES.OWNER.BOOKING.ACCEPT,
-  validate(BookingParamsSchema, "params"),
-  iVendorBookingController.acceptBooking
-);
-
-router.patch(
-  ROUTES.OWNER.BOOKING.REJECT,
-  validate(BookingParamsSchema, "params"),
-  validate(RejectBookingSchema, "body"),
-  iVendorBookingController.rejectBooking
 );
 
 router.get(

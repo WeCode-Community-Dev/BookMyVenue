@@ -16,6 +16,12 @@ export class GetDashboardStatsUsecase {
 
     const totalBookings = await this._bookingRepository.countByOwnerId(ownerId);
 
+    const topVenues = await this._bookingRepository.getTopVenues(ownerId);
+
+    const recentBookings = await this._bookingRepository.getRecentBookings(
+      ownerId
+    );
+
     const pendingBookings =
       await this._bookingRepository.countByOwnerIdAndStatus(
         ownerId,
@@ -28,12 +34,6 @@ export class GetDashboardStatsUsecase {
         BookingStatus.CONFIRMED
       );
 
-    const rejectedBookings =
-      await this._bookingRepository.countByOwnerIdAndStatus(
-        ownerId,
-        BookingStatus.REJECTED
-      );
-
     const completedBookings =
       await this._bookingRepository.countByOwnerIdAndStatus(
         ownerId,
@@ -41,17 +41,21 @@ export class GetDashboardStatsUsecase {
       );
 
     return {
-      totalVenues,
+      stats: {
+        totalVenues,
 
-      totalBookings,
+        totalBookings,
 
-      pendingBookings,
+        pendingBookings,
 
-      confirmedBookings,
+        confirmedBookings,
 
-      rejectedBookings,
+        completedBookings,
+      },
 
-      completedBookings,
+      topVenues,
+
+      recentBookings,
     };
   }
 }

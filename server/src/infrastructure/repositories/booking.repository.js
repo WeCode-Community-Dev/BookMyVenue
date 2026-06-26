@@ -1,4 +1,6 @@
 import { BookingRepository } from "../../domain/repositories/IBooking.repository.js";
+import mongoose from "mongoose";
+
 
 import BookingModel from "../database/models/BookingModel.js";
 
@@ -14,11 +16,13 @@ class BookingRepositoryImpl extends BookingRepository {
   }
 
   async findById(id) {
-    console.log("id :", id);
-    const doc = await BookingModel.findById(id);
-    console.log("doc :", doc);
+    const doc = await BookingModel.findById(id)
 
-    return BookingMapper.mapToEntity(doc);
+      .populate("userId", "fullName email phone")
+
+      .populate("venueId", "name category address");
+
+    return doc;
   }
 
   async findByUserId(userId) {
@@ -29,31 +33,64 @@ class BookingRepositoryImpl extends BookingRepository {
     return docs.map((doc) => BookingMapper.mapToEntity(doc));
   }
 
-  async findByOwnerId(ownerId, { page = 1, limit = 10, status }) {
-    const skip = (page - 1) * limit;
+  async findByOwnerId(
+    ownerId,
+    {
+      page = 1,
+
+      limit = 10,
+
+      status,
+
+      search,
+    }
+  ) {
     const filter = { ownerId };
 
     if (status) {
       filter.status = status;
     }
 
-    const docs = await BookingModel.find({
-      ownerId,
-    })
+    console.log("ownerId:", ownerId);
+    console.log("filter:", filter);
+
+    let docs = await BookingModel.find(filter)
+
+      .populate("userId", "fullName email")
+
+      .populate("venueId", "name")
+
       .sort({
         createdAt: -1,
-      })
-      .skip(skip)
-      .limit(limit);
+      });
 
-    const total = await BookingModel.countDocuments({ ownerId });
+    if (search) {
+      const keyword = search.trim().toLowerCase();
+
+      docs = docs.filter(
+        (doc) =>
+          doc.userId?.fullName?.toLowerCase().includes(keyword) ||
+          doc.venueId?.name?.toLowerCase().includes(keyword) ||
+          doc._id.toString().includes(keyword)
+      );
+    }
+
+    const total = docs.length;
+
+    const skip = (page - 1) * limit;
+
+    docs = docs.slice(skip, skip + Number(limit));
 
     return {
       bookings: docs.map((doc) => BookingMapper.mapToEntity(doc)),
+
       pagination: {
         total,
-        page,
-        limit,
+
+        page: Number(page),
+
+        limit: Number(limit),
+
         totalPages: Math.ceil(total / limit),
       },
     };
@@ -107,6 +144,87 @@ class BookingRepositoryImpl extends BookingRepository {
 
       status,
     });
+  }
+
+  async getTopVenues(ownerId) {
+    const result = await BookingModel.aggregate([
+      {
+        $match: {
+          ownerId: new mongoose.Types.ObjectId(ownerId),
+        },
+      },
+
+      {
+        $group: {
+          _id: "$venueId",
+          bookings: { $sum: 1 },
+        },
+      },
+
+      {
+        $sort: {
+          bookings: -1,
+        },
+      },
+
+      {
+        $limit: 5,
+      },
+
+      {
+        $lookup: {
+          from: "venues",
+          localField: "_id",
+          foreignField: "_id",
+          as: "venue",
+        },
+      },
+
+      {
+        $unwind: "$venue",
+      },
+
+      {
+        $project: {
+          _id: 0,
+          venueId: "$venue._id",
+          name: "$venue.name",
+          bookings: 1,
+        },
+      },
+    ]);
+
+    return result;
+  }
+
+  async getRecentBookings(ownerId) {
+    const docs = await BookingModel.find({
+      ownerId,
+    })
+
+      .populate("userId", "fullName")
+
+      .populate("venueId", "name")
+
+      .sort({
+        createdAt: -1,
+      })
+
+      .limit(5);
+
+    return docs.map((doc) => ({
+      bookingId: doc._id,
+
+      customer: doc.userId?.fullName,
+
+      venue: doc.venueId?.name,
+
+      amount: doc.totalAmount,
+
+      status: doc.status,
+
+      bookingDate: doc.bookingDate,
+    }));
   }
 }
 
