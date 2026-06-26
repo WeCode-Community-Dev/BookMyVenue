@@ -67,30 +67,11 @@
                 <td><img src="${imagePath}" width="100" height="100"></td>
                 <td>${element.venue.status}</td>
                 <td>
-                    <button onclick="bookVenue('${element.venue.id}')">Book</button>
+                    <a href="/user/venue/${element.venue.id}/availability">see availability</a>
                 </td>
             `
             tbody.appendChild(row);
         });
-    </script>
-    <script>
-        window.approveVenue = async function(id) {
-            const response = await fetch(`/api/v1/user/bookVenue/${id}`, {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                    "Authorization": "Bearer "+localStorage.getItem("access_token")
-                }
-            })
-            if (response.ok) {
-                alert("Venue Approved")
-            } else {
-                const text = await response.text();
-                console.error(text);
-                alert("Request failed: " + text);
-                return;
-            }
-        }
     </script>
 </body>
 </html>
