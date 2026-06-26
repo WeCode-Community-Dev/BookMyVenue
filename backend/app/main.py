@@ -1,9 +1,9 @@
 import logging
 from contextlib import asynccontextmanager
 
-from sqlalchemy import text
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from app.db.database import Base, engine, SessionLocal
 
@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
         logger.info("Database is connected")
-        
+
         # Seed initial amenities
         db = SessionLocal()
         try:
@@ -50,7 +50,7 @@ async def lifespan(app: FastAPI):
             logger.info("Amenities seeded successfully")
         finally:
             db.close()
-            
+
     except Exception as exc:
         logger.error("Database connection failed: %s", exc)
         raise
@@ -71,7 +71,7 @@ app = FastAPI(
 # Defining which origins are allowed to talk to this backend
 origins = [
     "http://localhost:5173",
-    "http://localhost:3000", 
+    "http://localhost:3000",
 ]
 
 app.add_middleware(
