@@ -4,6 +4,7 @@ import type { IVenueRepository } from 'src/core/domain/venues/repositories/venue
 import { NotFoundException } from 'src/core/domain/_shared/exception/notfound.exception';
 import { BusinessRuleException } from 'src/core/domain/_shared/exception/business-rule.exception';
 import type { BookingStatus } from 'src/core/domain/bookings/enum/booking-status.enum';
+import type { PaymentStatus } from 'src/core/domain/_shared/enum/PaymentStatus.enum';
 
 export interface BookingResponseDto {
     id: string;
@@ -14,6 +15,7 @@ export interface BookingResponseDto {
     guestsCount: number;
     totalAmount: number;
     status: BookingStatus
+    paymentStatus: PaymentStatus
     createdAt: Date;
 }
 
@@ -44,6 +46,7 @@ export class GetBookingsByVenueQuery {
             guestsCount: b.guestsCount,
             totalAmount: b.totalAmount,
             status: b.status,
+            paymentStatus: b.paymentStatus,
             createdAt: b.createdAt,
         }));
     }

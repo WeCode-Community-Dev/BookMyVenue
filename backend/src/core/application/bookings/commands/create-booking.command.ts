@@ -7,6 +7,7 @@ import { NotFoundException } from '../../../domain/_shared/exception/notfound.ex
 import { BusinessRuleException } from '../../../domain/_shared/exception/business-rule.exception';
 import * as crypto from 'crypto';
 import { BookingStatus } from 'src/core/domain/bookings/enum/booking-status.enum';
+import { PaymentStatus } from 'src/core/domain/_shared/enum/PaymentStatus.enum';
 
 export interface CreateBookingDto {
   userId: string;
@@ -57,7 +58,8 @@ export class CreateBookingCommand {
       dateRange,
       guestsCount: dto.guestsCount,
       totalAmount: 0,
-      status: BookingStatus.BOOKED
+      status: BookingStatus.BOOKED,
+      paymentStatus: PaymentStatus.PENDING,
     });
 
     booking.calculateTotalAmount(venue.pricePerDay);

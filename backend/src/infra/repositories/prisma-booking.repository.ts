@@ -10,6 +10,7 @@ export class PrismaBookingRepository implements IBookingRepository {
 
   private mapToDomain(dbBooking: any): Booking {
     const dateRange = DateRange.create(dbBooking.booking_start, dbBooking.booking_end);
+
     return Booking.restore(dbBooking.id, {
       userId: dbBooking.user_id,
       venueId: dbBooking.venue_id,
@@ -17,6 +18,7 @@ export class PrismaBookingRepository implements IBookingRepository {
       guestsCount: dbBooking.guests_count,
       totalAmount: Number(dbBooking.total_amount),
       status: dbBooking.status,
+      paymentStatus: dbBooking.payment_status,
       createdAt: dbBooking.created_at,
       updatedAt: dbBooking.updated_at,
       venue: {
