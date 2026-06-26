@@ -31,6 +31,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries, rediClient *redis.Client) {
 	adminWebRoutes.GET("viewApprovedVenues", webHandler.Admin_viewApprovedVenues)
 	adminWebRoutes.GET("viewRejectedVenues", webHandler.Admin_viewRejectedVenues)
 	userWebRoutes.GET("/viewVenues", webHandler.User_viewVenues)
+	userWebRoutes.GET("/venue/:venue_id/availability", webHandler.User_viewAvailability)
 
 	api := r.Group("/api/v1")
 
@@ -71,14 +72,15 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries, rediClient *redis.Client) {
 	userRoutes := api.Group("/user")
 	userRoutes.Use(auth.JWTAuthentication, auth.RoleGuarde("user"))
 	{
-		userRoutes.GET("/venues", userHandler.ViewVenue)
+		userRoutes.GET("/venues", userHandler.ViewVenues)
+		userRoutes.GET("/venue/:venue_id", userHandler.ViewVenue)
 	}
 
 	availabilityHandler := availability.NewService(db)
 	availabilityRoutes := api.Group("")
 	availabilityRoutes.Use(auth.JWTAuthentication)
 	{
-		availabilityRoutes.GET("/venues/:id/availability", auth.RoleGuarde("owner"), availabilityHandler.AvailableSlots)
+		availabilityRoutes.GET("/venues/:id/availability", auth.RoleGuarde("owner", "user"), availabilityHandler.AvailableSlots)
 		availabilityRoutes.POST("/venues/:id/availability", auth.RoleGuarde("owner"), availabilityHandler.SetNewSlot)
 		availabilityRoutes.DELETE("/venues/:venue_id/availability/:slot_id", auth.RoleGuarde("owner"), availabilityHandler.DeleteSlot)
 	}

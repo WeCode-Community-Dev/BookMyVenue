@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venue Availability</title>
+</head>
+<body>
+    <h1 id="venueName"></h1>
+
+    <div id="venueDetails">
+        <p><strong>Description:</strong> <span id="description"></span></p>
+        <p><strong>Location:</strong> <span id="location"></span></p>
+        <p><strong>Capacity:</strong> <span id="capacity"></span></p>
+        <p><strong>Price per hour:</strong> ₹<span id="price_per_hour"></span></p>
+        <p><strong>Price per day:</strong> ₹<span id="price_per_day"></span></p>
+    </div>
+
+    <h1>Venue Availability</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="availabilityTable">
+        </tbody>
+    </table>
+
+    <script>
+        const venueID = window.location.pathname.split("/")[3];
+
+        async function loadVenueData() {
+            const response = await fetch(`/api/v1/user/venue/${venueID}`, {
+                method: "GET",
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("access_token")
+                }
+            })
+
+            const result = await response.json();
+
+            const venue_name = document.getElementById("venueName");
+            venue_name.innerText = result.data.name;
+
+            const description = document.getElementById("description");
+            description.innerText = result.data.description;
+
+            const location = document.getElementById("location");
+            location.innerText = result.data.city;
+            
+            const capacity = document.getElementById("capacity");
+            capacity.innerText = result.data.capacity;
+
+            const price_per_hour = document.getElementById("price_per_hour");
+            price_per_hour.innerText += result.data.price_per_hour;
+
+            const price_per_day = document.getElementById("price_per_day");
+            price_per_day.innerText += result.data.price_per_day;
+            
+        }
+
+        async function loadAvailability() {
+            try {
+                const response = await fetch(`/api/v1/venues/${venueID}/availability`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: "Bearer " + localStorage.getItem("access_token")
+                    }
+                });
+
+                const result = await response.json();
+                console.log(result);
+
+                const table = document.getElementById("availabilityTable");
+                table.innerHTML = "";
+
+                result.data.slots.forEach(slot => {
+                    table.innerHTML += `
+                        <tr>
+                            <td>${slot.date}</td>
+                            <td>${slot.start_time}</td>
+                            <td>${slot.end_time}</td>
+                            <td>
+                                <a href="/booking/${slot.id}">
+                                    Book
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        loadVenueData();
+        loadAvailability();
+    </script>
+
+</body>
+</html>

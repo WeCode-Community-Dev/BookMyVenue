@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
@@ -57,6 +58,18 @@ func (s *service) viewVenues(ctx context.Context) (*viewVenuesResponse, error) {
 	}
 
 	return rejectedVenues, nil
+}
+
+func (s *service) viewVenueByVenueID(ctx context.Context, venueID string) (sqlc.Venue, error) {
+	venue, err := s.repo.getVenueByID(ctx, venueID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return sqlc.Venue{}, errors.New("venue not found")
+		}
+		return sqlc.Venue{}, err
+	}
+
+	return venue, nil
 }
 
 type venueWithAmenitiesAndImages struct {
