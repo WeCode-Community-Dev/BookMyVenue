@@ -20,3 +20,14 @@ export const formatEnum = (value: string) => {
         .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
         .join(" ");
 };
+
+export const formatToDetailedDate = (selectedDate: string | null) => {
+    return selectedDate
+        ? new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-IN", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+          })
+        : null;
+};

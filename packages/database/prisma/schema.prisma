@@ -141,6 +141,7 @@ model Booking {
   venue   Venue @relation(fields: [venueId], references: [id])
   venueId Int
 
+  phone   String?
   purpose String?
 
   status BookingStatus @default(CONFIRMED)

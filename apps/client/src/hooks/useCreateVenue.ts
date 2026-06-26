@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
-import { createVenueApi, type CreateVenuePayload } from "@/lib/api/venue";
+import { createVenueApi, type CreateVenuePayload } from "@/lib/api/venueApi";
 
 export function useCreateVenue() {
     const { getToken } = useAuth();

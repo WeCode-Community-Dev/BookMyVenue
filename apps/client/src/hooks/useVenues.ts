@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getVenuesApi, getVenueByIdApi, type GetVenuesParams } from "@/lib/api/venue";
+import { getVenuesApi, getVenueByIdApi, type GetVenuesParams } from "@/lib/api/venueApi";
 
 export function useVenues(params: GetVenuesParams = {}) {
     return useQuery({

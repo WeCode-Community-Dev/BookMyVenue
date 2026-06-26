@@ -1,17 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Clock, Loader2, MapPin, Sparkles, Star, Users } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock, Loader2, MapPin, Sparkles, Star, Users } from "lucide-react";
 import { useVenue } from "@/hooks/useVenues";
+import { useBookingStore } from "@/stores/bookingStore";
+import { Calendar } from "@/components/ui/calendar";
 import { formatEnum } from "@/lib/utils";
 
 export default function VenueDetailsPage() {
     const params = useParams<{ id: string }>();
+    const router = useRouter();
     const { data, isLoading, error } = useVenue(params.id);
     const [activeImage, setActiveImage] = useState(0);
+    const selectedSessions = useBookingStore((s) => s.selectedSessions);
+    const toggleSession = useBookingStore((s) => s.toggleSession);
+    const selectedDate = useBookingStore((s) => s.selectedDate);
+    const setSelectedDate = useBookingStore((s) => s.setSelectedDate);
 
     if (isLoading) {
         return (
@@ -119,7 +126,6 @@ export default function VenueDetailsPage() {
                             </div>
                         )}
 
-
                         <div>
                             <h2 className="text-lg font-bold text-foreground mb-3">
                                 Reviews ({venue.reviewCount})
@@ -169,15 +175,29 @@ export default function VenueDetailsPage() {
                             </div>
 
                             <div className="border-t border-border pt-5">
+                                <h3 className="flex items-center gap-1.5 text-sm font-bold text-foreground mb-3">
+                                    <CalendarDays className="w-4 h-4" />
+                                    Select date
+                                </h3>
+                                <Calendar value={selectedDate} onChange={setSelectedDate} />
+                            </div>
+
+                            <div className="border-t border-border pt-5">
                                 <h3 className="text-sm font-bold text-foreground mb-3">Sessions</h3>
                                 {venue.sessions.length === 0 ? (
                                     <p className="text-sm text-muted-foreground">No sessions available.</p>
                                 ) : (
                                     <div className="space-y-2">
                                         {venue.sessions.map((s) => (
-                                            <div
+                                            <button
                                                 key={s.id}
-                                                className="flex items-center justify-between border border-border rounded-xl px-3 py-2.5"
+                                                type="button"
+                                                onClick={() => toggleSession(s.id)}
+                                                className={`w-full flex items-center justify-between border rounded-xl px-3 py-2.5 text-left transition-colors cursor-pointer ${
+                                                    selectedSessions.includes(s.id)
+                                                        ? "border-primary ring-1 ring-primary"
+                                                        : "border-border hover:border-primary/50"
+                                                }`}
                                             >
                                                 <div>
                                                     <p className="text-sm font-medium text-foreground">
@@ -191,13 +211,21 @@ export default function VenueDetailsPage() {
                                                 <span className="text-sm font-bold text-primary">
                                                     ₹{s.price.toLocaleString("en-IN")}
                                                 </span>
-                                            </div>
+                                            </button>
                                         ))}
                                     </div>
                                 )}
                             </div>
 
-                            <button className="w-full bg-primary text-primary-foreground text-sm font-semibold py-3 rounded-xl hover:bg-accent transition-colors cursor-pointer">
+                            <button
+                                onClick={() => router.push(`/venues/${venue.id}/book`)}
+                                disabled={
+                                    venue.sessions.length === 0 ||
+                                    !selectedDate ||
+                                    selectedSessions.length === 0
+                                }
+                                className="w-full bg-primary text-primary-foreground text-sm font-semibold py-3 rounded-xl hover:bg-accent transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
                                 Book Now
                             </button>
                         </div>

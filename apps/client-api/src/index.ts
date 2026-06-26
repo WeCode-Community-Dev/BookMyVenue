@@ -1,13 +1,16 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { clerkPlugin } from "@clerk/fastify";
-import { venueRoute } from "./routes/venue.js";
+import { venueRoute } from "./routes/venue";
+import { bookingRoute } from "./routes/bookingRoute";
 
 const app = Fastify({ logger: true });
 app.register(cors, { origin: true });
 app.register(clerkPlugin);
 
 app.register(venueRoute, { prefix: "/venue" });
+app.register(bookingRoute, { prefix: "/booking" });
+
 
 app.get("/health", async () => ({ status: "ok", uptime: process.uptime() }));
 
