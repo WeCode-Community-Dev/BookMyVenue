@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Tooltip } from "@mui/material";
 
 import { BookingApiService } from "src/api/booking";
+import { PaymentStatus } from "src/api/types/payment.type";
 
 import { Label } from "src/components/label";
 import { Iconify } from "src/components/iconify";
@@ -48,6 +49,25 @@ export function ListBookings() {
                         return <Label color={(data.status === 'banned' && 'error') || 'success'}>
                             {data.status || 'NO status please add'}
                         </Label>
+                    },
+                },
+                {
+                    id: 'paymentStatus',
+                    label: 'Payment Status',
+                    component(data) {
+                        const colorMap: Record<PaymentStatus, 'default' | 'info' | 'success' | 'warning' | 'error'> = {
+                            [PaymentStatus.PENDING]: 'warning',
+                            [PaymentStatus.INITIATED]: 'info',
+                            [PaymentStatus.PAID]: 'success',
+                            [PaymentStatus.FAILED]: 'error',
+                            [PaymentStatus.REFUNDED]: 'default',
+                        }
+
+                        return (
+                            <Label color={colorMap[data.paymentStatus as keyof typeof PaymentStatus] ?? 'default'}>
+                                {data.paymentStatus ?? 'NO PAYMENT STATUS'}
+                            </Label>
+                        )
                     },
                 },
                 {

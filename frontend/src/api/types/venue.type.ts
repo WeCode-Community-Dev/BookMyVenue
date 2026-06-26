@@ -3,6 +3,7 @@
 // ======================================================
 
 import type { Pagination } from "./common";
+import type { PaymentStatus } from "./payment.type";
 
 export enum VenueStatus {
     PENDING = "PENDING",
@@ -228,6 +229,7 @@ export interface BookingSummary {
     endDate: string;
     totalAmount: number;
     status: BookingStatus;
+    paymentStatus: PaymentStatus
     createdAt: string;
     venue: VenueCard;
 }

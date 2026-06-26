@@ -24,6 +24,7 @@ import {
     DialogContent,
 } from '@mui/material';
 
+import { PaymentStatus } from 'src/api/types/payment.type';
 import { UserBookingApiService } from 'src/api/user-booking';
 
 import { Iconify } from 'src/components/iconify';
@@ -33,6 +34,69 @@ const STATUS_CONFIG: Record<BookingStatus, { label: string; color: 'default' | '
     CANCELLED: { label: 'Cancelled', color: 'error', icon: 'mdi:close-circle-outline' },
 };
 
+const PAYMENT_STATUS_CONFIG: Record<
+    PaymentStatus,
+    { label: string; color: 'default' | 'warning' | 'success' | 'error' | 'info'; icon: string }
+> = {
+    PENDING: { label: 'Payment Pending', color: 'warning', icon: 'mdi:clock-outline' },
+    INITIATED: { label: 'Payment Initiated', color: 'info', icon: 'mdi:credit-card-clock-outline' },
+    PAID: { label: 'Paid', color: 'success', icon: 'mdi:check-circle-outline' },
+    FAILED: { label: 'Payment Failed', color: 'error', icon: 'mdi:close-circle-outline' },
+    REFUNDED: { label: 'Refunded', color: 'default', icon: 'mdi:cash-refund' },
+};
+
+function getPaymentButtonProps(booking: BookingSummary) {
+    const paymentPath = `/my/bookings/${booking.id}/payment`;
+
+    if (booking.status !== 'BOOKED') {
+        return null;
+    }
+
+    switch (booking.paymentStatus) {
+        case PaymentStatus.PENDING:
+            return {
+                label: 'Pay Now',
+                path: paymentPath,
+                variant: 'contained' as const,
+                color: 'primary' as const,
+                icon: 'mdi:credit-card-outline',
+            };
+        case PaymentStatus.FAILED:
+            return {
+                label: 'Retry Payment',
+                path: paymentPath,
+                variant: 'contained' as const,
+                color: 'warning' as const,
+                icon: 'mdi:refresh',
+            };
+        case PaymentStatus.INITIATED:
+            return {
+                label: 'Complete Payment',
+                path: paymentPath,
+                variant: 'contained' as const,
+                color: 'primary' as const,
+                icon: 'mdi:credit-card-check-outline',
+            };
+        case PaymentStatus.PAID:
+            return {
+                label: 'View Payment',
+                path: paymentPath,
+                variant: 'outlined' as const,
+                color: 'success' as const,
+                icon: 'mdi:receipt-text-outline',
+            };
+        case PaymentStatus.REFUNDED:
+            return {
+                label: 'Refund Details',
+                path: paymentPath,
+                variant: 'outlined' as const,
+                color: 'inherit' as const,
+                icon: 'mdi:cash-refund',
+            };
+        default:
+            return null;
+    }
+}
 interface BookingCardProps {
     booking: BookingSummary;
     onCancel: (id: string) => void;
@@ -40,8 +104,10 @@ interface BookingCardProps {
 
 function BookingCard({ booking, onCancel }: BookingCardProps) {
     const statusCfg = STATUS_CONFIG[booking.status];
+    const paymentCfg = PAYMENT_STATUS_CONFIG[booking.paymentStatus];
+    const paymentButton = getPaymentButtonProps(booking);
     const nights = Math.max(1, dayjs(booking.endDate).diff(dayjs(booking.startDate), 'day'));
-
+    const venueId = booking.venue?.id;
     return (
         <Paper
             elevation={0}
@@ -80,14 +146,22 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
                                     Booking #{(booking.id ?? '').slice(-8).toUpperCase()}
                                 </Typography>
                             </Box>
-                            <Chip
-                                icon={<Iconify icon={statusCfg?.icon} width={14} />}
-                                label={statusCfg?.label}
-                                color={statusCfg?.color}
-                                size="small"
-                                sx={{ fontWeight: 700, flexShrink: 0 }}
-                            />
-                        </Stack>
+                            <Stack direction="row" spacing={1} flexShrink={0}>
+                                <Chip
+                                    icon={<Iconify icon={paymentCfg.icon} width={14} />}
+                                    label={paymentCfg.label}
+                                    color={paymentCfg.color}
+                                    size="small"
+                                    sx={{ fontWeight: 700 }}
+                                />
+                                <Chip
+                                    icon={<Iconify icon={statusCfg.icon} width={14} />}
+                                    label={statusCfg.label}
+                                    color={statusCfg.color}
+                                    size="small"
+                                    sx={{ fontWeight: 700 }}
+                                />
+                            </Stack>                        </Stack>
 
                         <Grid container spacing={2} mb={2}>
                             {[
@@ -121,17 +195,32 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
                                     View Details
                                 </Button>
                             </Link>
-                            <Link to={`/venues/${booking.venue.id}`}>
-                                <Button
-                                    size="small"
-                                    variant="text"
-                                    startIcon={<Iconify icon="mdi:domain" />}
-                                    sx={{ borderRadius: 2, fontWeight: 600 }}
-                                >
-                                    View Venue
-                                </Button>
-                            </Link>
-                            {['PENDING', 'CONFIRMED'].includes(booking.status) && (
+                            {paymentButton && (
+                                <Link to={paymentButton.path}>
+                                    <Button
+                                        size="small"
+                                        variant={paymentButton.variant}
+                                        color={paymentButton.color}
+                                        startIcon={<Iconify icon={paymentButton.icon} />}
+                                        sx={{ borderRadius: 2, fontWeight: 700 }}
+                                    >
+                                        {paymentButton.label}
+                                    </Button>
+                                </Link>
+                            )}
+                            {venueId && (
+                                <Link to={`/venues/${venueId}`}>
+                                    <Button
+                                        size="small"
+                                        variant="text"
+                                        startIcon={<Iconify icon="mdi:domain" />}
+                                        sx={{ borderRadius: 2, fontWeight: 600 }}
+                                    >
+                                        View Venue
+                                    </Button>
+                                </Link>
+                            )}
+                            {booking.status === 'BOOKED' && (
                                 <Button
                                     size="small"
                                     variant="text"
@@ -142,8 +231,7 @@ function BookingCard({ booking, onCancel }: BookingCardProps) {
                                 >
                                     Cancel
                                 </Button>
-                            )}
-                        </Stack>
+                            )}                        </Stack>
                     </Box>
                 </Grid>
             </Grid>
@@ -172,12 +260,9 @@ function BookingCardSkeleton() {
 
 const TAB_STATUSES = [
     { label: 'All Bookings', value: undefined as BookingStatus | undefined },
-    // { label: 'Upcoming', value: 'CONFIRMED' as BookingStatus },
-    // { label: 'Pending', value: 'PENDING' as BookingStatus },
-    // { label: 'Completed', value: 'COMPLETED' as BookingStatus },
-    // { label: 'Cancelled', value: 'CANCELLED' as BookingStatus },
+    { label: 'Booked', value: 'BOOKED' as BookingStatus },
+    { label: 'Cancelled', value: 'CANCELLED' as BookingStatus },
 ];
-
 export function MyBookingsView() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
