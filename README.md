@@ -92,14 +92,23 @@ const prisma = require('../config/prisma');
 
 Relative imports must include the `.js` extension.
 
-## Scripts
+## API (Phase 3+)
+
+```bash
+npm run dev
+```
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/v1/health` | Server health check |
 
 | Command | Description |
 |---------|-------------|
 | `npm run check:setup` | Verify `.env` and database connection |
 | `npm run db:generate` | Generate Prisma client |
 | `npm run db:migrate` | Run migrations (Phase 2+) |
-| `npm run dev` | Start API server (Phase 3+) |
+| `npm run dev` | Start API server with nodemon (auto-restart on file changes) |
+| `npm run start` | Start API server (production) |
 
 ## Folder structure
 
