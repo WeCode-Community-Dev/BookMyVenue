@@ -13,7 +13,12 @@ enum Role {
   ADMIN
 }
 
-//user model
+enum VenueModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -21,6 +26,7 @@ model User {
   name      String
   role      Role     @default(USER)
   createdAt DateTime @default(now())
+  venues    Venue[]
 }
 
 model Category {
@@ -31,4 +37,29 @@ model Category {
   isListed    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  venues      Venue[]
+}
+
+model Venue {
+  id               String                @id @default(uuid())
+  name             String
+  description      String?
+  location         String
+  address          String?
+  pricePerHour     Float
+  capacity         Int
+  imageUrls        String[]
+  isListed         Boolean               @default(false)
+  moderationStatus VenueModerationStatus @default(PENDING)
+  rejectionReason  String?
+  ownerId          String
+  categoryId       String
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  owner            User                  @relation(fields: [ownerId], references: [id])
+  category         Category              @relation(fields: [categoryId], references: [id])
+
+  @@index([ownerId])
+  @@index([categoryId])
+  @@index([moderationStatus, isListed])
 }

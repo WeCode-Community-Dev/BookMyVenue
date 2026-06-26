@@ -9,6 +9,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
 import { RolesGuard } from './shared/guards/roles.guard';
 import { CategoryModule } from './modules/category/category.module';
+import { VenueModule } from './modules/venue/venue.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { CategoryModule } from './modules/category/category.module';
     JwtModule,
     AuthModule,
     UserModule,
-    CategoryModule
+    CategoryModule,
+    VenueModule
   ],
   providers: [
     {
