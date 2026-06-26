@@ -5,16 +5,19 @@ import (
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/admin"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/auth"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/availability"
+	"github.com/WeCode-Community-Dev/BookMyVenue/internal/bookings"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/users"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/venues"
 	"github.com/WeCode-Community-Dev/BookMyVenue/internal/web"
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/redis"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func SetupRouter(r *gin.Engine, db *sqlc.Queries, rediClient *redis.Client) {
+func SetupRouter(r *gin.Engine, db *sqlc.Queries, rediClient *redis.Client, pool *pgxpool.Pool) {
 	adminWebRoutes := r.Group("/admin")
 	userWebRoutes := r.Group("/user")
+	bookingWebRoutes := r.Group("/booking")
 
 	webHandler := web.NewHandler()
 	r.GET("/register", webHandler.RegisterPage)
@@ -32,6 +35,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries, rediClient *redis.Client) {
 	adminWebRoutes.GET("viewRejectedVenues", webHandler.Admin_viewRejectedVenues)
 	userWebRoutes.GET("/viewVenues", webHandler.User_viewVenues)
 	userWebRoutes.GET("/venue/:venue_id/availability", webHandler.User_viewAvailability)
+	bookingWebRoutes.GET("/:id", webHandler.Booking_paymentPage)
 
 	api := r.Group("/api/v1")
 
@@ -83,5 +87,14 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries, rediClient *redis.Client) {
 		availabilityRoutes.GET("/venues/:id/availability", auth.RoleGuarde("owner", "user"), availabilityHandler.AvailableSlots)
 		availabilityRoutes.POST("/venues/:id/availability", auth.RoleGuarde("owner"), availabilityHandler.SetNewSlot)
 		availabilityRoutes.DELETE("/venues/:venue_id/availability/:slot_id", auth.RoleGuarde("owner"), availabilityHandler.DeleteSlot)
+		availabilityRoutes.GET("/slot/:slot_id", auth.RoleGuarde("user"), availabilityHandler.GetSlotByID)
+	}
+
+	bookingHandler := bookings.NewHandler(db, pool, rediClient)
+	bookingRoutes := api.Group("")
+	bookingRoutes.Use(auth.JWTAuthentication)
+	{
+		bookingRoutes.GET("/slot/:slot_id/book", auth.RoleGuarde("user"), bookingHandler.BookSlot)
+		bookingRoutes.POST("/slot/:slot_id/bookings/:booking_id/confirm", auth.RoleGuarde("user"), bookingHandler.ConfirmBooking)
 	}
 }

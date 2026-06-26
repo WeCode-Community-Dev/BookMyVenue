@@ -28,7 +28,7 @@ func (h *Handler) AvailableSlots(c *gin.Context) {
 	}
 
 	var res createSlot
-	for _, slot := range slots {
+	for _, slot := range *slots {
 		date := strings.Split(slot.StartTime.Time.String(), " ")[0]
 		start_time := strings.Split(slot.StartTime.Time.String(), " ")[1]
 		end_time := strings.Split(slot.EndTime.Time.String(), " ")[1]
@@ -84,6 +84,18 @@ func (h *Handler) DeleteSlot(c *gin.Context) {
 	response.Success(c, http.StatusOK, "delete id", slot_id)
 }
 
+func (h *Handler) GetSlotByID(c *gin.Context) {
+	slotID := c.Param("slot_id")
+
+	slot, err := h.service.getSlotByID(c.Request.Context(), slotID)
+	if err != nil {
+		response.Error(c, http.StatusForbidden, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Slot", slot)
+}
+
 type Slot struct {
 	Date      string `json:"date"`
 	StartTime string `json:"start_time"`
@@ -97,4 +109,10 @@ type ResposeSlot struct {
 
 type createSlot struct {
 	Slots []ResposeSlot `json:"slots"`
+}
+
+type slotResponseForBooking struct {
+	Name string `json:"name"`
+	Date string `json:"date"`
+	Time string `json:"time"`
 }

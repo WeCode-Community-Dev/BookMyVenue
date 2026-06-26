@@ -41,3 +41,12 @@ func (r *repository) deleteSlot(ctx context.Context, slotID string) error {
 	err = r.db.DeleteSlot(ctx, slotUUID)
 	return err
 }
+
+func (r *repository) getAvailableSlotsByID(ctx context.Context, slotID string) (sqlc.Availability, error) {
+	slotUUId, err := utils.StringToUUID(slotID)
+	if err != nil {
+		return sqlc.Availability{}, err
+	}
+
+	return r.db.GetSlotByID(ctx, slotUUId)
+}

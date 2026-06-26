@@ -18,12 +18,12 @@ func main() {
 	}
 
 	cfg := config.LoadConfig()
-	db, err := config.ConnectDB(cfg)
+	pool, err := config.ConnectDB(cfg)
 	if err != nil {
 		slog.Error("Failed to connect to database", "err", err)
 		return
 	}
-	defer db.Close()
+	defer pool.Close()
 
 	redisClient, err := redis.NewClient()
 	if err != nil {
@@ -31,14 +31,14 @@ func main() {
 	}
 	defer redisClient.Close()
 
-	queries := sqlc.New(db)
+	queries := sqlc.New(pool)
 
 	// Create a Gin router with default middleware (logger and recovery)
 	r := gin.Default()
 	r.LoadHTMLGlob("../frontend/*")
 	r.Static("/uploads", "./internal/venues/uploads")
 
-	routes.SetupRouter(r, queries, redisClient)
+	routes.SetupRouter(r, queries, redisClient, pool)
 
 	// Start server on port 8080 (default)
 	// Server will listen on 0.0.0.0:8080 (localhost:8080 on Windows)

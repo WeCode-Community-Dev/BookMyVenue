@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment</title>
+</head>
+<body>
+
+    <h1>Payment</h1>
+
+    <div id="bookingDetails">
+        <p><strong>Venue:</strong><span id="venue_name"></span></p>
+        <p><strong>Date:</strong><span id="date"></span></p>
+        <p><strong>Time:</strong><span id="time"></span></p>
+        <p><strong>Amount:</strong><span id="amount"></span></p>
+    </div>
+
+    <hr>
+
+    <h2>Dummy Payment Gateway</h2>
+
+    <form id="paymentForm">
+        <div>
+            <label>Card Number</label>
+            <br>
+            <input
+                type="text"
+                value="4111111111111111"
+                readonly
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label>Card Holder</label>
+            <br>
+            <input
+                type="text"
+                value="Demo User"
+                readonly
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label>CVV</label>
+            <br>
+            <input
+                type="text"
+                value="123"
+                readonly
+            >
+        </div>
+
+        <br>
+
+        <button type="submit" id="button_amount">
+            Pay ₹
+        </button>
+    </form>
+
+    <script type="module">
+        const token = localStorage.getItem("access_token")
+        const slotID = window.location.pathname.split("/")[2];
+
+        const Bookresponse = await fetch(`/api/v1/slot/${slotID}/book`, {
+            method: "GET",
+            headers: {
+                Authorization: "Bearer " + token
+            }
+        })
+
+        const BookRes = await Bookresponse.json()
+        console.log(BookRes)
+        
+        const slotResponse = await fetch(`/api/v1/slot/${slotID}`, {
+            method: "GET",
+            headers: {
+                Authorization: "Bearer " + token
+            }
+        })
+
+        const slotRes = await slotResponse.json()
+
+        const venueName = document.getElementById("venue_name")
+        venueName.innerText = slotRes.data.name
+        const slotDate = document.getElementById("date")
+        slotDate.innerText = slotRes.data.date
+        const slotTime = document.getElementById("time")
+        // var time = `${slotRes.data.start_time} - ${slotRes.data.end_time}`
+        slotTime.innerText = slotRes.data.time
+        const slotAmount = document.getElementById("amount")
+        slotAmount.innerText = BookRes.data.total_amount
+        const payButton = document.getElementById("button_amount")
+        payButton.innerText += BookRes.data.total_amount
+
+
+        document
+            .getElementById("paymentForm")
+            .addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                // const bookingId = new URLSearchParams(
+                //     window.location.search
+                // ).get("booking_id");
+
+                const response = await fetch(
+                    `/api/v1/slot/${slotID}/bookings/${BookRes.data.id}/confirm`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Authorization":
+                                `Bearer ${token}`
+                        }
+                    }
+                );
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("Payment Successful");
+                    window.location.href = "/user/bookings";
+                } else {
+                    alert(result.error || "Payment Failed");
+                }
+            });
+    </script>
+
+</body>
+</html>
