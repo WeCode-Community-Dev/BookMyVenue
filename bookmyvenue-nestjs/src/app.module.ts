@@ -7,6 +7,7 @@ import { RedisModule } from './shared/redis/redis.module';
 import { JwtModule } from './shared/jwt/jwt.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
+import { RolesGuard } from './shared/guards/roles.guard';
 
 @Module({
   imports: [
@@ -23,6 +24,10 @@ import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })
