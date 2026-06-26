@@ -6,6 +6,7 @@ import { SignupDto } from './dto/signup.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { createAccessToken } from './helpers/token';
 import { ok } from 'node:assert';
+import { UserRole } from 'generated/prisma/enums';
 
 
 export type SignupResponse = {
@@ -15,7 +16,7 @@ export type SignupResponse = {
 
 export type LoginResponse = {
   success: boolean;
-  data: { accessToken: string; }
+  data: { accessToken: string; role: UserRole; }
 };
 
 
@@ -130,7 +131,10 @@ export class AuthService {
 
       return {
         success: true,
-        data: { accessToken }
+        data: {
+           accessToken,
+           role: user.role,
+        }
       };
     } catch (error) {
       throw error

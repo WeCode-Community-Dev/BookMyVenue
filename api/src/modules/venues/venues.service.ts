@@ -5,11 +5,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Prisma } from '../../../generated/prisma/client.js';
+import { Prisma, UserRole } from '../../../generated/prisma/client.js';
 import { CreateSpaceDto } from './dto/create-space.dto';
 import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateSpaceDto } from './dto/update-space.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
+import { JwtService } from '@nestjs/jwt';
+import { verifyAccessToken } from '../auth/helpers/token';
 
 const venueDetailsInclude = {
   amenities: {
@@ -66,17 +68,14 @@ type SpaceDetails = Prisma.SpaceGetPayload<{
 export class VenuesService {
   constructor(
     private readonly prismaService: PrismaService,
+    private readonly jwtService: JwtService,
   ) {}
 
 
-  async createVenue(dto: CreateVenueDto): Promise<VenueDetails> {
-    const payload = {
-      sub: '123',
-      email: 'test@test.com',
-      role: 'owner',
-    };
-    if (!payload) {
-      throw new UnauthorizedException('Invalid authorization token');
+  async createVenue(dto: CreateVenueDto, authorization: string): Promise<VenueDetails> {
+    const payload = verifyAccessToken(this.jwtService, authorization);
+    if (payload.role !== UserRole.VENUE_OWNER) {
+      throw new UnauthorizedException('You are not authorized to create a venue');
     }
     const ownerId = payload.sub;
     const venueAmenityIds = this.normalizeIds(dto.venueAmenityIds);
@@ -91,7 +90,7 @@ export class VenuesService {
 
       const venue = await tx.venue.create({
         data: {
-          ownerId: dto.ownerId,
+          ownerId: ownerId,
           name: dto.name,
           description: dto.description,
           address: dto.address,

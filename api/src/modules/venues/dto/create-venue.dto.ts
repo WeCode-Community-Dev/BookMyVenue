@@ -99,11 +99,6 @@ export class CreateVenueDto {
   @MaxLength(120)
   timezone: string;
 
-  @Transform(trimString)
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  ownerId: string;
 
   @Transform(toUuidArray)
   @IsArray()

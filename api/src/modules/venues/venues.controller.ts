@@ -22,8 +22,8 @@ export class VenuesController {
   constructor(private readonly venuesService: VenuesService) {}
 
   @Post('venues')
-  createVenue(@Body() dto: CreateVenueDto) {
-    return this.venuesService.createVenue(dto);
+  createVenue(@Body() dto: CreateVenueDto, @Headers('authorization') authorization: string) {
+    return this.venuesService.createVenue(dto, authorization);
   }
 
   @Get('venues')
