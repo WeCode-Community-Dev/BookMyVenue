@@ -8,6 +8,7 @@ import { JwtModule } from './shared/jwt/jwt.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
 import { RolesGuard } from './shared/guards/roles.guard';
+import { CategoryModule } from './modules/category/category.module';
 
 @Module({
   imports: [
@@ -17,8 +18,9 @@ import { RolesGuard } from './shared/guards/roles.guard';
     PrismaModule,
     RedisModule,
     JwtModule,
-    UserModule,
     AuthModule,
+    UserModule,
+    CategoryModule
   ],
   providers: [
     {
