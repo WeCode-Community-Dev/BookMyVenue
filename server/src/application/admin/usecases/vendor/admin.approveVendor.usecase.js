@@ -2,17 +2,18 @@ import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
 import { BadRequestError } from "../../../../domain/errors/BadRequestError.js";
 import { VendorMessages } from "../../../../shared/constants/messages/vendorMessages.js";
 import { VendorApprovalStatus } from "../../../../domain/enums/VendorApprovalStatus.enum.js";
-import { vendorApprovalTemplate } from "../../../../infrastructure/emailTemplates/admin.vendorApprovalTemplate.js";
-import { sendMail } from "../../../../infrastructure/services/MailService.js";
 
 export class AdminApproveVendorUsecase {
 
-    constructor(vendorRepository) {
-        this._vendorRepository = vendorRepository
+    constructor(vendorRepository, mailService) {
+        this._vendorRepository = vendorRepository;
+        this._mailService = mailService;
     }
 
     async execute(vendorId) {
-        const vendor = await this._vendorRepository.findById(vendorId);
+
+        const vendor =
+            await this._vendorRepository.findById(vendorId);
 
         if (!vendor) {
             throw new NotFoundError(
@@ -20,7 +21,7 @@ export class AdminApproveVendorUsecase {
             );
         }
 
-        if (vendor.approvalStatus === VendorApprovalStatus.APPROVED ) {
+        if (vendor.approvalStatus === VendorApprovalStatus.APPROVED) {
             throw new BadRequestError(
                 VendorMessages.error.VENDOR_ALREADY_APPROVED
             );
@@ -35,19 +36,15 @@ export class AdminApproveVendorUsecase {
             );
         }
 
-        // Send approval email
-        const { subject, html } = vendorApprovalTemplate({
-            vendorName: approvedVendor.fullName
-        });
-
         try {
-            await sendMail(
-                approvedVendor.email,
-                subject,
-                html
+            await this._mailService.sendVendorApprovalMail(
+                approvedVendor
             );
         } catch (error) {
-            console.log("Approval email sending failed:", error.message);
+            console.log(
+                "Approval email sending failed:",
+                error.message
+            );
         }
 
         return approvedVendor;

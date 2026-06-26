@@ -38,6 +38,8 @@ import { VendorGetAllVenuesUsecase } from '../../application/vendor/usecases/ven
 import { CloudinaryService } from '../../infrastructure/services/cloudinaryService.js'
 import { UserRepository } from '../../infrastructure/repositories/user.repository.js'
 import HashService from '../../infrastructure/services/HashService.js'
+//mailService
+import { MailServiceImpl } from '../../infrastructure/services/MailService.js'
 
 //Vendor
 import VendorRepository from '../../infrastructure/repositories/vendor.repository.js'
@@ -65,6 +67,8 @@ const bookingRepository = new BookingRepositoryImpl();
 
 //service
 const iCloudinaryService = new CloudinaryService()
+//mailService
+const iMailSErvice = new MailServiceImpl()
 
 //adminUserUsecases
 const iAdminGetAllUsersUsecase =
@@ -80,8 +84,8 @@ const iAdminUpdateUserStatusUsecase =
 //adminVendorUsecases
 const iAdminGetAllVendorsUsecase = new AdminGetAllVendorsUsecase(iVendorRepository)
 const iAdminGetVendorByIdUsecase = new AdminGetVendorByIdUsecase(iVendorRepository)
-const iAdminApproveVendorUsecase = new AdminApproveVendorUsecase(iVendorRepository)
-const iAdminRejectVendorUsecase = new AdminRejectVendorUsecase(iVendorRepository)
+const iAdminApproveVendorUsecase = new AdminApproveVendorUsecase(iVendorRepository,iMailSErvice)
+const iAdminRejectVendorUsecase = new AdminRejectVendorUsecase(iVendorRepository,iMailSErvice)
 const iAdminUpdateVendorStatusUsecase = new AdminUpdateVendorStatusUsecase(iVendorRepository)
 
 //auth usecases

@@ -1,7 +1,7 @@
 import { MailService } from "../../application/services/mailService.js";
 import { transporter } from "../config/mail.config.js";
 import { vendorApprovalTemplate } from "../emailTemplates/admin.vendorApprovalTemplate.js";
-import { vendorApprovalTemplate } from "../emailTemplates/admin.vendorApprovalTemplate.js";
+import { vendorRejectionTemplate } from "../emailTemplates/admin.vendorRejectionTemplate.js";
 
 export class MailServiceImpl extends MailService {
 
