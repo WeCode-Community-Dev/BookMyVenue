@@ -103,12 +103,7 @@ export interface GetVenueByIdResponse {
     venue: VenueDetail;
 }
 
-export interface GetVenuesParams {
-    district?: string;
-    category?: string;
-    page?: number;
-    limit?: number;
-}
+
 
 export interface CreateVenueBody {
     name: string;

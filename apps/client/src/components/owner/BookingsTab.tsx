@@ -1,5 +1,6 @@
-import { CalendarCheck, ChevronLeft, ChevronRight, CheckCircle2, Eye, Search, XCircle } from "lucide-react";
+import { CalendarCheck, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { BOOKINGS, fmt, STATUS_DOT, STATUS_STYLE, type Booking, type BookingStatus } from "@/app/owner/types";
+import { useOwnerBookings } from "@/hooks/useBooking";
 
 interface BookingsTabProps {
     bookingFilter: BookingStatus | "All";
@@ -16,6 +17,9 @@ export default function BookingsTab({
     onFilterChange,
     onSearchChange,
 }: BookingsTabProps) {
+    const { data: bookings = [], isLoading, isError, error } = useOwnerBookings({});
+    console.log({ bookings });
+
     return (
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
             {/* Filters */}
@@ -30,7 +34,7 @@ export default function BookingsTab({
                     />
                 </div>
                 <div className="flex gap-2 shrink-0">
-                    {(["All", "Confirmed", "Pending", "Cancelled"] as const).map((s) => (
+                    {(["All", "Confirmed", "Cancelled"] as const).map((s) => (
                         <button
                             key={s}
                             onClick={() => onFilterChange(s)}
@@ -51,27 +55,33 @@ export default function BookingsTab({
                 <table className="w-full text-sm">
                     <thead>
                         <tr className="bg-muted/50 border-b border-border">
-                            {["Booking ID", "Client", "Venue", "Date", "Guests", "Amount", "Status", ""].map((h) => (
-                                <th
-                                    key={h}
-                                    className="text-left px-5 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap"
-                                >
-                                    {h}
-                                </th>
-                            ))}
+                            {["Booking ID", "Client", "Venue", "Date", "Guests", "Amount", "Status"].map(
+                                (h) => (
+                                    <th
+                                        key={h}
+                                        className="text-left px-5 py-3 text-xs font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap"
+                                    >
+                                        {h}
+                                    </th>
+                                ),
+                            )}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
                         {filteredBookings.map((b) => (
                             <tr key={b.id} className="hover:bg-muted/30 transition-colors">
-                                <td className="px-5 py-3.5 font-mono text-xs text-muted-foreground">{b.id}</td>
+                                <td className="px-5 py-3.5 font-mono text-xs text-muted-foreground">
+                                    {b.id}
+                                </td>
                                 <td className="px-5 py-3.5">
                                     <div>
                                         <p className="font-semibold text-foreground">{b.client}</p>
                                         <p className="text-xs text-muted-foreground">{b.category}</p>
                                     </div>
                                 </td>
-                                <td className="px-5 py-3.5 text-foreground/80 whitespace-nowrap">{b.venue}</td>
+                                <td className="px-5 py-3.5 text-foreground/80 whitespace-nowrap">
+                                    {b.venue}
+                                </td>
                                 <td className="px-5 py-3.5 text-foreground/70 whitespace-nowrap">{b.date}</td>
                                 <td className="px-5 py-3.5 text-foreground/70">{b.guests}</td>
                                 <td className="px-5 py-3.5 font-bold text-foreground whitespace-nowrap">
@@ -81,35 +91,11 @@ export default function BookingsTab({
                                     <span
                                         className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_STYLE[b.status]}`}
                                     >
-                                        <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[b.status]}`} />
+                                        <span
+                                            className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[b.status]}`}
+                                        />
                                         {b.status}
                                     </span>
-                                </td>
-                                <td className="px-5 py-3.5">
-                                    <div className="flex items-center gap-1">
-                                        {b.status === "Pending" && (
-                                            <>
-                                                <button
-                                                    className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors"
-                                                    title="Confirm"
-                                                >
-                                                    <CheckCircle2 className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
-                                                    title="Decline"
-                                                >
-                                                    <XCircle className="w-4 h-4" />
-                                                </button>
-                                            </>
-                                        )}
-                                        <button
-                                            className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:bg-secondary transition-colors"
-                                            title="View"
-                                        >
-                                            <Eye className="w-4 h-4" />
-                                        </button>
-                                    </div>
                                 </td>
                             </tr>
                         ))}

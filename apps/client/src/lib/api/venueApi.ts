@@ -1,8 +1,12 @@
 const API_BASE = "http://127.0.0.1:4000";
-import type { CreateVenuePayload, GetVenueByIdResponse, GetVenuesParams,GetVenuesResponse } from "@bookmyvenue/types";
+import type {
+    CreateVenuePayload,
+    GetVenueByIdResponse,
+    GetVenuesQuery,
+    GetVenuesResponse,
+} from "@bookmyvenue/types";
 
-
-export async function getVenuesApi(params: GetVenuesParams = {}): Promise<GetVenuesResponse> {
+export async function getVenuesApi(params: GetVenuesQuery = {}): Promise<GetVenuesResponse> {
     const query = new URLSearchParams();
     if (params.district) query.set("district", params.district);
     if (params.category) query.set("category", params.category);

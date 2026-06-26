@@ -2,9 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getVenuesApi, getVenueByIdApi } from "@/lib/api/venueApi";
-import type { GetVenuesParams } from "@bookmyvenue/types";
+import type { GetVenuesQuery } from "@bookmyvenue/types";
 
-export function useVenues(params: GetVenuesParams = {}) {
+export function useVenues(params: GetVenuesQuery = {}) {
     return useQuery({
         queryKey: ["venues", params],
         queryFn: () => getVenuesApi(params),

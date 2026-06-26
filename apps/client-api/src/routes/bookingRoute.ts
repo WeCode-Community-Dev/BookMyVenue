@@ -1,7 +1,8 @@
 import { FastifyInstance } from "fastify";
-import { userAuthMiddleware } from "../middleware/authmiddleware.js";
-import { createBooking } from "../controllers/bookingController.js";
-import type { CreateBookingBody } from "@bookmyvenue/types";
+import { userAuthMiddleware, ownerAuthMiddleware } from "../middleware/authmiddleware.js";
+import { createBooking, getBookingsByOwnerId } from "../controllers/bookingController.js";
+import type { CreateBookingBody, GetBookingQuery } from "@bookmyvenue/types";
+import { BookingStatus } from "@bookmyvenue/database";
 
 const createBookingSchema = {
     body: {
@@ -22,10 +23,26 @@ const createBookingSchema = {
     },
 };
 
+const getBookingsByIdSchema = {
+    querystring: {
+        type: "object",
+        properties: {
+            status: { type: "string", enum: Object.values(BookingStatus) },
+            page: { type: "integer", minimum: 1, default: 1 },
+            limit: { type: "integer", minimum: 1, maximum: 50, default: 10 },
+        },
+    },
+};
+
 export const bookingRoute = async (fastify: FastifyInstance) => {
     fastify.post<{ Body: CreateBookingBody }>(
         "/create-booking",
         { preHandler: userAuthMiddleware, schema: createBookingSchema },
         createBooking,
+    );
+    fastify.get<{ Querystring: GetBookingQuery }>(
+        "/owner/bookings",
+        { preHandler: ownerAuthMiddleware, schema: getBookingsByIdSchema },
+        getBookingsByOwnerId,
     );
 };
