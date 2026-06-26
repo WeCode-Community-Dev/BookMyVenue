@@ -71,9 +71,9 @@ const editVenueSchema = {
 };
 
 export const venueRoute = async (fastify: FastifyInstance) => {
-    fastify.get<{ Querystring: GetVenuesQuery }>("/venues", { schema: getVenuesSchema }, getVenues);
+    fastify.get<{ Querystring: GetVenuesQuery }>("/", { schema: getVenuesSchema }, getVenues);
 
-    fastify.get<{ Params: { id: string } }>("/venues/:id", getVenueById);
+    fastify.get<{ Params: { id: string } }>("/:id", getVenueById);
 
     fastify.post<{ Body: CreateVenueBody }>(
         "/create-venue",
@@ -82,7 +82,7 @@ export const venueRoute = async (fastify: FastifyInstance) => {
     );
 
     fastify.put<{ Params: { id: string }; Body: EditVenueBody }>(
-        "/venues/:id",
+        "/venue/:id",
         { preHandler: ownerAuthMiddleware, schema: editVenueSchema },
         editVenue,
     );

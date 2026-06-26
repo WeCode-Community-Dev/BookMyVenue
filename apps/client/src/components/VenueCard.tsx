@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Heart, MapPin, Star, Users } from "lucide-react";
 import type { Venue } from "@/lib/api/venue";
 import { formatEnum } from "@/lib/utils";
@@ -18,7 +19,10 @@ export function VenueCard({ venue }: VenueCardProps) {
         : null;
 
     return (
-        <div className="group bg-card rounded-2xl overflow-hidden border border-border hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+        <Link
+            href={`/venues/${venue.id}`}
+            className="group block bg-card rounded-2xl overflow-hidden border border-border hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+        >
             <div className="relative h-52 bg-muted overflow-hidden">
                 <Image
                     src={venue.images[0] ?? "/placeholder-venue.jpg"}
@@ -28,7 +32,10 @@ export function VenueCard({ venue }: VenueCardProps) {
                 />
                 <button
                     className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
-                    onClick={() => setWishlisted((prev) => !prev)}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        setWishlisted((prev) => !prev);
+                    }}
                 >
                     <Heart
                         className={`w-4 h-4 ${wishlisted ? "fill-red-500 text-red-500" : "text-gray-400"}`}
@@ -76,11 +83,14 @@ export function VenueCard({ venue }: VenueCardProps) {
                             <span className="text-sm text-muted-foreground">Price on request</span>
                         )}
                     </div>
-                    <button className="bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-xl hover:bg-accent transition-colors cursor-pointer">
+                    <button
+                        className="bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-xl hover:bg-accent transition-colors cursor-pointer"
+                        onClick={(e) => e.preventDefault()}
+                    >
                         Book Now
                     </button>
                 </div>
             </div>
-        </div>
+        </Link>
     );
 }

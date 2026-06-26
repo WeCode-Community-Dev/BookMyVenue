@@ -7,7 +7,7 @@ const app = Fastify({ logger: true });
 app.register(cors, { origin: true });
 app.register(clerkPlugin);
 
-app.register(venueRoute, { prefix: "/owner" });
+app.register(venueRoute, { prefix: "/venue" });
 
 app.get("/health", async () => ({ status: "ok", uptime: process.uptime() }));
 

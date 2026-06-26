@@ -55,6 +55,23 @@ export interface GetVenuesResponse {
     pagination: Pagination;
 }
 
+export interface VenueReview {
+    id: number;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    user: { id: number; email: string };
+}
+
+export interface VenueDetail extends Venue {
+    reviews: VenueReview[];
+    owner: { id: number; email: string };
+}
+
+export interface GetVenueByIdResponse {
+    venue: VenueDetail;
+}
+
 export interface GetVenuesParams {
     district?: string;
     category?: string;
@@ -70,7 +87,7 @@ export async function getVenuesApi(params: GetVenuesParams = {}): Promise<GetVen
     if (params.limit) query.set("limit", String(params.limit));
 
     const qs = query.toString();
-    const res = await fetch(`${API_BASE}/owner/venues${qs ? `?${qs}` : ""}`);
+    const res = await fetch(`${API_BASE}/venue/${qs ? `?${qs}` : ""}`);
 
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -80,8 +97,19 @@ export async function getVenuesApi(params: GetVenuesParams = {}): Promise<GetVen
     return res.json();
 }
 
+export async function getVenueByIdApi(id: number | string): Promise<GetVenueByIdResponse> {
+    const res = await fetch(`${API_BASE}/venue/${id}`);
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { message?: string }).message ?? "Failed to fetch venue");
+    }
+
+    return res.json();
+}
+
 export async function createVenueApi(payload: CreateVenuePayload, token: string) {
-    const res = await fetch(`${API_BASE}/owner/create-venue`, {
+    const res = await fetch(`${API_BASE}/venue/create-venue`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
