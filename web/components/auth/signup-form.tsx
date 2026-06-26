@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { ArrowRight } from "lucide-react";
 
 import { IconInput } from "@/components/auth/icon-input";
@@ -11,40 +10,53 @@ import {
 import { PasswordField } from "@/components/auth/password-field";
 import { RoleSelector, type UserRole } from "@/components/auth/role-selector";
 import { Button } from "@/components/ui/button";
+import { useForm } from "@/hooks/useFrom";
+import { signup } from "@/services/authServices";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function SignupForm() {
-  const [role, setRole] = React.useState<UserRole>("CUSTOMER");
-  const [firstName, setFirstName] = React.useState("");
-  const [lastName, setLastName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [countryCode, setCountryCode] = React.useState<PhoneCountryCode>("US");
-  const [phone, setPhone] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
-  const [passwordError, setPasswordError] = React.useState("");
+  const initialData = {
+    role: "CUSTOMER" as UserRole,
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+  };
+  const { formData, errors, isSubmitting, handleChange, handleSubmit, result } = useForm<typeof initialData>(initialData, signup);
+  const router = useRouter();
+  const [passwordError, setPasswordError] = useState("");
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (password !== confirmPassword) {
-      setPasswordError("Passwords do not match");
-      return;
+  useEffect(() => {
+    if (result) {
+      if (result.success) {
+        router.push("/login");
+      } else {
+      }
     }
+  }, [result]);
 
-    setPasswordError("");
-  }
+  useEffect(() => {
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError("Passwords do not match");
+    } else {
+      setPasswordError("");
+    }
+  },[formData.password, formData.confirmPassword])
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <RoleSelector value={role} onChange={setRole} />
+      <RoleSelector value={formData.role as UserRole} onChange={handleChange} />
       <div className="grid grid-cols-2 gap-3">
         <IconInput
           label="First Name"
           name="firstName"
           autoComplete="given-name"
           placeholder="First name"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
+          value={formData.firstName}
+          onChange={handleChange}
           required
         />
         <IconInput
@@ -52,8 +64,8 @@ export function SignupForm() {
           name="lastName"
           autoComplete="family-name"
           placeholder="Last name"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
+          value={formData.lastName}
+          onChange={handleChange}
         />
       </div>
       <IconInput
@@ -62,20 +74,23 @@ export function SignupForm() {
         name="email"
         autoComplete="email"
         placeholder="name@company.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        value={formData.email}
+        onChange={handleChange}
         required
       />
-      <PhoneInput
-        countryCode={countryCode}
-        onCountryCodeChange={setCountryCode}
-        value={phone}
-        onChange={setPhone}
+      <IconInput
+        label="Phone"
+        type="tel"
+        name="phone"
+        autoComplete="tel"
+        placeholder="Phone"
+        value={formData.phone}
+        onChange={handleChange}
       />
       <div className="grid grid-cols-2 gap-3">
         <PasswordField
-          value={password}
-          onChange={setPassword}
+          value={formData.password}
+          onChange={handleChange}
           name="password"
           autoComplete="new-password"
           showForgotPassword={false}
@@ -83,8 +98,8 @@ export function SignupForm() {
         />
         <PasswordField
           label="Confirm Password"
-          value={confirmPassword}
-          onChange={setConfirmPassword}
+          value={formData.confirmPassword}
+          onChange={handleChange}
           name="confirmPassword"
           id="confirm-password"
           autoComplete="new-password"
@@ -98,8 +113,9 @@ export function SignupForm() {
           {passwordError}
         </p>
       )}
-      <Button type="submit" className="h-10 w-full gap-2 text-sm font-medium">
-        Create Account
+      {errors && <p className="text-red-500">{errors}</p>}
+      <Button type="submit" disabled={isSubmitting} className="h-10 w-full gap-2 text-sm font-medium">
+        {isSubmitting ? "Creating Account..." : "Create Account"}
         <ArrowRight className="size-4" />
       </Button>
     </form>

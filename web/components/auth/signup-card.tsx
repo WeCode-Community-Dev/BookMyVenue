@@ -28,8 +28,8 @@ export function SignupCard({ className }: { className?: string }) {
       </CardHeader>
       <CardContent className="flex flex-col gap-6 px-6 pt-6 pb-6">
         <SignupForm />
-        <AuthDivider label="Or sign up with" />
-        <SocialLoginButtons />
+        {/* <AuthDivider label="Or sign up with" /> */}
+        {/* <SocialLoginButtons /> */}
       </CardContent>
     </Card>
   );

@@ -8,7 +8,7 @@ export type UserRole = "CUSTOMER" | "VENUE_OWNER";
 
 type RoleSelectorProps = {
   value: UserRole;
-  onChange: (role: UserRole) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 const roles = [
@@ -38,7 +38,7 @@ export function RoleSelector({ value, onChange }: RoleSelectorProps) {
               key={role.value}
               type="button"
               aria-pressed={isSelected}
-              onClick={() => onChange(role.value)}
+              onClick={() => onChange( { target: { name: "role", value: role.value } } as React.ChangeEvent<HTMLInputElement>)}
               className={cn(
                 "relative flex flex-col items-start gap-2 rounded-lg border p-3 text-left transition-colors",
                 isSelected

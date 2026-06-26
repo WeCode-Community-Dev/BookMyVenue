@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 export const phoneCountries = [
   { code: "US", dial: "+1", label: "US" },
@@ -15,7 +16,6 @@ export type PhoneCountryCode = (typeof phoneCountries)[number]["code"];
 
 type PhoneInputProps = {
   countryCode: PhoneCountryCode;
-  onCountryCodeChange: (code: PhoneCountryCode) => void;
   value: string;
   onChange: (value: string) => void;
 };
@@ -28,13 +28,14 @@ const selectClassName = cn(
 
 export function PhoneInput({
   countryCode,
-  onCountryCodeChange,
   value,
   onChange,
 }: PhoneInputProps) {
   const selectedCountry =
     phoneCountries.find((country) => country.code === countryCode) ??
     phoneCountries[0];
+
+    const [selectedCountryState, setSelectedCountryState] = useState<typeof phoneCountries[number]>(selectedCountry);
 
   return (
     <div className="flex flex-col gap-2">
@@ -47,7 +48,7 @@ export function PhoneInput({
           aria-label="Country code"
           value={countryCode}
           onChange={(e) =>
-            onCountryCodeChange(e.target.value as PhoneCountryCode)
+            setSelectedCountryState(phoneCountries.find((country) => country.code === e.target.value) ?? phoneCountries[0])
           }
           className={cn(selectClassName, "w-[88px]")}
         >

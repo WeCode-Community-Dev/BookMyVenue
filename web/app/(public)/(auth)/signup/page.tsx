@@ -1,6 +1,5 @@
 import { AuthBrandHeader } from "@/components/auth/auth-brand-header";
 import { AuthFooterLink } from "@/components/auth/auth-footer-link";
-import { AuthLegalFooter } from "@/components/auth/auth-legal-footer";
 import { SignupCard } from "@/components/auth/signup-card";
 
 export default function SignupPage() {
@@ -13,7 +12,6 @@ export default function SignupPage() {
         linkText="Login"
         href="/login"
       />
-      <AuthLegalFooter />
     </>
   );
 }
