@@ -105,6 +105,42 @@ npm run dev
 | `POST /api/v1/auth/login` | Login (body: email, password) → returns JWT |
 | `GET /api/v1/auth/me` | Current user (header: `Authorization: Bearer <token>`) |
 
+### Venues
+
+| Endpoint | Auth | Description |
+|----------|------|-------------|
+| `GET /api/v1/venues` | No | List venues; optional `?city=Mumbai` |
+| `GET /api/v1/venues/:id` | No | Single venue with amenities |
+| `POST /api/v1/venues` | OWNER | Create venue + amenities |
+| `PUT /api/v1/venues/:id` | OWNER | Update own venue |
+| `DELETE /api/v1/venues/:id` | OWNER | Delete own venue |
+
+**Create venue example:**
+
+```bash
+curl -X POST http://localhost:3000/api/v1/venues \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_OWNER_TOKEN" \
+  -d '{
+    "name": "Grand Hall",
+    "description": "Spacious event hall",
+    "pricePerHour": 5000,
+    "city": "Mumbai",
+    "district": "Andheri",
+    "state": "Maharashtra",
+    "latitude": 19.1136,
+    "longitude": 72.8697,
+    "country": "India",
+    "capacity": 200,
+    "amenities": {
+      "parking": true,
+      "parkingSize": 50,
+      "airConditioning": true,
+      "wifi": true
+    }
+  }'
+```
+
 | Command | Description |
 |---------|-------------|
 | `npm run check:setup` | Verify `.env` and database connection |
