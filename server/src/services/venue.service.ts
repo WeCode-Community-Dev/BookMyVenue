@@ -51,6 +51,10 @@ export const getVenuesService = async ({ page, limit, city, venueType }: ListVen
   };
 };
 
+export const getMyVenuesService = async (ownerId: string) => {
+  return VenueModel.find({ owner: ownerId }).sort({ createdAt: -1 });
+};
+
 export const approveVenueService = async (venueId: string) => {
   const venue = await VenueModel.findById(venueId);
   if (!venue) {

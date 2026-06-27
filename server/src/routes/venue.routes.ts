@@ -5,6 +5,7 @@ import { Permissions } from "../utils/role-permission";
 import {
   createVenueController,
   getVenuesController,
+  getMyVenuesController,
   getVenueByIdController,
   approveVenueController,
   updateVenueController,
@@ -21,6 +22,14 @@ venueRoute.post(
 );
 
 venueRoute.get("/", getVenuesController);
+
+// Owner: their own venues (approved or not)
+venueRoute.get(
+  "/my-venues",
+  isAuthenticated,
+  authorize(Permissions.CREATE_VENUE),
+  getMyVenuesController,
+);
 
 venueRoute.get(`/get/:venueId`, getVenueByIdController);
 

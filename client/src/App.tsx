@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import AppRoutes from "./routes";
+import { Toaster } from "@/components/ui/sonner";
 import { useAuthStore } from "@/store/store";
 import { useAuthUser } from "@/hooks/use-auth";
 
@@ -19,6 +20,7 @@ const App = () => {
   return (
     <div>
       <AppRoutes />
+      <Toaster richColors position="top-center" />
     </div>
   );
 };

@@ -7,6 +7,7 @@ import { RoleEnumType } from "../enums/user-enum";
 import {
   createVenueService,
   getVenuesService,
+  getMyVenuesService,
   getVenueByIdService,
   approveVenueService,
   updateVenueService,
@@ -26,6 +27,20 @@ export const getVenuesController = asyncHandler(async (req: Request, res: Respon
   return res.status(HTTP_STATUS.OK).json({
     message: "Venues fetched successfully",
     ...result,
+  });
+});
+
+export const getMyVenuesController = asyncHandler(async (req: Request, res: Response) => {
+  const ownerId = req.user?.userId;
+  if (!ownerId) {
+    throw new UnauthorizedException("Unauthorized. Please log in");
+  }
+
+  const venues = await getMyVenuesService(ownerId);
+
+  return res.status(HTTP_STATUS.OK).json({
+    message: "Venues fetched successfully",
+    venues,
   });
 });
 

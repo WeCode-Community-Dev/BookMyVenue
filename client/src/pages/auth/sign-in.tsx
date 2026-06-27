@@ -8,7 +8,7 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { loginSchema, type LoginFormValues } from "@/validator/auth-schema";
 import { useLogin } from "@/hooks/use-auth";
-import { PUBLIC_ROUTES, AUTH_ROUTES } from "@/routes/common/route-path";
+import { AUTH_ROUTES, getRoleLandingPath } from "@/routes/common/route-path";
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const SignIn = () => {
 
   const onSubmit = (values: LoginFormValues) => {
     login.mutate(values, {
-      onSuccess: () => navigate(PUBLIC_ROUTES.HOME),
+      onSuccess: (user) => navigate(getRoleLandingPath(user.role)),
     });
   };
 
