@@ -14,8 +14,7 @@ export const createReviewService = async ({
   comment,
   customer,
 }: CreateReviewParams) => {
-  
-  // Check venue exist or not 
+  // Check venue exist or not
   await getVenueByIdService(venueId);
 
   const existingReview = await ReviewModel.findOne({ venue: venueId, customer });
@@ -31,4 +30,14 @@ export const createReviewService = async ({
   });
 
   return review;
+};
+
+export const getVenueReviewsService = async (venueId: string) => {
+  await getVenueByIdService(venueId);
+
+  const reviews = await ReviewModel.find({ venue: venueId })
+    .populate("customer", "name")
+    .sort({ createdAt: -1 });
+
+  return reviews;
 };
