@@ -1,4 +1,10 @@
-import { AUTH_ROUTES, CUSTOMER_ROUTES, OWNER_ROUTES, PUBLIC_ROUTES } from "./route-path";
+import {
+  ADMIN_ROUTES,
+  AUTH_ROUTES,
+  CUSTOMER_ROUTES,
+  OWNER_ROUTES,
+  PUBLIC_ROUTES,
+} from "./route-path";
 import SignIn from "../../pages/auth/sign-in";
 import SignUp from "../../pages/auth/sign-up";
 import Home from "@/pages/home/home";
@@ -9,6 +15,10 @@ import OwnerDashboard from "@/pages/owner/owner-dashboard";
 import CreateVenueForm from "@/pages/owner/create-venue-form";
 import VenueDetails from "@/pages/owner/venue-details";
 import VenueBookings from "@/pages/owner/venue-bookings";
+import AdminDashboard from "@/pages/admin/admin-dashboard";
+import AdminVenues from "@/pages/admin/admin-venues";
+import AdminUsers from "@/pages/admin/admin-users";
+import AdminRevenue from "@/pages/admin/admin-revenue";
 
 export const publicRoutePaths = [
   { path: PUBLIC_ROUTES.HOME, element: <Home /> },
@@ -30,4 +40,11 @@ export const ownerRoutePaths = [
 
 export const customerRoutePaths = [
   { path: CUSTOMER_ROUTES.MY_BOOKINGS, element: <MyBookings /> },
+];
+
+export const adminRoutePaths = [
+  { path: ADMIN_ROUTES.DASHBOARD, element: <AdminDashboard /> },
+  { path: ADMIN_ROUTES.VENUES, element: <AdminVenues /> },
+  { path: ADMIN_ROUTES.USERS, element: <AdminUsers /> },
+  { path: ADMIN_ROUTES.REVENUE, element: <AdminRevenue /> },
 ];

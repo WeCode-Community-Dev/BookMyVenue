@@ -20,6 +20,9 @@ export const Permissions = {
 
   // User administration
   MANAGE_USERS: "MANAGE_USERS",
+
+  // Platform analytics
+  VIEW_REVENUE: "VIEW_REVENUE",
 } as const;
 
 export type PermissionType = (typeof Permissions)[keyof typeof Permissions];
@@ -39,6 +42,7 @@ export const RolePermissions: Record<RoleEnumType, PermissionType[]> = {
     Permissions.UPDATE_REVIEW,
     Permissions.DELETE_REVIEW,
     Permissions.MANAGE_USERS,
+    Permissions.VIEW_REVENUE,
   ],
 
   [RoleEnum.OWNER]: [

@@ -6,6 +6,7 @@ import {
   createVenueController,
   getVenuesController,
   getMyVenuesController,
+  getAllVenuesController,
   getVenueByIdController,
   approveVenueController,
   updateVenueController,
@@ -29,6 +30,13 @@ venueRoute.get(
   isAuthenticated,
   authorize(Permissions.CREATE_VENUE),
   getMyVenuesController,
+);
+
+venueRoute.get(
+  "/admin/all-venues",
+  isAuthenticated,
+  authorize(Permissions.APPROVE_VENUE),
+  getAllVenuesController,
 );
 
 venueRoute.get(`/get/:venueId`, getVenueByIdController);

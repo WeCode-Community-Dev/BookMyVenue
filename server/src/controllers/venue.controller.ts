@@ -8,8 +8,9 @@ import {
   createVenueService,
   getVenuesService,
   getMyVenuesService,
+  getAllVenuesService,
   getVenueByIdService,
-  approveVenueService,
+  setVenueApprovalService,
   updateVenueService,
   deleteVenueService,
 } from "../services/venue.service";
@@ -44,6 +45,15 @@ export const getMyVenuesController = asyncHandler(async (req: Request, res: Resp
   });
 });
 
+export const getAllVenuesController = asyncHandler(async (_req: Request, res: Response) => {
+  const venues = await getAllVenuesService();
+
+  return res.status(HTTP_STATUS.OK).json({
+    message: "Venues fetched successfully",
+    venues,
+  });
+});
+
 export const createVenueController = asyncHandler(async (req: Request, res: Response) => {
   const owner = req.user?.userId;
   if (!owner) {
@@ -66,10 +76,12 @@ export const approveVenueController = asyncHandler(async (req: Request, res: Res
     throw new BadRequestException("Invalid venue id");
   }
 
-  const venue = await approveVenueService(venueId);
+  const isApproved = typeof req.body?.isApproved === "boolean" ? req.body.isApproved : true;
+
+  const venue = await setVenueApprovalService(venueId, isApproved);
 
   return res.status(HTTP_STATUS.OK).json({
-    message: "Venue approved successfully",
+    message: isApproved ? "Venue approved successfully" : "Venue moved to pending",
     venue,
   });
 });

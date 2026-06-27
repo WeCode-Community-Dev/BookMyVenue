@@ -11,15 +11,20 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { NavGroup } from "@/components/nav-group";
-import { navGroups } from "@/components/app-shared";
+import { getNavGroups } from "@/components/app-shared";
 import { Link, useNavigate } from "react-router-dom";
 import { LogOutIcon } from "lucide-react";
-import { OWNER_ROUTES, PUBLIC_ROUTES } from "@/routes/common/route-path";
+import { PUBLIC_ROUTES, getRoleLandingPath } from "@/routes/common/route-path";
 import { useLogout } from "@/hooks/use-auth";
+import { useAuthStore } from "@/store/store";
 
 export function AppSidebar() {
 	const navigate = useNavigate();
 	const logout = useLogout();
+	const user = useAuthStore((state) => state.user);
+
+	const navGroups = getNavGroups(user?.role);
+	const landingPath = user ? getRoleLandingPath(user.role) : PUBLIC_ROUTES.HOME;
 
 	const handleLogout = () => {
 		logout.mutate(undefined, {
@@ -31,7 +36,7 @@ export function AppSidebar() {
 		<Sidebar collapsible="icon" variant="floating">
 			<SidebarHeader className="h-14 justify-center">
 				<SidebarMenuButton asChild>
-					<Link to={OWNER_ROUTES.DASHBOARD}>
+					<Link to={landingPath}>
 						<LogoIcon />
 						<span className="font-medium">BookMyVenue</span>
 					</Link>

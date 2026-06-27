@@ -14,6 +14,8 @@ import reviewRoute from "./routes/review.route";
 import reservationRoute from "./routes/reservation.route";
 import paymentRoute from "./routes/payment.route";
 import bookingRoute from "./routes/booking.route";
+import userRoute from "./routes/user.routes";
+import analyticsRoute from "./routes/analytics.routes";
 
 const app = express();
 
@@ -45,6 +47,8 @@ app.use(`${BASE_PATH}/review`, reviewRoute);
 app.use(`${BASE_PATH}/reservation`, reservationRoute);
 app.use(`${BASE_PATH}/payment`, paymentRoute);
 app.use(`${BASE_PATH}/booking`, bookingRoute);
+app.use(`${BASE_PATH}/user`, userRoute);
+app.use(`${BASE_PATH}/analytics`, analyticsRoute);
 
 app.use(errorHandler);
 

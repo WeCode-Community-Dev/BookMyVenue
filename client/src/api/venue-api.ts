@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/axios-client";
-import type { Venue, VenueType } from "@/types/venue.types";
+import type { AdminVenue, Venue, VenueType } from "@/types/venue.types";
 
 export interface CreateVenuePayload {
   name: string;
@@ -45,6 +45,26 @@ export const getVenueById = async (venueId: string): Promise<Venue> => {
 export const getMyVenues = async (): Promise<Venue[]> => {
   const { data } = await apiClient.get("/venue/my-venues");
   return data.venues;
+};
+
+export const getAllVenues = async (): Promise<AdminVenue[]> => {
+  const { data } = await apiClient.get("/venue/admin/all-venues");
+  return data.venues;
+};
+
+export const setVenueStatusRequest = async ({
+  venueId,
+  isApproved,
+}: {
+  venueId: string;
+  isApproved: boolean;
+}): Promise<Venue> => {
+  const { data } = await apiClient.patch(`/venue/approve/${venueId}`, { isApproved });
+  return data.venue;
+};
+
+export const deleteVenueRequest = async (venueId: string): Promise<void> => {
+  await apiClient.delete(`/venue/delete/${venueId}`);
 };
 
 export const updateVenueRequest = async ({

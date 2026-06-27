@@ -18,6 +18,12 @@ export const VENUE_TYPE_LABELS: Record<VenueType, string> = {
   PARTY_HALL: "Party Hall",
 };
 
+export interface VenueOwner {
+  _id: string;
+  name: string;
+  email: string;
+}
+
 export interface Venue {
   _id: string;
   owner: string;
@@ -35,4 +41,8 @@ export interface Venue {
   isApproved: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AdminVenue extends Omit<Venue, "owner"> {
+  owner: VenueOwner;
 }

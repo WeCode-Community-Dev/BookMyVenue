@@ -55,13 +55,17 @@ export const getMyVenuesService = async (ownerId: string) => {
   return VenueModel.find({ owner: ownerId }).sort({ createdAt: -1 });
 };
 
-export const approveVenueService = async (venueId: string) => {
+export const getAllVenuesService = async () => {
+  return VenueModel.find().sort({ createdAt: -1 }).populate("owner", "name email");
+};
+
+export const setVenueApprovalService = async (venueId: string, isApproved: boolean) => {
   const venue = await VenueModel.findById(venueId);
   if (!venue) {
     throw new NotFoundException("Venue not found");
   }
 
-  venue.isApproved = true;
+  venue.isApproved = isApproved;
   await venue.save();
 
   return venue;

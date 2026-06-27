@@ -1,6 +1,14 @@
-import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  setVenueStatusRequest,
   createVenueRequest,
+  deleteVenueRequest,
+  getAllVenues,
   getMyVenues,
   getVenues,
   getVenueById,
@@ -9,6 +17,7 @@ import {
 } from "@/api/venue-api";
 
 export const MY_VENUES_QUERY_KEY = ["my-venues"];
+export const ALL_VENUES_QUERY_KEY = ["all-venues"];
 
 export const useVenues = (params: VenuesQuery) =>
   useQuery({
@@ -29,6 +38,32 @@ export const useMyVenues = () =>
     queryKey: MY_VENUES_QUERY_KEY,
     queryFn: getMyVenues,
   });
+
+export const useAllVenues = () =>
+  useQuery({
+    queryKey: ALL_VENUES_QUERY_KEY,
+    queryFn: getAllVenues,
+  });
+
+export const useSetVenueStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: setVenueStatusRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ALL_VENUES_QUERY_KEY });
+    },
+  });
+};
+
+export const useDeleteVenue = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteVenueRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ALL_VENUES_QUERY_KEY });
+    },
+  });
+};
 
 export const useCreateVenue = () =>
   useMutation({

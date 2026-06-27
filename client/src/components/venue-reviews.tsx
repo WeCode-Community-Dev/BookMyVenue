@@ -53,7 +53,6 @@ const VenueReviews = ({ venueId }: { venueId: string }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
 
-  // pre-fill the form when the user already has a review (edit mode)
   useEffect(() => {
     if (myReview) {
       setRating(myReview.rating);
