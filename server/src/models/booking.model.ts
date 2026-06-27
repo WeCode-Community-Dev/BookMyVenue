@@ -4,7 +4,6 @@ import { BookingStatusEnum, BookingStatusEnumType } from "../enums/booking-enum"
 export interface BookingDocument extends Document {
   venue: mongoose.Types.ObjectId;
   customer: mongoose.Types.ObjectId;
-  reservation: mongoose.Types.ObjectId;
   startTime: Date;
   endTime: Date;
   totalAmount: number;
@@ -25,11 +24,6 @@ const bookingSchema = new Schema<BookingDocument>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    },
-
-    reservation: {
-      type: Schema.Types.ObjectId,
-      ref: "Reservation",
     },
 
     startTime: {
@@ -57,7 +51,6 @@ const bookingSchema = new Schema<BookingDocument>(
     timestamps: true,
   },
 );
-
 
 const BookingModel = mongoose.model<BookingDocument>("Booking", bookingSchema);
 export default BookingModel;

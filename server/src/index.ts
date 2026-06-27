@@ -12,6 +12,8 @@ import authRoute from "./routes/auth.routes";
 import venueRoute from "./routes/venue.routes";
 import reviewRoute from "./routes/review.route";
 import reservationRoute from "./routes/reservation.route";
+import paymentRoute from "./routes/payment.route";
+import bookingRoute from "./routes/booking.route";
 
 const app = express();
 
@@ -41,6 +43,8 @@ app.use(`${BASE_PATH}/auth`, authRoute);
 app.use(`${BASE_PATH}/venue`, venueRoute);
 app.use(`${BASE_PATH}/review`, reviewRoute);
 app.use(`${BASE_PATH}/reservation`, reservationRoute);
+app.use(`${BASE_PATH}/payment`, paymentRoute);
+app.use(`${BASE_PATH}/booking`, bookingRoute);
 
 app.use(errorHandler);
 

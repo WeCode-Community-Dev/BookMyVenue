@@ -1,6 +1,7 @@
 export const ProviderEnum = {
   RAZORPAY: "RAZORPAY",
   STRIPE: "STRIPE",
+  DUMMY: "DUMMY",
 };
 
 export const PaymentStatusEnum = {

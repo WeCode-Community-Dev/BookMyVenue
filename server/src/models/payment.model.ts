@@ -7,7 +7,8 @@ import {
 } from "../enums/payment.enum";
 
 export interface PaymentDocument extends Document {
-  booking: mongoose.Types.ObjectId;
+  booking?: mongoose.Types.ObjectId;
+  reservation?: mongoose.Types.ObjectId;
   customer: mongoose.Types.ObjectId;
   amount: number;
   provider: ProviderEnumType;
@@ -22,12 +23,15 @@ const paymentSchema = new mongoose.Schema<PaymentDocument>(
     booking: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Booking",
-      required:true
+    },
+    reservation: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Reservation",
     },
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required:true
+      required: true,
     },
     amount: {
       type: Number,
@@ -50,4 +54,4 @@ const paymentSchema = new mongoose.Schema<PaymentDocument>(
 );
 
 export const PaymentModel = mongoose.model<PaymentDocument>("Payment", paymentSchema);
-export default PaymentModel
+export default PaymentModel;
