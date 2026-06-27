@@ -27,6 +27,11 @@ export class VenuesController {
     return this.venuesService.createVenue(dto, authorization);
   }
 
+  @Get('venues/owned')
+  getOwnedVenues(@Headers('authorization') authorization: string) {
+    return this.venuesService.getOwnedVenues(authorization);
+  }
+
   @Get('venues')
   findAllVenues() {
     return this.venuesService.findAllVenues();

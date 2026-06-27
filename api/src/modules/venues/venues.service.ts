@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -79,12 +80,27 @@ type ImageDetails = Prisma.ImageGetPayload<{
   };
 }>;
 
+type OwnedVenueDetails = {
+  name: string
+  id: string
+  address: string
+  images:
+  {
+    image:
+    {
+      id: string
+      url: string
+      altText: string | null;
+    };
+  }[];
+};
+
 @Injectable()
 export class VenuesService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
 
   async createVenue(dto: CreateVenueDto, authorization: string): Promise<VenueDetails> {
@@ -150,6 +166,38 @@ export class VenuesService {
 
       return createdVenue;
     });
+  }
+
+  async getOwnedVenues(authorization: string): Promise<OwnedVenueDetails[]> {
+    try {
+      const payload = verifyAccessToken(this.jwtService, authorization);
+      if (payload.role !== UserRole.VENUE_OWNER) {
+        throw new UnauthorizedException('You are not authorized to get owned venues');
+      }
+      const ownerId = payload.sub;
+      return this.prismaService.venue.findMany({
+        where: { ownerId },
+        select: {
+          id: true,
+          name: true,
+          address: true,
+          images: {
+            take: 1,
+            select: {
+              image: {
+                select: {
+                  id: true,
+                  url: true,
+                  altText: true,
+                }
+              }
+            }
+          }
+        }
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get owned venues');
+    }
   }
 
   async findAllVenues(): Promise<VenueDetails[]> {
@@ -503,32 +551,32 @@ export class VenuesService {
   }
 
   async createImages(dto: CreateImagesDto): Promise<ImageDetails[]> {
-    try { 
-      
+    try {
+
       if (dto.images.length === 0) {
         return [];
       }
-      
+
       const images = await this.prismaService.$transaction(
-      dto.images.map((image) =>
-        this.prismaService.image.create({
-          data: {
-            url: image.url,
-            altText: image.altText,
-            width: image.width,
-            height: image.height,
-          },
-          select:{
-            id: true,
-          },
-        }),
-      ),
-    );
-    return images;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+        dto.images.map((image) =>
+          this.prismaService.image.create({
+            data: {
+              url: image.url,
+              altText: image.altText,
+              width: image.width,
+              height: image.height,
+            },
+            select: {
+              id: true,
+            },
+          }),
+        ),
+      );
+      return images;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
 

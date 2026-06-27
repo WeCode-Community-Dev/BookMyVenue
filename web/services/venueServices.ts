@@ -1,3 +1,4 @@
+import { VenueStatus } from "@/lib/data/venues";
 import { apiFetch } from "./api";
 
 export type CreateVenuePayload = {
@@ -21,8 +22,26 @@ export type AmenityResponse = {
     description: string;
 }[]
 
+export type OwnedVenueResponse = {
+    name: string
+    id: string
+    address: string
+    spaces?: number;
+    bookings?: number;
+    status?: VenueStatus;
+    images:
+    {
+        image:
+        {
+            id: string
+            url: string
+            altText: string | null;
+        };
+    }[];
+};
+
 export async function fetchAmenities(): Promise<AmenityResponse> {
-    try{
+    try {
         const response = await apiFetch('/amenities', {
             method: 'GET',
             headers: {
@@ -36,7 +55,7 @@ export async function fetchAmenities(): Promise<AmenityResponse> {
     }
 }
 
-export async function createImages(images: {url: string, altText: string}[]): Promise<{id: string}[]> {
+export async function createImages(images: { url: string, altText: string }[]): Promise<{ id: string }[]> {
     try {
         if (images.length === 0) {
             return [];
@@ -51,7 +70,7 @@ export async function createImages(images: {url: string, altText: string}[]): Pr
                 'Content-Type': 'application/json',
                 Authorization: accessToken,
             },
-            body: JSON.stringify({images: images}),
+            body: JSON.stringify({ images: images }),
 
         });
         return response;
@@ -81,6 +100,26 @@ export async function createVenue(venue: CreateVenuePayload) {
                 venueAmenityIds: venue.venueAmenityIds ?? [],
                 venueImageIds: venue.venueImageIds ?? [],
             }),
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getOwnedVenues(): Promise<OwnedVenueResponse[]> {
+    try {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            throw new Error('No access token found');
+        }
+        const response = await apiFetch('/venues/owned', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: accessToken,
+            },
         });
         return response;
     } catch (error) {

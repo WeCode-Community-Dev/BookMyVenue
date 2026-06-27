@@ -118,7 +118,3 @@ export const mapWidget = {
   label: "Active Operations: New York District",
 };
 
-export const systemHealth = {
-  message: "All servers are operating within optimal parameters.",
-  uptime: 99.9,
-};
