@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booked venues</title>
+</head>
+<body>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Name</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+    </table>
+
+    <script type="module">
+
+        const token = localStorage.getItem("access_token")
+
+        const response = await fetch("/api/v1/user/viewBookedVenues", {
+            method: "GET",
+            headers: {
+                Authorization: "Bearer " + token
+            }
+        })
+
+        const result = await response.json()
+        console.log(result)
+
+        const table = document.getElementById("table-body")
+
+        result.data.venues.forEach( venue => {
+            table.innerHTML += `
+                <tr>
+                    <th>${venue.date}</th>
+                    <th>${venue.time}</th>
+                    <th>${venue.name}</th>
+                    <th>${venue.amount}</th>
+                </tr>
+            `
+        })
+    </script>
+</body>
+</html>

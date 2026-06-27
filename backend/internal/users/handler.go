@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
+	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/ctxutil"
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/response"
 	"github.com/gin-gonic/gin"
 )
@@ -35,4 +36,16 @@ func (h *Handler) ViewVenue(c *gin.Context) {
 	}
 
 	response.Success(c, http.StatusOK, "Venue", venue)
+}
+
+func (h *Handler) ViewBookedVenues(c *gin.Context) {
+	userID := ctxutil.GetUserID(c)
+
+	venues, err := h.service.getBookedVenues(c.Request.Context(), userID)
+	if err != nil {
+		response.Error(c, http.StatusForbidden, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Booked Venues", venues)
 }

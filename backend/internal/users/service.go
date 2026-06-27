@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
+	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/utils"
 )
 
 type service struct {
@@ -72,6 +74,51 @@ func (s *service) viewVenueByVenueID(ctx context.Context, venueID string) (sqlc.
 	return venue, nil
 }
 
+func (s *service) getBookedVenues(ctx context.Context, userID string) (*bookedVenuesResponse, error) {
+	BookedVenues, err := s.repo.getBookedVenuesByUserID(ctx, userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &bookedVenuesResponse{}, nil
+		}
+		return nil, errors.New("cannot find booked venues")
+	}
+	var res bookedVenuesResponse
+
+	for _, Bvenue := range BookedVenues {
+		venue, err := s.repo.getVenueByID(ctx, Bvenue.VenueID.String())
+		if err != nil {
+			return nil, errors.New("venue not found: " + err.Error())
+		}
+
+		slot, err := s.repo.getslotByID(ctx, Bvenue.SlotID)
+		if err != nil {
+			return nil, errors.New("slot not found: " + err.Error())
+		}
+
+		date, endTime, exists := strings.Cut(slot.EndTime.Time.String(), " ")
+		if !exists {
+			date = slot.EndTime.Time.GoString()
+		}
+		_, start_time, _ := strings.Cut(slot.StartTime.Time.String(), " ")
+		log.Println(Bvenue.TotalAmount)
+
+		amount, err := utils.NumericToInt64(Bvenue.TotalAmount)
+		if err != nil {
+			return nil, err
+		}
+
+		response := bookedVenue{
+			Date:   date,
+			Time:   start_time + " - " + endTime,
+			Name:   venue.Name,
+			Amount: amount,
+		}
+		res.Venues = append(res.Venues, response)
+	}
+
+	return &res, nil
+}
+
 type venueWithAmenitiesAndImages struct {
 	Venue     sqlc.Venue     `json:"venue"`
 	Amenities []sqlc.Amenity `json:"amenities"`
@@ -80,4 +127,15 @@ type venueWithAmenitiesAndImages struct {
 
 type viewVenuesResponse struct {
 	Venues []venueWithAmenitiesAndImages `json:"venues"`
+}
+
+type bookedVenue struct {
+	Date   string `json:"date"`
+	Time   string `json:"time"`
+	Name   string `json:"name"`
+	Amount int64  `json:"amount"`
+}
+
+type bookedVenuesResponse struct {
+	Venues []bookedVenue `json:"venues"`
 }

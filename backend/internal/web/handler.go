@@ -74,6 +74,10 @@ func (h *Handler) User_viewAvailability(c *gin.Context) {
 	c.HTML(http.StatusOK, "user_viewAvailability.html", nil)
 }
 
+func (h *Handler) User_viewBookedSlot(c *gin.Context) {
+	c.HTML(http.StatusOK, "user_viewBookedVenues.html", nil)
+}
+
 // --------Booking------------------
 func (h *Handler) Booking_paymentPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "user_payment_screen.html", nil)

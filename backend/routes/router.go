@@ -35,6 +35,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries, rediClient *redis.Client, pool
 	adminWebRoutes.GET("viewRejectedVenues", webHandler.Admin_viewRejectedVenues)
 	userWebRoutes.GET("/viewVenues", webHandler.User_viewVenues)
 	userWebRoutes.GET("/venue/:venue_id/availability", webHandler.User_viewAvailability)
+	userWebRoutes.GET("/viewBookedVenues", webHandler.User_viewBookedSlot)
 	bookingWebRoutes.GET("/:id", webHandler.Booking_paymentPage)
 
 	api := r.Group("/api/v1")
@@ -78,6 +79,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries, rediClient *redis.Client, pool
 	{
 		userRoutes.GET("/venues", userHandler.ViewVenues)
 		userRoutes.GET("/venue/:venue_id", userHandler.ViewVenue)
+		userRoutes.GET("/viewBookedVenues", userHandler.ViewBookedVenues)
 	}
 
 	availabilityHandler := availability.NewService(db)

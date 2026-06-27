@@ -35,3 +35,15 @@ func (r *repository) getVenueByID(ctx context.Context, venueID string) (sqlc.Ven
 	}
 	return r.db.GetVenueByID(ctx, venueUUID)
 }
+
+func (r *repository) getBookedVenuesByUserID(ctx context.Context, userID string) ([]sqlc.Booking, error) {
+	userUUID, err := utils.StringToUUID(userID)
+	if err != nil {
+		return []sqlc.Booking{}, err
+	}
+	return r.db.GetBookingsByUserID(ctx, userUUID)
+}
+
+func (r *repository) getslotByID(ctx context.Context, slotID pgtype.UUID) (sqlc.Availability, error) {
+	return r.db.GetSlotByID(ctx, slotID)
+}
