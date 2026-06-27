@@ -8,4 +8,12 @@ export class MailService {
         throw new Error("Method not implemented");
     }
 
+     async sendVenueApprovalMail(venue){
+        throw new Error("Method not implemented");
+    }
+
+    async sendVenueRejectionMail(venue, reason){
+        throw new Error("Method not implemented");
+    }
+
 }

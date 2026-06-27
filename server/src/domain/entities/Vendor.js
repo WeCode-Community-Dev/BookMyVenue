@@ -1,3 +1,5 @@
+import { VendorApprovalStatus } from "../enums/VendorApprovalStatus.enum.js";
+
 export class VendorEntity {
   constructor({
     id,
@@ -22,8 +24,8 @@ export class VendorEntity {
     isVerified = false,
     isBlocked = false,
     isDeleted = false,
-    approvalStatus,
-    rejectionReason,
+    approvalStatus = VendorApprovalStatus.PENDING,
+    rejectionReason = null,
   }) {
     this.id = id;
     this.fullName = fullName;

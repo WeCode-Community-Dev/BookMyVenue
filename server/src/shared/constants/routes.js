@@ -13,8 +13,15 @@ export const ROUTES = {
             APPROVE_VENDOR:"/vendors/:vendorId/approve",
             REJECT_VENDOR:"/vendors/:vendorId/reject",
             UPDATE_STATUS:'/vendors/:vendorId/status'
-
+        },
+        VENUE:{
+            GET_ALL:'/venues',
+            GET_BY_ID:'/venues/:venueId',
+            APPROVE_VENUE:'/venues/:venueId/approve',
+            REJECT_VENUE:'/venues/:venueId/reject',
+            UPDATE_STATUS:'/venues/:venueId/status'
         }
+
     },
     OWNER: {
         VENUE: {
