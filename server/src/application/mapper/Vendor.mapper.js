@@ -17,11 +17,13 @@ export class VendorMapper {
             address: doc.address,
             bio: doc.bio,
             role: doc.role,
-            isApproved: doc.isApproved,
             isDeleted: doc.isDeleted,
             refreshToken: doc.refreshToken,
             createdAt: doc.createdAt,
-            updatedAt: doc.updatedAt
+            updatedAt: doc.updatedAt,
+            isBlocked:doc.isBlocked,
+            approvalStatus:doc.approvalStatus,
+            rejectionReason:doc.rejectionReason,
         });
     }
 
@@ -39,9 +41,11 @@ export class VendorMapper {
             address: entity.address,
             bio: entity.bio,
             role: entity.role,
-            isApproved: entity.isApproved,
             isDeleted: entity.isDeleted,
-            refreshToken: entity.refreshToken
+            refreshToken: entity.refreshToken,
+            isBlocked:entity.isBlocked,
+            approvalStatus:entity.approvalStatus,
+            rejectionReason:entity.rejectionReason,
         };
     }
 }
