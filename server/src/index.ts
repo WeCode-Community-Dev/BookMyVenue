@@ -11,6 +11,7 @@ import connectDatabase from "./config/database";
 import authRoute from "./routes/auth.routes";
 import venueRoute from "./routes/venue.routes";
 import reviewRoute from "./routes/review.route";
+import reservationRoute from "./routes/reservation.route";
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.get(
 app.use(`${BASE_PATH}/auth`, authRoute);
 app.use(`${BASE_PATH}/venue`, venueRoute);
 app.use(`${BASE_PATH}/review`, reviewRoute);
+app.use(`${BASE_PATH}/reservation`, reservationRoute);
 
 app.use(errorHandler);
 

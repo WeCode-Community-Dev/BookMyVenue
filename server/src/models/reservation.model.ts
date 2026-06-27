@@ -52,6 +52,14 @@ const reservationSchema = new Schema<ReservationDocument>(
   },
 );
 
+// TTL: Mongo auto-removes a hold once expiresAt passes (the 10-minute window).
+reservationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+// Race guard: only one active (PENDING) hold can exist for a venue + exact slot.
+reservationSchema.index(
+  { venue: 1, startTime: 1, endTime: 1 },
+  { unique: true, partialFilterExpression: { status: ReservationStatusEnum.PENDING } },
+);
 
 const ReservationModel = mongoose.model<ReservationDocument>("Reservation", reservationSchema);
 export default ReservationModel;
