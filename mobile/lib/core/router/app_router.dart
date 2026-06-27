@@ -26,8 +26,8 @@ import '../di/injection.dart';
 import 'route_name.dart';
 
 class AppRouter {
-  static Route<PageRouteBuilder> createHeroPageRoute(Widget page) {
-    return PageRouteBuilder(
+  static Route<PageRouteBuilder<dynamic>> createHeroPageRoute(Widget page) {
+    return PageRouteBuilder<PageRouteBuilder<dynamic>>(
       pageBuilder:
           (
             BuildContext context,
@@ -59,8 +59,8 @@ class AppRouter {
       GlobalKey<NavigatorState>();
 
   static final GoRouter router = GoRouter(
-    // initialLocation: '/${AppRouteNames.signin}',
-    initialLocation: AppRouteNames.userDashboard,
+    initialLocation: '/${AppRouteNames.signin}',
+    // initialLocation: AppRouteNames.userDashboard,
     navigatorKey: navigatorKey,
     debugLogDiagnostics: true, // Useful for development
     // --- Deep Linking Configuration ---

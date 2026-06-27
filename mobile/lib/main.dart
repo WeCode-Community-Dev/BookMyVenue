@@ -6,7 +6,6 @@ import 'core/environment/app_env.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/ui/app_commands.dart';
-import 'feature/user_venue_listing/presentation/pages/venue_list_page.dart';
 
 Future<void> main() async {
   Environment.init(AppEnvironment.dev);
