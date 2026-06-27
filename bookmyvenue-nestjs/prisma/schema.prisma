@@ -13,62 +13,53 @@ enum Role {
   ADMIN
 }
 
-enum VenueStatus {
+enum VenueModerationStatus {
   PENDING
   APPROVED
   REJECTED
 }
 
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  venues    Venue[]
 }
 
-// User model
-model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  password  String    
-  name      String
-  role      Role      @default(USER)
-  createdAt DateTime  @default(now())
-
-  venues    Venue[]
-  bookings  Booking[]
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  isListed    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  venues      Venue[]
 }
 
 model Venue {
-  id                     String      @id @default(uuid())
-  name                   String
-  location               String
-  description            String?
-  pricePerHour           Float
-  rating                 Float       @default(0.0)
-  imageUrl               String?     
-  amenities              String[]   
-  status                 VenueStatus @default(PENDING)
-  cancellationWindowDays Int         @default(2)
-  bufferHours            Int       @default(2)
-  createdAt              DateTime    @default(now())
-  updatedAt              DateTime    @updatedAt
-  ownerId                String
-  owner                  User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  bookings               Booking[]
-}
+  id               String                @id @default(uuid())
+  name             String
+  description      String?
+  location         String
+  address          String?
+  pricePerHour     Float
+  capacity         Int
+  imageUrls        String[]
+  isListed         Boolean               @default(false)
+  moderationStatus VenueModerationStatus @default(PENDING)
+  rejectionReason  String?
+  ownerId          String
+  categoryId       String
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  owner            User                  @relation(fields: [ownerId], references: [id])
+  category         Category              @relation(fields: [categoryId], references: [id])
 
-model Booking {
-  id          String        @id @default(uuid())      
-  startTime   DateTime 
-  endTime     DateTime
-  totalPrice  Float
-  status      BookingStatus @default(PENDING)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  venueId     String
-  venue       Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
-
-  @@index([venueId, startTime, endTime, status]) 
+  @@index([ownerId])
+  @@index([categoryId])
+  @@index([moderationStatus, isListed])
 }

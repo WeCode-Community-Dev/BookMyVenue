@@ -8,15 +8,12 @@ import morgan = require('morgan');
 import cookieParser = require('cookie-parser');
 import * as bodyParser from 'body-parser';
 import { NestFactory } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
 
 import { AppModule } from '../../app.module';
 import { setupSwagger } from './swagger.config';
 
 export async function setupApp(): Promise<INestApplication> {
   const app = await NestFactory.create(AppModule);
-
-  const configService = app.get(ConfigService);
 
   app.use(cookieParser());
 
@@ -30,14 +27,6 @@ export async function setupApp(): Promise<INestApplication> {
   );
 
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-
-  const origins = configService.getOrThrow<string>('CORS_ORIGINS').split(',');
-
-  app.enableCors({
-    origin: origins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  });
 
   app.use(morgan('dev'));
 

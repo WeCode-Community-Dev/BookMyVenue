@@ -81,7 +81,7 @@ export class AuthService {
         }
 
         return {
-            success: 'true',
+            success: true,
             message: 'A verification OTP has been sent to your email. It will expire in 10 minutes.',
         };
     }
@@ -164,7 +164,7 @@ export class AuthService {
         }
 
         return {
-            success: 'true',
+            success: true,
             message: 'A new OTP has been sent to your email.',
         };
     }
@@ -240,7 +240,7 @@ export class AuthService {
         }
 
         return {
-            success: 'true',
+            success: true,
             message: 'If an account with this email exists, a password reset OTP has been sent.',
         };
     }
@@ -264,7 +264,7 @@ export class AuthService {
         await this.redisService.del(this.getForgotPasswordKey(email));
 
         return {
-            success: 'true',
+            success: true,
             message: 'OTP verified successfully. You can now reset your password.',
         };
     }
@@ -293,7 +293,7 @@ export class AuthService {
         await this.redisService.del(this.getForgotPasswordCooldownKey(email));
 
         return {
-            success: 'true',
+            success: true,
             message: 'Password reset successful. You can now log in.',
         };
     }

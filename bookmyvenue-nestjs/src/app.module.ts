@@ -7,8 +7,9 @@ import { RedisModule } from './shared/redis/redis.module';
 import { JwtModule } from './shared/jwt/jwt.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
+import { RolesGuard } from './shared/guards/roles.guard';
+import { CategoryModule } from './modules/category/category.module';
 import { VenueModule } from './modules/venue/venue.module';
-import { BookingModule } from './modules/booking/booking.module';
 
 @Module({
   imports: [
@@ -18,17 +19,20 @@ import { BookingModule } from './modules/booking/booking.module';
     PrismaModule,
     RedisModule,
     JwtModule,
-    UserModule,
     AuthModule,
-    VenueModule,
-    BookingModule,
+    UserModule,
+    CategoryModule,
+    VenueModule
   ],
   providers: [
     { 
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-    
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
   ],
 })
 export class AppModule { }
