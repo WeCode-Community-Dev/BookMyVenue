@@ -11,3 +11,12 @@ export interface VenueBooking {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface MyBooking {
+  _id: string;
+  venue: { _id: string; name: string; city?: string } | null;
+  startTime: string;
+  endTime: string;
+  totalAmount: number;
+  bookingStatus: BookingStatus;
+}

@@ -7,19 +7,26 @@ import { ReservationStatusEnum } from "../enums/reservation-enum";
 import { BookingStatusEnum } from "../enums/booking-enum";
 import { CreateReservationInput } from "../validator/reservation.validator";
 
-// How long a hold stays alive before the TTL index removes it.
-const RESERVATION_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const RESERVATION_TTL_MS = 10 * 60 * 1000;
+
+// Cleaning gap required between two bookings of the same venue.
+const CLEANING_BUFFER_MS = 60 * 60 * 1000;
 
 type CreateReservationParams = CreateReservationInput & {
   customer: string;
 };
 
-// minutes from midnight (UTC) for a given datetime
-const getMinutesOfDay = (date: Date): number => date.getUTCHours() * 60 + date.getUTCMinutes();
+const IST_OFFSET_MINUTES = 330;
 
-// same calendar day in UTC
+const toIst = (date: Date): Date => new Date(date.getTime() + IST_OFFSET_MINUTES * 60 * 1000);
+
+const getMinutesOfDay = (date: Date): number => {
+  const ist = toIst(date);
+  return ist.getUTCHours() * 60 + ist.getUTCMinutes();
+};
+
 const isSameDay = (a: Date, b: Date): boolean =>
-  a.toISOString().slice(0, 10) === b.toISOString().slice(0, 10);
+  toIst(a).toISOString().slice(0, 10) === toIst(b).toISOString().slice(0, 10);
 
 export const createReservationService = async ({
   venueId,
@@ -29,23 +36,25 @@ export const createReservationService = async ({
 }: CreateReservationParams) => {
   const venue = await getVenueByIdService(venueId);
 
-  // a booking must start and end on the same day
   if (!isSameDay(startTime, endTime)) {
     throw new BadRequestException("Booking must start and end on the same day");
   }
 
-  // the slot must fall within the venue's operating hours
   const startMinutes = getMinutesOfDay(startTime);
   const endMinutes = getMinutesOfDay(endTime);
   if (startMinutes < venue.openingTime || endMinutes > venue.closingTime) {
     throw new BadRequestException("Requested time is outside the venue's operating hours");
   }
 
-  // two ranges overlap when: existing.start < new.end AND existing.end > new.start
+  // A venue needs a cleaning gap between bookings, so the requested slot is
+  // padded by the buffer on both sides when checking for conflicts.
+  const paddedStart = new Date(startTime.getTime() - CLEANING_BUFFER_MS);
+  const paddedEnd = new Date(endTime.getTime() + CLEANING_BUFFER_MS);
+
   const overlapFilter = {
     venue: venueId,
-    startTime: { $lt: endTime },
-    endTime: { $gt: startTime },
+    startTime: { $lt: paddedEnd },
+    endTime: { $gt: paddedStart },
   };
 
   const activeHold = await ReservationModel.findOne({
@@ -75,7 +84,6 @@ export const createReservationService = async ({
 
     return reservation;
   } catch (error: any) {
-    // unique index race guard: a concurrent request grabbed the exact slot first
     if (error?.code === 11000) {
       throw new HttpException("This time slot is already booked", HTTP_STATUS.CONFLICT);
     }

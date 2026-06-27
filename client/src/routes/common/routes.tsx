@@ -1,9 +1,10 @@
-import { AUTH_ROUTES, OWNER_ROUTES, PUBLIC_ROUTES } from "./route-path";
+import { AUTH_ROUTES, CUSTOMER_ROUTES, OWNER_ROUTES, PUBLIC_ROUTES } from "./route-path";
 import SignIn from "../../pages/auth/sign-in";
 import SignUp from "../../pages/auth/sign-up";
 import Home from "@/pages/home/home";
 import VenueList from "@/pages/venues/venue-list";
 import VenueDetailsPublic from "@/pages/venues/venue-details";
+import MyBookings from "@/pages/customer/my-bookings";
 import OwnerDashboard from "@/pages/owner/owner-dashboard";
 import CreateVenueForm from "@/pages/owner/create-venue-form";
 import VenueDetails from "@/pages/owner/venue-details";
@@ -25,4 +26,8 @@ export const ownerRoutePaths = [
   { path: OWNER_ROUTES.CREATE_VENUE, element: <CreateVenueForm /> },
   { path: OWNER_ROUTES.VENUE_DETAILS, element: <VenueDetails /> },
   { path: OWNER_ROUTES.BOOKINGS, element: <VenueBookings /> },
+];
+
+export const customerRoutePaths = [
+  { path: CUSTOMER_ROUTES.MY_BOOKINGS, element: <MyBookings /> },
 ];

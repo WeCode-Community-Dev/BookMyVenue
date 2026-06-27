@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { MapPinIcon, UsersIcon, ClockIcon } from "lucide-react";
 import Navbar from "@/components/navbar";
-import { Button } from "@/components/ui/button";
+import ReserveDialog from "@/components/reserve-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -107,9 +107,7 @@ const VenueDetails = () => {
                       <span className="text-sm text-muted-foreground"> / hour</span>
                     </div>
                     <Separator />
-                    <Button size="lg" className="w-full">
-                      Reserve
-                    </Button>
+                    <ReserveDialog venue={venue} />
                     <p className="text-center text-xs text-muted-foreground">
                       You won&apos;t be charged yet
                     </p>

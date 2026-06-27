@@ -1,6 +1,11 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
-import { authenticationRoutePaths, ownerRoutePaths, publicRoutePaths } from "./common/routes";
+import {
+  authenticationRoutePaths,
+  customerRoutePaths,
+  ownerRoutePaths,
+  publicRoutePaths,
+} from "./common/routes";
 import BaseLayout from "@/layout/base-layout";
 import OwnerLayout from "@/layout/owner-layout";
 import AuthRoute from "./authRoute";
@@ -31,6 +36,12 @@ const AppRoutes = () => {
               <Route key={route.path} path={route.path} element={route.element} />
             ))}
           </Route>
+        </Route>
+
+        <Route element={<ProtectedRoute />}>
+          {customerRoutePaths.map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
         </Route>
       </Routes>
       </NuqsAdapter>

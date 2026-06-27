@@ -11,11 +11,22 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { NavGroup } from "@/components/nav-group";
-import { footerNavLinks, navGroups } from "@/components/app-shared";
-import { Link } from "react-router-dom";
-import { OWNER_ROUTES } from "@/routes/common/route-path";
+import { navGroups } from "@/components/app-shared";
+import { Link, useNavigate } from "react-router-dom";
+import { LogOutIcon } from "lucide-react";
+import { OWNER_ROUTES, PUBLIC_ROUTES } from "@/routes/common/route-path";
+import { useLogout } from "@/hooks/use-auth";
 
 export function AppSidebar() {
+	const navigate = useNavigate();
+	const logout = useLogout();
+
+	const handleLogout = () => {
+		logout.mutate(undefined, {
+			onSuccess: () => navigate(PUBLIC_ROUTES.HOME),
+		});
+	};
+
 	return (
 		<Sidebar collapsible="icon" variant="floating">
 			<SidebarHeader className="h-14 justify-center">
@@ -32,22 +43,18 @@ export function AppSidebar() {
 				))}
 			</SidebarContent>
 			<SidebarFooter>
-				<SidebarMenu className="mt-2">
-					{footerNavLinks.map((item) => (
-						<SidebarMenuItem key={item.title}>
-							<SidebarMenuButton
-								asChild
-								className="text-muted-foreground"
-								isActive={item.isActive}
-								size="sm"
-							>
-								<a href={item.path}>
-									{item.icon}
-									<span>{item.title}</span>
-								</a>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-					))}
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							className="text-muted-foreground"
+							tooltip="Logout"
+							onClick={handleLogout}
+							disabled={logout.isPending}
+						>
+							<LogOutIcon />
+							<span>{logout.isPending ? "Logging out..." : "Logout"}</span>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
 				</SidebarMenu>
 			</SidebarFooter>
 		</Sidebar>

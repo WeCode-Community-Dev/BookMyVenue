@@ -2,7 +2,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/store";
 import { useLogout } from "@/hooks/use-auth";
-import { AUTH_ROUTES, PUBLIC_ROUTES, getRoleLandingPath } from "@/routes/common/route-path";
+import {
+  AUTH_ROUTES,
+  CUSTOMER_ROUTES,
+  PUBLIC_ROUTES,
+  getRoleLandingPath,
+} from "@/routes/common/route-path";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -30,7 +35,14 @@ const Navbar = () => {
           {user ? (
             <>
               <Button asChild variant="ghost" size="sm">
-                <Link to={getRoleLandingPath(user.role)}>{user.name}</Link>
+                <Link
+                  to={
+                    user.role === "CUSTOMER"
+                      ? CUSTOMER_ROUTES.MY_BOOKINGS
+                      : getRoleLandingPath(user.role)
+                  }>
+                  {user.name}
+                </Link>
               </Button>
               <Button size="sm" onClick={handleLogout} disabled={logout.isPending}>
                 {logout.isPending ? "Logging out..." : "Logout"}

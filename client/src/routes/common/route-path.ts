@@ -9,6 +9,10 @@ export const AUTH_ROUTES = {
   SIGN_UP: "/sign-up",
 };
 
+export const CUSTOMER_ROUTES = {
+  MY_BOOKINGS: "/my-bookings",
+};
+
 export const OWNER_ROUTES = {
   DASHBOARD: "/owner-dashboard",
   CREATE_VENUE: "/create-venue",
