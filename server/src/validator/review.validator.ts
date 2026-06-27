@@ -14,3 +14,19 @@ export const createReviewSchema = z.object({
 });
 
 export type CreateReviewInput = z.infer<typeof createReviewSchema>;
+
+export const updateReviewSchema = z
+  .object({
+    rating: z
+      .number()
+      .int("rating must be a whole number")
+      .min(1, "rating must be at least 1")
+      .max(5, "rating must be at most 5")
+      .optional(),
+    comment: z.string().trim().min(1, "comment is required").optional(),
+  })
+  .refine((data) => data.rating !== undefined || data.comment !== undefined, {
+    message: "Provide at least rating or comment to update",
+  });
+
+export type UpdateReviewInput = z.infer<typeof updateReviewSchema>;

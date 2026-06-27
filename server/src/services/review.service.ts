@@ -1,11 +1,25 @@
 import ReviewModel from "../models/review.model";
 import { getVenueByIdService } from "./venue.service";
-import { HttpException } from "../utils/appError";
+import { ForbiddenException, HttpException, NotFoundException } from "../utils/appError";
 import { HTTP_STATUS } from "../config/http.config";
-import { CreateReviewInput } from "../validator/review.validator";
+import { RoleEnum, RoleEnumType } from "../enums/user-enum";
+import { CreateReviewInput, UpdateReviewInput } from "../validator/review.validator";
 
 type CreateReviewParams = CreateReviewInput & {
   customer: string;
+};
+
+type UpdateReviewParams = {
+  reviewId: string;
+  userId: string;
+  role: RoleEnumType;
+  data: UpdateReviewInput;
+};
+
+type DeleteReviewParams = {
+  reviewId: string;
+  userId: string;
+  role: RoleEnumType;
 };
 
 export const createReviewService = async ({
@@ -40,4 +54,39 @@ export const getVenueReviewsService = async (venueId: string) => {
     .sort({ createdAt: -1 });
 
   return reviews;
+};
+
+export const updateReviewService = async ({ reviewId, userId, role, data }: UpdateReviewParams) => {
+  const review = await ReviewModel.findById(reviewId);
+  if (!review) {
+    throw new NotFoundException("Review not found");
+  }
+
+  const isOwner = review.customer.toString() === userId;
+  const isAdmin = role === RoleEnum.ADMIN;
+  if (!isOwner && !isAdmin) {
+    throw new ForbiddenException("You can only update your own review");
+  }
+
+  Object.assign(review, data);
+  await review.save();
+
+  return review;
+};
+
+export const deleteReviewService = async ({ reviewId, userId, role }: DeleteReviewParams) => {
+  const review = await ReviewModel.findById(reviewId);
+  if (!review) {
+    throw new NotFoundException("Review not found");
+  }
+
+  const isOwner = review.customer.toString() === userId;
+  const isAdmin = role === RoleEnum.ADMIN;
+  if (!isOwner && !isAdmin) {
+    throw new ForbiddenException("You can only delete your own review");
+  }
+
+  await review.deleteOne();
+
+  return review;
 };

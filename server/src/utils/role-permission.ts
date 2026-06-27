@@ -15,6 +15,7 @@ export const Permissions = {
 
   // Review
   CREATE_REVIEW: "CREATE_REVIEW",
+  UPDATE_REVIEW: "UPDATE_REVIEW",
   DELETE_REVIEW: "DELETE_REVIEW",
 
   // User administration
@@ -35,6 +36,7 @@ export const RolePermissions: Record<RoleEnumType, PermissionType[]> = {
     Permissions.VIEW_VENUE_BOOKINGS,
     Permissions.VIEW_ALL_BOOKINGS,
     Permissions.CREATE_REVIEW,
+    Permissions.UPDATE_REVIEW,
     Permissions.DELETE_REVIEW,
     Permissions.MANAGE_USERS,
   ],
@@ -52,6 +54,7 @@ export const RolePermissions: Record<RoleEnumType, PermissionType[]> = {
     Permissions.CREATE_BOOKING,
     Permissions.CANCEL_BOOKING,
     Permissions.CREATE_REVIEW,
+    Permissions.UPDATE_REVIEW,
     Permissions.DELETE_REVIEW,
   ],
 };

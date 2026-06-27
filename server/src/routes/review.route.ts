@@ -5,6 +5,8 @@ import { Permissions } from "../utils/role-permission";
 import {
   createReviewController,
   getVenueReviewsController,
+  updateReviewController,
+  deleteReviewController,
 } from "../controllers/review.controller";
 
 const reviewRoute = Router();
@@ -17,5 +19,19 @@ reviewRoute.post(
 );
 
 reviewRoute.get("/venue/:venueId", getVenueReviewsController);
+
+reviewRoute.patch(
+  "/update/:reviewId",
+  isAuthenticated,
+  authorize(Permissions.UPDATE_REVIEW),
+  updateReviewController,
+);
+
+reviewRoute.delete(
+  "/delete/:reviewId",
+  isAuthenticated,
+  authorize(Permissions.DELETE_REVIEW),
+  deleteReviewController,
+);
 
 export default reviewRoute;
