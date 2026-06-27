@@ -1,6 +1,6 @@
 import type { CreateBookingBody, GetBookingQuery, OwnerBookingResponse, UserBookingsResponse } from "@bookmyvenue/types";
 
-const API_BASE = "http://127.0.0.1:4000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 export const createBooking = async (payload: CreateBookingBody, token: string) => {
     const res = await fetch(`${API_BASE}/booking/create-booking`, {
@@ -30,7 +30,8 @@ export const fetchBookingsByOwnerId = async (
     if (params.page) query.set("page", String(params.page));
     if (params.limit) query.set("limit", String(params.limit));
 
-    const res = await fetch(`${API_BASE}/booking/owner/bookings`, {
+    const qs = query.toString();
+    const res = await fetch(`${API_BASE}/booking/owner/bookings${qs ? `?${qs}` : ""}`, {
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -39,7 +40,7 @@ export const fetchBookingsByOwnerId = async (
 
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error((err as { message?: string }).message ?? "Failed to create booking");
+        throw new Error((err as { message?: string }).message ?? "Failed to fetch bookings");
     }
 
     return res.json();
@@ -55,7 +56,8 @@ export const fetchBookingsByUserId = async (
     if (params.page) query.set("page", String(params.page));
     if (params.limit) query.set("limit", String(params.limit));
 
-    const res = await fetch(`${API_BASE}/booking/user/bookings`, {
+    const qs = query.toString();
+    const res = await fetch(`${API_BASE}/booking/user/bookings${qs ? `?${qs}` : ""}`, {
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -64,7 +66,7 @@ export const fetchBookingsByUserId = async (
 
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error((err as { message?: string }).message ?? "Failed to create booking");
+        throw new Error((err as { message?: string }).message ?? "Failed to fetch bookings");
     }
 
     return res.json();

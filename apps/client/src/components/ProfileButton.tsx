@@ -10,9 +10,9 @@ const ProfileButton = () => {
         <UserButton>
             <UserButton.MenuItems>
                 <UserButton.Action
-                    label="See Orders"
+                    label="My Bookings"
                     labelIcon={<ShoppingBag className="w-4 h-4" />}
-                    onClick={() => router.push("/orders")}
+                    onClick={() => router.push("/bookings")}
                 />
             </UserButton.MenuItems>
         </UserButton>

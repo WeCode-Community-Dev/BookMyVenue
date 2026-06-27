@@ -1,10 +1,11 @@
-const API_BASE = "http://127.0.0.1:4000";
 import type {
     CreateVenuePayload,
     GetVenueByIdResponse,
     GetVenuesQuery,
     GetVenuesResponse,
 } from "@bookmyvenue/types";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
 export async function getVenuesApi(params: GetVenuesQuery = {}): Promise<GetVenuesResponse> {
     const query = new URLSearchParams();

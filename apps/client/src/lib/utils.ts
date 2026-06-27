@@ -21,6 +21,7 @@ export const formatEnum = (value: string) => {
         .join(" ");
 };
 
+//  Friday, 10 July 2026
 export const formatToDetailedDate = (selectedDate: string | null) => {
     return selectedDate
         ? new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-IN", {
@@ -31,3 +32,7 @@ export const formatToDetailedDate = (selectedDate: string | null) => {
           })
         : null;
 };
+
+// 30 Jun 2026
+export const fmtDate = (d: string | Date) =>
+    new Date(d).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });

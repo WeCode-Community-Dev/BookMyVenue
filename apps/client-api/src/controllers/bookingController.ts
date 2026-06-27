@@ -135,6 +135,7 @@ export const getBookingByUserId = async (
 
     const where = {
         userId: request.userId,
+        ...(status && { status }),
     };
 
     const [bookings, total] = await Promise.all([
@@ -165,7 +166,35 @@ export const getBookingByUserId = async (
                     },
                 },
             },
+            orderBy: {
+                createdAt: "desc",
+            },
         }),
         prisma.booking.count({ where }),
     ]);
+
+    const formattedBookings = bookings.map((booking) => ({
+        id: booking.id,
+        status: booking.status,
+        phone: booking.phone,
+        purpose: booking.purpose,
+        createdAt: booking.createdAt,
+        venue: booking.venue,
+        totalAmount: booking.bookingSessions.reduce((sum, session) => sum + session.pricePaid, 0),
+        sessions: booking.bookingSessions.map((session) => ({
+            eventDate: session.eventDate,
+            pricePaid: session.pricePaid,
+            session: session.session,
+        })),
+    }));
+
+    return reply.send({
+        bookings: formattedBookings,
+        pagination: {
+            total,
+            page: Number(page),
+            limit: limit,
+            totalPages: Math.ceil(total / limit),
+        },
+    });
 };
