@@ -4,6 +4,7 @@ import { authorize } from "../middlewares/authorize.middleware";
 import { Permissions } from "../utils/role-permission";
 import {
   createVenueController,
+  getVenuesController,
   getVenueByIdController,
   updateVenueController,
   deleteVenueController,
@@ -17,6 +18,8 @@ venueRoute.post(
   authorize(Permissions.CREATE_VENUE),
   createVenueController,
 );
+
+venueRoute.get("/", getVenuesController);
 
 venueRoute.get(`/get/:venueId`, getVenueByIdController);
 

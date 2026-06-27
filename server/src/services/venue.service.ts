@@ -1,7 +1,11 @@
 import VenueModel from "../models/venue.model";
 import { ForbiddenException, NotFoundException } from "../utils/appError";
 import { RoleEnum, RoleEnumType } from "../enums/user-enum";
-import { CreateVenueInput, UpdateVenueInput } from "../validator/venue.validator";
+import {
+  CreateVenueInput,
+  UpdateVenueInput,
+  ListVenuesInput,
+} from "../validator/venue.validator";
 
 type CreateVenueParams = CreateVenueInput & {
   owner: string;
@@ -23,6 +27,32 @@ type DeleteVenueParams = {
 export const createVenueService = async (data: CreateVenueParams) => {
   const venue = await VenueModel.create(data);
   return venue;
+};
+
+export const getVenuesService = async ({ page, limit, city, venueType }: ListVenuesInput) => {
+  const filter: Record<string, unknown> = { isApproved: true };
+  if (city) {
+    const escaped = city.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    filter.city = { $regex: escaped, $options: "i" };
+  }
+  if (venueType) filter.venueType = venueType;
+
+  const skip = (page - 1) * limit;
+
+  const [venues, total] = await Promise.all([
+    VenueModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    VenueModel.countDocuments(filter),
+  ]);
+
+  return {
+    venues,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 export const getVenueByIdService = async (venueId: string) => {
@@ -59,7 +89,6 @@ export const deleteVenueService = async ({ venueId, userId, role }: DeleteVenueP
     throw new NotFoundException("Venue not found");
   }
 
-  // Owners can only delete their own venue and admin can delete any venue.
   const isOwner = venue.owner.toString() === userId;
   const isAdmin = role === RoleEnum.ADMIN;
   if (!isOwner && !isAdmin) {

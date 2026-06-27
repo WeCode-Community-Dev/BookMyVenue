@@ -40,5 +40,14 @@ export const updateVenueSchema = z
     { message: "openingTime must be before closingTime", path: ["closingTime"] },
   );
 
+// Query params for the public, paginated venue listing.
+export const listVenuesSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+  city: z.string().trim().min(1).optional(),
+  venueType: z.enum(VenueTypeEnum).optional(),
+});
+
 export type CreateVenueInput = z.infer<typeof createVenueSchema>;
 export type UpdateVenueInput = z.infer<typeof updateVenueSchema>;
+export type ListVenuesInput = z.infer<typeof listVenuesSchema>;

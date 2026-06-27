@@ -6,11 +6,27 @@ import { BadRequestException, UnauthorizedException } from "../utils/appError";
 import { RoleEnumType } from "../enums/user-enum";
 import {
   createVenueService,
+  getVenuesService,
   getVenueByIdService,
   updateVenueService,
   deleteVenueService,
 } from "../services/venue.service";
-import { createVenueSchema, updateVenueSchema } from "../validator/venue.validator";
+import {
+  createVenueSchema,
+  updateVenueSchema,
+  listVenuesSchema,
+} from "../validator/venue.validator";
+
+export const getVenuesController = asyncHandler(async (req: Request, res: Response) => {
+  const query = listVenuesSchema.parse(req.query);
+
+  const result = await getVenuesService(query);
+
+  return res.status(HTTP_STATUS.OK).json({
+    message: "Venues fetched successfully",
+    ...result,
+  });
+});
 
 export const createVenueController = asyncHandler(async (req: Request, res: Response) => {
   const owner = req.user?.userId;
