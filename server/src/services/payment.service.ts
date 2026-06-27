@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import mongoose from "mongoose";
 import PaymentModel from "../models/payment.model";
 import ReservationModel from "../models/reservation.model";
 import { getVenueByIdService } from "./venue.service";
@@ -86,20 +87,29 @@ export const verifyPaymentService = async ({ orderId, success, customer }: Verif
     );
   }
 
-  // Success: create the booking, link the payment, release the hold.
-  const booking = await createBookingService({
-    venue: reservation.venue,
-    customer: reservation.customer,
-    startTime: reservation.startTime,
-    endTime: reservation.endTime,
-    totalAmount: payment.amount,
-  });
+  const session = await mongoose.startSession();
+  try {
+    return await session.withTransaction(async () => {
+      const booking = await createBookingService(
+        {
+          venue: reservation.venue,
+          customer: reservation.customer,
+          startTime: reservation.startTime,
+          endTime: reservation.endTime,
+          totalAmount: payment.amount,
+        },
+        session,
+      );
 
-  payment.booking = booking._id as typeof payment.booking;
-  payment.paymentStatus = PaymentStatusEnum.SUCCESS;
-  await payment.save();
+      payment.booking = booking._id as typeof payment.booking;
+      payment.paymentStatus = PaymentStatusEnum.SUCCESS;
+      await payment.save({ session });
 
-  await reservation.deleteOne();
+      await reservation.deleteOne({ session });
 
-  return { booking, payment };
+      return { booking, payment };
+    });
+  } finally {
+    session.endSession();
+  }
 };

@@ -9,7 +9,6 @@ import { CreateReservationInput } from "../validator/reservation.validator";
 
 const RESERVATION_TTL_MS = 10 * 60 * 1000;
 
-// Cleaning gap required between two bookings of the same venue.
 const CLEANING_BUFFER_MS = 60 * 60 * 1000;
 
 type CreateReservationParams = CreateReservationInput & {
@@ -46,8 +45,6 @@ export const createReservationService = async ({
     throw new BadRequestException("Requested time is outside the venue's operating hours");
   }
 
-  // A venue needs a cleaning gap between bookings, so the requested slot is
-  // padded by the buffer on both sides when checking for conflicts.
   const paddedStart = new Date(startTime.getTime() - CLEANING_BUFFER_MS);
   const paddedEnd = new Date(endTime.getTime() + CLEANING_BUFFER_MS);
 

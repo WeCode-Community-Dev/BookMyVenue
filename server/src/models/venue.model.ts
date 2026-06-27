@@ -67,5 +67,7 @@ const venueSchema = new Schema<VenueDocument>(
   },
 );
 
+venueSchema.index({ isApproved: 1, venueType: 1, createdAt: -1 });
+
 const VenueModel = mongoose.model<VenueDocument>("Venue", venueSchema);
 export default VenueModel;

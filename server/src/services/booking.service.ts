@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import BookingModel from "../models/booking.model";
+import BookingModel, { BookingDocument } from "../models/booking.model";
 import { getVenueByIdService } from "./venue.service";
 import { BadRequestException, ForbiddenException, NotFoundException } from "../utils/appError";
 import { RoleEnum, RoleEnumType } from "../enums/user-enum";
@@ -25,23 +25,25 @@ type CancelBookingParams = {
   role: RoleEnumType;
 };
 
-export const createBookingService = async ({
-  venue,
-  customer,
-  startTime,
-  endTime,
-  totalAmount,
-}: CreateBookingParams) => {
-  const booking = await BookingModel.create({
-    venue,
-    customer,
-    startTime,
-    endTime,
-    totalAmount,
-    bookingStatus: BookingStatusEnum.CONFIRMED,
-  });
+export const createBookingService = async (
+  { venue, customer, startTime, endTime, totalAmount }: CreateBookingParams,
+  session?: mongoose.ClientSession,
+) => {
+  const [booking] = await BookingModel.create(
+    [
+      {
+        venue,
+        customer,
+        startTime,
+        endTime,
+        totalAmount,
+        bookingStatus: BookingStatusEnum.CONFIRMED,
+      },
+    ],
+    { session },
+  );
 
-  return booking;
+  return booking as mongoose.HydratedDocument<BookingDocument>;
 };
 
 export const getMyBookingsService = async (customer: string) => {
