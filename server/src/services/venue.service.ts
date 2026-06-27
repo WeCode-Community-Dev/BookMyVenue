@@ -1,11 +1,7 @@
 import VenueModel from "../models/venue.model";
 import { ForbiddenException, NotFoundException } from "../utils/appError";
 import { RoleEnum, RoleEnumType } from "../enums/user-enum";
-import {
-  CreateVenueInput,
-  UpdateVenueInput,
-  ListVenuesInput,
-} from "../validator/venue.validator";
+import { CreateVenueInput, UpdateVenueInput, ListVenuesInput } from "../validator/venue.validator";
 
 type CreateVenueParams = CreateVenueInput & {
   owner: string;
@@ -53,6 +49,18 @@ export const getVenuesService = async ({ page, limit, city, venueType }: ListVen
       totalPages: Math.ceil(total / limit),
     },
   };
+};
+
+export const approveVenueService = async (venueId: string) => {
+  const venue = await VenueModel.findById(venueId);
+  if (!venue) {
+    throw new NotFoundException("Venue not found");
+  }
+
+  venue.isApproved = true;
+  await venue.save();
+
+  return venue;
 };
 
 export const getVenueByIdService = async (venueId: string) => {

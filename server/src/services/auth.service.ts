@@ -54,3 +54,13 @@ export const loginService = async ({ email, password }: LoginParams) => {
 
   return { user: user.omitPassword(), accessToken };
 };
+
+export const getCurrentUserService = async (userId: string) => {
+  const user = await UserModel.findById(userId).select("-password");
+
+  if (!user) {
+    throw new UnauthorizedException("User not found", ErrorCodeEnum.AUTH_USER_NOT_FOUND);
+  }
+
+  return user;
+};

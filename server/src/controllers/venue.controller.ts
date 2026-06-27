@@ -8,6 +8,7 @@ import {
   createVenueService,
   getVenuesService,
   getVenueByIdService,
+  approveVenueService,
   updateVenueService,
   deleteVenueService,
 } from "../services/venue.service";
@@ -40,6 +41,20 @@ export const createVenueController = asyncHandler(async (req: Request, res: Resp
 
   return res.status(HTTP_STATUS.CREATED).json({
     message: "Venue created successfully",
+    venue,
+  });
+});
+
+export const approveVenueController = asyncHandler(async (req: Request, res: Response) => {
+  const venueId = req.params.venueId;
+  if (typeof venueId !== "string" || !isValidObjectId(venueId)) {
+    throw new BadRequestException("Invalid venue id");
+  }
+
+  const venue = await approveVenueService(venueId);
+
+  return res.status(HTTP_STATUS.OK).json({
+    message: "Venue approved successfully",
     venue,
   });
 });

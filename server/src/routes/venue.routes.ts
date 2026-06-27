@@ -6,6 +6,7 @@ import {
   createVenueController,
   getVenuesController,
   getVenueByIdController,
+  approveVenueController,
   updateVenueController,
   deleteVenueController,
 } from "../controllers/venue.controller";
@@ -22,6 +23,13 @@ venueRoute.post(
 venueRoute.get("/", getVenuesController);
 
 venueRoute.get(`/get/:venueId`, getVenueByIdController);
+
+venueRoute.patch(
+  "/approve/:venueId",
+  isAuthenticated,
+  authorize(Permissions.APPROVE_VENUE),
+  approveVenueController,
+);
 
 venueRoute.patch(
   "/update/:venueId",
