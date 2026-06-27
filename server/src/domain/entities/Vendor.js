@@ -1,3 +1,5 @@
+import { VendorApprovalStatus } from "../enums/VendorApprovalStatus.enum.js";
+
 export class VendorEntity {
   constructor({
     id,
@@ -8,23 +10,22 @@ export class VendorEntity {
     profileImage = {
       publicId: "",
       url: ""
-  },
-  companyName = "",
-  address = {
+    },
+    companyName = "",
+    address = {
       addressLine1: "",
       city: "",
       state: "",
       pincode: ""
-  },
-  bio = "",
+    },
+    bio = "",
     role,
     businessName,
     isVerified = false,
     isBlocked = false,
     isDeleted = false,
-    
-    
-    isAdminApproved = false, 
+    approvalStatus = VendorApprovalStatus.PENDING,
+    rejectionReason = null,
   }) {
     this.id = id;
     this.fullName = fullName;
@@ -35,14 +36,13 @@ export class VendorEntity {
     this.companyName = companyName;
     this.address = address;
     this.bio = bio;
+    this.role = role;
     this.businessName = businessName;
     this.isVerified = isVerified;
     this.isBlocked = isBlocked;
-    this.isAdminApproved = isAdminApproved;
-    this.role = role;
     this.isDeleted = isDeleted;
-    
+    this.approvalStatus = approvalStatus;
+    this.rejectionReason = rejectionReason;
+
   }
 }
-
-export default VendorEntity;

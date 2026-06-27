@@ -25,7 +25,7 @@ const bookingSchema = new mongoose.Schema(
 
         },
 
-        ownerId: {
+        vendorId: {
 
             type: mongoose.Schema.Types.ObjectId,
 

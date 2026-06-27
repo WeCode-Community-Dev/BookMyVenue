@@ -16,16 +16,18 @@ export class AdminUserController {
     getAllUsers = asyncHandler(async(req,res) => {
 
         const {
-            search = '',
-            page = 1,
-            limit = 10
-        } = req.query
+            search ,
+            isBlocked,
+            page ,
+            limit 
+        } = req.validatedQuery;
 
         const { data, totalCount, totalPages } =
             await this._adminGetAllUsersUsecase.execute(
                 search,
-                Number(page),
-                Number(limit)
+                isBlocked,
+                page,
+                limit
             )
 
         return sendSuccess(
