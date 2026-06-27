@@ -7,7 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { reviewPublishCopy } from "@/lib/data/list-venue";
 
-export function ReviewPublishPanel() {
+type ReviewPublishPanelProps = {
+  onPublish: () => void;
+};
+
+export function ReviewPublishPanel({ onPublish }: ReviewPublishPanelProps) {
   const [termsAccepted, setTermsAccepted] = React.useState(false);
   const [amenitiesConfirmed, setAmenitiesConfirmed] = React.useState(false);
 
@@ -57,7 +61,7 @@ export function ReviewPublishPanel() {
       <Button
         type="button"
         disabled={!canPublish}
-        onClick={() => {}}
+        onClick={onPublish}
         className="h-11 w-full bg-on-primary text-surface-tint hover:bg-on-primary/90 disabled:bg-on-primary/50 disabled:text-surface-tint/70"
       >
         <Rocket className="size-4" />

@@ -22,10 +22,8 @@ const trimOptionalString = ({ value }: { value: unknown }): unknown => {
 };
 
 export class CreateImageDto {
-  @Transform(trimString)
   @IsString()
   @IsNotEmpty()
-  @IsUrl({ require_protocol: true, protocols: ['http', 'https'] })
   @MaxLength(2048)
   url: string;
 
@@ -48,4 +46,4 @@ export class CreateImageDto {
   @IsInt()
   @Min(1)
   height?: number;
-}
+}[]

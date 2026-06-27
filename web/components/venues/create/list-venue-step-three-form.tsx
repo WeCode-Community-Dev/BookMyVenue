@@ -7,14 +7,16 @@ import { VenueImageUploadZone } from "./venue-image-upload-zone";
 
 type ListVenueStepThreeFormProps = {
   images: VenueImage[];
-  coverImageId: string;
+  coverImageId: string | null;
   onImagesChange: (images: VenueImage[]) => void;
   onCoverChange: (id: string) => void;
 };
 
+
+
 function createImageFromFile(file: File, index: number): VenueImage {
   return {
-    id: `venue-image-${Date.now()}-${index}`,
+    id: `${crypto.randomUUID()}-${file.name}`,
     url: URL.createObjectURL(file),
     alt: file.name.replace(/\.[^.]+$/, "") || "Uploaded venue photo",
   };
@@ -26,6 +28,7 @@ export function ListVenueStepThreeForm({
   onImagesChange,
   onCoverChange,
 }: ListVenueStepThreeFormProps) {
+  
   function handleFilesSelected(files: FileList) {
     const newImages = Array.from(files)
       .filter((file) => file.type.startsWith("image/"))

@@ -77,30 +77,6 @@ export type VenueImage = {
   alt: string;
 };
 
-export const defaultVenueImages: VenueImage[] = [
-  {
-    id: "venue-image-1",
-    url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
-    alt: "Modern office exterior",
-  },
-  {
-    id: "venue-image-2",
-    url: "https://images.unsplash.com/photo-1480714378408-67e0d69b5a4c?w=800&q=80",
-    alt: "City skyline view",
-  },
-  {
-    id: "venue-image-3",
-    url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80",
-    alt: "Brick interior lounge",
-  },
-  {
-    id: "venue-image-4",
-    url: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80",
-    alt: "Conference room setup",
-  },
-];
-
-export const defaultCoverImageId = defaultVenueImages[0].id;
 
 export const venueAmenities: VenueAmenity[] = [
   { id: "wifi", label: "WiFi", icon: "wifi" },

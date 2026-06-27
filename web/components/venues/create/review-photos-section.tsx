@@ -9,11 +9,11 @@ import { ReviewSectionCard } from "./review-section-card";
 
 type ReviewPhotosSectionProps = {
   images: VenueImage[];
-  coverImageId: string;
+  coverImageId: string | null;
   onEditStep: (step: number) => void;
 };
 
-function sortCoverFirst(images: VenueImage[], coverImageId: string) {
+function sortCoverFirst(images: VenueImage[], coverImageId: string|null) {
   const cover = images.find((image) => image.id === coverImageId);
   const rest = images.filter((image) => image.id !== coverImageId);
 

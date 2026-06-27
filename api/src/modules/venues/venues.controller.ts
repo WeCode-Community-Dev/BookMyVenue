@@ -16,6 +16,7 @@ import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateSpaceDto } from './dto/update-space.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
 import { VenuesService } from './venues.service';
+import { CreateImagesDto } from './dto/create-images.dto';
 
 @Controller()
 export class VenuesController {
@@ -80,4 +81,10 @@ export class VenuesController {
   findAllAmenities() {
     return this.venuesService.findAllAmenities();
   }
+
+  @Post('images')
+  createImages(@Body() dto: CreateImagesDto) {
+    return this.venuesService.createImages(dto);
+  }
+
 }

@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  defaultCoverImageId,
-  defaultVenueImages,
   listVenueDefaultForm,
   listVenueStepContent,
   TOTAL_LIST_VENUE_STEPS,
+  VenueImage,
 } from "@/lib/data/list-venue";
 
 import { ListVenueFormActions } from "./list-venue-form-actions";
@@ -19,6 +18,10 @@ import { ListVenueStepOneForm } from "./list-venue-step-one-form";
 import { ListVenueStepThreeForm } from "./list-venue-step-three-form";
 import { ListVenueStepTwoForm } from "./list-venue-step-two-form";
 import { ListVenueWizardHeader } from "./list-venue-wizard-header";
+import { uploadFile } from "@/services/r2Services";
+import { createImages, createVenue } from "@/services/venueServices";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export function ListVenueWizard() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -26,8 +29,9 @@ export function ListVenueWizard() {
   const [selectedAmenityIds, setSelectedAmenityIds] = useState<string[]>(
     []
   );
-  const [venueImages, setVenueImages] = useState(defaultVenueImages);
-  const [coverImageId, setCoverImageId] = useState(defaultCoverImageId);
+  const [venueImages, setVenueImages] = useState<VenueImage[]>([]);
+  const [coverImageId, setCoverImageId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const stepContent = listVenueStepContent[currentStep];
 
@@ -39,14 +43,58 @@ export function ListVenueWizard() {
     setCurrentStep((step) => Math.min(TOTAL_LIST_VENUE_STEPS, step + 1));
   }
 
+  async function handlePublish() {
+
+    try{
+      setIsSubmitting(true);
+      for (const image of venueImages) {
+        if (!image.url.startsWith('blob:')) continue;
+        const response = await fetch(image.url);
+        const blob = await response.blob();
+  
+        const file = new File(
+          [blob],
+          image.id, // choose a filename
+          { type: blob.type }
+        );
+        const result = await uploadFile(file);
+      }
+  
+      const images:{id: string}[] = await createImages(venueImages.filter((image) => image.url.startsWith('blob:')).map((image) => ({
+        url: image.id,
+        altText: image.alt,
+      })));
+  
+      const venue = await createVenue({
+        ...basicsForm,
+        latitude: Number(basicsForm.latitude),
+        longitude: Number(basicsForm.longitude),
+        venueImageIds: images.map((image) => image.id),
+        venueAmenityIds: selectedAmenityIds
+      });
+      toast.success('Venue published successfully');
+
+    } catch (error) {
+      console.error(error);
+      toast.error((error as Error)?.message || 'Failed to publish venue');
+      throw error;
+    } finally {
+      setIsSubmitting(false);
+    }
+
+  }
+  if (isSubmitting) {
+    return <div className="flex justify-center items-center h-screen">
+      <Loader2 className="w-10 h-10 animate-spin" />
+    </div>
+  }
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 lg:gap-8">
       <ListVenueWizardHeader
         title={stepContent.title}
         subtitle={stepContent.subtitle}
         currentStep={currentStep}
-        totalSteps={TOTAL_LIST_VENUE_STEPS}
-      />
+        totalSteps={TOTAL_LIST_VENUE_STEPS} />
       <ListVenueProgress
         currentStep={currentStep}
         totalSteps={TOTAL_LIST_VENUE_STEPS}
@@ -95,6 +143,7 @@ export function ListVenueWizard() {
               images={venueImages}
               coverImageId={coverImageId}
               onEditStep={setCurrentStep}
+              onPublish={handlePublish}
             />
           ) : null}
           <ListVenueFormActions

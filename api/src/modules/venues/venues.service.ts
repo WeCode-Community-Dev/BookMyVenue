@@ -12,6 +12,7 @@ import { UpdateSpaceDto } from './dto/update-space.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
 import { JwtService } from '@nestjs/jwt';
 import { verifyAccessToken } from '../auth/helpers/token';
+import { CreateImagesDto } from './dto/create-images.dto';
 
 const venueDetailsInclude = {
   amenities: {
@@ -69,6 +70,12 @@ type AmenityDetails = Prisma.AmenityGetPayload<{
     id: true;
     name: true;
     description: true;
+  };
+}>;
+
+type ImageDetails = Prisma.ImageGetPayload<{
+  select: {
+    id: true;
   };
 }>;
 
@@ -494,6 +501,36 @@ export class VenuesService {
       },
     });
   }
+
+  async createImages(dto: CreateImagesDto): Promise<ImageDetails[]> {
+    try { 
+      
+      if (dto.images.length === 0) {
+        return [];
+      }
+      
+      const images = await this.prismaService.$transaction(
+      dto.images.map((image) =>
+        this.prismaService.image.create({
+          data: {
+            url: image.url,
+            altText: image.altText,
+            width: image.width,
+            height: image.height,
+          },
+          select:{
+            id: true,
+          },
+        }),
+      ),
+    );
+    return images;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+  }
+
 
   private normalizeIds(ids: readonly string[]): string[] {
     return [...new Set(ids)];

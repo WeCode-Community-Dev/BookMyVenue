@@ -9,7 +9,7 @@ import { VenueImageThumbnail } from "./venue-image-thumbnail";
 
 type VenueImageGalleryProps = {
   images: VenueImage[];
-  coverImageId: string;
+  coverImageId: string | null;
   onImagesChange: (images: VenueImage[]) => void;
   onCoverChange: (id: string) => void;
 };

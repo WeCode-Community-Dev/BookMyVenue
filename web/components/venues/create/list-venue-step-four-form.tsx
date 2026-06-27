@@ -10,8 +10,9 @@ type ListVenueStepFourFormProps = {
   basics: ListVenueBasicsForm;
   selectedAmenityIds: string[];
   images: VenueImage[];
-  coverImageId: string;
+  coverImageId: string | null;
   onEditStep: (step: number) => void;
+  onPublish: () => void;
 };
 
 export function ListVenueStepFourForm({
@@ -20,6 +21,7 @@ export function ListVenueStepFourForm({
   images,
   coverImageId,
   onEditStep,
+  onPublish,
 }: ListVenueStepFourFormProps) {
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
@@ -36,7 +38,7 @@ export function ListVenueStepFourForm({
         />
       </div>
       <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-        <ReviewPublishPanel />
+        <ReviewPublishPanel onPublish={onPublish} />
         <ReviewVerificationPanel />
       </div>
     </div>
