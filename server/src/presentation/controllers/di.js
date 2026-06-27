@@ -22,11 +22,21 @@ import { AdminApproveVendorUsecase } from '../../application/admin/usecases/vend
 import { AdminRejectVendorUsecase } from '../../application/admin/usecases/vendor/admin.rejectVendor.usecase.js'
 import { AdminUpdateVendorStatusUsecase } from '../../application/admin/usecases/vendor/admin.updateVendorStatus.js'
 
+//AdminVenueUsecases
+import { AdminGetAllVenuesUsecase } from '../../application/admin/usecases/venue/admin.getAllVenues.usecase.js'
+import { AdminGetVenueByIdUsecase } from '../../application/admin/usecases/venue/admin.getVenueById.usecase.js'
+import { AdminApproveVenueUsecase } from '../../application/admin/usecases/venue/admin.approveVenue.usecase.js'
+import { AdminRejectVenueUsecase } from '../../application/admin/usecases/venue/admin.rejectVenue.usecase.js'
+import { AdminUpdateVenueBlockStatusUsecase } from '../../application/admin/usecases/venue/admin.updateVenueStatus.usecase.js'
+
 // AdminUserController
 import { AdminUserController } from '../controllers/admin/admin.userController.js'
 
 //AdminVendorController
 import { AdminVendorController } from '../controllers/admin/admin.vendorController.js'
+
+//AdminVenueController
+import { AdminVenueController } from './admin/admin.venueController.js'
 
 import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
 import { UserVenueController } from '../controllers/user/user.venueController.js'
@@ -87,6 +97,13 @@ const iAdminGetVendorByIdUsecase = new AdminGetVendorByIdUsecase(iVendorReposito
 const iAdminApproveVendorUsecase = new AdminApproveVendorUsecase(iVendorRepository,iMailSErvice)
 const iAdminRejectVendorUsecase = new AdminRejectVendorUsecase(iVendorRepository,iMailSErvice)
 const iAdminUpdateVendorStatusUsecase = new AdminUpdateVendorStatusUsecase(iVendorRepository)
+
+//adminVenueUsecases
+const iAdminGetAllVenueUsecase = new AdminGetAllVenuesUsecase(iVenueRepository)
+const iAdminGetVenueByIdUsecase = new AdminGetVenueByIdUsecase(iVenueRepository)
+const iAdminApproveVenueUsecase = new AdminApproveVenueUsecase(iVenueRepository,iMailSErvice)
+const iAdminRejectVenueUsecase = new AdminRejectVenueUsecase(iVenueRepository,iMailSErvice)
+const iAdminUpdateVenueBlockStatusUsecase = new AdminUpdateVenueBlockStatusUsecase(iVenueRepository)
 
 //auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(iUserRepository, HashService)
@@ -182,7 +199,7 @@ export const iAdminUserController =
         iAdminUpdateUserStatusUsecase,
     )
 //adminVendorController
-export const iAdminVendorControlller = 
+export const iAdminVendorController = 
     new AdminVendorController(
         iAdminGetAllVendorsUsecase,
         iAdminGetVendorByIdUsecase,
@@ -190,6 +207,16 @@ export const iAdminVendorControlller =
         iAdminRejectVendorUsecase,
         iAdminUpdateVendorStatusUsecase
     )
+//adminVenueController
+export const iAdminVenueController = 
+    new AdminVenueController(
+        iAdminGetAllVenueUsecase,
+        iAdminGetVenueByIdUsecase,
+        iAdminApproveVenueUsecase,
+        iAdminRejectVenueUsecase,
+        iAdminUpdateVenueBlockStatusUsecase,
+    )
+
 export const iUserVenueController = new UserVenueController (
     iUserGetAllVenues,
     iUserGetVenueById,

@@ -81,8 +81,8 @@ const vendorSchema = new mongoose.Schema(
         rejectionReason: {
             type: String,
             default: ""
-        }
-
+        },
+       
     },
     {
         timestamps: true

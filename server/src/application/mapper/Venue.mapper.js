@@ -7,7 +7,7 @@ export class VenueMapper {
         const venue = new VenueEntity({
             id: doc._id.toString(),
             name: doc.name,
-            ownerId: doc.ownerId ? doc.ownerId.toString() : null,
+            vendorId: doc.vendorId ? doc.vendorId.toString() : null,
             description: doc.description,
             category: doc.category,
             websiteUrl: doc.websiteUrl,
@@ -26,14 +26,16 @@ export class VenueMapper {
             isDeleted: doc.isDeleted,
             rating: doc.rating,
             reviews: doc.reviews,
-            isAdminVerified: doc.isAdminVerified
+            approvalStatus : doc.approvalStatus,
+            isBlocked : doc.isBlocked,
+            rejectionReason : doc.rejectionReason
         })
         return venue
     }
     static mapToPersistence(entity){
         return {
             name: entity.name,
-            ownerId: entity.ownerId ?  new Types.ObjectId(entity.ownerId) : null,
+            vendorId: entity.vendorId ?  new Types.ObjectId(entity.vendorId) : null,
             description: entity.description,
             category: entity.category,
             websiteUrl: entity.websiteUrl,
@@ -52,7 +54,9 @@ export class VenueMapper {
             isDeleted: entity.isDeleted,
             rating: entity.rating,
             reviews: entity.reviews,
-            isAdminVerified: entity.isAdminVerified
+            approvalStatus : entity.approvalStatus,
+            isBlocked : entity.isBlocked,
+            rejectionReason : entity.rejectionReason
         }
     }
 }
