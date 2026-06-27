@@ -10,6 +10,7 @@ import { HTTP_STATUS } from "./config/http.config";
 import connectDatabase from "./config/database";
 import authRoute from "./routes/auth.routes";
 import venueRoute from "./routes/venue.routes";
+import reviewRoute from "./routes/review.route";
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.get(
 
 app.use(`${BASE_PATH}/auth`, authRoute);
 app.use(`${BASE_PATH}/venue`, venueRoute);
+app.use(`${BASE_PATH}/review`, reviewRoute);
 
 app.use(errorHandler);
 
