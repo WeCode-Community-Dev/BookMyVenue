@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { LayoutGridIcon, FileTextIcon } from "lucide-react";
+import { LayoutGridIcon, FileTextIcon, CalendarCheckIcon } from "lucide-react";
 
 export type SidebarNavItem = {
 	title: string;
@@ -27,6 +27,11 @@ export const navGroups: SidebarNavGroup[] = [
 				title: "Create venue",
 				path: "/create-venue",
 				icon: <FileTextIcon />,
+			},
+			{
+				title: "Bookings",
+				path: "/bookings",
+				icon: <CalendarCheckIcon />,
 			},
 		],
 	},

@@ -13,7 +13,7 @@ export const OWNER_ROUTES = {
   DASHBOARD: "/owner-dashboard",
   CREATE_VENUE: "/create-venue",
   VENUE_DETAILS:"/venue-details",
-  VENUE_BOOKINGS: "/venue-bookings/:venueId",
+  BOOKINGS: "/bookings",
 };
 
 export const ADMIN_ROUTES = {

@@ -18,5 +18,5 @@ export const ownerRoutePaths = [
   { path: OWNER_ROUTES.DASHBOARD, element: <OwnerDashboard /> },
   { path: OWNER_ROUTES.CREATE_VENUE, element: <CreateVenueForm /> },
   { path: OWNER_ROUTES.VENUE_DETAILS, element: <VenueDetails /> },
-  { path: OWNER_ROUTES.VENUE_BOOKINGS, element: <VenueBookings /> },
+  { path: OWNER_ROUTES.BOOKINGS, element: <VenueBookings /> },
 ];
