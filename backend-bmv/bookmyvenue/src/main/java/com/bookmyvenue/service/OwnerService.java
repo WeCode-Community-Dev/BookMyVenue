@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class OwnerService {
+    private final MeilisearchService meilisearchService;
     public final VenueRepository venueRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
@@ -92,6 +93,7 @@ public class OwnerService {
         }
 
         venueRepository.deleteById(venueId);
+        meilisearchService.removeVenue(venueId);
     }
 
     public List<BookingResponse> getBookingsReviews(String userEmail){

@@ -10,11 +10,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyvenue.dto.BookingRequest;
 import com.bookmyvenue.dto.BookingResponse;
 import com.bookmyvenue.dto.VenueResponse;
+import com.bookmyvenue.dto.VenueSearchDocument;
+import com.bookmyvenue.service.MeilisearchService;
 import com.bookmyvenue.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final MeilisearchService meilisearchService;
     
     @GetMapping("/venues")
     public ResponseEntity<List<VenueResponse>> getApprovedVenues(){
@@ -40,5 +44,17 @@ public class UserController {
     @GetMapping("/bookings/my")
     public ResponseEntity<List<BookingResponse>> getMyBookings(@AuthenticationPrincipal UserDetails userDetails){
         return ResponseEntity.ok(userService.getMyBookings(userDetails.getUsername()));
+    }
+
+    @GetMapping("/venues/search")
+    public ResponseEntity<List<VenueSearchDocument>> searchVenues(
+        @RequestParam(required = false) String q,
+        @RequestParam(required = false) String venueType,
+        @RequestParam(required = false) Integer minPrice,
+        @RequestParam(required = false) Integer maxPrice) {
+
+        return ResponseEntity.ok(
+            meilisearchService.searchVenues(q, venueType, minPrice, maxPrice)
+        );
     }
 }

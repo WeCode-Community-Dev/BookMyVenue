@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-
+import { useState, useEffect } from 'react';import { toast } from 'react-toastify';
 function UserDashboard({ user, onLogout }) {
-
   // ── State ──────────────────────────────────────────────────────────────────
   const [venues, setVenues]     = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [activeTab, setActiveTab] = useState('browse');
-console.log(bookings);
+  const [activeTab, setActiveTab] = useState('browse');console.log(bookings);
 
   // Search + filter
   const [searchTerm, setSearchTerm]     = useState('');
   const [selectedType, setSelectedType] = useState('all');
+
+  // NEW: search results from Meilisearch — null means not searched yet, show all venues
+  const [searchResults, setSearchResults] = useState(null);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Booking modal — null = closed, venue object = open
   const [bookingModal, setBookingModal] = useState(null);
@@ -33,28 +33,26 @@ console.log(bookings);
     const userData = JSON.parse(localStorage.getItem('bmv_user'));
     return userData.token;
   };
-// ✅ Safe fetch helper — handles both JSON and plain text error responses
-const safeFetch = async (url, options = {}) => {
-  const res  = await fetch(url, options);
-  const text = await res.text();
 
-  let data = null;
-  try {
-    data = JSON.parse(text); // try to parse as JSON
-  } catch {
-    data = text;             // if it fails, keep as plain text
-  }
+  // Safe fetch helper — handles both JSON and plain text error responses
+  const safeFetch = async (url, options = {}) => {
+    const res = await fetch(url, options);
+    const text = await res.text();
+    let data = null;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
+    if (!res.ok) {
+      const message = typeof data === 'object'
+        ? (data?.error || data?.message || 'Something went wrong')
+        : (data || 'Something went wrong');
+      throw new Error(message);
+    }
+    return data;
+  };
 
-  if (!res.ok) {
-    // data might be an object with .error/.message, or just a string
-    const message = typeof data === 'object'
-      ? (data?.error || data?.message || 'Something went wrong')
-      : (data || 'Something went wrong');
-    throw new Error(message);
-  }
-
-  return data;
-};
   // ── Fetch approved venues ──────────────────────────────────────────────────
   const fetchVenues = async () => {
     try {
@@ -75,9 +73,7 @@ const safeFetch = async (url, options = {}) => {
     try {
       const res = await fetch('http://localhost:8080/api/user/bookings/my', {
         headers: { Authorization: `Bearer ${getToken()}` },
-      });
-console.log(res);
-
+      });console.log(res);
       if (!res.ok) throw new Error('Failed to load bookings');
       setBookings(await res.json());
     } catch (err) {
@@ -92,11 +88,49 @@ console.log(res);
     fetchBookings();
   }, []);
 
+  // NEW: Search via Meilisearch API
+  // Called automatically 400ms after user stops typing (debounce)
+  const handleSearch = async (term, type) => {
+    // If both are empty/all, reset to show all venues from MySQL
+    if (!term.trim() && type === 'all') {
+      setSearchResults(null); // null = show all venues
+      return;
+    }
+    setSearchLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (term.trim()) params.append('q', term.trim());
+      if (type !== 'all') params.append('venueType', type);
+
+      const res = await fetch(
+        `http://localhost:8080/api/user/venues/search?${params.toString()}`,
+        { headers: { Authorization: `Bearer ${getToken()}` } }
+      );
+      if (!res.ok) throw new Error('Search failed');
+      const data = await res.json();
+      setSearchResults(data);
+    } catch (err) {
+      // If search fails, fall back to local filter silently
+      console.error('Search error:', err.message);
+      setSearchResults(null);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // NEW: Debounce — auto search 400ms after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleSearch(searchTerm, selectedType);
+    }, 400);
+    return () => clearTimeout(timer); // cancel if user types again before 400ms
+  }, [searchTerm, selectedType]);
+
   // ── Open booking modal ─────────────────────────────────────────────────────
   const openBookingModal = (venue) => {
     setBookingModal(venue);
-    setSelectedDate(null);             // clear any previously selected date
-    setCalMonth(new Date());           // reset calendar to current month
+    setSelectedDate(null);
+    setCalMonth(new Date());
   };
 
   const closeBookingModal = () => {
@@ -112,40 +146,29 @@ console.log(res);
   const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
 
   const today = new Date();
-  today.setHours(0,0,0,0); // normalize for comparison
+  today.setHours(0,0,0,0);
 
-  // Returns array of day cells for the current calendar month
   const getCalendarDays = () => {
     const year  = calMonth.getFullYear();
     const month = calMonth.getMonth();
-    const firstDay    = new Date(year, month, 1).getDay();    // 0=Sun
+    const firstDay    = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-
     const cells = [];
-
-    // Empty cells before first day
     for (let i = 0; i < firstDay; i++) {
       cells.push({ day: null, date: null });
     }
-
-    // Actual days
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(year, month, d);
       date.setHours(0,0,0,0);
       cells.push({ day: d, date });
     }
-
     return cells;
   };
 
-  const isPast = (date) => date < today;
+  const isPast     = (date) => date < today;
+  const isSelected = (date) => selectedDate && date.toDateString() === selectedDate.toDateString();
+  const isToday    = (date) => date.toDateString() === today.toDateString();
 
-  const isSelected = (date) =>
-    selectedDate && date.toDateString() === selectedDate.toDateString();
-
-  const isToday = (date) => date.toDateString() === today.toDateString();
-
-  // Navigate calendar
   const prevMonth = () => {
     setCalMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
@@ -153,67 +176,54 @@ console.log(res);
     setCalMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
-  // Format selected date for display
   const formatDate = (date) =>
     date.toLocaleDateString('en-IN', {
       weekday: 'short', day: 'numeric', month: 'long', year: 'numeric',
     });
 
-  // Format date for API (YYYY-MM-DD)
   const formatDateForApi = (date) => {
-  const year  = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() is 0-indexed
-  const day   = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`; // always "2026-06-30" regardless of timezone
-};
+    const year  = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day   = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   // ── Confirm booking ────────────────────────────────────────────────────────
-const handleConfirmBooking = async () => {
-  if (!selectedDate) {
-    toast.error('Please select a date');
-    return;
-  }
-  setSubmitting(true);
-  try {
-    const res = await fetch('http://localhost:8080/api/user/booking', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getToken()}`,
-      },
-      body: JSON.stringify({
-        venueId:     bookingModal.id,
-        bookingDate: formatDateForApi(selectedDate),
-      }),
-    });
-
-    // ✅ Read as text first — works for BOTH json and plain text responses
-    const text = await res.text();
-
-    if (!res.ok) {
-      // Try to parse as JSON to get the error message
-      // If backend sent plain text, just use the text directly
-      try {
-        const data = JSON.parse(text);
-        throw new Error(data.error || data.message || 'Failed to create booking');
-      } catch {
-        throw new Error(text || 'Failed to create booking');
-      }
-    }
-
-    // Success — parse the JSON response normally
-    const data = JSON.parse(text);
-    toast.success(`Booking requested for "${bookingModal.venueName}"!`);
-    closeBookingModal();
-    await fetchBookings();
-    setActiveTab('bookings');
-
-  } catch (err) {
-    toast.error(err.message);
-  } finally {
-    setSubmitting(false);
-  }
-};
+  const handleConfirmBooking = async () => {
+    if (!selectedDate) { toast.error('Please select a date'); return; }
+    setSubmitting(true);
+    try {
+      const res = await fetch('http://localhost:8080/api/user/booking', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          venueId:     bookingModal.id,
+          bookingDate: formatDateForApi(selectedDate),
+        }),
+      });
+      const text = await res.text();
+      if (!res.ok) {
+        try {
+          const data = JSON.parse(text);
+          throw new Error(data.error || data.message || 'Failed to create booking');
+        } catch {
+          throw new Error(text || 'Failed to create booking');
+        }
+      }
+      const data = JSON.parse(text);
+      toast.success(`Booking requested for "${bookingModal.venueName}"!`);
+      closeBookingModal();
+      await fetchBookings();
+      setActiveTab('bookings');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   // ── Cancel booking ─────────────────────────────────────────────────────────
   const openCancelModal  = (booking) => { setCancelModal(booking); setCancelReason(''); };
@@ -250,16 +260,19 @@ const handleConfirmBooking = async () => {
     toast.info('Payment module coming in Phase 2!');
   };
 
-  // ── Filter venues ──────────────────────────────────────────────────────────
-  const filteredVenues = venues.filter(venue => {
-    const matchesSearch =
-      venue.venueName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      venue.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType =
-      selectedType === 'all' ||
-      venue.venueType.toLowerCase().replace(/[\s/]+/g, '_').includes(selectedType);
-    return matchesSearch && matchesType;
-  });
+  // CHANGED: use searchResults from Meilisearch if available
+  // otherwise fall back to local filter on venues from MySQL
+  const displayVenues = searchResults !== null
+    ? searchResults  // Meilisearch results
+    : venues.filter(venue => {
+        const matchesSearch =
+          venue.venueName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          venue.location.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType =
+          selectedType === 'all' ||
+          venue.venueType.toLowerCase().replace(/[\s/]+/g, '_').includes(selectedType);
+        return matchesSearch && matchesType;
+      });
 
   // ── Status badge class ─────────────────────────────────────────────────────
   const statusClass = (status) => {
@@ -303,7 +316,7 @@ const handleConfirmBooking = async () => {
           </div>
           <div className="user-text-info">
             <h3>{user?.name || 'Guest'}</h3>
-            <span className="role-badge">Booker</span>
+            <span className="role-badge">User</span>
           </div>
         </div>
         <div className="dashboard-tabs">
@@ -350,12 +363,40 @@ const handleConfirmBooking = async () => {
                 className="filter-select"
               >
                 <option value="all">All Types</option>
-                <option value="banquet_hall">Banquet Hall</option>
-                <option value="outdoor">Outdoor / Garden</option>
-                <option value="conference_room">Conference Room</option>
-                <option value="wedding">Wedding / Reception Hall</option>
+                <option value="BANQUET_HALL">Banquet Hall</option>
+                <option value="OUTDOOR_GARDEN">Outdoor / Garden</option>
+                <option value="CONFERENCE_ROOM">Conference Room</option>
+                <option value="WEDDING_RECEPTION_HALL">Wedding / Reception Hall</option>
               </select>
             </div>
+
+            {/* NEW: search loading indicator */}
+            {searchLoading && (
+              <p style={{ color: 'var(--text)', fontSize: 13, marginBottom: 12 }}>
+                Searching...
+              </p>
+            )}
+
+            {/* NEW: show "Showing results for..." when search is active */}
+            {searchResults !== null && !searchLoading && (
+              <p style={{ color: 'var(--text)', fontSize: 13, marginBottom: 12 }}>
+                {searchResults.length > 0
+                  ? `Found ${searchResults.length} result${searchResults.length !== 1 ? 's' : ''}`
+                  : 'No results found'}
+                {searchTerm && ` for "${searchTerm}"`}
+                {' '}
+                <button
+                  onClick={() => { setSearchTerm(''); setSelectedType('all'); setSearchResults(null); }}
+                  style={{
+                    background: 'none', border: 'none',
+                    color: 'var(--accent)', cursor: 'pointer',
+                    fontSize: 13, textDecoration: 'underline', padding: 0,
+                  }}
+                >
+                  Clear
+                </button>
+              </p>
+            )}
 
             {venuesLoading && (
               <p style={{ color: 'var(--text)', textAlign: 'center', padding: 48 }}>
@@ -365,8 +406,9 @@ const handleConfirmBooking = async () => {
 
             {!venuesLoading && (
               <div className="venues-grid">
-                {filteredVenues.length > 0 ? (
-                  filteredVenues.map(venue => (
+                {/* CHANGED: displayVenues uses Meilisearch results when available */}
+                {displayVenues.length > 0 ? (
+                  displayVenues.map(venue => (
                     <div className="venue-card" key={venue.id}>
                       <div
                         className="venue-image"
@@ -390,7 +432,6 @@ const handleConfirmBooking = async () => {
                         <p style={{ fontSize: 12, color: 'var(--text)', marginBottom: 12 }}>
                           Parking: {venue.parkingAvailable}
                         </p>
-                        {/* Opens booking modal instead of booking directly */}
                         <button
                           className="book-btn"
                           onClick={() => openBookingModal(venue)}
@@ -461,8 +502,8 @@ const handleConfirmBooking = async () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {bookings.map(booking => (    
-                      <tr key={booking.id}>
+                    {bookings.map(booking => (
+                       <tr key={booking.id}>
 
                         <td>
                           <div className="user-table-cell">
@@ -471,7 +512,6 @@ const handleConfirmBooking = async () => {
                           </div>
                         </td>
 
-                        {/* The date user chose during booking */}
                         <td className="subtext">
                           {booking.bookingDate
                             ? new Date(booking.bookingDate + 'T00:00:00').toLocaleDateString('en-IN', {
@@ -480,7 +520,6 @@ const handleConfirmBooking = async () => {
                             : '—'}
                         </td>
 
-                        {/* When they submitted the request */}
                         <td className="subtext">
                           {booking.bookedOn
                             ? new Date(booking.bookedOn+ 'T00:00:00').toLocaleDateString('en-IN', {
@@ -495,7 +534,6 @@ const handleConfirmBooking = async () => {
                           </span>
                         </td>
 
-                        {/* Owner's message shown as a quote */}
                         <td style={{ maxWidth: 180 }}>
                           {booking.ownerComments ? (
                             <span style={{
@@ -515,7 +553,6 @@ const handleConfirmBooking = async () => {
 
                         <td>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                            {/* Proceed to Pay — only when APPROVED */}
                             {['APPROVED','CONFIRMED'].includes(
                               booking.bookingStatus?.toUpperCase()
                             ) && (
@@ -527,7 +564,6 @@ const handleConfirmBooking = async () => {
                                 Proceed to Pay
                               </button>
                             )}
-                            {/* Cancel — only when PENDING or APPROVED */}
                             {['PENDING','APPROVED'].includes(
                               booking.bookingStatus?.toUpperCase()
                             ) && (
@@ -571,7 +607,7 @@ const handleConfirmBooking = async () => {
             </h3>
             <p style={{ color: 'var(--text)', fontSize: 14, marginBottom: 6 }}>{user?.email}</p>
             <span className="role-badge" style={{ marginBottom: 24, display: 'inline-block' }}>
-              Booker
+              User
             </span>
             <div style={{
               background: 'var(--code-bg)', border: '1px solid var(--border)',
@@ -590,7 +626,6 @@ const handleConfirmBooking = async () => {
 
         {/* ════════════════════════════════════════
             BOOKING MODAL WITH CALENDAR
-            Uses existing .modal-overlay / .modal-content classes
         ════════════════════════════════════════ */}
         {bookingModal && (
           <div className="modal-overlay" onClick={closeBookingModal}>
@@ -601,7 +636,6 @@ const handleConfirmBooking = async () => {
             >
               <h3>Book venue</h3>
 
-              {/* Venue summary chip */}
               <div style={{
                 background: 'var(--code-bg)',
                 border: '1px solid var(--border)',
@@ -625,7 +659,6 @@ const handleConfirmBooking = async () => {
                 </div>
               </div>
 
-              {/* Calendar label */}
               <div style={{
                 fontSize: 11, fontWeight: 700,
                 textTransform: 'uppercase', letterSpacing: '0.6px',
@@ -634,14 +667,12 @@ const handleConfirmBooking = async () => {
                 Select date
               </div>
 
-              {/* ── Calendar ── */}
               <div style={{
                 border: '1px solid var(--border)',
                 borderRadius: 10,
                 overflow: 'hidden',
                 marginBottom: 20,
               }}>
-                {/* Month navigation */}
                 <div style={{
                   display: 'flex', alignItems: 'center',
                   justifyContent: 'space-between',
@@ -676,14 +707,12 @@ const handleConfirmBooking = async () => {
                   </button>
                 </div>
 
-                {/* Day grid */}
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(7, 1fr)',
                   padding: '8px',
                   gap: 2,
                 }}>
-                  {/* Day name headers */}
                   {DAYS.map(d => (
                     <div key={d} style={{
                       textAlign: 'center', fontSize: 11,
@@ -694,17 +723,13 @@ const handleConfirmBooking = async () => {
                     </div>
                   ))}
 
-                  {/* Calendar day cells */}
                   {getCalendarDays().map((cell, i) => {
                     if (!cell.date) {
-                      // Empty spacer cell
                       return <div key={`empty-${i}`} />;
                     }
-
                     const past     = isPast(cell.date);
                     const selected = isSelected(cell.date);
                     const todayDay = isToday(cell.date);
-
                     return (
                       <div
                         key={i}
@@ -715,15 +740,13 @@ const handleConfirmBooking = async () => {
                           padding: '7px 4px',
                           borderRadius: 6,
                           cursor: past ? 'not-allowed' : 'pointer',
-                          // Selected = accent red background
                           background: selected ? 'var(--accent)' : 'transparent',
-                          // Today = accent red text (unless selected)
                           color: selected
                             ? '#fff'
                             : past
-                            ? 'var(--border)'         // greyed out
+                            ? 'var(--border)'
                             : todayDay
-                            ? 'var(--accent)'          // red for today
+                            ? 'var(--accent)'
                             : 'var(--text-h)',
                           fontWeight: selected || todayDay ? 700 : 400,
                           transition: 'background 0.15s ease',
@@ -744,7 +767,6 @@ const handleConfirmBooking = async () => {
                 </div>
               </div>
 
-              {/* ── Summary — only shows after date is picked ── */}
               {selectedDate ? (
                 <div style={{
                   background: 'var(--code-bg)',
@@ -766,7 +788,6 @@ const handleConfirmBooking = async () => {
                       <span style={{ fontWeight: 600, color: 'var(--text-h)' }}>{row.value}</span>
                     </div>
                   ))}
-                  {/* Total row */}
                   <div style={{
                     display: 'flex', justifyContent: 'space-between',
                     fontSize: 14, padding: '8px 0 0',
@@ -787,12 +808,10 @@ const handleConfirmBooking = async () => {
                 </p>
               )}
 
-              {/* Modal action buttons */}
               <div className="modal-actions">
                 <button type="button" onClick={closeBookingModal}>
                   Cancel
                 </button>
-                {/* Last button gets accent style from your existing CSS */}
                 <button
                   type="button"
                   onClick={handleConfirmBooking}
