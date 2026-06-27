@@ -37,6 +37,11 @@ export const getVenues = async (params: VenuesQuery): Promise<VenuesResponse> =>
   return { venues: data.venues, pagination: data.pagination };
 };
 
+export const getVenueById = async (venueId: string): Promise<Venue> => {
+  const { data } = await apiClient.get(`/venue/get/${venueId}`);
+  return data.venue;
+};
+
 export const getMyVenues = async (): Promise<Venue[]> => {
   const { data } = await apiClient.get("/venue/my-venues");
   return data.venues;

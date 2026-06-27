@@ -3,6 +3,7 @@ import {
   createVenueRequest,
   getMyVenues,
   getVenues,
+  getVenueById,
   updateVenueRequest,
   type VenuesQuery,
 } from "@/api/venue-api";
@@ -14,6 +15,13 @@ export const useVenues = (params: VenuesQuery) =>
     queryKey: ["venues", params],
     queryFn: () => getVenues(params),
     placeholderData: keepPreviousData,
+  });
+
+export const useVenue = (venueId: string) =>
+  useQuery({
+    queryKey: ["venue", venueId],
+    queryFn: () => getVenueById(venueId),
+    enabled: Boolean(venueId),
   });
 
 export const useMyVenues = () =>

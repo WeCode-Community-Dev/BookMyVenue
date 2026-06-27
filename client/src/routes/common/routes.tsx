@@ -3,6 +3,7 @@ import SignIn from "../../pages/auth/sign-in";
 import SignUp from "../../pages/auth/sign-up";
 import Home from "@/pages/home/home";
 import VenueList from "@/pages/venues/venue-list";
+import VenueDetailsPublic from "@/pages/venues/venue-details";
 import OwnerDashboard from "@/pages/owner/owner-dashboard";
 import CreateVenueForm from "@/pages/owner/create-venue-form";
 import VenueDetails from "@/pages/owner/venue-details";
@@ -11,6 +12,7 @@ import VenueBookings from "@/pages/owner/venue-bookings";
 export const publicRoutePaths = [
   { path: PUBLIC_ROUTES.HOME, element: <Home /> },
   { path: PUBLIC_ROUTES.VENUES, element: <VenueList /> },
+  { path: PUBLIC_ROUTES.VENUE_DETAILS, element: <VenueDetailsPublic /> },
 ];
 
 export const authenticationRoutePaths = [
