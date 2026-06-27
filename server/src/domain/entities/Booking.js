@@ -6,7 +6,7 @@ export class Booking {
     id = null,
     userId,
     venueId,
-    ownerId,
+    vendorId,
     bookingDate,
     startTime,
     endTime,
@@ -24,7 +24,7 @@ export class Booking {
     this.id = id;
     this.userId = userId;
     this.venueId = venueId;
-    this.ownerId = ownerId;
+    this.vendorId = vendorId;
     this.bookingDate = bookingDate;
     this.startTime = startTime;
     this.endTime = endTime;

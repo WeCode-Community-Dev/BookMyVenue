@@ -14,7 +14,7 @@ export class BookingMapper {
 
             venueId: doc.venueId,
 
-            ownerId: doc.ownerId,
+            vendorId: doc. vendorId,
 
             bookingDate: doc.bookingDate,
 
@@ -56,7 +56,7 @@ export class BookingMapper {
 
             venueId: entity.venueId,
 
-            ownerId: entity.ownerId,
+            vendorId: entity.vendorId,
 
             bookingDate: entity.bookingDate,
 

@@ -7,8 +7,7 @@ import { BadRequestError }
 import { VenueMessages }
     from "../../../../shared/constants/messages/venueMessages.js";
 
-import { VenueApprovalStatus }
-    from "../../../../domain/enums/Venue.enum.js";
+import { VenueStatus } from "../../../../domain/enums/Venue.enum.js";
 
 export class AdminUpdateVenueBlockStatusUsecase {
 
@@ -44,7 +43,7 @@ export class AdminUpdateVenueBlockStatusUsecase {
 
         if (
             venue.approvalStatus !==
-            VenueApprovalStatus.APPROVED
+            VenueStatus.APPROVED
         ) {
 
             throw new BadRequestError(
