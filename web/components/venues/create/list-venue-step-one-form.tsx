@@ -32,7 +32,6 @@ export function ListVenueStepOneForm({
   ) {
     onChange({ ...value, [field]: fieldValue });
   }
-  console.log('value', value);
 
   return (
     <div className="flex flex-col gap-5">

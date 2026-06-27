@@ -32,7 +32,6 @@ const navIcons: Record<NavIcon, LucideIcon> = {
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  console.log(pathname);
 
   return (
     <aside className="flex w-[280px] shrink-0 flex-col border-r border-outline-variant/40 bg-surface-container-lowest">

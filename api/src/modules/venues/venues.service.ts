@@ -64,6 +64,14 @@ type SpaceDetails = Prisma.SpaceGetPayload<{
   include: typeof spaceDetailsInclude;
 }>;
 
+type AmenityDetails = Prisma.AmenityGetPayload<{
+  select: {
+    id: true;
+    name: true;
+    description: true;
+  };
+}>;
+
 @Injectable()
 export class VenuesService {
   constructor(
@@ -471,6 +479,19 @@ export class VenuesService {
 
     await this.prismaService.space.delete({
       where: { id },
+    });
+  }
+
+  async findAllAmenities(): Promise<AmenityDetails[]> {
+    return this.prismaService.amenity.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+      },
     });
   }
 

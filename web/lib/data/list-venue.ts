@@ -116,7 +116,16 @@ export const venueAmenities: VenueAmenity[] = [
   },
 ];
 
-export const defaultSelectedAmenityIds = ["wifi"];
+export const venueAmenityIcons: Record<string, VenueAmenityIcon> = {
+  Wifi: "wifi",
+  Parking: "car",
+  Security: "shield",
+  Reception: "concierge-bell",
+  Elevator: "arrow-up-down",
+  Cafeteria: "utensils-crossed",
+  "Wheelchair Access": "accessibility",
+};
+
 
 export const listVenuePreviewImage =
   "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80";

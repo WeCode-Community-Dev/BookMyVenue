@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   defaultCoverImageId,
-  defaultSelectedAmenityIds,
   defaultVenueImages,
   listVenueDefaultForm,
   listVenueStepContent,
@@ -25,7 +24,7 @@ export function ListVenueWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [basicsForm, setBasicsForm] = useState(listVenueDefaultForm);
   const [selectedAmenityIds, setSelectedAmenityIds] = useState<string[]>(
-    defaultSelectedAmenityIds
+    []
   );
   const [venueImages, setVenueImages] = useState(defaultVenueImages);
   const [coverImageId, setCoverImageId] = useState(defaultCoverImageId);

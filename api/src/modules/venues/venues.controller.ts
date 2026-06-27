@@ -75,4 +75,9 @@ export class VenuesController {
   async removeSpace(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     await this.venuesService.removeSpace(id);
   }
+
+  @Get('amenities')
+  findAllAmenities() {
+    return this.venuesService.findAllAmenities();
+  }
 }
