@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Layout, Building, Rupee, Cog, PlusCircle, Bell, Message, 
   Clock1, MapPin, DotsVertical, Star, Menu, X 
@@ -24,7 +25,7 @@ const LISTED_PROPERTIES = [
 const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
   <button 
     onClick={onClick}
-    className={`w-full flex items-center space-x-4 px-5 py-3.5 rounded-xl transition-colors text-sm font-semibold ${
+    className={`w-full cursor-pointer flex items-center space-x-4 px-5 py-3.5 rounded-xl transition-colors text-sm font-semibold ${
       isActive ? 'bg-[#ff5c5d] text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
     }`}
   >
@@ -43,7 +44,7 @@ const ToggleSwitch = ({ isActive }) => (
 // 3. LAYOUT COMPONENTS
 // ==========================================
 
-const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => (
+const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen,navigate }) => (
   <>
     {/* Mobile Overlay Background */}
     {isOpen && (
@@ -80,18 +81,18 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => (
 
         {/* Navigation Links */}
         <nav className="px-6 space-y-2">
+          <SidebarItem icon={Building} label="Homepage" isActive={activeTab === 'My Venues'} onClick={() => { setActiveTab('My Venues'); setIsOpen(false); navigate("/host") }} />
           <SidebarItem icon={Layout} label="Dashboard" isActive={activeTab === 'Dashboard'} onClick={() => { setActiveTab('Dashboard'); setIsOpen(false); }} />
-          <SidebarItem icon={Building} label="My Venues" isActive={activeTab === 'My Venues'} onClick={() => { setActiveTab('My Venues'); setIsOpen(false); }} />
         </nav>
       </div>
 
       {/* Bottom Action */}
-      <div className="p-6 border-t border-gray-100 bg-white">
+      <Link to="/host/dashboard/list-new-venues" className="p-6 border-t border-gray-100 cursor-pointer bg-white">
         <button className="w-full bg-[#8b3d2c] hover:bg-[#733224] text-white flex items-center justify-center space-x-2 py-4 rounded-xl transition-colors font-semibold text-sm shadow-sm">
           <PlusCircle size={20} />
           <span>List New Space</span>
         </button>
-      </div>
+      </Link>
     </aside>
   </>
 );
@@ -217,7 +218,7 @@ const ListedProperties = () => (
         </div>
       ))}
 
-      <button className="border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center h-full min-h-[280px] text-gray-500 hover:text-[#ff5c5d] hover:border-[#ff5c5d] hover:bg-[#fff9f9] transition-colors group">
+      <button className="border-2 cursor-pointer border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center h-full min-h-[280px] text-gray-500 hover:text-[#ff5c5d] hover:border-[#ff5c5d] hover:bg-[#fff9f9] transition-colors group">
         <div className="bg-white rounded-full p-4 shadow-sm mb-4 border border-gray-50 group-hover:border-[#ff5c5d]/20 transition-colors">
           <PlusCircle size={28} className="text-[#ff5c5d]" />
         </div>
@@ -232,6 +233,8 @@ const ListedProperties = () => (
 // ==========================================
 
 export default function OwnerDashboard() {
+  const navigate = useNavigate()
+
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -243,7 +246,8 @@ export default function OwnerDashboard() {
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         isOpen={isMobileMenuOpen} 
-        setIsOpen={setIsMobileMenuOpen} 
+        setIsOpen={setIsMobileMenuOpen}
+        navigate={navigate} 
       />
 
       {/* MAIN CONTENT AREA */}

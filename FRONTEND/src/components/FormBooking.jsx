@@ -46,8 +46,8 @@ export default function FormBooking ({
 
         const endTime = new Date()
 
-        SetTimeFromString(startTime, venue.availability[0].open_time) 
-        SetTimeFromString(endTime, venue.availability[0].closing_time)
+        SetTimeFromString(startTime, venue.availability.open_time) 
+        SetTimeFromString(endTime, venue.availability.closing_time)
         
         while(startTime < endTime){
             const startStr = startTime.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true})
@@ -64,8 +64,8 @@ export default function FormBooking ({
     }
     const availTime = GenerateHourlyTimeIntervals();
 
-    const isHourly = venue.availability.some(avail => avail.booking_types == "hourly")
-    const isDaily = venue.availability.some(avail => avail.booking_types == "daily")
+    const isHourly = venue.availability.booking_types == "hourly"
+    const isDaily = venue.availability.booking_types == "daily"
 
     return (
         <>

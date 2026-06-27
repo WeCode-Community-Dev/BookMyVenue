@@ -18,7 +18,30 @@ const apiService = {
         const response = await axiosInstance.get(`/venues/details/${id}`)
         return response.data
     },
-    
+    postBasicVenueDetails: async(payload) => {
+        const response = await axiosInstance.post(`/venues/basic-details`, payload)
+        return response.data
+    },
+    postVenueAmenities: async(payload, venue_id) => {
+        const response = await axiosInstance.post(`/venues/${venue_id}/amenities`, payload)
+        return response.data
+    },
+    postVenuePhotos: async(payload, venue_id) => {
+        const response = await axiosInstance.post(`/venues/${venue_id}/images`, payload)
+        return response.data
+    },
+    postVenueAvailability: async (payload, venue_id) => {
+        const response = await axiosInstance.post(`/venues/${venue_id}/availability`, payload)
+        return response.data
+    },
+    createPaymentOrder: async (amount) => {
+        const response = await axiosInstance.post(`/payments/create-order`, {amount})
+        return response.data
+    },
+    verifyPayment: async (paymentDetails) => {
+        const response = await axios.post('/payments/verify-payment', paymentDetails);
+        return response.data;
+    }  
 }
 
 export default apiService

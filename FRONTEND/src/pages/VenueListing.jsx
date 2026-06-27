@@ -6,15 +6,18 @@ import {
   Parking,
   Monitor,
   Coffee,
-  SpinnerOne
+  SpinnerOne,
+  X,
+  ArrowLeft,
 } from '@mynaui/icons-react';
 import { VENUE_DATA } from '../data/VenueCardData';
 import FormBooking from "../components/FormBooking"
 import apiService from '../services/apiService';
-import { useParams } from 'react-router-dom';
-import { isValidElement, useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 const ImageGalleryModal = ({ isOpen, onClose, images }) => {
+
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -33,12 +36,12 @@ const ImageGalleryModal = ({ isOpen, onClose, images }) => {
             
             {/* Header (Sticky so it stays visible while scrolling) */}
             <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900">Photo Tour</h2>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">Image Gallery</h2>
                 <button 
                     onClick={onClose}
                     className="p-2 bg-gray-100 hover:bg-gray-200 hover:text-black rounded-full text-gray-600 transition-colors cursor-pointer"
                 >
-                    <X size={24} />
+                    <X size={24}  />
                 </button>
             </div>
 
@@ -51,7 +54,7 @@ const ImageGalleryModal = ({ isOpen, onClose, images }) => {
                             className="relative aspect-square md:aspect-[4/3] rounded-xl overflow-hidden bg-gray-50 border border-gray-100 group"
                         >
                             <img 
-                                src={img.image_url} 
+                                src={img} 
                                 alt={`Venue photo ${index + 1}`} 
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />
@@ -65,6 +68,8 @@ const ImageGalleryModal = ({ isOpen, onClose, images }) => {
 }
 
 export default function SpaceListing() {
+
+    const navigate = useNavigate()
 
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedSession, setSelectedSession] = useState("hourly");
@@ -122,14 +127,25 @@ export default function SpaceListing() {
     const venue_rating = venue.rating
     const venue_capacity = venue.capacity
     const venue_location= venue.location
+    // const venue_min_hour = venue.availability.minimum_hours
+    // console.log(venue_min_hour);
+
+    const calculateTotalAmount = () => {
+        const totalAmount = selectedTimes.length * 2 * venue_price;
+        return totalAmount
+    }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans text-gray-900">
+        <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans text-gray-900">
+
+            <div onClick={() => navigate("/")} className='absolute left-8 z-99'>
+                <ArrowLeft size={40} className="p-1 bg-gray-100 hover:bg-gray-200 hover:text-black rounded-full text-gray-600 transition-colors cursor-pointer" />
+            </div>
 
             {/* Image Gallery Modal */}
             <ImageGalleryModal 
                 isOpen={isGalleryOpen} 
-                onClose={() => setIsGalleryOpen(false)} 
+                onClose={() => SetIsGalleryOpen(false)}
                 images={imageLinks} 
             />
 
@@ -280,8 +296,8 @@ export default function SpaceListing() {
                 />
 
                 {/* Submit Button */}
-                <button className="w-full cursor-pointer bg-[#f4645c] hover:bg-[#e05048] text-white py-3.5 rounded-lg font-semibold text-base transition-colors duration-200">
-                Confirm Reservation
+                <button onClick={calculateTotalAmount} className="w-full cursor-pointer bg-[#f4645c] hover:bg-[#e05048] text-white py-3.5 rounded-lg font-semibold text-base transition-colors duration-200">
+                    Confirm Reservation
                 </button>
                 <p className="text-center text-xs text-gray-500 mt-3 mb-6">You won't be charged yet</p>
 
@@ -305,8 +321,8 @@ export default function SpaceListing() {
                 <div className="flex justify-between font-bold text-gray-800 mt-4 text-base">
                 <span>Total amount</span>
                 <span>₹{selectedTimes.length > 0 
-                ? selectedTimes.length * venue_price
-                : 0
+                    ? selectedTimes.length * 2 * venue_price
+                    : 0
                 }</span>
                 </div>
 

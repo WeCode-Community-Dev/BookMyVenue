@@ -73,6 +73,9 @@ export const useAuthForm = () => {
             if(data.access_token){
                 Cookies.set("authToken", data.access_token, {expires: 30, secure: true, sameSite: 'Lax'})
                 Cookies.set('userRole', data.user.role, {expires: 30, secure: true, sameSite: 'Lax'})
+                Cookies.set('userId', data.user.id, {expires: 30, secure: true, sameSite: 'Lax'})
+                Cookies.set('userEmail', data.user.email, {expires: 30, secure: true, sameSite: 'Lax'})
+                Cookies.set('userName', data.user.name, {expires: 30, secure: true, sameSite: 'Lax'})
             }
 
             setSuccessMessage(isLoginView ? 'Logged in successfully!' : 'Account created successfully!')
