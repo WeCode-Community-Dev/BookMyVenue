@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { MapPinIcon, UsersIcon, ClockIcon } from "lucide-react";
 import Navbar from "@/components/navbar";
 import ReserveDialog from "@/components/reserve-dialog";
+import VenueReviews from "@/components/venue-reviews";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -115,6 +116,9 @@ const VenueDetails = () => {
                 </Card>
               </div>
             </div>
+
+            <Separator />
+            <VenueReviews venueId={venue._id} />
           </div>
         )}
       </main>

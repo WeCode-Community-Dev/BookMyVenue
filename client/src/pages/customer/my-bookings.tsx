@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Navbar from "@/components/navbar";
+import ReviewDialog from "@/components/review-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -72,6 +73,11 @@ const MyBookings = () => {
                     {timeFmt.format(new Date(booking.endTime))}
                   </span>
                   <span className="font-medium text-foreground">₹{booking.totalAmount}</span>
+                  {booking.venue && (
+                    <div className="mt-3">
+                      <ReviewDialog venueId={booking.venue._id} venueName={booking.venue.name} />
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
