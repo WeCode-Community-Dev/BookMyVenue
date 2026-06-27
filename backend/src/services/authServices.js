@@ -104,7 +104,6 @@ export default {
       .from(usersTable)
       .where(eq(usersTable.id, id));
     return user;
-  },
+  }
 };
 
-//   const response =  await jwt.sign({email,role,hashedPassword,salt}, process.env.JWT_SECRET, {expiresIn: '1h'},);

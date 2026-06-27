@@ -7,6 +7,8 @@ const router = Router();
 console.log('Routes file loaded');
 
 router.post('/login', catchErrors(authController.login));
+router.post('/logout', catchErrors(authController.logout) )
+router.post('/admin/login',catchErrors(authController.login) )
 
 router.post('/register', catchErrors(authController.register));
 

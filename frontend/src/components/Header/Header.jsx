@@ -4,11 +4,20 @@ import { FiLogOut, FiCalendar, FiSearch, FiHeart, FiMenu, FiX, FiChevronDown } f
 import './Header.scss';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../redux/slices/authSlice';
+import { useLogoutMutation } from '../../features/auth/authApi';
+import { adminLogout } from '../../redux/slices/adminAuthSlice';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+
 
 function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [logout , {data,error,isLoading,isSuccess,isError}] = useLogoutMutation();
 
   const currentUser = useSelector(selectCurrentUser);
 
@@ -59,6 +68,17 @@ function Header() {
     </>
   );
 
+async function logoutUser() {
+  try {
+    await logout().unwrap()
+    dispatch(adminLogout())
+    navigate('/login')
+  } catch (err) {
+    console.error('Logout failed', err)
+  }
+}
+
+
   return (
     <header className="main-header">
       <div className="header-container">
@@ -100,7 +120,9 @@ function Header() {
             {navLinks}
           </nav>
 
-          <div className="header-user-section" ref={dropdownRef}>
+         
+        </div>
+         <div className="header-user-section" ref={dropdownRef}>
             <button
               type="button"
               className="user-profile-card user-dropdown-trigger"
@@ -137,14 +159,13 @@ function Header() {
                   <FiCalendar /> My Bookings
                 </Link>
                 <div className="dropdown-divider" />
-                <button className="dropdown-item dropdown-item--danger logout-btn" aria-label="Log out">
+                <button  onClick={logoutUser} className="dropdown-item dropdown-item--danger logout-btn" aria-label="Log out">
                   <FiLogOut className="logout-icon" />
-                  <span>Logout</span>
+                  <span >Logout</span>
                 </button>
               </div>
             )}
           </div>
-        </div>
       </div>
     </header>
   );

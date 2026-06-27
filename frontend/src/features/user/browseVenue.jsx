@@ -10,7 +10,7 @@ import {useGetUserVenuesQuery, useGetFavoritesQuery, useAddFavoriteMutation, use
 
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
-const VENUE_TYPES = ['Hall', 'Rooftop', 'Banquet', 'Conference Room', 'Farmhouse', 'Studio', 'Cafe'];
+const VENUE_TYPES = ['Hall', 'Rooftop', 'Banquet', 'Conference Room', 'Farmhouse', 'Studio', 'cafe'];
 
 const AMENITIES_FILTER = [
   { slug: 'wifi',        label: 'Wi-Fi' },
@@ -206,7 +206,7 @@ function BrowseVenues() {
             <div className="venue-grid">
               {filtered.map(venue => {
                 const pricePerHour = venue.pricing && venue.pricing[0]
-                  ? Number(venue.pricing[0].pricePerHour)
+                  ? Number(venue.pricing[0].price)
                   : null;
                 return (
                 <div key={venue.id} className="venue-card">
@@ -221,11 +221,11 @@ function BrowseVenues() {
                       <FiStar />
                     </button>
                     <span className={`type-badge ${TYPE_COLORS[venue.type] || ''}`}>{venue.type}</span>
-                    {pricePerHour && (
+                    {/* {pricePerHour && (
                       <span className="price-badge">
                         ₹{pricePerHour.toLocaleString()}<small>/hr</small>
                       </span>
-                    )}
+                    )} */}
                     <span className="capacity-badge">
                       <FiUsers size={11} /> {venue.capacity}
                     </span>
@@ -242,7 +242,7 @@ function BrowseVenues() {
                       </span>
                     </div>
                     <div className="venue-price">
-                      From <strong>₹{(venue.pricing && venue.pricing[0]) ? Number(venue.pricing[0].pricePerHour).toLocaleString() : 'N/A'}</strong>/hr
+                      From <strong>₹{(venue.pricing && venue.pricing[0]) ? Number(venue.pricing[0].price).toLocaleString() : 'N/A'}</strong>{venue.bookingType ==="daily"?`/day`:'/hr'}
                     </div>
                     <div className="venue-amenities-row">
                       {(venue.venueAmenities || []).slice(0, 4).map(x => {

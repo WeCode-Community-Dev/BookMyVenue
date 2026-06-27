@@ -1,7 +1,9 @@
 import { db } from '../db/index.js';
 import { venuesTable, venuePricing } from '../models/venueModel.js';
 import { venueAmenities } from '../models/amenityModel.js';
+import { amenities } from '../models/amenityModel.js';
 import { eq, gte, ilike, and, or, sql } from 'drizzle-orm';
+import { AppError } from '../handlers/error_handlers.js';
 
 const venueServices = {
   isReadyForReview: (payload) => {
@@ -12,15 +14,17 @@ const venueServices = {
       hasOpenTime: !!payload.openTime,
       hasCloseTime: !!payload.closeTime,
       hasPricing: payload.pricing?.length > 0,
-      hasAmenities: payload.amenities?.length > 0,
+      hasAmenities: payload.venueAmenities?.length > 0,
     };
-
+    console.log("check",check)
     const isReady = Object.values(check).every(Boolean);
     return { isReady, check };
   },
 
   addVenue: async function (payload) {
     const status = this.isReadyForReview(payload);
+
+    console.log(payload,status,"payload")
 
     const venue = await db.transaction(async (tx) => {
       const venueData = {
@@ -52,7 +56,7 @@ const venueServices = {
           payload.pricing.map((p) => ({
             venueId: venue.id,
             dayType: p.dayType,
-            pricePerHour: p.pricePerHour,
+            price: p.price,
             minHours: p.minHours,
             validFrom: new Date(),
             validTo: p.validTo ? new Date(p.validTo) : null,
@@ -60,9 +64,9 @@ const venueServices = {
         );
       }
 
-      if (payload.amenities && payload.amenities.length > 0) {
+      if (payload.venueAmenities && payload.venueAmenities.length > 0) {
         await tx.insert(venueAmenities).values(
-          payload.amenities.map((amenityId) => ({
+          payload.venueAmenities.map((amenityId) => ({
             venueId: venue.id,
             amenityId,
           }))
@@ -78,6 +82,33 @@ const venueServices = {
       reviewChecklist: status.check,
     };
   },
+
+updateVenue: async function(payload, id) {
+  const { venueAmenities:venueAmenitiesList, ...venueData } = payload
+
+  const result = await db.transaction(async (tx) => {
+    const [response] = await tx
+      .update(venuesTable)
+      .set({ ...venueData, updatedAt: new Date() })
+      .where(eq(venuesTable.id, id))
+      .returning()
+
+    if (venueAmenitiesList && venueAmenitiesList.length > 0) {
+      await tx.delete(venueAmenities)
+        .where(eq(venueAmenities.venueId, id))
+
+      await tx.insert(venueAmenities)
+        .values(venueAmenitiesList.map(amenityId => ({
+          venueId: id,
+          amenityId
+        })))
+    }
+
+    return response
+  })
+
+  return result
+},
 
   getOwnerVenues: async function (ownerId) {
     const response = await db.query.venuesTable.findMany({
@@ -117,7 +148,10 @@ const venueServices = {
     });
 
     // total count
-    const [{ count }] = await db.select({ count: sql`count(*)` }).from(venuesTable).where(and(...conditions));
+    const [{ count }] = await db
+      .select({ count: sql`count(*)` })
+      .from(venuesTable)
+      .where(and(...conditions));
 
     const rows = await db.query.venuesTable.findMany({
       where: and(...conditions),
@@ -139,18 +173,110 @@ const venueServices = {
     };
   },
 
-  getVenueDetails: async function(venueId) {
+  getVenueDetails: async function (venueId) {
     const result = await db.query.venuesTable.findFirst({
-        where: eq(venuesTable.id, venueId),
-        with: {
-            pricing: true,
-            venueAmenities: {
-                with: { amenity: true }
-            }
-        }
-    })
+      where: eq(venuesTable.id, venueId),
+      with: {
+        pricing: true,
+        venueAmenities: {
+          with: { amenity: true },
+        },
+      },
+    });
+    console.log(result,"resultresultresultresultresultresultresult")
     return result;
-}
+  },
+
+  getPendingVenues: async function () {
+    const pendingVenues = await db.query.venuesTable.findMany({
+      where: eq(venuesTable.approvalStatus, 'pending'),
+      with: {
+        owner: {
+          columns: {
+            id: true,
+            username: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: (venuesTable, { asc }) => [asc(venuesTable.createdAt)],
+    });
+    return pendingVenues;
+  },
+
+  approveVenue: async function (venueId) {
+    const [response] = await db
+      .update(venuesTable)
+      .set({ approvalStatus: 'approved', updatedAt: new Date() })
+      .where(eq(venuesTable.id, venueId))
+      .returning();
+
+    return response;
+  },
+
+  rejectVenue: async function (venueId, reason) {
+    const [response] = await db
+      .update(venuesTable)
+      .set({ approvalStatus: 'rejected', updatedAt: new Date(), adminNote: reason })
+      .where(eq(venuesTable.id, venueId))
+      .returning();
+
+    return response;
+  },
+
+  deactivateVenue: async function (venueId, reason) {
+    const [response] = await db
+      .update(venuesTable)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(venuesTable.id, venueId))
+      .returning();
+
+    return response;
+  },
+
+  activateVenue: async function (venueId, reason) {
+    const [response] = await db
+      .update(venuesTable)
+      .set({ isActive: true, updatedAt: new Date() })
+      .where(eq(venuesTable.id, venueId))
+      .returning();
+
+    return response;
+  },
+
+  checkSubmission: async function (venueId) {
+    const venue = await db.query.venuesTable.findFirst({
+      where: eq(venuesTable.id, venueId),
+      with: {
+        pricing: true,
+        venueAmenities: true,
+      },
+    });
+
+    console.log(venue,"venuevenuevenuevenuevenuevenue")
+
+    const checkStatus = this.isReadyForReview(venue);
+    if (checkStatus.isReady) {
+      const response = await db
+        .update(venuesTable)
+        .set({ approvalStatus: 'pending' })
+        .where(eq(venuesTable.id, venueId));
+      return response;
+    }
+    if (!checkStatus.isReady) {
+      throw new AppError({
+        message: 'Venue profile is incomplete',
+        statusCode: 400,
+        errorCode: 'VENUE_NOT_READY',
+        data: checkStatus.check, // so frontend knows exactly what's missing
+      });
+    }
+  },
+
+  getAmenities: async function(){
+   const result = await db.select().from(amenities);
+   return result
+  }
 };
 
 export default venueServices;

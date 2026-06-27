@@ -17,6 +17,16 @@ export default {
     sendResponse(res, response);
   },
 
+  logout: async function (req,res){
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 1000,
+    });
+    sendResponse(res, { data: null, message: 'Logged out successfully' })
+  },
+
   register: async function (req, res) {
     const payload = registerSchema.parse(req.body);
     const response = await authService.register(payload);
@@ -34,4 +44,17 @@ export default {
     const response = { data: req.user };
     sendResponse(res, response);
   },
+
+  adminLogin: async function (req,res){
+     const response = await authService.adminLogin(req.body)
+
+    res.cookie('accessToken', response.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 1000,
+    })
+
+    sendResponse(res, response)
+  }
 };

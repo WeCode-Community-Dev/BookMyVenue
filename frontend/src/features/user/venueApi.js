@@ -49,6 +49,25 @@ export const userAPi = baseApi.injectEndpoints({
         url: `/payments/verify/${bookingId}`,
       }),
     }),
+
+    getUserBookings: builder.query({
+      query: (userId) => ({
+        url: `/bookings/${userId}`,
+      }),
+      providesTags: ['UserBookings'],
+    }),
+
+    getVenueAvailability: builder.query({
+  query: ({ venueId, month }) => ({
+    url: `/venue/${venueId}/availability`,
+    params: { month },
+  }),
+  serializeQueryArgs: ({ queryArgs }) => {
+    return `${queryArgs.venueId}-${queryArgs.month}`
+  },
+}),
+
+
   }),
 });
 
@@ -60,4 +79,6 @@ export const {
   useDeleteFavoriteMutation,
   useCreateBookingMutation,
   useVerifyPaymentQuery,
+  useGetUserBookingsQuery,
+  useGetVenueAvailabilityQuery
 } = userAPi;

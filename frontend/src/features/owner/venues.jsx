@@ -7,9 +7,7 @@ import {useGetOwnerVenuesQuery} from './ownerApi.js'
 function OwnerVenues() {
   const navigate = useNavigate();
 
-  const {data, isLoading,isError,error} = useGetOwnerVenuesQuery() ;
-
-  console.log(data);
+  const {data, isLoading,isError,error} = useGetOwnerVenuesQuery();
 
   let venues;
 
@@ -39,10 +37,8 @@ if (isError) {
         {venues.map((venue) => (
           <div key={venue.id} className="venue-card">
             <div className="venue-card-image-wrapper">
-              <img src={venue.images[0]} alt={venue.name} className="venue-card-image" /> 
-               {/* //chnage logic to show primary image */}
+              <img src={venue.images[0].url} alt={venue.name} className="venue-card-image" /> 
             </div>
-            
             <div className="venue-card-body">
               <div className="venue-card-title-row">
                 <h3 className="venue-card-name">{venue.name}</h3>
@@ -63,7 +59,10 @@ if (isError) {
                 </span>
               </div>
 
-              <button className="view-details-btn">
+              <button
+                className="view-details-btn"
+                onClick={() => navigate(`/owner/venues/${venue.id}`)}
+              >
                 View Details
               </button>
             </div>

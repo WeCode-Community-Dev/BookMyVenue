@@ -8,7 +8,11 @@ export const baseApi = createApi({
     credentials: 'include'
   }),
 
-  tagTypes: [],
+  tagTypes: [
+    'PendingVenues',   
+    'AdminVenue',      
+    'AdminStats', 
+  ],
 
   endpoints: () => ({}),
 })

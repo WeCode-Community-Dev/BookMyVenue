@@ -26,4 +26,19 @@ router.get(
   catchErrors(bookingController.verifyPayment)
 );
 
+router.get(
+    '/bookings/:userId',
+    isAuthenticated,
+    requireRole('user'),
+    catchErrors(bookingController.getUserBookings)
+);
+
+router.get(
+    '/bookings/owner/:ownerId',
+    isAuthenticated,
+    requireRole('owner'),
+    catchErrors(bookingController.getOwnerBookings)
+);
+
+
 export default router;

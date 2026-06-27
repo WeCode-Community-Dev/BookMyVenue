@@ -13,6 +13,14 @@ router.post(
   requireRole('owner'),
   catchErrors(venueController.addVenue)
 );
+
+router.patch(
+  '/venues/:id',
+  isAuthenticated,
+  requireRole('owner','admin'),
+  catchErrors(venueController.updateVenue)
+)
+
 router.get(
   '/owner/venues',
   isAuthenticated,
@@ -23,5 +31,18 @@ router.get(
 //users routes
 router.get('/venues', isAuthenticated, requireRole('user'), catchErrors(venueController.getVenues));
 router.get('/venue/:id', catchErrors(venueController.getVenueDetails));
+
+router.patch(
+  '/owner/venue/:id/submit',
+  isAuthenticated,
+  requireRole('owner'),
+  catchErrors(venueController.checkSubmission)
+);
+
+router.get(
+  '/amenities',
+  isAuthenticated,
+  catchErrors(venueController.getAmenities)
+)
 
 export default router;
