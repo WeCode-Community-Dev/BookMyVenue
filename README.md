@@ -101,6 +101,9 @@ npm run dev
 | Endpoint | Description |
 |----------|-------------|
 | `GET /api/v1/health` | Server health check |
+| `POST /api/v1/auth/register` | Register user (body: username, email, mobileNumber, password, role?) |
+| `POST /api/v1/auth/login` | Login (body: email, password) → returns JWT |
+| `GET /api/v1/auth/me` | Current user (header: `Authorization: Bearer <token>`) |
 
 | Command | Description |
 |---------|-------------|
