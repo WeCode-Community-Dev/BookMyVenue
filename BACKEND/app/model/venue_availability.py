@@ -14,7 +14,7 @@ from app.db.database import Base
 class VenueAvailability(Base):
     __tablename__ = "venue_availability"
     
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, unique=True, index=True)
     venue_id = Column(
         Integer,
         ForeignKey("venues.id", ondelete="CASCADE"),
