@@ -1,4 +1,4 @@
-import { VenueStatus } from "@/lib/data/venues";
+import { VenueDetails, VenueStatus } from "@/lib/data/venues";
 import { apiFetch } from "./api";
 
 export type CreateVenuePayload = {
@@ -39,6 +39,8 @@ export type OwnedVenueResponse = {
         };
     }[];
 };
+
+export type VenueResponse = VenueDetails
 
 export async function fetchAmenities(): Promise<AmenityResponse> {
     try {
@@ -119,6 +121,26 @@ export async function getOwnedVenues(): Promise<OwnedVenueResponse[]> {
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: accessToken,
+            },
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getVenue(id: string): Promise<VenueResponse> {
+    try {
+        // const accessToken = localStorage.getItem('accessToken');
+        // if (!accessToken) {
+        //     throw new Error('No access token found');
+        // }
+        const response = await apiFetch(`/venues/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                // Authorization: accessToken,
             },
         });
         return response;
