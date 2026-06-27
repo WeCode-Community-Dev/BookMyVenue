@@ -1,7 +1,20 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { createVenueRequest, getMyVenues, updateVenueRequest } from "@/api/venue-api";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
+import {
+  createVenueRequest,
+  getMyVenues,
+  getVenues,
+  updateVenueRequest,
+  type VenuesQuery,
+} from "@/api/venue-api";
 
 export const MY_VENUES_QUERY_KEY = ["my-venues"];
+
+export const useVenues = (params: VenuesQuery) =>
+  useQuery({
+    queryKey: ["venues", params],
+    queryFn: () => getVenues(params),
+    placeholderData: keepPreviousData,
+  });
 
 export const useMyVenues = () =>
   useQuery({

@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 import { authenticationRoutePaths, ownerRoutePaths, publicRoutePaths } from "./common/routes";
 import BaseLayout from "@/layout/base-layout";
 import OwnerLayout from "@/layout/owner-layout";
@@ -8,6 +9,7 @@ import ProtectedRoute from "./protectedRoute";
 const AppRoutes = () => {
   return (
     <BrowserRouter>
+      <NuqsAdapter>
       <Routes>
         <Route path="/" element={<BaseLayout />}>
           {publicRoutePaths.map((route) => (
@@ -31,6 +33,7 @@ const AppRoutes = () => {
           </Route>
         </Route>
       </Routes>
+      </NuqsAdapter>
     </BrowserRouter>
   );
 };

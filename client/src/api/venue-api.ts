@@ -20,6 +20,23 @@ export const createVenueRequest = async (payload: CreateVenuePayload): Promise<V
   return data.venue;
 };
 
+export interface VenuesQuery {
+  page?: number;
+  limit?: number;
+  city?: string;
+  venueType?: string;
+}
+
+export interface VenuesResponse {
+  venues: Venue[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}
+
+export const getVenues = async (params: VenuesQuery): Promise<VenuesResponse> => {
+  const { data } = await apiClient.get("/venue", { params });
+  return { venues: data.venues, pagination: data.pagination };
+};
+
 export const getMyVenues = async (): Promise<Venue[]> => {
   const { data } = await apiClient.get("/venue/my-venues");
   return data.venues;

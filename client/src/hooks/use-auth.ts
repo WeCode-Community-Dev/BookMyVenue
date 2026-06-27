@@ -1,5 +1,5 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { getCurrentUser, loginRequest, registerRequest } from "@/api/auth-api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getCurrentUser, loginRequest, logoutRequest, registerRequest } from "@/api/auth-api";
 import { useAuthStore } from "@/store/store";
 
 export const AUTH_USER_QUERY_KEY = ["auth-user"];
@@ -29,3 +29,16 @@ export const useRegister = () =>
   useMutation({
     mutationFn: registerRequest,
   });
+
+export const useLogout = () => {
+  const clearUser = useAuthStore((state) => state.clearUser);
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: logoutRequest,
+    onSuccess: () => {
+      clearUser();
+      queryClient.removeQueries({ queryKey: AUTH_USER_QUERY_KEY });
+    },
+  });
+};
