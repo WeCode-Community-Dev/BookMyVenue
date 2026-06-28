@@ -60,6 +60,44 @@ export type CreateSpacePayload = {
     spaceImageIds?: string[];
 };
 
+export type SpaceOperatingHourInput = {
+    weekday: number;
+    openTime: string;
+    closeTime: string;
+    isClosed?: boolean;
+};
+
+export type CreateSpaceOperatingHoursPayload = {
+    hours: SpaceOperatingHourInput[];
+};
+
+export type CreateSpaceBlockedPeriodPayload = {
+    startAt: string;
+    endAt: string;
+    reason?: string;
+};
+
+export type UpdateSpaceBlockedPeriodPayload = Partial<CreateSpaceBlockedPeriodPayload>;
+
+export type SpaceOperatingHourResponse = {
+    weekday: number;
+    openTime: string;
+    closeTime: string;
+    isClosed: boolean;
+};
+
+export type SpaceOperatingHourRecord = SpaceOperatingHourResponse & {
+    id: string;
+    spaceId: string;
+};
+
+export type SpaceBlockedPeriodResponse = {
+    id: string;
+    startAt: string;
+    endAt: string;
+    reason: string | null;
+};
+
 
 export async function fetchAmenities(): Promise<AmenityResponse> {
     try {
@@ -216,6 +254,115 @@ export async function createSpace(venueId: string, payload: CreateSpacePayload) 
             }),
         });
         return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function createSpaceOperatingHours(
+    spaceId: string,
+    payload: CreateSpaceOperatingHoursPayload,
+): Promise<SpaceOperatingHourRecord[]> {
+    try {
+        const response = await apiFetch(`/spaces/${spaceId}/operating-hours`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getSpaceOperatingHours(
+    spaceId: string,
+): Promise<SpaceOperatingHourResponse[]> {
+    try {
+        const response = await apiFetch(`/spaces/${spaceId}/operating-hours`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function createSpaceBlockedPeriod(
+    spaceId: string,
+    payload: CreateSpaceBlockedPeriodPayload,
+): Promise<SpaceBlockedPeriodResponse & { spaceId: string }> {
+    try {
+        const response = await apiFetch(`/spaces/${spaceId}/blocked-periods`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getSpaceBlockedPeriods(
+    spaceId: string,
+): Promise<SpaceBlockedPeriodResponse[]> {
+    try {
+        const response = await apiFetch(`/spaces/${spaceId}/blocked-periods`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function updateSpaceBlockedPeriod(
+    spaceId: string,
+    id: string,
+    payload: UpdateSpaceBlockedPeriodPayload,
+): Promise<SpaceBlockedPeriodResponse & { spaceId: string }> {
+    try {
+        const response = await apiFetch(`/spaces/${spaceId}/blocked-periods/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function removeSpaceBlockedPeriod(
+    spaceId: string,
+    id: string,
+): Promise<void> {
+    try {
+        await apiFetch(`/spaces/${spaceId}/blocked-periods/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
     } catch (error) {
         console.error(error);
         throw error;

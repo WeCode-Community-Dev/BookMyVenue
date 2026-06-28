@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   Headers,
+  Put,
 } from '@nestjs/common';
 import { CreateSpaceDto } from './dto/create-space.dto';
 import { CreateVenueDto } from './dto/create-venue.dto';
@@ -17,6 +18,9 @@ import { UpdateSpaceDto } from './dto/update-space.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
 import { VenuesService } from './venues.service';
 import { CreateImagesDto } from './dto/create-images.dto';
+import { CreateSpaceOperatingHoursDto } from './dto/create-space-op-hours.dto';
+import { CreateSpaceBlockedPeriodDto } from './dto/create-space-block-period.dto';
+import { UpdateSpaceBlockedPeriodDto } from './dto/update-space-block-period.dto';
 
 @Controller()
 export class VenuesController {
@@ -100,6 +104,35 @@ export class VenuesController {
   @Get('capacity-types')
   getCapacityTypes() {
     return this.venuesService.getCapacityTypes();
+  }
+
+  @Post('spaces/:spaceId/operating-hours')
+  createSpaceOperatingHours(@Param('spaceId', ParseUUIDPipe) spaceId: string, @Body() dto: CreateSpaceOperatingHoursDto) {
+    return this.venuesService.createSpaceOperatingHours(spaceId, dto);
+  }
+
+  @Get('spaces/:spaceId/operating-hours')
+  getSpaceOperatingHours(@Param('spaceId', ParseUUIDPipe) spaceId: string) {
+    return this.venuesService.getSpaceOperatingHours(spaceId);
+  }
+
+  @Post('spaces/:spaceId/blocked-periods')
+  createSpaceBlockedPeriods(@Param('spaceId', ParseUUIDPipe) spaceId: string, @Body() dto: CreateSpaceBlockedPeriodDto) {
+    return this.venuesService.createSpaceBlockedPeriods(spaceId, dto);
+  }
+  @Get('spaces/:spaceId/blocked-periods')
+  getSpaceBlockedPeriods(@Param('spaceId', ParseUUIDPipe) spaceId: string) {
+    return this.venuesService.getSpaceBlockedPeriods(spaceId);
+  }
+
+  @Put('spaces/:spaceId/blocked-periods/:id')
+  updateSpaceBlockedPeriods(@Param('spaceId', ParseUUIDPipe) spaceId: string, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateSpaceBlockedPeriodDto) {
+    return this.venuesService.updateSpaceBlockedPeriods(spaceId, id, dto);
+  }
+
+  @Delete('spaces/:spaceId/blocked-periods/:id')
+  removeSpaceBlockedPeriod(@Param('spaceId', ParseUUIDPipe) spaceId: string, @Param('id', ParseUUIDPipe) id: string) {
+    return this.venuesService.removeSpaceBlockedPeriod(spaceId, id);
   }
 
 }

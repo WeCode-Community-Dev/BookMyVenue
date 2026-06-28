@@ -162,8 +162,10 @@ model Space {
   venue    Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
   category SpaceCategory @relation(fields: [categoryId], references: [id])
 
-  amenities SpaceAmenity[]
-  images    SpaceImage[]
+  amenities           SpaceAmenity[]
+  images              SpaceImage[]
+  spaceOperatingHours SpaceOperatingHour[]
+  spaceBlockedPeriods SpaceBlockedPeriod[]
 
   @@index([venueId])
   @@index([categoryId])
@@ -277,6 +279,42 @@ model SpaceImage {
   @@id([spaceId, imageId])
   @@index([imageId])
   @@map("space_images")
+}
+
+model SpaceOperatingHour {
+  id String @id @default(uuid())
+
+  spaceId String
+
+  weekday Int // 0 = Sunday ... 6 = Saturday
+
+  openTime String // "09:00"
+
+  closeTime String // "18:00"
+
+  isClosed Boolean @default(false)
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, weekday])
+  @@index([spaceId])
+  @@map("space_operating_hours")
+}
+
+model SpaceBlockedPeriod {
+  id String @id @default(uuid())
+
+  spaceId String
+
+  startAt DateTime
+  endAt   DateTime
+
+  reason String?
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId])
+  @@map("space_blocked_periods")
 }
 
 // =========================

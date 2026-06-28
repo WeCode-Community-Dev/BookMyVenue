@@ -15,6 +15,9 @@ import { JwtService } from '@nestjs/jwt';
 import { verifyAccessToken } from '../auth/helpers/token';
 import { CreateImagesDto } from './dto/create-images.dto';
 import { CapacityType } from '../../../generated/prisma/client';
+import { CreateSpaceOperatingHoursDto } from './dto/create-space-op-hours.dto';
+import { CreateSpaceBlockedPeriodDto } from './dto/create-space-block-period.dto';
+import { UpdateSpaceBlockedPeriodDto } from './dto/update-space-block-period.dto';
 
 const venueDetailsInclude = {
   amenities: {
@@ -100,6 +103,20 @@ type SpaceCategoryDetails = {
   id: string;
   name: string;
   description: string | null;
+};
+
+type SpaceOperatingHourDetails = {
+  weekday: number;
+  openTime: string;
+  closeTime: string;
+  isClosed: boolean;
+};
+
+type SpaceBlockedPeriodDetails = {
+  id: string;
+  startAt: Date;
+  endAt: Date;
+  reason: string | null;
 };
 
 @Injectable()
@@ -606,6 +623,120 @@ export class VenuesService {
       throw new InternalServerErrorException('Failed to get capacity types');
     }
   }
+
+  async createSpaceOperatingHours(spaceId: string, dto: CreateSpaceOperatingHoursDto) {
+    try {
+      return await Promise.all(
+        dto.hours.map((hour) =>
+          this.prismaService.spaceOperatingHour.upsert({
+            where: {
+              spaceId_weekday: {
+                spaceId,
+                weekday: hour.weekday,
+              },
+            },
+            update: {
+              openTime: hour.openTime,
+              closeTime: hour.closeTime,
+              isClosed: hour.isClosed,
+            },
+            create: {
+              spaceId,
+              weekday: hour.weekday,
+              openTime: hour.openTime,
+              closeTime: hour.closeTime,
+              isClosed: hour.isClosed,
+            },
+          }),
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async getSpaceOperatingHours(spaceId: string): Promise<SpaceOperatingHourDetails[]> {
+    return this.prismaService.spaceOperatingHour.findMany({
+      where: { spaceId },
+      orderBy:{
+        weekday: 'asc',
+      },
+      select: {
+        weekday: true,
+        openTime: true,
+        closeTime: true,
+        isClosed: true,
+      },
+    });
+  }
+
+
+  async createSpaceBlockedPeriods(spaceId: string, dto: CreateSpaceBlockedPeriodDto) {
+    try {
+      return this.prismaService.spaceBlockedPeriod.create({
+        data: {
+          spaceId,
+          startAt: dto.startAt,
+          endAt: dto.endAt,
+          reason: dto.reason,
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async updateSpaceBlockedPeriods(spaceId: string, id: string, dto: UpdateSpaceBlockedPeriodDto) {
+    try {
+      return this.prismaService.spaceBlockedPeriod.update({
+        where: { spaceId:spaceId, id:id },
+        data: {
+          startAt: dto.startAt,
+          endAt: dto.endAt,
+          reason: dto.reason,
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async getSpaceBlockedPeriods(spaceId: string): Promise<SpaceBlockedPeriodDetails[]> {
+    try {
+      return this.prismaService.spaceBlockedPeriod.findMany({
+        where: { spaceId },
+        orderBy: {
+          startAt: 'asc',
+        },
+      select: {
+        id: true,
+        startAt: true,
+        endAt: true,
+        reason: true,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+  }
+
+  async removeSpaceBlockedPeriod(spaceId: string, id: string): Promise<void> {
+    try {
+    await this.prismaService.spaceBlockedPeriod.delete({
+      where: { spaceId:spaceId, id:id },
+    });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+  }
+
+
+
 
 
   private normalizeIds(ids: readonly string[]): string[] {
