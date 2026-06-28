@@ -2,8 +2,6 @@
 
 import {
   Heart,
-  LayoutGrid,
-  List,
   MapPin,
   Sparkles,
   Star,
@@ -11,6 +9,7 @@ import {
   Zap,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -145,8 +144,12 @@ export function PublicVenueCard({ display, view }: PublicVenueCardProps) {
             <span className="text-sm font-normal text-on-surface-variant">/hr</span>
           </span>
         </div>
-        <Button type="button" className="shrink-0 bg-surface-tint hover:bg-surface-tint/90">
-          View Details
+        <Button
+          type="button"
+          asChild
+          className="shrink-0 bg-surface-tint hover:bg-surface-tint/90"
+        >
+          <Link href={`/venues/${venue.id}`}>View Details</Link>
         </Button>
       </div>
     </CardContent>

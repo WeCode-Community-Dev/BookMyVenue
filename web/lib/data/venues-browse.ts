@@ -3,6 +3,7 @@ import {
   getSpaceDisplayStatus,
   getVenueRating,
 } from "@/lib/data/venue-detail";
+import { getPlaceholderHourlyPrice } from "@/lib/data/public-venue-detail";
 
 export const VENUES_PER_PAGE = 8;
 
@@ -67,11 +68,7 @@ export function getPrimarySpace(venue: VenueDetails): Space | undefined {
 }
 
 export function getPlaceholderStartingPrice(venueId: string): number {
-  let hash = 0;
-  for (let i = 0; i < venueId.length; i++) {
-    hash = (hash + venueId.charCodeAt(i) * (i + 1)) % 451;
-  }
-  return 45 + hash;
+  return getPlaceholderHourlyPrice(venueId);
 }
 
 export function toVenueBrowseDisplay(venue: VenueDetails): VenueBrowseDisplay {
