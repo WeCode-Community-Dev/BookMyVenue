@@ -724,11 +724,11 @@ export class VenuesService {
   }
   }
 
-  async removeSpaceBlockedPeriod(spaceId: string, id: string): Promise<void> {
+  async removeSpaceBlockedPeriod(spaceId: string, id: string) {
     try {
-    await this.prismaService.spaceBlockedPeriod.delete({
+    return await this.prismaService.spaceBlockedPeriod.delete({
       where: { spaceId:spaceId, id:id },
-    });
+    select: { id: true }});
   } catch (error) {
     console.error(error);
     throw error;

@@ -132,3 +132,136 @@ export function formatRelativeUpdatedAt(updatedAt: string): string {
   const diffDays = Math.floor(diffHours / 24);
   return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
 }
+
+export const WEEKDAY_LABELS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+] as const;
+
+export const DEFAULT_OPERATING_HOURS = {
+  openTime: "09:00",
+  closeTime: "17:00",
+} as const;
+
+export const availabilityProTip = {
+  title: "Pro Tip",
+  body: "Setting regular business hours helps our algorithm recommend your space to high-value corporate clients during peak times.",
+};
+
+export type OperatingHourRow = {
+  weekday: number;
+  openTime: string;
+  closeTime: string;
+  isClosed: boolean;
+};
+
+function parseTimeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+export function computeWeeklyCapacityHours(
+  hours: Pick<OperatingHourRow, "openTime" | "closeTime" | "isClosed">[],
+): number {
+  const totalMinutes = hours.reduce((sum, row) => {
+    if (row.isClosed) return sum;
+    const open = parseTimeToMinutes(row.openTime);
+    const close = parseTimeToMinutes(row.closeTime);
+    if (close <= open) return sum;
+    return sum + (close - open);
+  }, 0);
+  return Math.round(totalMinutes / 60);
+}
+
+export function createDefaultOperatingHours(): OperatingHourRow[] {
+  return WEEKDAY_LABELS.map((_, weekday) => ({
+    weekday,
+    openTime: DEFAULT_OPERATING_HOURS.openTime,
+    closeTime: DEFAULT_OPERATING_HOURS.closeTime,
+    isClosed: false,
+  }));
+}
+
+export function formatBlockedPeriodDate(isoDate: string): string {
+  const date = new Date(isoDate);
+  const month = date.toLocaleString("en-US", { month: "short" }).toUpperCase();
+  const day = date.getDate();
+  return `${month} ${day}`;
+}
+
+export function isAllDayBlock(startAt: string, endAt: string): boolean {
+  const start = new Date(startAt);
+  const end = new Date(endAt);
+  const sameDay =
+    start.getFullYear() === end.getFullYear() &&
+    start.getMonth() === end.getMonth() &&
+    start.getDate() === end.getDate();
+  if (!sameDay) return false;
+  const startMinutes = start.getHours() * 60 + start.getMinutes();
+  const endMinutes = end.getHours() * 60 + end.getMinutes();
+  return startMinutes === 0 && endMinutes >= 23 * 60 + 59;
+}
+
+export function formatBlockedPeriodTimeRange(
+  startAt: string,
+  endAt: string,
+): string {
+  if (isAllDayBlock(startAt, endAt)) {
+    return "All Day";
+  }
+  const start = new Date(startAt);
+  const end = new Date(endAt);
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  return `${formatTime(start)} → ${formatTime(end)}`;
+}
+
+export function formatNextBlockedDate(isoDate: string): string {
+  return new Date(isoDate).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export function toDateInputValue(isoDate: string): string {
+  const date = new Date(isoDate);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function toTimeInputValue(isoDate: string): string {
+  const date = new Date(isoDate);
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+export function buildBlockPeriodIsoStrings(
+  date: string,
+  startTime: string,
+  endTime: string,
+  allDay: boolean,
+): { startAt: string; endAt: string } {
+  if (allDay) {
+    return {
+      startAt: new Date(`${date}T00:00:00`).toISOString(),
+      endAt: new Date(`${date}T23:59:59.999`).toISOString(),
+    };
+  }
+  return {
+    startAt: new Date(`${date}T${startTime}:00`).toISOString(),
+    endAt: new Date(`${date}T${endTime}:00`).toISOString(),
+  };
+}

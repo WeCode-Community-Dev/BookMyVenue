@@ -372,12 +372,13 @@ export async function removeSpaceBlockedPeriod(
     id: string,
 ): Promise<void> {
     try {
-        await apiFetch(`/spaces/${spaceId}/blocked-periods/${id}`, {
+        const response = await apiFetch(`/spaces/${spaceId}/blocked-periods/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
             },
         });
+        return response;
     } catch (error) {
         console.error(error);
         throw error;
