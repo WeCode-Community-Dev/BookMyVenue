@@ -21,6 +21,7 @@ import { CreateImagesDto } from './dto/create-images.dto';
 import { CreateSpaceOperatingHoursDto } from './dto/create-space-op-hours.dto';
 import { CreateSpaceBlockedPeriodDto } from './dto/create-space-block-period.dto';
 import { UpdateSpaceBlockedPeriodDto } from './dto/update-space-block-period.dto';
+import { UpsertSpacePricingDto } from './dto/upsert-space-pricing.dto';
 
 @Controller()
 export class VenuesController {
@@ -104,6 +105,24 @@ export class VenuesController {
   @Get('capacity-types')
   getCapacityTypes() {
     return this.venuesService.getCapacityTypes();
+  }
+
+  @Get('pricing-types')
+  getPricingTypes() {
+    return this.venuesService.getPricingTypes();
+  }
+
+  @Post('spaces/:spaceId/pricing')
+  upsertSpacePricing(
+    @Param('spaceId', ParseUUIDPipe) spaceId: string,
+    @Body() dto: UpsertSpacePricingDto,
+  ) {
+    return this.venuesService.upsertSpacePricing(spaceId, dto);
+  }
+
+  @Get('spaces/:spaceId/pricing')
+  getSpacePricing(@Param('spaceId', ParseUUIDPipe) spaceId: string) {
+    return this.venuesService.getSpacePricing(spaceId);
   }
 
   @Post('spaces/:spaceId/operating-hours')

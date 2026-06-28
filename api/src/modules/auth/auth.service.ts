@@ -16,7 +16,7 @@ export type SignupResponse = {
 
 export type LoginResponse = {
   success: boolean;
-  data: { accessToken: string; role: UserRole; }
+  data: { accessToken: string; role: UserRole; firstName: string; lastName: string; }
 };
 
 
@@ -128,12 +128,14 @@ export class AuthService {
         email: user.email,
         role: user.role,
       });
-
+      
       return {
         success: true,
         data: {
-           accessToken,
-           role: user.role,
+          accessToken,
+          role: user.role,
+          firstName: user.firstName,
+          lastName: user.lastName ?? '',
         }
       };
     } catch (error) {

@@ -14,10 +14,11 @@ import { UpdateVenueDto } from './dto/update-venue.dto';
 import { JwtService } from '@nestjs/jwt';
 import { verifyAccessToken } from '../auth/helpers/token';
 import { CreateImagesDto } from './dto/create-images.dto';
-import { CapacityType } from '../../../generated/prisma/client';
+import { CapacityType, PricingType } from '../../../generated/prisma/client';
 import { CreateSpaceOperatingHoursDto } from './dto/create-space-op-hours.dto';
 import { CreateSpaceBlockedPeriodDto } from './dto/create-space-block-period.dto';
 import { UpdateSpaceBlockedPeriodDto } from './dto/update-space-block-period.dto';
+import { UpsertSpacePricingDto } from './dto/upsert-space-pricing.dto';
 
 const venueDetailsInclude = {
   amenities: {
@@ -118,6 +119,28 @@ type SpaceBlockedPeriodDetails = {
   endAt: Date;
   reason: string | null;
 };
+
+type SpacePricingDetails = {
+  id: string;
+  spaceId: string;
+  pricingType: PricingType;
+  amount: Prisma.Decimal;
+  currency: string;
+  minBooking: number | null;
+  maxBooking: number | null;
+  createdAt: Date;
+};
+
+const spacePricingSelect = {
+  id: true,
+  spaceId: true,
+  pricingType: true,
+  amount: true,
+  currency: true,
+  minBooking: true,
+  maxBooking: true,
+  createdAt: true,
+} satisfies Prisma.SpacePricingSelect;
 
 @Injectable()
 export class VenuesService {
@@ -624,6 +647,65 @@ export class VenuesService {
     }
   }
 
+  async getPricingTypes(): Promise<PricingType[]> {
+    try {
+      return Object.values(PricingType);
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get pricing types');
+    }
+  }
+
+  async upsertSpacePricing(
+    spaceId: string,
+    dto: UpsertSpacePricingDto,
+  ): Promise<SpacePricingDetails> {
+    await this.ensureSpaceExists(this.prismaService, spaceId);
+
+    const data = {
+      amount: dto.amount,
+      currency: dto.currency,
+      minBooking: dto.minBooking,
+      maxBooking: dto.maxBooking,
+    };
+
+    const existing = await this.prismaService.spacePricing.findFirst({
+      where: {
+        spaceId,
+        pricingType: dto.pricingType,
+      },
+      select: { id: true },
+    });
+
+    if (existing) {
+      return this.prismaService.spacePricing.update({
+        where: { id: existing.id },
+        data,
+        select: spacePricingSelect,
+      });
+    }
+
+    return this.prismaService.spacePricing.create({
+      data: {
+        spaceId,
+        pricingType: dto.pricingType,
+        ...data,
+      },
+      select: spacePricingSelect,
+    });
+  }
+
+  async getSpacePricing(spaceId: string): Promise<SpacePricingDetails[]> {
+    try {
+    return this.prismaService.spacePricing.findMany({
+      where: { spaceId },
+      select: spacePricingSelect,
+    });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
   async createSpaceOperatingHours(spaceId: string, dto: CreateSpaceOperatingHoursDto) {
     try {
       return await Promise.all(
@@ -746,6 +828,20 @@ export class VenuesService {
   private assertNoDuplicateIds(ids: readonly string[], label: string): void {
     if (new Set(ids).size !== ids.length) {
       throw new ConflictException(`${label} must be unique`);
+    }
+  }
+
+  private async ensureSpaceExists(
+    client: Prisma.TransactionClient | PrismaService,
+    spaceId: string,
+  ): Promise<void> {
+    const space = await client.space.findUnique({
+      where: { id: spaceId },
+      select: { id: true },
+    });
+
+    if (!space) {
+      throw new NotFoundException('Space not found');
     }
   }
 

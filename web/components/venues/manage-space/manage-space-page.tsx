@@ -15,6 +15,7 @@ import { ManageSpaceHeader } from "./manage-space-header";
 import { ManageSpaceOverview } from "./manage-space-overview";
 import { ManageSpaceTabs } from "./manage-space-tabs";
 import { ManageSpaceAvailability } from "./manage-space-availability";
+import { ManageSpacePricing } from "./manage-space-pricing";
 
 type ManageSpacePageProps = {
   venueId: string;
@@ -64,6 +65,8 @@ export function ManageSpacePage({ venueId, spaceId }: ManageSpacePageProps) {
         <ManageSpaceOverview space={space} venueId={venueId} />
       ) : activeTab === "availability" ? (
         <ManageSpaceAvailability spaceId={spaceId} />
+      ) : activeTab === "pricing" ? (
+        <ManageSpacePricing spaceId={spaceId} />
       ) : (
         <VenueTabPlaceholder tabLabel={activeTabLabel} />
       )}

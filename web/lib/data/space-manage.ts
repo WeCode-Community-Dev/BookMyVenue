@@ -1,3 +1,8 @@
+import type {
+  PricingType,
+  SpacePricingResponse,
+} from "@/services/venueServices";
+
 export type SpaceManageTab =
   | "overview"
   | "availability"
@@ -264,4 +269,108 @@ export function buildBlockPeriodIsoStrings(
     startAt: new Date(`${date}T${startTime}:00`).toISOString(),
     endAt: new Date(`${date}T${endTime}:00`).toISOString(),
   };
+}
+
+export type PricingModelId =
+  | "hourly"
+  | "daily"
+  | "event"
+  | "session"
+  | "custom";
+
+export type PricingFormState = {
+  model: PricingModelId;
+  amount: string;
+  currency: string;
+  minBooking: string;
+  maxBooking: string;
+};
+
+export const DEFAULT_CURRENCY = "INR";
+
+export const SUPPORTED_CURRENCIES = ["INR", "USD", "EUR", "GBP"] as const;
+
+export const PRICING_MODEL_OPTIONS: {
+  id: PricingModelId;
+  label: string;
+  description: string;
+  pricingType: PricingType;
+}[] = [
+  {
+    id: "hourly",
+    label: "Per Hour",
+    description: "Charge customers based on hours booked.",
+    pricingType: "HOURLY",
+  },
+  {
+    id: "daily",
+    label: "Per Day",
+    description: "Set a fixed price for full-day bookings.",
+    pricingType: "DAILY",
+  },
+  // {
+  //   id: "event",
+  //   label: "Per Event",
+  //   description: "One price for the entire event duration.",
+  //   pricingType: "EVENT",
+  // },
+  // {
+  //   id: "session",
+  //   label: "Per Session",
+  //   description: "Charge a fixed rate per booking session.",
+  //   pricingType: "SESSION",
+  // },
+  {
+    id: "custom",
+    label: "Custom Quote",
+    description: "Review requests and send a manual quote.",
+    pricingType: "CUSTOM",
+  },
+];
+
+export function createDefaultPricingFormState(): PricingFormState {
+  return {
+    model: "hourly",
+    amount: "",
+    currency: DEFAULT_CURRENCY,
+    minBooking: "",
+    maxBooking: "",
+  };
+}
+
+export function pricingModelToApiType(id: PricingModelId): PricingType {
+  const option = PRICING_MODEL_OPTIONS.find((item) => item.id === id);
+  return option?.pricingType ?? "HOURLY";
+}
+
+export function apiTypeToPricingModel(type: PricingType): PricingModelId {
+  const option = PRICING_MODEL_OPTIONS.find((item) => item.pricingType === type);
+  return option?.id ?? "hourly";
+}
+
+export function mapPricingResponseToForm(
+  record: SpacePricingResponse,
+): PricingFormState {
+  return {
+    model: apiTypeToPricingModel(record.pricingType),
+    amount: record.pricingType === "CUSTOM" ? "" : record.amount,
+    currency: record.currency,
+    minBooking: record.minBooking != null ? String(record.minBooking) : "",
+    maxBooking: record.maxBooking != null ? String(record.maxBooking) : "",
+  };
+}
+
+export function resolvePricingFormFromRecords(
+  records: SpacePricingResponse[],
+): PricingFormState {
+  if (records.length === 0) {
+    return createDefaultPricingFormState();
+  }
+
+  const latest = [...records].sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  )[0];
+
+  return mapPricingResponseToForm(latest);
 }

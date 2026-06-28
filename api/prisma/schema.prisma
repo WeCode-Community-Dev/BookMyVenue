@@ -166,6 +166,7 @@ model Space {
   images              SpaceImage[]
   spaceOperatingHours SpaceOperatingHour[]
   spaceBlockedPeriods SpaceBlockedPeriod[]
+  spacePricing        SpacePricing[]
 
   @@index([venueId])
   @@index([categoryId])
@@ -317,6 +318,28 @@ model SpaceBlockedPeriod {
   @@map("space_blocked_periods")
 }
 
+model SpacePricing {
+  id String @id @default(uuid())
+
+  spaceId String
+
+  pricingType PricingType
+
+  amount Decimal
+
+  currency String
+
+  minBooking Int?
+
+  maxBooking Int?
+
+  createdAt DateTime @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id])
+
+  @@map("space_pricing")
+}
+
 // =========================
 // ENUMS
 // =========================
@@ -328,4 +351,12 @@ enum CapacityType {
   CARS
   SQFT
   SQM
+}
+
+enum PricingType {
+  HOURLY
+  SESSION
+  DAILY
+  EVENT
+  CUSTOM
 }

@@ -98,6 +98,32 @@ export type SpaceBlockedPeriodResponse = {
     reason: string | null;
 };
 
+export type PricingType =
+    | 'HOURLY'
+    | 'SESSION'
+    | 'DAILY'
+    | 'EVENT'
+    | 'CUSTOM';
+
+export type UpsertSpacePricingPayload = {
+    pricingType: PricingType;
+    amount: number;
+    currency: string;
+    minBooking?: number;
+    maxBooking?: number;
+};
+
+export type SpacePricingResponse = {
+    id: string;
+    spaceId: string;
+    pricingType: PricingType;
+    amount: string;
+    currency: string;
+    minBooking: number | null;
+    maxBooking: number | null;
+    createdAt: string;
+};
+
 
 export async function fetchAmenities(): Promise<AmenityResponse> {
     try {
@@ -250,6 +276,57 @@ export async function getCapacityTypes(): Promise<string[]> {
         return response;
     }
     catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getPricingTypes(): Promise<PricingType[]> {
+    try {
+        const response = await apiFetch('/pricing-types', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function upsertSpacePricing(
+    spaceId: string,
+    payload: UpsertSpacePricingPayload,
+): Promise<SpacePricingResponse> {
+    try {
+        const response = await apiFetch(`/spaces/${spaceId}/pricing`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getSpacePricing(
+    spaceId: string,
+): Promise<SpacePricingResponse[]> {
+    try {
+        const response = await apiFetch(`/spaces/${spaceId}/pricing`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return response;
+    } catch (error) {
         console.error(error);
         throw error;
     }
