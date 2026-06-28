@@ -35,8 +35,6 @@ class _BuildStep1BasicsState extends State<BuildStep1Basics> {
   @override
   void initState() {
     super.initState();
-    // Dispatch event to fetch amenities from the API
-    context.read<VenueBloc>().add(const VenueEvent.getAmenities());
 
     final VenueBasicInfoState? basicInfo = context
         .read<VenueDetailsCubit>()
