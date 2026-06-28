@@ -2,6 +2,27 @@ import venueModel from "../models/venueModel.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 
+const parseJsonArrayField = (value, fieldName) => {
+    if (!value) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(value);
+
+        if (!Array.isArray(parsed)) {
+            return {
+                error: `Invalid ${fieldName}. Expected a JSON array.`,
+            };
+        }
+
+        return { data: parsed };
+    } catch {
+        return {
+            error: `Invalid ${fieldName}. Please provide valid JSON.`,
+        };
+    }
+};
 
 //provider creates venue
 const createVenue = async (req, res) => {
@@ -33,6 +54,21 @@ const createVenue = async (req, res) => {
             uploadedImages.push({ url: result.secure_url, public_id: result.public_id });
         }
 
+        const parsedAmenities = parseJsonArrayField(amenities, "amenities");
+        if (parsedAmenities.error) {
+            return res.status(400).json({
+                success: false,
+                message: parsedAmenities.error,
+            });
+        }
+
+        const parsedRules = parseJsonArrayField(rules, "rules");
+        if (parsedRules.error) {
+            return res.status(400).json({
+                success: false,
+                message: parsedRules.error,
+            });
+        }
 
         const venue = await venueModel.create({
             ownerId: req.user._id,
@@ -45,8 +81,8 @@ const createVenue = async (req, res) => {
             price,
             pricingUnit,
             capacity,
-            amenities: amenities ? JSON.parse(amenities) : [],
-            rules: rules ? JSON.parse(rules) : [],
+            amenities: parsedAmenities.data,
+            rules: parsedRules.data,
             address,
             city,
             state,
@@ -170,14 +206,27 @@ const updateVenue = async (req, res) => {
         venue.state = state || venue.state;
         venue.pincode = pincode || venue.pincode;
 
+        if (amenities) {
+            const parsedAmenities = parseJsonArrayField(amenities, "amenities");
+            if (parsedAmenities.error) {
+                return res.status(400).json({
+                    success: false,
+                    message: parsedAmenities.error,
+                });
+            }
+            venue.amenities = parsedAmenities.data;
+        }
 
-        venue.amenities = amenities
-            ? JSON.parse(amenities)
-            : venue.amenities;
-
-        venue.rules = rules
-            ? JSON.parse(rules)
-            : venue.rules;
+        if (rules) {
+            const parsedRules = parseJsonArrayField(rules, "rules");
+            if (parsedRules.error) {
+                return res.status(400).json({
+                    success: false,
+                    message: parsedRules.error,
+                });
+            }
+            venue.rules = parsedRules.data;
+        }
 
         // location
         venue.location = {

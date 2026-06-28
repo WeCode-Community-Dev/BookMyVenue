@@ -17,10 +17,17 @@ const authMiddleware = async (req, res, next) => {
     const user = await userModel.findById(decoded.id)
     .select("-password -otp -otpExpiresAt");
 
-    if(!user) {
+    if (!user) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized access. User not found.",
+      });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been deactivated. Please contact support.",
       });
     }
 

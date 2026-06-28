@@ -43,6 +43,8 @@ const bookingSchema = new mongoose.Schema(
         paymentId: {
             type: String,
             default: null,
+            unique: true,
+            sparse: true,
         },
 
         paymentStatus: {
