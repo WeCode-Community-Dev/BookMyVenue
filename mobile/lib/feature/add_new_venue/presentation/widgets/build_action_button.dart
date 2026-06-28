@@ -13,8 +13,11 @@ class BuildActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final VenueDetailsState venueCubit = context.watch<VenueDetailsCubit>().state;
-    final bool isPublishing = context.watch<VenueBloc>().state.addVenueStatus == VenueStatus.loading;
+    final VenueDetailsState venueCubit = context
+        .watch<VenueDetailsCubit>()
+        .state;
+    final bool isPublishing =
+        context.watch<VenueBloc>().state.addVenueStatus == VenueStatus.loading;
 
     return Row(
       spacing: AppSpacing.spaceSm,

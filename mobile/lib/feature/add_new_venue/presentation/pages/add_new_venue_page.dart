@@ -232,7 +232,9 @@ class _AddVenueWizardFlowState extends State<AddVenueWizardFlow> {
         if (state.addVenueStatus == VenueStatus.success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.successMessage ?? 'Venue added successfully!'),
+              content: Text(
+                state.successMessage ?? 'Venue added successfully!',
+              ),
               backgroundColor: Colors.green,
             ),
           );

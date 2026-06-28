@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/constants/app_constant.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
@@ -34,7 +33,10 @@ class _BuildStep1BasicsState extends State<BuildStep1Basics> {
   @override
   void initState() {
     super.initState();
-    final basicInfo = context.read<VenueDetailsCubit>().state.basicInfo;
+    final VenueBasicInfoState? basicInfo = context
+        .read<VenueDetailsCubit>()
+        .state
+        .basicInfo;
     if (basicInfo != null) {
       _nameController.text = basicInfo.venueName;
       _descController.text = basicInfo.description;
@@ -44,6 +46,7 @@ class _BuildStep1BasicsState extends State<BuildStep1Basics> {
       _selectedAmenities.addAll(basicInfo.amenityIds);
     }
   }
+
   final List<String> _allAmenities = <String>[
     'Free WiFi',
     'Parking',

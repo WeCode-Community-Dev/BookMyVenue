@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../../../../core/logger/app_logger.dart';
-import '../../../../core/services/location_service.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/validation/app_validation.dart';
 import '../../../../core/widgets/custom_text_field.dart';
@@ -38,7 +35,10 @@ class _BuildStep3LocationState extends State<BuildStep3Location> {
   @override
   void initState() {
     super.initState();
-    final location = context.read<VenueDetailsCubit>().state.location;
+    final VenueLocationState? location = context
+        .read<VenueDetailsCubit>()
+        .state
+        .location;
     if (location != null) {
       latController.text = location.latitude.toString();
       lngController.text = location.longitude.toString();
@@ -75,7 +75,7 @@ class _BuildStep3LocationState extends State<BuildStep3Location> {
           Row(
             crossAxisAlignment: .start,
             spacing: AppSpacing.spaceMd,
-            children: [
+            children: <Widget>[
               Expanded(
                 flex: 2,
                 child: CustomTextField(

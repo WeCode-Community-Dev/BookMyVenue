@@ -33,7 +33,10 @@ class _BuildStep2MediaState extends State<BuildStep2Media> {
   @override
   void initState() {
     super.initState();
-    final media = context.read<VenueDetailsCubit>().state.media;
+    final VenueMediaState? media = context
+        .read<VenueDetailsCubit>()
+        .state
+        .media;
     if (media != null) {
       if (media.coverImageUrl.isNotEmpty) {
         _photos.add(media.coverImageUrl);
