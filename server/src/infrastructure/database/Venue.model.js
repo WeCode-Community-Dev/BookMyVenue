@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types } from 'mongoose'
-import { VenueCategory, VenueStatus } from '../../domain/enums/Venue.enum.js'
+import { VenueCategory, VenueStatus, VenueApprovalStatus } from '../../domain/enums/Venue.enum.js'
 
 const VenueSchema = new Schema({
     name: {
@@ -10,9 +10,9 @@ const VenueSchema = new Schema({
         type: String,
         required: true
     },
-    ownerId: {
+    vendorId: {
         type: Types.ObjectId,
-        ref: 'User',
+        ref: 'Vendor',
         required: true
     },
     category: {
@@ -148,10 +148,23 @@ const VenueSchema = new Schema({
         type: Boolean,
         default: false
     },
-    isAdminVerified: {
+    isBlocked: {
         type: Boolean,
         default: false
+    },
+    rejectionReason: {
+        type: String,
+        default: null
+    },
+    approvalStatus : {
+        type: String,
+        enum:  Object.values(VenueApprovalStatus),
+         default: VenueApprovalStatus.PENDING,
+
     }
+
+
+
 }, {
     timestamps: true
 })

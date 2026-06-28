@@ -23,7 +23,7 @@ export class UserEntity {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.refreshToken = refreshToken;
-        
+
     }
 }
 

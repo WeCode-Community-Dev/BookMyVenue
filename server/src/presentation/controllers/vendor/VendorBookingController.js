@@ -7,28 +7,25 @@ export class VendorBookingController {
 
     constructor(
         getVendorBookingsUsecase,
-        getBookingByIdUsecase,
-        acceptBookingUsecase,
-        rejectBookingUsecase
+        getBookingByIdUsecase
     ) {
 
         this._getVendorBookingsUsecase =
             getVendorBookingsUsecase
         this._getBookingByIdUsecase =
             getBookingByIdUsecase
-        this._acceptBookingUsecase =
-            acceptBookingUsecase
-        this._rejectBookingUsecase =
-            rejectBookingUsecase
+
     }
 
     getBookings = asyncHandler(
 
         async (req, res) => {
-            const ownerId = req.user.id
+
+            const ownerId = req.user.id;
+
             const bookings =
                 await this._getVendorBookingsUsecase
-                    .execute(ownerId)
+                    .execute({ownerId, ...req.query})
             return sendSuccess(
                 res,
                 statusCode.OK,
@@ -44,7 +41,7 @@ export class VendorBookingController {
         async (req, res) => {
             const { bookingId } = req.params
 
-            const ownerId = req.user.id
+            const ownerId = req.user.id;
 
                 const booking =
                 await this._getBookingByIdUsecase
@@ -53,48 +50,6 @@ export class VendorBookingController {
                 res,
                 statusCode.OK,
                 BookingMessages.success.BOOKING_FETCHED,
-                booking
-            )
-        }
-    )
-
-
-    acceptBooking = asyncHandler(
-
-        async (req, res) => {
-            const { bookingId }
-                = req.params
-
-                const ownerId = req.user.id
-
-            const booking =
-                await this._acceptBookingUsecase
-                    .execute({bookingId, ownerId})
-            return sendSuccess(
-                res,
-                statusCode.OK,
-                BookingMessages.success.BOOKING_ACCEPTED,
-                booking
-            )
-        }
-    )
-
-
-    rejectBooking = asyncHandler(
-
-        async (req, res) => {
-            const { bookingId }
-                = req.params
-
-                const ownerId = req.user.id
-
-            const booking =
-                await this._rejectBookingUsecase
-                    .execute({bookingId, ownerId})
-            return sendSuccess(
-                res,
-                statusCode.OK,
-                BookingMessages.success.BOOKING_REJECTED,
                 booking
             )
         }

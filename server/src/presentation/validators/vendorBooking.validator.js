@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { BookingStatus } from '../../domain/enums/Booking.enum.js'
 
 export const BookingParamsSchema = z.object({
 
@@ -8,19 +9,30 @@ export const BookingParamsSchema = z.object({
 
 })
 
-
 export const BookingQuerySchema = z.object({
 
     status: z
         .string()
         .optional(),
 
-    page: z
-        .string()
-        .optional(),
+    page: z.coerce
+        .number()
+        .min(1)
+        .default(1),
 
-    limit: z
+    limit: z.coerce
+        .number()
+        .min(1)
+        .max(50)
+        .default(10),
+        
+    status: z
+        .enum(Object.values(BookingStatus))
+        .optional(),
+    
+    search: z
         .string()
+        .trim()
         .optional()
 
 })

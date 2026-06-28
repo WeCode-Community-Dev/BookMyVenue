@@ -1,6 +1,7 @@
-import {IVendorRepository} from "../../domain/repositories/IVendor.repository.js";
+import { IVendorRepository } from "../../domain/repositories/IVendor.repository.js";
 import VendorModel from "../database/models/Vendor.model.js";
-import {VendorMapper} from "../../application/mapper/Vendor.mapper.js";
+import { VendorMapper } from "../../application/mapper/Vendor.mapper.js";
+import { VendorApprovalStatus } from "../../domain/enums/VendorApprovalStatus.enum.js";
 
 class VendorRepositoryImpl extends IVendorRepository {
 
@@ -10,13 +11,112 @@ class VendorRepositoryImpl extends IVendorRepository {
     }
 
     async findById(id) {
-        const doc = await VendorModel.findOne({ _id: id, isDeleted: false });
-        return doc ? VendorMapper.mapToEntity(doc) : null;
+        const document = await VendorModel.findById(id)
+
+        if (!document) return null
+        return VendorMapper.mapToEntity(document)
     }
 
     async findAll() {
         const docs = await VendorModel.find({ isDeleted: false });
         return docs.map((doc) => VendorMapper.mapToEntity(doc));
+    }
+
+    async findAllFiltered(query = {}) {
+
+        const filter = {}
+
+        if (query.search) {
+            filter.$or = [
+                {
+                    name: {
+                        $regex: query.search,
+                        $options: "i"
+                    }
+                }
+            ]
+        }
+
+        if (query.status) {
+            filter.approvalStatus = query.status
+        }
+
+        const skip =
+            query.limit * (query.page - 1)
+
+        const totalCount =
+            await VendorModel.countDocuments(filter)
+
+        const totalPages =
+            Math.ceil(totalCount / query.limit)
+
+        const documents =
+            await VendorModel.find(filter)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(query.limit)
+
+        return {
+            data: documents.map(doc =>
+                VendorMapper.mapToEntity(doc)
+            ),
+            totalCount,
+            totalPages
+        }
+    }
+
+    async approveVendor(vendorId) {
+    const updatedVendor =
+        await VendorModel.findByIdAndUpdate(
+            vendorId,
+            {
+                approvalStatus:VendorApprovalStatus.APPROVED,
+                rejectionReason: null
+            },
+            {
+                new: true
+            }
+        );
+
+    if (!updatedVendor) return null;
+
+    return VendorMapper.mapToEntity(updatedVendor);
+}
+
+async rejectVendor(vendorId, reason) {
+    const updatedVendor =
+        await VendorModel.findByIdAndUpdate(
+            vendorId,
+            {
+                approvalStatus: VendorApprovalStatus.REJECTED,
+                rejectionReason: reason
+            },
+            {
+                new: true
+            }
+        );
+
+    if (!updatedVendor) return null;
+
+    return VendorMapper.mapToEntity(updatedVendor);
+}
+
+    async updateBlockStatus(vendorId, isBlocked) {
+        const document =
+            await VendorModel.findByIdAndUpdate(
+                vendorId,
+                {
+                    isBlocked:isBlocked
+                },
+                {
+                    new: true
+                }
+            );
+
+        if (!document) return null;
+        console.log(document)
+
+        return VendorMapper.mapToEntity(document);
     }
 
     async update(id, entity) {

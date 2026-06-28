@@ -1,124 +1,231 @@
 import { BookingRepository } from "../../domain/repositories/IBooking.repository.js";
+import mongoose from "mongoose";
+
 
 import BookingModel from "../database/models/BookingModel.js";
 
 import { BookingMapper } from "../../application/mapper/Booking.mapper.js";
 
-
 class BookingRepositoryImpl extends BookingRepository {
+  async create(entity) {
+    const doc = await BookingModel.create(
+      BookingMapper.mapToPersistence(entity)
+    );
 
-    async create(entity) {
+    return BookingMapper.mapToEntity(doc);
+  }
 
-        const doc = await BookingModel.create(
+  async findById(id) {
+    const doc = await BookingModel.findById(id)
 
-            BookingMapper.mapToPersistence(entity)
+      .populate("userId", "fullName email phone")
 
-        );
+      .populate("venueId", "name category address");
 
-        return BookingMapper.mapToEntity(doc);
+    return doc;
+  }
 
+  async findByUserId(userId) {
+    const docs = await BookingModel.find({
+      userId,
+    });
+
+    return docs.map((doc) => BookingMapper.mapToEntity(doc));
+  }
+
+  async findByOwnerId(
+    ownerId,
+    {
+      page = 1,
+
+      limit = 10,
+
+      status,
+
+      search,
+    }
+  ) {
+    const filter = { ownerId };
+
+    if (status) {
+      filter.status = status;
     }
 
+    console.log("ownerId:", ownerId);
+    console.log("filter:", filter);
 
-    async findById(id) {
+    let docs = await BookingModel.find(filter)
 
-        console.log("id :", id);
-        const doc = await BookingModel.findById(id);
-        console.log("doc :", doc);
+      .populate("userId", "fullName email")
 
-        return BookingMapper.mapToEntity(doc);
+      .populate("venueId", "name")
 
+      .sort({
+        createdAt: -1,
+      });
+
+    if (search) {
+      const keyword = search.trim().toLowerCase();
+
+      docs = docs.filter(
+        (doc) =>
+          doc.userId?.fullName?.toLowerCase().includes(keyword) ||
+          doc.venueId?.name?.toLowerCase().includes(keyword) ||
+          doc._id.toString().includes(keyword)
+      );
     }
 
+    const total = docs.length;
 
-    async findByUserId(userId) {
+    const skip = (page - 1) * limit;
 
-        const docs = await BookingModel.find({
+    docs = docs.slice(skip, skip + Number(limit));
 
-            userId
+    return {
+      bookings: docs.map((doc) => BookingMapper.mapToEntity(doc)),
 
-        });
+      pagination: {
+        total,
 
-        return docs.map(doc =>
+        page: Number(page),
 
-            BookingMapper.mapToEntity(doc)
+        limit: Number(limit),
 
-        );
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 
-    }
+  async findByVenueAndDate(
+    venueId,
 
+    bookingDate
+  ) {
+    const docs = await BookingModel.find({
+      venueId,
 
-    async findByOwnerId(ownerId) {
+      bookingDate,
+    });
 
-        const docs = await BookingModel.find({
+    return docs.map((doc) => BookingMapper.mapToEntity(doc));
+  }
 
-            ownerId
+  async update(
+    id,
 
-        });
+    entity
+  ) {
+    const doc = await BookingModel.findByIdAndUpdate(
+      id,
 
-        return docs.map(doc =>
+      BookingMapper.mapToPersistence(entity),
 
-            BookingMapper.mapToEntity(doc)
+      {
+        new: true,
+      }
+    );
 
-        );
+    return BookingMapper.mapToEntity(doc);
+  }
 
-    }
+  async countByOwnerId(ownerId) {
+    return await BookingModel.countDocuments({
+      ownerId,
+    });
+  }
 
+  async countByOwnerIdAndStatus(
+    ownerId,
 
-    async findByVenueAndDate(
+    status
+  ) {
+    return await BookingModel.countDocuments({
+      ownerId,
 
-        venueId,
+      status,
+    });
+  }
 
-        bookingDate
+  async getTopVenues(ownerId) {
+    const result = await BookingModel.aggregate([
+      {
+        $match: {
+          ownerId: new mongoose.Types.ObjectId(ownerId),
+        },
+      },
 
-    ) {
+      {
+        $group: {
+          _id: "$venueId",
+          bookings: { $sum: 1 },
+        },
+      },
 
-        const docs = await BookingModel.find({
+      {
+        $sort: {
+          bookings: -1,
+        },
+      },
 
-            venueId,
+      {
+        $limit: 5,
+      },
 
-            bookingDate
+      {
+        $lookup: {
+          from: "venues",
+          localField: "_id",
+          foreignField: "_id",
+          as: "venue",
+        },
+      },
 
-        });
+      {
+        $unwind: "$venue",
+      },
 
-        return docs.map(doc =>
+      {
+        $project: {
+          _id: 0,
+          venueId: "$venue._id",
+          name: "$venue.name",
+          bookings: 1,
+        },
+      },
+    ]);
 
-            BookingMapper.mapToEntity(doc)
+    return result;
+  }
 
-        );
+  async getRecentBookings(ownerId) {
+    const docs = await BookingModel.find({
+      ownerId,
+    })
 
-    }
+      .populate("userId", "fullName")
 
+      .populate("venueId", "name")
 
-    async update(
+      .sort({
+        createdAt: -1,
+      })
 
-        id,
+      .limit(5);
 
-        entity
+    return docs.map((doc) => ({
+      bookingId: doc._id,
 
-    ) {
+      customer: doc.userId?.fullName,
 
-        const doc =
+      venue: doc.venueId?.name,
 
-            await BookingModel.findByIdAndUpdate(
+      amount: doc.totalAmount,
 
-                id,
+      status: doc.status,
 
-                BookingMapper.mapToPersistence(entity),
-
-                {
-
-                    new: true
-
-                }
-
-            );
-
-        return BookingMapper.mapToEntity(doc);
-
-    }
-
+      bookingDate: doc.bookingDate,
+    }));
+  }
 }
-
 
 export default BookingRepositoryImpl;
