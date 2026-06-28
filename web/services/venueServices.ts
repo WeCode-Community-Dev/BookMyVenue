@@ -22,7 +22,7 @@ export type AmenityResponse = {
     description: string;
 }[]
 
-export type OwnedVenueResponse = {
+export type VenueResponse = {
     name: string
     id: string
     address: string
@@ -40,7 +40,7 @@ export type OwnedVenueResponse = {
     }[];
 };
 
-export type VenueResponse = VenueDetails
+export type VenueDetailedResponse = VenueDetails
 
 export type SpaceCategoryResponse = {
     id: string;
@@ -166,7 +166,21 @@ export async function createImages(images: { url: string, altText: string }[]): 
     }
 }
 
-
+export async function getVenues(): Promise<VenueDetailedResponse[]> {
+    try {
+        const response = await apiFetch('/venues', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return response;
+    }
+    catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
 
 export async function createVenue(venue: CreateVenuePayload) {
     try {
@@ -193,7 +207,7 @@ export async function createVenue(venue: CreateVenuePayload) {
     }
 }
 
-export async function getOwnedVenues(): Promise<OwnedVenueResponse[]> {
+export async function getOwnedVenues(): Promise<VenueResponse[]> {
     try {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
@@ -213,7 +227,7 @@ export async function getOwnedVenues(): Promise<OwnedVenueResponse[]> {
     }
 }
 
-export async function getVenue(id: string): Promise<VenueResponse> {
+export async function getVenue(id: string): Promise<VenueDetailedResponse> {
     try {
         // const accessToken = localStorage.getItem('accessToken');
         // if (!accessToken) {

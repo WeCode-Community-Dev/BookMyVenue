@@ -13,10 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { VenueStatusBadge } from "./venue-status-badge";
-import { OwnedVenueResponse } from "@/services/venueServices";
+import { VenueResponse } from "@/services/venueServices";
 import Link from "next/link";
 
-export function VenueCard({ venue }: { venue: OwnedVenueResponse }) {
+export function VenueCard({ venue }: { venue: VenueResponse }) {
   return (
     <Link href={`/my-venues/${venue.id}`}>
       <Card className="gap-0 overflow-hidden rounded-lg border-0 bg-surface-container-lowest py-0 shadow-elevation-1 ring-0">
