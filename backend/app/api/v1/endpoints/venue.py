@@ -103,7 +103,7 @@ def update_status(
 
 
 @router.get(
-    "amenities",
+    "/amenities",
     response_model=SuccessResponse[List[AmenityResponse]],
     status_code=status.HTTP_200_OK,
     summary="Get all amenities",
