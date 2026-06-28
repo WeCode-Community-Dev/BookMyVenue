@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --font-brand: "Pacifico", cursive;
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
+#root {
+  overflow-x: clip;
+  min-height: 100%;
+}
