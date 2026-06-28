@@ -39,11 +39,9 @@ export const ROUTES = {
         BOOKING: {
 
             GET_ALL: '/bookings',
-            GET_BY_ID: '/bookings/:bookingId',
-            ACCEPT: '/bookings/:bookingId/accept',
-            REJECT: '/bookings/:bookingId/reject'
-
-        }
+            GET_BY_ID: '/bookings/:bookingId'
+        },
+        DASHBOARD: '/dashboard'
     },
     USER: {
         VENUE: {
