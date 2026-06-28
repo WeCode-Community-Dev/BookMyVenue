@@ -36,7 +36,6 @@
             method: "GET",
             headers: {
                 "content-type": "application/json",
-                "Authorization": "Bearer "+token
             }
         });
 
@@ -79,7 +78,6 @@
                 method: "PUT",
                 headers: {
                     "content-type": "application/json",
-                    "Authorization": "Bearer "+localStorage.getItem("access_token")
                 }
             })
             if (response.ok) {

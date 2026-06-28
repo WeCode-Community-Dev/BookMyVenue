@@ -24,9 +24,6 @@
 
         const response = await fetch("/api/v1/user/viewBookedVenues", {
             method: "GET",
-            headers: {
-                Authorization: "Bearer " + token
-            }
         })
 
         const result = await response.json()

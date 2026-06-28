@@ -37,9 +37,6 @@
         async function loadVenueData() {
             const response = await fetch(`/api/v1/user/venue/${venueID}`, {
                 method: "GET",
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("access_token")
-                }
             })
 
             const result = await response.json();
@@ -68,9 +65,6 @@
             try {
                 const response = await fetch(`/api/v1/venues/${venueID}/availability`, {
                     method: "GET",
-                    headers: {
-                        Authorization: "Bearer " + localStorage.getItem("access_token")
-                    }
                 });
 
                 const result = await response.json();

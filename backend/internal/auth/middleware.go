@@ -3,7 +3,6 @@ package auth
 import (
 	"net/http"
 	"slices"
-	"strings"
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/ctxutil"
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/response"
@@ -11,40 +10,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func JWTAuthentication(ctx *gin.Context) {
+func JWTAuthentication(c *gin.Context) {
 
-	// get token from Authorization header
-	authHeader := ctx.GetHeader("Authorization")
-	if authHeader == "" {
-		response.Error(ctx, http.StatusUnauthorized, "authorization header missing")
-		ctx.Abort()
-		return
+	// get token from cookie
+	cookie, err := c.Cookie("access_token")
+	if err != nil {
+		response.Error(c, http.StatusUnauthorized, "token not found")
 	}
 
-	// header must be "Bearer <token>"
-	parts := strings.Split(authHeader, " ")
-	if len(parts) != 2 || parts[0] != "Bearer" {
-		response.Error(ctx, http.StatusUnauthorized, "invalid authorization format")
-		ctx.Abort()
-		return
-	}
-
-	tokenString := parts[1]
+	tokenString := cookie
 
 	// verify token signature and expiry
 	claims, err := token.VerifyAccessToken(tokenString)
 	if err != nil {
-		response.Error(ctx, http.StatusUnauthorized, "invalid or expired token")
-		ctx.Abort()
+		response.Error(c, http.StatusUnauthorized, "invalid or expired token")
+		c.Abort()
 		return
 	}
 
 	// attach user info to context for use in handlers
-	ctx.Set("user_id", claims.UserID)
-	ctx.Set("email", claims.Email)
-	ctx.Set("role", claims.Role)
+	c.Set("user_id", claims.UserID)
+	c.Set("email", claims.Email)
+	c.Set("role", claims.Role)
 
-	ctx.Next()
+	c.Next()
 }
 
 // checks if user has the required role to access the route

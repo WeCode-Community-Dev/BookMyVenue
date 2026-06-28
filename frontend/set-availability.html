@@ -86,8 +86,6 @@
 
 <script>
     const venueID = window.location.pathname.split("/")[3];
-    console.log(venueID)
-    const token   = localStorage.getItem("access_token")
 
     // load existing slots on page load
     window.onload = () => {
@@ -117,7 +115,6 @@
             method: "POST",
             headers: {
                 "Content-Type":  "application/json",
-                "Authorization": "Bearer " + token
             },
             body: JSON.stringify({
                 slots: [
@@ -170,7 +167,6 @@
             method: "POST",
             headers: {
                 "Content-Type":  "application/json",
-                "Authorization": "Bearer " + token
             },
             body: JSON.stringify({ slots })
         })
@@ -213,9 +209,7 @@
     // ─── Load Existing Slots ─────────────────────────────────────
 
     async function loadSlots() {
-        const res  = await fetch(`/api/v1/venues/${venueID}/availability`, {
-            headers: { "Authorization": "Bearer " + token }
-        })
+        const res  = await fetch(`/api/v1/venues/${venueID}/availability`)
 
         const data = await res.json()
         if (!data.success) return
@@ -251,7 +245,6 @@
     async function deleteSlot(slotID) {
         const res  = await fetch(`/api/v1/venues/${venueID}/availability/${slotID}`, {
             method:  "DELETE",
-            headers: { "Authorization": "Bearer " + token }
         })
 
         const data = await res.json()

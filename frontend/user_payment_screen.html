@@ -68,9 +68,6 @@
 
         const Bookresponse = await fetch(`/api/v1/slot/${slotID}/book`, {
             method: "GET",
-            headers: {
-                Authorization: "Bearer " + token
-            }
         })
 
         const BookRes = await Bookresponse.json()
@@ -78,9 +75,6 @@
         
         const slotResponse = await fetch(`/api/v1/slot/${slotID}`, {
             method: "GET",
-            headers: {
-                Authorization: "Bearer " + token
-            }
         })
 
         const slotRes = await slotResponse.json()
@@ -111,10 +105,6 @@
                     `/api/v1/slot/${slotID}/bookings/${BookRes.data.id}/confirm`,
                     {
                         method: "POST",
-                        headers: {
-                            "Authorization":
-                                `Bearer ${token}`
-                        }
                     }
                 );
 

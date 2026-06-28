@@ -60,6 +60,7 @@
         <div id="imagePreview" class="image-preview"></div>
 
         <button type="submit">Add Venue</button>
+        <p id="message"></p>
     </form>
 
     <script>
@@ -103,10 +104,6 @@
 
         document.getElementById("addVenueForm").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const token = localStorage.getItem("access_token")
-            if (!token) {
-                window.location.href = "/login"
-            }
 
             const amenityCheckboxes = document.querySelectorAll(".amenities-grid input[type=checkbox]:checked")
             const amenities = Array.from(amenityCheckboxes).map(cb => cb.value)
@@ -122,7 +119,6 @@
                 method: "POST",
                 headers: {
                     "content-type": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("access_token")
                 },
                 body: JSON.stringify({
                     name: document.getElementById("name").value,
@@ -141,7 +137,7 @@
 
             const venueData = await venueRes.json();
             if (!venueData.success) {
-                showMessage(venueData.Message, "error")
+                showMessage(venueData.message, "error")
                 return
             }
 
@@ -154,9 +150,7 @@
 
             const imageRes = await fetch(`/api/v1/owner/${venueID}/images`, {
                 method: "POST",
-                headers: {
-                    "Authorization": "Bearer " + token
-                },
+                headers: {},
                 body: formData
             })
 

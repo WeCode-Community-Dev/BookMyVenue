@@ -29,13 +29,11 @@
     </table>
     <script type="module">
         const tbody = document.getElementById("venueTableBody");
-        const token = localStorage.getItem("access_token");
 
         const venuesRes = await fetch("/api/v1/owner/viewPendingVenues", {
             method: "GET",
             headers: {
                 "content-type": "application/json",
-                "Authorization": "Bearer "+token
             }
         });
 

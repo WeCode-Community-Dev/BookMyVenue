@@ -30,13 +30,11 @@
     </table>
     <script type="module">
         const tbody = document.getElementById("venueTableBody");
-        const token = localStorage.getItem("access_token");
 
         const venuesRes = await fetch("/api/v1/admin/viewPendingVenues", {
             method: "GET",
             headers: {
                 "content-type": "application/json",
-                "Authorization": "Bearer "+token
             }
         });
 
@@ -80,7 +78,6 @@
                 method: "PUT",
                 headers: {
                     "content-type": "application/json",
-                    "Authorization": "Bearer "+localStorage.getItem("access_token")
                 }
             })
             if (response.ok) {
@@ -98,7 +95,6 @@
                 method: "PUT",
                 headers: {
                     "content-type": "application/json",
-                    "Authorization": "Bearer "+localStorage.getItem("access_token")
                 }
             })
             if (response.ok) {

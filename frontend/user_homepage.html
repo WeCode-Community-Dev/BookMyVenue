@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
         const role = localStorage.getItem("role")
-        const token = localStorage.getItem("access_token")
 
-        if (!token || role !== "user") {
+        if (role !== "user") {
             window.location.href = "/login"
         }
     </script>

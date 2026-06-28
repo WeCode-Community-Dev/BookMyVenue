@@ -28,14 +28,12 @@
             })
         });
 
-        data = await response.json();
+        const data = await response.json();
 
         if (data.success) {
-            localStorage.setItem("access_token", data.data.access_token)
-            localStorage.setItem("refresh_token", data.data.refresh_token)
-            localStorage.setItem("role", data.data.role)
+            localStorage.setItem("role", data.data)
 
-            redirectByRole(data.data.role)
+            redirectByRole(data.data)
         }
         else {
             alert(data.message)

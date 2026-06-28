@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/response"
@@ -46,7 +47,25 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, http.StatusOK, "Login successful", token)
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "access_token",
+		Value:    token.AccessToken,
+		HttpOnly: true,
+		Secure:   os.Getenv("ENV") == "production",
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		MaxAge:   15 * 60, // 15 minutes
+	})
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    token.RefreshToken,
+		HttpOnly: true,
+		Secure:   os.Getenv("ENV") == "production",
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		MaxAge:   7 * 24 * 60 * 60, // 7 days
+	})
+	response.Success(c, http.StatusOK, "Login successful", token.Role)
 }
 
 func (h *Handler) Logout(c *gin.Context) {

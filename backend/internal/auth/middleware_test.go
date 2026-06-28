@@ -12,7 +12,7 @@ import (
 )
 
 // JWTAuthentication
-func TestJWTAuthentication(t *testing.T) {
+func TestJWTAuthentication_NoToken(t *testing.T) {
 	router := gin.New()
 	router.Use(JWTAuthentication)
 
@@ -32,40 +32,6 @@ func TestJWTAuthentication(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 }
 
-func TestJWTAuthentication_MissingHeaders(t *testing.T) {
-	router := gin.New()
-	router.Use(JWTAuthentication)
-
-	router.GET("/protected", func(ctx *gin.Context) {
-		ctx.Status(http.StatusOK)
-	})
-
-	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
-	w := httptest.NewRecorder()
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusUnauthorized, w.Code)
-}
-
-func TestJWTAuthentication_MissingBearer(t *testing.T) {
-	router := gin.New()
-	router.Use(JWTAuthentication)
-
-	router.GET("/protected", func(ctx *gin.Context) {
-		ctx.Status(http.StatusOK)
-	})
-
-	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
-	req.Header.Set("Authorization", "abc")
-
-	w := httptest.NewRecorder()
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusUnauthorized, w.Code)
-}
-
 func TestJWTAuthentication_InvalidToken(t *testing.T) {
 	router := gin.New()
 	router.Use(JWTAuthentication)
@@ -75,7 +41,10 @@ func TestJWTAuthentication_InvalidToken(t *testing.T) {
 	})
 
 	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
-	req.Header.Set("Authorization", "Bearer token")
+	req.AddCookie(&http.Cookie{
+		Name:  "access_token",
+		Value: "invalid-token",
+	})
 
 	w := httptest.NewRecorder()
 
@@ -100,7 +69,10 @@ func TestJWTAuthentication_ValidToken(t *testing.T) {
 	require.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
-	req.Header.Set("Authorization", "Bearer "+tokenString)
+	req.AddCookie(&http.Cookie{
+		Name:  "access_token",
+		Value: tokenString,
+	})
 
 	w := httptest.NewRecorder()
 
@@ -125,7 +97,10 @@ func TestJWTAuthentication_SetsContext(t *testing.T) {
 	require.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodGet, "/protected", nil)
-	req.Header.Set("Authorization", "Bearer "+tokenString)
+	req.AddCookie(&http.Cookie{
+		Name:  "access_token",
+		Value: tokenString,
+	})
 
 	w := httptest.NewRecorder()
 
