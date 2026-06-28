@@ -8,6 +8,7 @@ import 'domain/repository/i_venue_repository.dart';
 import 'domain/usecase/add_new_venue_usecase.dart';
 import 'domain/usecase/get_all_venues_usecase.dart';
 import 'domain/usecase/get_venue_by_id_usecase.dart';
+import 'domain/usecase/get_venue_amenities_usecase.dart';
 import 'presentation/bloc/venue_bloc.dart';
 
 Future<void> registerVenueDependencies() async {
@@ -31,6 +32,9 @@ Future<void> registerVenueDependencies() async {
   sl.registerLazySingleton(
     () => GetVenueByIdUseCase(repository: sl<IVenueRepository>()),
   );
+  sl.registerLazySingleton(
+    () => GetVenueAmenitiesUseCase(repository: sl<IVenueRepository>()),
+  );
 
   /// Bloc
   sl.registerFactory(
@@ -38,6 +42,7 @@ Future<void> registerVenueDependencies() async {
       addNewVenueUseCase: sl<AddNewVenueUseCase>(),
       getAllVenuesUseCase: sl<GetAllVenuesUseCase>(),
       getVenueByIdUseCase: sl<GetVenueByIdUseCase>(),
+      getVenueAmenitiesUseCase: sl<GetVenueAmenitiesUseCase>(),
     ),
   );
 }

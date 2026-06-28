@@ -20,14 +20,14 @@ class VenueBasicInfoState {
     required this.description,
     required this.minCapacity,
     required this.maxCapacity,
-    required this.amenityIds,
+    required this.amenities,
   });
   final String venueName;
   final VenueCategory category;
   final String description;
   final int minCapacity;
   final int maxCapacity;
-  final List<String> amenityIds;
+  final List<VenueAmenityEntity> amenities;
 
   VenueBasicInfoState copyWith({
     String? venueName,
@@ -35,7 +35,7 @@ class VenueBasicInfoState {
     String? description,
     int? minCapacity,
     int? maxCapacity,
-    List<String>? amenityIds,
+    List<VenueAmenityEntity>? amenities,
   }) {
     return VenueBasicInfoState(
       venueName: venueName ?? this.venueName,
@@ -43,13 +43,13 @@ class VenueBasicInfoState {
       description: description ?? this.description,
       minCapacity: minCapacity ?? this.minCapacity,
       maxCapacity: maxCapacity ?? this.maxCapacity,
-      amenityIds: amenityIds ?? this.amenityIds,
+      amenities: amenities ?? this.amenities,
     );
   }
 
   @override
   String toString() {
-    return 'VenueBasicInfoState(venueName: $venueName, category: $category, description: $description, minCapacity: $minCapacity, maxCapacity: $maxCapacity, amenityIds: $amenityIds)';
+    return 'VenueBasicInfoState(venueName: $venueName, category: $category, description: $description, minCapacity: $minCapacity, maxCapacity: $maxCapacity, amenities: $amenities)';
   }
 }
 

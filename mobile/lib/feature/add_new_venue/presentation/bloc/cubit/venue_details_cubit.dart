@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../domain/enum/venue_category_enum.dart';
+import '../../../domain/entity/venue_response_entity.dart';
 
 part 'venue_details_state.dart';
 

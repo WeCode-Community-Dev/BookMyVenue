@@ -9,8 +9,10 @@ import '../../../../core/validation/app_validation.dart';
 import '../../../../core/widgets/app_text.dart';
 import '../../../../core/widgets/custom_dropdown.dart';
 import '../../../../core/widgets/custom_text_field.dart';
+import '../../domain/entity/venue_response_entity.dart';
 import '../../domain/enum/venue_category_enum.dart';
 import '../bloc/cubit/venue_details_cubit.dart';
+import '../bloc/venue_bloc.dart';
 import 'build_action_button.dart';
 
 class BuildStep1Basics extends StatefulWidget {
@@ -28,11 +30,14 @@ class _BuildStep1BasicsState extends State<BuildStep1Basics> {
   final TextEditingController _sizeController = TextEditingController();
   VenueCategory? _selectedCategory;
 
-  final List<String> _selectedAmenities = <String>[];
+  final List<VenueAmenityEntity> _selectedAmenities = <VenueAmenityEntity>[];
 
   @override
   void initState() {
     super.initState();
+    // Dispatch event to fetch amenities from the API
+    context.read<VenueBloc>().add(const VenueEvent.getAmenities());
+
     final VenueBasicInfoState? basicInfo = context
         .read<VenueDetailsCubit>()
         .state
@@ -43,18 +48,9 @@ class _BuildStep1BasicsState extends State<BuildStep1Basics> {
       _capacityController.text = basicInfo.minCapacity.toString();
       _sizeController.text = basicInfo.maxCapacity.toString();
       _selectedCategory = basicInfo.category;
-      _selectedAmenities.addAll(basicInfo.amenityIds);
+      _selectedAmenities.addAll(basicInfo.amenities);
     }
   }
-
-  final List<String> _allAmenities = <String>[
-    'Free WiFi',
-    'Parking',
-    'Air Conditioning',
-    'AV Equipment',
-    'Kitchenette',
-    'Accessibility',
-  ];
 
   @override
   void dispose() {
@@ -71,7 +67,7 @@ class _BuildStep1BasicsState extends State<BuildStep1Basics> {
       key: _formKeyBasics,
       child: Column(
         spacing: AppSpacing.spaceMd,
-        crossAxisAlignment: .start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           CustomTextField(
             controller: _nameController,
@@ -143,42 +139,86 @@ class _BuildStep1BasicsState extends State<BuildStep1Basics> {
             ],
           ),
 
-          Wrap(
-            spacing: AppSpacing.spaceXs,
-            runSpacing: AppSpacing.spaceXs,
-            children: _allAmenities.map((String amenity) {
-              final bool isChecked = _selectedAmenities.contains(amenity);
-              return FilterChip(
-                label: AppText(
-                  amenity,
-                  color: isChecked ? Colors.white : AppColors.onSurface,
-                ),
-                selected: isChecked,
-                selectedColor: AppColors.primary,
-                checkmarkColor: Colors.white,
-                backgroundColor: AppColors.surface,
-                shape: RoundedRectangleBorder(
-                  borderRadius: AppShapes.defaultBorder,
-                  side: BorderSide(
-                    color: isChecked ? AppColors.primary : AppColors.outline,
+          BlocBuilder<VenueBloc, VenueState>(
+            builder: (BuildContext context, VenueState state) {
+              if (state.getAmenitiesStatus == VenueStatus.loading) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24.0),
+                    child: CircularProgressIndicator(),
                   ),
-                ),
-                labelStyle: TextStyle(
-                  fontSize: 13,
-                  color: isChecked ? Colors.white : AppColors.onSurface,
-                  fontWeight: isChecked ? FontWeight.bold : FontWeight.normal,
-                ),
-                onSelected: (bool checked) {
-                  setState(() {
-                    if (checked) {
-                      _selectedAmenities.add(amenity);
-                    } else {
-                      _selectedAmenities.remove(amenity);
-                    }
-                  });
-                },
+                );
+              }
+              if (state.getAmenitiesStatus == VenueStatus.failure) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24.0),
+                    child: AppText(
+                      state.errorMessage ?? 'Failed to load amenities',
+                      color: Colors.red,
+                    ),
+                  ),
+                );
+              }
+              final List<VenueAmenityEntity> amenities = state.amenities;
+              if (amenities.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24.0),
+                    child: AppText(
+                      'No amenities available.',
+                      color: Colors.grey,
+                    ),
+                  ),
+                );
+              }
+
+              return Wrap(
+                spacing: AppSpacing.spaceXs,
+                runSpacing: AppSpacing.spaceXs,
+                children: amenities.map((VenueAmenityEntity amenity) {
+                  final bool isChecked = _selectedAmenities.any(
+                    (VenueAmenityEntity a) => a.id == amenity.id,
+                  );
+                  return FilterChip(
+                    label: AppText(
+                      amenity.name,
+                      color: isChecked ? Colors.white : AppColors.onSurface,
+                    ),
+                    selected: isChecked,
+                    selectedColor: AppColors.primary,
+                    checkmarkColor: Colors.white,
+                    backgroundColor: AppColors.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppShapes.defaultBorder,
+                      side: BorderSide(
+                        color: isChecked
+                            ? AppColors.primary
+                            : AppColors.outline,
+                      ),
+                    ),
+                    labelStyle: TextStyle(
+                      fontSize: 13,
+                      color: isChecked ? Colors.white : AppColors.onSurface,
+                      fontWeight: isChecked
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                    onSelected: (bool checked) {
+                      setState(() {
+                        if (checked) {
+                          _selectedAmenities.add(amenity);
+                        } else {
+                          _selectedAmenities.removeWhere(
+                            (VenueAmenityEntity a) => a.id == amenity.id,
+                          );
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
               );
-            }).toList(),
+            },
           ),
           BuildActionButton(
             onTap: (int step) {
@@ -200,7 +240,7 @@ class _BuildStep1BasicsState extends State<BuildStep1Basics> {
                   description: _descController.text.trim(),
                   minCapacity: int.parse(_capacityController.text.trim()),
                   maxCapacity: int.parse(_sizeController.text.trim()),
-                  amenityIds: _selectedAmenities,
+                  amenities: _selectedAmenities,
                 ),
               );
             },

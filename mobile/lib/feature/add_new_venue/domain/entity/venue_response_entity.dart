@@ -148,6 +148,13 @@ class VenueLocationEntity extends Equatable {
   ];
 }
 
+class VenueAmenityResult {
+  VenueAmenityResult({required this.message, required this.amenities});
+
+  final String message;
+  final List<VenueAmenityEntity> amenities;
+}
+
 class VenueAmenityEntity extends Equatable {
   const VenueAmenityEntity({required this.id, required this.name});
 

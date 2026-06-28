@@ -67,4 +67,19 @@ class VenueRepositoryImpl extends BaseRepository implements IVenueRepository {
       );
     });
   }
+
+  @override
+  ResultFuture<VenueAmenityResult> getAmenities() {
+    return handleRequest(() async {
+      final ApiResponse<List<VenueAmenity>> response = await remoteDatasource
+          .getAmenities();
+
+      return VenueAmenityResult(
+        message: response.message ?? '',
+        amenities: response.data!
+            .map((VenueAmenity e) => e.toEntity())
+            .toList(),
+      );
+    });
+  }
 }

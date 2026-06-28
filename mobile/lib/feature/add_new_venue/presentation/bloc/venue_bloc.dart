@@ -13,6 +13,8 @@ import '../../domain/params/get_venue_params.dart';
 import '../../domain/usecase/add_new_venue_usecase.dart';
 import '../../domain/usecase/get_all_venues_usecase.dart';
 import '../../domain/usecase/get_venue_by_id_usecase.dart';
+import '../../domain/usecase/get_venue_amenities_usecase.dart';
+import '../../../../core/usecase/usecase.dart';
 
 part 'venue_event.dart';
 part 'venue_state.dart';
@@ -23,18 +25,22 @@ class VenueBloc extends Bloc<VenueEvent, VenueState> {
     required AddNewVenueUseCase addNewVenueUseCase,
     required GetAllVenuesUseCase getAllVenuesUseCase,
     required GetVenueByIdUseCase getVenueByIdUseCase,
+    required GetVenueAmenitiesUseCase getVenueAmenitiesUseCase,
   }) : _addNewVenueUseCase = addNewVenueUseCase,
        _getAllVenuesUseCase = getAllVenuesUseCase,
        _getVenueByIdUseCase = getVenueByIdUseCase,
+       _getVenueAmenitiesUseCase = getVenueAmenitiesUseCase,
        super(VenueState.initial()) {
     on<_AddNewVenue>(_onAddNewVenue);
     on<_GetAllVenues>(_onGetAllVenues);
     on<_GetVenueById>(_onGetVenueById);
+    on<_GetAmenities>(_onGetAmenities);
   }
 
   final AddNewVenueUseCase _addNewVenueUseCase;
   final GetAllVenuesUseCase _getAllVenuesUseCase;
   final GetVenueByIdUseCase _getVenueByIdUseCase;
+  final GetVenueAmenitiesUseCase _getVenueAmenitiesUseCase;
 
   FutureOr<void> _onAddNewVenue(
     _AddNewVenue event,
@@ -112,6 +118,32 @@ class VenueBloc extends Bloc<VenueEvent, VenueState> {
           getVenueStatus: VenueStatus.success,
           successMessage: venueResult.message,
           selectedVenue: venueResult.venue,
+        ),
+      ),
+    );
+  }
+
+  FutureOr<void> _onGetAmenities(
+    _GetAmenities event,
+    Emitter<VenueState> emit,
+  ) async {
+    emit(state.copyWith(getAmenitiesStatus: VenueStatus.loading));
+
+    final Either<Failure, VenueAmenityResult> result =
+        await _getVenueAmenitiesUseCase(const NoParams());
+
+    result.fold(
+      (Failure failure) => emit(
+        state.copyWith(
+          getAmenitiesStatus: VenueStatus.failure,
+          errorMessage: failure.message,
+        ),
+      ),
+      (VenueAmenityResult amenities) => emit(
+        state.copyWith(
+          getAmenitiesStatus: VenueStatus.success,
+          amenities: amenities.amenities,
+          successMessage: amenities.message,
         ),
       ),
     );

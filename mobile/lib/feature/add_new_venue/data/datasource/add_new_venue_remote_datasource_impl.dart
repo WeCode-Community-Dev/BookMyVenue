@@ -69,4 +69,18 @@ class AddNewVenueRemoteDatasourceImpl extends BaseRemoteDataSourceImpl
       );
     });
   }
+
+  @override
+  Future<ApiResponse<List<VenueAmenity>>> getAmenities() {
+    return safeApiCall(() async {
+      final Response<dynamic> res = await dio.get(
+        VenueManagementEndpoint.getAmenities,
+      );
+
+      return ApiResponseMapper.fromJson(
+        res.data as Map<String, dynamic>,
+        (Object? data) => mapList(data, VenueAmenity.fromJson),
+      );
+    });
+  }
 }

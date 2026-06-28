@@ -226,6 +226,14 @@ class AddVenueWizardFlow extends StatefulWidget {
 
 class _AddVenueWizardFlowState extends State<AddVenueWizardFlow> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((Duration timeStamp) {
+      context.read<VenueBloc>().add(const VenueEvent.getAmenities());
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocListener<VenueBloc, VenueState>(
       listener: (BuildContext context, VenueState state) {

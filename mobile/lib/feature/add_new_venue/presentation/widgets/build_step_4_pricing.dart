@@ -6,6 +6,7 @@ import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
 import '../../../../core/widgets/app_text.dart';
 import '../../domain/enum/venue_category_enum.dart';
+import '../../domain/entity/venue_response_entity.dart';
 import '../../domain/params/add_venue_params.dart';
 import '../bloc/cubit/venue_details_cubit.dart';
 import '../bloc/venue_bloc.dart';
@@ -153,7 +154,7 @@ class _BuildStep4PricingState extends State<BuildStep4Pricing> {
       ),
       minCapacity: basic.minCapacity,
       maxCapacity: basic.maxCapacity,
-      amenityIds: basic.amenityIds,
+      amenityIds: basic.amenities.map((VenueAmenityEntity e) => e.id).toList(),
       coverImageUrl: media.coverImageUrl,
       galleryImages: media.galleryImages,
       virtualTourUrl: media.virtualTourUrl,

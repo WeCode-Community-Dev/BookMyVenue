@@ -14,4 +14,5 @@ abstract interface class IVenueRepository {
   ResultFuture<VenueResponseByIdResult> getVenuesById({
     required String venueId,
   });
+  ResultFuture<VenueAmenityResult> getAmenities();
 }

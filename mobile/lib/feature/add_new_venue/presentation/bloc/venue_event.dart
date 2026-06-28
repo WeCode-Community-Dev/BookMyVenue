@@ -11,4 +11,6 @@ sealed class VenueEvent with _$VenueEvent {
 
   const factory VenueEvent.getVenueById({required String venueId}) =
       _GetVenueById;
+
+  const factory VenueEvent.getAmenities() = _GetAmenities;
 }

@@ -14,4 +14,5 @@ abstract interface class IAddNewVenueRemoteDatasource {
   Future<ApiResponse<VenueResponseModel>> getVenuesById({
     required String venueId,
   });
+  Future<ApiResponse<List<VenueAmenity>>> getAmenities();
 }
