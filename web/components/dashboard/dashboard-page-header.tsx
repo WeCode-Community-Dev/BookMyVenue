@@ -1,9 +1,11 @@
+"use client";
 import { Download, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { dashboardUser } from "@/lib/data/dashboard";
+import { getDashboardUser } from "@/lib/data/dashboard";
 
 export function DashboardPageHeader() {
+  const dashboardUser = getDashboardUser(); 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex flex-col gap-1">

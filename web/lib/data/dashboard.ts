@@ -10,11 +10,18 @@ export type NavIcon =
   | "star"
   | "settings";
 
-export const dashboardUser = {
-  name: "Alex Thompson",
-  role: "Admin Level",
-  initials: "AT",
-};
+  export const getDashboardUser = ()=> {
+    const firstName = localStorage.getItem('firstName') ?? ''
+    const lastName = localStorage.getItem('lastName') ?? ''
+  
+    return {
+      name: `${firstName} ${lastName}`,
+      role: "Admin Level",
+      initials: `${firstName.charAt(0)}${lastName.charAt(0)}`
+    }
+  };
+
+
 
 export const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: "layout-dashboard" as NavIcon },

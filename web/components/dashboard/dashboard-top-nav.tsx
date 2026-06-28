@@ -13,9 +13,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { dashboardUser } from "@/lib/data/dashboard";
+import { getDashboardUser } from "@/lib/data/dashboard";
+
 
 export function DashboardTopNav() {
+  const dashboardUser = getDashboardUser();
   return (
     <header className="flex h-16 shrink-0 items-center gap-4 border-b border-outline-variant/40 bg-surface-container-lowest px-6">
       <div className="relative mx-auto w-full flex-1">

@@ -5,7 +5,7 @@ import { apiFetch } from "./api";
 
 export type LoginResponse = {
     success: boolean;
-    data: { accessToken: string; role: UserRole; }
+    data: { accessToken: string; role: UserRole; firstName: string; lastName: string; }
 }
 
 export const login = async (data: { email: string, password: string }): Promise<LoginResponse> => {

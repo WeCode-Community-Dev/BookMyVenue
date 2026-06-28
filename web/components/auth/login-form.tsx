@@ -23,6 +23,8 @@ export function LoginForm() {
     if (result as LoginResponse && result.success) {
       localStorage.setItem('accessToken', result.data.accessToken);
       localStorage.setItem('role', result.data.role);
+      localStorage.setItem('firstName', result.data.firstName);
+      localStorage.setItem('lastName', result.data.lastName);
       if (result.data.role === "VENUE_OWNER") {
       router.push('/dashboard');
       } else {
