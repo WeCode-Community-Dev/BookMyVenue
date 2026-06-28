@@ -92,4 +92,14 @@ export class VenuesController {
     return this.venuesService.createImages(dto);
   }
 
+  @Get('space-categories')
+  getAllSpaceCategories() {
+    return this.venuesService.getAllSpaceCategories();
+  }
+
+  @Get('capacity-types')
+  getCapacityTypes() {
+    return this.venuesService.getCapacityTypes();
+  }
+
 }

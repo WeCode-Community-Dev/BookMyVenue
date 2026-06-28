@@ -14,6 +14,7 @@ import { UpdateVenueDto } from './dto/update-venue.dto';
 import { JwtService } from '@nestjs/jwt';
 import { verifyAccessToken } from '../auth/helpers/token';
 import { CreateImagesDto } from './dto/create-images.dto';
+import { CapacityType } from '../../../generated/prisma/client';
 
 const venueDetailsInclude = {
   amenities: {
@@ -93,6 +94,12 @@ type OwnedVenueDetails = {
       altText: string | null;
     };
   }[];
+};
+
+type SpaceCategoryDetails = {
+  id: string;
+  name: string;
+  description: string | null;
 };
 
 @Injectable()
@@ -576,6 +583,27 @@ export class VenuesService {
     } catch (error) {
       console.error(error);
       throw error;
+    }
+  }
+
+  async getAllSpaceCategories(): Promise<SpaceCategoryDetails[]> {
+    try {
+      return this.prismaService.spaceCategory.findMany({
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: { id: true, name: true, description: true },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get all space categories');
+    }
+  }
+
+  async getCapacityTypes(): Promise<CapacityType[]> {
+    try {
+      return Object.values(CapacityType);
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get capacity types');
     }
   }
 

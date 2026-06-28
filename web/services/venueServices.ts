@@ -42,6 +42,25 @@ export type OwnedVenueResponse = {
 
 export type VenueResponse = VenueDetails
 
+export type SpaceCategoryResponse = {
+    id: string;
+    name: string;
+    description: string | null;
+};
+
+export type CreateSpacePayload = {
+    name: string;
+    description?: string;
+    rules?: string;
+    capacityValue?: number;
+    capacityType?: string;
+    isActive?: boolean;
+    categoryId: string;
+    spaceAmenityIds?: string[];
+    spaceImageIds?: string[];
+};
+
+
 export async function fetchAmenities(): Promise<AmenityResponse> {
     try {
         const response = await apiFetch('/amenities', {
@@ -142,6 +161,59 @@ export async function getVenue(id: string): Promise<VenueResponse> {
                 'Content-Type': 'application/json',
                 // Authorization: accessToken,
             },
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+
+export async function getSpaceCategories(): Promise<SpaceCategoryResponse[]> {
+    try {
+        const response = await apiFetch('/space-categories', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return response;
+    }
+    catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getCapacityTypes(): Promise<string[]> {
+    try {
+        const response = await apiFetch('/capacity-types', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return response;
+    }
+    catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function createSpace(venueId: string, payload: CreateSpacePayload) {
+    try {
+        const response = await apiFetch(`/venues/${venueId}/spaces`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ...payload,
+                spaceAmenityIds: payload.spaceAmenityIds ?? [],
+                spaceImageIds: payload.spaceImageIds ?? [],
+            }),
         });
         return response;
     } catch (error) {

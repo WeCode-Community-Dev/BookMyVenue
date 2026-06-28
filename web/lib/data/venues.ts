@@ -90,10 +90,21 @@ export type SpaceImage = {
 
 export enum CapacityType {
   PEOPLE = 'PEOPLE',
-  // Add other values from your backend enum
-  // SEATS = 'SEATS',
-  // TABLES = 'TABLES',
+  SEATS = 'SEATS',
+  PLAYERS = 'PLAYERS',
+  CARS = 'CARS',
+  SQFT = 'SQFT',
+  SQM = 'SQM',
 }
+
+export const capacityTypeLabels: Record<CapacityType, string> = {
+  [CapacityType.PEOPLE]: 'People (Total)',
+  [CapacityType.SEATS]: 'Seats',
+  [CapacityType.PLAYERS]: 'Players',
+  [CapacityType.CARS]: 'Cars',
+  [CapacityType.SQFT]: 'Square Feet',
+  [CapacityType.SQM]: 'Square Meters',
+};
 
 export type VenueDetails = {
   id: string;

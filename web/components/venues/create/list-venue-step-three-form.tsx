@@ -1,6 +1,7 @@
 "use client";
 
 import type { VenueImage } from "@/lib/data/list-venue";
+import { createImageFromFile } from "@/lib/utils/venue-image";
 
 import { VenueImageGallery } from "./venue-image-gallery";
 import { VenueImageUploadZone } from "./venue-image-upload-zone";
@@ -14,14 +15,6 @@ type ListVenueStepThreeFormProps = {
 
 
 
-function createImageFromFile(file: File, index: number): VenueImage {
-  return {
-    id: `${crypto.randomUUID()}-${file.name}`,
-    url: URL.createObjectURL(file),
-    alt: file.name.replace(/\.[^.]+$/, "") || "Uploaded venue photo",
-  };
-}
-
 export function ListVenueStepThreeForm({
   images,
   coverImageId,
@@ -32,7 +25,7 @@ export function ListVenueStepThreeForm({
   function handleFilesSelected(files: FileList) {
     const newImages = Array.from(files)
       .filter((file) => file.type.startsWith("image/"))
-      .map((file, index) => createImageFromFile(file, index));
+      .map((file) => createImageFromFile(file));
 
     if (newImages.length === 0) {
       return;

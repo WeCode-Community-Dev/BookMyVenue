@@ -8,10 +8,16 @@ import { cn } from "@/lib/utils";
 
 type VenueImageUploadZoneProps = {
   onFilesSelected: (files: FileList) => void;
+  title?: string;
+  description?: string;
+  buttonLabel?: string;
 };
 
 export function VenueImageUploadZone({
   onFilesSelected,
+  title = "Drag and drop images here",
+  description = "Upload at least 5 high-resolution photos of your venue. Support for JPG, PNG, and HEIC up to 20MB.",
+  buttonLabel = "Select Files from Device",
 }: VenueImageUploadZoneProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = React.useState(false);
@@ -57,11 +63,10 @@ export function VenueImageUploadZone({
       </span>
       <div className="flex flex-col gap-2">
         <p className="text-base font-semibold text-on-surface">
-          Drag and drop images here
+          {title}
         </p>
         <p className="text-sm text-on-surface-variant">
-          Upload at least 5 high-resolution photos of your venue. Support for
-          JPG, PNG, and HEIC up to 20MB.
+          {description}
         </p>
       </div>
       <input
@@ -76,7 +81,7 @@ export function VenueImageUploadZone({
         }}
       />
       <Button type="button" onClick={() => inputRef.current?.click()}>
-        Select Files from Device
+        {buttonLabel}
       </Button>
     </div>
   );
