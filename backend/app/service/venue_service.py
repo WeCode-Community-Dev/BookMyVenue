@@ -19,6 +19,7 @@ from app.schema.venue_schema import (
     VenueSlotResponse,
 )
 from app.model.venue_model import (
+    Amenity,
     Venue,
     VenueAmenity,
     VenueImage,
@@ -342,6 +343,25 @@ class VenueService:
                 status_code=500,
                 detail=str(e),
             )
+
+    def get_all_amenities(
+        self,
+        db: Session,
+        owner_id: str,
+    ) -> List[VenueResponse]:
+
+        try:
+
+            amenities = db.query(Amenity).all()
+
+            # return amenities
+
+            return [v for v in amenities]
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
 
 # Singleton instance

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.schema.base_schema import SuccessResponse
 from app.schema.venue_schema import (
+    AmenityResponse,
     CreateVenueRequest,
     CreateVenueResponse,
     UpdateVenueStatusRequest,
@@ -97,5 +98,24 @@ def update_status(
 
     return SuccessResponse(
         message="Venue verification status updated successfully",
+        data=result,
+    )
+
+
+@router.get(
+    "amenities",
+    response_model=SuccessResponse[List[AmenityResponse]],
+    status_code=status.HTTP_200_OK,
+    summary="Get all amenities",
+    description="Get all amenities",
+)
+def get_all_amenities(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = venue_service.get_all_amenities(db=db, owner_id=current_user.id)
+
+    return SuccessResponse(
+        message="Amenities list retrieved successfully",
         data=result,
     )
