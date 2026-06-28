@@ -43,7 +43,7 @@ export class AdminUpdateVenueBlockStatusUsecase {
 
         if (
             venue.approvalStatus !==
-            VenueStatus.APPROVED
+            VenueStatus.ACTIVE
         ) {
 
             throw new BadRequestError(

@@ -181,7 +181,7 @@ export class VenueRepository extends IVenueRepository {
 
                 {
 
-                    approvalStatus: VenueStatus.APPROVED,
+                    approvalStatus: VenueStatus.ACTIVE,
 
                     rejectionReason: null
 

@@ -36,7 +36,7 @@ export class AdminApproveVenueUsecase {
 
         if (
             venue.approvalStatus ===
-            VenueStatus.APPROVED
+            VenueStatus.ACTIVE
         ) {
 
             throw new BadRequestError(
