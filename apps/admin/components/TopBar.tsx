@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
-import { Show, SignInButton, UserButton } from "@clerk/nextjs";
+import { Show, SignInButton } from "@clerk/nextjs";
 
 const TITLES: Record<string, string> = {
     "/": "Dashboard",
@@ -45,9 +45,9 @@ export function TopBar({ setSidebarOpen }: TopBarProps) {
                 <Show when="signed-out">
                     <SignInButton />
                 </Show>
-                <Show when="signed-in">
+                {/* <Show when="signed-in">
                     <UserButton />
-                </Show>
+                </Show> */}
             </div>
         </header>
     );

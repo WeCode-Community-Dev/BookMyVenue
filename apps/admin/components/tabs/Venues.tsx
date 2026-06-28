@@ -53,7 +53,6 @@ export function VenuesPage() {
             setVenues(result.venues);
             setTotal(result.total);
         });
-        fetchPendingVenues(1, 1).then((result) => setPendingCount(result.total));
     }, []);
 
     const handleFilterChange = async (filter: VerificationStatus | "All") => {
@@ -112,7 +111,6 @@ export function VenuesPage() {
             return [1, null, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
         return [1, null, page - 1, page, page + 1, null, totalPages];
     };
-    console.log({ pagedVenues });
 
     return (
         <>

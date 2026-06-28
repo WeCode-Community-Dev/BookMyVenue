@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MapPin, Settings, LogOut } from "lucide-react";
+import { MapPin, LogOut } from "lucide-react";
+import { useClerk } from "@clerk/nextjs";
 import { NAV } from "./data";
 
 interface SidebarProps {
@@ -12,6 +13,7 @@ interface SidebarProps {
 
 export function Sidebar({ setSidebarOpen, mobile = false }: SidebarProps) {
   const pathname = usePathname();
+  const { signOut } = useClerk();
 
   return (
     <div className={`${mobile ? "flex" : "hidden lg:flex"} flex-col bg-primary text-primary-foreground h-full`}>
@@ -46,10 +48,13 @@ export function Sidebar({ setSidebarOpen, mobile = false }: SidebarProps) {
       </nav>
 
       <div className="px-3 py-4 border-t border-primary-foreground/10 space-y-1">
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-primary-foreground/60 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-all">
-          <Settings className="w-4 h-4" /> Settings
-        </button>
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-primary-foreground/60 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-all">
+        <button
+          onClick={() => {
+            setSidebarOpen(false);
+            signOut({ redirectUrl: "/sign-in" });
+          }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-primary-foreground/60 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-all"
+        >
           <LogOut className="w-4 h-4" /> Logout
         </button>
       </div>

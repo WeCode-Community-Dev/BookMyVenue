@@ -1,6 +1,7 @@
 import { VenueCategory, VerificationStatus, Role } from "@bookmyvenue/database";
 import { Venue } from "./venue";
 import { Owner, Customer } from "./user";
+import { Booking, BookingSession, BookingWithRelations } from "./booking";
 
 export const SELECT_VENUE = {
     id: true,
@@ -127,5 +128,23 @@ export const mapCustomer = (u: {
         role: u.role,
         joined: u.createdAt.toISOString().split("T")[0]!,
         bookings: u._count.bookings,
+    };
+};
+
+
+export const mapBooking = (b: BookingWithRelations): Booking => {
+    return {
+        id: b.id,
+        client: b.user.name ?? "",
+        venue: b.venue.name,
+        owner: b.venue.owner.name ?? "",
+        date: b.bookingSessions[0]?.eventDate.toISOString().split("T")[0] ?? "",
+        category: b.venue.category,
+        purpose: b.purpose ?? "",
+        amount: b.bookingSessions.reduce(
+            (sum: number, session: BookingSession) => sum + session.pricePaid,
+            0,
+        ),
+        status: b.status,
     };
 };

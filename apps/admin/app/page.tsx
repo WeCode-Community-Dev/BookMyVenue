@@ -13,7 +13,7 @@ export default function App() {
     const [venues, setVenues] = useState<Venue[]>([]);
     const [users, setUsers] = useState<User[]>(USERS);
 
-    const totalRevenue = BOOKINGS.filter((b) => b.status === "Confirmed").reduce((s, b) => s + b.amount, 0);
+    const totalRevenue = BOOKINGS.filter((b) => b.status === "CONFIRMED").reduce((s, b) => s + b.amount, 0);
 
     return (
         <div className="h-screen flex overflow-hidden bg-background">
