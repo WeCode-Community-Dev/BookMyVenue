@@ -1,7 +1,7 @@
-import { VenueCategory, VerificationStatus, Role } from "@bookmyvenue/database";
+import { Prisma } from "@bookmyvenue/database";
 import { Venue } from "./venue";
 import { Owner, Customer } from "./user";
-import { Booking, BookingSession, BookingWithRelations } from "./booking";
+import { Booking } from "./booking";
 
 export const SELECT_VENUE = {
     id: true,
@@ -32,31 +32,11 @@ export const SELECT_VENUE = {
     _count: { select: { bookings: true } },
 } as const;
 
-export const mapVenue = (v: {
-    id: number;
-    name: string;
-    description: string;
-    location: string;
-    district: string;
-    category: VenueCategory;
-    capacity: number;
-    images: string[];
-    amenities: string[];
-    isActive: boolean;
-    verificationStatus: VerificationStatus;
-    createdAt: Date;
-    owner: { email: string };
-    sessions: {
-        id: number;
-        label: string;
-        startTime: string;
-        endTime: string;
-        price: number;
-        isActive: boolean;
-    }[];
-    reviews: { rating: number }[];
-    _count: { bookings: number };
-}): Venue  => {
+export type MappedVenues = Prisma.VenueGetPayload<{
+    select: typeof SELECT_VENUE;
+}>;
+
+export const mapVenue = (v: MappedVenues): Venue => {
     return {
         id: String(v.id),
         name: v.name,
@@ -75,7 +55,7 @@ export const mapVenue = (v: {
         amenities: v.amenities,
         sessions: v.sessions,
     };
-}
+};
 
 export const SELECT_OWNER = {
     id: true,
@@ -86,14 +66,11 @@ export const SELECT_OWNER = {
     _count: { select: { venues: true } },
 } as const;
 
-export const mapOwner = (u: {
-    id: string;
-    email: string;
-    name: string | null;
-    role: Role;
-    createdAt: Date;
-    _count: { venues: number };
-}): Owner => {
+export type MappedOwner = Prisma.UserGetPayload<{
+    select: typeof SELECT_OWNER;
+}>;
+
+export const mapOwner = (u: MappedOwner): Owner => {
     return {
         id: u.id,
         name: u.name,
@@ -113,14 +90,11 @@ export const SELECT_CUSTOMER = {
     _count: { select: { bookings: true } },
 } as const;
 
-export const mapCustomer = (u: {
-    id: string;
-    email: string;
-    name: string | null;
-    role: Role;
-    createdAt: Date;
-    _count: { bookings: number };
-}): Customer => {
+export type MappedCustomer = Prisma.UserGetPayload<{
+    select: typeof SELECT_CUSTOMER;
+}>;
+
+export const mapCustomer = (u: MappedCustomer): Customer => {
     return {
         id: u.id,
         name: u.name,
@@ -131,8 +105,42 @@ export const mapCustomer = (u: {
     };
 };
 
+export const SELECT_BOOKING = {
+    id: true,
+    purpose: true,
+    status: true,
+    user: {
+        select: {
+            name: true,
+            email: true,
+        },
+    },
+    venue: {
+        select: {
+            name: true,
+            category: true,
+            owner: {
+                select: {
+                    name: true,
+                },
+            },
+        },
+    },
+    bookingSessions: {
+        include: {
+            session: true,
+        },
+    },
+};
 
-export const mapBooking = (b: BookingWithRelations): Booking => {
+export type MappedBookings = Prisma.BookingGetPayload<{
+    select: typeof SELECT_BOOKING;
+}>;
+
+export type BookingSession = MappedBookings["bookingSessions"][number];
+
+
+export const mapBooking = (b: MappedBookings): Booking => {
     return {
         id: b.id,
         client: b.user.name ?? "",

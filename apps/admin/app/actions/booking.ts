@@ -1,42 +1,10 @@
 "use server";
 
 import { unstable_cache } from "next/cache";
-import { prisma, BookingStatus, VenueCategory, Prisma } from "@bookmyvenue/database";
-import { mapBooking } from "./utils";
+import { prisma, BookingStatus, VenueCategory } from "@bookmyvenue/database";
+import { mapBooking, SELECT_BOOKING } from "./utils";
 
-const SELECT_BOOKING = {
-    id: true,
-    purpose: true,
-    status: true,
-    user: {
-        select: {
-            name: true,
-            email: true,
-        },
-    },
-    venue: {
-        select: {
-            name: true,
-            category: true,
-            owner: {
-                select: {
-                    name: true,
-                },
-            },
-        },
-    },
-    bookingSessions: {
-        include: {
-            session: true,
-        },
-    },
-};
 
-export type BookingWithRelations = Prisma.BookingGetPayload<{
-    select: typeof SELECT_BOOKING;
-}>;
-
-export type BookingSession = BookingWithRelations["bookingSessions"][number];
 
 export type Booking = {
     id: string;
