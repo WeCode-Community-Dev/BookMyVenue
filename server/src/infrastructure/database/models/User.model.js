@@ -12,12 +12,18 @@ const userSchema = new mongoose.Schema({
     },
     phone: {
         type: String,
-        required: true,
-        unique: true
+        unique: true,
+        sparse: true,
+        default: null
     },
     password: {
         type: String,
-        required: true,
+        required: false,
+        select: false
+    },
+    googleId: {
+        type: String,
+        default: null,
         select: false
     },
     role: {
@@ -29,6 +35,14 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    otpCode: {
+        type: String,
+        select: false
+    },
+    otpExpiresAt: {
+        type: Date,
+        select: false
+    },
     isBlocked: {
         type: Boolean,
         default: false
@@ -36,6 +50,14 @@ const userSchema = new mongoose.Schema({
     refreshToken: {
         type: [String],
         default: [],
+        select: false
+    },
+    resetToken: {
+        type: String,
+        select: false
+    },
+    resetTokenExpiry: {
+        type: Date,
         select: false
     }
 

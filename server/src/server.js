@@ -4,6 +4,7 @@ dotenv.config()
 import express from 'express';
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
+// import passport from './infrastructure/config/passport.config.js'  // TODO: Google Auth - temporarily disabled
 import routes from './presentation/routes/index.js'
 import { connectDB } from './infrastructure/config/mongo.config.js';
 import cloudinaryUpload from "./presentation/middlewares/cloudinaryUpload.js";
@@ -13,6 +14,7 @@ const app = express()
 app.use(express.json())
 app.use(cookieParser())
 app.use(express.urlencoded({extended: true}))
+// app.use(passport.initialize())  // TODO: Google Auth - temporarily disabled
 
 
 app.use(cors({

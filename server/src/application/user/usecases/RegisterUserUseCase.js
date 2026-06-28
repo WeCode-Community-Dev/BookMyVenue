@@ -1,7 +1,8 @@
 import { ConflictError } from "../../../domain/errors/ConflictError.js";
-import { UserMapper } from "../../mapper/User.mapper.js";
 import { UserRole } from "../../../domain/enums/UserRole.enum.js";
 import { UserEntity } from "../../../domain/entities/User.js";
+import { sendMail } from "../../../infrastructure/services/MailService.js";
+import { otpTemplate } from "../../../infrastructure/emailTemplates/otpTemplate.js";
 
 class RegisterUserUseCase {
     constructor(userRepository, hashService) {
@@ -17,18 +18,30 @@ class RegisterUserUseCase {
         }
 
         const hashedPassword = await this._hashService.hash(userData.password);
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const hashedOtpCode = await this._hashService.hash(otpCode);
+        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-        const userEntity = new User({
+        const userEntity = new UserEntity({
             fullName: userData.fullName,
             email: userData.email,
             phone: userData.phone,
             password: hashedPassword,
-            role: UserRole.CUSTOMER
+            role: UserRole.CUSTOMER,
+            isOtpVerified: false,
+            otpCode: hashedOtpCode,
+            otpExpiresAt
         });
 
         const created = await this._userRepository.create(userEntity);
 
-        return UserMapper.toDTO(created);
+        await sendMail(
+            created.email,
+            'Your BookMyVenue OTP Code - Verify Your Email',
+            otpTemplate(created.fullName, otpCode)
+        );
+
+        return created;
     }
 }
 

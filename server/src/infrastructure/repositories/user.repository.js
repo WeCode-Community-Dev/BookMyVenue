@@ -92,17 +92,39 @@ export class UserRepository extends IUserRepository {
         return UserMapper.mapToEntity(document);
     }
 
-    async findByEmail(email, includePassword = false) {
+    async findByEmail(email, includePassword = false, includeOtp = false) {
         let query = UserModel.findOne({
             email,
             isDeleted: false,
         });
 
-        if (includePassword) {
-            query = query.select("+password");
+        const select = [];
+        if (includePassword) select.push('+password');
+        if (includeOtp) select.push('+otpCode +otpExpiresAt');
+
+        if (select.length) {
+            query = query.select(select.join(' '));
         }
 
         const document = await query;
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
+
+    async verifyOtp(userId) {
+        const document = await UserModel.findByIdAndUpdate(
+            userId,
+            {
+                isOtpVerified: true,
+                otpCode: null,
+                otpExpiresAt: null
+            },
+            {
+                new: true
+            }
+        );
 
         if (!document) return null;
 
@@ -160,5 +182,16 @@ export class UserRepository extends IUserRepository {
 
     async delete(id) {
         return await UserModel.findByIdAndDelete(id);
+    }
+
+    async findByGoogleId(googleId) {
+        const document = await UserModel.findOne({
+            googleId,
+            isDeleted: { $ne: true }
+        }).select('+googleId');
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
     }
 }

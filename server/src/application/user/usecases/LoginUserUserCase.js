@@ -22,6 +22,10 @@ export default class LoginUserUseCase {
             throw new UnauthorizedError("Invalid credentials");
         }
 
+        if (!user.isOtpVerified) {
+            throw new UnauthorizedError("OTP verification required");
+        }
+
         const payload = { userId: user.id, role: user.role };
         const accessToken = TokenService.generateAccessToken(payload);
         const refreshToken = TokenService.generateRefreshToken(payload);
