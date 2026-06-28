@@ -1,4 +1,4 @@
-import { VenueDetails, VenueStatus } from "@/lib/data/venues";
+import { Space, VenueDetails, VenueStatus } from "@/lib/data/venues";
 import { apiFetch } from "./api";
 
 export type CreateVenuePayload = {
@@ -198,6 +198,21 @@ export async function getVenue(id: string): Promise<VenueResponse> {
             headers: {
                 'Content-Type': 'application/json',
                 // Authorization: accessToken,
+            },
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export async function getSpace(id: string): Promise<Space> {
+    try {
+        const response = await apiFetch(`/spaces/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
             },
         });
         return response;
