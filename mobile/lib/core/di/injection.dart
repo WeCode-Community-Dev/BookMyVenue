@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 
+import '../../feature/add_new_venue/venue_injection.dart';
 import '../../feature/auth/auth_injection.dart';
 import '../../feature/auth/data/datasource/auth_local_datasource.dart';
 import '../network/api_client.dart';
@@ -16,6 +17,7 @@ Future<void> setupInjector() async {
   await _registerLocalNotification();
   await registerAuthDependencies();
   await registerOwnerAuthDependencies();
+  await registerVenueDependencies();
 }
 
 Future<void> _registerCore() async {

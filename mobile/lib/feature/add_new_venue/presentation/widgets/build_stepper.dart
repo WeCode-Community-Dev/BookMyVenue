@@ -27,14 +27,14 @@ class BuildStepper extends StatelessWidget {
           _BuildStepLine(isActive: step >= 2),
           _BuildStepIndicator(
             number: 2,
-            label: 'Location',
+            label: 'Media',
             active: step >= 2,
             current: step == 2,
           ),
           _BuildStepLine(isActive: step >= 3),
           _BuildStepIndicator(
             number: 3,
-            label: 'Photos',
+            label: 'Location',
             active: step >= 3,
             current: step == 3,
           ),

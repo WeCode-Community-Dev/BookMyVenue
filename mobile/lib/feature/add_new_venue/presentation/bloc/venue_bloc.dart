@@ -5,6 +5,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../../core/errors/failures.dart';
+import '../../../../core/logger/app_logger.dart';
 import '../../domain/entity/add_new_venue_entity.dart';
 import '../../domain/entity/venue_response_entity.dart';
 import '../../domain/params/add_venue_params.dart';
@@ -40,6 +41,8 @@ class VenueBloc extends Bloc<VenueEvent, VenueState> {
     Emitter<VenueState> emit,
   ) async {
     emit(state.copyWith(addVenueStatus: VenueStatus.loading));
+
+    AppLogger.debug('${event.params}');
 
     final Either<Failure, AddNewVenueResult> result = await _addNewVenueUseCase(
       event.params,

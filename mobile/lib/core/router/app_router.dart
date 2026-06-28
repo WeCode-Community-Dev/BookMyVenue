@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../feature/add_new_venue/presentation/bloc/cubit/venue_details_cubit.dart';
+import '../../feature/add_new_venue/presentation/bloc/venue_bloc.dart';
 import '../../feature/add_new_venue/presentation/pages/add_new_venue_page.dart';
 import '../../feature/auth/domain/enums/approval_status.dart';
 import '../../feature/auth/domain/enums/role_base.dart';
@@ -138,7 +140,17 @@ class AppRouter {
                 path: '/${AppRouteNames.addNewVenue}',
                 name: AppRouteNames.addNewVenue,
                 builder: (BuildContext context, GoRouterState state) =>
-                    const OwnerVenuesListPage(),
+                    MultiBlocProvider(
+                      providers: [
+                        BlocProvider<VenueDetailsCubit>(
+                          create: (BuildContext context) => VenueDetailsCubit(),
+                        ),
+                        BlocProvider<VenueBloc>(
+                          create: (BuildContext context) => sl<VenueBloc>(),
+                        ),
+                      ],
+                      child: const OwnerVenuesListPage(),
+                    ),
               ),
             ],
           ),

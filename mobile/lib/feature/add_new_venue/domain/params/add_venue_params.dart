@@ -17,16 +17,23 @@ class AddNewVenueRequestParams extends Equatable {
     required this.instantBooking,
   });
 
+  ///BASIC INFO
   final String venueName;
   final String category;
   final String description;
   final int minCapacity;
   final int maxCapacity;
   final List<String> amenityIds;
+
+  /// MEDIA
   final String coverImageUrl;
   final List<String> galleryImages;
   final String? virtualTourUrl;
+
+  /// LOCATION
   final VenueLocationRequestParams location;
+
+  /// BOOKING AND PRICING
   final List<VenueSlotRequestParams> slots;
   final List<VenueServiceRequestParams> services;
   final bool instantBooking;

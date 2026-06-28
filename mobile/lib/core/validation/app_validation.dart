@@ -3,6 +3,15 @@ import 'validation_messages.dart';
 
 class AppValidation {
   AppValidation._();
+
+  static String? validateEmptyField(String? value, String text) {
+    if (value == null || value.isEmpty) {
+      return '$text${ValidationMessages.requiredField}';
+    }
+
+    return null;
+  }
+
   static String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return ValidationMessages.emailRequired;
@@ -74,6 +83,22 @@ class AppValidation {
 
     if (value.length > 25) {
       return ValidationMessages.businessNameTooLong;
+    }
+
+    return null;
+  }
+
+  static String? validateVenueName(String? value) {
+    if (value == null || value.isEmpty) {
+      return ValidationMessages.venueNameRequired;
+    }
+
+    if (value.length < 3) {
+      return ValidationMessages.venueNameTooShort;
+    }
+
+    if (value.length > 50) {
+      return ValidationMessages.venueNameTooLong;
     }
 
     return null;

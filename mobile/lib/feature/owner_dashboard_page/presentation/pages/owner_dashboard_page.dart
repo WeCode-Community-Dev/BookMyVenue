@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/auth/auth_session.dart';
+import '../../../../core/logger/app_logger.dart';
+import '../../../../core/services/permission_service.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/widgets/app_text.dart';
@@ -10,8 +12,24 @@ import '../widget/build_quick_action_button.dart';
 import '../widget/build_recent_booking_card.dart';
 import '../widget/build_revenue_performance_card.dart';
 
-class OwnerDashboardPage extends StatelessWidget {
+class OwnerDashboardPage extends StatefulWidget {
   const OwnerDashboardPage({super.key});
+
+  @override
+  State<OwnerDashboardPage> createState() => _OwnerDashboardPageState();
+}
+
+class _OwnerDashboardPageState extends State<OwnerDashboardPage> {
+  @override
+  void initState() {
+    super.initState();
+    getLocationPermission();
+  }
+
+  Future<void> getLocationPermission() async {
+    final granted = await PermissionService.requestLocation();
+    AppLogger.info('$granted permission granted');
+  }
 
   @override
   Widget build(BuildContext context) {

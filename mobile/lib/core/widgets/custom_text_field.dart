@@ -9,20 +9,24 @@ class CustomTextField extends StatefulWidget {
     required this.hint,
     this.controller,
     this.isPassword = false,
-    this.icon,
+    this.prefixIcon,
     this.validator,
     this.keyboardType,
     this.maxLength,
+    this.maxLines = 1,
     this.label,
+    this.enabled,
   });
   final String hint;
   final String? label;
   final TextEditingController? controller;
   final bool isPassword;
-  final IconData? icon;
+  final IconData? prefixIcon;
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final int? maxLength;
+  final int? maxLines;
+  final bool? enabled;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -49,10 +53,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
           const SizedBox(height: 6),
         ],
         TextFormField(
+          enabled: widget.enabled,
           controller: widget.controller,
           keyboardType: widget.keyboardType,
           obscureText: _obscureText,
           maxLength: widget.maxLength,
+          maxLines: widget.maxLines,
           style: Theme.of(context).textTheme.bodyLarge,
           inputFormatters: <TextInputFormatter>[
             if (widget.keyboardType ==
@@ -65,8 +71,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
           decoration: InputDecoration(
             counter: const SizedBox(),
             hintText: widget.hint,
-            prefixIcon: widget.icon != null
-                ? Icon(widget.icon, size: 20)
+            prefixIcon: widget.prefixIcon != null
+                ? Icon(widget.prefixIcon, size: 20)
                 : null,
             suffixIcon: widget.isPassword
                 ? IconButton(

@@ -54,7 +54,25 @@
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>NSUserNotificationUsageDescription</key>
-	<string>This app uses notifications to keep you informed.</string>
+    <string>Book my venue uses notifications to send you booking confirmations, event reminders, and important venue updates.</string>
+    
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Book my venue requires access to your photo library so you can upload venue photos, profile pictures, and event banners.</string>
+    
+    <key>NSCameraUsageDescription</key>
+    <string>Book my venue requires camera access so you can take and upload real-time photos of your venue or scan booking QR codes.</string>
+    
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Book my venue requires microphone access to let you record audio descriptions or video tours of your venue.</string>
+	
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs your location to select venue locations.</string>
+
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs your location to select venue locations.</string>
+
+	<key>GMSApiKey</key>
+	<string>AIzaSyACaI8OFFdRgQ0gf0jRTAR2WJ5cDx7miac</string>	
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

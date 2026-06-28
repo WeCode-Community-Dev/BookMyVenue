@@ -85,7 +85,7 @@ class _SigninPageState extends State<SigninPage> {
                     CustomTextField(
                       hint: 'Continue with mobile number',
                       controller: _mobileController,
-                      icon: Icons.email_outlined,
+                      prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.number,
 
                       maxLength: 50,

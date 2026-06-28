@@ -1,5 +1,7 @@
 class ValidationMessages {
   ValidationMessages._();
+  // Empty field
+  static const String requiredField = ' is required';
   // Email
   static const String emailRequired = 'Email is required';
   static const String emailTooLong = 'Email is too long';
@@ -27,4 +29,10 @@ class ValidationMessages {
       'Business name must be at least 3 characters';
   static const String businessNameTooLong =
       'Business name cannot exceed 50 characters';
+
+  // Venue name
+  static const String venueNameRequired = 'Venue name is required';
+  static const String venueNameTooShort =
+      'Venue name must be at least 3 characters';
+  static const String venueNameTooLong = 'Fullname cannot exceed 50 characters';
 }
