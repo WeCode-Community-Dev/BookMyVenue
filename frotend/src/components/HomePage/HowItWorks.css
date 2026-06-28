@@ -1,0 +1,85 @@
+.how-it-works-section {
+  padding: 40px 20px;
+  background-color: #f8fafc;
+  font-family: sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.how-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.how-header h2 {
+  font-size: 24px;
+  color: #0f172a;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.how-header p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.how-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+.how-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px 24px;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.how-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
+}
+
+.how-number-badge {
+  font-size: 36px;
+  font-weight: 800;
+  color: #059669;
+  opacity: 0.2;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+
+.how-card-title {
+  font-size: 18px;
+  color: #0f172a;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.how-card-desc {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .how-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .how-it-works-section {
+    padding: 60px 0;
+  }
+
+  .how-header h2 {
+    font-size: 28px;
+  }
+}
