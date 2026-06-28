@@ -15,5 +15,9 @@ export const VenueMessages = {
         STATUS_ALREADY_SET: 'Status alredy set',
         NOT_ACTIVE_VENUE: 'Current venue is inactivated',
         NOT_ADMIN_VERIFIED: 'Venue is not verified by admin',
+        VENUE_ALREADY_APPROVED:"Venue already approved",
+        VENUE_ALREADY_REJECTED:"Venue already rejected",
+        REJECTION_REASON_REQUIRED:"Rejection reason is required",
+        ONLY_APPROVED_VENUE_CAN_BE_BLOCKED:"Only approved venues ca be blocked or unblocked"
     }
 }

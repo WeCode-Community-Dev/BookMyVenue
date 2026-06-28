@@ -7,27 +7,27 @@ export class AdminUserController {
 
     constructor(
         adminGetAllUsersUsecase,
-        adminBlockUserUsecase,
-        adminUnblockUserUsecase
+        adminUpdateUserStatusUsecase,
     ){
-        this._adminGetAllUsersUsecase = adminGetAllUsersUsecase
-        this._adminBlockUserUsecase = adminBlockUserUsecase
-        this._adminUnblockUserUsecase = adminUnblockUserUsecase
+        this._adminGetAllUsersUsecase = adminGetAllUsersUsecase,
+        this._adminUpdateUserStatusUsecase = adminUpdateUserStatusUsecase
     }
 
     getAllUsers = asyncHandler(async(req,res) => {
 
         const {
-            search = '',
-            page = 1,
-            limit = 10
-        } = req.query
+            search ,
+            isBlocked,
+            page ,
+            limit 
+        } = req.validatedQuery;
 
         const { data, totalCount, totalPages } =
             await this._adminGetAllUsersUsecase.execute(
                 search,
-                Number(page),
-                Number(limit)
+                isBlocked,
+                page,
+                limit
             )
 
         return sendSuccess(
@@ -38,33 +38,20 @@ export class AdminUserController {
         )
     })
 
-    blockUser = asyncHandler(async(req,res) => {
+    updateUserStatus = asyncHandler(async(req,res) => {
 
-        const { userId } = req.params
+        const { userId } = req.params;
+        const { isBlocked } = req.body;
 
         const user =
-            await this._adminBlockUserUsecase.execute(userId)
+            await this._adminUpdateUserStatusUsecase.execute(userId, isBlocked)
 
         return sendSuccess(
             res,
             statusCode.OK,
-            UserMessage.success.USER_BLOCKED,
+            isBlocked?UserMessage.success.USER_BLOCKED:UserMessage.success.USER_UNBLOCKED,
             user
         )
     })
 
-    unblockUser = asyncHandler(async(req,res) => {
-
-        const { userId } = req.params
-
-        const user =
-            await this._adminUnblockUserUsecase.execute(userId)
-
-        return sendSuccess(
-            res,
-            statusCode.OK,
-            UserMessage.success.USER_UNBLOCKED,
-            user
-        )
-    })
 }

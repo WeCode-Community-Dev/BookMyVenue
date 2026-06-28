@@ -34,9 +34,13 @@ export class UserRepository extends IUserRepository {
             ];
 
         }
+        if (query.isBlocked !== undefined) {
+            filter.isBlocked =
+                query.isBlocked === "true";
+        }
 
-        const page = Number(query.page) || 1;
-        const limit = Number(query.limit) || 10;
+        const page = query.page;
+        const limit = query.limit;
 
         const skip =
             limit * (page - 1);
@@ -62,14 +66,12 @@ export class UserRepository extends IUserRepository {
         };
     }
 
-    async blockUser(id) {
-        console.log("blocked repo")
-
+    async updateBlockStatus(id, isBlocked) {
         const document =
             await UserModel.findByIdAndUpdate(
                 id,
                 {
-                    isBlocked: true
+                    isBlocked
                 },
                 {
                     new: true
@@ -82,24 +84,6 @@ export class UserRepository extends IUserRepository {
         return UserMapper.mapToEntity(document);
     }
 
-    async unblockUser(id) {
-
-        const document =
-            await UserModel.findByIdAndUpdate(
-                id,
-                {
-                    isBlocked: false
-                },
-                {
-                    new: true
-                }
-            );
-
-        if (!document) return null;
-
-        return UserMapper.mapToEntity(document);
-    }
-
     async create(user) {
         const data = UserMapper.mapToPersistence(user);
 
@@ -108,17 +92,39 @@ export class UserRepository extends IUserRepository {
         return UserMapper.mapToEntity(document);
     }
 
-    async findByEmail(email, includePassword = false) {
+    async findByEmail(email, includePassword = false, includeOtp = false) {
         let query = UserModel.findOne({
             email,
             isDeleted: { $ne: true }
         });
 
-        if (includePassword) {
-            query = query.select("+password");
+        const select = [];
+        if (includePassword) select.push('+password');
+        if (includeOtp) select.push('+otpCode +otpExpiresAt');
+
+        if (select.length) {
+            query = query.select(select.join(' '));
         }
 
         const document = await query;
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
+
+    async verifyOtp(userId) {
+        const document = await UserModel.findByIdAndUpdate(
+            userId,
+            {
+                isOtpVerified: true,
+                otpCode: null,
+                otpExpiresAt: null
+            },
+            {
+                new: true
+            }
+        );
 
         if (!document) return null;
 
@@ -199,5 +205,16 @@ export class UserRepository extends IUserRepository {
 
     async delete(id) {
         return await UserModel.findByIdAndDelete(id);
+    }
+
+    async findByGoogleId(googleId) {
+        const document = await UserModel.findOne({
+            googleId,
+            isDeleted: { $ne: true }
+        }).select('+googleId');
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
     }
 }

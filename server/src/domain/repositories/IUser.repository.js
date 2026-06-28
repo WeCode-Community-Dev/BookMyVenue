@@ -3,15 +3,11 @@ export class IUserRepository {
         throw new Error('Method not implemented');
     }
 
-    async findAllFiltered(query={}) {
+    async findAllFiltered(query = {}) {
         throw new Error('Method not implemented');
     }
 
-    async blockUser(id) {
-        throw new Error('Method not implemented');
-    }
-
-    async unblockUser(id) {
+    async updateBlockStatus(id, isBlocked) {
         throw new Error('Method not implemented');
     }
 
@@ -23,6 +19,10 @@ export class IUserRepository {
         throw new Error('Method not implemented');
     }
 
+    async verifyOtp(userId) {
+        throw new Error('Method not implemented');
+    }
+
     async delete(id) {
         throw new Error('Method not implemented');
     }
@@ -31,7 +31,7 @@ export class IUserRepository {
         throw new Error('Method not implemented');
     }
 
-    async findByEmail(email, includePassword = false) {
+    async findByEmail(email, includePassword = false, includeOtp = false) {
         throw new Error('Method not implemented');
     }
 
@@ -51,4 +51,7 @@ export class IUserRepository {
         throw new Error('Method not implemented');
     }
 
+    async findByGoogleId(googleId) {
+        throw new Error('Method not implemented');
+    }
 }

@@ -26,7 +26,9 @@ export class VenueMapper {
             isDeleted: doc.isDeleted,
             rating: doc.rating,
             reviews: doc.reviews,
-            isAdminVerified: doc.isAdminVerified
+            approvalStatus : doc.approvalStatus,
+            isBlocked : doc.isBlocked,
+            rejectionReason : doc.rejectionReason
         })
         return venue
     }
@@ -52,7 +54,9 @@ export class VenueMapper {
             isDeleted: entity.isDeleted,
             rating: entity.rating,
             reviews: entity.reviews,
-            isAdminVerified: entity.isAdminVerified
+            approvalStatus : entity.approvalStatus,
+            isBlocked : entity.isBlocked,
+            rejectionReason : entity.rejectionReason
         }
     }
 }
