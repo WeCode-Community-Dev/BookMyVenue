@@ -1,6 +1,3 @@
-import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
-import { ValidationError } from "../../../../domain/errors/ValidationError.js";
-
 export class UserUpdateProfileImageUsecase {
 
     constructor(userRepository){
