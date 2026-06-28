@@ -1,4 +1,5 @@
 from datetime import datetime, time
+from enum import Enum
 from uuid import uuid4
 
 from sqlalchemy import (
@@ -10,11 +11,19 @@ from sqlalchemy import (
     ForeignKey,
     Numeric,
     Index,
+    Enum as SqlEnum,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config.database import Base
+
+
+class VerificationStatus(str, Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    SUSPENDED = "suspended"
 
 
 class Venue(Base):
@@ -127,10 +136,16 @@ class Venue(Base):
         index=True,
     )
 
-    verification_status: Mapped[str] = mapped_column(
-        String(20),
-        default="pending",
+    verification_status: Mapped[VerificationStatus] = mapped_column(
+        # SqlEnum(ApprovalStatus, name="approval_status"),
+        SqlEnum(
+            VerificationStatus,
+            name="approval_status",
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        ),
         nullable=False,
+        default=VerificationStatus.PENDING,
+        server_default=VerificationStatus.PENDING.value,
     )
 
     average_rating: Mapped[float] = mapped_column(
@@ -158,9 +173,8 @@ class Venue(Base):
         default=False,
     )
 
-    approved_by: Mapped[UUID | None] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("users.id"),
+    approved_by: Mapped[str | None] = mapped_column(
+        Text,
         nullable=True,
     )
 

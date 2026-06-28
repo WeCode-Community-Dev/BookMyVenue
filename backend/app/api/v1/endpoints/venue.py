@@ -7,6 +7,8 @@ from app.schema.base_schema import SuccessResponse
 from app.schema.venue_schema import (
     CreateVenueRequest,
     CreateVenueResponse,
+    UpdateVenueStatusRequest,
+    UpdateVenueStatusResponse,
     VenueResponse,
 )
 from app.service.venue_service import venue_service
@@ -72,5 +74,28 @@ def get_all_venues(
 
     return SuccessResponse(
         message="Venues list retrieved successfully",
+        data=result,
+    )
+
+
+@router.patch(
+    "/update-status",
+    response_model=SuccessResponse[UpdateVenueStatusResponse],
+    status_code=status.HTTP_200_OK,
+)
+def update_status(
+    data: UpdateVenueStatusRequest,
+    db: Session = Depends(get_db),
+    # current_admin=Depends(get_current_admin),
+):
+    result = venue_service.update_verification_status(
+        db=db,
+        venue_id=data.venue_id,
+        status=data.status,
+        rejection_reason=data.rejection_reason,
+    )
+
+    return SuccessResponse(
+        message="Venue verification status updated successfully",
         data=result,
     )

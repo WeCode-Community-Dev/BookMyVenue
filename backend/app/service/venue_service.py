@@ -1,5 +1,7 @@
+from datetime import datetime
 import re
 from typing import List
+from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
@@ -9,6 +11,7 @@ from app.schema.venue_schema import (
     AmenityResponse,
     CreateVenueRequest,
     CreateVenueResponse,
+    UpdateVenueStatusResponse,
     VenueImageResponse,
     VenueLocation,
     VenueResponse,
@@ -21,6 +24,7 @@ from app.model.venue_model import (
     VenueImage,
     VenueServiceSchema,
     VenueSlot,
+    VerificationStatus,
 )
 
 
@@ -278,6 +282,66 @@ class VenueService:
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
+    def update_verification_status(
+        self,
+        db: Session,
+        venue_id: str,
+        status: VerificationStatus,
+        rejection_reason: str | None = None,
+    ):
+        try:
+
+            venue = db.query(Venue).filter(Venue.id == venue_id).first()
+
+            if venue.verification_status == status:
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Venue is already {status.value}.",
+                )
+
+            if not venue:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Venue not found",
+                )
+
+            venue.verification_status = status
+            venue.updated_at = datetime.utcnow()
+
+            if status == VerificationStatus.APPROVED:
+                venue.approved_by = "Admin"
+                venue.approved_at = datetime.utcnow()
+                venue.rejection_reason = None
+
+            elif status == VerificationStatus.REJECTED:
+                venue.approved_by = None
+                venue.approved_at = None
+                venue.rejection_reason = rejection_reason
+
+            elif status == VerificationStatus.SUSPENDED:
+                venue.rejection_reason = rejection_reason
+
+            db.commit()
+            db.refresh(venue)
+
+            return UpdateVenueStatusResponse(
+                venue_id=venue.id,
+                verification_status=venue.verification_status,
+                approved_by=venue.approved_by,
+                approved_at=venue.approved_at,
+                rejection_reason=venue.rejection_reason,
+            )
+
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail=str(e),
+            )
 
 
 # Singleton instance

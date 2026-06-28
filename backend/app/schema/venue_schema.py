@@ -15,6 +15,8 @@ from pydantic import (
     model_validator,
 )
 
+from app.model.venue_model import VerificationStatus
+
 
 class VenueCategory(str, Enum):
     MARRIAGE_HALL = "marriage_hall"
@@ -378,6 +380,89 @@ class CreateVenueResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ApproveVenueRequest(BaseModel):
-    approve: bool
-    rejection_reason: Optional[str] = None
+class UpdateVenueStatusRequest(BaseModel):
+    """
+    Request to update a venue's verification status.
+    """
+
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        extra="forbid",
+    )
+
+    venue_id: UUID = Field(
+        ...,
+        description="Unique identifier of the venue.",
+        examples=["550e8400-e29b-41d4-a716-446655440000"],
+    )
+
+    status: VerificationStatus = Field(
+        ...,
+        description="New verification status for the venue.",
+        examples=["approved"],
+    )
+
+    rejection_reason: Optional[str] = Field(
+        default=None,
+        min_length=5,
+        max_length=500,
+        description="Reason for rejection or suspension.",
+        examples=["Venue ownership documents are invalid."],
+    )
+
+    @model_validator(mode="after")
+    def validate_rejection_reason(self):
+        if (
+            self.status
+            in (
+                VerificationStatus.REJECTED,
+                VerificationStatus.SUSPENDED,
+            )
+            and not self.rejection_reason
+        ):
+            raise ValueError(
+                "Rejection reason is required when rejecting or suspending a venue."
+            )
+
+        return self
+
+
+class UpdateVenueStatusResponse(BaseModel):
+    """
+    Response returned after updating venue verification status.
+    """
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        extra="forbid",
+    )
+
+    venue_id: UUID = Field(
+        ...,
+        description="Unique identifier of the venue.",
+        examples=["550e8400-e29b-41d4-a716-446655440000"],
+    )
+
+    verification_status: VerificationStatus = Field(
+        ...,
+        description="Current verification status of the venue.",
+        examples=["approved"],
+    )
+
+    approved_by: Optional[UUID] = Field(
+        default=None,
+        description="Admin ID who approved the venue. Null if not approved.",
+        examples=["6a4c4f4d-4f5b-47f0-8b17-18d7d6d9f7c1"],
+    )
+
+    approved_at: Optional[datetime] = Field(
+        default=None,
+        description="Timestamp when the venue was approved.",
+        examples=["2026-06-29T10:30:00Z"],
+    )
+
+    rejection_reason: Optional[str] = Field(
+        default=None,
+        description="Reason for rejection or suspension, if applicable.",
+        examples=["Venue documents are incomplete."],
+    )
