@@ -211,6 +211,27 @@ class UserAuthService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
+    def get_user_profile(
+        self,
+        db: Session,
+        user_id: str,
+    ) -> UserResponse:
+        try:
+            user = user_service.get_user_by_id(
+                db=db,
+                user_id=user_id,
+            )
+            return UserResponse.model_validate(user)
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail=str(e),
+            )
+
 
 # Singleton instance
 user_auth_service = UserAuthService()

@@ -10,6 +10,8 @@ from app.schema.user_auth_schema import (
 from app.schema.base_schema import SuccessResponse
 from app.service.user_auth_service import user_auth_service
 from app.config.database import get_db
+from app.config.dependencies import get_current_user
+from app.model.user import User
 
 router = APIRouter()
 
@@ -64,4 +66,21 @@ def get_all_venue_owners(
     return SuccessResponse(
         message="Users details fetched successfully",
         data=venue_owners,
+    )
+
+
+@router.get(
+    "/user/profile",
+    response_model=SuccessResponse[UserResponse],
+    summary="Get user profile",
+    description="Get user details based on token",
+)
+def get_user_profile(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user_profile = user_auth_service.get_user_profile(db=db, user_id=current_user.id)
+    return SuccessResponse(
+        message="User profile retrieved successfully",
+        data=user_profile,
     )
