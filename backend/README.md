@@ -24,7 +24,7 @@ psql --version
 # 1. Create database (one-time)
 createdb book_my_venue
 
-# 2. Copy env file and edit if your Mac username is not jeevan
+# 2. Copy env file and edit  your Mac username 
 cp .env.example .env
 
 # 3. Install dependencies
@@ -48,7 +48,7 @@ DATABASE_URL="postgresql://jeevan@localhost:5432/book_my_venue"
 | Part | Meaning |
 |------|---------|
 | `postgresql://` | Protocol |
-| `jeevan` | Your Mac username (Postgres trusts local login — **no password**) |
+| `name` | Your Mac username (Postgres trusts local login — **no password**) |
 | `localhost:5432` | Postgres running on your machine, default port |
 | `book_my_venue` | Database name from `createdb` |
 
