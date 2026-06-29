@@ -14,6 +14,7 @@ public class BookingResponse {
     private Integer id;
     private Integer venueId;
     private String  venueName;
+    private Integer price;
     private String  venueLocation;
     private LocalDate bookingDate;
     private String  bookingStatus;
@@ -38,6 +39,7 @@ public class BookingResponse {
                 .bookedOn(booking.getBookedOn())
                 .customerName(booking.getUser().getName())
                 .customerEmail(booking.getUser().getEmail())
+                .price(booking.getVenue().getPrice())
                 .build();
     }
 }

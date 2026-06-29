@@ -1,4 +1,107 @@
 import { useState, useEffect } from 'react';import { toast } from 'react-toastify';
+// NEW: Stripe imports
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+// NEW: Stripe instance — loaded once outside component
+const stripePromise = loadStripe('pk_test_51TnBbxFTP4YQTTBn4nvcjBwqAtaYz3flObfYyAg3Nv1s7H0EBbh6iqJhHyDwZLhSgOhlLEPfCM0ri9ErASAO5RfZ00KXXTvWpE');
+
+// NEW: Stripe card form component — separate so it can use useStripe/useElements hooks
+function StripeCardForm({ booking, clientSecret, onSuccess, onCancel }) {
+  const stripe   = useStripe();
+  const elements = useElements();
+  const [paying, setPaying] = useState(false);
+
+  const getToken = () => {
+    const userData = JSON.parse(localStorage.getItem('bmv_user'));
+    return userData.token;
+  };
+
+  const handlePay = async (e) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setPaying(true);
+    try {
+      // Step 1 — confirm card payment with Stripe
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+        },
+      });
+
+      if (error) throw new Error(error.message);
+      if (paymentIntent.status !== 'succeeded') throw new Error('Payment not completed');
+
+      // Step 2 — tell backend payment succeeded
+      const res = await fetch(
+        `http://localhost:8080/api/payments/confirm?bookingId=${booking.id}&paymentIntentId=${paymentIntent.id}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${getToken()}` },
+        }
+      );
+      if (!res.ok) throw new Error('Payment confirmation failed');
+
+      onSuccess(); // triggers success screen
+
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handlePay}>
+      {/* Card element from Stripe — renders card number, expiry, cvc fields */}
+      <div style={{
+        border: '1px solid var(--border)',
+        borderRadius: 8,
+        padding: '12px 14px',
+        marginBottom: 20,
+        background: '#1e1e2e',       // dark bg so white text is visible
+        position: 'relative',        // needed for Stripe iframe to receive clicks
+        zIndex: 1001,                // above modal overlay (1000)
+        pointerEvents: 'auto',       // ensure clicks reach the Stripe iframe
+      }}>
+        <CardElement options={{
+          style: {
+            base: {
+              fontSize: '15px',
+              color: '#ffffff',                           // white text
+              fontFamily: 'system-ui, sans-serif',
+              iconColor: '#ffffff',                       // white card icon
+              '::placeholder': { color: 'rgba(255,255,255,0.5)' }, // semi-white placeholder
+            },
+            invalid: {
+              color: '#ff6b6b',      // red for invalid input
+              iconColor: '#ff6b6b',
+            },
+          },
+        }} />
+      </div>
+
+      {/* Test card hint */}
+      <div style={{
+        background: '#fef3c7', border: '1px solid #f59e0b',
+        borderRadius: 8, padding: '8px 12px',
+        marginBottom: 20, fontSize: 12, color: '#92400e',
+      }}>
+        <strong>Test card:</strong> 4242 4242 4242 4242 · Any future date · Any CVC
+      </div>
+
+      <div className="modal-actions">
+        <button type="button" onClick={onCancel} disabled={paying}>
+          Cancel
+        </button>
+        <button type="submit" disabled={paying || !stripe}>
+          {paying ? 'Processing...' : `Pay ₹${booking.price ? booking.price.toLocaleString('en-IN') : '—'}`}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function UserDashboard({ user, onLogout }) {
   // ── State ──────────────────────────────────────────────────────────────────
   const [venues, setVenues]     = useState([]);
@@ -22,6 +125,12 @@ function UserDashboard({ user, onLogout }) {
   // Cancel modal — null = closed, booking object = open
   const [cancelModal, setCancelModal]   = useState(null);
   const [cancelReason, setCancelReason] = useState('');
+
+  // NEW: Payment modal state
+  const [paymentModal, setPaymentModal]     = useState(null);   // null = closed, booking = open
+  const [clientSecret, setClientSecret]     = useState(null);   // from backend
+  const [paymentSuccess, setPaymentSuccess] = useState(false);  // show success screen
+  const [intentLoading, setIntentLoading]   = useState(false);  // loading intent from backend
 
   // Loading states
   const [venuesLoading, setVenuesLoading]     = useState(true);
@@ -255,9 +364,36 @@ function UserDashboard({ user, onLogout }) {
     }
   };
 
-  // ── Proceed to pay placeholder ─────────────────────────────────────────────
-  const handleProceedToPay = (booking) => {
-    toast.info('Payment module coming in Phase 2!');
+  // NEW: Proceed to pay — opens payment modal and fetches PaymentIntent from backend
+  const handleProceedToPay = async (booking) => {
+    setPaymentModal(booking);
+    setPaymentSuccess(false);
+    setClientSecret(null);
+    setIntentLoading(true);
+    try {
+      // Call backend to create a Stripe PaymentIntent
+      const res = await fetch(
+        `http://localhost:8080/api/payments/create-intent/${booking.id}`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${getToken()}` },
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to initiate payment');
+      setClientSecret(data.clientSecret); // store clientSecret for Stripe
+    } catch (err) {
+      toast.error(err.message);
+      setPaymentModal(null);
+    } finally {
+      setIntentLoading(false);
+    }
+  };
+
+  // NEW: Called by StripeCardForm after payment succeeds
+  const handlePaymentSuccess = async () => {
+    setPaymentSuccess(true);
+    await fetchBookings(); // refresh bookings — payment_status now PAID
   };
 
   // CHANGED: use searchResults from Meilisearch if available
@@ -555,7 +691,7 @@ function UserDashboard({ user, onLogout }) {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             {['APPROVED','CONFIRMED'].includes(
                               booking.bookingStatus?.toUpperCase()
-                            ) && (
+                            ) && booking.paymentStatus !== 'PAID' && (
                               <button
                                 className="auth-button"
                                 style={{ padding:'6px 14px', fontSize:13, marginTop:0, width:'auto' }}
@@ -563,6 +699,17 @@ function UserDashboard({ user, onLogout }) {
                               >
                                 Proceed to Pay
                               </button>
+                            )}
+                            {/* Show PAID badge if already paid */}
+                            {booking.paymentStatus === 'PAID' && (
+                              <span style={{
+                                fontSize: 12, fontWeight: 600,
+                                padding: '3px 10px', borderRadius: 20,
+                                background: '#d1fae5', color: '#065f46',
+                                textAlign: 'center',
+                              }}>
+                                PAID
+                              </span>
                             )}
                             {['PENDING','APPROVED'].includes(
                               booking.bookingStatus?.toUpperCase()
@@ -614,9 +761,6 @@ function UserDashboard({ user, onLogout }) {
               borderRadius: 12, padding: '24px 32px',
               maxWidth: 400, margin: '24px auto 0',
             }}>
-              <p style={{ fontSize: 15, color: 'var(--text-h)', fontWeight: 600, marginBottom: 8 }}>
-                Profile editing coming in Phase 2
-              </p>
               <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.6 }}>
                 Update your name, location, profile photo and password.
               </p>
@@ -881,6 +1025,111 @@ function UserDashboard({ user, onLogout }) {
                 <button type="button" onClick={closeCancelModal}>Keep booking</button>
                 <button type="button" onClick={handleConfirmCancel}>Confirm cancel</button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ════════════════════════════════════════
+            NEW: PAYMENT MODAL WITH STRIPE
+            Uses existing .modal-overlay and .modal-content classes
+        ════════════════════════════════════════ */}
+        {paymentModal && (
+          <div
+            className="modal-overlay"
+            onClick={() => !intentLoading && !paymentSuccess && setPaymentModal(null)}
+          >
+            <div
+              className="modal-content"
+              style={{ maxWidth: 460, overflow: 'visible' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+
+              {/* ── Success screen ── */}
+              {paymentSuccess ? (
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  <div style={{
+                    width: 64, height: 64, borderRadius: '50%',
+                    background: '#d1fae5',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 16px', fontSize: 28, color: '#065f46',
+                  }}>
+                    ✓
+                  </div>
+                  <h3 style={{ marginBottom: 8 }}>Payment successful!</h3>
+                  <p style={{ color: 'var(--text)', fontSize: 14, marginBottom: 24 }}>
+                    Your booking for <strong>{paymentModal.venueName}</strong> is confirmed and paid.
+                  </p>
+                  <div className="modal-actions" style={{ justifyContent: 'center' }}>
+                    <button type="button" onClick={() => setPaymentModal(null)}>
+                      Close
+                    </button>
+                  </div>
+                </div>
+
+              ) : (
+                <>
+                  <h3>Payment overview</h3>
+
+                  {/* Booking summary */}
+                  <div style={{
+                    background: 'var(--code-bg)', border: '1px solid var(--border)',
+                    borderRadius: 8, padding: '14px', marginBottom: 20,
+                  }}>
+                    {[
+                      { label: 'Venue',        value: paymentModal.venueName },
+                      { label: 'Location',     value: paymentModal.venueLocation || '—' },
+                      { label: 'Booking date', value: paymentModal.bookingDate
+                          ? new Date(paymentModal.bookingDate + 'T00:00:00')
+                              .toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+                          : '—'
+                      },
+                      { label: 'Booking ID',   value: `#${paymentModal.id}` },
+                    ].map(row => (
+                      <div key={row.label} style={{
+                        display: 'flex', justifyContent: 'space-between',
+                        fontSize: 13, padding: '4px 0',
+                      }}>
+                        <span style={{ color: 'var(--text)' }}>{row.label}</span>
+                        <span style={{ fontWeight: 600, color: 'var(--text-h)' }}>{row.value}</span>
+                      </div>
+                    ))}
+                    {/* Total */}
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between',
+                      fontSize: 15, padding: '10px 0 0',
+                      borderTop: '1px solid var(--border)', marginTop: 8,
+                    }}>
+                      <span style={{ fontWeight: 600, color: 'var(--text-h)' }}>Total amount</span>
+                      <span style={{ fontWeight: 700, color: 'var(--accent)', fontSize: 18 }}>
+                        ₹{paymentModal.price
+                          ? paymentModal.price.toLocaleString('en-IN')
+                          : '—'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Loading intent */}
+                  {intentLoading && (
+                    <p style={{ color: 'var(--text)', textAlign: 'center', padding: '20px 0' }}>
+                      Preparing payment...
+                    </p>
+                  )}
+
+                  {/* Stripe card form — only renders when clientSecret is ready */}
+                  {!intentLoading && clientSecret && (
+                    <div style={{ position: 'relative', zIndex: 1001 }}>
+                      <Elements stripe={stripePromise} options={{ clientSecret }}>
+                        <StripeCardForm
+                          booking={paymentModal}
+                          clientSecret={clientSecret}
+                          onSuccess={handlePaymentSuccess}
+                          onCancel={() => setPaymentModal(null)}
+                        />
+                      </Elements>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         )}
