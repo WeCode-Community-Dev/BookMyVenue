@@ -18,13 +18,17 @@ source ~/.zshrc
 psql --version
 ```
 
-## Setup (Phase 1)
+## Setup
+
+All commands below are run from the **`backend/`** folder (monorepo root is one level up).
 
 ```bash
+cd backend
+
 # 1. Create database (one-time)
 createdb book_my_venue
 
-# 2. Copy env file and edit  your Mac username 
+# 2. Copy env file and edit DATABASE_URL 
 cp .env.example .env
 
 # 3. Install dependencies
@@ -33,7 +37,10 @@ npm install
 # 4. Generate Prisma client
 npm run db:generate
 
-# 5. Verify Postgres connection
+# 5. Run migrations
+npm run db:migrate
+
+# 6. Verify Postgres connection
 npm run check:setup
 ```
 
@@ -48,7 +55,7 @@ DATABASE_URL="postgresql://jeevan@localhost:5432/book_my_venue"
 | Part | Meaning |
 |------|---------|
 | `postgresql://` | Protocol |
-| `name` | Your Mac username (Postgres trusts local login — **no password**) |
+| `jeevan` | Your Mac username — use `whoami` (Postgres trusts local login — **no password**) |
 | `localhost:5432` | Postgres running on your machine, default port |
 | `book_my_venue` | Database name from `createdb` |
 
@@ -92,7 +99,9 @@ const prisma = require('../config/prisma');
 
 Relative imports must include the `.js` extension.
 
-## API (Phase 3+)
+## API
+
+From `backend/`:
 
 ```bash
 npm run dev
@@ -119,7 +128,7 @@ npm run dev
 
 | Endpoint | Auth | Description |
 |----------|------|-------------|
-| `GET /api/v1/venues/:id/availability` | No | Busy CONFIRMED slots in range (`?from=&to=` **UTC ISO datetimes ending in `Z`**) |
+| `GET /api/v1/venues/:id/availability` | No | Busy CONFIRMED slots in range (`?from=&to=` **UTC ISO datetimes**, `Z` or `+00:00`) |
 | `POST /api/v1/bookings` | CUSTOMER | Create booking (overlap check + price snapshot) |
 | `GET /api/v1/bookings` | CUSTOMER | List your bookings |
 | `PATCH /api/v1/bookings/:id/cancel` | CUSTOMER | Cancel your own booking |
