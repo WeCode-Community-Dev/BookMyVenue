@@ -3,19 +3,21 @@ import { FiPlus, FiMapPin, FiUsers } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import {useGetOwnerVenuesQuery} from './ownerApi.js'
 
+const PLACEHOLDER_IMAGE =
+  'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&h=400&q=80';
+
+function getVenueImage(venue) {
+  const primary = venue.images?.find((img) => img.isPrimary) || venue.images?.[0];
+  const url = typeof primary === 'string' ? primary : primary?.url;
+  return url || PLACEHOLDER_IMAGE;
+}
 
 function OwnerVenues() {
   const navigate = useNavigate();
 
-  const {data, isLoading,isError,error} = useGetOwnerVenuesQuery() ;
+  const {data, isLoading,isError,error} = useGetOwnerVenuesQuery();
 
-  console.log(data);
-
-  let venues;
-
-  if(data){
-     venues = data.data;
-  }
+  const venues = data?.data ?? [];
 
   if (isLoading) return <p>.......................</p>;
 
@@ -27,22 +29,22 @@ if (isError) {
     <div className="venues-container">
       <div className="venues-header-row">
         <h1 className="venues-title">My Venues</h1>
+        {venues.length === 0 ? <div>No venues found</div> : ( 
         <button 
           className="add-venue-btn" 
           onClick={() => navigate('/owner/add-venue')}
         >
           Add New Venue
         </button>
+        )}
       </div>
 
       <div className="venues-grid">
         {venues.map((venue) => (
           <div key={venue.id} className="venue-card">
             <div className="venue-card-image-wrapper">
-              <img src={venue.images[0]} alt={venue.name} className="venue-card-image" /> 
-               {/* //chnage logic to show primary image */}
+              <img src={getVenueImage(venue)} alt={venue.name} className="venue-card-image" />
             </div>
-            
             <div className="venue-card-body">
               <div className="venue-card-title-row">
                 <h3 className="venue-card-name">{venue.name}</h3>
@@ -63,7 +65,10 @@ if (isError) {
                 </span>
               </div>
 
-              <button className="view-details-btn">
+              <button
+                className="view-details-btn"
+                onClick={() => navigate(`/owner/venues/${venue.id}`)}
+              >
                 View Details
               </button>
             </div>

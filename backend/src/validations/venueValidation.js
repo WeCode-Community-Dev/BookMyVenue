@@ -1,9 +1,11 @@
 import { z } from 'zod';
 
 export const pricingSchema = z.object({
-  dayType: z.enum(['Weekday', 'Weekend', 'Holiday']),
-  pricePerHour: z.coerce.number().positive('Price must be positive'),
+  dayType: z.enum(['weekday', 'weekend', 'holiday']),
+  price: z.coerce.number().positive('Price must be positive'),
   minHours: z.coerce.number().int().positive().default(1),
+  validFrom: z.string().optional(),
+  validTo: z.string().optional(),
 });
 
 export const imageSchema = z.object({
@@ -30,25 +32,15 @@ export const venueSchema = z.object({
   city: z.string().min(2, 'City must be at least 2 characters long'),
   state: z.string().min(2, 'State must be at least 2 characters long'),
   capacity: z.coerce.number().int().positive('Capacity must be a positive integer'),
-  //    images: z.array(z.string().url("Each image must be a valid URL")).min(1, "At least one image URL is required"),
-
-  //optional fields
   pincode: z.string().min(4).max(10).optional(),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
   images: z.array(imageSchema).optional().default([]),
-  // openDays: z.array(
-  //   z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
-  // ).optional().default([]),
-  openTime: z
-    .string()
-    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format, use HH:MM')
-    .optional(),
-  closeTime: z
-    .string()
-    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format, use HH:MM')
-    .optional(),
+  openDays: z.array(z.string()).optional().default([]),
+  openTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format, use HH:MM').optional(),
+  closeTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format, use HH:MM').optional(),
   minBookingHours: z.coerce.number().int().positive().default(1),
-  amenities: z.array(z.string().uuid('Each amenity must be a valid UUID')).optional().default([]),
+  bookingType: z.enum(['hourly', 'daily']).default('daily'),
+  venueAmenities: z.array(z.string().uuid('Each amenity must be a valid UUID')).optional().default([]),
   pricing: z.array(pricingSchema).optional().default([]),
 });

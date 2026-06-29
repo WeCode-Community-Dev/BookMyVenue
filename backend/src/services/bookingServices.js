@@ -2,7 +2,7 @@ import { db } from '../db/index.js';
 import { bookingsTable } from '../models/bookingModel.js';
 import { venuesTable } from '../models/venueModel.js';
 import { paymentsTable } from '../models/paymentModel.js';
-import { and, eq, ne, lte, gte } from 'drizzle-orm';
+import { and, eq, ne, lte, gte,inArray } from 'drizzle-orm';
 import pricingServices from './pricingServices.js';
 import { AppError } from '../handlers/error_handlers.js';
 import { StandardCheckoutPayRequest } from '@phonepe-pg/pg-sdk-node'
@@ -180,7 +180,62 @@ export default {
 }
 
     return { status: 'pending' }
-}
+},
+
+getUserBookings: async function (userId) {
+  const result = await db.query.bookingsTable.findMany({
+    where: eq(bookingsTable.bookerId, userId),
+    with: {
+      venue: {
+        columns: {
+          id: true,
+          name: true,
+          city: true,
+          images: true,
+          bookingType: true,
+        },
+      },
+    },
+    orderBy: (bookingsTable, { desc }) => [desc(bookingsTable.createdAt)],
+  });
+  return result;
+},
+
+getOwnerBookings: async function (ownerId) {
+  const venues = await db.query.venuesTable.findMany({
+    where: eq(venuesTable.ownerId, ownerId),
+    columns: { id: true },
+  });
+
+  const venueIds = venues.map((v) => v.id);
+  if (venueIds.length === 0) return [];
+
+  const bookings = await db.query.bookingsTable.findMany({
+    where: inArray(bookingsTable.venueId, venueIds),
+    with: {
+      venue: {
+        columns: {
+          id: true,
+          name: true,
+          city: true,
+          images: true,
+          bookingType: true,
+        },
+      },
+      booker: {
+        columns: {
+          id: true,
+          username: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: (bookingsTable, { desc }) => [desc(bookingsTable.createdAt)],
+  });
+
+  return bookings;
+},
+
 
 
 

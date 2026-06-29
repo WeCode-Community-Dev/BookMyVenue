@@ -1,14 +1,18 @@
 import { relations } from 'drizzle-orm';
 import { venuesTable, venuePricing } from './venueModel.js';
 import { venueAmenities, amenities } from './amenityModel.js';
-import { userFavourites,usersTable } from './userModel.js';
+import { userFavourites, usersTable } from './userModel.js';
 import { bookingsTable } from './bookingModel.js';
-import {paymentsTable} from './paymentModel.js'
+import { paymentsTable } from './paymentModel.js';
 
-export const venueRelations = relations(venuesTable, ({ many }) => ({
+export const venueRelations = relations(venuesTable, ({ many,one }) => ({
   pricing: many(venuePricing),
   venueAmenities: many(venueAmenities),
-   bookings: many(bookingsTable)
+  bookings: many(bookingsTable),
+  owner: one(usersTable, {
+    fields: [venuesTable.ownerId],
+    references: [usersTable.id],
+  }),
 }));
 
 export const venuePricingRelations = relations(venuePricing, ({ one }) => ({
@@ -34,43 +38,42 @@ export const amenitiesRelations = relations(amenities, ({ many }) => ({
 }));
 
 export const userFavouritesRelations = relations(userFavourites, ({ one }) => ({
-    venue: one(venuesTable, {
-        fields: [userFavourites.venueId],
-        references: [venuesTable.id],
-    }),
-    user: one(usersTable, {              // ← this was missing
-        fields: [userFavourites.userId],
-        references: [usersTable.id],
-    })
-}))
+  venue: one(venuesTable, {
+    fields: [userFavourites.venueId],
+    references: [venuesTable.id],
+  }),
+  user: one(usersTable, {
+    fields: [userFavourites.userId],
+    references: [usersTable.id],
+  }),
+}));
 
-
-export const bookingRelations = relations( bookingsTable, ({one})=>({
+export const bookingRelations = relations(bookingsTable, ({ one }) => ({
   venue: one(venuesTable, {
     fields: [bookingsTable.venueId],
-    references: [venuesTable.id]
+    references: [venuesTable.id],
   }),
 
-   booker: one(usersTable, {
-        fields: [bookingsTable.bookerId],
-        references: [usersTable.id]
-    }),
+  booker: one(usersTable, {
+    fields: [bookingsTable.bookerId],
+    references: [usersTable.id],
+  }),
 
   payment: one(paymentsTable, {
-        fields: [bookingsTable.id],
-        references: [paymentsTable.bookingId]
-    })
-
-}))
+    fields: [bookingsTable.id],
+    references: [paymentsTable.bookingId],
+  }),
+}));
 
 export const paymentsRelations = relations(paymentsTable, ({ one }) => ({
-    booking: one(bookingsTable, {
-        fields: [paymentsTable.bookingId],   // FK on THIS table
-        references: [bookingsTable.id]        // PK on the OTHER table
-    })
+  booking: one(bookingsTable, {
+    fields: [paymentsTable.bookingId], // FK on THIS table
+    references: [bookingsTable.id], // PK on the OTHER table
+  }),
 }));
 
 export const usersRelations = relations(usersTable, ({ many }) => ({
-    bookings: many(bookingsTable),
-    favourites: many(userFavourites)
-}))
+  bookings: many(bookingsTable),
+  favourites: many(userFavourites),
+   venues: many(venuesTable)
+}));

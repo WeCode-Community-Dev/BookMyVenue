@@ -28,6 +28,7 @@ export default {
 
       const breakdown = dates.map((date) => {
         const dayType = classifyDay(date);
+        console.log(venue,"gggggggggggggggggggggggggggggg")
         const pricingRow = findMatchingRow(venue.pricing, dayType);
         console.log(dayType,venue,pricingRow,"pricingRowpricingRow")
         return { date, dayType, amount: parseFloat(pricingRow.price) };

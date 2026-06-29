@@ -1,7 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiMapPin, FiUsers, FiStar } from 'react-icons/fi';
+import { FiMapPin, FiUsers, FiStar, FiHeart } from 'react-icons/fi';
 import { useGetFavoritesQuery } from './venueApi';
+import PageTransition from '../../components/ui/PageTransition';
+import { VenueGridSkeleton } from '../../components/ui/LoadingSkeleton';
+import EmptyState from '../../components/ui/EmptyState';
 import './Favorites.scss';
 
 function Favorites() {
@@ -16,40 +19,41 @@ function Favorites() {
   };
 
   return (
-    <div className="favorites-page">
+    <PageTransition className="favorites-page">
+      <div className="favorites-hero">
+        <span className="eyebrow">Your collection</span>
+        <h1>Saved <em>favorites</em></h1>
+        {!isLoading && !error && favorites.length > 0 && (
+          <p>{favorites.length} venue{favorites.length !== 1 ? 's' : ''} you love</p>
+        )}
+      </div>
       <main className="favorites-container">
-        <header className="favorites-header">
-          <div>
-            <p>
-              {isLoading && 'Loading your favorite venues...'}
-              {error && 'Unable to load favorites. Please try again.'}
-              {!isLoading && !error && favorites.length === 0 && 'You have no favorites yet.'}
-              {!isLoading && !error && favorites.length > 0 && `${favorites.length} favorite venue${favorites.length !== 1 ? 's' : ''}`}
-            </p>
-          </div>
-        </header>
-
         {isLoading ? (
-          <div className="favorites-state">Loading favorites...</div>
+          <VenueGridSkeleton count={3} />
         ) : error ? (
-          <div className="favorites-state error">Failed to load favorites.</div>
+          <EmptyState
+            title="Couldn't load favorites"
+            message="Something went wrong. Please refresh and try again."
+            variant="error"
+          />
         ) : favorites.length === 0 ? (
-          <div className="favorites-empty">
-            <h2>No favorites yet</h2>
-            <p>Browse venues and tap the star icon to save them here.</p>
-          </div>
+          <EmptyState
+            icon={FiHeart}
+            title="No favorites yet"
+            message="Browse venues and tap the star icon to save your favorite spaces here."
+            actionLabel="Browse Venues"
+            actionTo="/browse-venues"
+          />
         ) : (
           <section className="favorites-grid">
             {favorites.map((venue) => (
               <article key={venue.id} className="favorite-card">
                 <div className="favorite-card-image">
-                  <img src={venue.images?.[0]?.url || venue.image || 'https://via.placeholder.com/400x230'} alt={venue.name} />
+                  <img src={venue.images?.[0]?.url || venue.image || 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&h=400&q=80'} alt={venue.name} />
+                  <span className="favorite-chip">Saved</span>
                 </div>
                 <div className="favorite-card-body">
-                  <div className="favorite-card-top">
-                    <h2>{venue.name}</h2>
-                    <span className="favorite-chip">Favorite</span>
-                  </div>
+                  <h2>{venue.name}</h2>
                   <div className="favorite-meta">
                     <span>
                       <FiMapPin size={14} /> {venue.city}, {venue.state}
@@ -75,7 +79,7 @@ function Favorites() {
           </section>
         )}
       </main>
-    </div>
+    </PageTransition>
   );
 }
 

@@ -8,7 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../../../redux/slices/authSlice.js';
 import { useSelector } from 'react-redux';
-import {selectCurrentUser,selectIsAuthenticated} from '../../../redux/slices/authSlice.js';
+import { ToastBanner } from '../../../components/ui/ToastProvider';
+import { selectCurrentUser, selectIsAuthenticated } from '../../../redux/slices/authSlice.js';
 
 
 
@@ -72,7 +73,7 @@ console.log("LOGIN RENDERING - isAuthenticated:", isAuthenticated)
         </p>
       </div>
 
-      {errorMsg && <div className="login-error-message">{errorMsg}</div>}
+      <ToastBanner message={errorMsg} type="error" />
 
       <form className="login-form" onSubmit={(e) => { e.preventDefault(); console.log("FORM SUBMIT"); handleSubmit(); }}>
         <div className="form-group">

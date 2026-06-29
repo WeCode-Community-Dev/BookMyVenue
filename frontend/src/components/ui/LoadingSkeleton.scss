@@ -1,0 +1,150 @@
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-muted, #f0ebe4) 25%,
+    var(--surface-elevated, #faf8f5) 50%,
+    var(--surface-muted, #f0ebe4) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-sm, 8px);
+}
+
+.skeleton-line {
+  height: 14px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+
+  &--title { height: 20px; width: 70%; }
+  &--short { width: 45%; }
+  &--price { width: 35%; height: 18px; }
+  &--btn { height: 40px; width: 100%; margin-top: 8px; border-radius: 8px; }
+}
+
+.skeleton-chip {
+  height: 24px;
+  width: 64px;
+  border-radius: 4px;
+}
+
+.skeleton-chips {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.skeleton-venue-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 12px);
+  overflow: hidden;
+
+  &__image {
+    height: 200px;
+    border-radius: 0;
+  }
+
+  &__body {
+    padding: 16px;
+  }
+}
+
+.skeleton-venue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.skeleton-venue-detail-page {
+  &__hero {
+    height: clamp(380px, 55vh, 520px);
+    border-radius: 0;
+    margin-bottom: 0;
+  }
+
+  &__stats {
+    display: flex;
+    gap: 24px;
+    padding: 20px 32px;
+    background: var(--surface-elevated);
+    border-bottom: 1px solid var(--border);
+
+    .skeleton-stat {
+      height: 48px;
+      width: 140px;
+      border-radius: 12px;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 40px;
+    max-width: 1240px;
+    margin: 32px auto 0;
+    padding: 0 32px;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__main,
+  &__sidebar {
+    padding: 28px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+  }
+}
+
+.skeleton-venue-detail {
+  &__hero {
+    height: 420px;
+    border-radius: var(--radius-lg, 16px);
+    margin-bottom: 12px;
+  }
+
+  &__thumbs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+
+    .skeleton { height: 100px; }
+  }
+}
+
+.page-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 60vh;
+  padding: 48px;
+
+  &__spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  &__label {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

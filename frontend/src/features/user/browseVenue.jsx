@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { FiSearch, FiMapPin, FiUsers, FiChevronDown, FiChevronUp, FiStar, FiFilter, FiX } from 'react-icons/fi';
 import './browseVenue.scss';
 import { useNavigate } from 'react-router-dom'
+import PageTransition from '../../components/ui/PageTransition';
+import { VenueGridSkeleton } from '../../components/ui/LoadingSkeleton';
+import EmptyState from '../../components/ui/EmptyState';
 
 import {useGetUserVenuesQuery, useGetFavoritesQuery, useAddFavoriteMutation, useDeleteFavoriteMutation} from "./venueApi.js"
 
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
-const VENUE_TYPES = ['Hall', 'Rooftop', 'Banquet', 'Conference Room', 'Farmhouse', 'Studio', 'Cafe'];
+const VENUE_TYPES = ['Hall', 'Rooftop', 'Banquet', 'Conference Room', 'Farmhouse', 'Studio', 'cafe'];
 
 const AMENITIES_FILTER = [
   { slug: 'wifi',        label: 'Wi-Fi' },
@@ -153,7 +156,19 @@ function BrowseVenues() {
 }
 
   return (
-    <div className="browse-page">
+    <PageTransition className="browse-page">
+      <div className="browse-hero">
+        <div className="browse-hero__content">
+          <span className="eyebrow">Explore venues</span>
+          <h1 className="browse-hero__title">Discover your <em>perfect</em> space</h1>
+          <p className="browse-hero__subtitle">Filter by type, capacity, amenities, and price to find venues that fit your vision.</p>
+        </div>
+        <div className="browse-hero__chips">
+          <span className="browse-chip"><FiUsers size={13} /> 500+ venues</span>
+          <span className="browse-chip browse-chip--sage">Instant booking</span>
+          <span className="browse-chip">Transparent pricing</span>
+        </div>
+      </div>
       <div className="browse-search-bar">
         <div className="search-input-wrapper">
           <FiSearch className="search-icon" />
@@ -177,14 +192,23 @@ function BrowseVenues() {
       <div className="browse-body">
         {/* ── LEFT: Venue cards ── */}
         <section className="venue-grid-section">
-          {filtered.length === 0 ? (
-            <div className="no-results">
-              <p>No venues match your filters.</p>
-              <button className="btn-clear-link" onClick={clearFilters}>Clear all filters</button>
-            </div>
+          {isLoading ? (
+            <VenueGridSkeleton count={pageSize} />
+          ) : filtered.length === 0 ? (
+            <EmptyState
+              icon={FiSearch}
+              title="No venues match your filters"
+              message="Try adjusting your search or clearing filters to see more results."
+              actionLabel="Clear all filters"
+              onAction={clearFilters}
+            />
           ) : (
             <div className="venue-grid">
-              {filtered.map(venue => (
+              {filtered.map(venue => {
+                const pricePerHour = venue.pricing && venue.pricing[0]
+                  ? Number(venue.pricing[0].price)
+                  : null;
+                return (
                 <div key={venue.id} className="venue-card">
                   <div className="venue-card-image">
                     <img src={venue.images?.[0]?.url || venue.image} alt={venue.name} />
@@ -197,6 +221,11 @@ function BrowseVenues() {
                       <FiStar />
                     </button>
                     <span className={`type-badge ${TYPE_COLORS[venue.type] || ''}`}>{venue.type}</span>
+                    {/* {pricePerHour && (
+                      <span className="price-badge">
+                        ₹{pricePerHour.toLocaleString()}<small>/hr</small>
+                      </span>
+                    )} */}
                     <span className="capacity-badge">
                       <FiUsers size={11} /> {venue.capacity}
                     </span>
@@ -213,7 +242,7 @@ function BrowseVenues() {
                       </span>
                     </div>
                     <div className="venue-price">
-                      From <strong>₹{(venue.pricing && venue.pricing[0]) ? Number(venue.pricing[0].pricePerHour).toLocaleString() : 'N/A'}</strong>/hr
+                      From <strong>₹{(venue.pricing && venue.pricing[0]) ? Number(venue.pricing[0].price).toLocaleString() : 'N/A'}</strong>{venue.bookingType ==="daily"?`/day`:'/hr'}
                     </div>
                     <div className="venue-amenities-row">
                       {(venue.venueAmenities || []).slice(0, 4).map(x => {
@@ -230,7 +259,7 @@ function BrowseVenues() {
                     <button onClick={() => viewDetail(venue.id)} className="view-details-btn">View Details</button>
                   </div>
                 </div>
-              ))}
+              );})}
             </div>
           )}
           {/* Pagination */}
@@ -350,7 +379,7 @@ function BrowseVenues() {
           </div>
         </aside>
       </div>
-    </div>
+    </PageTransition>
   );
 }
 

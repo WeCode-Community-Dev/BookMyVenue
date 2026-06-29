@@ -1,24 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import './variable.scss';
+@import '../components/ui/PageTransition.scss';
+@import '../components/ui/LoadingSkeleton.scss';
+@import '../components/ui/EmptyState.scss';
+@import '../components/ui/ToastProvider.scss';
 
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --text: #6b6560;
+  --text-h: #141210;
+  --bg: #fffbf7;
+  --surface-muted: #f5efe8;
+  --surface-elevated: #ffffff;
+  --border: #e8dfd4;
+  --border-subtle: #f0e9e0;
+  --code-bg: #f5efe8;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Warm terracotta + sage accent pair */
+  --accent: #c2410c;
+  --accent-hover: #9a3412;
+  --accent-light: #fb923c;
+  --accent-bg: rgba(194, 65, 12, 0.08);
+  --accent-border: rgba(194, 65, 12, 0.28);
+  --accent-glow: rgba(194, 65, 12, 0.22);
+
+  --sage: #2d6a4f;
+  --sage-light: #d8f3dc;
+  --sage-bg: rgba(45, 106, 79, 0.08);
+  --gold: #b8860b;
+  --gold-light: #fef3c7;
+
+  --gradient-brand: linear-gradient(135deg, #c2410c 0%, #ea580c 50%, #b8860b 100%);
+  --gradient-warm: linear-gradient(160deg, #fffbf7 0%, #f5efe8 50%, #fde8d8 100%);
+  --gradient-dark: linear-gradient(145deg, #141210 0%, #2a221c 60%, #3d2010 100%);
+
+  --shadow:
+    0 1px 2px rgba(20, 18, 16, 0.04),
+    0 4px 16px rgba(20, 18, 16, 0.06);
+  --shadow-md:
+    0 4px 8px rgba(20, 18, 16, 0.04),
+    0 12px 32px rgba(20, 18, 16, 0.08);
+  --shadow-lg:
+    0 8px 16px rgba(20, 18, 16, 0.06),
+    0 24px 48px rgba(20, 18, 16, 0.1);
+
+  --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --heading: 'Fraunces', Georgia, serif;
   --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  font: 16px/1.65 var(--sans);
+  letter-spacing: -0.01em;
+  color-scheme: light;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -27,83 +63,130 @@
   -moz-osx-font-smoothing: grayscale;
 
   @media (max-width: 1024px) {
-    font-size: 16px;
+    font-size: 15px;
   }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --text: #a8a29e;
+    --text-h: #faf8f5;
+    --bg: #141210;
+    --surface-muted: #1f1c19;
+    --surface-elevated: #1a1816;
+    --border: #2e2a26;
+    --border-subtle: #252220;
+    --code-bg: #1f1c19;
+    --accent: #fb923c;
+    --accent-hover: #f97316;
+    --accent-bg: rgba(251, 146, 60, 0.1);
+    --accent-border: rgba(251, 146, 60, 0.3);
+    --accent-glow: rgba(251, 146, 60, 0.2);
+    --sage: #52b788;
+    --sage-bg: rgba(82, 183, 136, 0.1);
+    color-scheme: dark;
   }
+}
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(194, 65, 12, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(45, 106, 79, 0.04) 0%, transparent 40%),
+    url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23e8dfd4'/%3E%3C/svg%3E");
+  background-size: 100% 100%, 100% 100%, 24px 24px;
 }
 
 #root {
   max-width: 100%;
-  text-align: center;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
 }
 
-h1,
-h2 {
+::selection {
+  background: var(--accent-bg);
+  color: var(--accent-hover);
+}
+
+h1, h2, h3 {
   font-family: var(--heading);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-h);
+  font-optical-sizing: auto;
 }
 
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
+  font-size: clamp(2.25rem, 4.5vw, 3.5rem);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
 }
 
-code,
-.counter {
+h2 {
+  font-size: clamp(1.35rem, 2.5vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+p { margin: 0; }
+
+.text-gradient {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+
+  &::before {
+    content: '';
+    width: 20px;
+    height: 2px;
+    background: var(--gradient-brand);
+    border-radius: 2px;
+  }
+}
+
+a, button, input, select, textarea, [role="button"] {
+  transition: color 0.22s ease, background-color 0.22s ease, border-color 0.22s ease,
+    box-shadow 0.22s ease, transform 0.22s ease, opacity 0.22s ease;
+}
+
+code, .counter {
   font-family: var(--mono);
   display: inline-flex;
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--text-h);
 }
 
 code {
-  font-size: 15px;
+  font-size: 13px;
   line-height: 135%;
-  padding: 4px 8px;
+  padding: 3px 8px;
   background: var(--code-bg);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 100px;
+  &:hover { background: var(--text); }
 }

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setCredentials, setInitialized } from './redux/slices/authSlice'
 import { selectIsAuthenticated } from './redux/slices/authSlice'
 import { useGetMeQuery } from '../src/features/auth/authApi.js'
+import { PageLoader } from './components/ui/LoadingSkeleton'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -22,7 +23,7 @@ const App = () => {
     }
   }, [isError])
 
-  if (isLoading) return <div>Loading...</div>  // 👈 no && !isAuthenticated
+  if (isLoading) return <PageLoader label="Loading BookMyVenue..." />
 
   return <Outlet />
 }

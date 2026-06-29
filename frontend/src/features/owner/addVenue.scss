@@ -1,699 +1,951 @@
-// variables
-$teal-primary: #0d9488;
-$teal-hover: #0f766e;
-$teal-light: #f0fdfa;
-$teal-border: rgba(13, 148, 136, 0.2);
-$text-dark: #111827;
+// Owner palette — matches ownerLayout.scss
+$teal-primary: #15535c;
+$teal-hover: #1e6c78;
+$teal-light: #f0f7f7;
+$teal-border: rgba(21, 83, 92, 0.22);
+$teal-glow: rgba(21, 83, 92, 0.25);
+$rust-orange: #9e5c4a;
+$text-dark: #1f2937;
 $text-medium: #4b5563;
 $text-light: #9ca3af;
-$border-light: #e5e7eb;
-$bg-gray: #f9fafb;
+$bg-light: #f8fafc;
+$border-color: #e5e7eb;
 $white: #ffffff;
-$error-color: #ef4444;
 $shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$radius-md: 10px;
+$radius-lg: 14px;
+$radius-xl: 18px;
 
-.wizard-container {
-  max-width: 900px;
-  margin: 0 auto 100px; // extra bottom margin for the sticky bottom bar
-  background-color: $white;
+// ─── Add Venue Wizard — owner theme ──────────────────────────────────────────
+.wizard-page {
   text-align: left;
-  font-family: 'Inter', -apple-system, sans-serif;
+  padding-bottom: 100px;
+  font-family: var(--sans);
 
-  * {
-    box-sizing: border-box;
+  .eyebrow {
+    color: $teal-primary;
+
+    &::before {
+      background: linear-gradient(135deg, $teal-primary 0%, $teal-hover 100%);
+    }
+  }
+}
+
+.wizard-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+
+  &__text {
+    flex: 1;
+    min-width: 240px;
+  }
+}
+
+.wizard-page-title {
+  font-family: var(--heading);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 700;
+  color: $text-dark;
+  margin: 10px 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.wizard-page-subtitle {
+  font-size: 14px;
+  color: $text-medium;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.wizard-step-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 12px 20px;
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+
+  &__label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $text-light;
+    margin-bottom: 2px;
   }
 
-  // --- STEP PROGRESS INDICATOR ---
-  .wizard-progress-bar {
+  &__value {
+    font-family: var(--heading);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: $teal-primary;
+  }
+}
+
+.wizard-container {
+  max-width: 960px;
+  margin: 0 auto;
+
+  * { box-sizing: border-box; }
+}
+
+.wizard-card {
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-md;
+  overflow: hidden;
+
+  &__body {
+    padding: 32px 36px 40px;
+
+    @media (max-width: 640px) {
+      padding: 24px 20px 32px;
+    }
+  }
+}
+
+// ─── Progress stepper ────────────────────────────────────────────────────────
+.wizard-progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 24px 28px;
+  background: $teal-light;
+  border-bottom: 1px solid $border-color;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+
+  @media (max-width: 640px) {
+    padding: 16px 20px;
+    gap: 4px;
+  }
+
+  .progress-step {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 40px;
-    padding: 16px 8px;
-    border-bottom: 1px solid $border-light;
-    position: relative;
-    overflow-x: auto;
-    gap: 12px;
+    gap: 10px;
+    padding: 8px 14px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    color: $text-medium;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
 
-    .progress-step {
+    .step-number-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid $border-color;
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      font-weight: 500;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      background: $white;
       color: $text-light;
-      position: relative;
-      white-space: nowrap;
-      padding-bottom: 4px;
-      cursor: pointer;
-      user-select: none;
-      transition: color 0.2s ease;
-
-      .step-number-badge {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        border: 1px solid $border-light;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        font-weight: 600;
-        background-color: $white;
-        color: $text-light;
-        transition: all 0.2s ease;
-      }
-
-      .step-check-icon {
-        color: $teal-primary;
-        font-size: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      // Active state: highlighted with teal text and border-bottom or pill
-      &.active {
-        color: $teal-primary;
-        font-weight: 600;
-
-        .step-number-badge {
-          border-color: $teal-primary;
-          background-color: $teal-primary;
-          color: $white;
-        }
-
-        &::after {
-          content: '';
-          position: absolute;
-          bottom: -17px; // sits perfectly on the border-bottom line
-          left: 0;
-          right: 0;
-          height: 2px;
-          background-color: $teal-primary;
-        }
-      }
-
-      &.completed {
-        color: $text-dark;
-      }
+      transition: all 0.25s ease;
     }
 
-    .progress-divider {
-      flex-grow: 1;
-      height: 1px;
-      background-color: $border-light;
-      max-width: 40px;
+    .step-check-icon {
+      color: $teal-primary;
+      font-size: 16px;
+    }
 
-      @media (max-width: 640px) {
+    .step-label {
+      @media (max-width: 720px) {
         display: none;
       }
     }
-  }
 
-  // --- STEP CARD HEADER ---
-  .step-header {
-    margin-bottom: 28px;
+    &:hover:not(.active) {
+      background: rgba(21, 83, 92, 0.06);
+    }
 
-    h2 {
-      font-size: 20px;
+    &.active {
+      background: rgba(21, 83, 92, 0.1);
+      color: $teal-primary;
       font-weight: 600;
-      color: $text-dark;
-      margin: 0 0 6px 0;
-      letter-spacing: -0.02em;
+
+      .step-number-badge {
+        border-color: $teal-primary;
+        background: $teal-primary;
+        color: $white;
+        box-shadow: 0 4px 12px $teal-glow;
+      }
     }
 
-    p {
-      font-size: 14px;
-      color: $text-medium;
-      margin: 0;
+    &.completed {
+      color: $text-dark;
+
+      .step-number-badge {
+        border-color: $teal-primary;
+        background: $teal-light;
+        color: $teal-primary;
+      }
     }
   }
 
-  // --- FORM FIELDS & GRID ---
-  .form-grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
+  .progress-divider {
+    flex: 1;
+    min-width: 16px;
+    max-width: 48px;
+    height: 2px;
+    background: $border-color;
+    border-radius: 2px;
+    margin: 0 4px;
 
-    @media (max-width: 640px) {
+    @media (max-width: 720px) {
+      min-width: 8px;
+      max-width: 20px;
+    }
+  }
+}
+
+// ─── Step content ────────────────────────────────────────────────────────────
+.wizard-step-content {
+  animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.step-header {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid $border-color;
+
+  h2 {
+    font-family: var(--heading);
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: $text-dark;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    font-size: 14px;
+    color: $text-medium;
+    margin: 0;
+    line-height: 1.6;
+    max-width: 560px;
+  }
+}
+
+// ─── Form fields ─────────────────────────────────────────────────────────────
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 4px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group-full {
+  margin-bottom: 4px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+
+  label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $text-medium;
+  }
+
+  input,
+  select,
+  textarea {
+    padding: 12px 14px;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-size: 14px;
+    font-family: var(--sans);
+    color: $text-dark;
+    background: $white;
+    outline: none;
+    box-shadow: $shadow-sm;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+
+    &:focus {
+      border-color: $teal-primary;
+      box-shadow: 0 0 0 3px $teal-light;
+    }
+
+    &::placeholder {
+      color: $text-light;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.55;
+  }
+
+  .input-group {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    overflow: hidden;
+    background: $white;
+    box-shadow: $shadow-sm;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    input {
+      flex: 1;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+
+      &:focus {
+        box-shadow: none;
+      }
+    }
+
+    .input-prefix,
+    .input-suffix {
+      background: $bg-light;
+      color: $text-medium;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      border-right: 1px solid $border-color;
+      user-select: none;
+    }
+
+    .input-suffix {
+      border-right: none;
+      border-left: 1px solid $border-color;
+    }
+
+    &:focus-within {
+      border-color: $teal-primary;
+      box-shadow: 0 0 0 3px $teal-light;
+    }
+  }
+
+  .error-message {
+    font-size: 12px;
+    color: #ef4444;
+    font-weight: 500;
+  }
+}
+
+// ─── Availability: day pills ─────────────────────────────────────────────────
+.day-selector-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $text-medium;
+  margin-bottom: 12px;
+}
+
+.days-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+
+  .day-pill {
+    min-width: 56px;
+    padding: 10px 16px;
+    border-radius: $radius-md;
+    border: 1px solid $border-color;
+    background: $white;
+    color: $text-medium;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--sans);
+    box-shadow: $shadow-sm;
+    transition: all 0.22s ease;
+
+    &:hover {
+      border-color: $teal-primary;
+      background: $teal-light;
+      color: $teal-primary;
+    }
+
+    &.active {
+      background: $teal-primary;
+      border-color: $teal-primary;
+      color: $white;
+      box-shadow: 0 4px 12px $teal-glow;
+    }
+  }
+}
+
+// ─── Pricing rules ───────────────────────────────────────────────────────────
+.booking-type-selector {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: $bg-light;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+
+  label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    color: $text-medium;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+}
+
+.booking-type-options {
+  display: inline-flex;
+  gap: 8px;
+  padding: 4px;
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: 10px;
+}
+
+.booking-type-option {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: $text-medium;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: $teal-primary;
+    color: $white;
+    box-shadow: 0 4px 12px $teal-glow;
+  }
+
+  &:hover:not(.active) {
+    background: $teal-light;
+    color: $teal-primary;
+  }
+}
+
+.pricing-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h3 {
+    font-family: var(--heading);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: $text-dark;
+    margin: 0;
+  }
+
+  .add-rule-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: $teal-light;
+    border: 1px solid $teal-border;
+    border-radius: 8px;
+    color: $teal-primary;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.22s ease;
+
+    &:hover {
+      background: $teal-primary;
+      color: $white;
+      border-color: $teal-primary;
+    }
+  }
+}
+
+.pricing-rules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.pricing-rule-card {
+  background: $bg-light;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 0.8fr 1fr 1fr auto;
+  gap: 14px;
+  align-items: end;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: $teal-border;
+    box-shadow: $shadow-sm;
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+
+    .delete-btn-cell {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+
+  &--daily {
+    grid-template-columns: 1.2fr 1.2fr 1fr 1fr auto;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 480px) {
       grid-template-columns: 1fr;
     }
   }
 
-  .form-group-full {
-    margin-bottom: 20px;
-  }
-
-  .form-group {
+  .rule-input-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    margin-bottom: 20px;
 
     label {
-      font-size: 13px;
-      font-weight: 500;
-      color: $text-dark;
+      font-size: 10px;
+      font-weight: 700;
+      color: $text-medium;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
-    input, select, textarea {
+    input,
+    select {
       padding: 10px 12px;
-      border: 1px solid $border-light;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: inherit;
-      color: $text-dark;
-      background-color: $white;
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
+      font-size: 13px;
+      font-family: var(--sans);
+      background: $white;
       outline: none;
-      box-shadow: $shadow-sm;
-      transition: all 0.2s ease;
+      width: 100%;
+      color: $text-dark;
 
       &:focus {
         border-color: $teal-primary;
-        box-shadow: 0 0 0 1px $teal-primary, $shadow-sm;
-      }
-
-      &::placeholder {
-        color: $text-light;
+        box-shadow: 0 0 0 2px $teal-light;
       }
     }
 
-    // Input Group wrapper with prefix/suffix
-    .input-group {
+    .price-prefix-wrapper {
       display: flex;
       align-items: stretch;
-      border: 1px solid $border-light;
-      border-radius: 6px;
-      box-shadow: $shadow-sm;
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
       overflow: hidden;
-      background-color: $white;
-      transition: all 0.2s ease;
+      background: $white;
+
+      .price-prefix {
+        background: $bg-light;
+        border-right: 1px solid $border-color;
+        padding: 0 10px;
+        font-size: 14px;
+        font-weight: 700;
+        color: $teal-primary;
+        display: flex;
+        align-items: center;
+      }
 
       input {
-        flex-grow: 1;
         border: none;
         border-radius: 0;
         box-shadow: none;
-        padding: 10px 12px;
-
-        &:focus {
-          box-shadow: none;
-        }
-      }
-
-      .input-prefix, .input-suffix {
-        background-color: $bg-gray;
-        color: $text-medium;
-        padding: 0 12px;
-        font-size: 14px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        border-right: 1px solid $border-light;
-        user-select: none;
-      }
-
-      .input-suffix {
-        border-right: none;
-        border-left: 1px solid $border-light;
       }
 
       &:focus-within {
         border-color: $teal-primary;
-        box-shadow: 0 0 0 1px $teal-primary, $shadow-sm;
+        box-shadow: 0 0 0 2px $teal-light;
       }
     }
-
-    .error-message {
-      font-size: 12px;
-      color: $error-color;
-      font-weight: 500;
-      margin-top: 2px;
-    }
   }
 
-  // --- STEP 2: AVAILABILITY SPECIFICS ---
-  .day-selector-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: $text-dark;
-    margin-bottom: 8px;
-  }
-
-  .days-pills-row {
+  .delete-rule-btn {
+    width: 40px;
+    height: 40px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 24px;
-
-    .day-pill {
-      padding: 8px 16px;
-      border-radius: 20px;
-      border: 1px solid $border-light;
-      background-color: $white;
-      color: $text-medium;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background-color: $bg-gray;
-        border-color: $text-light;
-      }
-
-      &.active {
-        background-color: $teal-primary;
-        border-color: $teal-primary;
-        color: $white;
-        box-shadow: $shadow-sm;
-      }
-    }
-  }
-
-  // --- STEP 3: PRICING RULES SPECIFICS ---
-  .pricing-section-header {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-
-    h3 {
-      font-size: 15px;
-      font-weight: 600;
-      color: $text-dark;
-      margin: 0;
-    }
-
-    .add-rule-btn {
-      background: none;
-      border: 1px solid $border-light;
-      border-radius: 6px;
-      color: $teal-primary;
-      font-weight: 600;
-      font-size: 13px;
-      padding: 6px 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background-color: $teal-light;
-        border-color: $teal-primary;
-      }
-    }
-  }
-
-  .pricing-rules-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 24px;
-
-    .pricing-rule-card {
-      background-color: $white;
-      border: 1px solid $border-light;
-      border-radius: 8px;
-      padding: 16px;
-      box-shadow: $shadow-sm;
-      display: grid;
-      grid-template-columns: 1.5fr 1.5fr 1.2fr 1.5fr 1.5fr auto;
-      gap: 12px;
-      align-items: end;
-
-      @media (max-width: 768px) {
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-
-        .delete-btn-cell {
-          grid-column: span 2;
-          text-align: right;
-        }
-      }
-
-      .rule-input-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-
-        label {
-          font-size: 11px;
-          font-weight: 500;
-          color: $text-medium;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        input, select {
-          padding: 8px 10px;
-          border: 1px solid $border-light;
-          border-radius: 6px;
-          font-size: 13px;
-          outline: none;
-          width: 100%;
-
-          &:focus {
-            border-color: $teal-primary;
-          }
-        }
-
-        // pricing prefix inline
-        .price-prefix-wrapper {
-          display: flex;
-          align-items: stretch;
-          border: 1px solid $border-light;
-          border-radius: 6px;
-          overflow: hidden;
-
-          .price-prefix {
-            background-color: $bg-gray;
-            border-right: 1px solid $border-light;
-            padding: 0 8px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-          }
-
-          input {
-            border: none;
-            border-radius: 0;
-            padding: 8px 10px;
-          }
-
-          &:focus-within {
-            border-color: $teal-primary;
-          }
-        }
-      }
-
-      .delete-rule-btn {
-        background: none;
-        border: none;
-        color: $text-light;
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-
-        &:hover {
-          color: $error-color;
-          background-color: #fee2e2;
-        }
-      }
-    }
-  }
-
-  // --- STEP 4: AMENITIES SPECIFICS ---
-  .amenities-section {
-    margin-bottom: 28px;
-
-    .amenity-category-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: $text-medium;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 12px;
-      border-bottom: 1px solid $border-light;
-      padding-bottom: 6px;
-    }
-
-    .amenities-checkbox-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-    }
-
-    .amenity-card-label {
-      border: 1px solid $border-light;
-      border-radius: 8px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      background-color: $white;
-      box-shadow: $shadow-sm;
-      user-select: none;
-      transition: all 0.2s ease;
-
-      .amenity-icon {
-        font-size: 22px;
-        line-height: 1;
-        color: $text-medium;
-        flex-shrink: 0;
-        transition: color 0.2s ease;
-      }
-
-      .amenity-label-text {
-        font-size: 13px;
-        font-weight: 500;
-        color: $text-dark;
-      }
-
-      input[type="checkbox"] {
-        display: none;
-      }
-
-      &:hover {
-        border-color: $text-light;
-        background-color: $bg-gray;
-      }
-
-      &.selected {
-        border-color: $teal-primary;
-        background-color: $teal-light;
-        box-shadow: 0 0 0 1px $teal-primary, $shadow-sm;
-
-        .amenity-icon {
-          color: $teal-primary;
-        }
-      }
-    }
-  }
-
-  // --- STEP 5: IMAGES SPECIFICS ---
-  .image-upload-zone {
-    border: 2px dashed $border-light;
-    border-radius: 8px;
-    padding: 40px 20px;
-    text-align: center;
-    background-color: $bg-gray;
+    justify-content: center;
+    background: $white;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    color: $text-light;
     cursor: pointer;
     transition: all 0.2s ease;
-    margin-bottom: 28px;
 
-    .upload-icon-wrapper {
-      margin-bottom: 12px;
-      color: $text-light;
-      font-size: 32px;
-      display: flex;
-      justify-content: center;
+    &:hover {
+      color: #ef4444;
+      background: #fee2e2;
+      border-color: #fca5a5;
     }
+  }
+}
 
-    .upload-main-text {
-      font-size: 14px;
-      font-weight: 500;
-      color: $text-dark;
-      margin: 0 0 4px 0;
+// ─── Amenities ───────────────────────────────────────────────────────────────
+.amenities-section {
+  margin-bottom: 32px;
 
-      span {
-        color: $teal-primary;
-        text-decoration: underline;
-      }
+  .amenity-category-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: $text-medium;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: $border-color;
     }
+  }
 
-    .upload-sub-text {
-      font-size: 12px;
+  .amenities-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .amenity-card-label {
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    background: $white;
+    box-shadow: $shadow-sm;
+    user-select: none;
+    transition: all 0.25s ease;
+
+    .amenity-icon {
+      font-size: 22px;
       color: $text-medium;
-      margin: 0;
+      flex-shrink: 0;
+      transition: color 0.2s ease;
+    }
+
+    .amenity-label-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: $text-dark;
+    }
+
+    input[type="checkbox"] {
+      display: none;
     }
 
     &:hover {
       border-color: $teal-primary;
-      background-color: $teal-light;
+      background: $teal-light;
+      transform: translateY(-2px);
+      box-shadow: $shadow-md;
+    }
+
+    &.selected {
+      border-color: $teal-primary;
+      background: $teal-light;
+      box-shadow: 0 0 0 1px $teal-border, $shadow-sm;
+
+      .amenity-icon {
+        color: $teal-primary;
+      }
+
+      .amenity-label-text {
+        color: $teal-hover;
+      }
+    }
+  }
+}
+
+// ─── Image upload ────────────────────────────────────────────────────────────
+.image-upload-zone {
+  border: 2px dashed $border-color;
+  border-radius: $radius-xl;
+  padding: 48px 24px;
+  text-align: center;
+  background: $bg-light;
+  cursor: pointer;
+  margin-bottom: 28px;
+  transition: all 0.25s ease;
+
+  .upload-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: $teal-light;
+    color: $teal-primary;
+    font-size: 28px;
+    margin-bottom: 16px;
+    transition: transform 0.25s ease;
+  }
+
+  .upload-main-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: $text-dark;
+    margin: 0 0 6px;
+
+    span {
+      color: $teal-primary;
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
   }
 
-  .images-thumbnail-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 30px;
+  .upload-sub-text {
+    font-size: 12px;
+    color: $text-medium;
+    margin: 0;
+  }
 
-    .image-thumbnail-card {
-      border: 1px solid $border-light;
-      border-radius: 8px;
-      overflow: hidden;
-      background-color: $white;
-      box-shadow: $shadow-sm;
-      position: relative;
-      display: flex;
-      flex-direction: column;
+  &:hover {
+    border-color: $teal-primary;
+    background: $teal-light;
 
-      .thumbnail-image-wrapper {
-        height: 120px;
+    .upload-icon-wrapper {
+      transform: scale(1.08);
+    }
+  }
+}
+
+.images-thumbnail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+
+  .image-thumbnail-card {
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    background: $white;
+    box-shadow: $shadow-sm;
+    position: relative;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: $shadow-md;
+    }
+
+    .thumbnail-image-wrapper {
+      height: 140px;
+      background: $bg-light;
+
+      img {
         width: 100%;
-        background-color: $bg-gray;
-
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
+        height: 100%;
+        object-fit: cover;
+        display: block;
       }
+    }
 
-      .primary-badge-overlay {
-        position: absolute;
-        top: 8px;
-        left: 8px;
-        background-color: $teal-primary;
-        color: $white;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 4px;
-        box-shadow: $shadow-sm;
-      }
+    .primary-badge-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: $teal-primary;
+      color: $white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: $shadow-sm;
+    }
 
-      .thumbnail-controls {
-        padding: 10px 12px;
+    .thumbnail-controls {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-top: 1px solid $border-color;
+
+      .primary-radio-label {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-top: auto;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: $text-medium;
+        cursor: pointer;
 
-        .primary-radio-label {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 12px;
-          color: $text-medium;
+        input[type="radio"] {
+          accent-color: $teal-primary;
+          margin: 0;
           cursor: pointer;
-          font-weight: 500;
-
-          input[type="radio"] {
-            accent-color: $teal-primary;
-            margin: 0;
-            cursor: pointer;
-          }
         }
+      }
 
-        .delete-image-btn {
-          background: none;
-          border: none;
-          color: $text-light;
-          cursor: pointer;
-          padding: 4px;
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
+      .delete-image-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: 1px solid $border-color;
+        border-radius: 8px;
+        color: $text-light;
+        cursor: pointer;
+        transition: all 0.2s ease;
 
-          &:hover {
-            color: $error-color;
-            background-color: #fee2e2;
-          }
+        &:hover {
+          color: #ef4444;
+          background: #fee2e2;
+          border-color: #fca5a5;
         }
       }
     }
   }
+}
 
-  // --- STICKY BOTTOM ACTION BAR ---
-  .wizard-bottom-bar {
-    position: fixed;
-    bottom: 0;
+// ─── Sticky bottom bar ───────────────────────────────────────────────────────
+.wizard-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 260px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid $border-color;
+  padding: 16px 32px;
+  z-index: 90;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 768px) {
     left: 0;
-    right: 0;
-    background-color: $white;
-    border-top: 1px solid $border-light;
-    padding: 16px 40px;
-    z-index: 100;
+    padding: 14px 20px;
+  }
+
+  .bottom-bar-inner {
+    max-width: 960px;
+    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
 
-    // Keep form centered inside bottom bar (optional)
-    .bottom-bar-inner {
-      max-width: 900px;
-      width: 100%;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+  .bottom-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .btn-save-draft {
+    padding: 10px 20px;
+    background: $white;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    color: $text-medium;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: all 0.22s ease;
+
+    &:hover {
+      border-color: $text-light;
+      color: $text-dark;
+      background: $bg-light;
     }
+  }
 
-    .bottom-bar-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+  .btn-back {
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    color: $text-dark;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: all 0.22s ease;
+
+    &:hover {
+      background: $bg-light;
+      border-color: $text-light;
     }
+  }
 
-    // Button states
-    .btn-save-draft {
-      background-color: $white;
-      border: 1px solid $border-light;
-      color: $text-medium;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
+  .btn-next,
+  .btn-submit {
+    padding: 10px 24px;
+    background: $teal-primary;
+    border: 1px solid $teal-primary;
+    border-radius: 8px;
+    color: $white;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    box-shadow: $shadow-sm;
+    transition: all 0.22s ease;
 
-      &:hover {
-        background-color: $bg-gray;
-        border-color: $text-light;
-        color: $text-dark;
-      }
-    }
-
-    .btn-back {
-      background: none;
-      border: none;
-      color: $text-medium;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover {
-        color: $text-dark;
-        background-color: $bg-gray;
-      }
-    }
-
-    .btn-next, .btn-submit {
-      background-color: $teal-primary;
-      border: 1px solid $teal-primary;
-      color: $white;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: $shadow-sm;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background-color: $teal-hover;
-        border-color: $teal-hover;
-      }
+    &:hover {
+      background: $teal-hover;
+      border-color: $teal-hover;
+      transform: translateY(-1px);
+      box-shadow: $shadow-md;
     }
   }
 }
