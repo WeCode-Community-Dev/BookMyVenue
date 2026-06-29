@@ -74,6 +74,13 @@ export default function OwnerDashboard() {
   const [selectedVenueToDelete, setSelectedVenueToDelete] = useState(null);
   const [selectedVenueNameToDelete, setSelectedVenueNameToDelete] = useState('');
 
+  // Unblock confirmation modal states
+  const [showUnblockModal, setShowUnblockModal] = useState(false);
+  const [selectedBlockedDate, setSelectedBlockedDate] = useState(null);
+
+  // Block confirmation modal states
+  const [showBlockConfirmModal, setShowBlockConfirmModal] = useState(false);
+
   const [activeMenuVenueId, setActiveMenuVenueId] = useState(null);
 
   useEffect(() => {
@@ -156,17 +163,6 @@ export default function OwnerDashboard() {
     }
   };
 
-  const handleUnblockDate = async (blockedDateId) => {
-    if (!window.confirm('Are you sure you want to unblock this date?')) return;
-    try {
-      await venueService.removeBlockedDate(blockedDateId);
-      toast.success('Date unblocked successfully.');
-      fetchBlockedDates(blockVenueId);
-    } catch {
-      toast.error('Failed to unblock date.');
-    }
-  };
-
   const fetchAllBlockedDates = async (venuesList) => {
     const listToUse = venuesList || venues;
     if (!listToUse || listToUse.length === 0) return;
@@ -190,14 +186,22 @@ export default function OwnerDashboard() {
     }
   };
 
-  const handleUnblockFromAll = async (blockedDateId, venueId) => {
-    if (!window.confirm('Are you sure you want to unblock this date?')) return;
+  const handleUnblockClick = (blockedDate) => {
+    setSelectedBlockedDate(blockedDate);
+    setShowUnblockModal(true);
+  };
+
+  const confirmUnblockDate = async () => {
+    if (!selectedBlockedDate) return;
     try {
-      await venueService.removeBlockedDate(blockedDateId);
+      await venueService.removeBlockedDate(selectedBlockedDate.id);
       toast.success('Date unblocked successfully.');
+      setShowUnblockModal(false);
+      const oldVenueId = selectedBlockedDate.venueId;
+      setSelectedBlockedDate(null);
       fetchAllBlockedDates();
-      if (blockVenueId === venueId) {
-        fetchBlockedDates(venueId);
+      if (blockVenueId === oldVenueId) {
+        fetchBlockedDates(oldVenueId);
       }
     } catch {
       toast.error('Failed to unblock date.');
@@ -207,6 +211,14 @@ export default function OwnerDashboard() {
   const handleDateChange = (dateVal) => {
     setBlockDate(dateVal);
     if (!blockVenueId || !dateVal) return;
+
+    // Check past date
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (dateVal < todayStr) {
+      setBlockDate('');
+      return toast.error('Cannot block past dates.');
+    }
+
     const venueObj = venues.find(v => v.id === blockVenueId);
     if (!venueObj) return;
 
@@ -244,10 +256,16 @@ export default function OwnerDashboard() {
     }
   };
 
-  const handleBlockDate = async (e) => {
+  const handleBlockDate = (e) => {
     e.preventDefault();
     if (!blockVenueId || !blockDate) return toast.error('Please choose venue and date');
     
+    // Double-verify past date
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (blockDate < todayStr) {
+      return toast.error('Cannot block past dates.');
+    }
+
     const venueObj = venues.find(v => v.id === blockVenueId);
     if (!venueObj) return toast.error('Selected space listing not found.');
 
@@ -292,14 +310,22 @@ export default function OwnerDashboard() {
       return toast.error(`This date is already blocked for ${venueObj.venueName}.`);
     }
 
+    setShowBlockConfirmModal(true);
+  };
+
+  const executeBlockDate = async () => {
     try {
       await venueService.addBlockedDate(blockVenueId, {
         blockedDate: blockDate,
         reason: blockReason,
       });
       toast.success('Date blocked successfully.');
+      setShowBlockConfirmModal(false);
+      const oldVenueId = blockVenueId;
+      setBlockVenueId('');
       setBlockDate('');
-      fetchBlockedDates(blockVenueId);
+      setBlockReason('Maintenance');
+      fetchBlockedDates(oldVenueId);
       fetchAllBlockedDates();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to block date');
@@ -562,7 +588,7 @@ export default function OwnerDashboard() {
                       }}
                     >
                       <option value="">Choose Listing</option>
-                      {venues.map(v => (
+                      {venues.filter(v => v.status === 'approved').map(v => (
                         <option key={v.id} value={v.id}>{v.venueName}</option>
                       ))}
                     </select>
@@ -573,6 +599,7 @@ export default function OwnerDashboard() {
                       type="date"
                       className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none"
                       value={blockDate}
+                      min={new Date().toISOString().split('T')[0]}
                       onChange={e => handleDateChange(e.target.value)}
                     />
                   </div>
@@ -626,9 +653,9 @@ export default function OwnerDashboard() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 items-start">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {venues.map((v) => (
-                  <div key={v.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                  <div key={v.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col h-full">
                     <div className="h-32 w-full bg-slate-100 overflow-hidden relative">
                       {v.status === 'suspended' ? (
                         <div className="absolute top-2.5 left-2.5 bg-rose-600 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-md z-10 flex items-center gap-1">
@@ -658,7 +685,7 @@ export default function OwnerDashboard() {
                         </div>
                       )}
                     </div>
-                    <div className="p-4 flex flex-col gap-2.5">
+                    <div className="p-4 flex flex-col gap-2.5 flex-grow">
                       <div className="flex justify-between items-start gap-2 relative venue-menu-container">
                         <h4 className="font-black text-slate-900 text-sm leading-tight truncate flex-grow" title={v.venueName}>
                           {v.venueName}
@@ -722,7 +749,7 @@ export default function OwnerDashboard() {
                         ))}
                       </div>
                       
-                      <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-100/70 mt-1">
+                      <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-100/70 mt-auto">
                         <span>
                           {v.pricingUnit === 'day' ? 'Daily:' : 'Hourly:'} <span className="font-bold text-slate-900">₹{Number(v.pricingUnit === 'day' ? v.pricePerDay : v.pricePerHour).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </span>
@@ -1047,7 +1074,7 @@ export default function OwnerDashboard() {
                             <span className="text-[10px] text-slate-400">Blocked Date</span>
                           </div>
                           <button
-                            onClick={() => handleUnblockFromAll(bd.id, bd.venueId)}
+                            onClick={() => handleUnblockClick(bd)}
                             className="py-1.5 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 font-bold text-[10px] rounded-lg transition-colors cursor-pointer"
                           >
                             Unblock
@@ -1078,7 +1105,7 @@ export default function OwnerDashboard() {
                       }}
                     >
                       <option value="">Choose Listing</option>
-                      {venues.map(v => (
+                      {venues.filter(v => v.status === 'approved').map(v => (
                         <option key={v.id} value={v.id}>{v.venueName}</option>
                       ))}
                     </select>
@@ -1089,6 +1116,7 @@ export default function OwnerDashboard() {
                       type="date"
                       className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:outline-none"
                       value={blockDate}
+                      min={new Date().toISOString().split('T')[0]}
                       onChange={e => handleDateChange(e.target.value)}
                     />
                   </div>
@@ -1150,6 +1178,94 @@ export default function OwnerDashboard() {
                 className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm shadow-rose-600/10"
               >
                 Delete Space
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unblock Confirmation Modal */}
+      {showUnblockModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 flex flex-col gap-4 animate-scale-up">
+            <div className="flex items-center gap-3">
+              <span className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl text-2xl font-black">🔓</span>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Unblock Date Closure</h3>
+                <p className="text-slate-400 text-xs mt-0.5">This date will become available for booking again.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you absolutely sure you want to unblock <span className="font-bold text-slate-900">{selectedBlockedDate?.blockedDate}</span> for the space <span className="font-bold text-slate-900">"{selectedBlockedDate?.venue?.venueName}"</span>?
+            </p>
+
+            <div className="flex gap-3 mt-2 justify-end">
+              <button
+                onClick={() => {
+                  setShowUnblockModal(false);
+                  setSelectedBlockedDate(null);
+                }}
+                className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmUnblockDate}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm shadow-emerald-600/10"
+              >
+                Unblock Date
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block Confirmation Modal */}
+      {showBlockConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 flex flex-col gap-4 animate-scale-up">
+            <div className="flex items-center gap-3">
+              <span className="p-3 bg-rose-50 text-rose-600 rounded-2xl text-2xl font-black">🚫</span>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Block Date Closure</h3>
+                <p className="text-slate-400 text-xs mt-0.5">This will prevent clients from booking this space on the selected date.</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col gap-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Space Name:</span>
+                <span className="text-slate-900 font-bold">{venues.find(v => v.id === blockVenueId)?.venueName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Target Date:</span>
+                <span className="text-slate-900 font-bold">{blockDate}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Reason:</span>
+                <span className="text-slate-900 font-bold">{blockReason || 'Maintenance'}</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you absolutely sure you want to block this date?
+            </p>
+
+            <div className="flex gap-3 mt-2 justify-end">
+              <button
+                onClick={() => {
+                  setShowBlockConfirmModal(false);
+                }}
+                className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeBlockDate}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm shadow-rose-600/10"
+              >
+                Block Date
               </button>
             </div>
           </div>
