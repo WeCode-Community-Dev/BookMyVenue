@@ -481,7 +481,7 @@ export class VenuesService {
         });
 
         // Format to simplified model expected by frontend
-        const formatted = features.slice(0, 10).map((feature: any) => {
+        let formatted = features.slice(0, 10).map((feature: any) => {
           const props = feature.properties || {};
           const name = props.name || '';
           const street = props.street ? `${props.street}, ` : '';
@@ -502,6 +502,31 @@ export class VenuesService {
             lon: feature.geometry?.coordinates?.[0] || lon,
           };
         });
+
+        // Dynamically add the typed query as a custom location option so users can pin any place
+        if (query && query.trim().length >= 3) {
+          let customLat = lat.toString();
+          let customLon = lon.toString();
+          if (features.length > 0) {
+            const firstFeature = features[0];
+            const coords = firstFeature.geometry?.coordinates;
+            if (coords) {
+              customLat = coords[1].toString();
+              customLon = coords[0].toString();
+            }
+          }
+          const customEntry = {
+            display_name: query.trim(),
+            lat: customLat,
+            lon: customLon,
+          };
+          const alreadyExists = formatted.some(
+            (item) => item.display_name.toLowerCase() === query.trim().toLowerCase(),
+          );
+          if (!alreadyExists) {
+            formatted = [customEntry, ...formatted];
+          }
+        }
 
         resolve(formatted);
       } catch {
