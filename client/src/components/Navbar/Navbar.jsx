@@ -152,11 +152,6 @@ export default function Navbar() {
 
           {/* Desktop Links */}
           <div className="hidden md:flex items-center gap-6">
-            {!isAuthenticated && (
-              <Link to="/bookings" className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors duration-200">
-                Discover
-              </Link>
-            )}
 
             {isAuthenticated ? (
               <>
@@ -236,11 +231,6 @@ export default function Navbar() {
         {/* Mobile Links Dropdown */}
         {menuOpen && (
           <div className="absolute top-[65px] left-0 right-0 bg-white border-b border-slate-200 p-6 flex flex-col gap-4 md:hidden shadow-lg animate-fade-in text-slate-800">
-            {!isAuthenticated && (
-              <Link to="/bookings" className="text-sm font-semibold text-slate-600 hover:text-primary" onClick={() => setMenuOpen(false)}>
-                Discover
-              </Link>
-            )}
 
             {isAuthenticated ? (
               <>
