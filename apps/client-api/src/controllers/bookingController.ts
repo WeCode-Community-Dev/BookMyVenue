@@ -135,7 +135,6 @@ export const getBookingByUserId = async (
 
     const todayDate = new Date(today);
     todayDate.setHours(0, 0, 0, 0);
-    console.log({ todayDate, type });
 
     const where =
         type === "UPCOMING"

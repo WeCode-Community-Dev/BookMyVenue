@@ -63,10 +63,10 @@ enum BookingStatus {
 }
 
 model User {
-  id      String  @id @default(uuid())
-  email   String  @unique
-  name    String?
-  role    Role    @default(USER)
+  id    String  @id @default(uuid())
+  email String  @unique
+  name  String?
+  role  Role    @default(USER)
 
   venues   Venue[]
   bookings Booking[]
@@ -184,5 +184,7 @@ model Review {
   updatedAt DateTime @updatedAt
 
   @@unique([venueId, userId])
+  
+  @@index([venueId, userId])
   @@index([venueId])
 }
