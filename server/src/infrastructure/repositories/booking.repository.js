@@ -147,8 +147,7 @@ async findAllFiltered(query = {}) {
                 bookingDate: query.sortBy === "asc" ? 1 : -1
             }
         },
-
-        {
+  {
             $skip: (query.page - 1) * query.limit
         },
 
