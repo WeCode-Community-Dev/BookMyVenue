@@ -35,7 +35,7 @@ import { MailModule } from './mail/mail.module';
         password: configService.get<string>('DB_PASSWORD', 'postgres'),
         database: configService.get<string>('DB_NAME', 'bookmyvenue'),
         autoLoadEntities: true,
-        synchronize: configService.get<string>('NODE_ENV') === 'development',
+        synchronize: false,
         logging: configService.get<string>('NODE_ENV') === 'development',
       }),
     }),
