@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import venueAvailabilityRoutes from './routes/venueAvailabilityRoutes.js'
 import bookingRoutes from './routes/bookingRoutes.js'
 import paymentRoutes from './routes/paymentRoutes.js'
+import adminRouter from "./routes/adminRoutes.js"
 
 
 dotenv.config();
@@ -32,6 +33,7 @@ app.use("/api/venues", venueRouter);
 app.use('/api/availability',venueAvailabilityRoutes);
 app.use("/api/bookings",bookingRoutes);
 app.use("/api/payments",paymentRoutes);
+app.use("/api/admin", adminRouter);
 
 
 
