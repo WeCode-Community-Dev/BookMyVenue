@@ -11,7 +11,7 @@ export class BookingRepository {
       throw new Error("Method not implemented");
     }
   
-    async findByOwnerId(ownerId, filters) {
+    async findByOwnerId(vendorId, filters) {
       throw new Error("Method not implemented");
     }
   
@@ -20,6 +20,12 @@ export class BookingRepository {
     }
   
     async update(id, booking) {
+      throw new Error("Method not implemented");
+    }
+    async findAllFiltered(query={}) {
+      throw new Error("Method not implemented");
+    }
+    async getBookingStatistics() {
       throw new Error("Method not implemented");
     }
 

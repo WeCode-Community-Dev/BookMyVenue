@@ -1,7 +1,7 @@
 import { VenueMapper } from "../../application/mapper/Venue.mapper.js";
 import { IVenueRepository } from "../../domain/repositories/IVenue.repository.js";
 import { VenueModel } from "../database/Venue.model.js";
-import { VenueApprovalStatus } from "../../domain/enums/Venue.enum.js";
+import { VenueStatus } from "../../domain/enums/Venue.enum.js";
 
 export class VenueRepository extends IVenueRepository {
 <<<<<<< HEAD
@@ -127,7 +127,7 @@ export class VenueRepository extends IVenueRepository {
 
     async findByOwnerAndName(vendorId, name) {
         const document = await VenueModel.findOne({
-            ownerId,
+            vendorId,
             name
         })
         if (!document) return null
@@ -277,7 +277,7 @@ export class VenueRepository extends IVenueRepository {
 
                 {
 
-                    approvalStatus: VenueApprovalStatus.APPROVED,
+                    approvalStatus: VenueStatus.ACTIVE,
 
                     rejectionReason: null
 
@@ -309,7 +309,7 @@ export class VenueRepository extends IVenueRepository {
 
                 {
 
-                    approvalStatus: VenueApprovalStatus.REJECTED,
+                    approvalStatus: VenueStatus.REJECTED,
 
                     rejectionReason: reason
 
