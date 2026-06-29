@@ -8,7 +8,7 @@ import { getVenue } from "@/services/venueServices";
 
 type SpaceBookPageProps = {
   params: Promise<{ id: string; spaceId: string }>;
-  searchParams: Promise<{ date?: string; guests?: string }>;
+  searchParams: Promise<{ date?: string; guests?: string; pricingType?: string }>;
 };
 
 export async function generateMetadata({
@@ -33,7 +33,7 @@ export default async function SpaceBookPage({
   searchParams,
 }: SpaceBookPageProps) {
   const { id, spaceId } = await params;
-  const { date, guests } = await searchParams;
+  const { date, guests, pricingType } = await searchParams;
 
   let venue;
   try {
@@ -56,6 +56,7 @@ export default async function SpaceBookPage({
           space={space}
           initialDate={date}
           initialGuests={guests}
+          initialPricingType={pricingType}
         />
       </main>
       {/* <PublicSiteFooter /> */}

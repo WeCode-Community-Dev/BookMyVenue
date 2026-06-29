@@ -40,7 +40,7 @@ export function PublicSpaceList({
           const cover = getSpaceCoverImage(space);
           const capacity = formatSpaceCapacity(space);
           const area = formatSpaceArea(space);
-          const hourlyPrice = getSpaceHourlyPrice(space.id);
+          // const hourlyPrice = getSpaceHourlyPrice(space.id);
           const isSelected = selectedSpaceId === space.id;
 
           return (
@@ -86,9 +86,9 @@ export function PublicSpaceList({
                       {space.description}
                     </p>
                   )}
-                  <p className="text-sm font-semibold text-on-surface">
+                  {/* <p className="text-sm font-semibold text-on-surface">
                     From ${hourlyPrice}/hr
-                  </p>
+                  </p> */}
                 </div>
                 <Button
                   type="button"

@@ -4,10 +4,11 @@ import { Calendar, Clock, Info, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { TimeSlotOption } from "@/lib/data/public-venue-detail";
+import type { TimeRangeSelection } from "@/lib/data/public-venue-detail";
 import {
   computeSpaceBookingTotal,
   formatDisplayDate,
+  formatTimeRangeLabel,
   getSpaceHourlyPrice,
 } from "@/lib/data/public-venue-detail";
 import {
@@ -18,18 +19,20 @@ import {
 type SpaceBookingSummaryProps = {
   spaceId: string;
   selectedDate: Date;
-  selectedSlot: TimeSlotOption;
+  selectedRange: TimeRangeSelection | null;
 };
 
 export function SpaceBookingSummary({
   spaceId,
   selectedDate,
-  selectedSlot,
+  selectedRange,
 }: SpaceBookingSummaryProps) {
   const hourlyRate = getSpaceHourlyPrice(spaceId);
   const rating = getVenueRating();
   const reviewCount = getVenueReviewCount();
-  const breakdown = computeSpaceBookingTotal(hourlyRate, selectedSlot.hours);
+  const breakdown = selectedRange
+    ? computeSpaceBookingTotal(hourlyRate, selectedRange.hours)
+    : null;
 
   return (
     <Card className="sticky top-24 gap-0 overflow-hidden rounded-xl border border-outline-variant/40 py-0 shadow-elevation-2">
@@ -63,29 +66,38 @@ export function SpaceBookingSummary({
             </span>
             <span className="flex items-center gap-2 text-sm font-medium text-on-surface">
               <Clock className="size-4 text-surface-tint" />
-              {selectedSlot.label}
+              {selectedRange
+                ? formatTimeRangeLabel(selectedRange)
+                : "Select a time range"}
             </span>
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-outline-variant/40 pt-4 text-sm">
-          <div className="flex justify-between text-on-surface-variant">
-            <span>{breakdown.subtotalLine}</span>
-            <span>${breakdown.subtotal.toFixed(2)}</span>
+        {breakdown ? (
+          <div className="flex flex-col gap-2 border-t border-outline-variant/40 pt-4 text-sm">
+            <div className="flex justify-between text-on-surface-variant">
+              <span>{breakdown.subtotalLine}</span>
+              <span>${breakdown.subtotal.toFixed(2)}</span>
+            </div>
+            {/* <div className="flex justify-between text-on-surface-variant">
+              <span>Service fee</span>
+              <span>${breakdown.serviceFee.toFixed(2)}</span>
+            </div> */}
+            <div className="flex justify-between pt-2 text-lg font-bold text-on-surface">
+              <span>Total</span>
+              <span>${breakdown.subtotal.toFixed(2)}</span>
+            </div>
           </div>
-          <div className="flex justify-between text-on-surface-variant">
-            <span>Service fee</span>
-            <span>${breakdown.serviceFee.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between pt-2 text-lg font-bold text-on-surface">
-            <span>Total</span>
-            <span>${breakdown.total.toFixed(2)}</span>
-          </div>
-        </div>
+        ) : (
+          <p className="border-t border-outline-variant/40 pt-4 text-sm text-on-surface-variant">
+            Choose a start and end time to see pricing.
+          </p>
+        )}
 
         <Button
           type="button"
           className="h-11 w-full bg-surface-tint hover:bg-surface-tint/90"
+          disabled={!selectedRange}
         >
           Continue Booking
         </Button>

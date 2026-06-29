@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { Space, VenueDetails } from "@/lib/data/venues";
-import type { TimeSlotOption } from "@/lib/data/public-venue-detail";
+import type { TimeRangeSelection } from "@/lib/data/public-venue-detail";
 import { parseDateParam } from "@/lib/data/public-venue-detail";
 
 import { AvailabilityCalendar } from "./availability-calendar";
@@ -13,32 +13,34 @@ import { SpaceBookingBreadcrumbs } from "./space-booking-breadcrumbs";
 import { SpaceBookingGallery } from "./space-booking-gallery";
 import { SpaceBookingHeader } from "./space-booking-header";
 import { SpaceBookingSummary } from "./space-booking-summary";
-import { TIME_SLOT_OPTIONS, TimeSlotPicker } from "./time-slot-picker";
+import { TimeRangePicker } from "./time-slot-picker";
+import { getSpaceBlockedPeriods, getSpaceOperatingHours, SpaceBlockedPeriodResponse, SpaceOperatingHourResponse } from "@/services/venueServices";
 
 type SpaceBookingPageProps = {
   venue: VenueDetails;
   space: Space;
   initialDate?: string;
   initialGuests?: string;
+  initialPricingType?: string;
 };
 
 export function SpaceBookingPage({
   venue,
   space,
   initialDate,
+  initialPricingType: _initialPricingType,
 }: SpaceBookingPageProps) {
   const defaultDate = useMemo(() => {
     const parsed = parseDateParam(initialDate);
-    return parsed ?? new Date(2024, 9, 5);
+    return parsed ?? new Date();
   }, [initialDate]);
-
-  const defaultSlot =
-    TIME_SLOT_OPTIONS.find((s) => !s.disabled) ?? TIME_SLOT_OPTIONS[0];
 
   const [selectedDate, setSelectedDate] = useState<Date>(defaultDate);
   const [viewYear, setViewYear] = useState(defaultDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(defaultDate.getMonth());
-  const [selectedSlot, setSelectedSlot] = useState<TimeSlotOption>(defaultSlot);
+  const [selectedRange, setSelectedRange] = useState<TimeRangeSelection | null>(
+    null,
+  );
 
   function handleSelectDate(date: Date) {
     setSelectedDate(date);
@@ -50,6 +52,22 @@ export function SpaceBookingPage({
     setViewYear(year);
     setViewMonth(month);
   }
+  
+  const [operatingHours, setOperatingHours] = useState<SpaceOperatingHourResponse[]>([]);
+  const [blockedPeriods, setBlockedPeriods] = useState<SpaceBlockedPeriodResponse[]>([]);
+  
+  useEffect(() => {
+    async function loadData() {
+      const hours = await getSpaceOperatingHours(space.id);
+      const periods = await getSpaceBlockedPeriods(space.id);
+  
+      setOperatingHours(hours);
+      setBlockedPeriods(periods);
+    }
+  
+    loadData();
+  }, [space.id]);
+
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-8">
@@ -68,16 +86,20 @@ export function SpaceBookingPage({
               Check Availability
             </h2>
             <AvailabilityCalendar
+              operatingHours={operatingHours}
+              blockedPeriods={blockedPeriods}
               selectedDate={selectedDate}
               viewYear={viewYear}
               viewMonth={viewMonth}
               onSelectDate={handleSelectDate}
               onMonthChange={handleMonthChange}
             />
-            <TimeSlotPicker
+            <TimeRangePicker
               selectedDate={selectedDate}
-              selectedSlotId={selectedSlot.id}
-              onSelectSlot={setSelectedSlot}
+              operatingHours={operatingHours}
+              blockedPeriods={blockedPeriods}
+              selectedRange={selectedRange}
+              onTimeRangeChange={setSelectedRange}
             />
           </section>
         </div>
@@ -87,7 +109,7 @@ export function SpaceBookingPage({
         <SpaceBookingSummary
           spaceId={space.id}
           selectedDate={selectedDate}
-          selectedSlot={selectedSlot}
+          selectedRange={selectedRange}
         />
       </div>
     </div>

@@ -1,6 +1,17 @@
 import type { Space, VenueDetails } from "@/lib/data/venues";
 import { CapacityType } from "@/lib/data/venues";
 import { getVenueRating } from "@/lib/data/venue-detail";
+import {
+  DEFAULT_OPERATING_HOURS,
+  parseTimeToMinutes,
+  PRICING_MODEL_OPTIONS,
+} from "@/lib/data/space-manage";
+import type {
+  PricingType,
+  SpaceBlockedPeriodResponse,
+  SpaceOperatingHourResponse,
+  SpacePricingResponse,
+} from "@/services/venueServices";
 
 export type PublicReview = {
   id: string;
@@ -117,23 +128,136 @@ export function getActiveSpaces(venue: VenueDetails): Space[] {
   return active.length > 0 ? active : venue.spaces;
 }
 
-export function computeBookingBreakdown(
-  spaceName: string,
-  hourlyRate: number,
-  hours = BOOKING_DEFAULT_HOURS,
-): {
+export type BookingBreakdown = {
   spaceLine: string;
   spaceAmount: number;
   cleaningFee: number;
   serviceFee: number;
   total: number;
-} {
+};
+
+export function computeBookingBreakdown(
+  spaceName: string,
+  hourlyRate: number,
+  hours = BOOKING_DEFAULT_HOURS,
+): BookingBreakdown {
   const spaceAmount = hourlyRate * hours;
   const serviceFee = Math.round(spaceAmount * SERVICE_FEE_RATE);
   const total = spaceAmount + CLEANING_FEE + serviceFee;
 
   return {
     spaceLine: `${spaceName} x ${hours} hrs`,
+    spaceAmount,
+    cleaningFee: CLEANING_FEE,
+    serviceFee,
+    total,
+  };
+}
+
+const PRICING_TYPE_PRIORITY: PricingType[] = [
+  "HOURLY",
+  "DAILY",
+  "SESSION",
+  "EVENT",
+  "CUSTOM",
+];
+
+export function getPrimaryPricingRecord(
+  records: SpacePricingResponse[],
+): SpacePricingResponse | null {
+  if (records.length === 0) return null;
+
+  for (const type of PRICING_TYPE_PRIORITY) {
+    const match = records.find((record) => record.pricingType === type);
+    if (match) return match;
+  }
+
+  return [...records].sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  )[0];
+}
+
+export function getDefaultPricingType(
+  records: SpacePricingResponse[],
+): PricingType | null {
+  return getPrimaryPricingRecord(records)?.pricingType ?? null;
+}
+
+export function sortPricingRecordsByPriority(
+  records: SpacePricingResponse[],
+): SpacePricingResponse[] {
+  return [...records].sort(
+    (a, b) =>
+      PRICING_TYPE_PRIORITY.indexOf(a.pricingType) -
+      PRICING_TYPE_PRIORITY.indexOf(b.pricingType),
+  );
+}
+
+export function formatPricingAmount(amount: string, currency: string): string {
+  const value = parseFloat(amount);
+  if (Number.isNaN(value)) return amount;
+
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+export function getPricingUnitLabel(pricingType: PricingType): string {
+  switch (pricingType) {
+    case "HOURLY":
+      return "/ hour";
+    case "DAILY":
+      return "/ day";
+    case "SESSION":
+      return "/ session";
+    case "EVENT":
+      return "/ event";
+    case "CUSTOM":
+      return "Custom quote";
+    default:
+      return "";
+  }
+}
+
+export function getPricingTypeLabel(pricingType: PricingType): string {
+  const option = PRICING_MODEL_OPTIONS.find(
+    (item) => item.pricingType === pricingType,
+  );
+  if (option) return option.label;
+
+  const unit = getPricingUnitLabel(pricingType);
+  return unit.startsWith("/ ") ? unit.slice(2) : unit;
+}
+
+export function getBreakdownFromPricing(
+  record: SpacePricingResponse,
+  spaceName: string,
+): BookingBreakdown | null {
+  if (record.pricingType === "CUSTOM") return null;
+
+  const amount = parseFloat(record.amount);
+  if (Number.isNaN(amount)) return null;
+
+  if (record.pricingType === "HOURLY") {
+    return computeBookingBreakdown(spaceName, amount);
+  }
+
+  const unitLabel =
+    record.pricingType === "DAILY"
+      ? "day"
+      : record.pricingType === "SESSION"
+        ? "session"
+        : "event";
+  const spaceAmount = amount;
+  const serviceFee = Math.round(spaceAmount * SERVICE_FEE_RATE);
+  const total = spaceAmount + CLEANING_FEE + serviceFee;
+
+  return {
+    spaceLine: `${spaceName} x 1 ${unitLabel}`,
     spaceAmount,
     cleaningFee: CLEANING_FEE,
     serviceFee,
@@ -149,19 +273,15 @@ export function getTransportDescription(city: string): string {
   return `Located in ${city}, this venue is well connected by public transport with nearby tube and bus links, plus on-street parking options in the surrounding area.`;
 }
 
-export type TimeSlotOption = {
-  id: string;
-  label: string;
+export type TimeRangeSelection = {
+  start: string;
+  end: string;
   hours: number;
-  disabled?: boolean;
 };
 
-export const TIME_SLOT_OPTIONS: TimeSlotOption[] = [
-  { id: "morning", label: "09:00 AM - 12:00 PM", hours: 3 },
-  { id: "afternoon", label: "01:00 PM - 04:00 PM", hours: 3 },
-  { id: "evening", label: "05:00 PM - 08:00 PM", hours: 3 },
-  { id: "late", label: "08:00 PM - 11:00 PM", hours: 3, disabled: true },
-];
+export function formatTimeRangeLabel(range: TimeRangeSelection): string {
+  return `${range.start} → ${range.end}`;
+}
 
 export function getSpaceMaxGuests(space: Space): string | null {
   if (!space.capacityValue) return null;
@@ -201,8 +321,145 @@ export function computeSpaceBookingTotal(
   };
 }
 
-export function isDateUnavailable(date: Date): boolean {
-  return date.getDate() % 7 === 0;
+export type CalendarDayAvailability = "available" | "partial" | "unavailable";
+
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+}
+
+function endOfDay(date: Date): Date {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    23,
+    59,
+    59,
+    999,
+  );
+}
+
+function isPastDate(date: Date, today: Date): boolean {
+  return startOfDay(date).getTime() < startOfDay(today).getTime();
+}
+
+function getOperatingWindow(
+  date: Date,
+  operatingHours: SpaceOperatingHourResponse[],
+): { open: number; close: number } | null {
+  const weekday = date.getDay();
+  const entry = operatingHours.find((hour) => hour.weekday === weekday);
+
+  if (entry?.isClosed) return null;
+
+  const openTime = entry?.openTime ?? DEFAULT_OPERATING_HOURS.openTime;
+  const closeTime = entry?.closeTime ?? DEFAULT_OPERATING_HOURS.closeTime;
+  const open = parseTimeToMinutes(openTime);
+  const close = parseTimeToMinutes(closeTime);
+
+  if (close <= open) return null;
+
+  return { open, close };
+}
+
+function toMinutesOnDay(day: Date, instant: Date): number {
+  const dayStart = startOfDay(day);
+  const dayEnd = endOfDay(day);
+
+  if (instant <= dayStart) return 0;
+  if (instant >= dayEnd) return 24 * 60;
+
+  return instant.getHours() * 60 + instant.getMinutes();
+}
+
+function getBlockedIntervalsInWindow(
+  date: Date,
+  blockedPeriods: SpaceBlockedPeriodResponse[],
+  window: { open: number; close: number },
+): { start: number; end: number }[] {
+  const dayStart = startOfDay(date);
+  const dayEnd = endOfDay(date);
+  const intervals: { start: number; end: number }[] = [];
+
+  for (const period of blockedPeriods) {
+    const blockStart = new Date(period.startAt);
+    const blockEnd = new Date(period.endAt);
+
+    if (blockEnd < dayStart || blockStart > dayEnd) continue;
+
+    const startMin = Math.max(toMinutesOnDay(date, blockStart), window.open);
+    const endMin = Math.min(toMinutesOnDay(date, blockEnd), window.close);
+
+    if (endMin > startMin) {
+      intervals.push({ start: startMin, end: endMin });
+    }
+  }
+
+  return intervals;
+}
+
+function mergeIntervals(
+  intervals: { start: number; end: number }[],
+): { start: number; end: number }[] {
+  if (intervals.length === 0) return [];
+
+  const sorted = [...intervals].sort((a, b) => a.start - b.start);
+  const merged = [{ ...sorted[0] }];
+
+  for (let i = 1; i < sorted.length; i++) {
+    const current = sorted[i];
+    const last = merged[merged.length - 1];
+
+    if (current.start <= last.end) {
+      last.end = Math.max(last.end, current.end);
+    } else {
+      merged.push({ ...current });
+    }
+  }
+
+  return merged;
+}
+
+function intervalsFullyCoverWindow(
+  merged: { start: number; end: number }[],
+  window: { open: number; close: number },
+): boolean {
+  if (merged.length === 0) return false;
+  if (merged[0].start > window.open) return false;
+
+  let coveredUntil = merged[0].end;
+  if (coveredUntil >= window.close) return true;
+
+  for (let i = 1; i < merged.length; i++) {
+    if (merged[i].start > coveredUntil) return false;
+    coveredUntil = Math.max(coveredUntil, merged[i].end);
+    if (coveredUntil >= window.close) return true;
+  }
+
+  return false;
+}
+
+export function getCalendarDayAvailability(
+  date: Date,
+  operatingHours: SpaceOperatingHourResponse[],
+  blockedPeriods: SpaceBlockedPeriodResponse[],
+  today: Date = new Date(),
+): CalendarDayAvailability {
+  if (isPastDate(date, today)) return "unavailable";
+
+  const window = getOperatingWindow(date, operatingHours);
+  if (!window) return "unavailable";
+
+  const blockedInWindow = getBlockedIntervalsInWindow(
+    date,
+    blockedPeriods,
+    window,
+  );
+  const merged = mergeIntervals(blockedInWindow);
+
+  if (merged.length === 0) return "available";
+  if (intervalsFullyCoverWindow(merged, window)) return "unavailable";
+  return "partial";
 }
 
 export function getMonthDays(year: number, month: number): (Date | null)[] {
