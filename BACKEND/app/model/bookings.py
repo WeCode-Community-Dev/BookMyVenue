@@ -18,8 +18,8 @@ class Booking(Base):
 
     user_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
         index=True
     )
 
@@ -38,10 +38,11 @@ class Booking(Base):
     )
 
     booking_date = Column(Date, nullable=False)
-    booking_time = Column(String(100), nullable=True)
+    start_time = Column(String(100), nullable=False)
+    end_time = Column(String(100), nullable=False)
 
     status = Column(String(50), nullable=False, default="created")
-    # status can be "created", "confirmed", "cancelled", "completed"
+    # status can be "created", "confirmed", "cancelled", "completed", "offline"
 
     created_at = Column(
         DateTime(timezone=True),

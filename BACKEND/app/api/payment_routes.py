@@ -1,13 +1,12 @@
 import os
 import razorpay
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.core.config import settings
 from app.db.session import get_db
 from sqlalchemy.orm import Session
 from app.schema.payment import (
     CreateOrderRequest,
-    VerifyPaymentRequest,
-    PaymentFailedRequest
+    VerifyPaymentRequest
 )
 from app.services.order_service import (
     add_order_details,
@@ -27,7 +26,7 @@ client = razorpay.Client(
 )
 
 @router.post("/create-order")
-def create_order(payload: CreateOrderRequest, db: Session = Depends(get_db)):
+async def create_order(payload: CreateOrderRequest, db: Session = Depends(get_db)):
     try:
         order_data = {
             "amount": payload.amount * 100,  # ₹500 => 50000 paise
@@ -36,22 +35,22 @@ def create_order(payload: CreateOrderRequest, db: Session = Depends(get_db)):
             "payment_capture": 1
         }
 
-        order = client.order.create(data=order_data)
+        razorpay_order = client.order.create(data=order_data)
 
-        order = add_order_details(
+        saved_order = add_order_details(
             db,
             user_id=payload.user_id,    
             venue_id=payload.venue_id,
-            razorpay_order_id=order["id"],
+            razorpay_order_id=razorpay_order["id"],
             amount=order_data["amount"],
             currency=order_data["currency"],
             status="pending",
         )
         
         return {
-            "order_id": order["id"],
-            "amount": order["amount"],
-            "currency": order["currency"],
+            "order_id": razorpay_order["id"],
+            "amount": razorpay_order["amount"],
+            "currency": razorpay_order["currency"],
             "key": settings.RAZORPAY_KEY_ID
         }
 
@@ -60,7 +59,7 @@ def create_order(payload: CreateOrderRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/verify-payment")
-def verify_payment(payload: VerifyPaymentRequest, db: Session = Depends(get_db)):
+async def verify_payment(payload: VerifyPaymentRequest, db: Session = Depends(get_db)):
     try:
         client.utility.verify_payment_signature({
             "razorpay_order_id": payload.razorpay_order_id,
