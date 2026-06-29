@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -30,12 +33,19 @@ export function VenueBookingSidebar({
   venue,
   selectedSpace,
 }: VenueBookingSidebarProps) {
+  const [date, setDate] = useState("2024-10-05");
+  const [guests, setGuests] = useState("10");
+
   const hourlyRate = selectedSpace
     ? getSpaceHourlyPrice(selectedSpace.id)
     : getVenueAverageHourlyPrice(venue);
 
   const spaceName = selectedSpace?.name ?? "Selected space";
   const breakdown = computeBookingBreakdown(spaceName, hourlyRate);
+
+  const bookHref = selectedSpace
+    ? `/venues/${venue.id}/spaces/${selectedSpace.id}/book?date=${encodeURIComponent(date)}&guests=${guests}`
+    : undefined;
 
   return (
     <Card className="sticky top-24 gap-0 overflow-hidden rounded-xl border border-outline-variant/40 py-0 shadow-elevation-2">
@@ -52,9 +62,11 @@ export function VenueBookingSidebar({
             <Label htmlFor="booking-date">Date</Label>
             <Input
               id="booking-date"
+              name="date"
               type="date"
               className="h-10 bg-background"
-              defaultValue="2024-10-24"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
             />
           </div>
 
@@ -70,7 +82,7 @@ export function VenueBookingSidebar({
 
           <div className="flex flex-col gap-1.5">
             <Label>Guests</Label>
-            <Select defaultValue="10">
+            <Select value={guests} onValueChange={setGuests}>
               <SelectTrigger className="h-10 w-full bg-background">
                 <SelectValue />
               </SelectTrigger>
@@ -85,12 +97,27 @@ export function VenueBookingSidebar({
           </div>
         </div>
 
-        <Button
-          type="button"
-          className="h-11 w-full bg-surface-tint hover:bg-surface-tint/90"
-        >
-          Check Availability
-        </Button>
+        {bookHref ? (
+          <Button
+            asChild
+            className="h-11 w-full bg-surface-tint hover:bg-surface-tint/90"
+          >
+            <Link href={bookHref}>Check Availability</Link>
+          </Button>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <Button
+              type="button"
+              disabled
+              className="h-11 w-full bg-surface-tint hover:bg-surface-tint/90"
+            >
+              Check Availability
+            </Button>
+            <p className="text-xs text-center text-on-surface-variant">
+              Select a space below to check availability
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col gap-2 border-t border-outline-variant/40 pt-4 text-sm">
           <div className="flex justify-between text-on-surface-variant">

@@ -148,3 +148,120 @@ export function getNeighborhoodDescription(city: string): string {
 export function getTransportDescription(city: string): string {
   return `Located in ${city}, this venue is well connected by public transport with nearby tube and bus links, plus on-street parking options in the surrounding area.`;
 }
+
+export type TimeSlotOption = {
+  id: string;
+  label: string;
+  hours: number;
+  disabled?: boolean;
+};
+
+export const TIME_SLOT_OPTIONS: TimeSlotOption[] = [
+  { id: "morning", label: "09:00 AM - 12:00 PM", hours: 3 },
+  { id: "afternoon", label: "01:00 PM - 04:00 PM", hours: 3 },
+  { id: "evening", label: "05:00 PM - 08:00 PM", hours: 3 },
+  { id: "late", label: "08:00 PM - 11:00 PM", hours: 3, disabled: true },
+];
+
+export function getSpaceMaxGuests(space: Space): string | null {
+  if (!space.capacityValue) return null;
+  const value = parseFloat(space.capacityValue);
+  if (Number.isNaN(value)) return null;
+
+  const type = space.capacityType;
+  if (
+    type === CapacityType.PEOPLE ||
+    type === CapacityType.SEATS ||
+    type === CapacityType.PLAYERS ||
+    !type
+  ) {
+    return `Up to ${Math.round(value)} guests`;
+  }
+  return null;
+}
+
+export function computeSpaceBookingTotal(
+  hourlyRate: number,
+  hours: number,
+): {
+  subtotalLine: string;
+  subtotal: number;
+  serviceFee: number;
+  total: number;
+} {
+  const subtotal = hourlyRate * hours;
+  const serviceFee = Math.round(subtotal * SERVICE_FEE_RATE);
+  const total = subtotal + serviceFee;
+
+  return {
+    subtotalLine: `$${hourlyRate} x ${hours} hours`,
+    subtotal,
+    serviceFee,
+    total,
+  };
+}
+
+export function isDateUnavailable(date: Date): boolean {
+  return date.getDate() % 7 === 0;
+}
+
+export function getMonthDays(year: number, month: number): (Date | null)[] {
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startPadding = firstDay.getDay();
+  const days: (Date | null)[] = [];
+
+  for (let i = 0; i < startPadding; i++) {
+    days.push(null);
+  }
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    days.push(new Date(year, month, d));
+  }
+
+  return days;
+}
+
+export function formatDisplayDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export function formatShortDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function formatMonthYear(year: number, month: number): string {
+  return new Date(year, month, 1).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export function parseDateParam(value: string | undefined): Date | null {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+export function getSpaceAmenities(
+  space: Space,
+  venue: VenueDetails,
+): { id: string; name: string }[] {
+  if (space.amenities.length > 0) {
+    return space.amenities.map((a) => ({
+      id: a.amenityId,
+      name: a.amenity.name,
+    }));
+  }
+  return venue.amenities.map((a) => ({
+    id: a.amenityId,
+    name: a.amenity.name,
+  }));
+}
