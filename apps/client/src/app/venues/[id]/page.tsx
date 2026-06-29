@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,16 +9,34 @@ import { useVenue } from "@/hooks/useVenues";
 import { useBookingStore } from "@/stores/bookingStore";
 import { Calendar } from "@/components/ui/calendar";
 import { formatEnum } from "@/lib/utils";
+import { useGetVenueReviewStatus } from "@/hooks/useReview";
+import { useAuth } from "@clerk/nextjs";
+// import { GetVenueReviewStatusResponse } from "@bookmyvenue/types";
 
 export default function VenueDetailsPage() {
+    const [token, setToken] = useState("");
+    const [activeImage, setActiveImage] = useState(0);
+
+    const { getToken } = useAuth();
     const params = useParams<{ id: string }>();
     const router = useRouter();
+
     const { data, isLoading, error } = useVenue(params.id);
-    const [activeImage, setActiveImage] = useState(0);
+    const { data: reviewStatus } = useGetVenueReviewStatus(params.id, token);
+    console.log({ reviewStatus });
+
     const selectedSessions = useBookingStore((s) => s.selectedSessions);
     const toggleSession = useBookingStore((s) => s.toggleSession);
     const selectedDate = useBookingStore((s) => s.selectedDate);
     const setSelectedDate = useBookingStore((s) => s.setSelectedDate);
+
+    useEffect(() => {
+        const fetchToken = async () => {
+            const jwt = await getToken();
+            setToken(jwt ?? "");
+        };
+        fetchToken();
+    }, [getToken]);
 
     if (isLoading) {
         return (

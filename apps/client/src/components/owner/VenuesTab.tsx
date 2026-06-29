@@ -15,11 +15,7 @@ const STATUS_STYLE = {
     REJECTED: "bg-red-200 text-red-600 border-red-700",
 } as const;
 
-const STATUS_LABEL = {
-    APPROVED: "Approved",
-    PENDING: "Pending",
-    REJECTED: "Rejected",
-} as const;
+
 
 export default function VenuesTab() {
     const { getToken } = useAuth();
