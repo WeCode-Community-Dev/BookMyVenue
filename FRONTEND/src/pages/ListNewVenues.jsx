@@ -110,8 +110,21 @@ export default function ListNewVenue() {
     const handleSubmit = async () => {
         try {
             if(currentStep === 1){
-                const response = await apiService.postBasicVenueDetails(basicFormData)
+                const freshUserId = Cookies.get('userId')
+
+                if(!freshUserId){
+                    console.log("User session not found. Please Log in again!");
+                    return false;
+                }
+
+                const payload = {
+                    ...basicFormData,
+                    userId: parseInt(freshUserId)
+                }
+
+                const response = await apiService.postBasicVenueDetails(payload)
                 setVenueId(response?.venue_id)
+
             } else if (currentStep === 2){
                 await apiService.postVenueAmenities(amenitiesFormData, venueId)
             } else if (currentStep === 3){
@@ -124,7 +137,7 @@ export default function ListNewVenue() {
                 await apiService.postVenueAvailability(availabilityFormData, venueId)
             }
             
-            // API call was successful!
+            // API call successful!
             return true; 
             
         } catch (error) {

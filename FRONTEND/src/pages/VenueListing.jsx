@@ -56,7 +56,7 @@ const ImageGalleryModal = ({ isOpen, onClose, images }) => {
                             <img 
                                 src={img} 
                                 alt={`Venue photo ${index + 1}`} 
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                className="w-full h-full object-cover group-hover:scale-101 transition-transform duration-100"
                             />
                         </div>
                     ))}
@@ -138,9 +138,9 @@ export default function SpaceListing() {
     return (
         <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans text-gray-900">
 
-            <div onClick={() => navigate("/")} className='absolute left-8 z-99'>
+            {!isGalleryOpen && <div onClick={() => navigate("/")} className='fixed absolute left-8 z-99'>
                 <ArrowLeft size={40} className="p-1 bg-gray-100 hover:bg-gray-200 hover:text-black rounded-full text-gray-600 transition-colors cursor-pointer" />
-            </div>
+            </div>}
 
             {/* Image Gallery Modal */}
             <ImageGalleryModal 
@@ -154,7 +154,7 @@ export default function SpaceListing() {
                 <div className="w-full h-full relative group cursor-pointer">
                     <img 
                         src={imageLinks[0]}
-                        alt="Main Loft Space" 
+                        alt="." 
                         className="w-full h-full object-cover hover:brightness-90 transition-all duration-300"
                     />
                 </div>
@@ -165,7 +165,7 @@ export default function SpaceListing() {
                     <div className="relative w-full h-full min-h-0">
                         <img 
                         src={imageLinks[1]}
-                        alt="Lounge Area" 
+                        alt="." 
                         className="absolute inset-0 w-full h-full object-cover hover:brightness-90 transition-all duration-300" 
                         />
                     </div>
@@ -174,7 +174,7 @@ export default function SpaceListing() {
                     <div className="relative w-full h-full min-h-0">
                         <img 
                         src={imageLinks[2]}
-                        alt="Kitchen" 
+                        alt="." 
                         className="absolute inset-0 w-full h-full object-cover hover:brightness-90 transition-all duration-300" 
                         />
                     </div>
@@ -183,7 +183,7 @@ export default function SpaceListing() {
                     <div className="relative w-full h-full min-h-0">
                         <img 
                         src={imageLinks[3]}
-                        alt="Seating Setup" 
+                        alt="." 
                         className="absolute inset-0 w-full h-full object-cover hover:brightness-90 transition-all duration-300" 
                         />
                     </div>
@@ -192,7 +192,7 @@ export default function SpaceListing() {
                     <div className="relative w-full h-full min-h-0">
                         <img 
                         src={imageLinks[4]}
-                        alt="Patio" 
+                        alt="." 
                         className="absolute inset-0 w-full h-full object-cover hover:brightness-90 transition-all duration-300" 
                         />
                     </div>

@@ -39,9 +39,14 @@ const apiService = {
         return response.data
     },
     verifyPayment: async (paymentDetails) => {
-        const response = await axios.post('/payments/verify-payment', paymentDetails);
+        const response = await axiosInstance.post('/payments/verify-payment', paymentDetails);
         return response.data;
-    }  
+    },
+    updateVenueAvailability: async (payload, venue_id) => {
+        const response = await axiosInstance.patch(`/venues/active-status/${venue_id}`, payload)
+        return response.data
+    },
+
 }
 
 export default apiService
