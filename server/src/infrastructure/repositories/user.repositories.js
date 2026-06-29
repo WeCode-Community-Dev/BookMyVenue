@@ -1,4 +1,4 @@
-import UserModel from "../database/models/UserModel.js";
+import UserModel from "../database/models/User.model.js";
 
 import { IUserRepository } from "../../domain/repositories/IUser.repository.js";
 

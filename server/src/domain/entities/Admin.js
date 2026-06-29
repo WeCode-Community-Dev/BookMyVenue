@@ -1,16 +1,25 @@
-class Admin {
-  constructor({
-    fullName,
-    email,
-    password,
-    role
-    
-  }) {
-    this.fullName = fullName;
-    this.email = email;
-    this.password = password;
-    
-  }
+class AdminEntity {
+    constructor({
+        id,
+        fullName,
+        email,
+        password = null,
+        role,
+        isDeleted = false,
+        createdAt,
+        updatedAt,
+        isActive = true,
+    }) {
+        this.id = id;
+        this.fullName = fullName;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.isDeleted = isDeleted;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.isActive = isActive;
+    }
 }
 
-export default Admin;
+export default AdminEntity;

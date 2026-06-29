@@ -1,0 +1,91 @@
+import { Types } from "mongoose";
+import { Booking } from "../../domain/entities/Booking.js";
+
+export class BookingMapper {
+
+    static mapToEntity(doc) {
+
+        if (!doc) return null;
+
+        return new Booking({
+
+            id: doc._id ? doc._id.toString() : null,
+
+            userId: doc.userId ? doc.userId.toString() : null,
+
+            venueId: doc.venueId ? doc.venueId.toString() : null,
+
+            ownerId: doc.ownerId ? doc.ownerId.toString() : null,
+
+            bookingDate: doc.bookingDate,
+
+            startTime: doc.startTime,
+
+            endTime: doc.endTime,
+
+            guestCount: doc.guestCount,
+
+            totalAmount: doc.totalAmount,
+
+            advanceAmount: doc.advanceAmount,
+
+            paidAmount: doc.paidAmount,
+
+            remainingAmount: doc.remainingAmount,
+
+            status: doc.status,
+
+            paymentStatus: doc.paymentStatus,
+
+            cancellationReason: doc.cancellationReason,
+
+            rejectionReason: doc.rejectionReason,
+
+            createdAt: doc.createdAt,
+
+            updatedAt: doc.updatedAt
+
+        });
+
+    }
+
+    static mapToPersistence(entity) {
+
+        if (!entity) return null;
+
+        return {
+            userId: entity.userId ? new Types.ObjectId(entity.userId) : null,
+
+            venueId: entity.venueId ? new Types.ObjectId(entity.venueId) : null,
+
+            ownerId: entity.ownerId ? new Types.ObjectId(entity.ownerId) : null,
+
+            bookingDate: entity.bookingDate,
+
+            startTime: entity.startTime,
+
+            endTime: entity.endTime,
+
+            guestCount: entity.guestCount,
+
+            totalAmount: entity.totalAmount,
+
+            advanceAmount: entity.advanceAmount,
+
+            paidAmount: entity.paidAmount,
+
+            remainingAmount: entity.remainingAmount,
+
+            status: entity.status,
+
+            paymentStatus: entity.paymentStatus,
+
+            cancellationReason: entity.cancellationReason,
+
+            rejectionReason: entity.rejectionReason
+
+        };
+
+    }
+
+}

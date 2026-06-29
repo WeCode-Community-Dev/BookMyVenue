@@ -14,13 +14,34 @@ export class IVenueRepository {
     async delete(id){
         throw new Error('Method not implemented')
     }
-    async findAllFiltered(ownerId, search, status, page, limit){
+    async findAllFiltered(query = {}){
         throw new Error('Method not implemented')
     }
+    async approveVenue(id){
+        throw new Error('Method not implemented')
+    }
+    async rejectVenue(id, reason){
+        throw new Error('Method not implemented')
+    }
+    async updateBlockStatus(id, isBlocked){
+        throw new Error('Method not implemented')
+    }
+
+
+    
+
+
+
+
+
     // mapToEntity(doc){
     //     throw new Error('Method not implemented')
     // }
     // mapToPersistence(venue){
     //     throw new Error('Method not implemented')
     // }
+
+    async countByOwnerId(ownerId) {
+        throw new Error("Method not implemented")
+    }
 }
