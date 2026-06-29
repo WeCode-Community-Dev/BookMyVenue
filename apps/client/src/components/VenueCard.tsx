@@ -81,12 +81,11 @@ export function VenueCard({ venue }: VenueCardProps) {
                             <span className="text-sm text-muted-foreground">Price on request</span>
                         )}
                     </div>
-                    <Link
-                        href={`/venues/${venue.id}`}
+                    <button
                         className="bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-xl hover:bg-accent transition-colors cursor-pointer"
                     >
                         Book Now
-                    </Link>
+                    </button>
                 </div>
             </div>
         </Link>
