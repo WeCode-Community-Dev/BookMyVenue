@@ -1,17 +1,15 @@
 export class GetVendorBookingsUsecase {
 
-    constructor(
-        bookingRepository
-    ) {
+    constructor( bookingRepository) {
         this._bookingRepository =
             bookingRepository
     }
 
-    async execute(ownerId) {
+    async execute({ownerId, page, limit, status, search}) {
 
         const bookings =
             await this._bookingRepository
-                .findByOwnerId(ownerId)
+                .findByOwnerId(ownerId, {page, limit, status, search})
         return bookings
 
     }

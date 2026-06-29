@@ -101,22 +101,7 @@ export class Booking {
     this.touch();
   }
 
-  reject() {
-    if (this.status === BookingStatus.COMPLETED) {
-      throw new Error("Completed booking cannot be rejected");
-    }
 
-    if (this.status === BookingStatus.CANCELLED) {
-      throw new Error("Cancelled booking cannot be rejected");
-    }
-
-    if (this.status === BookingStatus.REJECTED) {
-      return;
-    }
-
-    this.status = BookingStatus.REJECTED;
-    this.touch();
-  }
 
   cancel(reason = null) {
     if (this.status === BookingStatus.COMPLETED) {

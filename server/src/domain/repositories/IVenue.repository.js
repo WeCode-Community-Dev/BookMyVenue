@@ -40,4 +40,8 @@ export class IVenueRepository {
     // mapToPersistence(venue){
     //     throw new Error('Method not implemented')
     // }
+
+    async countByOwnerId(ownerId) {
+        throw new Error("Method not implemented")
+    }
 }

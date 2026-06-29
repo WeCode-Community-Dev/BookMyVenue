@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { Booking } from "../../domain/entities/Booking.js";
 
 export class BookingMapper {
@@ -8,13 +9,13 @@ export class BookingMapper {
 
         return new Booking({
 
-            id: doc._id?.toString(),
+            id: doc._id ? doc._id.toString() : null,
 
-            userId: doc.userId,
+            userId: doc.userId ? doc.userId.toString() : null,
 
-            venueId: doc.venueId,
+            venueId: doc.venueId ? doc.venueId.toString() : null,
 
-            vendorId: doc. vendorId,
+            vendorId: doc. vendorId  ? doc.vendorId.toString() : null,
 
             bookingDate: doc.bookingDate,
 
@@ -38,6 +39,8 @@ export class BookingMapper {
 
             cancellationReason: doc.cancellationReason,
 
+            rejectionReason: doc.rejectionReason,
+
             createdAt: doc.createdAt,
 
             updatedAt: doc.updatedAt
@@ -51,12 +54,11 @@ export class BookingMapper {
         if (!entity) return null;
 
         return {
+            userId: entity.userId ? new Types.ObjectId(entity.userId) : null,
 
-            userId: entity.userId,
+            venueId: entity.venueId ? new Types.ObjectId(entity.venueId) : null,
 
-            venueId: entity.venueId,
-
-            vendorId: entity.vendorId,
+            vendorId: entity.vendorId ? new Types.ObjectId(entity.vendorId) : null,
 
             bookingDate: entity.bookingDate,
 
@@ -78,7 +80,9 @@ export class BookingMapper {
 
             paymentStatus: entity.paymentStatus,
 
-            cancellationReason: entity.cancellationReason
+            cancellationReason: entity.cancellationReason,
+
+            rejectionReason: entity.rejectionReason
 
         };
 
