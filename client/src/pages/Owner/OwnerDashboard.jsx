@@ -244,11 +244,13 @@ export default function OwnerDashboard() {
     }
 
     // Check booked status
-    const hasBooking = bookings.some(b => 
-      b.venueId === blockVenueId && 
-      b.bookingDate === dateVal && 
-      (b.bookingStatus === 'confirmed' || b.bookingStatus === 'pending')
-    );
+    const hasBooking = bookings.some(b => {
+      if (b.venueId !== blockVenueId) return false;
+      if (b.bookingStatus !== 'confirmed' && b.bookingStatus !== 'pending') return false;
+      const start = b.bookingDate;
+      const end = b.endDate || b.bookingDate;
+      return dateVal >= start && dateVal <= end;
+    });
 
     if (hasBooking) {
       setBlockDate('');
@@ -263,7 +265,7 @@ export default function OwnerDashboard() {
     // Double-verify past date
     const todayStr = new Date().toISOString().split('T')[0];
     if (blockDate < todayStr) {
-      return toast.error('Cannot block past dates.');
+      return toast.error('Cannot book a slot in the past');
     }
 
     const venueObj = venues.find(v => v.id === blockVenueId);
@@ -290,11 +292,13 @@ export default function OwnerDashboard() {
     }
 
     // Double-verify booked status
-    const hasBooking = bookings.some(b => 
-      b.venueId === blockVenueId && 
-      b.bookingDate === blockDate && 
-      (b.bookingStatus === 'confirmed' || b.bookingStatus === 'pending')
-    );
+    const hasBooking = bookings.some(b => {
+      if (b.venueId !== blockVenueId) return false;
+      if (b.bookingStatus !== 'confirmed' && b.bookingStatus !== 'pending') return false;
+      const start = b.bookingDate;
+      const end = b.endDate || b.bookingDate;
+      return blockDate >= start && blockDate <= end;
+    });
 
     if (hasBooking) {
       return toast.error(`Cannot block this date because there is an active reservation scheduled on ${blockDate} for ${venueObj.venueName}.`);

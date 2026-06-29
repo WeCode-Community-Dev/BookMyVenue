@@ -253,12 +253,22 @@ export default function VenueDetailPage() {
     const day = String(dayDate.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
 
-    // Get all confirmed bookings on this date
+    // Get all confirmed bookings that overlap with this dateStr
     const dateBookings = venue.bookings.filter(
-      b => b.bookingDate === dateStr && b.bookingStatus === 'confirmed'
+      b => {
+        if (b.bookingStatus !== 'confirmed') return false;
+        const start = b.bookingDate;
+        const end = b.endDate || b.bookingDate;
+        return dateStr >= start && dateStr <= end;
+      }
     );
 
     if (dateBookings.length === 0) return false;
+
+    // Daily bookings: any overlap fully books the day
+    if (venue.pricingUnit === 'day') {
+      return true;
+    }
 
     const openingStr = venue.openingTime || '09:00';
     const closingStr = venue.closingTime || '22:00';
@@ -275,9 +285,25 @@ export default function VenueDetailPage() {
 
     let bookedHours = 0;
     dateBookings.forEach(b => {
-      const bStart = parseTimeToDecimal(b.startTime);
-      const bEnd = parseTimeToDecimal(b.endTime);
-      bookedHours += (bEnd - bStart);
+      const start = b.bookingDate;
+      const end = b.endDate || b.bookingDate;
+      if (start === end) {
+        const bStart = parseTimeToDecimal(b.startTime);
+        const bEnd = parseTimeToDecimal(b.endTime);
+        bookedHours += (bEnd - bStart);
+      } else {
+        if (dateStr === start) {
+          const bStart = parseTimeToDecimal(b.startTime);
+          const bEnd = closing;
+          bookedHours += Math.max(0, bEnd - bStart);
+        } else if (dateStr === end) {
+          const bStart = opening;
+          const bEnd = parseTimeToDecimal(b.endTime);
+          bookedHours += Math.max(0, bEnd - bStart);
+        } else {
+          bookedHours += totalOperatingHours;
+        }
+      }
     });
 
     return bookedHours >= (totalOperatingHours - 0.5);
