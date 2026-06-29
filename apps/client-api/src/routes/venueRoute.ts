@@ -1,7 +1,13 @@
 import { FastifyInstance } from "fastify";
 import { ownerAuthMiddleware } from "../middleware/authmiddleware.js";
 import { VenueCategory, District } from "@bookmyvenue/database";
-import { createVenue, getVenues, getVenueById, editVenue } from "../controllers/venueController.js";
+import {
+    createVenue,
+    getVenues,
+    getVenueById,
+    editVenue,
+    getVenuesByOwnerId,
+} from "../controllers/venueController.js";
 import { CreateVenueBody, EditVenueBody, GetVenuesQuery } from "@bookmyvenue/types";
 
 const createVenueSchema = {
@@ -65,6 +71,12 @@ const editVenueSchema = {
 
 export const venueRoute = async (fastify: FastifyInstance) => {
     fastify.get<{ Querystring: GetVenuesQuery }>("/", { schema: getVenuesSchema }, getVenues);
+
+    fastify.get<{ Querystring: GetVenuesQuery }>(
+        "/owner-venues",
+        { preHandler: ownerAuthMiddleware, schema: getVenuesSchema },
+        getVenuesByOwnerId,
+    );
 
     fastify.get<{ Params: { id: string } }>("/:id", getVenueById);
 

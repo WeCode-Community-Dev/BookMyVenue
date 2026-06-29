@@ -1,5 +1,4 @@
-import { District, VenueCategory } from "@bookmyvenue/database";
-
+import { District, VenueCategory, VerificationStatus } from "@bookmyvenue/database";
 
 export const DISTRICTS = [
     "THIRUVANANTHAPURAM",
@@ -17,7 +16,6 @@ export const DISTRICTS = [
     "KANNUR",
     "KASARAGOD",
 ] as const;
-
 
 export const VENUE_CATEGORIES = [
     "WEDDING_HALL",
@@ -72,6 +70,12 @@ export interface Venue {
     averageRating: number | null;
     reviewCount: number;
     createdAt: string;
+    isActive?: boolean;
+    verificationStatus?: VerificationStatus;
+    verificationReason?: string;
+    _count?: {
+        bookings: number;
+    };
 }
 
 export interface Pagination {
@@ -102,8 +106,6 @@ export interface VenueDetail extends Venue {
 export interface GetVenueByIdResponse {
     venue: VenueDetail;
 }
-
-
 
 export interface CreateVenueBody {
     name: string;

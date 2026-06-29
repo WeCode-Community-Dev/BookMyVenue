@@ -15,7 +15,31 @@ export async function getVenuesApi(params: GetVenuesQuery = {}): Promise<GetVenu
     if (params.limit) query.set("limit", String(params.limit));
 
     const qs = query.toString();
-    const res = await fetch(`${API_BASE}/venue/${qs ? `?${qs}` : ""}`);
+    const res = await fetch(`${API_BASE}/venue${qs ? `?${qs}` : ""}`);
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { message?: string }).message ?? "Failed to fetch venues");
+    }
+
+    return res.json();
+}
+
+export async function getOwnerVenuesApi(
+    params: GetVenuesQuery = {},
+    token: string,
+): Promise<GetVenuesResponse> {
+    const query = new URLSearchParams();
+    if (params.page) query.set("page", String(params.page));
+    if (params.limit) query.set("limit", String(params.limit));
+
+    const qs = query.toString();
+    const res = await fetch(`${API_BASE}/venue/owner-venues${qs ? `?${qs}` : ""}`, {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
 
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));

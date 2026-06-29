@@ -100,10 +100,7 @@ export default function OwnerDashboard() {
                 )}
 
                 {activeTab === "bookings" && <BookingsTab />}
-
-                {activeTab === "venues" && (
-                    <VenuesTab venues={venues} onShowModal={() => setShowModal(true)} />
-                )}
+                {activeTab === "venues" && <VenuesTab />}
             </div>
         </div>
     );

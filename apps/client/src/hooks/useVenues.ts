@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getVenuesApi, getVenueByIdApi } from "@/lib/api/venueApi";
+import { getVenuesApi, getVenueByIdApi, getOwnerVenuesApi } from "@/lib/api/venueApi";
 import type { GetVenuesQuery } from "@bookmyvenue/types";
 
 export function useVenues(params: GetVenuesQuery = {}) {
@@ -16,5 +16,13 @@ export function useVenue(id: number | string) {
         queryKey: ["venue", String(id)],
         queryFn: () => getVenueByIdApi(id),
         enabled: id !== undefined && id !== null && id !== "",
+    });
+}
+
+export function useOwnerVenues(params: GetVenuesQuery = {}, token: string) {
+    return useQuery({
+        queryKey: ["owner-venues", params],
+        queryFn: () => getOwnerVenuesApi(params, token),
+        enabled: !!token,
     });
 }
