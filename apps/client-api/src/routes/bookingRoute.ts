@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { userAuthMiddleware, ownerAuthMiddleware } from "../middleware/authmiddleware.js";
 import { createBooking, getBookingByUserId, getBookingsByOwnerId } from "../controllers/bookingController.js";
-import type { CreateBookingBody, GetBookingQuery } from "@bookmyvenue/types";
+import type { CreateBookingBody, GetOwnerBookingQuery, GetUserBookingQuery } from "@bookmyvenue/types";
 import { BookingStatus } from "@bookmyvenue/database";
 
 const createBookingSchema = {
@@ -30,6 +30,8 @@ const getBookingsByIdSchema = {
             status: { type: "string", enum: Object.values(BookingStatus) },
             page: { type: "integer", minimum: 1, default: 1 },
             limit: { type: "integer", minimum: 1, maximum: 50, default: 10 },
+            today: { type: "string" },
+            type: { type: "string", enum: ["UPCOMING", "HISTORY"] },
         },
     },
 };
@@ -40,12 +42,12 @@ export const bookingRoute = async (fastify: FastifyInstance) => {
         { preHandler: userAuthMiddleware, schema: createBookingSchema },
         createBooking,
     );
-    fastify.get<{ Querystring: GetBookingQuery }>(
+    fastify.get<{ Querystring: GetOwnerBookingQuery }>(
         "/owner/bookings",
         { preHandler: ownerAuthMiddleware, schema: getBookingsByIdSchema },
         getBookingsByOwnerId,
     );
-    fastify.get<{ Querystring: GetBookingQuery }>(
+    fastify.get<{ Querystring: GetUserBookingQuery & { today: string } }>(
         "/user/bookings",
         { preHandler: userAuthMiddleware, schema: getBookingsByIdSchema },
         getBookingByUserId,

@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { prisma } from "@bookmyvenue/database";
 import { VerificationStatus } from "@bookmyvenue/database/enums";
-import type { CreateBookingBody, GetBookingQuery } from "@bookmyvenue/types";
+import type { CreateBookingBody, GetOwnerBookingQuery, GetUserBookingQuery } from "@bookmyvenue/types";
 
 export const createBooking = async (
     request: FastifyRequest<{ Body: CreateBookingBody }>,
@@ -54,7 +54,7 @@ export const createBooking = async (
 };
 
 export const getBookingsByOwnerId = async (
-    request: FastifyRequest<{ Querystring: GetBookingQuery }>,
+    request: FastifyRequest<{ Querystring: GetOwnerBookingQuery }>,
     reply: FastifyReply,
 ) => {
     const { status, page = 1, limit = 10 } = request.query;
@@ -127,16 +127,26 @@ export const getBookingsByOwnerId = async (
 };
 
 export const getBookingByUserId = async (
-    request: FastifyRequest<{ Querystring: GetBookingQuery }>,
+    request: FastifyRequest<{ Querystring: GetUserBookingQuery & { today: string } }>,
     reply: FastifyReply,
 ) => {
-    const { status, page = 1, limit = 10 } = request.query;
+    const { status, page = 1, limit = 10, type, today } = request.query;
     const skip = (Number(page) - 1) * limit;
 
-    const where = {
-        userId: request.userId,
-        ...(status && { status }),
-    };
+    const todayDate = new Date(today);
+    todayDate.setHours(0, 0, 0, 0);
+    console.log({ todayDate, type });
+
+    const where =
+        type === "UPCOMING"
+            ? {
+                  userId: request.userId,
+                  bookingSessions: { some: { eventDate: { gte: todayDate } } },
+              }
+            : {
+                  userId: request.userId,
+                  bookingSessions: { every: { eventDate: { lt: todayDate } } },
+              };
 
     const [bookings, total] = await Promise.all([
         prisma.booking.findMany({

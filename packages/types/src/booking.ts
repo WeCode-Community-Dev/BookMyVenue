@@ -1,18 +1,23 @@
 import { BookingStatus, District } from "@bookmyvenue/database";
 
-export interface CreateBookingBody {
+export type CreateBookingBody = {
     venueId: number;
     sessionIds: number[];
     eventDate: string;
     phone: string;
     purpose?: string;
-}
+};
 
-export interface GetBookingQuery {
+export type TypeOfBooking = "UPCOMING" | "HISTORY";
+
+export type GetOwnerBookingQuery = {
     status?: BookingStatus;
     page?: number;
     limit?: number;
-}
+    type?: TypeOfBooking;
+};
+
+export type GetUserBookingQuery = GetOwnerBookingQuery & { today: string };
 
 export type OwnerBookingResponse = {
     bookings: OwnerBooking[];
