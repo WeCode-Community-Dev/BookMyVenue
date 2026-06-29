@@ -6,18 +6,25 @@ import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
 import '../../../../core/widgets/app_cached_image.dart';
 import '../../../../core/widgets/app_text.dart';
+import '../../domain/entity/user_venue_entity.dart';
 import '../pages/venue_details_page.dart';
 
 class BuildVenueItem extends StatelessWidget {
-  const BuildVenueItem({super.key});
+  const BuildVenueItem({required this.venue, super.key});
+
+  final UserVenueEntity venue;
 
   @override
   Widget build(BuildContext context) {
+    final String priceStr = venue.slots.isNotEmpty
+        ? venue.slots.first.price.toStringAsFixed(0)
+        : '0';
+
     return GestureDetector(
       onTap: () {
-        Navigator.of(
-          context,
-        ).push(AppRouter.createHeroPageRoute(const UserVenueDetailsScreen()));
+        Navigator.of(context).push(
+          AppRouter.createHeroPageRoute(UserVenueDetailsScreen(venue: venue)),
+        );
       },
       child: Container(
         decoration: BoxDecoration(
@@ -33,20 +40,20 @@ class BuildVenueItem extends StatelessWidget {
           ],
         ),
         child: Column(
-          crossAxisAlignment: .start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             // Image and Star / Verified badge
             Stack(
               children: <Widget>[
-                const Hero(
-                  tag: 10,
+                Hero(
+                  tag: venue.id,
                   child: AppCachedImage(
-                    imageUrl:
-                        'https://d3i6fh83elv35t.cloudfront.net/static/2026/06/2026-06-17T033637Z_31440324_UP1EM6H0415VH_RTRMADP_3_SOCCER-WORLDCUP-ARG-DZA-1024x674.jpg',
+                    imageUrl: venue.coverImageUrl.isNotEmpty
+                        ? venue.coverImageUrl
+                        : 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=400',
                     height: 180,
-
                     width: double.infinity,
-                    borderRadius: BorderRadius.vertical(
+                    borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(AppShapes.radiusMd),
                     ),
                   ),
@@ -56,9 +63,7 @@ class BuildVenueItem extends StatelessWidget {
                   right: 12,
                   child: InkWell(
                     onTap: () {
-                      // appState.toggleStarred(
-                      //   venue.id,
-                      // );
+                      // Favorite action
                     },
                     child: Container(
                       padding: AppSpacing.pSm,
@@ -81,17 +86,17 @@ class BuildVenueItem extends StatelessWidget {
               padding: AppSpacing.cardPadding,
               child: Column(
                 spacing: AppSpacing.spaceSm,
-                crossAxisAlignment: .start,
-                mainAxisAlignment: .spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Column(
                     spacing: AppSpacing.spaceXs,
-                    crossAxisAlignment: .start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Row(
                         children: <Widget>[
                           AppText(
-                            'Auditorium'.toUpperCase(),
+                            venue.category.toUpperCase(),
                             variant: TextVariant.labelMedium,
                             color: AppColors.primaryDark,
                           ),
@@ -101,21 +106,19 @@ class BuildVenueItem extends StatelessWidget {
                             color: AppColors.primary,
                             size: AppSpacing.iconXs,
                           ),
-                          const AppText(
-                            '4.9',
+                          AppText(
+                            venue.averageRating.toStringAsFixed(1),
                             variant: TextVariant.captionRegular,
                             color: AppColors.primaryDark,
                           ),
                         ],
                       ),
-
-                      const AppText(
-                        'Adathara Auditorium',
+                      AppText(
+                        venue.venueName,
                         variant: TextVariant.headingLarge,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-
                       Row(
                         spacing: AppSpacing.spaceXs,
                         children: <Widget>[
@@ -124,10 +127,9 @@ class BuildVenueItem extends StatelessWidget {
                             size: 14,
                             color: AppColors.onSurfaceVariant,
                           ),
-
-                          const Expanded(
+                          Expanded(
                             child: AppText(
-                              'Manathattikunn, Sulthan Bathery',
+                              venue.location.address,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -138,7 +140,7 @@ class BuildVenueItem extends StatelessWidget {
                   ),
                   Row(
                     spacing: AppSpacing.spaceXl,
-                    mainAxisAlignment: .spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Row(
                         spacing: AppSpacing.spaceXs,
@@ -148,23 +150,14 @@ class BuildVenueItem extends StatelessWidget {
                             size: 14,
                             color: AppColors.onSurfaceVariant,
                           ),
-
-                          const AppText('Cap: ${1000}'),
+                          AppText('Cap: ${venue.maxCapacity}'),
                         ],
                       ),
                       AppText(
-                        '\u{20B9} ${100.toStringAsFixed(0)}/hr',
+                        '\u{20B9} $priceStr/hr',
                         variant: TextVariant.headingLarge,
                         color: AppColors.primaryDark,
                       ),
-                      // Expanded(
-                      //   child: AppButton(
-                      //     onPressed: () {},
-                      //     label: 'View details',
-                      //     size: ButtonSize.small,
-                      //     borderRadius: AppShapes.sm,
-                      //   ),
-                      // ),
                     ],
                   ),
                 ],

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/router/app_router.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
@@ -9,7 +8,6 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_cached_image.dart';
 import '../../../../core/widgets/app_text.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
-import '../../../user_venue_listing/presentation/pages/venue_details_page.dart';
 
 class UserDashboard extends StatefulWidget {
   const UserDashboard({super.key});
@@ -253,12 +251,13 @@ class _UserDashboardState extends State<UserDashboard> {
                           itemBuilder: (BuildContext context, int index) {
                             return GestureDetector(
                               onTap: () {
-                                // Navigate to details
-                                Navigator.of(context).push(
-                                  AppRouter.createHeroPageRoute(
-                                    const UserVenueDetailsScreen(),
-                                  ),
-                                );
+                                //TODO(Jiyad): Navigate to details
+
+                                // Navigator.of(context).push(
+                                //   AppRouter.createHeroPageRoute(
+                                //     const UserVenueDetailsScreen(),
+                                //   ),
+                                // );
                               },
                               child: Container(
                                 width: 280,
@@ -451,18 +450,11 @@ class _UserDashboardState extends State<UserDashboard> {
           AppButton(
             label: 'Book Now',
             onPressed: () {
-              /// Try to find Executive Suite M-1 (V-103)
-              // final appState = Provider.of<AppState>(
-              //   context,
-              //   listen: false,
+              //TODO(Jiyad): Navigate to details
+
+              // Navigator.of(context).push(
+              //   AppRouter.createHeroPageRoute(const UserVenueDetailsScreen()),
               // );
-              // final suite = appState.venues.firstWhere(
-              //   (v) => v.id == 'V-103',
-              //   orElse: () => appState.venues.first,
-              // );
-              Navigator.of(context).push(
-                AppRouter.createHeroPageRoute(const UserVenueDetailsScreen()),
-              );
             },
           ),
         ],

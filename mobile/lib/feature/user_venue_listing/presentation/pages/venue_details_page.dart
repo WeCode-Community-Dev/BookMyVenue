@@ -1,51 +1,76 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_constant.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
 import '../../../../core/widgets/app_cached_image.dart';
 import '../../../../core/widgets/app_text.dart';
+import '../../domain/entity/user_venue_entity.dart';
 
 class UserVenueDetailsScreen extends StatefulWidget {
-  const UserVenueDetailsScreen({super.key});
+  const UserVenueDetailsScreen({required this.venue, super.key});
+
+  final UserVenueEntity venue;
 
   @override
   State<UserVenueDetailsScreen> createState() => _UserVenueDetailsScreenState();
 }
 
 class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
-  DateTime _selectedDate = DateTime.now().add(const Duration(days: 2));
+  late final UserVenueEntity _venue;
+  late DateTime _selectedDate;
   double _selectedHours = 8.0;
-  String _selectedTimeSlot = '9:00 AM - 5:00 PM';
+  String _selectedTimeSlot = '';
+  late List<String> _timeSlots;
 
-  final List<String> _timeSlots = <String>[
-    '8:00 AM - 12:00 PM',
-    '1:00 PM - 5:00 PM',
-    '9:00 AM - 5:00 PM',
-    '6:00 PM - 10:00 PM',
-    '9:00 AM - 9:00 PM',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = DateTime.now().add(const Duration(days: 2));
 
-  final bool isStarred = true;
+    _venue = widget.venue;
+
+    // Dynamically build slots list
+    _timeSlots = _venue.slots
+        .map(
+          (UserVenueSlotEntity slot) =>
+              '${slot.slotName} (${slot.startTime} - ${slot.endTime})',
+        )
+        .toList();
+
+    if (_timeSlots.isEmpty) {
+      _timeSlots = <String>[
+        '8:00 AM - 12:00 PM',
+        '1:00 PM - 5:00 PM',
+        '9:00 AM - 5:00 PM',
+        '6:00 PM - 10:00 PM',
+        '9:00 AM - 9:00 PM',
+      ];
+    }
+    _selectedTimeSlot = _timeSlots.first;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final double hourlyRate = _venue.slots.isNotEmpty
+        ? _venue.slots.first.price
+        : 0.0;
+
     final Widget detailsContent = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         // Image banner
         Stack(
           children: <Widget>[
-            const Hero(
-              tag: 10,
+            Hero(
+              tag: _venue.id,
               child: AppCachedImage(
-                imageUrl:
-                    'https://d3i6fh83elv35t.cloudfront.net/static/2026/06/2026-06-17T033637Z_31440324_UP1EM6H0415VH_RTRMADP_3_SOCCER-WORLDCUP-ARG-DZA-1024x674.jpg',
+                imageUrl: _venue.coverImageUrl.isNotEmpty
+                    ? _venue.coverImageUrl
+                    : 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=400',
                 height: 250,
-
                 width: double.infinity,
-                borderRadius: BorderRadius.vertical(
+                borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(AppShapes.radiusMd),
                 ),
               ),
@@ -68,17 +93,18 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
                 backgroundColor: Colors.white,
                 child: IconButton(
                   icon: Icon(
-                    isStarred ? Icons.favorite : Icons.favorite_border,
-                    color: isStarred ? Colors.red : AppColors.onSurfaceVariant,
+                    Icons.favorite_border,
+                    color: AppColors.onSurfaceVariant,
                   ),
                   onPressed: () {
-                    // appState.toggleStarred(widget.venue.id);
+                    // Star action
                   },
                 ),
               ),
             ),
           ],
         ),
+        const SizedBox(height: 16),
 
         // Title and Category
         Row(
@@ -89,17 +115,19 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
                 color: AppColors.primary.withAlpha(10),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: AppText('Auditorium'.toUpperCase()),
+              child: AppText(_venue.category.toUpperCase()),
             ),
           ],
         ),
+        const SizedBox(height: 8),
 
-        const AppText(
-          'Adathara Auditorium',
+        AppText(
+          _venue.venueName,
           variant: TextVariant.headingLarge,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
+        const SizedBox(height: 8),
 
         // Address & Reviews
         Row(
@@ -110,9 +138,9 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
               color: AppColors.onSurfaceVariant,
             ),
             const SizedBox(width: 6),
-            const Expanded(
+            Expanded(
               child: AppText(
-                'Manathattikunn, Sulthan Bathery',
+                _venue.location.address,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -120,80 +148,88 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        const Row(
+        Row(
           children: <Widget>[
-            Icon(Icons.star, color: AppColors.primary, size: AppSpacing.iconXs),
+            const Icon(
+              Icons.star,
+              color: AppColors.primary,
+              size: AppSpacing.iconXs,
+            ),
+            const SizedBox(width: 4),
             AppText(
-              '4.9',
+              _venue.averageRating.toStringAsFixed(1),
               variant: TextVariant.captionRegular,
               color: AppColors.primaryDark,
             ),
-            AppText('(124 reviews)'),
+            const SizedBox(width: 4),
+            AppText('(${_venue.totalReviews} reviews)'),
           ],
         ),
         Divider(height: 40, color: AppColors.outline),
 
-        // Highlights (Cap, Sq Ft)
+        // Highlights (Cap, Hourly Rate)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
             _buildHighlightItem(
               Icons.people_alt_outlined,
               'Capacity',
-              '${1000} people',
-            ),
-            _buildHighlightItem(
-              Icons.square_foot_outlined,
-              'Size',
-              '${1500.toStringAsFixed(0)} sq ft',
+              '${_venue.maxCapacity} people',
             ),
             _buildHighlightItem(
               Icons.payments_outlined,
               'Hourly Rate',
-              '\$${100.toStringAsFixed(0)}/hr',
+              '\u{20B9} ${hourlyRate.toStringAsFixed(0)}/hr',
             ),
           ],
         ),
         Divider(height: 40, color: AppColors.outline),
 
         // Description
-        const AppText('About the Space'),
+        const AppText('About the Space', variant: TextVariant.headingMedium),
         const SizedBox(height: 12),
-        const AppText(
-          'widget.venue.description' +
-              '\n\nThis premium listing features standard high-tech support, central air conditioning, pristine sanitization, and flexible layouts. Conveniently located with excellent transport accessibility and ample local parking.',
+        AppText(
+          _venue.description.isNotEmpty
+              ? _venue.description
+              : 'This premium venue offers excellent spaces and top-notch event hospitality. Reach out to coordinate custom decorations and booking rules.',
         ),
         const SizedBox(height: 32),
 
         // Amenities
-        const AppText('Amenities Included'),
+        const AppText('Amenities Included', variant: TextVariant.headingMedium),
         const SizedBox(height: 16),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: AppConst.amenities.map((String amenity) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.outline),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const Icon(
-                    Icons.check_circle_outline,
-                    size: 16,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  AppText(amenity),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
+        if (_venue.amenities.isEmpty)
+          const AppText('No amenities listed.')
+        else
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: _venue.amenities.map((UserVenueAmenityEntity amenity) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.outline),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Icon(
+                      Icons.check_circle_outline,
+                      size: 16,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    AppText(amenity.name),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
         const SizedBox(height: 32),
       ],
     );
@@ -215,7 +251,10 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const AppText('Reservation Request'),
+          const AppText(
+            'Reservation Request',
+            variant: TextVariant.headingMedium,
+          ),
           const SizedBox(height: 20),
 
           // Date Picker
@@ -266,9 +305,9 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
               ),
             ),
             items: const <DropdownMenuItem<double>>[
-              DropdownMenuItem(value: 4.0, child: AppText('4 Hours')),
-              DropdownMenuItem(value: 8.0, child: AppText('8 Hours')),
-              DropdownMenuItem(value: 12.0, child: AppText('12 Hours')),
+              DropdownMenuItem<double>(value: 4.0, child: AppText('4 Hours')),
+              DropdownMenuItem<double>(value: 8.0, child: AppText('8 Hours')),
+              DropdownMenuItem<double>(value: 12.0, child: AppText('12 Hours')),
             ],
             onChanged: (double? val) {
               setState(() {
@@ -290,11 +329,14 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
               ),
             ),
             items: _timeSlots.map((String slot) {
-              return DropdownMenuItem(value: slot, child: AppText(slot));
+              return DropdownMenuItem<String>(
+                value: slot,
+                child: AppText(slot),
+              );
             }).toList(),
             onChanged: (String? val) {
               setState(() {
-                _selectedTimeSlot = val ?? '9:00 AM - 5:00 PM';
+                _selectedTimeSlot = val ?? _timeSlots.first;
               });
             },
           ),
@@ -314,17 +356,14 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
                 elevation: 0,
               ),
               onPressed: () {
-                // Save settings in state and navigate to policy review screen
-                // appState.startCheckout(
-                //   widget.venue,
-                //   _selectedDate,
-                //   timeSlot: _selectedTimeSlot,
-                //   hours: _selectedHours,
-                // );
                 Navigator.of(context).push(
-                  MaterialPageRoute(
+                  MaterialPageRoute<UserBookingDetailsPolicyScreen>(
                     builder: (BuildContext context) =>
-                        const UserBookingDetailsPolicyScreen(),
+                        UserBookingDetailsPolicyScreen(
+                          venue: _venue,
+                          selectedHours: _selectedHours,
+                          selectedTimeSlot: _selectedTimeSlot,
+                        ),
                   ),
                 );
               },
@@ -362,14 +401,23 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
         const SizedBox(height: 6),
         AppText(label),
         const SizedBox(height: 2),
-        AppText(value),
+        AppText(value, variant: TextVariant.headingMedium),
       ],
     );
   }
 }
 
 class UserBookingDetailsPolicyScreen extends StatefulWidget {
-  const UserBookingDetailsPolicyScreen({super.key});
+  const UserBookingDetailsPolicyScreen({
+    required this.venue,
+    required this.selectedHours,
+    required this.selectedTimeSlot,
+    super.key,
+  });
+
+  final UserVenueEntity venue;
+  final double selectedHours;
+  final String selectedTimeSlot;
 
   @override
   State<UserBookingDetailsPolicyScreen> createState() =>
@@ -382,12 +430,26 @@ class _UserBookingDetailsPolicyScreenState
 
   @override
   Widget build(BuildContext context) {
-    // Calculations
-    const double baseAmount = 100;
-    const double cleaning = 10;
-    const double security = 1000;
-    const double serviceFee = baseAmount * 0.05;
-    const double totalAmount = baseAmount + cleaning + security + serviceFee;
+    final double hourlyRate = widget.venue.slots.isNotEmpty
+        ? widget.venue.slots.first.price
+        : 0.0;
+    final double baseAmount = widget.selectedHours * hourlyRate;
+
+    // Search for cleaning fee or fallback to first service
+    final double cleaning = widget.venue.services.isNotEmpty
+        ? widget.venue.services
+              .firstWhere(
+                (UserVenueServiceEntity s) =>
+                    s.serviceName.toLowerCase().contains('clean') ||
+                    s.serviceName.toLowerCase().contains('fee'),
+                orElse: () => widget.venue.services.first,
+              )
+              .price
+        : 0.0;
+
+    const double security = 1000.0;
+    final double serviceFee = baseAmount * 0.05;
+    final double totalAmount = baseAmount + cleaning + security + serviceFee;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -425,10 +487,10 @@ class _UserBookingDetailsPolicyScreenState
                     children: <Widget>[
                       Expanded(
                         child: AppCachedImage(
-                          imageUrl:
-                              'https://d3i6fh83elv35t.cloudfront.net/static/2026/06/2026-06-17T033637Z_31440324_UP1EM6H0415VH_RTRMADP_3_SOCCER-WORLDCUP-ARG-DZA-1024x674.jpg',
+                          imageUrl: widget.venue.coverImageUrl.isNotEmpty
+                              ? widget.venue.coverImageUrl
+                              : 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=400',
                           height: 100,
-
                           width: double.infinity,
                           borderRadius: BorderRadius.circular(
                             AppShapes.radiusMd,
@@ -440,10 +502,13 @@ class _UserBookingDetailsPolicyScreenState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            const AppText('Venue Name'),
+                            AppText(
+                              widget.venue.venueName,
+                              variant: TextVariant.headingMedium,
+                            ),
                             const SizedBox(height: 6),
                             AppText(
-                              '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year} | Morning - 9 - 3',
+                              '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year} | ${widget.selectedTimeSlot} | ${widget.selectedHours.toInt()} hrs',
                             ),
                           ],
                         ),
@@ -454,7 +519,10 @@ class _UserBookingDetailsPolicyScreenState
                 const SizedBox(height: 32),
 
                 // Policies Section
-                const AppText('Cancellation Policy'),
+                const AppText(
+                  'Cancellation Policy',
+                  variant: TextVariant.headingMedium,
+                ),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -487,7 +555,10 @@ class _UserBookingDetailsPolicyScreenState
                 const SizedBox(height: 24),
 
                 // Rules
-                const AppText('House Rules & Guidelines'),
+                const AppText(
+                  'House Rules & Guidelines',
+                  variant: TextVariant.headingMedium,
+                ),
                 const SizedBox(height: 12),
                 const AppText(
                   '1. Overtime hours are billed at 1.5x the hourly rate.\n2. No smoking permitted indoors. Outdoor smoking areas available.\n3. Noise levels must be kept within municipal guidelines after 10:00 PM.\n4. Clean-up fee covers normal usage. Excess clutter will require additional security deposit deduction.',
@@ -495,7 +566,10 @@ class _UserBookingDetailsPolicyScreenState
                 const SizedBox(height: 32),
 
                 // Pricing Breakdown Table
-                const AppText('Pricing Breakdown'),
+                const AppText(
+                  'Pricing Breakdown',
+                  variant: TextVariant.headingMedium,
+                ),
                 const SizedBox(height: 12),
                 Container(
                   decoration: BoxDecoration(
@@ -506,25 +580,25 @@ class _UserBookingDetailsPolicyScreenState
                   child: Column(
                     children: <Widget>[
                       _buildBreakdownRow(
-                        'Base Rate (${10.toStringAsFixed(0)} hrs × \$${10.toStringAsFixed(0)})',
-                        '\$${baseAmount.toStringAsFixed(2)}',
+                        'Base Rate (${widget.selectedHours.toInt()} hrs × \u{20B9} ${hourlyRate.toStringAsFixed(0)})',
+                        '\u{20B9} ${baseAmount.toStringAsFixed(2)}',
                       ),
                       _buildBreakdownRow(
                         'Cleaning Fee',
-                        '\$${cleaning.toStringAsFixed(2)}',
+                        '\u{20B9} ${cleaning.toStringAsFixed(2)}',
                       ),
                       _buildBreakdownRow(
                         'Refundable Security Deposit',
-                        '\$${security.toStringAsFixed(2)}',
+                        '\u{20B9} ${security.toStringAsFixed(2)}',
                       ),
                       _buildBreakdownRow(
                         'Service & Platform Fee (5%)',
-                        '\$${serviceFee.toStringAsFixed(2)}',
+                        '\u{20B9} ${serviceFee.toStringAsFixed(2)}',
                       ),
                       Divider(height: 1, color: AppColors.outline),
                       _buildBreakdownRow(
                         'Total Booking Cost',
-                        '\$${totalAmount.toStringAsFixed(2)}',
+                        '\u{20B9} ${totalAmount.toStringAsFixed(2)}',
                         isTotal: true,
                       ),
                     ],
@@ -568,12 +642,7 @@ class _UserBookingDetailsPolicyScreenState
                     ),
                     onPressed: _agreedToPolicies
                         ? () {
-                            // Navigator.of(context).push(
-                            //   MaterialPageRoute(
-                            //     builder: (BuildContext context) =>
-                            //         const UserSecureCheckoutScreen(),
-                            //   ),
-                            // );
+                            // Proceed to Secure Checkout
                           }
                         : null,
                     child: const AppText('Proceed to Secure Checkout'),

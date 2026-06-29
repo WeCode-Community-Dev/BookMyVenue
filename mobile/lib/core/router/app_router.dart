@@ -24,6 +24,7 @@ import '../../feature/owner_profile/presentation/pages/owner_profile.dart';
 import '../../feature/user_dashbaord/presentation/pages/user_dashboard.dart';
 import '../../feature/user_profile/presentation/bloc/user_profile_bloc.dart';
 import '../../feature/user_profile/presentation/pages/user_profile_page.dart';
+import '../../feature/user_venue_listing/presentation/bloc/user_venue_bloc.dart';
 import '../../feature/user_venue_listing/presentation/pages/venue_list_page.dart';
 import '../auth/auth_session.dart';
 import '../di/injection.dart';
@@ -211,7 +212,10 @@ class AppRouter {
                 path: '/${AppRouteNames.listVenue}',
                 name: AppRouteNames.listVenue,
                 builder: (BuildContext context, GoRouterState state) =>
-                    const UserVenueListPage(),
+                    BlocProvider<UserVenueBloc>(
+                      create: (BuildContext context) => sl<UserVenueBloc>(),
+                      child: const UserVenueListPage(),
+                    ),
               ),
             ],
           ),
