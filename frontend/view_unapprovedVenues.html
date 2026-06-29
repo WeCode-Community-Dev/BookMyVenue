@@ -47,7 +47,7 @@
             const row = document.createElement("tr");
             const amenitiesString = element.amenities.map(amenity => amenity.name).join(", ")
             // TODO: Implement support for rendering all uploaded venue images (currently only the first image is displayed).
-            const imagePath = element.images[0]
+            const imagePath = element.images?.[0]
             // console.log(amenitiesString)
             row.innerHTML = `
                 <td>${element.venue.name}</td>
