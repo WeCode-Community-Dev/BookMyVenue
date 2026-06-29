@@ -115,6 +115,45 @@ npm run dev
 | `PUT /api/v1/venues/:id` | OWNER | Update own venue |
 | `DELETE /api/v1/venues/:id` | OWNER | Delete own venue |
 
+### Bookings (Phase 6)
+
+| Endpoint | Auth | Description |
+|----------|------|-------------|
+| `GET /api/v1/venues/:id/availability` | No | Busy CONFIRMED slots in range (`?from=&to=` **UTC ISO datetimes ending in `Z`**) |
+| `POST /api/v1/bookings` | CUSTOMER | Create booking (overlap check + price snapshot) |
+| `GET /api/v1/bookings` | CUSTOMER | List your bookings |
+| `PATCH /api/v1/bookings/:id/cancel` | CUSTOMER | Cancel your own booking |
+
+**Datetime rule:** All booking/availability datetimes must be ISO 8601 **UTC** — end with `Z` or `+00:00` (e.g. `2026-07-01T10:00:00.000Z`). Date-only (`2026-07-01`) and non-UTC offsets (`+05:30`) are rejected.
+
+**Query strings:** If you use `+00:00` in a URL, encode `+` as `%2B` (otherwise `+` is read as a space).
+
+**Check availability:**
+
+```bash
+curl "http://localhost:3000/api/v1/venues/1/availability?from=2026-07-01T10:00:00.000Z&to=2026-07-01T18:00:00.000Z"
+```
+
+**Create booking (customer token):**
+
+```bash
+curl -X POST http://localhost:3000/api/v1/bookings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_CUSTOMER_TOKEN" \
+  -d '{
+    "venueId": 1,
+    "bookingFrom": "2026-07-01T10:00:00.000Z",
+    "bookingTo": "2026-07-01T14:00:00.000Z"
+  }'
+```
+
+**Cancel booking:**
+
+```bash
+curl -X PATCH http://localhost:3000/api/v1/bookings/1/cancel \
+  -H "Authorization: Bearer YOUR_CUSTOMER_TOKEN"
+```
+
 **Create venue example:**
 
 ```bash
