@@ -413,9 +413,11 @@ export default function VenuesPage() {
                           <h3 className="font-bold text-slate-900 text-sm tracking-tight truncate group-hover:text-primary transition-colors">
                             {venue.venueName}
                           </h3>
-                          <div className="flex items-center gap-0.5 text-yellow-500 text-xs font-semibold shrink-0">
-                            <MdStar /> {Number(venue.rating || 0).toFixed(1)}
-                          </div>
+                          {venue.rating && Number(venue.rating) > 0 ? (
+                            <div className="flex items-center gap-0.5 text-yellow-500 text-xs font-semibold shrink-0">
+                              <MdStar /> {Number(venue.rating).toFixed(1)}
+                            </div>
+                          ) : null}
                         </div>
 
                         <p className="text-slate-500 text-xs truncate mb-4">

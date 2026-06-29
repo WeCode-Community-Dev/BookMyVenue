@@ -11,6 +11,7 @@ import {
   MdEventNote,
   MdTrendingUp,
   MdSearch,
+  MdStar,
   MdOutlineMapsHomeWork,
   MdDashboard,
   MdLocationOn,
@@ -564,10 +565,10 @@ export default function BookingsPage() {
                 <p className="text-slate-500 text-sm max-w-xs mx-auto">Try modifying your search keywords or explore other listing options.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-4 items-start">
                 {filteredVenues.map((v) => (
-                  <div key={v.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
-                    <div className="h-40 w-full bg-slate-100 overflow-hidden relative shrink-0">
+                  <div key={v.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm flex flex-col">
+                    <div className="h-32 w-full bg-slate-100 overflow-hidden relative shrink-0">
                       {v.images?.[0] ? (
                         <img
                           src={thumbnailUrl(v.images[0])}
@@ -587,37 +588,36 @@ export default function BookingsPage() {
                         </span>
                       )}
                     </div>
-                    <div className="p-5 flex-grow flex flex-col justify-between">
-                      <div>
-                        <h4 className="font-black text-slate-900 text-base leading-tight mb-1">{v.venueName}</h4>
-                        <p className="text-xs text-slate-400 mb-3 truncate">📍 {v.address}</p>
-                        
-                        <div className="flex flex-wrap gap-2.5 mb-4">
-                          {v.amenities?.slice(0, 3).map((am, i) => (
-                            <span key={i} className="py-1 px-2 bg-slate-50 border border-slate-100 rounded-md text-[10px] text-slate-500 font-semibold">{am}</span>
-                          ))}
-                        </div>
+                    <div className="p-4 flex flex-col gap-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-black text-slate-900 text-sm leading-tight truncate" title={v.venueName}>{v.venueName}</h4>
+                        {v.rating && Number(v.rating) > 0 ? (
+                          <div className="flex items-center gap-0.5 text-yellow-500 text-xs font-semibold shrink-0">
+                            <MdStar /> {Number(v.rating).toFixed(1)}
+                          </div>
+                        ) : null}
+                      </div>
+                      <p className="text-[11px] text-slate-400 truncate">📍 {v.address}</p>
+                      
+                      <div className="flex flex-wrap gap-1.5">
+                        {v.amenities?.slice(0, 3).map((am, i) => (
+                          <span key={i} className="py-0.5 px-1.5 bg-slate-50 border border-slate-100 rounded text-[9px] text-slate-500 font-semibold">{am}</span>
+                        ))}
                       </div>
                       
-                      <div>
-                        <div className="flex items-center justify-between text-xs text-slate-600 pt-3 border-t border-slate-50">
-                          <span className="flex items-center gap-0.5">
-                            {v.pricingUnit === 'day' ? 'Daily:' : 'Hourly:'} 
-                            <span className="font-bold text-slate-900 flex items-center">
-                              <MdCurrencyRupee className="text-emerald-600 text-sm font-black" />
-                              {v.pricingUnit === 'day' ? Number(v.pricePerDay || 0).toLocaleString('en-IN') : Number(v.pricePerHour).toLocaleString('en-IN')}
-                            </span>
-                          </span>
-                          <span>Seating: <span className="font-bold text-slate-900">{v.capacity} pax</span></span>
-                        </div>
-
-                        <button
-                          onClick={() => navigate(`/venues/${v.id}`)}
-                          className="w-full mt-4 py-2.5 bg-primary hover:bg-primary-dark text-white font-bold text-xs rounded-xl shadow-sm shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99] text-center cursor-pointer"
-                        >
-                          View Details & Book
-                        </button>
+                      <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-100/70 mt-1">
+                        <span>
+                          {v.pricingUnit === 'day' ? 'Daily:' : 'Hourly:'} <span className="font-bold text-slate-900">₹{Number(v.pricingUnit === 'day' ? v.pricePerDay || 0 : v.pricePerHour || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </span>
+                        <span>Seating: <span className="font-bold text-slate-900">{Number(v.capacity || 0).toLocaleString('en-IN')} pax</span></span>
                       </div>
+
+                      <button
+                        onClick={() => navigate(`/venues/${v.id}`)}
+                        className="w-full mt-1.5 py-2 bg-primary hover:bg-primary-dark text-white font-bold text-xs rounded-xl shadow-sm transition-all text-center cursor-pointer"
+                      >
+                        View Details & Book
+                      </button>
                     </div>
                   </div>
                 ))}
