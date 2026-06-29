@@ -4,19 +4,17 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin, Star, Users } from "lucide-react";
-import type { Venue } from "@/lib/api/venueApi";
 import { formatEnum } from "@/lib/utils";
+import { Venue } from "@bookmyvenue/types";
 
-interface VenueCardProps {
+type VenueCardProps = {
     venue: Venue;
 }
 
 export function VenueCard({ venue }: VenueCardProps) {
     const [wishlisted, setWishlisted] = useState(false);
 
-    const startingPrice = venue.sessions.length
-        ? Math.min(...venue.sessions.map((s) => s.price))
-        : null;
+    const startingPrice = venue.sessions.length ? Math.min(...venue.sessions.map((s) => s.price)) : null;
 
     return (
         <Link
@@ -83,12 +81,12 @@ export function VenueCard({ venue }: VenueCardProps) {
                             <span className="text-sm text-muted-foreground">Price on request</span>
                         )}
                     </div>
-                    <button
+                    <Link
+                        href={`/venues/${venue.id}`}
                         className="bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-xl hover:bg-accent transition-colors cursor-pointer"
-                        onClick={(e) => e.preventDefault()}
                     >
                         Book Now
-                    </button>
+                    </Link>
                 </div>
             </div>
         </Link>

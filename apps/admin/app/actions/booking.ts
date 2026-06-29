@@ -4,8 +4,6 @@ import { unstable_cache } from "next/cache";
 import { prisma, BookingStatus, VenueCategory } from "@bookmyvenue/database";
 import { mapBooking, SELECT_BOOKING } from "./utils";
 
-
-
 export type Booking = {
     id: string;
     client: string;

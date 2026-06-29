@@ -26,36 +26,36 @@ export function Navbar() {
                     {!isAuthPage && (
                         <>
                             <div className="hidden md:flex items-center gap-8">
-                                <a
-                                    href="#venues"
+                                <Link
+                                    href="/#venues"
                                     className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm font-medium"
                                 >
                                     Explore Venues
-                                </a>
-                                <a
-                                    href="#categories"
+                                </Link>
+                                <Link
+                                    href="/#categories"
                                     className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm font-medium"
                                 >
                                     Categories
-                                </a>
-                                <a
-                                    href="#about"
+                                </Link>
+                                <Link
+                                    href="/#about"
                                     className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm font-medium"
                                 >
                                     About
-                                </a>
-                                <a
-                                    href="#contact"
+                                </Link>
+                                <Link
+                                    href="/#contact"
                                     className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm font-medium"
                                 >
                                     Contact
-                                </a>
-                                <a
-                                    href="#register_venue"
+                                </Link>
+                                <Link
+                                    href="/#register_venue"
                                     className="text-primary-foreground/80 hover:text-primary-foreground transition-colors text-sm font-medium"
                                 >
                                     List Venue
-                                </a>
+                                </Link>
                             </div>
 
                             <div className="hidden md:flex items-center gap-3">
@@ -71,12 +71,6 @@ export function Navbar() {
                                     >
                                         Sign Up
                                     </Link>
-                                    {/* <Link
-                                        href="/sign-up/owner"
-                                        className="text-sm font-semibold bg-primary-foreground text-primary px-4 py-1.5 rounded-full hover:bg-primary-foreground/90 transition-colors"
-                                    >
-                                        List Your Venue
-                                    </Link> */}
                                 </Show>
                                 <Show when="signed-in">
                                     <ProfileButton />
