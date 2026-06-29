@@ -1,11 +1,11 @@
 "use client";
 
 import { fetchBookingsByOwnerId, fetchBookingsByUserId } from "@/lib/api/bookingApi";
-import type { GetBookingQuery } from "@bookmyvenue/types";
+import type { GetOwnerBookingQuery, GetUserBookingQuery } from "@bookmyvenue/types";
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 
-export const useOwnerBookings = (params: GetBookingQuery) => {
+export const useOwnerBookings = (params: GetOwnerBookingQuery) => {
     const { getToken } = useAuth();
 
     return useQuery({
@@ -18,7 +18,7 @@ export const useOwnerBookings = (params: GetBookingQuery) => {
     });
 };
 
-export const useUserBookings = (params: GetBookingQuery) => {
+export const useUserBookings = (params: GetUserBookingQuery) => {
     const { getToken } = useAuth();
 
     return useQuery({

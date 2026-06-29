@@ -1,38 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CalendarCheck, ChevronLeft, ChevronRight, Clock, MapPin } from "lucide-react";
 
 import { fmt, STATUS_DOT, STATUS_STYLE, type BookingStatus } from "@/app/owner/types";
 import { useUserBookings } from "@/hooks/useBooking";
 import { fmt12h, fmtDate, formatEnum } from "@/lib/utils";
-import type { GetBookingQuery } from "@bookmyvenue/types";
+import type { TypeOfBooking } from "@bookmyvenue/types";
 import { Button } from "@/components/ui/button";
 
-const FILTERS = ["All", "Confirmed", "Cancelled"] as const;
+const TYPES: TypeOfBooking[] = ["UPCOMING", "HISTORY"];
 const PAGE_SIZE = 10;
 
 const toTitleStatus = (s: string): BookingStatus => (s.charAt(0) + s.slice(1).toLowerCase()) as BookingStatus;
 
 export default function MyBookingsPage() {
-    const [filter, setFilter] = useState<(typeof FILTERS)[number]>("All");
+    const [type, setType] = useState<TypeOfBooking>("UPCOMING");
     const [page, setPage] = useState(1);
+    const today = useMemo(() => new Date().toISOString(), []);
 
-    const statusParam = filter === "All" ? undefined : (filter.toUpperCase() as GetBookingQuery["status"]);
+    console.log({ type });
 
     const { data, isLoading, isError, error } = useUserBookings({
-        status: statusParam,
+        type,
         page,
         limit: PAGE_SIZE,
+        today,
     });
 
     const bookings = data?.bookings ?? [];
     const totalPages = data?.pagination.totalPages ?? 1;
     const currentPage = data?.pagination.page ?? page;
 
-    const handleFilter = (f: (typeof FILTERS)[number]) => {
+    const handleType = (f: TypeOfBooking) => {
         setPage(1);
-        setFilter(f);
+        setType(f);
     };
 
     return (
@@ -44,19 +46,18 @@ export default function MyBookingsPage() {
                 </p>
             </div>
 
-            {/* Status filter */}
-            <div className="mb-6 flex flex-wrap gap-2">
-                {FILTERS.map((f) => (
+            <div className="mb-2 flex gap-0 border-b border-border">
+                {TYPES.map((t) => (
                     <button
-                        key={f}
-                        onClick={() => handleFilter(f)}
-                        className={`rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
-                            filter === f
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted text-muted-foreground hover:bg-secondary"
+                        key={t}
+                        onClick={() => handleType(t)}
+                        className={`-mb-px border-b-2 px-5 py-3 text-sm font-semibold transition-all capitalize ${
+                            type === t
+                                ? "border-primary text-primary"
+                                : "border-transparent text-muted-foreground hover:text-foreground"
                         }`}
                     >
-                        {f}
+                        {t.toLocaleLowerCase()}
                     </button>
                 ))}
             </div>
@@ -127,9 +128,9 @@ export default function MyBookingsPage() {
                             </div>
 
                             {/* Footer */}
-                            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 text-xs text-muted-foreground">
-                                <span className="font-mono">#{b.id.slice(0, 8)}</span>
-                                {b.purpose && <span className="truncate">{b.purpose}</span>}
+                            <div className="mt-4 flex flex-wrap items-center justify-start gap-4 border-t border-border pt-4 text-xs text-muted-foreground">
+                                <span className="">#{b.id.slice(0, 8)}</span>
+                                {b.purpose && <span className="truncate me-auto">For: {b.purpose}</span>}
                                 <span className="font-bold text-foreground">Total: {fmt(b.totalAmount)}</span>
                             </div>
                         </div>

@@ -1,4 +1,10 @@
-import type { CreateBookingBody, GetBookingQuery, OwnerBookingResponse, UserBookingsResponse } from "@bookmyvenue/types";
+import type {
+    CreateBookingBody,
+    GetOwnerBookingQuery,
+    OwnerBookingResponse,
+    UserBookingsResponse,
+    GetUserBookingQuery,
+} from "@bookmyvenue/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
 
@@ -22,7 +28,7 @@ export const createBooking = async (payload: CreateBookingBody, token: string) =
 
 // Get all booking of venues for owner
 export const fetchBookingsByOwnerId = async (
-    params: GetBookingQuery = {},
+    params: GetOwnerBookingQuery = {},
     token: string,
 ): Promise<OwnerBookingResponse> => {
     const query = new URLSearchParams();
@@ -48,13 +54,15 @@ export const fetchBookingsByOwnerId = async (
 
 // Bookings made by user
 export const fetchBookingsByUserId = async (
-    params: GetBookingQuery = {},
+    params: GetUserBookingQuery,
     token: string,
 ): Promise<UserBookingsResponse> => {
     const query = new URLSearchParams();
+    query.set("today", String(params.today));
     if (params.status) query.set("status", params.status);
     if (params.page) query.set("page", String(params.page));
     if (params.limit) query.set("limit", String(params.limit));
+    if (params.type) query.set("type", params.type);
 
     const qs = query.toString();
     const res = await fetch(`${API_BASE}/booking/user/bookings${qs ? `?${qs}` : ""}`, {
