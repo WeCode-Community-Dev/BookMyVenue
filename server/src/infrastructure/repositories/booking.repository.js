@@ -42,7 +42,7 @@ export class BookingRepositoryImpl extends BookingRepository {
   }
 
   async findByOwnerId(
-    ownerId,
+    vendorId,
     {
       page = 1,
 
@@ -53,14 +53,11 @@ export class BookingRepositoryImpl extends BookingRepository {
       search,
     }
   ) {
-    const filter = { ownerId };
+    const filter = { vendorId };
 
     if (status) {
       filter.status = status;
     }
-
-    console.log("ownerId:", ownerId);
-    console.log("filter:", filter);
 
     let docs = await BookingModel.find(filter)
 
@@ -136,29 +133,29 @@ export class BookingRepositoryImpl extends BookingRepository {
     return BookingMapper.mapToEntity(doc);
   }
 
-  async countByOwnerId(ownerId) {
+  async countByOwnerId(vendorId) {
     return await BookingModel.countDocuments({
-      ownerId,
+      vendorId,
     });
   }
 
   async countByOwnerIdAndStatus(
-    ownerId,
+    vendorId,
 
     status
   ) {
     return await BookingModel.countDocuments({
-      ownerId,
+      vendorId,
 
       status,
     });
   }
 
-  async getTopVenues(ownerId) {
+  async getTopVenues(vendorId) {
     const result = await BookingModel.aggregate([
       {
         $match: {
-          ownerId: new mongoose.Types.ObjectId(ownerId),
+          vendorId: new mongoose.Types.ObjectId(vendorId),
         },
       },
 
@@ -205,10 +202,9 @@ export class BookingRepositoryImpl extends BookingRepository {
     return result;
   }
 
-  async getRecentBookings(ownerId) {
+  async getRecentBookings(vendorId) {
     const docs = await BookingModel.find({
-      ownerId,
-    })
+      vendorId    })
 
       .populate("userId", "fullName")
 
