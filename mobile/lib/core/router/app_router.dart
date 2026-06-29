@@ -22,6 +22,7 @@ import '../../feature/owner_payout_history/presentation/pages/owner_payout_page.
 import '../../feature/owner_profile/presentation/bloc/owner_profile_bloc.dart';
 import '../../feature/owner_profile/presentation/pages/owner_profile.dart';
 import '../../feature/user_dashbaord/presentation/pages/user_dashboard.dart';
+import '../../feature/user_profile/presentation/bloc/user_profile_bloc.dart';
 import '../../feature/user_profile/presentation/pages/user_profile_page.dart';
 import '../../feature/user_venue_listing/presentation/pages/venue_list_page.dart';
 import '../auth/auth_session.dart';
@@ -230,7 +231,10 @@ class AppRouter {
                 path: '/${AppRouteNames.userProfile}',
                 name: AppRouteNames.userProfile,
                 builder: (BuildContext context, GoRouterState state) =>
-                    const UserProfileScreen(),
+                    BlocProvider<UserProfileBloc>(
+                      create: (BuildContext context) => sl<UserProfileBloc>(),
+                      child: const UserProfileScreen(),
+                    ),
               ),
             ],
           ),
