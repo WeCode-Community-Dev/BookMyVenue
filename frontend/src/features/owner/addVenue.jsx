@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 import { FiCheck, FiTrash2, FiPlus, FiUpload } from "react-icons/fi";
 import "./addVenue.scss";
 import { useAddVenueMutation, useGetAmenitiesQuery } from "./ownerApi.js";
@@ -44,7 +45,7 @@ function OwnerAddVenue() {
   // Form states
   const [basicInfo, setBasicInfo] = useState({
     name: "",
-    type: "Hall",
+    type: "auditorium",
     description: "",
     address: "",
     city: "",
@@ -63,7 +64,8 @@ function OwnerAddVenue() {
   });
 
   const [pricingRules, setPricingRules] = useState(INITIAL_PRICING_RULES);
-  const [amenities, setAmenities] = useState([]); 
+  const [bookingType, setBookingType] = useState("hourly");
+  const [amenities, setAmenities] = useState([]);
   const [images, setImages] = useState([]);
 
   // Dynamic actions
@@ -219,45 +221,70 @@ function OwnerAddVenue() {
   }, [amenitiesList]);
 
   const handleSubmit = async () => {
-  const uploadedImages = await Promise.all(
-    images.map(async (img) => {
-      const formData = new FormData()
-      formData.append('file', img.file)
-      formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
+    try {
+      const uploadedImages = await Promise.all(
+        images.map(async (img) => {
+          const formData = new FormData();
+          formData.append("file", img.file);
+          formData.append(
+            "upload_preset",
+            import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+          );
 
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: formData
-      })
-      const data = await res.json()
-      return { url: data.secure_url, isPrimary: img.isPrimary }
-    })
-  )
+          const res = await fetch(
+            `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+            {
+              method: "POST",
+              body: formData,
+            },
+          );
 
-  const reqBody = {
-    ...basicInfo,
-    openDays: availability.openDays,
-    openTime: availability.openingTime,
-    closeTime: availability.closingTime,
-    minBookingHours: availability.minBookingHours,
-    images: uploadedImages, 
-    pricing: pricingRules.map(pricing => ({
-      dayType: pricing.dayType,
-      price: Number(pricing.pricePerHour),
-      minHours: pricing.minHours,
-      validFrom: pricing.validFrom,
-      validTo: pricing.validTo,
-    })),
-    venueAmenities: amenities
-  }
+          if (!res.ok) {
+            throw new Error("Image upload failed. Please try again.");
+          }
 
-  try {
-    const result = await addVenue(reqBody).unwrap()
-    navigate('/owner/venues')
-  } catch (err) {
-    console.log(err)
-  }
-}
+          const data = await res.json();
+
+          if (!data.secure_url) {
+            throw new Error(
+              data.error?.message || "Image upload failed. Please try again.",
+            );
+          }
+
+          return { url: data.secure_url, isPrimary: img.isPrimary };
+        }),
+      );
+
+      const reqBody = {
+        ...basicInfo,
+        bookingType,
+        openDays: availability.openDays,
+        openTime: availability.openingTime,
+        closeTime: availability.closingTime,
+        minBookingHours: availability.minBookingHours,
+        images: uploadedImages,
+        pricing: pricingRules.map((pricing) => ({
+          dayType: pricing.dayType,
+          price: Number(pricing.pricePerHour),
+          minHours: bookingType === "hourly" ? Number(pricing.minHours) : 1,
+          validFrom: pricing.validFrom,
+          validTo: pricing.validTo,
+        })),
+        venueAmenities: amenities,
+      };
+
+      await addVenue(reqBody).unwrap();
+      toast.success("Venue created successfully.");
+      navigate("/owner/venues");
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err?.data?.message ||
+          err?.message ||
+          "Unable to submit venue. Please try again.",
+      );
+    }
+  };
 
   const handleBackStep = () => {
     if (currentStep > 1) {
@@ -376,12 +403,13 @@ function OwnerAddVenue() {
                       onChange={handleBasicInfoChange}
                     >
                       {/* Replace with api call  */}
-                      <option value="Hall">Hall</option>
-                      <option value="Rooftop">Rooftop</option>
-                      <option value="Banquet">Banquet</option>
-                      <option value="Conference Room">Conference Room</option>
-                      <option value="Farmhouse">Farmhouse</option>
-                      <option value="Studio">Studio</option>
+                      <option value="auditorium">Auditorium</option>
+                      <option value="studio">Studio</option>
+                      <option value="outdoor">Outdoor</option>
+                      <option value="banquet">Banquet</option>
+                      <option value="coworking">Coworking</option>
+                      <option value="art_space">Art Space</option>
+                      <option value="rooftop">Rooftop</option>
                       <option value="cafe">Cafe</option>
                     </select>
                   </div>
@@ -591,9 +619,30 @@ function OwnerAddVenue() {
                 <div className="step-header">
                   <h2>Set Pricing Rules</h2>
                   <p>
-                    Customize hourly rates based on day types
-                    (Weekday/Weekend/Holiday) and specify validity ranges.
+                    {bookingType === "hourly"
+                      ? "Customize hourly rates based on day types (Weekday/Weekend/Holiday) and specify validity ranges."
+                      : "Set daily rates based on day types (Weekday/Weekend/Holiday) and specify validity ranges."}
                   </p>
+                </div>
+
+                <div className="booking-type-selector">
+                  <label htmlFor="bookingType">Booking type</label>
+                  <div className="booking-type-options">
+                    <button
+                      type="button"
+                      className={`booking-type-option ${bookingType === "hourly" ? "active" : ""}`}
+                      onClick={() => setBookingType("hourly")}
+                    >
+                      Hourly
+                    </button>
+                    <button
+                      type="button"
+                      className={`booking-type-option ${bookingType === "daily" ? "active" : ""}`}
+                      onClick={() => setBookingType("daily")}
+                    >
+                      Daily
+                    </button>
+                  </div>
                 </div>
 
                 <div className="pricing-section-header">
@@ -615,7 +664,10 @@ function OwnerAddVenue() {
 
                 <div className="pricing-rules-list">
                   {pricingRules.map((rule) => (
-                    <div key={rule.id} className="pricing-rule-card">
+                    <div
+                      key={rule.id}
+                      className={`pricing-rule-card ${bookingType === "daily" ? "pricing-rule-card--daily" : ""}`}
+                    >
                       <div className="rule-input-group">
                         <label>Day Type</label>
                         <select
@@ -628,19 +680,21 @@ function OwnerAddVenue() {
                             )
                           }
                         >
-                          <option value="Weekday">Weekday</option>
-                          <option value="Weekend">Weekend</option>
-                          <option value="Holiday">Holiday</option>
+                          <option value="weekday">Weekday</option>
+                          <option value="weekend">Weekend</option>
+                          <option value="holiday">Holiday</option>
                         </select>
                       </div>
 
                       <div className="rule-input-group">
-                        <label>Price Per Hour</label>
+                        <label>
+                          {bookingType === "hourly" ? "Price Per Hour" : "Price Per Day"}
+                        </label>
                         <div className="price-prefix-wrapper">
                           <span className="price-prefix">₹</span>
                           <input
                             type="number"
-                            placeholder="e.g. 1000"
+                            placeholder={bookingType === "hourly" ? "e.g. 1000" : "e.g. 5000"}
                             value={rule.pricePerHour}
                             onChange={(e) =>
                               updatePricingRule(
@@ -653,21 +707,23 @@ function OwnerAddVenue() {
                         </div>
                       </div>
 
-                      <div className="rule-input-group">
-                        <label>Min Hours</label>
-                        <input
-                          type="number"
-                          placeholder="1"
-                          value={rule.minHours}
-                          onChange={(e) =>
-                            updatePricingRule(
-                              rule.id,
-                              "minHours",
-                              e.target.value,
-                            )
-                          }
-                        />
-                      </div>
+                      {bookingType === "hourly" && (
+                        <div className="rule-input-group">
+                          <label>Min Hours</label>
+                          <input
+                            type="number"
+                            placeholder="1"
+                            value={rule.minHours}
+                            onChange={(e) =>
+                              updatePricingRule(
+                                rule.id,
+                                "minHours",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+                      )}
 
                       <div className="rule-input-group">
                         <label>Valid From</label>

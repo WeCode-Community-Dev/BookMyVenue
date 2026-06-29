@@ -9,9 +9,10 @@ export const baseApi = createApi({
   }),
 
   tagTypes: [
-    'PendingVenues',   
-    'AdminVenue',      
-    'AdminStats', 
+    'PendingVenues',
+    'AdminVenue',
+    'AdminStats',
+    'ActiveVenues',
   ],
 
   endpoints: () => ({}),

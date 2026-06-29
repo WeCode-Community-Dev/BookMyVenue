@@ -1,9 +1,7 @@
 import {
   FiGrid,
   FiCheckCircle,
-  FiLogOut,
-  FiBell,
-  FiChevronDown
+  FiMapPin,
 } from 'react-icons/fi'
 
 export const ADMIN_SIDEBAR_CONFIG = [
@@ -19,5 +17,11 @@ export const ADMIN_SIDEBAR_CONFIG = [
     label: 'Venue Approvals',
     path: '/admin/venue-approvals',
     icon: FiCheckCircle
-  }
+  },
+  {
+    id: 'active-venues',
+    label: 'All Venues',
+    path: '/admin/active-venues',
+    icon: FiMapPin
+  },
 ]

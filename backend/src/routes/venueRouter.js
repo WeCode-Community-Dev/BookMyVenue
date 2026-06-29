@@ -29,7 +29,7 @@ router.get(
 );
 
 //users routes
-router.get('/venues', isAuthenticated, requireRole('user'), catchErrors(venueController.getVenues));
+router.get('/venues', isAuthenticated, requireRole('user', 'admin'), catchErrors(venueController.getVenues));
 router.get('/venue/:id', catchErrors(venueController.getVenueDetails));
 
 router.patch(

@@ -79,6 +79,32 @@ export const adminApi = baseApi.injectEndpoints({
       ],
     }),
 
+    // ─── Venues (same /venues endpoint as user browse) ────────────────
+
+    getAdminVenues: builder.query({
+      query: (params = {}) => ({
+        url: '/venues',
+        params,
+      }),
+      providesTags: ['ActiveVenues'],
+    }),
+
+    deactivateVenue: builder.mutation({
+      query: (venueId) => ({
+        url: `/admin/${venueId}/deactivate`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['ActiveVenues', 'AdminStats'],
+    }),
+
+    activateVenue: builder.mutation({
+      query: (venueId) => ({
+        url: `/admin/${venueId}/activate`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['ActiveVenues', 'AdminStats'],
+    }),
+
   }),
 })
 
@@ -91,4 +117,7 @@ export const {
   useGetAdminVenueDetailQuery,
   useApproveVenueMutation,
   useRejectVenueMutation,
+  useGetAdminVenuesQuery,
+  useDeactivateVenueMutation,
+  useActivateVenueMutation,
 } = adminApi    

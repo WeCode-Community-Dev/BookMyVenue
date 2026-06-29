@@ -18,6 +18,7 @@ import {
   useDeactivateVenueMutation,
 } from './ownerApi.js';
 import PageTransition from '../../components/ui/PageTransition';
+import LocationPicker from '../../components/map/LocationPicker.jsx';
 import './venueDetails.scss';
 import { toast, Toaster } from 'react-hot-toast';
 
@@ -180,6 +181,35 @@ function OwnerVenueDetails() {
     setFormState((prev) => ({ ...prev, [field]: value }));
     setDirty(true);
   };
+
+  const handleLocationChange = (lat, lng) => {
+    setFormState((prev) => {
+      const prevLat = Number(prev.latitude);
+      const prevLng = Number(prev.longitude);
+      const nextLat = Number(lat);
+      const nextLng = Number(lng);
+      const hasChanged =
+        Number.isNaN(prevLat) ||
+        Number.isNaN(prevLng) ||
+        Math.abs(prevLat - nextLat) > 0.000001 ||
+        Math.abs(prevLng - nextLng) > 0.000001;
+
+      if (hasChanged) {
+        setDirty(true);
+      }
+
+      return { ...prev, latitude: lat, longitude: lng };
+    });
+  };
+
+  const mapSearchAddress = [
+    formState.address,
+    formState.city,
+    formState.state,
+    formState.pincode,
+  ]
+    .filter(Boolean)
+    .join(', ');
 
   const handleDayToggle = (day) => {
     setFormState((prev) => {
@@ -649,9 +679,30 @@ function OwnerVenueDetails() {
             </div>
 
             <div className="form-grid">
-              <div className="form-group full-width">
-                <label htmlFor="address">Address</label>
-                <input id="address" value={formState.address} onChange={(e) => handleInputChange('address', e.target.value)} />
+              <div className="form-group full-width location-map-block">
+                <label htmlFor="address">Street address</label>
+                <p className="field-hint">
+                  Type an address to move the pin automatically, or click the map to set the exact location.
+                </p>
+                <div className="location-map-wrapper">
+                  <LocationPicker
+                    address={mapSearchAddress}
+                    initialLatitude={formState.latitude}
+                    initialLongitude={formState.longitude}
+                    onLocationChange={handleLocationChange}
+                  />
+                </div>
+                <input
+                  id="address"
+                  value={formState.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  placeholder="e.g. 123 Market Street, Suite 400"
+                />
+                {(formState.latitude !== '' && formState.longitude !== '') && (
+                  <p className="location-coords">
+                    Coordinates: {Number(formState.latitude).toFixed(6)}, {Number(formState.longitude).toFixed(6)}
+                  </p>
+                )}
               </div>
               <div className="form-group">
                 <label htmlFor="city">City</label>
@@ -664,14 +715,6 @@ function OwnerVenueDetails() {
               <div className="form-group">
                 <label htmlFor="pincode">Pincode</label>
                 <input id="pincode" value={formState.pincode} onChange={(e) => handleInputChange('pincode', e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="latitude">Latitude</label>
-                <input id="latitude" type="number" step="0.000001" value={formState.latitude} onChange={(e) => handleInputChange('latitude', e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="longitude">Longitude</label>
-                <input id="longitude" type="number" step="0.000001" value={formState.longitude} onChange={(e) => handleInputChange('longitude', e.target.value)} />
               </div>
               <div className="form-group">
                 <label>Open days</label>

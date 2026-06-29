@@ -565,6 +565,39 @@ $radius-xl: 24px;
   }
 }
 
+.location-map-block {
+  .field-hint {
+    margin: -4px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: $text-medium;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+}
+
+.location-map-wrapper {
+  height: 320px;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  box-shadow: $shadow-sm;
+  margin-bottom: 4px;
+
+  .location-picker {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.location-coords {
+  margin: 0;
+  font-size: 12px;
+  color: $text-medium;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
 .checkbox-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const pricingSchema = z.object({
-  dayType: z.enum(['Weekday', 'Weekend', 'Holiday']),
+  dayType: z.enum(['weekday', 'weekend', 'holiday']),
   price: z.coerce.number().positive('Price must be positive'),
   minHours: z.coerce.number().int().positive().default(1),
   validFrom: z.string().optional(),
@@ -40,6 +40,7 @@ export const venueSchema = z.object({
   openTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format, use HH:MM').optional(),
   closeTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format, use HH:MM').optional(),
   minBookingHours: z.coerce.number().int().positive().default(1),
+  bookingType: z.enum(['hourly', 'daily']).default('daily'),
   venueAmenities: z.array(z.string().uuid('Each amenity must be a valid UUID')).optional().default([]),
   pricing: z.array(pricingSchema).optional().default([]),
 });

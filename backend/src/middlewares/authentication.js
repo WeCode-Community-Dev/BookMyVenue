@@ -36,6 +36,7 @@ export const isAuthenticated = async (req, res, next) => {
 
 export const requireRole = (...roles) => {
   return (req, res, next) => {
+    console.log(req.user.role,roles,"ggggggggggggggggggggggggggggggg")
     if (!roles.includes(req.user.role)) {
       return next(
         new AppError({

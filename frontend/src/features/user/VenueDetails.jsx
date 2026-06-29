@@ -20,6 +20,7 @@ import {
   FiMaximize2,
 } from "react-icons/fi";
 import PageTransition from "../../components/ui/PageTransition";
+import MapView from "../../components/map/Mapview.jsx";
 import { VenueDetailSkeleton } from "../../components/ui/LoadingSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
 import { ToastBanner } from "../../components/ui/ToastProvider";
@@ -55,6 +56,7 @@ function VenueDetails() {
   const { venueId } = useParams();
   const { data: response, isLoading, error } = useGetVenueDetailsQuery(venueId);
   const venue = response?.data;
+  const isVenueActive = venue?.isActive !== false;
   const images = venue?.images || [];
   const [activeImage, setActiveImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -168,7 +170,7 @@ const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, 
   const bookingType = venue?.bookingType === "hourly" ? "hourly" : "daily";
 
   const handleBookNow = async () => {
-    if (!venue?.id) return;
+    if (!venue?.id || !isVenueActive) return;
 
     const requestBody = {
       venueId: venue.id,
@@ -250,6 +252,13 @@ const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, 
   ]);
 
   const venueTypeLabel = TYPE_LABELS[venue?.type] || venue?.type || "Venue";
+
+  const mapPosition = useMemo(() => {
+    const lat = Number(venue?.latitude);
+    const lng = Number(venue?.longitude);
+    if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+    return { lat, lng };
+  }, [venue?.latitude, venue?.longitude]);
 
   if (isLoading) {
     return (
@@ -347,7 +356,12 @@ const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, 
         <div className="venue-gallery__info">
           <div className="venue-gallery__info-inner">
             <div className="venue-gallery__meta">
-              <span className="pill pill-type">{venueTypeLabel}</span>
+              <div className="venue-gallery__pills">
+                <span className="pill pill-type">{venueTypeLabel}</span>
+                {!isVenueActive && (
+                  <span className="pill pill-inactive">Inactive</span>
+                )}
+              </div>
               <h1 className="venue-gallery__title">{venue.name}</h1>
               <p className="venue-gallery__location">
                 <FiMapPin /> {venueCity}
@@ -499,16 +513,35 @@ const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, 
               <h2>About this venue</h2>
             </div>
             <p className="about-text">{venue.description}</p>
+          </div>
+
+          <div className="content-section detail-card">
+            <div className="detail-card__header">
+              <span className="eyebrow">Location</span>
+              <h2>Find this venue</h2>
+            </div>
             <div className="venue-address">
               <FiMapPin className="venue-address__icon" />
               <div>
                 <strong>Address</strong>
                 <p>
                   {venue.address}
+                  {venueCity ? `, ${venueCity}` : ""}
                   {venue.pincode ? ` • ${venue.pincode}` : ""}
                 </p>
               </div>
             </div>
+            {mapPosition ? (
+              <div className="venue-map-wrapper">
+                <MapView
+                  latitude={mapPosition.lat}
+                  longitude={mapPosition.lng}
+                  height="280px"
+                />
+              </div>
+            ) : (
+              <p className="empty-hint">Map location is not available for this venue yet.</p>
+            )}
           </div>
 
           <div className="content-section detail-card">
@@ -567,6 +600,7 @@ const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, 
         </section>
 
         <aside className="sidebar-wrapper">
+          {isVenueActive ? (
           <div className="booking-card">
             <div className="booking-card__header">
               <span className="eyebrow">Reserve</span>
@@ -748,6 +782,21 @@ const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, 
               </span>
             </div>
           </div>
+          ) : (
+            <div className="booking-card booking-card--inactive">
+              <div className="booking-card__header">
+                <span className="eyebrow">Unavailable</span>
+                <h2>Booking unavailable</h2>
+              </div>
+              <div className="venue-inactive-notice">
+                <span className="venue-inactive-badge">Inactive</span>
+                <p>
+                  This venue is currently inactive and not accepting new bookings.
+                  Check back later or browse other available venues.
+                </p>
+              </div>
+            </div>
+          )}
         </aside>
       </main>
     </PageTransition>

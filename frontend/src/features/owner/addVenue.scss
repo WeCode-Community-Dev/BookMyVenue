@@ -404,6 +404,57 @@ $radius-xl: 18px;
 }
 
 // ─── Pricing rules ───────────────────────────────────────────────────────────
+.booking-type-selector {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: $bg-light;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+
+  label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    color: $text-medium;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+}
+
+.booking-type-options {
+  display: inline-flex;
+  gap: 8px;
+  padding: 4px;
+  background: $white;
+  border: 1px solid $border-color;
+  border-radius: 10px;
+}
+
+.booking-type-option {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: $text-medium;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: $teal-primary;
+    color: $white;
+    box-shadow: 0 4px 12px $teal-glow;
+  }
+
+  &:hover:not(.active) {
+    background: $teal-light;
+    color: $teal-primary;
+  }
+}
+
 .pricing-section-header {
   display: flex;
   justify-content: space-between;
@@ -477,6 +528,18 @@ $radius-xl: 18px;
 
   @media (max-width: 480px) {
     grid-template-columns: 1fr;
+  }
+
+  &--daily {
+    grid-template-columns: 1.2fr 1.2fr 1fr 1fr auto;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
   }
 
   .rule-input-group {

@@ -8,6 +8,7 @@ const AdminLayout    = lazy(() => import('../features/admin/components/AdminLayo
 const AdminDashboard = lazy(() => import('../features/admin/pages/AdminDashboard'))
 const AdminVenueQueue  = lazy(() => import('../features/admin/pages/AdminVenueQueue'))
 const AdminVenueDetail = lazy(() => import('../features/admin/pages/AdminVenueDetails'))
+const AdminActiveVenues = lazy(() => import('../features/admin/pages/AdminActiveVenues'))
 
 const AdminSuspense = ({ children }) => (
   <Suspense fallback={<PageLoader label="Loading admin..." />}>
@@ -35,6 +36,7 @@ export const adminRoutes = [
           { path: 'dashboard', element: <AdminDashboard /> },
           { path: 'venue-approvals', element: <AdminVenueQueue /> },
           { path: 'venue-approvals/:id', element: <AdminVenueDetail /> },
+          { path: 'active-venues', element: <AdminActiveVenues /> },
         ]
       }
     ]

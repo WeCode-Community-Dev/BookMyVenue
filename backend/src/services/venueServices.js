@@ -44,6 +44,7 @@ const venueServices = {
         openTime: payload.openTime,
         closeTime: payload.closeTime,
         minBookingHours: payload.minBookingHours,
+        bookingType: payload.bookingType || 'daily',
         isActive: false,
         approvalStatus: status.isReady ? 'pending' : 'draft',
       };
@@ -126,41 +127,67 @@ updateVenue: async function(payload, id) {
     return response;
   },
 
-  getVenues: async function (payload) {
-    const { page = 1, pageSize = 10, ...filters } = payload || {};
+  getVenues: async function (payload, { isAdmin = false } = {}) {
+    const { page = 1, pageSize = 10, includeInactive, ...filters } = payload || {};
     const limit = parseInt(pageSize, 10) || 10;
     const currentPage = parseInt(page, 10) || 1;
     const offset = (currentPage - 1) * limit;
 
-    const conditions = [eq(venuesTable.approvalStatus, 'approved'), eq(venuesTable.isActive, true)];
+    const conditions = [];
+
+    if (isAdmin) {
+      // Admin uses the same /venues route but sees every venue.
+    } else {
+      conditions.push(eq(venuesTable.approvalStatus, 'approved'));
+      if (includeInactive !== 'true' && includeInactive !== true) {
+        conditions.push(eq(venuesTable.isActive, true));
+      }
+    }
 
     const filterHandlers = {
       city: (val) => ilike(venuesTable.city, `%${val}%`),
       type: (val) => eq(venuesTable.type, val),
       capacity: (val) => gte(venuesTable.capacity, parseInt(val, 10)),
       search: (val) => or(ilike(venuesTable.name, `%${val}%`), ilike(venuesTable.city, `%${val}%`)),
+      approvalStatus: (val) => eq(venuesTable.approvalStatus, val),
     };
 
     Object.entries(filters).forEach(([key, val]) => {
-      if (filterHandlers[key] && val) {
+      if (filterHandlers[key] && val !== undefined && val !== '') {
         conditions.push(filterHandlers[key](val));
       }
     });
 
-    // total count
-    const [{ count }] = await db
-      .select({ count: sql`count(*)` })
-      .from(venuesTable)
-      .where(and(...conditions));
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const countQuery = db.select({ count: sql`count(*)` }).from(venuesTable);
+    const [{ count }] = whereClause
+      ? await countQuery.where(whereClause)
+      : await countQuery;
+
+    const withRelations = {
+      pricing: true,
+      venueAmenities: {
+        with: { amenity: true },
+      },
+    };
+
+    if (isAdmin) {
+      withRelations.owner = {
+        columns: {
+          id: true,
+          username: true,
+          email: true,
+        },
+      };
+    }
 
     const rows = await db.query.venuesTable.findMany({
-      where: and(...conditions),
-      with: {
-        pricing: true,
-        venueAmenities: {
-          with: { amenity: true },
-        },
-      },
+      where: whereClause,
+      with: withRelations,
+      ...(isAdmin && {
+        orderBy: (table, { desc: descOrder }) => [descOrder(table.updatedAt)],
+      }),
       limit,
       offset,
     });

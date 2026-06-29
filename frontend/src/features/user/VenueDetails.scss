@@ -211,6 +211,26 @@
   }
 }
 
+.venue-gallery__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.pill-inactive {
+  display: inline-flex;
+  padding: 5px 14px;
+  background: rgba(148, 163, 184, 0.2);
+  color: #64748b;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .favorite-toggle {
   display: inline-flex;
   align-items: center;
@@ -670,6 +690,14 @@
   }
 }
 
+.venue-map-wrapper {
+  margin-top: 16px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+}
+
 // ─── Amenities ───────────────────────────────────────────────────────────────
 .amenities-container {
   display: flex;
@@ -795,6 +823,38 @@
     margin-top: 8px;
     padding-top: 20px;
   }
+
+  &--inactive {
+    border-color: rgba(148, 163, 184, 0.35);
+    background: linear-gradient(180deg, var(--surface-elevated) 0%, rgba(248, 250, 252, 0.95) 100%);
+  }
+}
+
+.venue-inactive-notice {
+  padding: 20px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+}
+
+.venue-inactive-badge {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  background: rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.35);
 }
 
 .booking-type-badge {

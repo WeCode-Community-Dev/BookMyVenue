@@ -17,8 +17,12 @@ export default {
   },
 
   getVenues: async function (req, res) {
-    const payload = req.query;
-    const result = await venueService.getVenues(payload);
+    const payload = { ...req.query };
+    const isAdmin = req.user.role === 'admin';
+    if (!isAdmin) {
+      delete payload.includeInactive;
+    }
+    const result = await venueService.getVenues(payload, { isAdmin });
     sendResponse(res, {
       data: result.rows,
       meta: { total: result.total, page: result.page, pageSize: result.pageSize },
