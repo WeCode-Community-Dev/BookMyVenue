@@ -8,6 +8,7 @@ class SettingsTile extends StatelessWidget {
     super.key,
     required this.icon,
     required this.title,
+    this.subtitle,
     this.trailing,
     this.onTap,
     this.showDivider = true,
@@ -15,6 +16,7 @@ class SettingsTile extends StatelessWidget {
 
   final IconData icon;
   final String title;
+  final String? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
   final bool showDivider;
@@ -27,6 +29,9 @@ class SettingsTile extends StatelessWidget {
           onTap: onTap,
           leading: Icon(icon),
           title: AppText(title),
+          subtitle: subtitle != null
+              ? AppText(subtitle!, variant: TextVariant.captionRegular)
+              : null,
           trailing: trailing ?? const Icon(Icons.chevron_right),
         ),
 

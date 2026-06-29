@@ -7,8 +7,8 @@ import 'data/repository/venue_repository_impl.dart';
 import 'domain/repository/i_venue_repository.dart';
 import 'domain/usecase/add_new_venue_usecase.dart';
 import 'domain/usecase/get_all_venues_usecase.dart';
-import 'domain/usecase/get_venue_by_id_usecase.dart';
 import 'domain/usecase/get_venue_amenities_usecase.dart';
+import 'domain/usecase/get_venue_by_id_usecase.dart';
 import 'presentation/bloc/venue_bloc.dart';
 
 Future<void> registerVenueDependencies() async {
@@ -19,7 +19,9 @@ Future<void> registerVenueDependencies() async {
 
   /// Repository
   sl.registerLazySingleton<IVenueRepository>(
-    () => VenueRepositoryImpl(remoteDatasource: sl<IAddNewVenueRemoteDatasource>()),
+    () => VenueRepositoryImpl(
+      remoteDatasource: sl<IAddNewVenueRemoteDatasource>(),
+    ),
   );
 
   /// UseCases

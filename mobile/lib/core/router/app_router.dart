@@ -19,6 +19,7 @@ import '../../feature/owner_dashboard_page/presentation/pages/owner_dashboard_pa
 import '../../feature/owner_payout_history/presentation/pages/owner_payout_details.dart';
 import '../../feature/owner_payout_history/presentation/pages/owner_payout_history_page.dart';
 import '../../feature/owner_payout_history/presentation/pages/owner_payout_page.dart';
+import '../../feature/owner_profile/presentation/bloc/owner_profile_bloc.dart';
 import '../../feature/owner_profile/presentation/pages/owner_profile.dart';
 import '../../feature/user_dashbaord/presentation/pages/user_dashboard.dart';
 import '../../feature/user_profile/presentation/pages/user_profile_page.dart';
@@ -170,7 +171,11 @@ class AppRouter {
                 path: '/${AppRouteNames.ownerProfile}',
                 name: AppRouteNames.ownerProfile,
                 builder: (BuildContext context, GoRouterState state) =>
-                    const OwnerProfileSettingsScreen(),
+                    BlocProvider<OwnerProfileBloc>(
+                      create: (BuildContext context) =>
+                          sl<OwnerProfileBloc>(),
+                      child: const OwnerProfileSettingsScreen(),
+                    ),
               ),
             ],
           ),

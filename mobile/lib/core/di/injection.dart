@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import '../../feature/add_new_venue/venue_injection.dart';
 import '../../feature/auth/auth_injection.dart';
 import '../../feature/auth/data/datasource/auth_local_datasource.dart';
+import '../../feature/owner_profile/owner_profile_injection.dart';
 import '../network/api_client.dart';
 import '../notifications/notification_service.dart';
 import '../notifications/notification_service_impl.dart';
@@ -18,6 +19,7 @@ Future<void> setupInjector() async {
   await registerAuthDependencies();
   await registerOwnerAuthDependencies();
   await registerVenueDependencies();
+  await registerOwnerProfileDependencies();
 }
 
 Future<void> _registerCore() async {
