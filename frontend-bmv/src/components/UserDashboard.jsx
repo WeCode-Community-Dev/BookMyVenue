@@ -106,7 +106,7 @@ function UserDashboard({ user, onLogout }) {
   // ── State ──────────────────────────────────────────────────────────────────
   const [venues, setVenues]     = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [activeTab, setActiveTab] = useState('browse');console.log(bookings);
+  const [activeTab, setActiveTab] = useState('browse');
 
   // Search + filter
   const [searchTerm, setSearchTerm]     = useState('');
@@ -182,7 +182,7 @@ function UserDashboard({ user, onLogout }) {
     try {
       const res = await fetch('http://localhost:8080/api/user/bookings/my', {
         headers: { Authorization: `Bearer ${getToken()}` },
-      });console.log(res);
+      });
       if (!res.ok) throw new Error('Failed to load bookings');
       setBookings(await res.json());
     } catch (err) {
@@ -345,18 +345,18 @@ function UserDashboard({ user, onLogout }) {
     }
     try {
       const res = await fetch(
-        `http://localhost:8080/api/bookings/${cancelModal.id}/cancel`,
+        `http://localhost:8080/api/user/bookings/${cancelModal.id}/cancel`,
         {
-          method: 'PATCH',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${getToken()}`,
           },
-          body: JSON.stringify({ cancelReason }),
+          body: JSON.stringify({reason: cancelReason }),
         }
       );
       if (!res.ok) throw new Error('Failed to cancel booking');
-      toast.success('Booking cancelled');
+      toast.success('Cancellation request submitted waiting for aproval');
       closeCancelModal();
       await fetchBookings();
     } catch (err) {
@@ -658,7 +658,7 @@ function UserDashboard({ user, onLogout }) {
 
                         <td className="subtext">
                           {booking.bookedOn
-                            ? new Date(booking.bookedOn+ 'T00:00:00').toLocaleDateString('en-IN', {
+                            ? new Date(booking.bookedOn).toLocaleDateString('en-IN', {
                                 day: 'numeric', month: 'short', year: 'numeric',
                               })
                             : '—'}

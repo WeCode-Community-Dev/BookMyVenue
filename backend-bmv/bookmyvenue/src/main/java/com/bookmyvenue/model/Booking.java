@@ -54,6 +54,9 @@ public class Booking {
     @Version
     @Column(nullable = false)
     private Integer version = 0;
+    
+    @Column(name= "payment_intent_id", length=100)
+    private String paymentIntentId;
 
     @PrePersist
     protected void onCreate() {

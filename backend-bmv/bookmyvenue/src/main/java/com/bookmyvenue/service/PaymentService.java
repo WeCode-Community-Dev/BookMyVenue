@@ -97,6 +97,7 @@ public class PaymentService {
 
         booking.setPaymentStatus(Booking.PaymentStatus.PAID);
         booking.setPaymentOn(LocalDateTime.now());
+        booking.setPaymentIntentId(paymentIntentId);
         bookingRepository.save(booking);
 
         log.info("Payment confirmed for booking id={} paymentIntent={}", bookingId, paymentIntentId);
