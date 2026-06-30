@@ -93,5 +93,5 @@ export const {
   useGetAmenitiesQuery,
   useSubmitVenueMutation,
   useDeactivateVenueMutation,
-  useActivateVenueMutation,
+  useActivateVenueMutation
 } = ownerApi;

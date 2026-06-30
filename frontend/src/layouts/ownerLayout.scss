@@ -259,23 +259,197 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
         }
       }
 
+      .notification-wrapper {
+        position: relative;
+      }
+
       .notification-btn {
         position: relative;
 
-
         .control-icon {
           font-size: 20px;
+          transition: color 0.2s ease;
+        }
+
+        &.has-unread .control-icon,
+        &.is-open .control-icon {
+          color: $teal-primary;
         }
 
         .notification-badge {
           position: absolute;
-          top: 6px;
-          right: 6px;
+          top: 0;
+          right: 0;
+          min-width: 18px;
+          height: 18px;
+          padding: 0 5px;
+          background-color: #ef4444;
+          color: $white;
+          font-size: 10px;
+          font-weight: 700;
+          line-height: 1;
+          border-radius: 999px;
+          border: 2px solid $white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
+          box-shadow: 0 1px 3px rgba(239, 68, 68, 0.35);
+        }
+      }
+
+      .notification-dropdown {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        width: 360px;
+        max-height: 420px;
+        background: $white;
+        border: 1px solid $border-color;
+        border-radius: 12px;
+        box-shadow: $shadow-lg;
+        z-index: 100;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+
+        &__header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 14px 16px;
+          border-bottom: 1px solid $border-color;
+
+          h3 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: $text-dark;
+          }
+        }
+
+        &__count {
+          font-size: 12px;
+          font-weight: 600;
+          color: $teal-primary;
+          background: $teal-light;
+          padding: 2px 8px;
+          border-radius: 999px;
+        }
+
+        &__list {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          overflow-y: auto;
+        }
+
+        &__empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 32px 24px;
+          text-align: center;
+          color: $text-medium;
+
+          p {
+            margin: 12px 0 4px;
+            font-size: 14px;
+            font-weight: 600;
+            color: $text-dark;
+          }
+
+          span {
+            font-size: 13px;
+            color: $text-light;
+          }
+        }
+
+        &__empty-icon {
+          font-size: 28px;
+          color: $text-light;
+        }
+      }
+
+      .notification-item {
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 16px;
+        border: none;
+        background: none;
+        text-align: left;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background-color 0.15s ease;
+
+        &:hover {
+          background-color: #f8fafc;
+        }
+
+        &--unread {
+          background-color: #f0f9fa;
+        }
+
+        &__icon {
+          flex-shrink: 0;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+
+          &--success {
+            background: #dcfce7;
+            color: #16a34a;
+          }
+
+          &--danger {
+            background: #fee2e2;
+            color: #dc2626;
+          }
+
+          &--default {
+            background: #f1f5f9;
+            color: $text-medium;
+          }
+        }
+
+        &__body {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        &__title {
+          font-size: 13px;
+          font-weight: 600;
+          color: $text-dark;
+        }
+
+        &__message {
+          font-size: 13px;
+          line-height: 1.45;
+          color: $text-medium;
+        }
+
+        &__time {
+          font-size: 11px;
+          color: $text-light;
+        }
+
+        &__dot {
+          flex-shrink: 0;
           width: 8px;
           height: 8px;
-          background-color: #ef4444;
+          margin-top: 6px;
           border-radius: 50%;
-          border: 1.5px solid $white;
+          background-color: $teal-primary;
         }
       }
 

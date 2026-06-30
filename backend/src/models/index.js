@@ -13,6 +13,7 @@ import {
 } from './relations.js';
 import {bookingsTable} from './bookingModel.js';
 import {paymentsTable} from './paymentModel.js';
+import {notificationTypeEnum,notificationsTable} from './notificationModel.js'
 
 export {
   usersTable,
@@ -30,5 +31,7 @@ export {
   paymentsTable,
   usersRelations,
   paymentsRelations,
-  bookingRelations
+  bookingRelations,
+  notificationTypeEnum,
+  notificationsTable
 };

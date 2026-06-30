@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCurrentUser } from '../redux/slices/authSlice';
@@ -15,6 +15,15 @@ import {
 } from 'react-icons/fi';
 import './ownerLayout.scss';
 import { logout } from '../redux/slices/authSlice';
+import { selectIsAuthenticated } from '../redux/slices/authSlice';
+import {
+  setNotification,
+  selectUnreadCount,
+  selectNotifications,
+  markAllRead,
+} from '../redux/slices/notificationSlice';
+import NotificationDropdown from '../components/ui/NotificationDropdown';
+import { useMarkAllNotificationsReadMutation } from '../features/notifications/notificationApi';
 
 function OwnerLayout() {
   const navigate = useNavigate();
@@ -25,6 +34,76 @@ function OwnerLayout() {
     name: currentUser?.username,
     role: currentUser?.role,
     initials: currentUser?.username ? currentUser.username.split(' ').map(n => n[0]).join('').toUpperCase() : ""
+  };
+
+
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const notifications = useSelector(selectNotifications);
+  const unreadCount = useSelector(selectUnreadCount);
+  const badgeLabel = unreadCount > 99 ? '99+' : unreadCount;
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationRef = useRef(null);
+  const [markAllNotificationsRead] = useMarkAllNotificationsReadMutation();
+
+  const closeNotificationsDropdown = useCallback(async () => {
+    setNotificationsOpen(false);
+
+    if (unreadCount > 0) {
+      dispatch(markAllRead());
+      try {
+        await markAllNotificationsRead().unwrap();
+      } catch (err) {
+        console.error('Failed to mark notifications as read', err);
+      }
+    }
+  }, [unreadCount, dispatch, markAllNotificationsRead]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const eventSource = new EventSource(
+      `${import.meta.env.VITE_API_URL}/notifications/stream`,
+      { withCredentials: true }
+    )
+
+    eventSource.onmessage = (event) => {
+      const notification = JSON.parse(event.data)
+      dispatch(setNotification(notification))
+    }
+
+    eventSource.onerror = (err) => {
+      console.error('SSE error', err)
+    }
+
+    return () => eventSource.close()
+
+  }, [isAuthenticated, dispatch])
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        closeNotificationsDropdown();
+      }
+    };
+
+    if (notificationsOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [notificationsOpen, closeNotificationsDropdown]);
+
+  const toggleNotifications = () => {
+    if (notificationsOpen) {
+      closeNotificationsDropdown();
+    } else {
+      setNotificationsOpen(true);
+    }
+  };
+
+  const handleNotificationClick = (_notification, link) => {
+    closeNotificationsDropdown();
+    if (link) navigate(link);
   };
 
   const handleLogout = () => {
@@ -127,10 +206,29 @@ function OwnerLayout() {
 
           <div className="header-controls">
 
-            <button className="control-btn notification-btn" aria-label="Notifications">
-              <FiBell className="control-icon" />
-              <span className="notification-badge"></span>
-            </button>
+            <div className="notification-wrapper" ref={notificationRef}>
+              <button
+                type="button"
+                className={`control-btn notification-btn${unreadCount > 0 ? ' has-unread' : ''}${notificationsOpen ? ' is-open' : ''}`}
+                aria-label={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'}
+                aria-expanded={notificationsOpen}
+                onClick={toggleNotifications}
+              >
+                <FiBell className="control-icon" />
+                {unreadCount > 0 && (
+                  <span className="notification-badge" aria-hidden="true">
+                    {badgeLabel}
+                  </span>
+                )}
+              </button>
+
+              {notificationsOpen && (
+                <NotificationDropdown
+                  notifications={notifications}
+                  onItemClick={handleNotificationClick}
+                />
+              )}
+            </div>
 
             <div className="header-profile-dropdown">
               <div className="header-avatar-initials">
