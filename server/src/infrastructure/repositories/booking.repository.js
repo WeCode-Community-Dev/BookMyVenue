@@ -44,9 +44,9 @@ export class BookingRepositoryImpl extends BookingRepository {
   async findByOwnerId(
     vendorId,
     {
-      page = 1,
+      page,
 
-      limit = 10,
+      limit,
 
       status,
 
@@ -232,7 +232,7 @@ export class BookingRepositoryImpl extends BookingRepository {
   }
 
 
-async findAllFiltered(query = {}) {
+async findAllFiltered(query) {
 
     const filter = {};
 
