@@ -20,6 +20,11 @@ export const ROUTES = {
             APPROVE_VENUE:'/venues/:venueId/approve',
             REJECT_VENUE:'/venues/:venueId/reject',
             UPDATE_STATUS:'/venues/:venueId/status'
+        },
+        BOOKING:{
+            GET_ALL:'/bookings',
+            GET_BY_ID:'/bookings/:bookingId',
+            GET_STATISTICS:'/bookings/statistics',
         }
 
     },

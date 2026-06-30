@@ -15,7 +15,7 @@ export class BookingMapper {
 
             venueId: doc.venueId ? doc.venueId.toString() : null,
 
-            ownerId: doc.ownerId ? doc.ownerId.toString() : null,
+            vendorId: doc. vendorId  ? doc.vendorId.toString() : null,
 
             bookingDate: doc.bookingDate,
 
@@ -58,7 +58,7 @@ export class BookingMapper {
 
             venueId: entity.venueId ? new Types.ObjectId(entity.venueId) : null,
 
-            ownerId: entity.ownerId ? new Types.ObjectId(entity.ownerId) : null,
+            vendorId: entity.vendorId ? new Types.ObjectId(entity.vendorId) : null,
 
             bookingDate: entity.bookingDate,
 

@@ -45,8 +45,3 @@ export const VenueStatus = {
     DRAFT: 'DRAFT',
 }
 
-export const VenueApprovalStatus = {
-    PENDING: "PENDING",
-    APPROVED: "APPROVED",
-    REJECTED: "REJECTED"
-}

@@ -30,6 +30,11 @@ import { AdminApproveVenueUsecase } from '../../application/admin/usecases/venue
 import { AdminRejectVenueUsecase } from '../../application/admin/usecases/venue/admin.rejectVenue.usecase.js'
 import { AdminUpdateVenueBlockStatusUsecase } from '../../application/admin/usecases/venue/admin.updateVenueStatus.usecase.js'
 
+//AdminBookingUsecases
+import { AdminGetAllBookingsUsecase } from '../../application/admin/usecases/booking/admin.getAllBookings.usecase.js'
+import { AdminGetBookingByIdUsecase } from '../../application/admin/usecases/booking/admin.getBookingById.usecase.js'
+import { AdminGetBookingStatisticsUsecase } from '../../application/admin/usecases/booking/admin.getBookingStatistics.usecase.js'
+
 // AdminUserController
 import { AdminUserController } from '../controllers/admin/admin.userController.js'
 
@@ -38,6 +43,9 @@ import { AdminVendorController } from '../controllers/admin/admin.vendorControll
 
 //AdminVenueController
 import { AdminVenueController } from './admin/admin.venueController.js'
+
+//AdminBookingController
+import { AdminBookingController } from './admin/admin.bookingController.js'
 
 import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
 import { UserVenueController } from '../controllers/user/user.venueController.js'
@@ -105,6 +113,12 @@ const iAdminGetVenueByIdUsecase = new AdminGetVenueByIdUsecase(iVenueRepository)
 const iAdminApproveVenueUsecase = new AdminApproveVenueUsecase(iVenueRepository,iMailSErvice)
 const iAdminRejectVenueUsecase = new AdminRejectVenueUsecase(iVenueRepository,iMailSErvice)
 const iAdminUpdateVenueBlockStatusUsecase = new AdminUpdateVenueBlockStatusUsecase(iVenueRepository)
+
+//adminBookingUsecases
+const iAdminGetAllBookingUsecase = new AdminGetAllBookingsUsecase(bookingRepository)
+const iAdminGetBookingByIdUsecase = new AdminGetBookingByIdUsecase(bookingRepository)
+const iAdminBookingStatisticsUsecase = new AdminGetBookingStatisticsUsecase(bookingRepository)
+
 
 //auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(
@@ -193,11 +207,19 @@ export const iAdminVenueController =
         iAdminUpdateVenueBlockStatusUsecase,
     )
 
+//adminBookingController
+export const iAdminBookingController =
+    new AdminBookingController(
+        iAdminGetAllBookingUsecase,
+        iAdminGetBookingByIdUsecase,
+        iAdminBookingStatisticsUsecase
 
-export const iUserVenueController = new UserVenueController(
-  iUserGetAllVenues,
-  iUserGetVenueById
-);
+    )
+
+export const iUserVenueController = new UserVenueController (
+    iUserGetAllVenues,
+    iUserGetVenueById,
+)
 
 export const iAuthController = new AuthController(
   iRegisterUserUseCase,
