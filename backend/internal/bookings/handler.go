@@ -44,3 +44,15 @@ func (h *Handler) ConfirmBooking(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, "slot successfuly booked", nil)
 }
+
+func (h *Handler) CancelBooking(c *gin.Context) {
+	bookingID := c.Param("booking_id")
+
+	err := h.service.cancelBooking(c.Request.Context(), bookingID)
+	if err != nil {
+		response.Error(c, http.StatusForbidden, err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, "slot successfuly cancelled", nil)
+}

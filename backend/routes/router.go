@@ -98,5 +98,6 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries, rediClient *redis.Client, pool
 	{
 		bookingRoutes.GET("/slot/:slot_id/book", auth.RoleGuarde("user"), bookingHandler.BookSlot)
 		bookingRoutes.POST("/slot/:slot_id/bookings/:booking_id/confirm", auth.RoleGuarde("user"), bookingHandler.ConfirmBooking)
+		bookingRoutes.PUT("/booking/:booking_id", auth.RoleGuarde("user"), bookingHandler.CancelBooking)
 	}
 }

@@ -13,6 +13,7 @@
                 <th>Time</th>
                 <th>Name</th>
                 <th>Amount</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody id="table-body"></tbody>
@@ -32,15 +33,32 @@
         const table = document.getElementById("table-body")
 
         result.data.venues.forEach( venue => {
-            table.innerHTML += `
-                <tr>
-                    <th>${venue.date}</th>
-                    <th>${venue.time}</th>
-                    <th>${venue.name}</th>
-                    <th>${venue.amount}</th>
-                </tr>
-            `
+            const row = document.createElement("tr");
+            row.innerHTML += `
+                <th>${venue.date}</th>
+                <th>${venue.time}</th>
+                <th>${venue.name}</th>
+                <th>${venue.amount}</th>
+                <th><button class="cancel-btn">Cancel</button></th>
+            `;
+
+            row.querySelector(".cancel-btn").addEventListener("click", () => {
+                cancelBooking(venue.id);
+            });
+
+            table.appendChild(row)
         })
+
+
+        async function cancelBooking(id) {
+            console.log("executed")
+            const response = await fetch(`/api/v1/booking/${id}`, {
+                method: "PUT"
+            })
+
+            const res = await response.json()
+            console.log(res)
+        }
     </script>
 </body>
 </html>

@@ -10,6 +10,7 @@ import (
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/utils"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type service struct {
@@ -108,6 +109,7 @@ func (s *service) getBookedVenues(ctx context.Context, userID string) (*bookedVe
 		}
 
 		response := bookedVenue{
+			ID:     Bvenue.ID,
 			Date:   date,
 			Time:   start_time + " - " + endTime,
 			Name:   venue.Name,
@@ -130,10 +132,11 @@ type viewVenuesResponse struct {
 }
 
 type bookedVenue struct {
-	Date   string `json:"date"`
-	Time   string `json:"time"`
-	Name   string `json:"name"`
-	Amount int64  `json:"amount"`
+	ID     pgtype.UUID `json:"id"`
+	Date   string      `json:"date"`
+	Time   string      `json:"time"`
+	Name   string      `json:"name"`
+	Amount int64       `json:"amount"`
 }
 
 type bookedVenuesResponse struct {

@@ -112,6 +112,25 @@ func (s *service) confirmBooking(ctx context.Context, bookingID, slotID string) 
 	return nil
 }
 
+func (s *service) cancelBooking(ctx context.Context, bookingID string) error {
+	slotID, err := s.repo.getSlotByBookingID(ctx, bookingID)
+	if err != nil {
+		return errors.New("cannot get slotID " + err.Error())
+	}
+
+	err = s.repo.markSlotCancelled(ctx, slotID)
+	if err != nil {
+		return errors.New("failed to mark slot as cancelled ")
+	}
+
+	err = s.repo.updateBookingStatus(ctx, bookingID, "cancelled")
+	if err != nil {
+		return errors.New("failed to cancel booking")
+	}
+
+	return nil
+}
+
 func calculateTotalAmount(slot sqlc.Availability, venue sqlc.Venue) (int64, error) {
 	startTime := slot.StartTime
 	endTime := slot.EndTime

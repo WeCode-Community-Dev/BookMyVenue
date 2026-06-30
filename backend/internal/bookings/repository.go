@@ -6,6 +6,7 @@ import (
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/utils"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type repository struct {
@@ -42,6 +43,10 @@ func (r *repository) markSlotBooked(ctx context.Context, slotID string) error {
 	return r.db.MarkSlotBooked(ctx, slotUUID)
 }
 
+func (r *repository) markSlotCancelled(ctx context.Context, slotID pgtype.UUID) error {
+	return r.db.MarkSlotCancelled(ctx, slotID)
+}
+
 func (r *repository) createBooking(ctx context.Context, tx pgx.Tx, params sqlc.CreateBookingParams) (sqlc.Booking, error) {
 	qtx := r.db.WithTx(tx)
 	return qtx.CreateBooking(ctx, params)
@@ -57,4 +62,13 @@ func (r *repository) updateBookingStatus(ctx context.Context, bookingID, status 
 		ID:     bookingUUID,
 		Status: status,
 	})
+}
+
+func (r *repository) getSlotByBookingID(ctx context.Context, bookingID string) (pgtype.UUID, error) {
+	bookingUUID, err := utils.StringToUUID(bookingID)
+	if err != nil {
+		return pgtype.UUID{}, err
+	}
+
+	return r.db.GetSlotByBookingID(ctx, bookingUUID)
 }
