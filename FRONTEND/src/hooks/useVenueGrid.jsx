@@ -13,8 +13,13 @@ export const useVenueGrid = () => {
                 setVenues(data)
 
             } catch(err) { 
-                console.error("Something Went Wrong!", err)
-                setError(err)
+                console.error("Something Went Wrong!", err.response?.data)
+                const errorMessage = 
+                    err.response?.data?.detail || 
+                    err.response?.data?.message || 
+                    "Failed to load spaces.";
+
+                setError(new Error(errorMessage));
 
             } finally {
                 setIsLoading(false)

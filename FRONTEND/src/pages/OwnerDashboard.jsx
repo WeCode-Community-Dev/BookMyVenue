@@ -1,22 +1,19 @@
-import React, { useState } from 'react';
+import React, { use, useEffect, useState, version } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
-  Layout, Building, Rupee, Cog, PlusCircle, Bell, Message, 
-  Clock1, MapPin, DotsVertical, Star, Menu, X 
+  Layout, Building, Rupee, PlusCircle,
+  MapPin, Menu, X,
+  Users,
 } from '@mynaui/icons-react';
+import Cookies from 'js-cookie';
+import apiService from '../services/apiService';
 
-// ==========================================
-// 1. MOCK DATA (Move to a separate data.js file later)
-// ==========================================
+
 const RECENT_BOOKINGS = [
   { id: 1, guestName: 'Sarah Jenkins', guestAvatar: 'https://i.pravatar.cc/150?u=sarah', status: 'PENDING', venueName: 'Maple Community Hall', venueImage: 'https://images.unsplash.com/photo-1505843513577-22bb7d21e455?auto=format&fit=crop&w=150&q=80', date: 'Oct 24, 14:00 - 18:00', price: '$120.00' },
   { id: 2, guestName: 'Alex Miller', guestAvatar: 'https://i.pravatar.cc/150?u=alex', status: 'CONFIRMED', venueName: 'Skyline Rooftop Garden', venueImage: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=150&q=80', date: 'Oct 26, 18:00 - 22:00', price: '$300.00' }
 ];
 
-const LISTED_PROPERTIES = [
-  { id: 1, name: 'Maple Hall', price: '$45/hr', rating: '4.9', image: 'https://images.unsplash.com/photo-1505843513577-22bb7d21e455?auto=format&fit=crop&w=400&q=80', isActive: true },
-  { id: 2, name: 'Skyline Rooftop', price: '$75/hr', rating: '4.7', image: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=400&q=80', isActive: true },
-  { id: 3, name: 'Art Studio', price: '$35/hr', rating: '5.0', image: 'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=400&q=80', isActive: false }
-];
 
 // ==========================================
 // 2. REUSABLE UI COMPONENTS
@@ -24,7 +21,7 @@ const LISTED_PROPERTIES = [
 const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
   <button 
     onClick={onClick}
-    className={`w-full flex items-center space-x-4 px-5 py-3.5 rounded-xl transition-colors text-sm font-semibold ${
+    className={`w-full cursor-pointer flex items-center space-x-4 px-5 py-3.5 rounded-xl transition-colors text-sm font-semibold ${
       isActive ? 'bg-[#ff5c5d] text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
     }`}
   >
@@ -33,8 +30,8 @@ const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
   </button>
 );
 
-const ToggleSwitch = ({ isActive }) => (
-  <div className={`w-11 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${isActive ? 'bg-[#2a5660]' : 'bg-gray-300'}`}>
+const ToggleSwitch = ({ isActive, onToggle, venue }) => (
+  <div onClick={() => onToggle(venue)} className={`w-11 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${isActive ? 'bg-[#2a5660]' : 'bg-gray-300'}`}>
     <div className={`bg-white w-4 h-4 rounded-full shadow-sm transform transition-transform duration-300 ${isActive ? 'translate-x-5' : 'translate-x-0'}`}></div>
   </div>
 );
@@ -43,7 +40,7 @@ const ToggleSwitch = ({ isActive }) => (
 // 3. LAYOUT COMPONENTS
 // ==========================================
 
-const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => (
+const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen,navigate }) => (
   <>
     {/* Mobile Overlay Background */}
     {isOpen && (
@@ -80,18 +77,18 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen }) => (
 
         {/* Navigation Links */}
         <nav className="px-6 space-y-2">
+          <SidebarItem icon={Building} label="Homepage" isActive={activeTab === 'Homepage'} onClick={() => { setActiveTab('Homepage'); setIsOpen(false); navigate("/host") }} />
           <SidebarItem icon={Layout} label="Dashboard" isActive={activeTab === 'Dashboard'} onClick={() => { setActiveTab('Dashboard'); setIsOpen(false); }} />
-          <SidebarItem icon={Building} label="My Venues" isActive={activeTab === 'My Venues'} onClick={() => { setActiveTab('My Venues'); setIsOpen(false); }} />
         </nav>
       </div>
 
       {/* Bottom Action */}
-      <div className="p-6 border-t border-gray-100 bg-white">
+      <Link to="/host/dashboard/list-new-venues" className="p-6 border-t border-gray-100 cursor-pointer bg-white">
         <button className="w-full bg-[#8b3d2c] hover:bg-[#733224] text-white flex items-center justify-center space-x-2 py-4 rounded-xl transition-colors font-semibold text-sm shadow-sm">
           <PlusCircle size={20} />
           <span>List New Space</span>
         </button>
-      </div>
+      </Link>
     </aside>
   </>
 );
@@ -105,9 +102,9 @@ const TopHeader = () => (
   </header>
 );
 
-const StatsOverview = () => (
+const StatsOverview = ({venue}) => (
   <div className="bg-white border border-gray-100 rounded-2xl flex flex-col md:flex-row items-center justify-between p-2 mb-10 shadow-sm">
-    <div className="flex-1 w-full flex items-center space-x-5 p-6 md:border-r border-gray-100">
+    {/* <div className="flex-1 w-full flex items-center space-x-5 p-6 md:border-r border-gray-100">
       <div className="bg-red-50 p-4 rounded-xl text-red-400">
         <Clock1 size={28} strokeWidth={2} />
       </div>
@@ -117,7 +114,7 @@ const StatsOverview = () => (
           <span className="text-sm font-semibold text-gray-500">Pending Requests</span>
         </div>
       </div>
-    </div>
+    </div> */}
     <div className="flex-1 w-full flex items-center space-x-5 p-6 md:border-r border-gray-100 border-t md:border-t-0">
       <div className="bg-blue-50 p-4 rounded-xl text-blue-400">
         <Rupee size={28} strokeWidth={2} />
@@ -135,8 +132,8 @@ const StatsOverview = () => (
       </div>
       <div>
         <div className="flex items-baseline space-x-3">
-          <span className="text-4xl font-bold text-gray-900">5</span>
-          <span className="text-sm font-semibold text-gray-500">Active Venues</span>
+          <span className="text-4xl font-bold text-gray-900">{venue.length}</span>
+          <span className="text-sm font-semibold text-gray-500">Your Venues</span>
         </div>
       </div>
     </div>
@@ -156,11 +153,11 @@ const RecentBookings = () => (
             <img src={booking.guestAvatar} alt={booking.guestName} className="w-12 h-12 rounded-full object-cover shadow-sm border border-gray-50" />
             <div className="flex flex-col items-start">
               <p className="font-bold text-gray-900 text-sm mb-1">{booking.guestName}</p>
-              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+              {/* <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
                 booking.status === 'PENDING' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-600'
               }`}>
                 {booking.status}
-              </span>
+              </span> */}
             </div>
           </div>
           <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
@@ -172,7 +169,7 @@ const RecentBookings = () => (
           </div>
           <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-none border-gray-50 pt-4 md:pt-0 shrink-0">
             <p className="font-black text-gray-900 text-lg whitespace-nowrap">{booking.price}</p>
-            {booking.status === 'PENDING' ? (
+            {/* {booking.status === 'PENDING' ? (
               <div className="flex gap-2">
                 <button className="bg-[#2a5660] hover:bg-[#1f4048] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm">Accept</button>
                 <button className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Decline</button>
@@ -181,7 +178,7 @@ const RecentBookings = () => (
               <button className="p-2 text-gray-400 hover:text-gray-900 transition-colors rounded-full hover:bg-gray-50">
                 <DotsVertical size={24} />
               </button>
-            )}
+            )} */}
           </div>
         </div>
       ))}
@@ -189,40 +186,47 @@ const RecentBookings = () => (
   </div>
 );
 
-const ListedProperties = () => (
+const ListedProperties = ({handleToggleAvailability, userVenues}) => (
   <>
     <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <h3 className="text-2xl font-bold text-gray-900">Listed Properties</h3>
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-16">
-      {LISTED_PROPERTIES.map(venue => (
+      {userVenues?.map(venue => (
         <div key={venue.id} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm flex flex-col">
           <div className="relative h-48 w-full">
-            <img src={venue.image} alt={venue.name} className="w-full h-full object-cover" />
-            <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-lg flex items-center space-x-1.5 shadow-sm">
+            <img src={venue.image} alt={venue.venue_name} className="w-full h-full object-cover" />
+            {/* <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-lg flex items-center space-x-1.5 shadow-sm">
               <Star size={14} className="text-[#ff5c5d] fill-[#ff5c5d]" />
               <span className="text-xs font-bold text-gray-900">{venue.rating}</span>
-            </div>
+            </div> */}
           </div>
           <div className="p-5 flex-1 flex flex-col justify-between">
             <div>
-              <h4 className="font-bold text-gray-900 text-base mb-1.5">{venue.name}</h4>
+              <h4 className="font-bold text-gray-900 text-lg mb-1.5">{venue.venue_name}</h4>
+              <div className='flex'>
+                <MapPin size={18} color="#3e517f" />
+                <h4 className="text-gray-700 text-sm mb-1.5 ml-1">{venue.location}</h4>
+              </div>
             </div>
             <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-50">
-              <p className="text-sm text-gray-500 font-semibold">{venue.price}</p>
-              <ToggleSwitch isActive={venue.isActive} />
+              <p className="text-sm text-gray-500 font-semibold">₹{venue.price}</p>
+              <ToggleSwitch isActive={venue.is_available}
+               venue={venue}
+               onToggle={handleToggleAvailability}  
+              />
             </div>
           </div>
         </div>
       ))}
 
-      <button className="border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center h-full min-h-[280px] text-gray-500 hover:text-[#ff5c5d] hover:border-[#ff5c5d] hover:bg-[#fff9f9] transition-colors group">
+      <Link to="/host/dashboard/list-new-venues" className="border-2 cursor-pointer border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center h-full min-h-[280px] text-gray-500 hover:text-[#ff5c5d] hover:border-[#ff5c5d] hover:bg-[#fff9f9] transition-colors group">
         <div className="bg-white rounded-full p-4 shadow-sm mb-4 border border-gray-50 group-hover:border-[#ff5c5d]/20 transition-colors">
           <PlusCircle size={28} className="text-[#ff5c5d]" />
         </div>
         <span className="font-bold text-base">Add New Venue</span>
-      </button>
+      </Link>
     </div>
   </>
 );
@@ -232,8 +236,59 @@ const ListedProperties = () => (
 // ==========================================
 
 export default function OwnerDashboard() {
+  const navigate = useNavigate()
+
+  const [userVenues, setUserVenues] = useState([])
+
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  //  Toggle Availability Function
+  const handleToggleAvailability = async (venue) => {
+    
+    try {
+      const ToggledAvailability = !venue.is_available
+      const stausPayload = ToggledAvailability ? "active" : "inactive"
+
+      const payload = {
+        status: stausPayload,
+        reason: "Reason of the Owner."
+      }
+
+      const response = await apiService.updateVenueAvailability(payload, venue.id)
+      console.log(response);
+
+      setUserVenues(prevVenues => prevVenues.map(v => 
+        v.id === venue.id ? {...v, is_available: ToggledAvailability} : v
+      )); 
+
+    } catch (error) {
+      alert("Some Error occured during toggling venue Availability!");
+      console.error(error);
+      
+    }
+  }
+
+  useEffect(() => {
+    const fetchVenues = async () => {
+      try {
+
+        const response = await apiService.getAllVenues();
+        console.error(response.message);
+        
+        
+        // Get user Venue from All venues
+        const UserVenue = response.filter(venue => Cookies.get("userId") == venue.user_id)
+        setUserVenues(UserVenue)
+        
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+    fetchVenues()
+  },[])
+
+
 
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans overflow-hidden">
@@ -243,7 +298,8 @@ export default function OwnerDashboard() {
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         isOpen={isMobileMenuOpen} 
-        setIsOpen={setIsMobileMenuOpen} 
+        setIsOpen={setIsMobileMenuOpen}
+        navigate={navigate} 
       />
 
       {/* MAIN CONTENT AREA */}
@@ -262,15 +318,12 @@ export default function OwnerDashboard() {
 
         {/* Dashboard Content Container */}
         <div className="max-w-[1400px] mx-auto p-6 md:p-10 lg:p-12">
-          
-          {/* Stacking the extracted components sequentially */}
           <TopHeader />
-          <StatsOverview />
-          
+          <StatsOverview venue={userVenues} />
           <RecentBookings />
-          
-          <ListedProperties />
-          
+          <ListedProperties handleToggleAvailability={handleToggleAvailability}
+            userVenues={userVenues}
+          />
         </div>
       </main>
 

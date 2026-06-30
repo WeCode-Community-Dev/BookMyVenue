@@ -18,16 +18,16 @@ function Filters() {
             icon: <MapPin size={20}/>, 
             options: ["Downtown", "Suburbs", "City Center", "Beachfront"] 
         },
-        { 
-            name: "Venue Type", 
-            icon: <Kanban size={20}/>, 
-            options: ["Indoor", "Outdoor", "Rooftop", "Barn"] 
-        },
-        { 
-            name: "Budget", 
-            icon: <Dollar size={20}/>, 
-            options: ["$ (Under $500)", "$$ ($500 - $1k)", "$$$ ($1k - $5k)", "$$$$ ($5k+)"] 
-        },
+        // { 
+        //     name: "Venue Type", 
+        //     icon: <Kanban size={20}/>, 
+        //     options: ["Indoor", "Outdoor", "Rooftop", "Barn"] 
+        // },
+        // { 
+        //     name: "Budget", 
+        //     icon: <Dollar size={20}/>, 
+        //     options: ["$ (Under $500)", "$$ ($500 - $1k)", "$$$ ($1k - $5k)", "$$$$ ($5k+)"] 
+        // },
         { 
             name: "Amenities", 
             icon: <Speaker size={20}/>, 
@@ -90,10 +90,10 @@ function Filters() {
                 </div>
             ))}
             
-            <button className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-[#f56d5e] text-white text-xs md:text-sm rounded-full shadow-md hover:bg-[#BF5842] hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out">
+            {/* <button className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-[#f56d5e] text-white text-xs md:text-sm rounded-full shadow-md hover:bg-[#BF5842] hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out">
                 <Config />
                 <span>All Filters</span>
-            </button>
+            </button> */}
         </div>
     )
 }
