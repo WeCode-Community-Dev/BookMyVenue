@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tanstack-start-app",
+  "compatibility_date": "2025-09-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/server.ts",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "book-my-venue-db",
+      "database_id": "book-my-venue-db",
+      "migrations_dir": "drizzle/migrations",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "VENUE_IMAGES",
+      "bucket_name": "venue-images",
+    },
+    {
+      "binding": "INVOICES",
+      "bucket_name": "invoices",
+    },
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "CACHE_KV",
+      "id": "book-my-venue-cache",
+    },
+  ],
+}

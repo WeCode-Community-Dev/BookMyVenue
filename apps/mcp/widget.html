@@ -1,0 +1,114 @@
+<!--
+  Venues widget — rendered inside ChatGPT (and other MCP UI hosts) via the
+  OpenAI Apps SDK. Reads structured data from `window.openai.toolOutput`.
+-->
+<div id="venues-root"></div>
+<style>
+  #venues-root {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #111;
+  }
+  .venues-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    padding: 4px;
+  }
+  .venue-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+  }
+  .venue-card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    background: #f3f4f6;
+    display: block;
+  }
+  .venue-card .body {
+    padding: 10px 12px 12px;
+  }
+  .venue-card h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .venue-card .meta {
+    font-size: 12px;
+    color: #6b7280;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+  .venue-card .type {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #4f46e5;
+    margin-bottom: 4px;
+  }
+  .empty {
+    padding: 24px;
+    color: #6b7280;
+    text-align: center;
+  }
+</style>
+<script>
+  (function () {
+    const root = document.getElementById("venues-root");
+    const data = (window.openai && window.openai.toolOutput) || {};
+    const venues = Array.isArray(data.venues) ? data.venues : [];
+
+    const fmtPrice = (cents, currency) => {
+      try {
+        return new Intl.NumberFormat(undefined, {
+          style: "currency",
+          currency: currency || "USD",
+          maximumFractionDigits: 0,
+        }).format((cents || 0) / 100);
+      } catch {
+        return `${((cents || 0) / 100).toFixed(0)} ${currency || ""}`;
+      }
+    };
+    const esc = (s) =>
+      String(s == null ? "" : s).replace(
+        /[&<>"']/g,
+        (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+      );
+
+    if (!venues.length) {
+      root.innerHTML = '<div class="empty">No venues found.</div>';
+      return;
+    }
+
+    root.innerHTML =
+      '<div class="venues-grid">' +
+      venues
+        .map((v) => {
+          const city = v.address_data && v.address_data.city ? v.address_data.city : "";
+          const country = v.address_data && v.address_data.country ? v.address_data.country : "";
+          const loc = [city, country].filter(Boolean).join(", ");
+          return `
+            <div class="venue-card">
+              ${v.cover_image_url ? `<img src="${esc(v.cover_image_url)}" alt="${esc(v.name)}" />` : `<img alt="" />`}
+              <div class="body">
+                <div class="type">${esc(v.venue_type || "venue")}</div>
+                <h3>${esc(v.name)}</h3>
+                <div style="font-size:12px;color:#374151;">${esc(loc)}</div>
+                <div class="meta">
+                  <span>Cap. ${esc(v.capacity)}</span>
+                  <span>${esc(fmtPrice(v.base_price_cents, v.currency))}</span>
+                </div>
+              </div>
+            </div>`;
+        })
+        .join("") +
+      "</div>";
+  })();
+</script>

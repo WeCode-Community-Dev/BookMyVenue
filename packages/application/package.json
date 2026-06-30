@@ -1,0 +1,22 @@
+{
+  "name": "@repo/application",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./venues": "./src/venues.ts",
+    "./bookings": "./src/bookings.ts",
+    "./coupons": "./src/coupons.ts",
+    "./reviews": "./src/reviews.ts",
+    "./admin": "./src/admin.ts",
+    "./invoices": "./src/invoices.ts"
+  },
+  "dependencies": {
+    "@repo/contracts": "*",
+    "@repo/domain": "*",
+    "zod": "^3.24.2"
+  }
+}

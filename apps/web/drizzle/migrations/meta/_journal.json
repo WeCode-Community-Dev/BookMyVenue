@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1781335345000,
+      "tag": "0000_graceful_patriot",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1781923958000,
+      "tag": "0001_booking_conflict_index",
+      "breakpoints": true
+    }
+  ]
+}

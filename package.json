@@ -1,0 +1,40 @@
+{
+  "name": "@app/root",
+  "private": true,
+  "packageManager": "npm@10.8.2",
+  "type": "module",
+  "overrides": {
+    "better-auth": {
+      "drizzle-orm": "^0.44.0"
+    },
+    "@better-auth/drizzle-adapter": {
+      "drizzle-orm": "^0.44.0"
+    },
+    "nativewind": {
+      "tailwindcss": "3.4.10"
+    },
+    "react-native-css-interop": {
+      "tailwindcss": "3.4.10"
+    },
+    "@app/mobile": {
+      "tailwindcss": "3.4.10"
+    }
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "turbo:build": "turbo run build",
+    "turbo:typecheck": "turbo run typecheck",
+    "turbo:lint": "turbo run lint",
+    "format": "prettier --write .",
+    "postinstall": "node scripts/fix-nativewind-tailwind.cjs"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "prettier": "^3.7.3",
+    "turbo": "^2.5.0"
+  }
+}

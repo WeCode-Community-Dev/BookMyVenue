@@ -1,0 +1,41 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  "globalDependencies": ["tsconfig.json"],
+  "globalPassThroughEnv": [
+    "SystemRoot",
+    "PATH",
+    "TEMP",
+    "TMP",
+    "COMSPEC",
+    "SystemDrive",
+    "USERPROFILE",
+    "LOCALAPPDATA",
+    "APPDATA",
+    "PATHEXT"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".output/**", ".vinxi/**", ".tanstack/**"]
+    },
+    "build:dev": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".output/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "format": {
+      "cache": false
+    }
+  }
+}

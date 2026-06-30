@@ -1,0 +1,10 @@
+{
+  "name": "@apps/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Python MCP server exposing get_venues to ChatGPT. Managed by Turborepo only for scripts orchestration.",
+  "scripts": {
+    "dev": "python server.py",
+    "install:py": "pip install -r requirements.txt"
+  }
+}
