@@ -15,27 +15,9 @@ const USERS_DATA = [
   { id: 3, initials: 'SL', name: 'Sarah Lee', role: 'Host', joinDate: 'Dec 01, 2023', status: 'Pending', avatarBg: 'bg-[#ff5c5d] text-white' },
 ];
 
-const PENDING_VENUES = [
-  { 
-    id: 1, 
-    name: 'Sunrise Yoga Studio', 
-    host: 'Elena Santos', 
-    location: 'Downtown, 1st Avenue',
-    price: '₹1,200',
-    image: 'https://images.unsplash.com/photo-1599438012674-124b81c2f974?q=80&w=150&h=100&auto=format&fit=crop'
-  },
-  { 
-    id: 2, 
-    name: 'The Oak Meeting Room', 
-    host: 'James Carter', 
-    location: 'Westside Business Park',
-    price: '₹850',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=150&h=100&auto=format&fit=crop'
-  },
-];
 
 // ==========================================
-//    REUSABLE UI COMPONENTS
+// 2. SIDEBAR
 // ==========================================
 const SidebarItem = ({ iconName, label, isActive, onClick, link }) => (
   <Link to={link}
@@ -64,6 +46,8 @@ export default function AdminDashboard() {
   const [allVenues, setAllVenues] = useState([])
   const [pendingVenues, SetPendingVenues] = useState([])
 
+  const [allUsers, setAllUsers] = useState([])
+
   const fetchPendingVenues = async () => {
     try {
       const response = await apiService.GetAllVenuesForAdmin()
@@ -79,6 +63,12 @@ export default function AdminDashboard() {
   }
 
   useEffect(() => {
+    const getAllUsersList = async () => {
+      const response = await apiService.GetUserListForAdmin();
+      setAllUsers(response);
+    }
+
+    getAllUsersList()
     fetchPendingVenues()
   }, [])  
   
@@ -190,7 +180,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <div className="flex items-baseline space-x-3">
-                  <span className="text-4xl font-bold text-gray-900">1,248</span>
+                  <span className="text-4xl font-bold text-gray-900">{allUsers.length}</span>
                   <span className="text-sm font-semibold text-gray-500">Total Users</span>
                 </div>
               </div>
@@ -201,7 +191,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <div className="flex items-baseline space-x-3">
-                  <span className="text-4xl font-bold text-gray-900">{PENDING_VENUES.length}</span>
+                  <span className="text-4xl font-bold text-gray-900">{pendingVenues.length}</span>
                   <span className="text-sm font-semibold text-gray-500">Pending Venues</span>
                 </div>
               </div>
@@ -225,27 +215,21 @@ export default function AdminDashboard() {
                         <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">User</th>
                         <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Role</th>
                         <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Join Date</th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Email</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
-                      {USERS_DATA.map((user) => (
+                      {allUsers.map((user) => (
                         <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-4 flex items-center gap-3">
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${user.avatarBg}`}>
+                            {/* <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${user.avatarBg}`}>
                               {user.initials}
-                            </div>
+                            </div> */}
                             <span className="font-bold text-gray-900 text-sm">{user.name}</span>
                           </td>
-                          <td className="px-6 py-4 text-sm font-semibold text-gray-600">{user.role}</td>
-                          <td className="px-6 py-4 text-sm font-semibold text-gray-500 whitespace-nowrap">{user.joinDate}</td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${
-                              user.status === 'Active' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
-                            }`}>
-                              {user.status}
-                            </span>
-                          </td>
+                          <td className="px-6 py-4 text-sm font-semibold text-gray-600">{user.role === "owner" ? "Host" : user.role}</td>
+                          <td className="px-6 py-4 text-sm font-semibold text-gray-500 whitespace-nowrap">{user.updated_at.slice(0, 10)}</td>
+                          <td className="px-6 py-4 text-sm font-semibold text-gray-600">{user.email}</td>
                         </tr>
                       ))}
                     </tbody>

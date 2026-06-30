@@ -18,8 +18,10 @@ function ActionButton({ role, isMobile, onClick }) {
         onClick={() => handleNavigation(role === "owner" ? "/host/dashboard" : "/admin/dashboard")}
         className={
           isMobile
-            ? "w-11/12 max-w-xs flex items-center justify-center gap-2 px-4 py-3 mt-2 bg-white text-gray-800 text-lg font-medium rounded-full shadow-md hover:shadow-lg hover:bg-gray-50 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
-            : "flex items-center justify-center gap-2 px-5 py-2 bg-[#ffffff] text-gray-800 text-base font-medium rounded-full shadow-md hover:shadow-lg hover:bg-gray-50 hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
+            // Updated mobile classes to match Sign Up styling
+            ? "w-11/12 max-w-xs flex items-center justify-center gap-2 px-4 py-3 mt-2 bg-[#f56d5e] text-white text-lg font-medium rounded-full shadow-md hover:shadow-lg hover:bg-[#BF5842] active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
+            // Updated desktop classes to match Sign Up styling
+            : "flex items-center justify-center gap-2 px-5 py-2 bg-[#f56d5e] text-white text-base font-medium rounded-full shadow-md hover:shadow-lg hover:bg-[#BF5842] hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
         }
       >
         Dashboard
@@ -53,7 +55,7 @@ function ActionButton({ role, isMobile, onClick }) {
       </button>
     )
   }
-}
+}7
 
 function NavBar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

@@ -62,7 +62,11 @@ const apiService = {
     updateAdminVenueApproval: async (payload, venue_id) => {
         const response = await axiosInstance.post(`/admin/venue/${venue_id}`, payload)
         return response.data
-    }
+    },
+    GetUserListForAdmin: async () => {
+        const response = await axiosInstance.get(`/user/users`)
+        return response.data
+    },
 
 }
 
