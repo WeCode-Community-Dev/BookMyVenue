@@ -9,10 +9,14 @@ WHERE id = $1;
 
 -- name: GetBookingsByUserID :many
 SELECT * FROM bookings
-WHERE user_id = $1
+WHERE user_id = $1 AND status = 'confirmed'
 ORDER BY created_at DESC;
 
 -- name: UpdateBookingStatus :exec
 UPDATE bookings
 SET status = $2
+WHERE id = $1;
+
+-- name: GetSlotByBookingID :one
+SELECT slot_id FROM bookings
 WHERE id = $1;

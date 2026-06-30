@@ -70,7 +70,7 @@ func (q *Queries) GetBookingByID(ctx context.Context, id pgtype.UUID) (Booking, 
 
 const getBookingsByUserID = `-- name: GetBookingsByUserID :many
 SELECT id, user_id, venue_id, slot_id, status, total_amount, created_at, updated_at FROM bookings
-WHERE user_id = $1
+WHERE user_id = $1 AND status = 'confirmed'
 ORDER BY created_at DESC
 `
 
@@ -101,6 +101,18 @@ func (q *Queries) GetBookingsByUserID(ctx context.Context, userID pgtype.UUID) (
 		return nil, err
 	}
 	return items, nil
+}
+
+const getSlotByBookingID = `-- name: GetSlotByBookingID :one
+SELECT slot_id FROM bookings
+WHERE id = $1
+`
+
+func (q *Queries) GetSlotByBookingID(ctx context.Context, id pgtype.UUID) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, getSlotByBookingID, id)
+	var slot_id pgtype.UUID
+	err := row.Scan(&slot_id)
+	return slot_id, err
 }
 
 const updateBookingStatus = `-- name: UpdateBookingStatus :exec
