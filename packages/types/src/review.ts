@@ -20,3 +20,25 @@ export type WriteReviewBody = {
     rating: number;
     comment?: string;
 };
+
+export type GetReviewsQuery = {
+    page?: number;
+    limit?: number;
+};
+
+export type ReviewUser = {
+    name: string;
+};
+
+export type ReviewResponse = {
+    id: number;
+    rating: number;
+    comment: string | null;
+    createdAt: Date;
+    user: ReviewUser;
+};
+
+export type GetReviewsResponse = {
+    success: true;
+    data: ReviewResponse[];
+};

@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { getVenueReviewStatusService } from "../services/review.service";
-import { WriteReviewBody } from "@bookmyvenue/types";
+import { WriteReviewBody, GetReviewsQuery } from "@bookmyvenue/types";
 import { prisma } from "@bookmyvenue/database";
 
 export const getVenueReviewStatus = async (
@@ -49,17 +49,21 @@ export const writeReview = async (
     });
 };
 
-
-export const getVenueReviews = async (
-    request: FastifyRequest<{ Params: { venueId: string } }>,
+export const getReviews = async (
+    request: FastifyRequest<{ Params: { venueId: string }; Querystring: GetReviewsQuery }>,
     reply: FastifyReply,
 ) => {
     const venueId = Number(request.params.venueId);
+
+    const { page = 1, limit = 10 } = request.query;
+    const skip = (Number(page) - 1) * limit;
 
     const reviews = await prisma.review.findMany({
         where: { venueId },
         include: { user: { select: { name: true } } },
         orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
     });
 
     return reply.send({ success: true, data: reviews });
