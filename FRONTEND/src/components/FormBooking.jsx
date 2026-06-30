@@ -52,7 +52,7 @@ export default function FormBooking ({
             
             const endStr = startTime.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true})
 
-            intervals.push(`${startStr} - ${endStr}`)      
+            intervals.push(`${startStr} - ${endStr}`)   
         }
         intervals.pop()
         

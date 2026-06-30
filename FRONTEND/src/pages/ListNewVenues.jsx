@@ -1,5 +1,3 @@
-import React, { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { 
     X, 
     Check, 
@@ -18,8 +16,15 @@ import {
     Image as ImageIcon, // Added for image placeholders
     Trash // Added for delete button
 } from '@mynaui/icons-react';
+
+import React, { useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import apiService from '../services/apiService';
 import Cookies from 'js-cookie';
+import toast, { Toaster } from 'react-hot-toast';
+
+import Loading from '../components/Loading';
+import Logo from '../assets/Logo.png'
 
 export default function ListNewVenue() {
 
@@ -30,6 +35,7 @@ export default function ListNewVenue() {
     const steps = ['Basic Info', 'Amenities', 'Photos', 'Availability'];
 
     const [venueId, setVenueId] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 4));
     const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
@@ -108,7 +114,9 @@ export default function ListNewVenue() {
     
     // submitting the forms
     const handleSubmit = async () => {
+        setIsLoading(true);
         try {
+
             if(currentStep === 1){
                 const freshUserId = Cookies.get('userId')
 
@@ -142,10 +150,13 @@ export default function ListNewVenue() {
             
         } catch (error) {
             console.error(error.response?.data || error)
-            alert("Something went wrong! Please check the console.");
+            toast.error("Something went wrong! Please try Again!");
             
             // API call failed!
             return false; 
+
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -157,16 +168,20 @@ export default function ListNewVenue() {
         }))
     }
 
+    const LoadingText = "Please Wait..."
+    if(isLoading){
+        return <Loading LoadingText={LoadingText} />
+    }
+
     return (
-        <div className="min-h-screen bg-[#f8fafc] font-sans flex flex-col">
+        <div className="min-h-screen bg-[#f8fafc] font-sans flex flex-col ">
+            <Toaster position='top-right' />
             
             <header className="bg-white px-6 py-4 flex items-center justify-between border-b border-gray-100">
                 <Link to="/host/dashboard" className="p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors cursor-pointer">
                     <X size={24} />
                 </Link>
-                <h1 className="text-xl font-black text-[#8b3d2c] tracking-tight absolute left-1/2 transform -translate-x-1/2">
-                    BookMyVenue
-                </h1>
+                <img src={Logo} alt="Logo" className="w-70 font-black text-[#8b3d2c] tracking-tight absolute left-1/2 transform -translate-x-1/2" />
                 <div className="w-10"></div> 
             </header>
 
@@ -502,7 +517,7 @@ export default function ListNewVenue() {
                             // Only move to the next step if the API call didn't crash
                             if (isSuccess) {
                                 if (currentStep === 4) {
-                                    alert("Venue Created Successfully!");
+                                    toast.success("Venue Created Successfully!");
                                     navigate("/host/dashboard");
                                 } else {
                                     nextStep();

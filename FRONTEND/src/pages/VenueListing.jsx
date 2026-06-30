@@ -16,7 +16,7 @@ import apiService from '../services/apiService';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
-
+import toast, {Toaster} from 'react-hot-toast';
 
 const ImageGalleryModal = ({ isOpen, onClose, images }) => {
 
@@ -136,7 +136,7 @@ export default function SpaceListing() {
         const totalAmount = venue_type === "hourly" ? selectedTimes.length * 2 * venue_price : venue_price ;
 
         if(totalAmount === 0 && venue_type === "hourly" ){
-            alert("Please select at least one time slot before confirming.")
+            toast.error("Please select at least one time slot before confirming.")
             return;
         } else {
             
@@ -173,11 +173,11 @@ export default function SpaceListing() {
 
                         console.log(verifyResponse);
                         if(verifyResponse.success){
-                            alert("Successfully Verified!")
+                            toast.success("Successfully Verified!")
                         }
                         
                     } catch (verifyError) {
-                        alert("Payment done! but Failed to Verify, contact Support.")
+                        toast.error("Payment done! but Failed to Verify, contact Support.")
                         console.error("Verification Failed!",verifyError)
                     }
                 },
@@ -191,12 +191,13 @@ export default function SpaceListing() {
 
         } catch (error) {
             console.error("Failed to Book the Venue:", error)
-            alert("Something went wrong while setting up the payment. Please try again.");
+            toast.error("Something went wrong while setting up the payment. Please try again.");
         }
     }
 
     return (
         <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans text-gray-900">
+            < Toaster />
 
             {!isGalleryOpen && <div onClick={() => navigate("/")} className='fixed absolute left-8 z-99'>
                 <ArrowLeft size={40} className="p-1 bg-gray-100 hover:bg-gray-200 hover:text-black rounded-full text-gray-600 transition-colors cursor-pointer" />

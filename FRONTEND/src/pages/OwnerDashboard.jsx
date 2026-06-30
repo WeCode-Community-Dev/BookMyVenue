@@ -7,6 +7,7 @@ import {
 } from '@mynaui/icons-react';
 import Cookies from 'js-cookie';
 import apiService from '../services/apiService';
+import Logo from '../assets/Logo.png'
 
 
 const RECENT_BOOKINGS = [
@@ -14,10 +15,6 @@ const RECENT_BOOKINGS = [
   { id: 2, guestName: 'Alex Miller', guestAvatar: 'https://i.pravatar.cc/150?u=alex', status: 'CONFIRMED', venueName: 'Skyline Rooftop Garden', venueImage: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=150&q=80', date: 'Oct 26, 18:00 - 22:00', price: '$300.00' }
 ];
 
-
-// ==========================================
-// 2. REUSABLE UI COMPONENTS
-// ==========================================
 const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
   <button 
     onClick={onClick}
@@ -37,7 +34,7 @@ const ToggleSwitch = ({ isActive, onToggle, venue }) => (
 );
 
 // ==========================================
-// 3. LAYOUT COMPONENTS
+//          LAYOUT COMPONENTS
 // ==========================================
 
 const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen,navigate }) => (
@@ -58,7 +55,7 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen,navigate }) => (
         
         {/* Logo & Mobile Close Button */}
         <div className="px-8 py-8 flex justify-between items-center">
-          <h1 className="text-2xl font-black text-[#8b3d2c] tracking-tight">BookMyVenue</h1>
+          <img src={Logo} alt="" className="text-2xl font-black text-[#8b3d2c] tracking-tight" />
           <button className="lg:hidden text-gray-500 hover:text-gray-900" onClick={() => setIsOpen(false)}>
             <X size={24} />
           </button>
@@ -66,11 +63,11 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen,navigate }) => (
 
         {/* Profile Card */}
         <div className="px-6 mb-8">
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex items-center space-x-4">
-            <img src="https://i.pravatar.cc/150?u=host" alt="Host" className="w-12 h-12 rounded-full object-cover shadow-sm" />
+          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex items-center  space-x-4">
+            {/* <img src="https://i.pravatar.cc/150?u=host" alt="Host" className="w-12 h-12 rounded-full object-cover shadow-sm" /> */}
             <div>
-              <p className="text-sm font-bold text-gray-900">Neighborhood Host</p>
-              <p className="text-xs font-medium text-gray-500 mt-0.5">Host since 2023</p>
+              <p className="text-sm font-bold text-gray-900">Welcome <span className='text-[#2e7078]' >{Cookies.get("userName")}</span> </p>
+              <p className="text-xs font-medium text-gray-500 mt-0.5">Host Dashboard</p>
             </div>
           </div>
         </div>
@@ -84,7 +81,7 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen,navigate }) => (
 
       {/* Bottom Action */}
       <Link to="/host/dashboard/list-new-venues" className="p-6 border-t border-gray-100 cursor-pointer bg-white">
-        <button className="w-full bg-[#8b3d2c] hover:bg-[#733224] text-white flex items-center justify-center space-x-2 py-4 rounded-xl transition-colors font-semibold text-sm shadow-sm">
+        <button className="w-full bg-[#8b3d2c] cursor-pointer hover:bg-[#733224] text-white flex items-center justify-center space-x-2 py-4 rounded-xl transition-colors font-semibold text-sm shadow-sm">
           <PlusCircle size={20} />
           <span>List New Space</span>
         </button>
@@ -273,16 +270,16 @@ export default function OwnerDashboard() {
     const fetchVenues = async () => {
       try {
 
-        const response = await apiService.getAllVenues();
-        console.error(response.message);
+        const response = await apiService.GetOwnerVenues(Cookies.get('userId'));
+        console.log(response);
         
         
         // Get user Venue from All venues
-        const UserVenue = response.filter(venue => Cookies.get("userId") == venue.user_id)
-        setUserVenues(UserVenue)
+        // const UserVenue = response.filter(venue => Cookies.get("userId") == venue.user_id)
+        setUserVenues(response)
         
       } catch (error) {
-        console.log(error.message);
+        console.log(error);
       }
     }
     fetchVenues()
@@ -307,7 +304,7 @@ export default function OwnerDashboard() {
         
         {/* Mobile Navbar Header (Only visible on small screens) */}
         <div className="lg:hidden flex items-center justify-between bg-white px-6 py-4 border-b border-gray-100 sticky top-0 z-30">
-          <h1 className="text-xl font-black text-[#8b3d2c] tracking-tight">BookMyVenue</h1>
+          <img src={Logo} alt="BookMyVenue" className="w-55 font-black text-[#8b3d2c] tracking-tight" />
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
             className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
