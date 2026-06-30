@@ -23,10 +23,6 @@ export default function FormBooking ({
         })
     }
 
-    const handleChange = (e) => {
-        setSelectedSession(e.target.value)
-    }
-
     // converts string time(9am) to (9, 0, 0, 0) format
     const SetTimeFromString = (dateObject, StringTime) => {
         const [time, modifier] = StringTime.split(" ");
@@ -79,27 +75,25 @@ export default function FormBooking ({
                         Session
                     </div>
                     
-                    <select
+                    <div
                         className="w-full pt-6 pb-2 px-3 text-sm font-medium text-gray-800 bg-transparent outline-none appearance-none cursor-pointer"
-                        onChange={handleChange}
                     >
-                        {isHourly && <option value="hourly">Hourly</option>}
-                        {isDaily && <option value="daily">Daily</option>}
-                    </select>
+                        {isHourly && <h3 value="hourly">Hourly</h3>}
+                        {isDaily && <h3 value="daily">Daily</h3>}
+                    </div>
                     
-                    {/* FIX: SVG is now positioned specifically inside the select area */}
-                    <svg 
+                    {/* <svg 
                         className="w-4 h-4 text-gray-400 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 group-hover:text-gray-600 transition-colors" 
                         fill="none" 
                         viewBox="0 0 24 24" 
                         stroke="currentColor"
                     >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    </svg> */}
                 </div>
 
                 {/* hourly Slots - Now seamlessly attached to the bottom of the select */}
-                {selectedSession === "hourly" && (
+                {isHourly && (
                     <div className="border-t border-gray-200 bg-gray-50 p-4">
                         {availTime && availTime.length > 0 ? (
                             <div className="flex flex-wrap gap-2">

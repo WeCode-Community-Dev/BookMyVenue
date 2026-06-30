@@ -15,6 +15,8 @@ import FormBooking from "../components/FormBooking"
 import apiService from '../services/apiService';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import Cookies from 'js-cookie';
+
 
 const ImageGalleryModal = ({ isOpen, onClose, images }) => {
 
@@ -86,12 +88,11 @@ export default function SpaceListing() {
         const FetchVenue =  async() => {
             try {
                 const response = await apiService.getVenueByID(id)
-                console.log(response)
                 setVenue(response)
 
             } catch (error) {
                 console.error("Failed to Fetch data: ",error)
-                const errorMessage = err.response?.data?.detail || err.response?.data?.message || "Failed to load venue details.";
+                const errorMessage = error.response?.data?.detail || error.response?.data?.message || "Failed to load venue details.";
                 setError(errorMessage)
 
             } finally {
@@ -127,12 +128,71 @@ export default function SpaceListing() {
     const venue_rating = venue.rating
     const venue_capacity = venue.capacity
     const venue_location= venue.location
+    const venue_type = venue.availability.booking_types
     // const venue_min_hour = venue.availability.minimum_hours
     // console.log(venue_min_hour);
 
-    const calculateTotalAmount = () => {
-        const totalAmount = selectedTimes.length * 2 * venue_price;
-        return totalAmount
+    const handleReservation = async () => {
+        const totalAmount = venue_type === "hourly" ? selectedTimes.length * 2 * venue_price : venue_price ;
+
+        if(totalAmount === 0 && venue_type === "hourly" ){
+            alert("Please select at least one time slot before confirming.")
+            return;
+        } else {
+            
+        }
+
+        try {
+            const orderPayload = {
+                user_id: Cookies.get('userId'),
+                venue_id: venue.id,
+                amount: totalAmount
+            }
+
+            const orderResponse = await apiService.createPaymentOrder(orderPayload);
+
+            const options = {
+                key: orderResponse.key,
+                amount: orderResponse.amount,
+                currency: orderResponse.currency,
+                order_id: orderResponse.order_id,
+                name: "BookMyVenue",
+                description: `Booking for ${venue_name}`,
+
+                handler: async function(response){
+                    try {
+                        const verifyPayload = {
+                            "user_id": parseInt(Cookies.get('userId')),
+                            "venue_id": venue.id,
+                            "razorpay_order_id": response.razorpay_order_id,
+                            "razorpay_payment_id": response.razorpay_payment_id,
+                            "razorpay_signature": response.razorpay_signature
+                        }
+
+                        const verifyResponse = await apiService.verifyPayment(verifyPayload);
+
+                        console.log(verifyResponse);
+                        if(verifyResponse.success){
+                            alert("Successfully Verified!")
+                        }
+                        
+                    } catch (verifyError) {
+                        alert("Payment done! but Failed to Verify, contact Support.")
+                        console.error("Verification Failed!",verifyError)
+                    }
+                },
+                theme: {
+                    color: "#ff5c5d",
+                }
+            };
+
+            const paymentWindow = new window.Razorpay(options)
+            paymentWindow.open();
+
+        } catch (error) {
+            console.error("Failed to Book the Venue:", error)
+            alert("Something went wrong while setting up the payment. Please try again.");
+        }
     }
 
     return (
@@ -280,8 +340,8 @@ export default function SpaceListing() {
                 
                 {/* Price */}
                 <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-2xl font-bold">{venue_price + "₹"}</span>
-                <span className="text-gray-500 text-sm">/ hour</span>
+                    <span className="text-2xl font-bold">{venue_price + "₹"}</span>
+                    <span className="text-gray-500 text-sm">{venue_type === "hourly" ? "/hour" : "/day"}</span>
                 </div>
 
                 {/* Form Inputs */}
@@ -296,7 +356,7 @@ export default function SpaceListing() {
                 />
 
                 {/* Submit Button */}
-                <button onClick={calculateTotalAmount} className="w-full cursor-pointer bg-[#f4645c] hover:bg-[#e05048] text-white py-3.5 rounded-lg font-semibold text-base transition-colors duration-200">
+                <button onClick={handleReservation} className="w-full cursor-pointer bg-[#f4645c] hover:bg-[#e05048] text-white py-3.5 rounded-lg font-semibold text-base transition-colors duration-200">
                     Confirm Reservation
                 </button>
                 <p className="text-center text-xs text-gray-500 mt-3 mb-6">You won't be charged yet</p>
@@ -320,9 +380,9 @@ export default function SpaceListing() {
                 {/* Total */}
                 <div className="flex justify-between font-bold text-gray-800 mt-4 text-base">
                 <span>Total amount</span>
-                <span>₹{selectedTimes.length > 0 
+                <span>₹{venue_type === "hourly"
                     ? selectedTimes.length * 2 * venue_price
-                    : 0
+                    : venue_price
                 }</span>
                 </div>
 

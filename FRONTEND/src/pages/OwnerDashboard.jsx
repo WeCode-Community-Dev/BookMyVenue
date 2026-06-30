@@ -133,7 +133,7 @@ const StatsOverview = ({venue}) => (
       <div>
         <div className="flex items-baseline space-x-3">
           <span className="text-4xl font-bold text-gray-900">{venue.length}</span>
-          <span className="text-sm font-semibold text-gray-500">Active Venues</span>
+          <span className="text-sm font-semibold text-gray-500">Your Venues</span>
         </div>
       </div>
     </div>
