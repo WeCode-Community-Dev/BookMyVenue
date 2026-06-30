@@ -13,10 +13,11 @@ export type NavIcon =
   export const getDashboardUser = ()=> {
     const firstName = localStorage.getItem('firstName') ?? ''
     const lastName = localStorage.getItem('lastName') ?? ''
+    const role = localStorage.getItem('role') ?? ''
   
     return {
       name: `${firstName} ${lastName}`,
-      role: "Admin Level",
+      role: role,
       initials: `${firstName.charAt(0)}${lastName.charAt(0)}`
     }
   };

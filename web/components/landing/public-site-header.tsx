@@ -1,10 +1,15 @@
-import { CalendarCheck } from "lucide-react";
+"use client";
+import { CalendarCheck, ChevronDown } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { landingNavLinks } from "@/lib/data/landing";
+import { getDashboardUser } from "@/lib/data/dashboard";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 export function PublicSiteHeader() {
+  const user = getDashboardUser();
   return (
     <header className="sticky top-0 z-50 border-b border-outline-variant/30 bg-surface-container-lowest">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 md:px-8">
@@ -30,17 +35,51 @@ export function PublicSiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline">
-            <Link href="/login">Login</Link>
-          </Button>
+          {user.role === 'CUSTOMER' ?
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-10 gap-2 px-2 hover:bg-surface-container-low"
+                >
+                  <Avatar className="size-8">
+                    <AvatarFallback className="bg-surface-tint text-xs font-medium text-on-primary">
+                      {user.initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden text-sm font-medium text-on-surface sm:inline">
+                    {user.name}
+                  </span>
+                  <ChevronDown className="size-4 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Log out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            :
+            <>
+              <Button asChild variant="outline">
+                <Link href="/login">Login</Link>
+              </Button>
 
-          <Button asChild variant="outline">
-            <Link href="/signup">Signup</Link>
-          </Button>
+              <Button asChild variant="outline">
+                <Link href="/signup">Signup</Link>
+              </Button>
 
-          <Button asChild className="hidden sm:inline-flex">
-            <Link href="/signup">List Your Venue</Link>
-          </Button>
+              <Button asChild className="hidden sm:inline-flex">
+                <Link href="/signup">List Your Venue</Link>
+              </Button>
+
+            </>
+          }
+
+
         </div>
       </div>
     </header>

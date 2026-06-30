@@ -28,7 +28,7 @@ export function LoginForm() {
       if (result.data.role === "VENUE_OWNER") {
       router.push('/dashboard');
       } else {
-        // router.push('/');
+        router.push('/');  
       }
     }
   }, [result]);
