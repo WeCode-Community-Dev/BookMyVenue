@@ -1,0 +1,27 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/bmv.db
+      - ENVIRONMENT=development
+      - JWT_SECRET=change-me-in-production
+      - BACKEND_CORS_ORIGINS=["http://localhost:5173"]
+      - GOOGLE_CLIENT_ID=
+    volumes:
+      - ./backend:/app
+      - backend_data:/app/data
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  backend_data:
