@@ -14,7 +14,11 @@ export function useVenues(params: GetVenuesQuery = {}) {
 export function useVenue(id: number | string) {
     return useQuery({
         queryKey: ["venue", id],
-        queryFn: () => getVenueByIdApi(id),
+        queryFn: async () => {
+            console.log("Fetching venues ...");
+            return getVenueByIdApi(id);
+        },
+
         enabled: id !== undefined && id !== null && id !== "",
     });
 }
