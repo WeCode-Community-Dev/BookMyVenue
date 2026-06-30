@@ -141,7 +141,7 @@ export const getVenueById = async (
         include: {
             sessions: { where: { isActive: true } },
             reviews: {
-                include: { user: { select: { id: true, email: true } } },
+                include: { user: { select: { id: true, name: true } } },
                 orderBy: { createdAt: "desc" },
             },
             owner: { select: { id: true, email: true } },

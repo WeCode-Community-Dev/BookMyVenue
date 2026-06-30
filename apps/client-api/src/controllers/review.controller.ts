@@ -48,3 +48,19 @@ export const writeReview = async (
         review,
     });
 };
+
+
+export const getVenueReviews = async (
+    request: FastifyRequest<{ Params: { venueId: string } }>,
+    reply: FastifyReply,
+) => {
+    const venueId = Number(request.params.venueId);
+
+    const reviews = await prisma.review.findMany({
+        where: { venueId },
+        include: { user: { select: { name: true } } },
+        orderBy: { createdAt: "desc" },
+    });
+
+    return reply.send({ success: true, data: reviews });
+};
