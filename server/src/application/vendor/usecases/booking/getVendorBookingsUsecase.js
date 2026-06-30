@@ -5,11 +5,11 @@ export class GetVendorBookingsUsecase {
             bookingRepository
     }
 
-    async execute({ownerId, page, limit, status, search}) {
+    async execute({vendorId, page, limit, status, search}) {
 
         const bookings =
             await this._bookingRepository
-                .findByOwnerId(ownerId, {page, limit, status, search})
+                .findByOwnerId(vendorId, {page, limit, status, search})
         return bookings
 
     }

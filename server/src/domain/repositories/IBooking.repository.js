@@ -29,19 +29,19 @@ export class BookingRepository {
       throw new Error("Method not implemented");
     }
 
-    async countByOwnerId(ownerId) {
+    async countByOwnerId(vendorId) {
       throw new Error("Method not implemented")
   }
   
-  async countByOwnerIdAndStatus(ownerId, status) {
+  async countByOwnerIdAndStatus(vendorId, status) {
       throw new Error("Method not implemented")
   }
 
-  async getTopVenues(ownerId) {
+  async getTopVenues(vendorId) {
     throw new Error("Method not implemented");
 }
 
-async getRecentBookings(ownerId) {
+async getRecentBookings(vendorId) {
     throw new Error("Method not implemented");
 }
   }
