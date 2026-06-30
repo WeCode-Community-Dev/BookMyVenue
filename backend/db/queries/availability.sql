@@ -24,3 +24,8 @@ FOR UPDATE;
 UPDATE availability
 SET is_booked = TRUE
 WHERE id = $1;
+
+-- name: MarkSlotCancelled :exec
+UPDATE availability
+SET is_booked = FALSE
+WHERE id = $1;

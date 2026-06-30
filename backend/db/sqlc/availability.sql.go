@@ -124,3 +124,14 @@ func (q *Queries) MarkSlotBooked(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, markSlotBooked, id)
 	return err
 }
+
+const markSlotCancelled = `-- name: MarkSlotCancelled :exec
+UPDATE availability
+SET is_booked = FALSE
+WHERE id = $1
+`
+
+func (q *Queries) MarkSlotCancelled(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, markSlotCancelled, id)
+	return err
+}
