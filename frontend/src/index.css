@@ -1,0 +1,18 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-gray-50 font-sans text-gray-900 antialiased;
+}
+
+/* Minimal focus rings */
+*:focus-visible {
+  @apply outline-none ring-2 ring-brand-500/30;
+}
