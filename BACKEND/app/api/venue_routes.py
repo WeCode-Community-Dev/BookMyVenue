@@ -15,6 +15,7 @@ from app.schema.venue import (
 from app.services.venue_service import ( 
     get_venues, 
     get_venues_all,
+    get_venues_by_user,
     get_venue_details_by_id,
     add_venue,
     add_venue_amenities,
@@ -72,6 +73,27 @@ def get_venues_all_route(
             status_code=400,
             detail=str(e)
         )
+
+@router.get("/user/{user_id}")
+def get_venues_by_user_route(
+    user_id: int,
+    db: Session = Depends(get_db),
+    page_no: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Records per page"),
+):
+    try:
+        return get_venues_by_user(
+            db,
+            user_id,
+            page_no,
+            limit,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
 
 @router.get("/details/{venue_id}")
 def get_venue_by_id(

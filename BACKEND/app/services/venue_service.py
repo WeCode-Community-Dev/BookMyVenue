@@ -95,6 +95,50 @@ def get_venues_all(
     except Exception as e:
         raise Exception(f"Error occurred while fetching venues: {str(e)}")
 
+def get_venues_by_user(
+    db: Session,
+    user_id: int,
+    page_no: int,
+    limit: int,
+):
+    try:
+        offset = (page_no - 1) * limit
+
+        venues = db.query(Venue).filter(
+            Venue.user_id == user_id
+        ).offset(offset).limit(limit).all()
+        
+        result = []
+
+        if not venues:
+            return {
+                "message": "venues are not added"
+            }
+
+        for venue in venues:
+            first_image = venue.venue_images[0] if venue.venue_images else None
+            price = venue.venue_availability.venue_price if venue.venue_availability else None
+
+            result.append({
+                "id": venue.id,
+                "user_id": venue.user_id,
+                "venue_name": venue.venue_name,
+                "venue_description": venue.venue_description,
+                "location": venue.location,
+                "capacity": venue.capacity,
+                "is_available": venue.is_available,
+                "is_approved": venue.is_approved,
+                "not_available_reason": venue.not_available_reason,
+                "created_at": venue.created_at,
+                "updated_at": venue.updated_at,
+                "image": first_image.image_url if first_image else None,
+                "price": price
+            })
+        
+        return result
+    except Exception as e:
+        raise Exception(f"Error occurred while fetching venues: {str(e)}")
+
 
 def get_venue_details_by_id(
     db: Session,
