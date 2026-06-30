@@ -55,11 +55,12 @@ extension UserProfileEventPatterns on UserProfileEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _GetUserProfile value)?  getUserProfile,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _GetUserProfile value)?  getUserProfile,TResult Function( _Logout value)?  logout,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _GetUserProfile() when getUserProfile != null:
-return getUserProfile(_that);case _:
+return getUserProfile(_that);case _Logout() when logout != null:
+return logout(_that);case _:
   return orElse();
 
 }
@@ -77,11 +78,12 @@ return getUserProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _GetUserProfile value)  getUserProfile,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _GetUserProfile value)  getUserProfile,required TResult Function( _Logout value)  logout,}){
 final _that = this;
 switch (_that) {
 case _GetUserProfile():
-return getUserProfile(_that);case _:
+return getUserProfile(_that);case _Logout():
+return logout(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -98,11 +100,12 @@ return getUserProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _GetUserProfile value)?  getUserProfile,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _GetUserProfile value)?  getUserProfile,TResult? Function( _Logout value)?  logout,}){
 final _that = this;
 switch (_that) {
 case _GetUserProfile() when getUserProfile != null:
-return getUserProfile(_that);case _:
+return getUserProfile(_that);case _Logout() when logout != null:
+return logout(_that);case _:
   return null;
 
 }
@@ -119,10 +122,11 @@ return getUserProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getUserProfile,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getUserProfile,TResult Function()?  logout,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GetUserProfile() when getUserProfile != null:
-return getUserProfile();case _:
+return getUserProfile();case _Logout() when logout != null:
+return logout();case _:
   return orElse();
 
 }
@@ -140,10 +144,11 @@ return getUserProfile();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getUserProfile,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getUserProfile,required TResult Function()  logout,}) {final _that = this;
 switch (_that) {
 case _GetUserProfile():
-return getUserProfile();case _:
+return getUserProfile();case _Logout():
+return logout();case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -160,10 +165,11 @@ return getUserProfile();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getUserProfile,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getUserProfile,TResult? Function()?  logout,}) {final _that = this;
 switch (_that) {
 case _GetUserProfile() when getUserProfile != null:
-return getUserProfile();case _:
+return getUserProfile();case _Logout() when logout != null:
+return logout();case _:
   return null;
 
 }
@@ -204,9 +210,41 @@ String toString() {
 
 
 /// @nodoc
+
+
+class _Logout implements UserProfileEvent {
+  const _Logout();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Logout);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'UserProfileEvent.logout()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
 mixin _$UserProfileState {
 
- UserProfileStatus get status; UserProfileResponseEntity? get profile; String? get successMessage; String? get errorMessage;
+ UserProfileStatus get status; UserProfileResponseEntity? get profile; String? get successMessage; String? get errorMessage; bool get isLoggedOut;
 /// Create a copy of UserProfileState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -217,16 +255,16 @@ $UserProfileStateCopyWith<UserProfileState> get copyWith => _$UserProfileStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfileState&&(identical(other.status, status) || other.status == status)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfileState&&(identical(other.status, status) || other.status == status)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.isLoggedOut, isLoggedOut) || other.isLoggedOut == isLoggedOut));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,profile,successMessage,errorMessage);
+int get hashCode => Object.hash(runtimeType,status,profile,successMessage,errorMessage,isLoggedOut);
 
 @override
 String toString() {
-  return 'UserProfileState(status: $status, profile: $profile, successMessage: $successMessage, errorMessage: $errorMessage)';
+  return 'UserProfileState(status: $status, profile: $profile, successMessage: $successMessage, errorMessage: $errorMessage, isLoggedOut: $isLoggedOut)';
 }
 
 
@@ -237,7 +275,7 @@ abstract mixin class $UserProfileStateCopyWith<$Res>  {
   factory $UserProfileStateCopyWith(UserProfileState value, $Res Function(UserProfileState) _then) = _$UserProfileStateCopyWithImpl;
 @useResult
 $Res call({
- UserProfileStatus status, UserProfileResponseEntity? profile, String? successMessage, String? errorMessage
+ UserProfileStatus status, UserProfileResponseEntity? profile, String? successMessage, String? errorMessage, bool isLoggedOut
 });
 
 
@@ -254,13 +292,14 @@ class _$UserProfileStateCopyWithImpl<$Res>
 
 /// Create a copy of UserProfileState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? profile = freezed,Object? successMessage = freezed,Object? errorMessage = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? profile = freezed,Object? successMessage = freezed,Object? errorMessage = freezed,Object? isLoggedOut = null,}) {
   return _then(_self.copyWith(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as UserProfileStatus,profile: freezed == profile ? _self.profile : profile // ignore: cast_nullable_to_non_nullable
 as UserProfileResponseEntity?,successMessage: freezed == successMessage ? _self.successMessage : successMessage // ignore: cast_nullable_to_non_nullable
 as String?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,isLoggedOut: null == isLoggedOut ? _self.isLoggedOut : isLoggedOut // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -342,10 +381,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( UserProfileStatus status,  UserProfileResponseEntity? profile,  String? successMessage,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( UserProfileStatus status,  UserProfileResponseEntity? profile,  String? successMessage,  String? errorMessage,  bool isLoggedOut)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserProfileState() when $default != null:
-return $default(_that.status,_that.profile,_that.successMessage,_that.errorMessage);case _:
+return $default(_that.status,_that.profile,_that.successMessage,_that.errorMessage,_that.isLoggedOut);case _:
   return orElse();
 
 }
@@ -363,10 +402,10 @@ return $default(_that.status,_that.profile,_that.successMessage,_that.errorMessa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( UserProfileStatus status,  UserProfileResponseEntity? profile,  String? successMessage,  String? errorMessage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( UserProfileStatus status,  UserProfileResponseEntity? profile,  String? successMessage,  String? errorMessage,  bool isLoggedOut)  $default,) {final _that = this;
 switch (_that) {
 case _UserProfileState():
-return $default(_that.status,_that.profile,_that.successMessage,_that.errorMessage);}
+return $default(_that.status,_that.profile,_that.successMessage,_that.errorMessage,_that.isLoggedOut);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -380,10 +419,10 @@ return $default(_that.status,_that.profile,_that.successMessage,_that.errorMessa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( UserProfileStatus status,  UserProfileResponseEntity? profile,  String? successMessage,  String? errorMessage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( UserProfileStatus status,  UserProfileResponseEntity? profile,  String? successMessage,  String? errorMessage,  bool isLoggedOut)?  $default,) {final _that = this;
 switch (_that) {
 case _UserProfileState() when $default != null:
-return $default(_that.status,_that.profile,_that.successMessage,_that.errorMessage);case _:
+return $default(_that.status,_that.profile,_that.successMessage,_that.errorMessage,_that.isLoggedOut);case _:
   return null;
 
 }
@@ -395,13 +434,14 @@ return $default(_that.status,_that.profile,_that.successMessage,_that.errorMessa
 
 
 class _UserProfileState implements UserProfileState {
-  const _UserProfileState({this.status = UserProfileStatus.initial, this.profile, this.successMessage, this.errorMessage});
+  const _UserProfileState({this.status = UserProfileStatus.initial, this.profile, this.successMessage, this.errorMessage, this.isLoggedOut = false});
   
 
 @override@JsonKey() final  UserProfileStatus status;
 @override final  UserProfileResponseEntity? profile;
 @override final  String? successMessage;
 @override final  String? errorMessage;
+@override@JsonKey() final  bool isLoggedOut;
 
 /// Create a copy of UserProfileState
 /// with the given fields replaced by the non-null parameter values.
@@ -413,16 +453,16 @@ _$UserProfileStateCopyWith<_UserProfileState> get copyWith => __$UserProfileStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserProfileState&&(identical(other.status, status) || other.status == status)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserProfileState&&(identical(other.status, status) || other.status == status)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.isLoggedOut, isLoggedOut) || other.isLoggedOut == isLoggedOut));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,profile,successMessage,errorMessage);
+int get hashCode => Object.hash(runtimeType,status,profile,successMessage,errorMessage,isLoggedOut);
 
 @override
 String toString() {
-  return 'UserProfileState(status: $status, profile: $profile, successMessage: $successMessage, errorMessage: $errorMessage)';
+  return 'UserProfileState(status: $status, profile: $profile, successMessage: $successMessage, errorMessage: $errorMessage, isLoggedOut: $isLoggedOut)';
 }
 
 
@@ -433,7 +473,7 @@ abstract mixin class _$UserProfileStateCopyWith<$Res> implements $UserProfileSta
   factory _$UserProfileStateCopyWith(_UserProfileState value, $Res Function(_UserProfileState) _then) = __$UserProfileStateCopyWithImpl;
 @override @useResult
 $Res call({
- UserProfileStatus status, UserProfileResponseEntity? profile, String? successMessage, String? errorMessage
+ UserProfileStatus status, UserProfileResponseEntity? profile, String? successMessage, String? errorMessage, bool isLoggedOut
 });
 
 
@@ -450,13 +490,14 @@ class __$UserProfileStateCopyWithImpl<$Res>
 
 /// Create a copy of UserProfileState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? profile = freezed,Object? successMessage = freezed,Object? errorMessage = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? profile = freezed,Object? successMessage = freezed,Object? errorMessage = freezed,Object? isLoggedOut = null,}) {
   return _then(_UserProfileState(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as UserProfileStatus,profile: freezed == profile ? _self.profile : profile // ignore: cast_nullable_to_non_nullable
 as UserProfileResponseEntity?,successMessage: freezed == successMessage ? _self.successMessage : successMessage // ignore: cast_nullable_to_non_nullable
 as String?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,isLoggedOut: null == isLoggedOut ? _self.isLoggedOut : isLoggedOut // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

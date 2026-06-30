@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/route_name.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
@@ -54,6 +56,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       body: SafeArea(
         child: BlocConsumer<UserProfileBloc, UserProfileState>(
           listener: (BuildContext context, UserProfileState state) {
+            if (state.isLoggedOut) {
+              context.goNamed(AppRouteNames.signin);
+              return;
+            }
             if (state.status == UserProfileStatus.success &&
                 state.profile != null) {
               final UserProfileResponseEntity profile = state.profile!;
@@ -211,7 +217,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             title: 'Logout',
                             titleColor: AppColors.primary,
                             onTap: () {
-                              // Action for Logout
+                              context.read<UserProfileBloc>().add(
+                                    const UserProfileEvent.logout(),
+                                  );
                             },
                           ),
                         ],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/route_name.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
@@ -58,6 +60,10 @@ class _OwnerProfileSettingsScreenState
       appBar: const CustomAppBar(title: 'Profile & Settings'),
       body: BlocConsumer<OwnerProfileBloc, OwnerProfileState>(
         listener: (BuildContext context, OwnerProfileState state) {
+          if (state.isLoggedOut) {
+            context.goNamed(AppRouteNames.signin);
+            return;
+          }
           if (state.status == OwnerProfileStatus.success &&
               state.profile != null) {
             final OwnerProfileResponseEntity profile = state.profile!;
@@ -227,7 +233,11 @@ class _OwnerProfileSettingsScreenState
                 ),
 
                 OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    context.read<OwnerProfileBloc>().add(
+                          const OwnerProfileEvent.logout(),
+                        );
+                  },
                   icon: const Icon(Icons.logout),
                   label: const AppText(
                     'Logout',

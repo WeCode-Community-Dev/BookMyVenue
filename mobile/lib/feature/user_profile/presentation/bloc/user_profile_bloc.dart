@@ -8,19 +8,25 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../domain/entity/user_profile_entity.dart';
 import '../../domain/usecase/get_user_profile_usecase.dart';
+import '../../domain/usecase/user_logout_usecase.dart';
 
 part 'user_profile_event.dart';
 part 'user_profile_state.dart';
 part 'user_profile_bloc.freezed.dart';
 
 class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
-  UserProfileBloc({required GetUserProfileUseCase getUserProfileUseCase})
-    : _getUserProfileUseCase = getUserProfileUseCase,
-      super(UserProfileState.initial()) {
+  UserProfileBloc({
+    required GetUserProfileUseCase getUserProfileUseCase,
+    required UserLogoutUseCase logoutUseCase,
+  }) : _getUserProfileUseCase = getUserProfileUseCase,
+       _logoutUseCase = logoutUseCase,
+       super(UserProfileState.initial()) {
     on<_GetUserProfile>(_onGetUserProfile);
+    on<_Logout>(_onLogout);
   }
 
   final GetUserProfileUseCase _getUserProfileUseCase;
+  final UserLogoutUseCase _logoutUseCase;
 
   FutureOr<void> _onGetUserProfile(
     _GetUserProfile event,
@@ -38,11 +44,34 @@ class UserProfileBloc extends Bloc<UserProfileEvent, UserProfileState> {
           errorMessage: failure.message,
         ),
       ),
-      (UserProfileResult profile) => emit(
+      (UserProfileResult userProfileResult) => emit(
         state.copyWith(
           status: UserProfileStatus.success,
-          successMessage: profile.message,
-          profile: profile.user,
+          profile: userProfileResult.user,
+        ),
+      ),
+    );
+  }
+
+  FutureOr<void> _onLogout(
+    _Logout event,
+    Emitter<UserProfileState> emit,
+  ) async {
+    emit(state.copyWith(status: UserProfileStatus.loading));
+
+    final Either<Failure, void> result = await _logoutUseCase(const NoParams());
+
+    result.fold(
+      (Failure failure) => emit(
+        state.copyWith(
+          status: UserProfileStatus.failure,
+          errorMessage: failure.message,
+        ),
+      ),
+      (_) => emit(
+        state.copyWith(
+          status: UserProfileStatus.success,
+          isLoggedOut: true,
         ),
       ),
     );

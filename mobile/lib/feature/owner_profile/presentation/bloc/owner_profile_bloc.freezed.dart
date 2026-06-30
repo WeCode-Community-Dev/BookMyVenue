@@ -55,11 +55,12 @@ extension OwnerProfileEventPatterns on OwnerProfileEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _GetOwnerProfile value)?  getOwnerProfile,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _GetOwnerProfile value)?  getOwnerProfile,TResult Function( _Logout value)?  logout,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _GetOwnerProfile() when getOwnerProfile != null:
-return getOwnerProfile(_that);case _:
+return getOwnerProfile(_that);case _Logout() when logout != null:
+return logout(_that);case _:
   return orElse();
 
 }
@@ -77,11 +78,12 @@ return getOwnerProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _GetOwnerProfile value)  getOwnerProfile,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _GetOwnerProfile value)  getOwnerProfile,required TResult Function( _Logout value)  logout,}){
 final _that = this;
 switch (_that) {
 case _GetOwnerProfile():
-return getOwnerProfile(_that);case _:
+return getOwnerProfile(_that);case _Logout():
+return logout(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -98,11 +100,12 @@ return getOwnerProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _GetOwnerProfile value)?  getOwnerProfile,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _GetOwnerProfile value)?  getOwnerProfile,TResult? Function( _Logout value)?  logout,}){
 final _that = this;
 switch (_that) {
 case _GetOwnerProfile() when getOwnerProfile != null:
-return getOwnerProfile(_that);case _:
+return getOwnerProfile(_that);case _Logout() when logout != null:
+return logout(_that);case _:
   return null;
 
 }
@@ -119,10 +122,11 @@ return getOwnerProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getOwnerProfile,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getOwnerProfile,TResult Function()?  logout,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GetOwnerProfile() when getOwnerProfile != null:
-return getOwnerProfile();case _:
+return getOwnerProfile();case _Logout() when logout != null:
+return logout();case _:
   return orElse();
 
 }
@@ -140,10 +144,11 @@ return getOwnerProfile();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getOwnerProfile,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getOwnerProfile,required TResult Function()  logout,}) {final _that = this;
 switch (_that) {
 case _GetOwnerProfile():
-return getOwnerProfile();case _:
+return getOwnerProfile();case _Logout():
+return logout();case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -160,10 +165,11 @@ return getOwnerProfile();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getOwnerProfile,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getOwnerProfile,TResult? Function()?  logout,}) {final _that = this;
 switch (_that) {
 case _GetOwnerProfile() when getOwnerProfile != null:
-return getOwnerProfile();case _:
+return getOwnerProfile();case _Logout() when logout != null:
+return logout();case _:
   return null;
 
 }
@@ -204,9 +210,41 @@ String toString() {
 
 
 /// @nodoc
+
+
+class _Logout implements OwnerProfileEvent {
+  const _Logout();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Logout);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'OwnerProfileEvent.logout()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
 mixin _$OwnerProfileState {
 
- OwnerProfileStatus get status; OwnerProfileResponseEntity? get profile; String? get errorMessage; String? get successMessage;
+ OwnerProfileStatus get status; OwnerProfileResponseEntity? get profile; String? get errorMessage; String? get successMessage; bool get isLoggedOut;
 /// Create a copy of OwnerProfileState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -217,16 +255,16 @@ $OwnerProfileStateCopyWith<OwnerProfileState> get copyWith => _$OwnerProfileStat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OwnerProfileState&&(identical(other.status, status) || other.status == status)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OwnerProfileState&&(identical(other.status, status) || other.status == status)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.isLoggedOut, isLoggedOut) || other.isLoggedOut == isLoggedOut));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,profile,errorMessage,successMessage);
+int get hashCode => Object.hash(runtimeType,status,profile,errorMessage,successMessage,isLoggedOut);
 
 @override
 String toString() {
-  return 'OwnerProfileState(status: $status, profile: $profile, errorMessage: $errorMessage, successMessage: $successMessage)';
+  return 'OwnerProfileState(status: $status, profile: $profile, errorMessage: $errorMessage, successMessage: $successMessage, isLoggedOut: $isLoggedOut)';
 }
 
 
@@ -237,7 +275,7 @@ abstract mixin class $OwnerProfileStateCopyWith<$Res>  {
   factory $OwnerProfileStateCopyWith(OwnerProfileState value, $Res Function(OwnerProfileState) _then) = _$OwnerProfileStateCopyWithImpl;
 @useResult
 $Res call({
- OwnerProfileStatus status, OwnerProfileResponseEntity? profile, String? errorMessage, String? successMessage
+ OwnerProfileStatus status, OwnerProfileResponseEntity? profile, String? errorMessage, String? successMessage, bool isLoggedOut
 });
 
 
@@ -254,13 +292,14 @@ class _$OwnerProfileStateCopyWithImpl<$Res>
 
 /// Create a copy of OwnerProfileState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? profile = freezed,Object? errorMessage = freezed,Object? successMessage = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? status = null,Object? profile = freezed,Object? errorMessage = freezed,Object? successMessage = freezed,Object? isLoggedOut = null,}) {
   return _then(_self.copyWith(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as OwnerProfileStatus,profile: freezed == profile ? _self.profile : profile // ignore: cast_nullable_to_non_nullable
 as OwnerProfileResponseEntity?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,successMessage: freezed == successMessage ? _self.successMessage : successMessage // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,isLoggedOut: null == isLoggedOut ? _self.isLoggedOut : isLoggedOut // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
@@ -342,10 +381,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( OwnerProfileStatus status,  OwnerProfileResponseEntity? profile,  String? errorMessage,  String? successMessage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( OwnerProfileStatus status,  OwnerProfileResponseEntity? profile,  String? errorMessage,  String? successMessage,  bool isLoggedOut)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OwnerProfileState() when $default != null:
-return $default(_that.status,_that.profile,_that.errorMessage,_that.successMessage);case _:
+return $default(_that.status,_that.profile,_that.errorMessage,_that.successMessage,_that.isLoggedOut);case _:
   return orElse();
 
 }
@@ -363,10 +402,10 @@ return $default(_that.status,_that.profile,_that.errorMessage,_that.successMessa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( OwnerProfileStatus status,  OwnerProfileResponseEntity? profile,  String? errorMessage,  String? successMessage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( OwnerProfileStatus status,  OwnerProfileResponseEntity? profile,  String? errorMessage,  String? successMessage,  bool isLoggedOut)  $default,) {final _that = this;
 switch (_that) {
 case _OwnerProfileState():
-return $default(_that.status,_that.profile,_that.errorMessage,_that.successMessage);}
+return $default(_that.status,_that.profile,_that.errorMessage,_that.successMessage,_that.isLoggedOut);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -380,10 +419,10 @@ return $default(_that.status,_that.profile,_that.errorMessage,_that.successMessa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( OwnerProfileStatus status,  OwnerProfileResponseEntity? profile,  String? errorMessage,  String? successMessage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( OwnerProfileStatus status,  OwnerProfileResponseEntity? profile,  String? errorMessage,  String? successMessage,  bool isLoggedOut)?  $default,) {final _that = this;
 switch (_that) {
 case _OwnerProfileState() when $default != null:
-return $default(_that.status,_that.profile,_that.errorMessage,_that.successMessage);case _:
+return $default(_that.status,_that.profile,_that.errorMessage,_that.successMessage,_that.isLoggedOut);case _:
   return null;
 
 }
@@ -395,13 +434,14 @@ return $default(_that.status,_that.profile,_that.errorMessage,_that.successMessa
 
 
 class _OwnerProfileState implements OwnerProfileState {
-  const _OwnerProfileState({this.status = OwnerProfileStatus.initial, this.profile, this.errorMessage, this.successMessage});
+  const _OwnerProfileState({this.status = OwnerProfileStatus.initial, this.profile, this.errorMessage, this.successMessage, this.isLoggedOut = false});
   
 
 @override@JsonKey() final  OwnerProfileStatus status;
 @override final  OwnerProfileResponseEntity? profile;
 @override final  String? errorMessage;
 @override final  String? successMessage;
+@override@JsonKey() final  bool isLoggedOut;
 
 /// Create a copy of OwnerProfileState
 /// with the given fields replaced by the non-null parameter values.
@@ -413,16 +453,16 @@ _$OwnerProfileStateCopyWith<_OwnerProfileState> get copyWith => __$OwnerProfileS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OwnerProfileState&&(identical(other.status, status) || other.status == status)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OwnerProfileState&&(identical(other.status, status) || other.status == status)&&(identical(other.profile, profile) || other.profile == profile)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.isLoggedOut, isLoggedOut) || other.isLoggedOut == isLoggedOut));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,status,profile,errorMessage,successMessage);
+int get hashCode => Object.hash(runtimeType,status,profile,errorMessage,successMessage,isLoggedOut);
 
 @override
 String toString() {
-  return 'OwnerProfileState(status: $status, profile: $profile, errorMessage: $errorMessage, successMessage: $successMessage)';
+  return 'OwnerProfileState(status: $status, profile: $profile, errorMessage: $errorMessage, successMessage: $successMessage, isLoggedOut: $isLoggedOut)';
 }
 
 
@@ -433,7 +473,7 @@ abstract mixin class _$OwnerProfileStateCopyWith<$Res> implements $OwnerProfileS
   factory _$OwnerProfileStateCopyWith(_OwnerProfileState value, $Res Function(_OwnerProfileState) _then) = __$OwnerProfileStateCopyWithImpl;
 @override @useResult
 $Res call({
- OwnerProfileStatus status, OwnerProfileResponseEntity? profile, String? errorMessage, String? successMessage
+ OwnerProfileStatus status, OwnerProfileResponseEntity? profile, String? errorMessage, String? successMessage, bool isLoggedOut
 });
 
 
@@ -450,13 +490,14 @@ class __$OwnerProfileStateCopyWithImpl<$Res>
 
 /// Create a copy of OwnerProfileState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? profile = freezed,Object? errorMessage = freezed,Object? successMessage = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? status = null,Object? profile = freezed,Object? errorMessage = freezed,Object? successMessage = freezed,Object? isLoggedOut = null,}) {
   return _then(_OwnerProfileState(
 status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as OwnerProfileStatus,profile: freezed == profile ? _self.profile : profile // ignore: cast_nullable_to_non_nullable
 as OwnerProfileResponseEntity?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,successMessage: freezed == successMessage ? _self.successMessage : successMessage // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,isLoggedOut: null == isLoggedOut ? _self.isLoggedOut : isLoggedOut // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

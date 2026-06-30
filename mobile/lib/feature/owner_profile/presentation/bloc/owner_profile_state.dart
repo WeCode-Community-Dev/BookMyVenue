@@ -9,6 +9,7 @@ sealed class OwnerProfileState with _$OwnerProfileState {
     OwnerProfileResponseEntity? profile,
     String? errorMessage,
     String? successMessage,
+    @Default(false) bool isLoggedOut,
   }) = _OwnerProfileState;
 
   factory OwnerProfileState.initial() => const OwnerProfileState();

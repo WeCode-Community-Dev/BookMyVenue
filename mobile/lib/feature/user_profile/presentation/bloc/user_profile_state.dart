@@ -9,6 +9,7 @@ sealed class UserProfileState with _$UserProfileState {
     UserProfileResponseEntity? profile,
     String? successMessage,
     String? errorMessage,
+    @Default(false) bool isLoggedOut,
   }) = _UserProfileState;
 
   factory UserProfileState.initial() => const UserProfileState();
