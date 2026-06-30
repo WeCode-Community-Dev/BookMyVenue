@@ -19,12 +19,6 @@ enum VenueModerationStatus {
   REJECTED
 }
 
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-}
-
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
@@ -33,7 +27,6 @@ model User {
   role      Role      @default(USER)
   createdAt DateTime  @default(now())
   venues    Venue[]
-  bookings  Booking[]
 }
 
 model Category {
