@@ -11,10 +11,6 @@ export const BookingParamsSchema = z.object({
 
 export const BookingQuerySchema = z.object({
 
-    status: z
-        .string()
-        .optional(),
-
     page: z.coerce
         .number()
         .min(1)

@@ -8,9 +8,9 @@ export class VendorDashboardController {
   }
 
   getDashboard = asyncHandler(async (req, res) => {
-    const ownerId = req.user.id;
+    const vendorId = req.user.id;
 
-    const dashboard = await this._getDashboardStatsUsecase.execute(ownerId);
+    const dashboard = await this._getDashboardStatsUsecase.execute(vendorId);
 
     return sendSuccess(
       res,

@@ -17,7 +17,7 @@ export class GetBookingByIdUsecase {
 
         bookingId,
 
-        ownerId
+        vendorId
 
     }) {
 
@@ -38,7 +38,7 @@ export class GetBookingByIdUsecase {
 
         }
 
-        if (booking.ownerId.toString() !== ownerId) {
+        if (booking.vendorId.toString() !== vendorId) {
 
             throw new ForbiddenError(
 
