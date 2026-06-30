@@ -13,7 +13,7 @@ export function useVenues(params: GetVenuesQuery = {}) {
 
 export function useVenue(id: number | string) {
     return useQuery({
-        queryKey: ["venue", String(id)],
+        queryKey: ["venue", id],
         queryFn: () => getVenueByIdApi(id),
         enabled: id !== undefined && id !== null && id !== "",
     });

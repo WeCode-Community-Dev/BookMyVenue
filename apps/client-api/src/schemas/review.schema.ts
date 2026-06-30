@@ -1,5 +1,5 @@
 
-export const createReviewSchema = {
+export const writeReviewSchema = {
     body: {
         type: "object",
         required: ["venueId", "rating"],

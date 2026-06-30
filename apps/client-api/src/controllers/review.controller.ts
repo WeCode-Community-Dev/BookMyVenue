@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { getVenueReviewStatusService } from "../services/review.service";
-import { CreateReviewBody } from "@bookmyvenue/types";
+import { WriteReviewBody } from "@bookmyvenue/types";
 import { prisma } from "@bookmyvenue/database";
 
 export const getVenueReviewStatus = async (
@@ -15,8 +15,8 @@ export const getVenueReviewStatus = async (
     return reply.send({ reviewStatus });
 };
 
-export const createReview = async (
-    request: FastifyRequest<{ Body: CreateReviewBody }>,
+export const writeReview = async (
+    request: FastifyRequest<{ Body: WriteReviewBody }>,
     reply: FastifyReply,
 ) => {
     const { venueId, rating, comment } = request.body;

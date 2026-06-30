@@ -274,7 +274,7 @@ export default function VenueDetailsPage() {
                     </div>
                 </div>
             </section>
-            <ReviewModal open={reviewModalOpen} onOpenChange={setReviewModalOpen} />
+            <ReviewModal open={reviewModalOpen} onOpenChange={setReviewModalOpen} venueId={Number(params.id)} />
         </>
     );
 }

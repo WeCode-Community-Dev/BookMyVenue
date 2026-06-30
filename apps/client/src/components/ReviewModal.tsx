@@ -6,25 +6,33 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useWriteReview } from "@/hooks/useWriteReview";
 
 interface ReviewModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    venueId: number;
 }
 
-export function ReviewModal({ open, onOpenChange }: ReviewModalProps) {
+export function ReviewModal({ open, onOpenChange, venueId }: ReviewModalProps) {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
     const [comment, setComment] = useState("");
 
+    const { mutate: writeReview, isPending } = useWriteReview();
+
     const handleSubmit = async () => {
         if (rating === 0) return;
-
-        console.log({ rating, comment });
-
-        setRating(0);
-        setComment("");
-        onOpenChange(false);
+        writeReview(
+            { venueId, rating, comment },
+            {
+                onSuccess: () => {
+                    setRating(0);
+                    setComment("");
+                    onOpenChange(false);
+                },
+            },
+        );
     };
 
     return (
@@ -41,6 +49,7 @@ export function ReviewModal({ open, onOpenChange }: ReviewModalProps) {
                         <div className="flex justify-center gap-2">
                             {[1, 2, 3, 4, 5].map((star) => (
                                 <button
+                                    disabled={isPending}
                                     key={star}
                                     type="button"
                                     onMouseEnter={() => setHover(star)}
@@ -65,6 +74,7 @@ export function ReviewModal({ open, onOpenChange }: ReviewModalProps) {
                         <label className="text-sm font-medium mb-2 block">Comment (optional)</label>
 
                         <Textarea
+                            disabled={isPending}
                             rows={5}
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
@@ -78,8 +88,8 @@ export function ReviewModal({ open, onOpenChange }: ReviewModalProps) {
                         </div>
                     </div>
 
-                    <Button className="w-full" disabled={rating === 0} onClick={handleSubmit}>
-                        {"Submit Review"}
+                    <Button disabled={rating === 0 || isPending} onClick={handleSubmit} className="w-full">
+                        {isPending ? "Submitting..." : "Submit Review"}
                     </Button>
                 </div>
             </DialogContent>
