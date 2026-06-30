@@ -65,26 +65,24 @@ model Venue {
   updatedAt        DateTime              @updatedAt
   owner            User                  @relation(fields: [ownerId], references: [id])
   category         Category              @relation(fields: [categoryId], references: [id])
-  bookings         Booking[]
-  cancellationWindowDays Int              @default(0)
+  slots            VenueSlot[]
+
   @@index([ownerId])
   @@index([categoryId])
   @@index([moderationStatus, isListed])
 }
 
-model Booking {
-  id         String        @id @default(uuid())
-  status     BookingStatus @default(PENDING)
-  startTime  DateTime
-  endTime    DateTime
-  totalPrice Float
-  userId     String
-  venueId    String
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  venue      Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+model VenueSlot {
+  id        String   @id @default(uuid())
+  venueId   String
+  startTime DateTime
+  endTime   DateTime
+  price     Float
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  venue     Venue    @relation(fields: [venueId], references: [id])
 
-  @@index([userId])
-  @@index([venueId])
+  @@index([venueId, startTime, endTime])
+  @@index([venueId, isActive])
 }

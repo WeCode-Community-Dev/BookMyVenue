@@ -12,7 +12,7 @@ import { UpdateVenueDto } from './dto/update-venue.dto';
 
 @Injectable()
 export class VenueService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(dto: CreateVenueDto, ownerId: string) {
     await this.ensureListedCategory(dto.categoryId);
@@ -154,6 +154,7 @@ export class VenueService {
       data: {
         moderationStatus: VenueModerationStatus.APPROVED,
         rejectionReason: null,
+        isListed: true
       },
       include: this.venueInclude,
     });
