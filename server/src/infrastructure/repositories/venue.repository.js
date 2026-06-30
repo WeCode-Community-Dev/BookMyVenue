@@ -38,6 +38,7 @@ export class VenueRepository extends IVenueRepository {
     }
 
     async findAllFiltered(query = {}) {
+        console.log('quesry: ', query)
 
         const filter = {
             isDeleted: false
@@ -77,22 +78,37 @@ export class VenueRepository extends IVenueRepository {
         }
 
         // Min / Max price
-        if (query.minPrice || query.maxPrice) {
+        if (query.priceType) {
 
-            filter.pricePerDay = {};
+            if(query.priceType === 'day'){
+                filter.pricePerDay = {};
 
-            if (query.minPrice) {
-                filter.pricePerDay.$gte = query.minPrice;
+                if (query.minPrice) {
+                    filter.pricePerDay.$gte = query.minPrice;
+                }
+
+                if (query.maxPrice) {
+                    filter.pricePerDay.$lte = query.maxPrice;
+                }
             }
+            if(query.priceType === 'hour'){
+                filter.pricePerHour = {};
 
-            if (query.maxPrice) {
-                filter.pricePerDay.$lte = query.maxPrice;
+                if (query.minPrice) {
+                    filter.pricePerHour.$gte = query.minPrice;
+                }
+
+                if (query.maxPrice) {
+                    filter.pricePerHour.$lte = query.maxPrice;
+                }
             }
         }
 
         // Rating
         if (query.rating) {
-            filter.rating = query.rating;
+            filter.rating = {
+                $gte: query.rating
+            }
         }
 
         // Amenities
@@ -102,6 +118,18 @@ export class VenueRepository extends IVenueRepository {
             };
         }
 
+        if(query.capacityType){
+            if(query.capacityType === 'seating'){
+                filter.seatingCapacity = {
+                    $gte: query.capacity
+                }
+            }
+            if(query.capacityType === 'standing'){
+                filter.standingCapacity = {
+                    $gte: query.capacity
+                }
+            }
+        }
         // Search
         if (query.search) {
 
