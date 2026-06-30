@@ -23,7 +23,7 @@ const appearance = {
 export default function Page() {
     return (
         <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-linear-to-br from-primary/5 via-background to-secondary/30 py-16 px-4">
-            <SignIn appearance={appearance} />
+            <SignIn appearance={appearance} forceRedirectUrl="/auth-redirect" />
         </div>
     );
 }
