@@ -10,6 +10,7 @@ import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
 import { RolesGuard } from './shared/guards/roles.guard';
 import { CategoryModule } from './modules/category/category.module';
 import { VenueModule } from './modules/venue/venue.module';
+import { SlotModule } from './modules/slot/slot.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { VenueModule } from './modules/venue/venue.module';
     AuthModule,
     UserModule,
     CategoryModule,
-    VenueModule
+    VenueModule,
+    SlotModule
   ],
   providers: [
     {
