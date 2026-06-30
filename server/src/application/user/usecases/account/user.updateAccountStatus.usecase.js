@@ -1,5 +1,6 @@
 import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
 import { ValidationError } from "../../../../domain/errors/ValidationError.js";
+import { UserMessage } from "../../../../shared/constants/messages/userMessages.js";
 
 export class UserUpdateAccountStatusUsecase {
 
@@ -12,20 +13,22 @@ export class UserUpdateAccountStatusUsecase {
         const user = await this._userRepository.findById(userId);
 
         if(!user){
-            throw new NotFoundError("User not found");
+            throw new NotFoundError(
+            UserMessage.error.USER_NOT_FOUND
+        );
         }
 
         if(user.isBlocked){
             throw new ValidationError(
-                "Blocked users cannot update account status"
-            );
+            UserMessage.error.USER_BLOCKED_UPDATE_ACCOUNT_STATUS
+        );
         }
 
         if(user.isActive === isActive){
             throw new ValidationError(
                 isActive
-                    ? "Account is already active"
-                    : "Account is already inactive"
+                    ? UserMessage.error.ACCOUNT_ALREADY_ACTIVE
+                    : UserMessage.error.ACCOUNT_ALREADY_INACTIVE
             );
         }
 

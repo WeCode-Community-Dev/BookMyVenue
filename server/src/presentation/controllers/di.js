@@ -51,6 +51,7 @@ import { VendorGetAllVenuesUsecase } from '../../application/vendor/usecases/ven
 import { CloudinaryService } from '../../infrastructure/services/cloudinaryService.js'
 
 import HashService from '../../infrastructure/services/HashService.js'
+import OtpService from '../../infrastructure/services/OtpService.js'
 //mailService
 import { MailServiceImpl } from '../../infrastructure/services/MailService.js'
 
@@ -192,14 +193,14 @@ const iUserUpdateProfile=new UserUpdateProfileUsecase(
     iUserRepository
 )
 const iRequestEmailChangeOtp= new RequestEmailChangeOtpUsecase(
-    iUserRepository
+    iUserRepository,HashService,OtpService, iMailSErvice
 )
 
 const iVerifyEmailChangeOtp= new VerifyEmailChangeOtpUsecase(
-    iUserRepository
+    iUserRepository,HashService
 )
 const iResendEmailChangeOtp = new ResendEmailChangeOtpUsecase(
-    iUserRepository
+    iUserRepository,HashService,OtpService, iMailSErvice
 )
 const iUserUpdateProfileImage = new UserUpdateProfileImageUsecase(
     iUserRepository

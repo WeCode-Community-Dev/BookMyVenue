@@ -1,5 +1,5 @@
 import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
-
+import { UserMessage } from "../../../../shared/constants/messages/userMessages.js";
 
 export class UserUpdateProfileUsecase{
     constructor(userRepository){
@@ -9,10 +9,14 @@ export class UserUpdateProfileUsecase{
         const user=await this._userRepository.findById(userId)
 
         if(!user){
-            throw new NotFoundError("User not found")
+            throw new NotFoundError(
+            UserMessage.error.USER_NOT_FOUND
+        )
         }
         if(user.isBlocked){
-            throw new NotFoundError("User Account is blocked")
+            throw new NotFoundError(
+            UserMessage.error.USER_NOT_FOUND
+        )
         }
         const updatedUser=await this._userRepository.update(
             userId,

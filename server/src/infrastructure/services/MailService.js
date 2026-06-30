@@ -65,33 +65,73 @@ export class MailServiceImpl extends MailService {
 
     });
 
-}
+    }
 
-async sendVenueRejectionMail(venue, reason) {
+    async sendVenueRejectionMail(venue, reason) {
 
-    const { subject, html } =
-        adminVenueRejectionTemplate({
+        const { subject, html } =
+            adminVenueRejectionTemplate({
 
-            venueName: venue.name,
-            vendorName: venue.vendorId.fullName,
-            reason
+                venueName: venue.name,
+                vendorName: venue.vendorId.fullName,
+                reason
+
+            });
+
+        await transporter.sendMail({
+
+            from: process.env.EMAIL_USER,
+
+            to: venue.vendorId.email,
+
+            subject,
+
+            html
 
         });
 
-    await transporter.sendMail({
+        console.log("Venue rejection mail sent.");
 
-        from: process.env.EMAIL_USER,
+    }
+    async sendEmailChangeOtp(email, otp) {
 
-        to: venue.vendorId.email,
+        await transporter.sendMail({
 
-        subject,
+            from: process.env.EMAIL_USER,
 
-        html
+            to: email,
 
-    });
+            subject: "Email Change OTP",
 
-    console.log("Venue rejection mail sent.");
+            html: `
+                <h2>Email Change Verification</h2>
+                <p>Your OTP is:</p>
+                <h1>${otp}</h1>
+                <p>This OTP is valid for 5 minutes.</p>
+            `
 
-}
+        });
+
+    }
+    async resendEmailChangeOtp(email, otp) {
+
+        await transporter.sendMail({
+
+            from: process.env.EMAIL_USER,
+
+            to: email,
+
+            subject: "Email Change OTP",
+
+            html: `
+                <h2>Email Change Verification</h2>
+                <p>Your new OTP is:</p>
+                <h1>${otp}</h1>
+                <p>This OTP is valid for 5 minutes.</p>
+            `
+
+        });
+
+    }
 
 }

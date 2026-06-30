@@ -1,6 +1,8 @@
 import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
 import { ValidationError } from "../../../../domain/errors/ValidationError.js";
 import { VenueStatus } from "../../../../domain/enums/Venue.enum.js";
+import { UserMessage } from "../../../../shared/constants/messages/userMessages.js";
+import { VenueMessages } from "../../../../shared/constants/messages/venueMessages.js";
 
 export class UserAddToWishlistUsecase {
 
@@ -14,29 +16,41 @@ export class UserAddToWishlistUsecase {
         const user = await this._userRepository.findById(userId);
 
         if(!user){
-            throw new NotFoundError("User not found");
+            throw new NotFoundError(
+            UserMessage.error.USER_NOT_FOUND
+        );
         }
 
         if(user.isBlocked){
-            throw new ValidationError("User account is blocked");
+            throw new ValidationError(
+            UserMessage.error.USER_ACCOUNT_BLOCKED
+        );
         }
 
         const venue = await this._venueRepository.findById(venueId);
 
         if(!venue){
-            throw new NotFoundError("Venue not found");
+            throw new NotFoundError(
+            VenueMessages.error.VENUE_NOT_FOUND
+        );
         }
 
         if(venue.isDeleted){
-            throw new ValidationError("Venue is no longer available");
+            throw new NotFoundError(
+            VenueMessages.error.VENUE_NOT_FOUND
+        );
         }
 
         if(!venue.isAdminVerified){
-            throw new ValidationError("Venue is not approved");
+            throw new ValidationError(
+            VenueMessages.error.NOT_ADMIN_VERIFIED
+        );
         }
 
         if(venue.status !== VenueStatus.ACTIVE){
-            throw new ValidationError("Venue is currently unavailable");
+            throw new ValidationError(
+            VenueMessages.error.NOT_ACTIVE_VENUE
+        );
         }
 
         const result = await this._userRepository.addToWishlist(
@@ -46,8 +60,8 @@ export class UserAddToWishlistUsecase {
 
         if(result?.alreadyExists){
             throw new ValidationError(
-                "Venue already exists in wishlist"
-            );
+            UserMessage.error.WISHLIST_ALREADY_EXISTS
+        );;
         }
 
         return result;

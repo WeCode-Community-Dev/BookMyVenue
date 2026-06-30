@@ -2,6 +2,7 @@ import {asyncHandler} from "../../../shared/utils/asyncHandler.js"
 import { sendSuccess } from "../../../shared/utils/apiResponse.js"
 import { statusCode } from "../../../shared/constants/enums/statusCode.js"
 import { ValidationError } from "../../../domain/errors/ValidationError.js";
+import { UserMessage } from "../../../shared/constants/messages/userMessages.js";
 
 
 export class UserProfileController{
@@ -29,7 +30,7 @@ export class UserProfileController{
 
         const user=await this._userGetProfileUsecase.execute(userId);
 
-        return sendSuccess(res,statusCode.OK,"profile fetched successfully",user)
+        return sendSuccess(res,statusCode.OK,UserMessage.success.PROFILE_FETCHED,user)
     })
 
     updateProfile=asyncHandler(async(req,res)=>{
@@ -42,7 +43,7 @@ export class UserProfileController{
         )
 
         return sendSuccess(
-            res,statusCode.OK,"profile updated successfully",
+            res,statusCode.OK,UserMessage.success.PROFILE_UPDATED,
             updatedUser
         )
     })
@@ -64,7 +65,7 @@ export class UserProfileController{
         return sendSuccess(
             res,
             statusCode.OK,
-            "Email updated successfully",
+            UserMessage.success.EMAIL_UPDATED,
             updatedUser
         )
     })
@@ -85,7 +86,9 @@ export class UserProfileController{
         const userId = req.user.userId;
 
         if(!req.file){
-            throw new ValidationError("Please upload a profile image");
+            throw new ValidationError(
+            UserMessage.error.PROFILE_IMAGE_REQUIRED
+        );
         }
 
         const updatedUser =
@@ -97,7 +100,7 @@ export class UserProfileController{
         return sendSuccess(
             res,
             statusCode.OK,
-            "Profile image updated successfully",
+            UserMessage.success.PROFILE_IMAGE_UPDATED,
             updatedUser
         );
     })
@@ -111,7 +114,7 @@ export class UserProfileController{
         return sendSuccess(
             res,
             statusCode.OK,
-            "Profile image removed successfully",
+            UserMessage.success.PROFILE_IMAGE_REMOVED,
             updatedUser
         );
 

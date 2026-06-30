@@ -1,5 +1,7 @@
 import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
 import { ValidationError } from "../../../../domain/errors/ValidationError.js";
+import { UserMessage } from "../../../../shared/constants/messages/userMessages.js";
+import { VenueMessages } from "../../../../shared/constants/messages/venueMessages.js";
 
 export class UserRemoveWishlistUsecase{
 
@@ -13,28 +15,34 @@ export class UserRemoveWishlistUsecase{
         const user=await this._userRepository.findById(userId);
 
         if(!user){
-            throw new NotFoundError("User not found");
+           throw new NotFoundError(
+            UserMessage.error.USER_NOT_FOUND
+        );
         }
 
         if(user.isBlocked){
-            throw new ValidationError("User account is blocked");
+            throw new ValidationError(
+            UserMessage.error.USER_ACCOUNT_BLOCKED
+        );
         }
 
         const venue=await this._venueRepository.findById(venueId);
 
         if(!venue){
-            throw new NotFoundError("Venue not found");
+           throw new NotFoundError(
+            VenueMessages.error.VENUE_NOT_FOUND
+        );
         }
 
-        const result=await this._userRepository.removeFromWishlist(
+        const result=await this._userRepository.removeWishlist(
             userId,
             venueId
         );
 
         if(result?.notFound){
             throw new ValidationError(
-                "Venue not found in wishlist"
-            );
+            UserMessage.error.WISHLIST_NOT_FOUND
+        );
         }
 
         return result;

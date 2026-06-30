@@ -206,7 +206,12 @@ export class UserRepository extends IUserRepository {
     }
 
     async delete(id) {
-        return await UserModel.findByIdAndDelete(id);
+        const document =
+            await UserModel.findByIdAndDelete(id);
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
     }
     async addToWishlist(userId, venueId) {
 
@@ -236,7 +241,7 @@ export class UserRepository extends IUserRepository {
 
         if (!document) return null;
 
-        return document;
+        return UserMapper.mapToEntity(document);
 }
 
     async removeWishlist(userId, venueId) {

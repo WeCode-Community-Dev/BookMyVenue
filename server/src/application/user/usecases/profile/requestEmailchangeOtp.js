@@ -1,38 +1,52 @@
 import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
-import HashService from "../../../../infrastructure/services/HashService.js";
-import { generateOtp } from "../../../../shared/utils/genarateotp.js";
-import { sendMail } from "../../../../infrastructure/services/MailService.js";
 import { ConflictError } from "../../../../domain/errors/ConflictError.js";
 import { ValidationError } from "../../../../domain/errors/ValidationError.js";
+import { UserMessage } from "../../../../shared/constants/messages/userMessages.js";
 
 
 export class RequestEmailChangeOtpUsecase{
-    constructor(userRepository){
-        this._userRepository=userRepository
+    constructor(
+        userRepository,
+        hashService,
+        otpService,
+        mailService
+    ) {
+        this._userRepository = userRepository;
+        this._hashService = hashService;
+        this._otpService = otpService;
+        this._mailService = mailService;
     }
     async execute(userId,newEmail){
         const user=await this._userRepository.findById(userId)
         if(!user){
-            throw new NotFoundError("user not found")
+            throw new NotFoundError(
+            UserMessage.error.USER_NOT_FOUND
+        )
         }
         if(user.isBlocked){
-            throw new ValidationError("Blocked users canot chnage email")
+            throw new ValidationError(
+            UserMessage.error.USER_BLOCKED_EMAIL_CHANGE
+        )
         }
         if(user.email===newEmail){
-            throw new ValidationError("New email cannot be same as current email")
+            throw new ValidationError(
+            UserMessage.error.EMAIL_SAME_AS_CURRENT
+        )
         }
 
         const existingUser=
         await this._userRepository.findByEmail(newEmail)
         if(existingUser){
-            throw new ConflictError("Email ALready exists")
+            throw new ConflictError(
+            UserMessage.error.EMAIL_ALREADY_EXISTS
+        )
         }
 
-        const otp=generateOtp()
-        console.log("OTP => ", otp)
-        const hashedOtp=await HashService.hash(otp)
+        const otp = this._otpService.generateOtp();
 
-        const otpExpiresAt=new Date(Date.now()+5*60*1000)
+        const otpExpiresAt = this._otpService.getOtpExpiry();
+        console.log("OTP => ", otp)
+        const hashedOtp = await this._hashService.hash(otp);
 
         await this._userRepository.saveEmailChangeOtp(
             userId,
@@ -41,18 +55,12 @@ export class RequestEmailChangeOtpUsecase{
             otpExpiresAt
         )
 
-        await sendMail(
+        await this._mailService.sendEmailChangeOtp(
             newEmail,
-            "Emailchnage OTP",
-            `
-            <h2>Email Change Verification</h2>
-            <p>your OTP is:</p>
-            <h1>${otp}</h1>
-            <p>THis OTP is valid for 5 minutes </p>
-            `
+            otp
         );
         return{
-            message:"OTP sent successfully"
+           message: UserMessage.success.OTP_SENT
         }
 
     }

@@ -1,12 +1,13 @@
 import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
 import { ValidationError } from "../../../../domain/errors/ValidationError.js";
-import HashService from "../../../../infrastructure/services/HashService.js";
-import { generateOtp } from "../../../../shared/utils/genarateotp.js";
-import { sendMail } from "../../../../infrastructure/services/MailService.js";
+import { UserMessage } from "../../../../shared/constants/messages/userMessages.js";
 
 export class ResendEmailChangeOtpUsecase {
-    constructor(userRepository){
+    constructor(userRepository, hashService, otpService, mailService) {
         this._userRepository = userRepository;
+        this._hashService = hashService;
+        this._otpService = otpService;
+        this._mailService = mailService;
     }
 
     async execute(userId){
@@ -14,18 +15,24 @@ export class ResendEmailChangeOtpUsecase {
         const user = await this._userRepository.findById(userId);
 
         if(!user){
-            throw new NotFoundError("User not found");
+            throw new NotFoundError(
+            UserMessage.error.USER_NOT_FOUND
+        );
         }
 
         if(!user.pendingEmail){
-            throw new ValidationError("No email change request found");
+            throw new ValidationError(
+            UserMessage.error.EMAIL_CHANGE_REQUEST_NOT_FOUND
+        );
         }
 
-        const otp = generateOtp();
+        const otp = this._otpService.generateOtp();
 
-        const hashedOtp = await HashService.hash(otp);
+        const otpExpiresAt = this._otpService.getOtpExpiry();
 
-        const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+        const hashedOtp = await this._hashService.hash(otp);
+
+       
 
         await this._userRepository.saveEmailChangeOtp(
             userId,
@@ -34,19 +41,13 @@ export class ResendEmailChangeOtpUsecase {
             otpExpiresAt
         );
 
-        await sendMail(
+        await this._mailService.resendEmailChangeOtp(
             user.pendingEmail,
-            "Email Change OTP",
-            `
-            <h2>Email Change Verification</h2>
-            <p>Your new OTP is:</p>
-            <h1>${otp}</h1>
-            <p>This OTP is valid for 5 minutes.</p>
-            `
+            otp
         );
 
         return {
-            message:"OTP resent successfully"
+            message: UserMessage.success.OTP_RESENT
         };
     }
 }

@@ -1,6 +1,7 @@
 import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 import { sendSuccess } from "../../../shared/utils/apiResponse.js";
 import { statusCode } from "../../../shared/constants/enums/statusCode.js";
+import { UserMessage } from "../../../shared/constants/messages/userMessages.js";
 
 export class UserWishlistController {
 
@@ -27,7 +28,7 @@ export class UserWishlistController {
         return sendSuccess(
             res,
             statusCode.OK,
-            "Venue added to wishlist successfully",
+            UserMessage.success.WISHLIST_ADDED,
             wishlist
         );
     });
@@ -42,7 +43,7 @@ export class UserWishlistController {
         return sendSuccess(
             res,
             statusCode.OK,
-            "Wishlist fetched successfully",
+            UserMessage.success.WISHLIST_FETCHED,
             wishlist
         );
     });
@@ -60,7 +61,7 @@ export class UserWishlistController {
         return sendSuccess(
             res,
             statusCode.OK,
-            "Venue removed from wishlist successfully",
+            UserMessage.success.WISHLIST_REMOVED,
             wishlist
         );
     });
