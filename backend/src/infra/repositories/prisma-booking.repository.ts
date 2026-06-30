@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma/prisma.service';
 import { Booking } from '../../core/domain/bookings/entities/booking.entity';
 import { DateRange } from '../../core/domain/bookings/value-objects/date-range.vo';
-import type { IBookingRepository } from '../../core/domain/bookings/repositories/booking-repository.interface';
+import type { IBookingRepository, UpdateBookingDto } from '../../core/domain/bookings/repositories/booking-repository.interface';
 
 @Injectable()
 export class PrismaBookingRepository implements IBookingRepository {
@@ -134,5 +134,17 @@ export class PrismaBookingRepository implements IBookingRepository {
     await this.prisma.bookings.delete({
       where: { id },
     });
+  }
+
+  async update(id: string, data: UpdateBookingDto): Promise<void> {
+
+    if (!data.paymentStatus) return
+
+    await this.prisma.bookings.update({
+      where: { id },
+      data: {
+        payment_status: data.paymentStatus
+      }
+    })
   }
 }

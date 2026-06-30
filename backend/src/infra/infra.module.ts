@@ -9,6 +9,8 @@ import { JwtTokenService } from './services/jwt-token.service';
 import { PrismaVenueImageRepository } from './repositories/prisma-venue-image.repository';
 import { LocalFileStorageService } from './storage/local-file.storage';
 import { PrismaDashboardRepository } from './repositories/prisma-dashboard.repository';
+import { PrismaPaymentRepository } from './repositories/prisma-payment.repository';
+import { RazorpayPaymentProvider } from './payment/razorpay-provider';
 
 @Module({
   imports: [DatabaseModule],
@@ -49,6 +51,15 @@ import { PrismaDashboardRepository } from './repositories/prisma-dashboard.repos
       provide: 'IDashboardRepository',
       useClass: PrismaDashboardRepository,
     },
+    {
+      provide: 'IPaymentRepository',
+      useClass: PrismaPaymentRepository,
+      // useClass: PrismaDashboardRepository
+    },
+    {
+      provide: 'IPaymentProvider',
+      useClass: RazorpayPaymentProvider
+    }
   ],
   exports: [
     'IFileStorage',
@@ -60,6 +71,8 @@ import { PrismaDashboardRepository } from './repositories/prisma-dashboard.repos
     'IBookingRepository',
     'IRefreshTokenRepository',
     'IDashboardRepository',
+    'IPaymentRepository',
+    'IPaymentProvider'
   ],
 })
 export class InfraModule { } 
