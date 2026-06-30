@@ -1,8 +1,10 @@
 import {BrowserRouter,Routes,Route} from "react-router-dom";
 import { Suspense,lazy } from "react";
-import Home from "@/presentation/pages/Home";
 import { ROUTES } from "@/constatnts/routes";
 import BrowseVenues from "@/presentation/pages/user/BrowseVenue";
+
+
+const Home = lazy(() => import("@/presentation/pages/Home"))
 
 const Dashboard=lazy(()=>
 import("@/presentation/pages/vendor/Dashboard")
@@ -32,6 +34,7 @@ function App() {
       <Routes>
           <Route path={ROUTES.PUBLIC.HOME} element={<Home />}/>
           <Route path={ROUTES.USER.BROWSE_VENUES} element={<BrowseVenues />} />
+
           <Route path={ROUTES.VENDOR.DASHBOARD} element={<Dashboard/>}/>
           <Route path={ROUTES.VENDOR.VENUES} element={<VenueList/>}/>
           <Route path={ROUTES.VENDOR.BOOKINGS} element={<Bookings/>}/>

@@ -15,5 +15,8 @@ export const ROUTES = {
         ADD_VENUE: '/vendor/add-venue',
         PROFILE: '/vendor/profile',
         SETTINGS: '/vendor/settings',
+    },
+    ADMIN: {
+        
     }
 }

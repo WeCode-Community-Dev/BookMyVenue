@@ -1,105 +1,70 @@
 import Header from "@/presentation/components/common/Header"
 import Footer from "@/presentation/components/common/Footer";
 import VenueCard from "@/presentation/components/common/VenueCard"
-
 import {Search} from "lucide-react";
-
-
-const venues=[
-
-{
-name:"Grand Ballroom Palace",
-type:"Wedding Hall",
-location:"Mumbai, Maharashtra",
-rating:"4.9",
-reviews:"324",
-price:"₹80,000",
-capacity:"500-800 guests",
-image:"https://images.unsplash.com/photo-1519167758481-83f550bb49b3",
-amenities:["AC","Parking","Catering"]
-},
-
-
-{
-name:"Sky Terrace Lounge",
-type:"Rooftop Venue",
-location:"Bangalore, Karnataka",
-rating:"4.8",
-reviews:"198",
-price:"₹45,000",
-capacity:"100-200 guests",
-image:"https://images.unsplash.com/photo-1519671482749-fd09be7ccebf",
-amenities:["Open Air","Parking","Bar"]
-},
-
-
-{
-name:"Modern Conference Hub",
-type:"Conference Room",
-location:"Gurgaon, Delhi NCR",
-rating:"4.7",
-reviews:"156",
-price:"₹25,000",
-capacity:"50-150 guests",
-image:"https://images.unsplash.com/photo-1497366754035-f200968a6e72",
-amenities:["AC","Projector","Wifi"]
-},
-
-
-{
-name:"Elegant Banquet Hall",
-type:"Banquet Hall",
-location:"Pune, Maharashtra",
-rating:"4.9",
-reviews:"267",
-price:"₹65,000",
-capacity:"300-500 guests",
-image:"https://images.unsplash.com/photo-1519167758481-83f550bb49b3",
-amenities:["AC","Parking","Catering"]
-}
-
-
-]
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getVenues } from "@/redux/slices/UserVenueSlice";
 
 const Amenities = [
-    'WIFI',
-    'PARKING',
-    'AIR_CONDITIONING',
-    'CATERING_KITCHEN',
-    'SOUND_SYSTEM',
-    'PROJECTOR',
-    'STAGE',
-    'DANCE_FLOOR',
-    'OUTDOOR_AREA',
-    'VALET_PARKING',
-    'GENERATOR_BACKUP',
-    'CCTV_sECURITY',
-    'GREEN_ROOM',
-    'BRIDAL_SUIT',
-    'SWIMMING_POOL',
-    'ELEVATOR',
-    'BAR_COUNTER',
-    'PHOTO_BOOTH'
+    "Wifi",
+    "Parking",
+    "Air Conditioning",
+    "Catering Kitchen",
+    "Sound System",
+    "Projector",
+    "Stage",
+    "Dance Floor",
+    "Outdoor Area",
+    "Valet Parking",
+    "Generator Backup",
+    "CCTV Security",
+    "Green Room",
+    "Bridal Suite",
+    "Swimming Pool",
+    "Elevator",
+    "Bar Counter",
+    "Photo Booth"
 ]
 
+
 const VenueCategory = [
-    'BEACH_SIDE',
-    'CONFERENCE_HALL',
-    'AUDITORIAM',
-    'BANQUET_HALL',
-    'PARTY_HALL',
-    'ROOFTOP',
-    'CAFE',
-    'FARM_HOUSE',
-    'PALACE',
-    'STUDIO',
-    'OUTDOOR_GARDEN',
-    'AUDITORIUM',
-    'RESORT',
-    'HOTEL'
+    "Beach Side",
+    "Conference Hall",
+    "Auditorium",
+    "Banquet Hall",
+    "Party Hall",
+    "Rooftop",
+    "Cafe",
+    "Farm House",
+    "Palace",
+    "Studio",
+    "Outdoor Garden",
+    "Resort",
+    "Hotel"
 ]
 
 export default function BrowseVenues(){
+
+    const dispatch = useDispatch()
+    const [search, setSearch] = useState('')
+    const [page, setPage] = useState(1)
+    const [selectedAmenities, setSelectedAmenities] = useState([])
+    const [selectedCategory, setSelectedCategory] = useState('')
+    const [selectedRating, setSelectedRating] = useState(0)
+    const [appliedFilters, setAppliedFilters] = useState({
+        amenities: [],
+        category: '',
+        rating: 0
+    })
+
+    const { venues, pagination } = useSelector((state) => state.userVenue)
+   
+
+    useEffect(() => {
+       dispatch(getVenues({search, amenities: appliedFilters.amenities, category: appliedFilters.category, rating: appliedFilters.rating, page, limit: 12}))
+    }, [dispatch, search, appliedFilters, page])
+
 return (
     <>
         <Header/>
@@ -110,6 +75,8 @@ return (
                         <input
                             placeholder="Search venues by name, location, or type..."
                             className="outline-none w-full"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
                     <button className="bg-slate-900 text-white px-8 rounded-xl">
@@ -160,7 +127,11 @@ return (
                     {VenueCategory.map((item)=>(
                         <label className="flex gap-3 mt-3 text-gray-700">
                             <input
-                                type="checkbox"
+                                value={item}
+                                type="radio"
+                                name="category"
+                                checked={selectedCategory === item}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
                             />
                             {item}
                         </label>
@@ -169,19 +140,31 @@ return (
                     {Amenities.map(item=>(
                         <label className="flex gap-3 mt-3">
                             <input
+                                value={item}
                                 type="checkbox"
+                                checked={selectedAmenities.includes(item)}
+                                onChange={(e) => {
+                                    if(e.target.checked){
+                                        setSelectedAmenities([...selectedAmenities, item])
+                                    }else{
+                                        setSelectedAmenities(selectedAmenities.filter((amenity) => amenity !== item ))
+                                    }
+                                }}
                             />
                             {item}
                         </label>
                     ))}
                     <h3 className="font-semibold mt-8 mb-3">Minimum Rating</h3>
                     {[
-                        "4.5+ ⭐",
                         "4+ ⭐",
-                        "3.5+ ⭐"
+                        "4+ ⭐",
+                        "3+ ⭐"
                     ].map(item=>(
                         <label className="flex gap-3 mt-3">
                             <input
+                                value={item}
+                                checked={selectedRating === item}
+                                onChange={(e) => setSelectedRating(e.target.value)}
                                 type="radio"
                                 name="rating"
                             />
@@ -189,20 +172,57 @@ return (
                         </label>
                     ))}
                     <div className="flex gap-3 mt-10">
-                        <button className="border px-6 py-3 rounded-xl">
+                        <button 
+                            className="border px-6 py-3 rounded-xl"
+                            onClick={() => {
+                                setSelectedCategory('')
+                                setSelectedAmenities([])
+                                setAppliedFilters({
+                                    category: '',
+                                    amenities: '',
+                                    rating: 0
+                                })
+                                setPage(1)
+                            }}
+                        >
                             Clear All
                         </button>
-                        <button className="bg-amber-500 px-8 py-3 rounded-xl font-semibold">
+                        <button 
+                            className="bg-amber-500 px-8 py-3 rounded-xl font-semibold"
+                            onClick={() => {
+                                setPage(1)
+                                setAppliedFilters({
+                                    category: selectedCategory,
+                                    amenities: selectedAmenities,
+                                    rating: selectedRating
+                                })
+                            }}
+                        >
                             Apply
                         </button>
                     </div>
                 </div>
                 <div className="md:col-span-3 grid md:grid-cols-3 gap-8">
-                    {venues.map((venue,index)=>(
+                    {venues.map((venue)=>(
                         <VenueCard 
-                        key={index}
+                        key={venue._id}
                         venue={venue}
                         />
+                    ))}
+                </div>
+                <div className="md:col-span-3 flex justify-center gap-3 mt-10">
+                    {Array.from({length: pagination.venues.totalPages},(_,index)=>index+1).map((number)=>(
+                        <button
+                            key={number}
+                            onClick={()=>setPage(number)}
+                            className={`px-4 py-2 rounded-lg border ${
+                                page === number
+                                ? "bg-slate-900 text-white"
+                                : ""
+                            }`}
+                        >
+                            {number}
+                        </button>
                     ))}
                 </div>
             </div>

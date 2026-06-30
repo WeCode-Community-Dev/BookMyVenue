@@ -20,6 +20,11 @@ app.use(cors({
     credentials: true
 }))
 
+app.use((req, res, next) => {
+    console.log(`recieving ${req.method} from ${req.url}`)
+    next()
+})
+
 connectDB()
 
 app.post(

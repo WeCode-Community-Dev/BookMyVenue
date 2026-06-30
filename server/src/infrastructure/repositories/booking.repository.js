@@ -10,7 +10,6 @@ import { Types } from "mongoose";
 
 
 
-
 export class BookingRepositoryImpl extends BookingRepository {
 
     async create(entity) {
