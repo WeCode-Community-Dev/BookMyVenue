@@ -7,8 +7,8 @@ export class UserGetAllVenuesUsecase {
         this._venueRepository = venueRepository
     }
 
-    async execute(search, category,rating, amenities, minPrice, maxPrice, page, limit) {
-        const { data, totalPages, totalCount } = await this._venueRepository.findAllFiltered({search, category, rating, amenities, minPrice, maxPrice, page, limit})
+    async execute(search, category,rating, amenities, capacityType, capacity, priceType, minPrice, maxPrice, page, limit) {
+        const { data, totalPages, totalCount } = await this._venueRepository.findAllFiltered({search, category, rating, amenities, capacityType, capacity, priceType, minPrice, maxPrice, page, limit})
         return {
             data,
             totalPages,

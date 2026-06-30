@@ -17,6 +17,7 @@ const initialState = {
 
 export const getVenues = createAsyncThunk('user/venues', async(params = {}, { rejectWithValue}) => {
     try {
+        console.log('params: ', params)
         const response = await api.get(API_ROUTES.USER.VENUE.VENUES, {
             params: {
                 page: params.page || 1,
@@ -24,7 +25,12 @@ export const getVenues = createAsyncThunk('user/venues', async(params = {}, { re
                 search: params.search || "",  
                 category: params.category || undefined ,
                 amenities: params.amenities,
-                rating: params.rating || 0
+                rating: params.rating || 0,
+                capacityType: params.capacityType || "",
+                capacity: params.capacity || "",
+                priceType: params.priceType || "",
+                minPrice: params.minPrice || "",
+                maxPrice: params.maxPrice || ""
             },
             paramsSerializer: {
                 indexes: null

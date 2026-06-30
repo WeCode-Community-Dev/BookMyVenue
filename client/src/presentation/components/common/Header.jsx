@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constatnts/routes'
 import { Heart, User } from 'lucide-react'
 
 const Header = () => {
@@ -13,10 +14,7 @@ const Header = () => {
           </div>
 
           <nav className="hidden md:flex items-center gap-10 text-gray-600">
-            <a href="/">Explore Venues</a>
-            <a href="/">Weddings</a>
-            <a href="/">Corporate Events</a>
-            <a href="/">List Your Venue</a>
+            <a href={ROUTES.USER.BROWSE_VENUES} className='font-bold'>Explore Venues</a>
           </nav>
 
           <div className="flex items-center gap-4">

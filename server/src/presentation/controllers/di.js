@@ -68,7 +68,7 @@ import { VendorProfileController } from "./vendor/vendorProfileController.js";
 
 //Vendorbookingmanagement
 
-import BookingRepositoryImpl from "../../infrastructure/repositories/booking.repository.js";
+import { BookingRepositoryImpl } from "../../infrastructure/repositories/booking.repository.js";
 import { GetVendorBookingsUsecase } from "../../application/vendor/usecases/booking/getVendorBookingsUsecase.js";
 import { GetBookingByIdUsecase } from "../../application/vendor/usecases/booking/getBookingByIdUsecase.js";
 import { VendorBookingController } from "./vendor/VendorBookingController.js";
