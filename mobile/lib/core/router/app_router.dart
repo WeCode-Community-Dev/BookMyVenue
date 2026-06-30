@@ -308,7 +308,7 @@ class AppRouter {
               : '/${AppRouteNames.ownerVerification}';
         }
 
-        return '/${AppRouteNames.ownerDashboard}';
+        return '/${AppRouteNames.userDashboard}';
       }
 
       return null;

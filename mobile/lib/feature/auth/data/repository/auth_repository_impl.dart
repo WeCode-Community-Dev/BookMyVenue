@@ -63,10 +63,17 @@ class AuthRepositoryImpl extends BaseRepository implements IAuthRepository {
           role: response.data!.user.role,
         );
         await localDatasource.saveToken(sessionModel);
+        await AuthSession.init();
       }
+      final String successMsg = (response.message != null &&
+              response.message!.isNotEmpty &&
+              response.message != 'OTP sent successfully')
+          ? response.message!
+          : 'OTP verified successfully';
+
       final VerifyOtpResponseResult result = VerifyOtpResponseResult(
         result: response.data!.toEntity(),
-        message: response.message ?? '',
+        message: successMsg,
       );
 
       return result;
@@ -132,9 +139,15 @@ class OwnerAuthRepositoryImpl extends BaseRepository
         await AuthSession.init();
       }
 
+      final String successMsg = (response.message != null &&
+              response.message!.isNotEmpty &&
+              response.message != 'OTP sent successfully')
+          ? response.message!
+          : 'OTP verified successfully';
+
       return VerifyOwnerOtpResponseResult(
         user: response.data!.toEntity(),
-        message: response.message ?? '',
+        message: successMsg,
       );
     });
   }

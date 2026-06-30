@@ -89,7 +89,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     _VerifyOtpEvent event,
     Emitter<AuthState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, isError: false));
+    emit(
+      state.copyWith(
+        isLoading: true,
+        isError: false,
+        successMessage: null,
+      ),
+    );
 
     final Either<Failure, VerifyOtpResponseResult> result =
         await _verifyOtpUseCase(event.requestParam);

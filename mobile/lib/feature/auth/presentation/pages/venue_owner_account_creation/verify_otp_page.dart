@@ -160,14 +160,16 @@ class _OwnerVerifyOtpPageState extends State<OwnerVerifyOtpPage> {
                     type: ToastType.error,
                     title: state.errorMessage!,
                   );
-                } else if (state.successMessage != null) {
+                }
+                if (state.successMessage != null &&
+                    state.successMessage!.isNotEmpty) {
                   SnackbarCommand.show(
                     type: ToastType.success,
                     title: state.successMessage!,
                   );
-                  if (state.verifyOtpResponse != null) {
-                    context.goNamed(AppRouteNames.ownerVerification);
-                  }
+                }
+                if (state.verifyOtpResponse != null) {
+                  context.goNamed(AppRouteNames.ownerVerification);
                 }
               },
               builder: (BuildContext context, OwnerAuthState state) {

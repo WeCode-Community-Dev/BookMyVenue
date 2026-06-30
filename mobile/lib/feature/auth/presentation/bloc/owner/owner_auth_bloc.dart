@@ -92,7 +92,13 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
     _VerifyOwnerOtpEvent event,
     Emitter<OwnerAuthState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, isError: false));
+    emit(
+      state.copyWith(
+        isLoading: true,
+        isError: false,
+        successMessage: null,
+      ),
+    );
 
     final Either<Failure, VerifyOwnerOtpResponseResult> result =
         await _verifyOwnerOtpUseCase(event.requestParam);

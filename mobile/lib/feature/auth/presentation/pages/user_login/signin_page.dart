@@ -164,33 +164,35 @@ class _SigninPageState extends State<SigninPage> {
                 type: ToastType.error,
                 title: state.errorMessage!,
               );
-            } else if (state.successMessage != null) {
+            }
+            if (state.successMessage != null &&
+                state.successMessage!.isNotEmpty) {
               SnackbarCommand.show(
                 type: ToastType.success,
                 title: state.successMessage!,
               );
+            }
 
-              // If OTP was successfully requested, start resend timer
-              if (state.otpResponse != null && !isOtpReceived) {
-                setState(() {
-                  isOtpReceived = true;
-                });
-                _startTimer(60);
-              }
+            // If OTP was successfully requested, start resend timer
+            if (state.otpResponse != null && !isOtpReceived) {
+              setState(() {
+                isOtpReceived = true;
+              });
+              _startTimer(60);
+            }
 
-              // Redirection logic on verification
-              if (state.verifyOtpResponse != null) {
-                final UserRole role = state.verifyOtpResponse!.user.role;
-                if (role == UserRole.customer) {
-                  context.goNamed(AppRouteNames.userDashboard);
-                } else if (role == UserRole.venueOwner) {
-                  final bool isVerified =
-                      AuthSession.ownerVerified == ApprovalStatus.approved;
-                  if (isVerified) {
-                    context.goNamed(AppRouteNames.ownerDashboard);
-                  } else {
-                    context.goNamed(AppRouteNames.ownerVerification);
-                  }
+            // Redirection logic on verification
+            if (state.verifyOtpResponse != null) {
+              final UserRole role = state.verifyOtpResponse!.user.role;
+              if (role == UserRole.customer) {
+                context.goNamed(AppRouteNames.userDashboard);
+              } else if (role == UserRole.venueOwner) {
+                final bool isVerified =
+                    AuthSession.ownerVerified == ApprovalStatus.approved;
+                if (isVerified) {
+                  context.goNamed(AppRouteNames.ownerDashboard);
+                } else {
+                  context.goNamed(AppRouteNames.ownerVerification);
                 }
               }
             }

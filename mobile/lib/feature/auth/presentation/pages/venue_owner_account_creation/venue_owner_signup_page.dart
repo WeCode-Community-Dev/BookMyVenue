@@ -52,17 +52,19 @@ class _VenueOwnerSignupPageState extends State<VenueOwnerSignupPage> {
                 type: ToastType.error,
                 title: state.errorMessage!,
               );
-            } else if (state.successMessage != null) {
+            }
+            if (state.successMessage != null &&
+                state.successMessage!.isNotEmpty) {
               SnackbarCommand.show(
                 type: ToastType.success,
                 title: state.successMessage!,
               );
-              if (state.otpResponse != null) {
-                context.goNamed(
-                  AppRouteNames.venueOwnerVerify,
-                  extra: state.otpResponse!.mobileNumber,
-                );
-              }
+            }
+            if (state.otpResponse != null) {
+              context.goNamed(
+                AppRouteNames.venueOwnerVerify,
+                extra: state.otpResponse!.mobileNumber,
+              );
             }
           },
           builder: (BuildContext context, OwnerAuthState state) {
