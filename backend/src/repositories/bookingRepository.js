@@ -6,6 +6,15 @@ const bookingInclude = {
   },
 };
 
+const ownerBookingInclude = {
+  venue: {
+    select: { id: true, name: true, city: true },
+  },
+  user: {
+    select: { id: true, username: true, email: true, mobileNumber: true },
+  },
+};
+
 export const bookingRepository = {
   findConflict(venueId, bookingFrom, bookingTo) {
     return prisma.booking.findFirst({
@@ -34,6 +43,14 @@ export const bookingRepository = {
     return prisma.booking.findMany({
       where: { userId },
       include: bookingInclude,
+      orderBy: { bookingFrom: 'desc' },
+    });
+  },
+
+  findByOwnerId(ownerId) {
+    return prisma.booking.findMany({
+      where: { venue: { ownerId } },
+      include: ownerBookingInclude,
       orderBy: { bookingFrom: 'desc' },
     });
   },

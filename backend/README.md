@@ -133,6 +133,19 @@ npm run dev
 | `GET /api/v1/bookings` | CUSTOMER | List your bookings |
 | `PATCH /api/v1/bookings/:id/cancel` | CUSTOMER | Cancel your own booking |
 
+### Owner dashboard (Phase 7)
+
+| Endpoint | Auth | Description |
+|----------|------|-------------|
+| `GET /api/v1/owners/bookings` | OWNER | All bookings on your venues (includes customer + venue info) |
+
+**Owner bookings example:**
+
+```bash
+curl http://localhost:3000/api/v1/owners/bookings \
+  -H "Authorization: Bearer YOUR_OWNER_TOKEN"
+```
+
 **Datetime rule:** All booking/availability datetimes must be ISO 8601 **UTC** — end with `Z` or `+00:00` (e.g. `2026-07-01T10:00:00.000Z`). Date-only (`2026-07-01`) and non-UTC offsets (`+05:30`) are rejected.
 
 **Query strings:** If you use `+00:00` in a URL, encode `+` as `%2B` (otherwise `+` is read as a space).
