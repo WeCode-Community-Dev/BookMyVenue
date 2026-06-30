@@ -11,32 +11,32 @@ export class GetDashboardStatsUsecase {
     this._bookingRepository = bookingRepository;
   }
 
-  async execute(ownerId) {
-    const totalVenues = await this._venueRepository.countByOwnerId(ownerId);
+  async execute(vendorId) {
+    const totalVenues = await this._venueRepository.countByOwnerId(vendorId);
 
-    const totalBookings = await this._bookingRepository.countByOwnerId(ownerId);
+    const totalBookings = await this._bookingRepository.countByOwnerId(vendorId);
 
-    const topVenues = await this._bookingRepository.getTopVenues(ownerId);
+    const topVenues = await this._bookingRepository.getTopVenues(vendorId);
 
     const recentBookings = await this._bookingRepository.getRecentBookings(
-      ownerId
+      vendorId
     );
 
     const pendingBookings =
       await this._bookingRepository.countByOwnerIdAndStatus(
-        ownerId,
+        vendorId,
         BookingStatus.PENDING
       );
 
     const confirmedBookings =
       await this._bookingRepository.countByOwnerIdAndStatus(
-        ownerId,
+        vendorId,
         BookingStatus.CONFIRMED
       );
 
     const completedBookings =
       await this._bookingRepository.countByOwnerIdAndStatus(
-        ownerId,
+        vendorId,
         BookingStatus.COMPLETED
       );
 
