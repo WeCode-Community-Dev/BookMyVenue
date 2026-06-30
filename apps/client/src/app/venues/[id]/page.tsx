@@ -25,7 +25,6 @@ export default function VenueDetailsPage() {
 
     const { data, isLoading, error } = useVenue(params.id);
     const { data: reviewStatus } = useGetVenueReviewStatus(params.id, token);
-    console.log({ reviewStatus });
 
     const selectedSessions = useBookingStore((s) => s.selectedSessions);
     const toggleSession = useBookingStore((s) => s.toggleSession);
@@ -83,7 +82,7 @@ export default function VenueDetailsPage() {
                         <div className="lg:col-span-2 space-y-6">
                             <div className="relative h-80 sm:h-96 bg-muted rounded-2xl overflow-hidden">
                                 <Image src={mainImage} alt={venue.name} fill className="object-cover" />
-                                <span className="absolute top-4 left-4 bg-primary/60 backdrop-blur- text-white text-xs px-2.5 py-1 rounded-full">
+                                <span className="absolute top-4 left-4 bg-primary/80 backdrop-blur- text-white text-xs px-2.5 py-1 rounded-full">
                                     {formatEnum(venue.category)}
                                 </span>
                             </div>

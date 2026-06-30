@@ -14,3 +14,9 @@ export type GetVenueReviewStatusQuery = {
 export type GetVenueReviewStatusResponse = {
     reviewStatus: ReviewStatus;
 };
+
+export type CreateReviewBody = {
+    venueId: number;
+    rating: number;
+    comment?: string;
+};

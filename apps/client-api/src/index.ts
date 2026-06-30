@@ -3,7 +3,7 @@ import cors from "@fastify/cors";
 import { clerkPlugin } from "@clerk/fastify";
 import { venueRoute } from "./routes/venueRoute";
 import { bookingRoute } from "./routes/bookingRoute";
-import { reviewRoute } from "./routes/reviewRoute";
+import { reviewRoute } from "./routes/review.route";
 
 const app = Fastify({ logger: true });
 app.register(cors, { origin: true });
