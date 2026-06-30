@@ -1,8 +1,8 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { clerkPlugin } from "@clerk/fastify";
-import { venueRoute } from "./routes/venueRoute";
-import { bookingRoute } from "./routes/bookingRoute";
+import { venueRoute } from "./routes/venue.route";
+import { bookingRoute } from "./routes/booking.route";
 import { reviewRoute } from "./routes/review.route";
 
 const app = Fastify({ logger: true });

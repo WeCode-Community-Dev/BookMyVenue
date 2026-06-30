@@ -1,16 +1,6 @@
-import { FastifyInstance } from "fastify";
-import { ownerAuthMiddleware } from "../middleware/authmiddleware.js";
-import { VenueCategory, District } from "@bookmyvenue/database";
-import {
-    createVenue,
-    getVenues,
-    getVenueById,
-    editVenue,
-    getVenuesByOwnerId,
-} from "../controllers/venueController.js";
-import { CreateVenueBody, EditVenueBody, GetVenuesQuery } from "@bookmyvenue/types";
+import { District, VenueCategory } from "@bookmyvenue/database";
 
-const createVenueSchema = {
+export const createVenueSchema = {
     body: {
         type: "object",
         required: ["name", "description", "capacity", "category", "location", "district"],
@@ -41,7 +31,7 @@ const createVenueSchema = {
     },
 };
 
-const getVenuesSchema = {
+export const getVenuesSchema = {
     querystring: {
         type: "object",
         properties: {
@@ -53,7 +43,7 @@ const getVenuesSchema = {
     },
 };
 
-const editVenueSchema = {
+export const editVenueSchema = {
     body: {
         type: "object",
         properties: {
@@ -67,28 +57,4 @@ const editVenueSchema = {
             amenities: { type: "array", items: { type: "string" } },
         },
     },
-};
-
-export const venueRoute = async (fastify: FastifyInstance) => {
-    fastify.get<{ Querystring: GetVenuesQuery }>("/", { schema: getVenuesSchema }, getVenues);
-
-    fastify.get<{ Querystring: GetVenuesQuery }>(
-        "/owner-venues",
-        { preHandler: ownerAuthMiddleware, schema: getVenuesSchema },
-        getVenuesByOwnerId,
-    );
-
-    fastify.get<{ Params: { id: string } }>("/:id", getVenueById);
-
-    fastify.post<{ Body: CreateVenueBody }>(
-        "/create-venue",
-        { preHandler: ownerAuthMiddleware, schema: createVenueSchema },
-        createVenue,
-    );
-
-    fastify.put<{ Params: { id: string }; Body: EditVenueBody }>(
-        "/venue/:id",
-        { preHandler: ownerAuthMiddleware, schema: editVenueSchema },
-        editVenue,
-    );
 };
