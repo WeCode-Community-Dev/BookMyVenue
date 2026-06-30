@@ -1,24 +1,54 @@
-import { IsOptional, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsDateString, IsOptional, IsString } from 'class-validator';
 
 export class UpdateProfileDto {
-  @ApiProperty({ example: 'AMITH ', required: false })
+  @ApiPropertyOptional({ example: 'Amith Biju' })
   @IsOptional()
   @IsString()
   name?: string;
 
-  @ApiProperty({ example: '+1234567890', required: false })
+  @ApiPropertyOptional({ example: '+9134567890' })
   @IsOptional()
   @IsString()
   phoneNumber?: string;
 
-  @ApiProperty({ example: '123 Main St, City, State 12345', required: false })
-  @IsOptional()
-  @IsString()
-  billingAddress?: string;
-
-  @ApiProperty({ example: 'https://example.com/profile.jpg', required: false })
+  @ApiPropertyOptional({ example: 'https://cdn.example.com/profiles/amith.jpg' })
   @IsOptional()
   @IsString()
   profilePicture?: string;
+
+  @ApiPropertyOptional({ example: '2005-08-28' })
+  @IsOptional()
+  @IsDateString()
+  dateOfBirth?: string;
+
+  @ApiPropertyOptional({ example: 'Male' })
+  @IsOptional()
+  @IsString()
+  gender?: string;
+
+  @ApiPropertyOptional({ example: 'About me' })
+  @IsOptional()
+  @IsString()
+  biography?: string;
+
+  @ApiPropertyOptional({ example: 'amith bhavan ezhukone' })
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @ApiPropertyOptional({ example: 'kollam' })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional({ example: 'Kerala' })
+  @IsOptional()
+  @IsString()
+  state?: string;
+
+  @ApiPropertyOptional({ example: 'India' })
+  @IsOptional()
+  @IsString()
+  country?: string;
 }

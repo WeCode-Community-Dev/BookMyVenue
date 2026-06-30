@@ -28,13 +28,18 @@ export class AuthService {
       data: {
         email: signUpDto.email,
         passwordHash: hashedpassword,
+        profile: {
+          create: {
+            name: signUpDto.email.split('@')[0],
+          },
+        },
       },
     });
     const token = await this.getAccessToken(user.id, user.email, user.role);
     return { message: 'User registered successfully', userId: user.id, token };
   }
 
-  //Google login method to handle user login via Google OAuth
+  //Google login method to handle user login  and signup via Google OAuth
   async googleLogin(googleUser: any) {
     let user = await this.prisma.user.findUnique({
       where: {
@@ -73,13 +78,7 @@ export class AuthService {
       });
     }
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    };
-
-    const token = await this.jwtService.signAsync(payload);
+    const token = await this.getAccessToken(user.id, user.email, user.role);
 
     return {
       message: 'Google login successful',

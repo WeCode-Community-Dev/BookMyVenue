@@ -28,21 +28,65 @@ model User {
   emailVerifyExpiry DateTime?
   emailVerifyOtp    String?
   profile           Profile?
+  venues             Venue[]  
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
 
 
 model Profile {
-  id              String   @id @default(uuid())
-  name            String
-  phoneNumber     String?
-  profilePicture  String?
-  billingAddress  String?
+  id            String   @id @default(cuid())
 
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  name          String
+  profilePicture String?
+
+  phoneNumber   String?
+  dateOfBirth   DateTime?
+  gender        String?
+  biography     String?
+
+  address       String?
+  city          String?
+  state         String?
+  country       String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Venue {
+  id            String        @id @default(uuid())
+
+  name          String
+  description   String?
+
+  address       String
+
+  latitude       Float
+  longitude      Float
+
+  price          Float?
+  capacity       Int?
+
+  ownerId        String
+  owner          User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  images         VenueImage[]
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model VenueImage {
+  id            String       @id @default(uuid())
+
+  imageUrl      String
+
+  venueId        String
+  venue          Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime     @default(now())
 }
