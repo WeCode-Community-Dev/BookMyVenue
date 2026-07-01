@@ -14,5 +14,6 @@ class VerifyPaymentRequest(BaseModel):
     razorpay_order_id: str
     razorpay_payment_id: str
     razorpay_signature: str
+    booking_date: str
     start_time: Optional[str] = None
     end_time: Optional[str] = None
