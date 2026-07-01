@@ -44,6 +44,17 @@ export const getVenues = createAsyncThunk('user/venues', async(params = {}, { re
     }
 })
 
+export const getTopVenues = createAsyncThunk('user/top-venues', async(_,{ rejectWithValue}) => {
+    try {
+        console.log('reached here...')
+        const response = await api.get(API_ROUTES.USER.VENUE.TOP_VENUES)
+        console.log('response: ', response.data.data)
+        return response.data.data
+    } catch (error) {
+        return rejectWithValue("Failed to get top venues", error)
+    }
+})
+
 
 const userVenueSlice = createSlice({
     name: 'UserVenueSlice',
@@ -61,6 +72,17 @@ const userVenueSlice = createSlice({
             state.pagination.venues.totalPages = action.payload.totalPages
          })
          .addCase(getVenues.rejected, (state, action) => {
+            state.loading = false
+            state.error = action.payload 
+         })
+         .addCase(getTopVenues.pending, (state) => {
+            state.loading = true
+         })
+         .addCase(getTopVenues.fulfilled, (state, action) => {
+            state.loading = false
+            state.venues = action.payload.venues
+         })
+         .addCase(getTopVenues.rejected, (state, action) => {
             state.loading = false
             state.error = action.payload 
          })

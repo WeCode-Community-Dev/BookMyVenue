@@ -6,7 +6,8 @@ export const ROUTES = {
     },
     USER: {
         PROFILE: '/user/profile',
-        BROWSE_VENUES: '/user/venues'
+        BROWSE_VENUES: '/user/venues',
+        VENUE_DETAILS: '/user/venue/:id'
     },
     VENDOR: {
         DASHBOARD: '/vendor/dashboard',

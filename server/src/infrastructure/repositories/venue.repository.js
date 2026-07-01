@@ -38,7 +38,7 @@ export class VenueRepository extends IVenueRepository {
     }
 
     async findAllFiltered(query = {}) {
-        console.log('quesry: ', query)
+        console.log('query: ', query)
 
         const filter = {
             isDeleted: false
@@ -189,7 +189,7 @@ export class VenueRepository extends IVenueRepository {
 
         return {
 
-            data: documents,
+            data: documents.map((d) => VenueMapper.mapToEntity(d)),
 
             totalCount,
 
@@ -298,9 +298,6 @@ export class VenueRepository extends IVenueRepository {
             { new: true }
         )
     }
-    // mapToEntity(doc){
-    //     return VenueMapper.mapToEntity(doc)
-    // }
 
   async delete(id) {
     return await VenueModel.findByIdAndUpdate(
@@ -309,13 +306,6 @@ export class VenueRepository extends IVenueRepository {
       { new: true }
     );
   }
-  // mapToEntity(doc){
-  //     return VenueMapper.mapToEntity(doc)
-  // }
-
-  // mapToPersistence(entity){
-  //     return VenueMapper.mapToPersistence(entity)
-  // }
 
   async countByOwnerId(ownerId) {
     return await VenueModel.countDocuments({
@@ -323,5 +313,21 @@ export class VenueRepository extends IVenueRepository {
 
       isDeleted: false,
     });
+  }
+
+  async findTopVenues() {
+    const documents = await VenueModel
+        .find({
+            isDeleted: false,
+            isBlocked: false,
+            approvalStatus: VenueStatus.ACTIVE
+        })
+        .sort({ 
+            rating: -1,
+            createdAt: -1
+        })
+        .limit(4)
+        .lean()
+    return documents.map(d => VenueMapper.mapToEntity(d))
   }
 }

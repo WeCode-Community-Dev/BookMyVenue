@@ -7,10 +7,12 @@ import { statusCode } from '../../../shared/constants/enums/statusCode.js'
 export class UserVenueController {
     constructor (
         userGetAllVenuesUsecase,
-        userGetVnueByIdUsecase
+        userGetVnueByIdUsecase,
+        userGetTopVenuesUsecase
     ) {
         this._userGetAllVenues = userGetAllVenuesUsecase
         this._userGetVenueById = userGetVnueByIdUsecase
+        this._userGetTopVenues = userGetTopVenuesUsecase
     }
 
     getAllVenues = asyncHandler( async (req, res ) => {
@@ -23,5 +25,11 @@ export class UserVenueController {
         const venueId = req.params.venueId
         const venue = await this._userGetVenueById.execute(venueId)
         return sendSuccess(res, statusCode.OK, '', venue)
+    })
+
+    getTopVenues = asyncHandler( async (req, res) => {
+        const venues = await this._userGetTopVenues.execute()
+        console.log('venue: ', venues)
+        return sendSuccess(res, statusCode.OK,'', venues)
     })
 }
