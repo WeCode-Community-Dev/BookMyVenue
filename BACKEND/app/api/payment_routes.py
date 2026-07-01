@@ -37,7 +37,7 @@ async def create_order(payload: CreateOrderRequest, db: Session = Depends(get_db
 
         razorpay_order = client.order.create(data=order_data)
 
-        saved_order = add_order_details(
+        saved_order = await add_order_details(
             db,
             user_id=payload.user_id,    
             venue_id=payload.venue_id,
@@ -48,10 +48,11 @@ async def create_order(payload: CreateOrderRequest, db: Session = Depends(get_db
         )
         
         return {
-            "order_id": razorpay_order["id"],
+            "razorpay_order_id": razorpay_order["id"],
             "amount": razorpay_order["amount"],
             "currency": razorpay_order["currency"],
-            "key": settings.RAZORPAY_KEY_ID
+            "key": settings.RAZORPAY_KEY_ID,
+            "order_id": saved_order.id
         }
 
     except Exception as e:
@@ -67,7 +68,7 @@ async def verify_payment(payload: VerifyPaymentRequest, db: Session = Depends(ge
             "razorpay_signature": payload.razorpay_signature
         })
 
-        update_order_payment_status(
+        await update_order_payment_status(
             db,
             razorpay_order_id=payload.razorpay_order_id,
             razorpay_payment_id=payload.razorpay_payment_id,
@@ -78,10 +79,11 @@ async def verify_payment(payload: VerifyPaymentRequest, db: Session = Depends(ge
             db,
             user_id=payload.user_id,
             venue_id=payload.venue_id,
-            order_id=payload.razorpay_order_id,
+            order_id=payload.order_id,
             booking_date=datetime.now().date(),
-            booking_time=datetime.now().strftime("%H:%M:%S"),
-            status="confirmed"
+            status="confirmed",
+            start_time=payload.start_time,
+            end_time=payload.end_time
         )
 
         return {
@@ -89,8 +91,8 @@ async def verify_payment(payload: VerifyPaymentRequest, db: Session = Depends(ge
             "message": "Payment verified successfully"
         }
 
-    except Exception:
+    except Exception as e:
         raise HTTPException(
             status_code=400,
-            detail="Payment verification failed"
+            detail=f"Payment verification failed: {str(e)}"
         )
