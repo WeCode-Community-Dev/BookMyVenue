@@ -11,6 +11,7 @@ const router = Express.Router()
 //venue
 router.get(ROUTES.USER.VENUE.GET_ALL, validate(VenueQuerySchema, 'query'), iUserVenueController.getAllVenues)
 router.get(ROUTES.USER.VENUE.GET_BY_ID, validate(VenueParamsSchema, 'params'), iUserVenueController.getVenueById)
+router.get(ROUTES.USER.VENUE.TOP_VENUES, iUserVenueController.getTopVenues)
 
 
 

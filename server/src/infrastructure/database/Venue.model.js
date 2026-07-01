@@ -116,11 +116,21 @@ const VenueSchema = new Schema({
         type: Number,
         default: 1
     },
-    status: {
-        type: String,
-        enum: Object.values(VenueStatus),
-        default: VenueStatus.PENDING
-    },
+    // status: {
+    //     type: String,
+    //     enum: Object.values(VenueStatus),
+    //     default: VenueStatus.PENDING
+    // },
+    license: [{
+        publicId: {
+            type: String,
+            required: true
+        },
+        url: {
+            type: String,
+            required: true
+        }
+    }],
     rating: {
         type: Number,
         default: 0

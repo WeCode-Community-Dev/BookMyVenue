@@ -27,7 +27,8 @@ export class VenueEntity {
     minimumBookingHours = 0,
     amenities = [],
     images = [],
-    status = VenueStatus.PENDING,
+    license = [],
+    // status = VenueStatus.PENDING,
     isDeleted = false,
     rating = 0,
     reviews = [],
@@ -60,7 +61,8 @@ export class VenueEntity {
         this.availabilityRules = availabilityRules;
         this.amenities = amenities;
         this.images = images;
-        this.status = status;
+        this.license = license;
+        // this.status = status;
         this.rating = rating;
         this.reviews = reviews;
         this.isDeleted = isDeleted;
