@@ -15,6 +15,8 @@ export async function seedAdmin(prisma: PrismaClient) {
 
     const email = normalizeEmail(rawEmail)
 
+    const email = normalizeEmail(rawEmail)
+
     await prisma.user.upsert({
         where: { email },
         update: {
