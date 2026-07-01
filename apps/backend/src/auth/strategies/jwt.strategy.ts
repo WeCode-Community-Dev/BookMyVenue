@@ -1,0 +1,1 @@
+// Passport JWT strategy for validating access tokens
