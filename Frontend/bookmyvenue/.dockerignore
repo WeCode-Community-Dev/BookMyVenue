@@ -1,0 +1,43 @@
+
+
+# Next.js build output and cache
+.next/
+
+# Logs and OS files
+npm-debug.log*
+.DS_Store
+
+# Source Control
+.git
+.github
+.gitignore  
+
+# Dependencies (Let Docker install these inside the container)
+node_modules/
+bower_components/
+vendor/
+
+# Build Outputs
+dist/
+build/
+out/
+*.exe
+*.dll
+
+# Environment & Secrets
+.env
+.env.*
+*.pem
+*.key
+aws_credentials
+
+# Debug & Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.logs/
+*.swp
+
+# OS Metadata
+.DS_Store
+Thumbs.db
