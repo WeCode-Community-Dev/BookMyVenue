@@ -438,6 +438,23 @@ export async function getSpaceBlockedPeriods(
     }
 }
 
+export async function getSpaceBookedPeriods(
+    spaceId: string,
+): Promise<SpaceBlockedPeriodResponse[]> {
+    try {
+        const response = await apiFetch(`/bookings/spaces/${spaceId}/occupancy`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return response;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
 export async function updateSpaceBlockedPeriod(
     spaceId: string,
     id: string,

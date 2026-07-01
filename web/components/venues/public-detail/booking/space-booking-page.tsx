@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { Space, VenueDetails } from "@/lib/data/venues";
 import type { TimeRangeSelection } from "@/lib/data/public-venue-detail";
@@ -14,7 +14,7 @@ import { SpaceBookingGallery } from "./space-booking-gallery";
 import { SpaceBookingHeader } from "./space-booking-header";
 import { SpaceBookingSummary } from "./space-booking-summary";
 import { TimeRangePicker } from "./time-slot-picker";
-import { getSpaceBlockedPeriods, getSpaceOperatingHours, SpaceBlockedPeriodResponse, SpaceOperatingHourResponse } from "@/services/venueServices";
+import { getSpaceBlockedPeriods, getSpaceBookedPeriods, getSpaceOperatingHours, SpaceBlockedPeriodResponse, SpaceOperatingHourResponse } from "@/services/venueServices";
 
 type SpaceBookingPageProps = {
   venue: VenueDetails;
@@ -55,18 +55,30 @@ export function SpaceBookingPage({
   
   const [operatingHours, setOperatingHours] = useState<SpaceOperatingHourResponse[]>([]);
   const [blockedPeriods, setBlockedPeriods] = useState<SpaceBlockedPeriodResponse[]>([]);
-  
+  const [bookedPeriods, setBookedPeriods] = useState<SpaceBlockedPeriodResponse[]>([]);
+
+  const refreshBookedPeriods = useCallback(async () => {
+    const booked = await getSpaceBookedPeriods(space.id);
+    setBookedPeriods(booked);
+  }, [space.id]);
+
+  const handleBookingCreated = useCallback(async () => {
+    await refreshBookedPeriods();
+    setSelectedRange(null);
+  }, [refreshBookedPeriods]);
+
   useEffect(() => {
     async function loadData() {
       const hours = await getSpaceOperatingHours(space.id);
       const periods = await getSpaceBlockedPeriods(space.id);
-  
+
       setOperatingHours(hours);
       setBlockedPeriods(periods);
+      await refreshBookedPeriods();
     }
-  
+
     loadData();
-  }, [space.id]);
+  }, [space.id, refreshBookedPeriods]);
 
 
   return (
@@ -88,6 +100,7 @@ export function SpaceBookingPage({
             <AvailabilityCalendar
               operatingHours={operatingHours}
               blockedPeriods={blockedPeriods}
+              bookedPeriods={bookedPeriods}
               selectedDate={selectedDate}
               viewYear={viewYear}
               viewMonth={viewMonth}
@@ -98,6 +111,7 @@ export function SpaceBookingPage({
               selectedDate={selectedDate}
               operatingHours={operatingHours}
               blockedPeriods={blockedPeriods}
+              bookedPeriods={bookedPeriods}
               selectedRange={selectedRange}
               onTimeRangeChange={setSelectedRange}
             />
@@ -110,6 +124,7 @@ export function SpaceBookingPage({
           spaceId={space.id}
           selectedDate={selectedDate}
           selectedRange={selectedRange}
+          onBookingCreated={handleBookingCreated}
         />
       </div>
     </div>

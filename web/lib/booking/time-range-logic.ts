@@ -196,6 +196,34 @@ function getBlockedIntervalsInWindow(
   return mergeMinuteIntervals(intervals);
 }
 
+export function getBookedIntervalsForDay(
+  date: Date,
+  periods: SpaceBlockedPeriodResponse[],
+): TimeInterval[] {
+  const dayStart = startOfDay(date);
+  const dayEnd = endOfDay(date);
+  const intervals: MinuteInterval[] = [];
+
+  for (const period of periods) {
+    const periodStart = new Date(period.startAt);
+    const periodEnd = new Date(period.endAt);
+
+    if (periodEnd < dayStart || periodStart > dayEnd) continue;
+
+    const startMin = toMinutesOnDay(date, periodStart);
+    const endMin = toMinutesOnDay(date, periodEnd);
+
+    if (endMin > startMin) {
+      intervals.push({ start: startMin, end: endMin });
+    }
+  }
+
+  return mergeMinuteIntervals(intervals).map((interval) => ({
+    start: formatTime(interval.start),
+    end: formatTime(interval.end),
+  }));
+}
+
 /**
  * Resolve working hours and blocked periods for a day.
  * Falls back to mock data when API arrays are empty.

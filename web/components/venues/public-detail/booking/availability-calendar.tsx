@@ -17,6 +17,7 @@ type AvailabilityCalendarProps = {
   selectedDate: Date;
   operatingHours: SpaceOperatingHourResponse[];
   blockedPeriods: SpaceBlockedPeriodResponse[];
+  bookedPeriods: SpaceBlockedPeriodResponse[];
   viewYear: number;
   viewMonth: number;
   onSelectDate: (date: Date) => void;
@@ -27,6 +28,7 @@ export function AvailabilityCalendar({
   selectedDate,
   operatingHours,
   blockedPeriods,
+  bookedPeriods,
   viewYear,
   viewMonth,
   onSelectDate,
@@ -97,8 +99,8 @@ export function AvailabilityCalendar({
           const availability = getCalendarDayAvailability(
             day,
             operatingHours,
-            blockedPeriods,
-
+            [...blockedPeriods, ...bookedPeriods],
+            
           );
           const unavailable = availability === "unavailable";
           const partial = availability === "partial";

@@ -26,12 +26,14 @@ type SpaceBookingSummaryProps = {
   spaceId: string;
   selectedDate: Date;
   selectedRange: TimeRangeSelection | null;
+  onBookingCreated?: () => void | Promise<void>;
 };
 
 export function SpaceBookingSummary({
   spaceId,
   selectedDate,
   selectedRange,
+  onBookingCreated,
 }: SpaceBookingSummaryProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const hourlyRate = getSpaceHourlyPrice(spaceId);
@@ -62,6 +64,7 @@ export function SpaceBookingSummary({
           : "submitted for approval";
 
       toast.success(`Booking ${result.data.bookingNumber} ${statusMessage}`);
+      await onBookingCreated?.();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to create booking",

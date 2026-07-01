@@ -18,6 +18,7 @@ import {
   formatDuration,
   getAllValidStartTimes,
   getAvailableIntervals,
+  getBookedIntervalsForDay,
   getValidEndTimes,
   isValidTimeRange,
   resolveDaySchedule,
@@ -34,6 +35,7 @@ type TimeRangePickerProps = {
   selectedDate: Date;
   operatingHours: SpaceOperatingHourResponse[];
   blockedPeriods: SpaceBlockedPeriodResponse[];
+  bookedPeriods?: SpaceBlockedPeriodResponse[];
   selectedRange?: TimeRangeSelection | null;
   onTimeRangeChange?: (range: TimeRangeSelection | null) => void;
 };
@@ -49,6 +51,7 @@ const LEGEND_ITEMS: { type: TimelineSegment["type"]; label: string; color: strin
   { type: "available", label: "Available", color: "bg-green-400" },
   { type: "blocked", label: "Blocked", color: "bg-red-300" },
   { type: "selected", label: "Selected", color: "bg-blue-500" },
+  { type: "booked", label: "Booked", color: "bg-gray-400" },
 ];
 
 function formatIntervalLabel(interval: TimeInterval): string {
@@ -100,9 +103,10 @@ export function TimeRangePicker({
   selectedDate,
   operatingHours,
   blockedPeriods,
+  bookedPeriods = [],
+  selectedRange = null,
   onTimeRangeChange,
 }: TimeRangePickerProps) {
-  const [bookedRanges, setBookedRanges] = useState<TimeInterval[]>([]);
   const [startTime, setStartTime] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -112,6 +116,11 @@ export function TimeRangePicker({
   const schedule = useMemo(
     () => resolveDaySchedule(selectedDate, operatingHours, blockedPeriods),
     [selectedDate, operatingHours, blockedPeriods],
+  );
+
+  const bookedRanges = useMemo(
+    () => getBookedIntervalsForDay(selectedDate, bookedPeriods),
+    [selectedDate, bookedPeriods],
   );
 
 
@@ -165,9 +174,8 @@ export function TimeRangePicker({
       availableIntervals,
     );
 
-  // Reset local demo state when the selected date changes
+  // Reset local selection when the selected date changes
   useEffect(() => {
-    setBookedRanges([]);
     setStartTime("");
     setEndTime("");
     setValidationError(null);
@@ -175,6 +183,17 @@ export function TimeRangePicker({
     onTimeRangeChange?.(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only reset when date changes
   }, [selectedDate]);
+
+  useEffect(() => {
+    if (selectedRange !== null) {
+      return;
+    }
+
+    setStartTime("");
+    setEndTime("");
+    setValidationError(null);
+    setConfirmMessage(null);
+  }, [selectedRange]);
 
   // Notify parent when a valid range is chosen (live preview for summary)
   useEffect(() => {
@@ -219,21 +238,6 @@ export function TimeRangePicker({
     setStartTime(interval.start);
     setEndTime(interval.end);
     setConfirmMessage(null);
-  }
-
-  function handleConfirmBooking() {
-    if (!currentSelection || !isSelectionValid) {
-      setValidationError("Please select a valid start and end time.");
-      return;
-    }
-
-    setBookedRanges((prev) => [...prev, currentSelection]);
-    setConfirmMessage(
-      `Booking confirmed: ${currentSelection.start} → ${currentSelection.end}`,
-    );
-    setStartTime("");
-    setEndTime("");
-    onTimeRangeChange?.(null);
   }
 
   return (
