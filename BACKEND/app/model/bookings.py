@@ -33,7 +33,7 @@ class Booking(Base):
     order_id = Column(
         Integer,
         ForeignKey("orders.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         index=True
     )
 
