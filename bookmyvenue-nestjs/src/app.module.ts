@@ -11,6 +11,7 @@ import { RolesGuard } from './shared/guards/roles.guard';
 import { CategoryModule } from './modules/category/category.module';
 import { VenueModule } from './modules/venue/venue.module';
 import { SlotModule } from './modules/slot/slot.module';
+import { BookingModule } from './modules/booking/booking.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { SlotModule } from './modules/slot/slot.module';
     UserModule,
     CategoryModule,
     VenueModule,
-    SlotModule
+    SlotModule,
+    BookingModule,
   ],
   providers: [
     { 

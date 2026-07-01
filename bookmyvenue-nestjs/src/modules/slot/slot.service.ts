@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { VenueModerationStatus } from '@prisma/client';
+import { BookingStatus, VenueModerationStatus } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateSlotDto } from './dto/create-slot.dto';
 import { UpdateSlotDto } from './dto/update-slot.dto';
@@ -12,7 +12,7 @@ import { RepeatType } from './enums/repeat-type.enum';
 
 @Injectable()
 export class SlotService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(venueId: string, ownerId: string, dto: CreateSlotDto) {
     const venue = await this.ensureOwnerVenueCanManageSlots(venueId, ownerId);
@@ -104,10 +104,16 @@ export class SlotService {
         startTime: {
           gt: new Date(),
         },
-      },
-      include: this.slotInclude,
-      orderBy: {
-        startTime: 'asc',
+        bookings: {
+          none: {
+            status: {
+              in: [
+                BookingStatus.PENDING_PAYMENT,
+                BookingStatus.CONFIRMED,
+              ],
+            },
+          },
+        },
       },
     });
   }
@@ -127,11 +133,27 @@ export class SlotService {
   async update(slotId: string, ownerId: string, dto: UpdateSlotDto) {
     const slot = await this.prisma.venueSlot.findUnique({
       where: { id: slotId },
-      include: { venue: true },
+      include: {
+        venue: true,
+        bookings: {
+          where: {
+            status: {
+              in: [BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED],
+            },
+          },
+          select: { id: true },
+        },
+      },
     });
 
     if (!slot) {
       throw new NotFoundException('Slot not found.');
+    }
+
+    if (slot.bookings.length > 0) {
+      throw new BadRequestException(
+        'Booked slots cannot be edited.',
+      );
     }
 
     if (slot.venue.ownerId !== ownerId) {
@@ -166,11 +188,27 @@ export class SlotService {
   async deactivate(slotId: string, ownerId: string) {
     const slot = await this.prisma.venueSlot.findUnique({
       where: { id: slotId },
-      include: { venue: true },
+      include: {
+        venue: true,
+        bookings: {
+          where: {
+            status: {
+              in: [BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED],
+            },
+          },
+          select: { id: true },
+        },
+      },
     });
 
     if (!slot) {
       throw new NotFoundException('Slot not found.');
+    }
+
+    if (slot.bookings.length > 0) {
+      throw new BadRequestException(
+        'Booked slots cannot be deactivated.',
+      );
     }
 
     if (slot.venue.ownerId !== ownerId) {
@@ -273,8 +311,8 @@ export class SlotService {
         isActive: true,
         id: excludeSlotId
           ? {
-              not: excludeSlotId,
-            }
+            not: excludeSlotId,
+          }
           : undefined,
         startTime: {
           lt: end,

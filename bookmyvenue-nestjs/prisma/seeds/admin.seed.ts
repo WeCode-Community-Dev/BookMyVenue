@@ -1,6 +1,7 @@
 import { PrismaClient, Role } from '@prisma/client';
 import { normalizeEmail } from '../../src/modules/auth/utils/normalize-email';
 import * as bcrypt from 'bcrypt';
+import { normalizeEmail } from '../../src/modules/auth/utils/normalize-email';
 
 export async function seedAdmin(prisma: PrismaClient) {
     const rawEmail = process.env.SEED_ADMIN_EMAIL;
@@ -11,6 +12,10 @@ export async function seedAdmin(prisma: PrismaClient) {
     }
     const email = normalizeEmail(rawEmail); 
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    const email = normalizeEmail(rawEmail)
+
+    const email = normalizeEmail(rawEmail)
 
     await prisma.user.upsert({
         where: { email },
