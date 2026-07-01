@@ -9,6 +9,8 @@ import {
   SpinnerOne,
   X,
   ArrowLeft,
+  AirVent,
+  Wheelchair
 } from '@mynaui/icons-react';
 import { VENUE_DATA } from '../data/VenueCardData';
 import FormBooking from "../components/FormBooking"
@@ -129,8 +131,10 @@ export default function SpaceListing() {
     const venue_capacity = venue.capacity
     const venue_location= venue.location
     const venue_type = venue.availability.booking_types
+    const venue_amenities = venue.amenities
     // const venue_min_hour = venue.availability.minimum_hours
     // console.log(venue_min_hour);
+
 
     const handleReservation = async () => {
         const totalAmount = venue_type === "hourly" ? selectedTimes.length * 2 * venue_price : venue_price ;
@@ -316,22 +320,30 @@ export default function SpaceListing() {
             <div>
                 <h2 className="text-xl font-semibold mb-6">What this place offers</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
-                    <div className="flex items-center gap-3 text-gray-700">
+                    {venue_amenities.wifi && <div className="flex items-center gap-3 text-gray-700">
                         <Wifi className="w-6 h-6 text-gray-600" />
                         <span>High-speed Wi-Fi</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-gray-700">
+                    </div>}
+                    {venue_amenities.parking && <div className="flex items-center gap-3 text-gray-700">
                         <Parking className="w-6 h-6 text-gray-600" />
                         <span>Free street parking</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-gray-700">
+                    </div>}
+                    {venue_amenities.av_equipements && <div className="flex items-center gap-3 text-gray-700">
                         <Monitor className="w-6 h-6 text-gray-600" />
                         <span>AV Equipment</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-gray-700">
+                    </div>}
+                    {venue_amenities.kitchen && <div className="flex items-center gap-3 text-gray-700">
                         <Coffee className="w-6 h-6 text-gray-600" />
                         <span>Kitchen access</span>
-                    </div>
+                    </div>}
+                    {venue_amenities.kitchen && <div className="flex items-center gap-3 text-gray-700">
+                        <AirVent className="w-6 h-6 text-gray-600" />
+                        <span>Air Conditioned</span>
+                    </div>}
+                    {venue_amenities.kitchen && <div className="flex items-center gap-3 text-gray-700">
+                        <Wheelchair className="w-6 h-6 text-gray-600" />
+                        <span>Wheen Chair</span>
+                    </div>}
                 </div>
             </div>
             </div>
