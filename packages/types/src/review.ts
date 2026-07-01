@@ -40,5 +40,13 @@ export type ReviewResponse = {
 
 export type GetReviewsResponse = {
     success: true;
-    data: ReviewResponse[];
+    reviews: ReviewResponse[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+        hasNextPage: boolean;
+        hasPreviousPage: boolean;
+    };
 };

@@ -55,16 +55,31 @@ export const getReviews = async (
 ) => {
     const venueId = Number(request.params.venueId);
 
-    const { page = 1, limit = 10 } = request.query;
-    const skip = (Number(page) - 1) * limit;
+    const page = Number(request.query.page ?? 1);
+    const limit = Number(request.query.limit ?? 10);
 
-    const reviews = await prisma.review.findMany({
-        where: { venueId },
-        include: { user: { select: { name: true } } },
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limit,
+    const skip = (page - 1) * limit;
+
+    const [reviews, total] = await prisma.$transaction([
+        prisma.review.findMany({
+            where: { venueId },
+            skip,
+            take: limit,
+            include: { user: { select: { name: true } } },
+            orderBy: { createdAt: "desc" },
+        }),
+        prisma.review.count({ where: { venueId } }),
+    ]);
+    return reply.send({
+        success: true,
+        reviews,
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+            hasNextPage: page * limit < total,
+            hasPreviousPage: page > 1,
+        },
     });
-
-    return reply.send({ success: true, data: reviews });
 };

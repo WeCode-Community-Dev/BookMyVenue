@@ -17,6 +17,7 @@ export function useWriteReview() {
         onSuccess: (_, payload) => {
             queryClient.invalidateQueries({ queryKey: ["review-status", String(payload.venueId)] });
             queryClient.invalidateQueries({ queryKey: ["venue", String(payload.venueId)] });
+            queryClient.invalidateQueries({ queryKey: ["reviews", payload.venueId] });
         },
 
         onError: (error: Error) => {

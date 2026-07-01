@@ -123,7 +123,7 @@ export const getVenuesByOwnerId = async (
             },
             Number(page),
             Number(limit),
-            OWNER_VENUE_LIST_SELECT
+            OWNER_VENUE_LIST_SELECT,
         ),
     );
 };
@@ -140,25 +140,25 @@ export const getVenueById = async (
         where: { id, isActive: true, verificationStatus: VerificationStatus.APPROVED },
         include: {
             sessions: { where: { isActive: true } },
-            reviews: {
-                include: { user: { select: { id: true, name: true } } },
-                orderBy: { createdAt: "desc" },
-            },
-            owner: { select: { id: true, email: true } },
+            owner: { select: { id: true, email: true, name: true } },
+            _count: { select: { reviews: true } },
         },
     });
 
     if (!venue) return reply.status(404).send({ message: "Venue not found" });
 
-    const { reviews, ...rest } = venue;
+    const rating = await prisma.review.aggregate({
+        where: { venueId: id },
+        _avg: { rating: true },
+    });
+
+
+    const { _count, ...rest } = venue;
     return reply.send({
         venue: {
             ...rest,
-            averageRating: reviews.length
-                ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-                : null,
-            reviewCount: reviews.length,
-            reviews,
+            reviewCount: venue._count.reviews,
+            averageRating: rating._avg.rating,
         },
     });
 };

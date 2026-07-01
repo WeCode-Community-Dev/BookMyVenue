@@ -9,13 +9,37 @@ import { useVenue } from "@/hooks/useVenues";
 import { useBookingStore } from "@/stores/bookingStore";
 import { Calendar } from "@/components/ui/calendar";
 import { formatEnum } from "@/lib/utils";
-import { useGetVenueReviewStatus } from "@/hooks/useReview";
+import { useGetVenueReviewStatus, useGetReviews } from "@/hooks/useReview";
 import { useAuth } from "@clerk/nextjs";
 import { ReviewModal } from "@/components/ReviewModal";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 // import { GetVenueReviewStatusResponse } from "@bookmyvenue/types";
+
+const PAGE_SIZE = 10;
+
+const pageRange = (current: number, total: number): (number | "ellipsis")[] => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages: (number | "ellipsis")[] = [1];
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    if (start > 2) pages.push("ellipsis");
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (end < total - 1) pages.push("ellipsis");
+    pages.push(total);
+    return pages;
+};
 
 export default function VenueDetailsPage() {
     const [token, setToken] = useState("");
+    const [page, setPage] = useState(1);
     const [activeImage, setActiveImage] = useState(0);
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
@@ -25,11 +49,15 @@ export default function VenueDetailsPage() {
 
     const { data, isLoading, error } = useVenue(params.id);
     const { data: reviewStatus } = useGetVenueReviewStatus(params.id, token);
+    const { data: reviewsData, isLoading: reviewsLoading } = useGetReviews(Number(params.id), page, PAGE_SIZE);
 
     const selectedSessions = useBookingStore((s) => s.selectedSessions);
     const toggleSession = useBookingStore((s) => s.toggleSession);
     const selectedDate = useBookingStore((s) => s.selectedDate);
     const setSelectedDate = useBookingStore((s) => s.setSelectedDate);
+
+    const totalPages = reviewsData?.pagination.totalPages?? 1;
+    const currentPage = reviewsData?.pagination.page ?? page;
 
     useEffect(() => {
         const fetchToken = async () => {
@@ -167,11 +195,16 @@ export default function VenueDetailsPage() {
                                 <h2 className="text-lg font-bold text-foreground mb-3">
                                     Reviews ({venue.reviewCount})
                                 </h2>
-                                {venue.reviews.length === 0 ? (
+                                {reviewsLoading ? (
+                                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Loading reviews…
+                                    </div>
+                                ) : !reviewsData?.reviews.length ? (
                                     <p className="text-muted-foreground text-sm">No reviews yet.</p>
                                 ) : (
                                     <div className="space-y-4">
-                                        {venue.reviews.map((r) => (
+                                        {reviewsData.reviews.map((r) => (
                                             <div
                                                 key={r.id}
                                                 className="bg-card border border-border rounded-xl p-4"
@@ -184,7 +217,7 @@ export default function VenueDetailsPage() {
                                                         </span>
                                                     </div>
                                                     <span className="text-xs text-muted-foreground">
-                                                        {r.user.email}
+                                                        {r.user.name}
                                                     </span>
                                                 </div>
                                                 {r.comment && (
@@ -195,6 +228,64 @@ export default function VenueDetailsPage() {
                                             </div>
                                         ))}
                                     </div>
+                                )}
+
+                                {totalPages > 1 && (
+                                    <Pagination className="mx-0 w-auto justify-end">
+                                        <PaginationContent>
+                                            <PaginationItem>
+                                                <PaginationPrevious
+                                                    href="#"
+                                                    aria-disabled={currentPage <= 1}
+                                                    className={
+                                                        currentPage <= 1
+                                                            ? "pointer-events-none opacity-50"
+                                                            : ""
+                                                    }
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        if (currentPage > 1) setPage(currentPage - 1);
+                                                    }}
+                                                />
+                                            </PaginationItem>
+                                            {pageRange(currentPage, totalPages).map((p, i) =>
+                                                p === "ellipsis" ? (
+                                                    <PaginationItem key={`ellipsis-${i}`}>
+                                                        <PaginationEllipsis />
+                                                    </PaginationItem>
+                                                ) : (
+                                                    <PaginationItem key={p}>
+                                                        <PaginationLink
+                                                            href="#"
+                                                            isActive={p === currentPage}
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                setPage(p);
+                                                            }}
+                                                        >
+                                                            {p}
+                                                        </PaginationLink>
+                                                    </PaginationItem>
+                                                ),
+                                            )}
+                                            <PaginationItem>
+                                                <PaginationNext
+                                                    href="#"
+                                                    aria-disabled={currentPage >= totalPages}
+                                                    className={
+                                                        currentPage >= totalPages
+                                                            ? "pointer-events-none opacity-50"
+                                                            : ""
+                                                    }
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        if (currentPage < totalPages)
+                                                            setPage(currentPage + 1);
+                                                    }}
+                                                />
+                                            </PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
                                 )}
                             </div>
                         </div>
@@ -274,7 +365,11 @@ export default function VenueDetailsPage() {
                     </div>
                 </div>
             </section>
-            <ReviewModal open={reviewModalOpen} onOpenChange={setReviewModalOpen} venueId={Number(params.id)} />
+            <ReviewModal
+                open={reviewModalOpen}
+                onOpenChange={setReviewModalOpen}
+                venueId={Number(params.id)}
+            />
         </>
     );
 }

@@ -48,34 +48,45 @@ export interface CreateVenuePayload {
     sessions: SessionInput[];
 }
 
-export interface VenueSession {
+export type VenueSession = {
     id: number;
     label: string;
     startTime: string;
     endTime: string;
     price: number;
-}
+};
+
+export type VenueOwner = {
+    id: string;
+    email: string;
+    name: string | null;
+};
 
 export interface Venue {
     id: number;
     name: string;
     description: string;
     capacity: number;
+
     images: string[];
     amenities: string[];
-    category: string;
+
+    category: VenueCategory;
+    district: District;
     location: string;
-    district: string;
-    sessions: VenueSession[];
-    averageRating: number | null;
-    reviewCount: number;
+
+    ownerId: string;
+
+    verificationStatus: VerificationStatus;
+    verificationReason: string | null;
+
+    isActive: boolean;
+
     createdAt: string;
-    isActive?: boolean;
-    verificationStatus?: VerificationStatus;
-    verificationReason?: string;
-    _count?: {
-        bookings: number;
-    };
+    updatedAt: string;
+
+    reviewCount: number;
+    averageRating: number | null;
 }
 
 export interface Pagination {
@@ -99,8 +110,8 @@ export interface VenueReview {
 }
 
 export interface VenueDetail extends Venue {
-    reviews: VenueReview[];
-    owner: { id: number; email: string };
+    sessions: VenueSession[];
+    owner: VenueOwner;
 }
 
 export interface GetVenueByIdResponse {
