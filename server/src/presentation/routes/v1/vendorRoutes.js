@@ -24,18 +24,25 @@ import {
 
 const router = Express.Router();
 
-const uploadVenueImages = cloudinaryUpload("venues");
+const uploadVenue = cloudinaryUpload("venues");
+// const uploadVenueLicense = cloudinaryUpload("venueLicense")
 
 //venue
 router.post(
   ROUTES.OWNER.VENUE.CREATE,
-  uploadVenueImages.array("images", 10),
+  uploadVenue.fields([
+    {name: "images", maxCount: 10},
+    {name: "license", maxCount: 5}
+  ]),
   validate(createVenueSchema, "body"),
   iVendorVenueController.createVenue
 );
 router.patch(
   ROUTES.OWNER.VENUE.EDIT,
-  uploadVenueImages.array("images", 10),
+  uploadVenue.fields([
+    {name: "images", maxCount: 10},
+    {name: "license", maxCount: 5}
+  ]),
   validate(createVenueSchema, "body"),
   validate(VenueParamsSchema, "params"),
   iVendorVenueController.updateVenue

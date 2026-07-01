@@ -17,6 +17,9 @@ export class IVenueRepository {
     async findAllFiltered(query = {}){
         throw new Error('Method not implemented')
     }
+    async findTopVenues(){
+        throw new Error("Method not implemented")
+    }
     async approveVenue(id){
         throw new Error('Method not implemented')
     }

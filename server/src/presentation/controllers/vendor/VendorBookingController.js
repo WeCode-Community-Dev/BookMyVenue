@@ -21,11 +21,11 @@ export class VendorBookingController {
 
         async (req, res) => {
 
-            const ownerId = req.user.id;
+            const vendorId = req.user.id;
 
             const bookings =
                 await this._getVendorBookingsUsecase
-                    .execute({ownerId, ...req.query})
+                    .execute({vendorId, ...req.query})
             return sendSuccess(
                 res,
                 statusCode.OK,
@@ -41,11 +41,11 @@ export class VendorBookingController {
         async (req, res) => {
             const { bookingId } = req.params
 
-            const ownerId = req.user.id;
+            const vendorId = req.user.id;
 
                 const booking =
                 await this._getBookingByIdUsecase
-                    .execute({bookingId, ownerId})
+                    .execute({bookingId, vendorId})
             return sendSuccess(
                 res,
                 statusCode.OK,

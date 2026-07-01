@@ -4,9 +4,10 @@ import { VendorCreateVenueUsecase } from '../../application/vendor/usecases/venu
 import { VendorGetVenueByIdUsecase } from '../../application/vendor/usecases/venue/vendor.getVenueById.usecase.js'
 import { VendorDeleteVenueUsecase } from '../../application/vendor/usecases/venue/vendor.deleteVenue.usecase.js'
 import { VendorUpdateVenueStatusUsecase } from '../../application/vendor/usecases/venue/venue.updateVenueStatus.usecase.js'
+import { VendorGetAllVenuesUsecase } from '../../application/vendor/usecases/venue/vendor.getAllVenues.usecase.js'
 import { UserGetAllVenuesUsecase } from '../../application/user/usecases/venue/user.getAllVenue.usecase.js'
 import { UserGetVenueByIdUsecase } from '../../application/user/usecases/venue/user.getVenueById.usecase.js'
-import { VendorGetAllVenuesUsecase } from '../../application/vendor/usecases/venue/vendor.getAllVenues.usecase.js'
+import { UserGetTopVenuesUsecase } from '../../application/user/usecases/venue/user.getTopVenue.usacase.js'
 
 // usecases - auth
 import RegisterUserUseCase from '../../application/user/usecases/RegisterUserUseCase.js'
@@ -136,6 +137,7 @@ const getDashboardStatsUsecase = new GetDashboardStatsUsecase(iVenueRepository, 
 // --- user usecases ---
 const iUserGetAllVenues = new UserGetAllVenuesUsecase(iVenueRepository)
 const iUserGetVenueById = new UserGetVenueByIdUsecase(iVenueRepository)
+const iUserGetTopVenues = new UserGetTopVenuesUsecase(iVenueRepository)
 
 // --- controllers ---
 export const iVendorVenueController = new VendorVenueController(
@@ -176,7 +178,8 @@ export const iAdminBookingController = new AdminBookingController(
 
 export const iUserVenueController = new UserVenueController(
     iUserGetAllVenues,
-    iUserGetVenueById
+    iUserGetVenueById,
+    iUserGetTopVenues
 )
 
 export const iVendorProfileController = new VendorProfileController(

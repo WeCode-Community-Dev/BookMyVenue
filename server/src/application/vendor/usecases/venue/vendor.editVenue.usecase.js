@@ -39,7 +39,9 @@ export class VendorEditVenueUsecase  {
         minimumBookingHours = 0,
         amenities = [],
         newImages = [],
-        deletedImages = []
+        newLicense = [],
+        deletedImages = [],
+        deletedLicense = []
     }) {
             const venue = await this._venueRepository.findById(venueId)
             if(!venue){
@@ -58,6 +60,12 @@ export class VendorEditVenueUsecase  {
             }
 
             const remainingImages = venue.images.filter(image => !deletedImages.includes(image.publicId))
+            const remainingLicense = venue.license.filter(l => !deletedLicense.includes(l.publicId))
+            const finalLicense = [...remainingLicense, ...newLicense]
+
+            if(finalLicense.length === 0){
+                throw new ValidationError(VenueMessages.error.VENUE_LICENSE_REQUIRED)
+            }
 
             const finalImages = [...remainingImages, ...newImages]
             if(finalImages.length < 3){
@@ -85,10 +93,14 @@ export class VendorEditVenueUsecase  {
             venue.minimumBookingHours = minimumBookingHours
             venue.amenities = amenities
             venue.images = [...remainingImages, ...newImages]
+            venue.license = finalLicense
 
             const updatedVenue = await this._venueRepository.update(venue.id, venue)
             if(deletedImages.length){
                 await this._cloudinaryService.deletedImages(deletedImages)
+            }
+            if(deletedLicense.length){
+                await this._cloudinaryService.deletedImages(deletedLicense)
             }
 
             return updatedVenue
