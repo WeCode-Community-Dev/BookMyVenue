@@ -1,131 +1,196 @@
-import { Injectable, BadRequestException, ConflictException, NotFoundException, Inject } from '@nestjs/common';
+import {
+    BadRequestException,
+    ForbiddenException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
+import {
+    BookingStatus,
+    Prisma,
+    VenueModerationStatus,
+} from '@prisma/client';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { BookingStatus } from '@prisma/client';
-import Redis from 'ioredis';
 
 @Injectable()
 export class BookingService {
-  constructor(
-    private prisma: PrismaService,
-    @Inject('REDIS_CLIENT') private readonly redis: Redis,
-  ) {}
+    constructor(private readonly prisma: PrismaService) { }
 
-  async createBooking(createBookingDto: CreateBookingDto, userId: string) {
-    const { venueId, startTime, endTime } = createBookingDto;
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    const now = new Date();
+    async create(dto: CreateBookingDto, userId: string) {
+        return this.prisma.$transaction(
+            async (tx) => {
+                const slot = await tx.venueSlot.findUnique({
+                    where: { id: dto.slotId },
+                    include: {
+                        venue: {
+                            include: {
+                                category: true,
+                            },
+                        },
+                    },
+                });
 
-    if (start < now) {
-      throw new BadRequestException('You cannot book a venue in the past!');
+                if (!slot) {
+                    throw new NotFoundException('Slot not found.');
+                }
+
+                if (!slot.isActive) {
+                    throw new BadRequestException('This slot is not active.');
+                }
+
+                if (slot.startTime <= new Date()) {
+                    throw new BadRequestException('This slot is no longer available.');
+                }
+
+                if (slot.venue.moderationStatus !== VenueModerationStatus.APPROVED) {
+                    throw new BadRequestException('Venue is not approved for booking.');
+                }
+
+                if (!slot.venue.isListed || !slot.venue.category.isListed) {
+                    throw new BadRequestException('Venue is not available for booking.');
+                }
+
+                const existingBooking = await tx.booking.findFirst({
+                    where: {
+                        slotId: slot.id,
+                        status: {
+                            in: [BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED],
+                        },
+                    },
+                });
+
+                if (existingBooking) {
+                    throw new BadRequestException('This slot has already been booked.');
+                }
+
+                return tx.booking.create({
+                    data: {
+                        userId,
+                        venueId: slot.venueId,
+                        slotId: slot.id,
+                        status: BookingStatus.PENDING_PAYMENT,
+                        totalPrice: slot.price,
+                        bookedStartTime: slot.startTime,
+                        bookedEndTime: slot.endTime,
+                    },
+                    include: this.bookingInclude,
+                });
+            },
+            {
+                isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+            },
+        );
     }
 
-    if (start >= end) {
-      throw new BadRequestException('End time must be after start time.');
-    }
-    const lockKey = `lock:venue:${venueId}:slot:${start.getTime()}-${end.getTime()}`;
-    const lockToken = `${userId}-${Date.now()}`;
-    const lockTimeoutMs = 10000;
-    const acquired = await this.redis.set(lockKey, lockToken, 'PX', lockTimeoutMs, 'NX');
-
-    if (!acquired) {
-      throw new ConflictException(
-        'This specific venue slot is not available at the moment. Please try again in a few moments.'
-      );
+    async findMyBookings(userId: string) {
+        return this.prisma.booking.findMany({
+            where: { userId },
+            include: this.bookingInclude,
+            orderBy: { createdAt: 'desc' },
+        });
     }
 
-    try {
-      return await this.prisma.$transaction(async (tx) => {
-        const venue = await tx.venue.findUnique({ where: { id: venueId } });
-        if (!venue) throw new NotFoundException('Venue not found.');
-
-        if (venue.ownerId === userId) {
-          throw new BadRequestException('You cannot book your own venue!');
-        }
-
-        const overlappingBooking = await tx.booking.findFirst({
-          where: {
-            venueId,
-            status: BookingStatus.CONFIRMED,
-            OR: [
-              {
-                startTime: { lte: start },
-                endTime: { gt: start },
-              },
-              {
-                startTime: { lt: end },
-                endTime: { gte: end },
-              },
-              {
-                startTime: { gte: start },
-                endTime: { lte: end },
-              },
-            ],
-          },
+    async findMyBookingById(id: string, userId: string) {
+        const booking = await this.prisma.booking.findFirst({
+            where: { id, userId },
+            include: this.bookingInclude,
         });
 
-        if (overlappingBooking) {
-          throw new ConflictException(
-            'This venue has already booked during this slot.'
-          );
+        if (!booking) {
+            throw new NotFoundException('Booking not found.');
         }
 
-        const totalHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-        const totalPrice = totalHours * venue.pricePerHour;
+        return booking;
+    }
 
-        return tx.booking.create({
-          data: {
-            venueId,
-            userId,
-            startTime: start,
-            endTime: end,
-            totalPrice,
-            status: BookingStatus.CONFIRMED,
-          },
+    async cancel(id: string, userId: string) {
+        const booking = await this.prisma.booking.findFirst({
+            where: { id, userId },
+            include: { slot: true },
         });
-      });
-    } finally {
-      const currentToken = await this.redis.get(lockKey);
-      if (currentToken === lockToken) {
-        await this.redis.del(lockKey);
-      }
+
+        if (!booking) {
+            throw new NotFoundException('Booking not found.');
+        }
+
+        const inactiveStatuses: BookingStatus[] = [
+            BookingStatus.CANCELLED,
+            BookingStatus.EXPIRED,
+            BookingStatus.FAILED,
+        ];
+
+        if (inactiveStatuses.includes(booking.status)) {
+            throw new BadRequestException('This booking is already inactive.');
+        }
+
+        if (booking.slot.startTime <= new Date()) {
+            throw new BadRequestException('Started or past slots cannot be cancelled.');
+        }
+
+        return this.prisma.booking.update({
+            where: { id: booking.id },
+            data: {
+                status: BookingStatus.CANCELLED,
+                cancelledAt: new Date(),
+                cancellationReason: 'Cancelled by user',
+            },
+            include: this.bookingInclude,
+        });
     }
-  }
 
-  async cancelBooking(bookingId: string, userId: string) {
-    const booking = await this.prisma.booking.findUnique({
-      where: { id: bookingId },
-      include: { venue: true },
-    });
+    async findOwnerVenueBookings(venueId: string, ownerId: string) {
+        const venue = await this.prisma.venue.findUnique({
+            where: { id: venueId },
+        });
 
-    if (!booking) throw new NotFoundException('Booking record not found.');
-    if (booking.userId !== userId) throw new BadRequestException('You do not own this booking.');
-    if (booking.status === BookingStatus.CANCELLED) throw new BadRequestException('Booking is already cancelled.');
+        if (!venue) {
+            throw new NotFoundException('Venue not found.');
+        }
 
-    const now = new Date();
-    const eventStart = new Date(booking.startTime);
-    
-    const msDiff = eventStart.getTime() - now.getTime();
-    const daysUntilEvent = msDiff / (1000 * 60 * 60 * 24);
+        if (venue.ownerId !== ownerId) {
+            throw new ForbiddenException(
+                'You do not have permission to view these bookings.',
+            );
+        }
 
-    if (daysUntilEvent < booking.venue.cancellationWindowDays) {
-      throw new BadRequestException(
-        `Cancellation window closed. This venue requires at least ${booking.venue.cancellationWindowDays} days notice for full cancellations.`
-      );
+        return this.prisma.booking.findMany({
+            where: { venueId },
+            include: this.bookingInclude,
+            orderBy: { createdAt: 'desc' },
+        });
     }
 
-    return this.prisma.booking.update({
-      where: { id: bookingId },
-      data: { status: BookingStatus.CANCELLED },
-    });
-  }
+    async findAllForAdmin() {
+        return this.prisma.booking.findMany({
+            include: this.bookingInclude,
+            orderBy: { createdAt: 'desc' },
+        });
+    }
 
-  async getUserBookings(userId: string) {
-    return this.prisma.booking.findMany({
-      where: { userId },
-      include: { venue: true },
-      orderBy: { startTime: 'asc' },
-    });
-  }
+    private readonly bookingInclude = {
+        user: {
+            select: {
+                id: true,
+                name: true,
+                email: true,
+            },
+        },
+        venue: {
+            select: {
+                id: true,
+                name: true,
+                location: true,
+                ownerId: true,
+            },
+        },
+        slot: {
+            select: {
+                id: true,
+                startTime: true,
+                endTime: true,
+                price: true,
+                isActive: true,
+            },
+        },
+    } as const;
 }
