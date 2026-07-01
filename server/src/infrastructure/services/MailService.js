@@ -4,6 +4,7 @@ import { vendorApprovalTemplate } from "../emailTemplates/admin.vendorApprovalTe
 import { vendorRejectionTemplate } from "../emailTemplates/admin.vendorRejectionTemplate.js";
 import { adminVenueApprovalTemplate } from "../emailTemplates/admin.venueApprovalTemplate.js";
 import { adminVenueRejectionTemplate } from "../emailTemplates/admin.venueRejectionTemplate.js";
+import { emailChangeOtpTemplate } from "../emailTemplates/user.emailChangeOtpTemplate.js";
 
 export class MailServiceImpl extends MailService {
 
@@ -95,43 +96,28 @@ export class MailServiceImpl extends MailService {
     }
     async sendEmailChangeOtp(email, otp) {
 
+        const { subject, html } =
+            emailChangeOtpTemplate({ otp });
+
         await transporter.sendMail({
-
             from: process.env.EMAIL_USER,
-
             to: email,
-
-            subject: "Email Change OTP",
-
-            html: `
-                <h2>Email Change Verification</h2>
-                <p>Your OTP is:</p>
-                <h1>${otp}</h1>
-                <p>This OTP is valid for 5 minutes.</p>
-            `
-
+            subject,
+            html
         });
-
     }
+
     async resendEmailChangeOtp(email, otp) {
 
+        const { subject, html } =
+            emailChangeOtpTemplate({ otp });
+
         await transporter.sendMail({
-
             from: process.env.EMAIL_USER,
-
             to: email,
-
-            subject: "Email Change OTP",
-
-            html: `
-                <h2>Email Change Verification</h2>
-                <p>Your new OTP is:</p>
-                <h1>${otp}</h1>
-                <p>This OTP is valid for 5 minutes.</p>
-            `
-
+            subject,
+            html
         });
-
     }
 
 }

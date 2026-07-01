@@ -280,7 +280,12 @@ export class UserRepository extends IUserRepository {
 
         const document = await UserModel.findByIdAndUpdate(
             userId,
-            { profileImage },
+            {
+                profileImage: {
+                    publicId: profileImage.publicId,
+                    url: profileImage.url
+                }
+            },
             { new: true }
         );
 
@@ -293,7 +298,12 @@ export class UserRepository extends IUserRepository {
 
         const document = await UserModel.findByIdAndUpdate(
             userId,
-            { profileImage: "" },
+            {
+                profileImage: {
+                    publicId: "",
+                    url: ""
+                }
+            },
             { new: true }
         );
 

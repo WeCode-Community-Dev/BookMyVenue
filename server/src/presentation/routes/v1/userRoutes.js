@@ -22,11 +22,12 @@ router.get(ROUTES.USER.VENUE.GET_BY_ID, validate(VenueParamsSchema, 'params'), i
 
 //profile
 router.get(
-    ROUTES.USER.PROFILE.GET_PROFILE,iUserProfileController.getProfile
+    ROUTES.USER.PROFILE.PROFILE,
+    iUserProfileController.getProfile
 )
 
 router.patch(
-    ROUTES.USER.PROFILE.UPDATE_PROFILE,
+    ROUTES.USER.PROFILE.PROFILE,
     validate(updateProfileSchema),
     iUserProfileController.updateProfile
 )
@@ -47,18 +48,18 @@ router.post(
     iUserProfileController.resendEmailChangeOtp
 )
 router.patch(
-    ROUTES.USER.PROFILE.UPDATE_PROFILE_IMAGE,
+    ROUTES.USER.PROFILE.PROFILE_IMAGE,
     cloudinaryUpload("profile-images").single("profileImage"),
     iUserProfileController.updateProfileImage
 )
 router.delete(
-    ROUTES.USER.PROFILE.REMOVE_PROFILE_IMAGE,
+    ROUTES.USER.PROFILE.PROFILE_IMAGE,
     iUserProfileController.removeProfileImage
 )
 
 //wishlist
 router.post(
-    ROUTES.USER.WISHLIST.ADD,
+    ROUTES.USER.WISHLIST.WISHLIST,
     validate(WishlistParamsSchema,"params"),
     iUserWishlistController.addToWishlist
 )
@@ -67,7 +68,7 @@ router.get(
     iUserWishlistController.getWishlist
 )
 router.delete(
-    ROUTES.USER.WISHLIST.REMOVE,
+    ROUTES.USER.WISHLIST.WISHLIST,
     validate(WishlistParamsSchema,'params'),
     iUserWishlistController.removeWishlist
 )

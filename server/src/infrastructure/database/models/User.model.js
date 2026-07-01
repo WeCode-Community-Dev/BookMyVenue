@@ -38,9 +38,15 @@ const userSchema = new mongoose.Schema({
         default: [],
         select: false
     },
-    profileImage: {
-    type: String,
-    default: ""
+   profileImage: {
+        publicId: {
+            type: String,
+            default: ""
+        },
+        url: {
+            type: String,
+            default: ""
+        }
     },
 
     pendingEmail: {

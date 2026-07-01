@@ -8,7 +8,10 @@ export class UserEntity {
         role,
         isVerified = false,
         isOtpVerified = false,
-        profileImage = "",
+       profileImage = {
+            publicId: "",
+            url: ""
+        },
         isBlocked = false,
         wishlist = [],
         createdAt,

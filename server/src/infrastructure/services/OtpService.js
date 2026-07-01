@@ -1,10 +1,12 @@
-import { generateOtp } from "../../shared/utils/genarateotp.js";
+
 import IOtpService from "../../domain/interfaces/IOtpService.js";
 
 class OtpService extends IOtpService {
 
     generateOtp() {
-        return generateOtp();
+        return Math.floor(
+            100000 + Math.random() * 900000
+        ).toString();
     }
 
     getOtpExpiry() {

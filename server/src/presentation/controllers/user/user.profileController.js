@@ -91,10 +91,14 @@ export class UserProfileController{
         );
         }
 
+        const profileImage={
+            publicId:req.file.filename,
+            url:req.file.path
+        };
         const updatedUser =
             await this._userUpdateProfileImageUsecase.execute(
                 userId,
-                req.file.path
+                profileImage
             );
 
         return sendSuccess(
@@ -104,6 +108,7 @@ export class UserProfileController{
             updatedUser
         );
     })
+
     removeProfileImage=asyncHandler(async(req,res)=>{
 
         const userId=req.user.userId;
