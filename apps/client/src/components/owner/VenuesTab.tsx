@@ -7,15 +7,11 @@ import { useAuth } from "@clerk/nextjs";
 import { fmt } from "@/app/owner/types";
 import { useOwnerVenues } from "@/hooks/useVenues";
 
-
-
 const STATUS_STYLE = {
     APPROVED: "bg-emerald-200 text-emerald-700 border-emerald-700",
     PENDING: "bg-amber-200 text-amber-700 border-amber-700",
     REJECTED: "bg-red-200 text-red-600 border-red-700",
 } as const;
-
-
 
 export default function VenuesTab() {
     const { getToken } = useAuth();
@@ -91,9 +87,7 @@ export default function VenuesTab() {
 
                                 {v.verificationStatus === "REJECTED" && v.verificationReason && (
                                     <div className="absolute bottom-0 left-0 right-0  rounded-lg border border-red-200 bg-red-50 p-3">
-                                        <p className="text-xs font-semibold text-red-600">
-                                            Venue Rejected:
-                                        </p>
+                                        <p className="text-xs font-semibold text-red-600">Venue Rejected:</p>
                                         <p className="mt-1 text-xs text-red-500">{v.verificationReason}</p>
                                     </div>
                                 )}
@@ -102,9 +96,12 @@ export default function VenuesTab() {
                             <div className="p-5">
                                 <h3 className="font-bold text-base mb-1">{v.name}</h3>
 
-                                <div className="flex items-center gap-1 text-muted-foreground text-xs mb-4">
-                                    <MapPin className="w-3 h-3" />
-                                    {v.location} · {v.category}
+                                <div className="text-muted-foreground text-xs mb-4">
+                                    <div className="flex items-center gap-1 ">
+                                        <MapPin className="w-3 h-3 " />
+                                        <span>{v.location}</span>
+                                    </div>
+                                    <span className="ps-4">{v.category}</span>
                                 </div>
                                 {/* {v.verificationStatus === "REJECTED" && v.verificationReason && (
                                     <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
@@ -131,7 +128,7 @@ export default function VenuesTab() {
                                     </div>
 
                                     <div className="bg-muted rounded-lg p-2 text-center">
-                                        <p className="text-xs font-bold">{v?._count?.bookings}</p>
+                                        <p className="text-xs font-bold">{v?.bookingCount}</p>
                                         <p className="text-xs text-muted-foreground">Bookings</p>
                                     </div>
                                 </div>

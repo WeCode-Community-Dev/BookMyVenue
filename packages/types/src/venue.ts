@@ -80,10 +80,14 @@ export interface Venue {
     verificationStatus: VerificationStatus;
     verificationReason: string | null;
 
+    sessions: VenueSession[];
+
     isActive: boolean;
 
     createdAt: string;
     updatedAt: string;
+
+    bookingCount: number;
 
     reviewCount: number;
     averageRating: number | null;
@@ -110,7 +114,7 @@ export interface VenueReview {
 }
 
 export interface VenueDetail extends Venue {
-    sessions: VenueSession[];
+    // sessions: VenueSession[];
     owner: VenueOwner;
 }
 

@@ -115,17 +115,27 @@ export const getVenuesByOwnerId = async (
 ) => {
     const { page = 1, limit = 20 } = request.query;
 
-    return reply.send(
-        await fetchVenues(
-            {
-                isActive: true,
-                ownerId: request.userId,
-            },
-            Number(page),
-            Number(limit),
-            OWNER_VENUE_LIST_SELECT,
-        ),
+    const result = await fetchVenues(
+        {
+            isActive: true,
+            ownerId: request.userId,
+        },
+        Number(page),
+        Number(limit),
+        OWNER_VENUE_LIST_SELECT,
     );
+
+    return reply.send({
+        ...result,
+        venues: result.venues.map((venue) => {
+            const { _count, ...rest } = venue;
+
+            return {
+                ...rest,
+                bookingCount: _count.bookings,
+            };
+        }),
+    });
 };
 
 // Single venue details
@@ -151,7 +161,6 @@ export const getVenueById = async (
         where: { venueId: id },
         _avg: { rating: true },
     });
-
 
     const { _count, ...rest } = venue;
     return reply.send({
