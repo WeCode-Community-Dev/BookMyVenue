@@ -13,25 +13,12 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
+import { fmtDate, pageRange } from "@/lib/utils";
 
 const toTitleStatus = (s: string): BookingStatus => (s.charAt(0) + s.slice(1).toLowerCase()) as BookingStatus;
 
-const fmtDate = (d: string | Date) =>
-    new Date(d).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
-
 const PAGE_SIZE = 10;
 
-const pageRange = (current: number, total: number): (number | "ellipsis")[] => {
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    const pages: (number | "ellipsis")[] = [1];
-    const start = Math.max(2, current - 1);
-    const end = Math.min(total - 1, current + 1);
-    if (start > 2) pages.push("ellipsis");
-    for (let i = start; i <= end; i++) pages.push(i);
-    if (end < total - 1) pages.push("ellipsis");
-    pages.push(total);
-    return pages;
-};
 
 export default function BookingsTab() {
     const [bookingFilter, setBookingFilter] = useState<BookingStatus | "All">("All");
