@@ -16,7 +16,7 @@ export const fmt12h = (t: string) => {
 
 export const formatEnum = (value: string) => {
     return value
-        .split("_")
+        ?.split("_")
         .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
         .join(" ");
 };
@@ -44,7 +44,6 @@ export const toDateString = (date: Date) => {
 // 30 Jun 2026
 export const fmtDate = (d: string | Date) =>
     new Date(d).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
-
 
 export const pageRange = (current: number, total: number): (number | "ellipsis")[] => {
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);

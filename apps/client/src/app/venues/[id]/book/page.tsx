@@ -36,7 +36,6 @@ export default function VenueBookingPage() {
 
     const router = useRouter();
     const { mutate: createBooking, isPending } = useCreateBooking();
-    const clearSessions = useBookingStore((s) => s.clearSessions);
 
     const selectedSessions = useBookingStore((s) => s.selectedSessions);
     const selectedDate = useBookingStore((s) => s.selectedDate);
@@ -44,6 +43,7 @@ export default function VenueBookingPage() {
     const setPhone = useBookingStore((s) => s.setPhone);
     const purpose = useBookingStore((s) => s.purpose);
     const setPurpose = useBookingStore((s) => s.setPurpose);
+    const resetBooking = useBookingStore((state) => state.resetBooking);
 
     const [touched, setTouched] = useState<{ phone?: boolean; purpose?: boolean }>({});
 
@@ -64,15 +64,11 @@ export default function VenueBookingPage() {
                 purpose,
             },
             {
-                onSuccess: (data) => {
-                    console.log(">>>>>>>>>>>");
-                    console.log({ data });
-                    clearSessions();
+                onSuccess: () => {
+                    resetBooking();
                     router.push(`/venues/${venue.id}/book/success`);
                 },
-                onError: (err) => {
-                    alert(err.message); // replace with a toast later
-                },
+                onError: (err) => {console.error(err)},
             },
         );
     };
@@ -237,7 +233,7 @@ export default function VenueBookingPage() {
                                                 </p>
                                             </div>
                                             <span className="text-sm font-bold text-primary">
-                                                ₹{(session.price/100).toLocaleString("en-IN")}
+                                                ₹{(session.price / 100).toLocaleString("en-IN")}
                                             </span>
                                         </div>
                                     ))}
@@ -249,7 +245,7 @@ export default function VenueBookingPage() {
                             <div className="border-t border-border pt-5 flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Total</span>
                                 <span className="text-lg font-bold text-foreground">
-                                    ₹{(total/100).toLocaleString("en-IN")}
+                                    ₹{(total / 100).toLocaleString("en-IN")}
                                 </span>
                             </div>
                         )}

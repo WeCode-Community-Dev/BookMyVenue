@@ -62,6 +62,7 @@ export type VenueOwner = {
     name: string | null;
 };
 
+export type BookedSessionsByDate = Record<string, number[]>;
 export interface Venue {
     id: number;
     name: string;
@@ -91,6 +92,9 @@ export interface Venue {
 
     reviewCount: number;
     averageRating: number | null;
+
+    disabledDates: number[];
+    bookedSessions: BookedSessionsByDate;
 }
 
 export interface Pagination {

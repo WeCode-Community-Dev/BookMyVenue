@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { Prisma, prisma, VerificationStatus } from "@bookmyvenue/database";
+import { BookingStatus, Prisma, prisma, VerificationStatus } from "@bookmyvenue/database";
 import { CreateVenueBody, EditVenueBody, GetVenuesQuery, SessionInput } from "@bookmyvenue/types";
 
 const VENUE_LIST_SELECT = {
@@ -144,6 +144,7 @@ export const getVenueById = async (
     reply: FastifyReply,
 ) => {
     const id = Number(request.params.id);
+
     if (isNaN(id)) return reply.status(400).send({ message: "Invalid venue id" });
 
     const venue = await prisma.venue.findFirst({
@@ -157,6 +158,46 @@ export const getVenueById = async (
 
     if (!venue) return reply.status(404).send({ message: "Venue not found" });
 
+    const sessionIds = venue.sessions.map((s) => s.id);
+    const totalSessions = sessionIds.length;
+
+    const tomorrow = new Date();
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const bookingSessions = await prisma.bookingSession.findMany({
+        where: {
+            sessionId: {
+                in: sessionIds,
+            },
+            eventDate: {
+                gte: tomorrow,
+            },
+            booking: {
+                status: BookingStatus.CONFIRMED,
+            },
+        },
+        select: {
+            eventDate: true,
+            sessionId: true,
+        },
+    });
+
+    const bookedSessionsByDate: Record<string, number[]> = {};
+
+    for (const booking of bookingSessions) {
+        const date = booking.eventDate.toISOString().split("T")[0]!;
+
+        if (!bookedSessionsByDate[date]) {
+            bookedSessionsByDate[date] = [];
+        }
+        bookedSessionsByDate[date].push(booking.sessionId);
+    }
+
+    const disabledDates = Object.entries(bookedSessionsByDate)
+        .filter(([, sessionIds]) => sessionIds.length === totalSessions)
+        .map(([date]) => date);
+
     const rating = await prisma.review.aggregate({
         where: { venueId: id },
         _avg: { rating: true },
@@ -168,6 +209,8 @@ export const getVenueById = async (
             ...rest,
             reviewCount: venue._count.reviews,
             averageRating: rating._avg.rating,
+            bookedSessions: bookedSessionsByDate,
+            disabledDates,
         },
     });
 };
