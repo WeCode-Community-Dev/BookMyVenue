@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
   
     private final JwtAuthFilter jwtAuthFilter;
+    private final RateLimitFilter rateLimitFilter;
    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -37,6 +38,7 @@ public class SecurityConfig {
                 //.requestMatchers("/api/owner/**").authenticated()
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
