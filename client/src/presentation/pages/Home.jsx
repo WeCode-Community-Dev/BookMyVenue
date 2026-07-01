@@ -1,130 +1,23 @@
-import {
-  MapPin,
-  Calendar,
-  Users,
-  Search,
-} from "lucide-react";
 import Header from "../components/common/Header";
 import Footer from "../components/common/Footer";
-
-const featuredVenues = [
-  {
-    name: "Grand Ballroom Palace",
-    type: "Wedding Hall",
-    location: "Mumbai, Maharashtra",
-    rating: "4.9",
-    reviews: "324",
-    price: "₹80,000",
-    capacity: "500-800 guests",
-    image:
-      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3",
-  },
-  {
-    name: "Sky Terrace Lounge",
-    type: "Rooftop Venue",
-    location: "Bangalore, Karnataka",
-    rating: "4.8",
-    reviews: "198",
-    price: "₹45,000",
-    capacity: "100-200 guests",
-    image:
-      "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf",
-  },
-  {
-    name: "Modern Conference Hub",
-    type: "Conference Room",
-    location: "Gurgaon, Delhi NCR",
-    rating: "4.7",
-    reviews: "156",
-    price: "₹25,000",
-    capacity: "50-150 guests",
-    image:
-      "https://images.unsplash.com/photo-1497366754035-f200968a6e72",
-  },
-  {
-    name: "Elegant Banquet Hall",
-    type: "Banquet Hall",
-    location: "Pune, Maharashtra",
-    rating: "4.9",
-    reviews: "267",
-    price: "₹65,000",
-    capacity: "300-500 guests",
-    image:
-      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3",
-  },
-];
-
-const categories = [
-  {
-    title: "Wedding Halls",
-    count: "1,200+",
-    icon: "🏩",
-  },
-  {
-    title: "Conference Rooms",
-    count: "850+",
-    icon: "🏢",
-  },
-  {
-    title: "Banquet Halls",
-    count: "950+",
-    icon: "🎉",
-  },
-  {
-    title: "Coworking Spaces",
-    count: "620+",
-    icon: "💼",
-  },
-  {
-    title: "Rooftop Venues",
-    count: "340+",
-    icon: "🏙️",
-  },
-  {
-    title: "Party Halls",
-    count: "780+",
-    icon: "🎊",
-  },
-  {
-    title: "Studios",
-    count: "450+",
-    icon: "📷",
-  },
-  {
-    title: "Auditoriums",
-    count: "290+",
-    icon: "🎭",
-  },
-];
-
-const reviews = [
-        {
-          name:"Priya Sharma",
-          role:"Wedding Client",
-          text:"Book My Venue made our wedding planning so much easier! We found the perfect venue within our budget and the booking process was seamless.",
-          initials:"PS",
-          color:"bg-blue-400"
-        },
-
-        {
-          name:"Rajesh Kumar",
-          role:"Corporate Event Manager",
-          text:"As a corporate event planner, I rely on Book My Venue for all our conferences. The variety and quality of venues is exceptional.",
-          initials:"RK",
-          color:"bg-orange-400"
-        },
-
-        {
-          name:"Anita Desai",
-          role:"Birthday Party Host",
-          text:"Found an amazing rooftop venue for my daughter's birthday. The photos, reviews, and booking system made everything stress-free!",
-          initials:"AD",
-          color:"bg-green-400"
-        }
-
-      ]
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constatnts/routes";
+import { VenueCategory } from "@/constatnts/Venue";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { getTopVenues } from "@/redux/slices/UserVenueSlice";
+import VenueCard from "../components/common/VenueCard";
 
 export default function Home() {
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const { venues } = useSelector((state) => state.userVenue)
+
+  useEffect(()=> {
+    dispatch(getTopVenues())
+  }, [dispatch])
+
+  
   return (
     <div className="bg-white">
       <Header />
@@ -145,41 +38,15 @@ export default function Home() {
             the ideal venue for your special moments.
           </p>
 
-          <div className="bg-white rounded-2xl p-4 mt-14 max-w-5xl mx-auto shadow-xl">
-            <div className="grid md:grid-cols-4 gap-3">
-              <div className="flex items-center gap-3 bg-gray-100 px-4 py-4 rounded-xl">
-                <MapPin className="text-gray-500" />
-                <input
-                  type="text"
-                  placeholder="Location"
-                  className="bg-transparent outline-none text-black w-full"
-                />
-              </div>
-
-              <div className="flex items-center gap-3 bg-gray-100 px-4 py-4 rounded-xl">
-                <Calendar className="text-gray-500" />
-                <input
-                  type="date"
-                  className="bg-transparent outline-none text-black w-full"
-                />
-              </div>
-
-              <div className="flex items-center gap-3 bg-gray-100 px-4 py-4 rounded-xl">
-                <Users className="text-gray-500" />
-                <input
-                  type="number"
-                  placeholder="Guest Count"
-                  className="bg-transparent outline-none text-black w-full"
-                />
-              </div>
-
-              <button className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl flex items-center justify-center gap-2 font-semibold">
-                <Search size={20} />
-                Search Venues
-              </button>
-            </div>
-          </div>
-
+        <div className="mt-14 flex justify-center">
+          <button
+            onClick={() => navigate(ROUTES.USER.BROWSE_VENUES)}
+            className="bg-amber-500 hover:bg-amber-600 text-white px-10 py-4 rounded-xl 
+            flex items-center justify-center gap-2 font-semibold text-lg shadow-lg transition"
+          >
+            Explore Venues
+          </button>
+        </div>
           <div className="flex justify-center gap-12 mt-12 text-gray-300">
             <div>✓ Verified Venues</div>
             <div>⭐ 4.8 Rating</div>
@@ -192,32 +59,38 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold text-slate-900">
-              Browse by Category
+              Find the Perfect Venue for Your Event
             </h2>
 
             <p className="text-xl text-gray-500 mt-4">
-              Find the perfect space for any occasion
+              Explore our categories and discover spaces that match your celebration
             </p>
           </div>
 
           <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-8">
-            {categories.map((category, index) => (
+            {VenueCategory.map((category) => (
               <div
-                key={index}
-                className="bg-white border rounded-2xl p-8 hover:shadow-lg transition-all cursor-pointer"
+                key={category}
+                className="bg-white border rounded-2xl p-8 hover:shadow-lg transition-all"
               >
-                <div className="text-5xl mb-5">{category.icon}</div>
-
-                <h3 className="text-2xl font-semibold mb-2">
-                  {category.title}
+                <h3 className="text-2xl font-semibold">
+                  {category}
                 </h3>
-
-                <p className="text-gray-500">{category.count}</p>
               </div>
             ))}
           </div>
+
+          <div className="flex justify-center mt-14">
+            <button
+              onClick={() => navigate(ROUTES.USER.BROWSE_VENUES)}
+              className="bg-amber-500 hover:bg-amber-600 text-white px-10 py-4 rounded-xl font-semibold text-lg transition"
+            >
+              Browse Venues
+            </button>
+          </div>
         </div>
       </section>
+
       <section className="bg-gray-50 py-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex justify-between items-center mb-12">
@@ -229,66 +102,81 @@ export default function Home() {
                 Handpicked premium venues for your events
               </p>
             </div>
-            <button className=" border  px-7  py-3  rounded-xl  bg-white font-semibold flex items-center gap-2 hover:shadow">
+            <button onClick={() => navigate(ROUTES.USER.BROWSE_VENUES)} className=" border  px-7  py-3  rounded-xl  bg-white font-semibold flex items-center gap-2 hover:shadow">
               View All →
             </button>
           </div>
           <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8">
-            {featuredVenues.map((venue,index)=>(
-              <div
-                key={index}
-                className=" bg-white rounded-3xl overflow-hidden border hover:shadow-xl transition">
-                <div className="relative">
-                  <img src={venue.image} alt={venue.name} className=" h-64 w-full object-cover"/>
-                  <button className=" absolute right-4 top-4 bg-white rounded-full w-11 h-11 flex items-center justify-center shadow">
-                    🤍
-                  </button>
-                  <span className=" absolute bottom-4 left-4 bg-amber-500 px-4 py-2 rounded-full text-sm font-semibold">
-                    {venue.type}
-                  </span>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="text-amber-500">
-                      ⭐
-                    </span>
-                    <span className="font-semibold">
-                      {venue.rating}
-                    </span>
-                    <span className="text-gray-500">
-                      ({venue.reviews})
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-3">{venue.name}</h3>
-                  <p className="text-gray-500 border-b pb-4">
-                    📍 {venue.location}
-                  </p>
-                  <div className="flex justify-between mt-5">
-                    <div>
-                      <p className="text-gray-500 text-sm">
-                        Starting from
-                      </p>
-                      <p className="font-bold text-xl">
-                        {venue.price}<span className="text-sm font-normal">/day</span>
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-gray-500 text-sm">
-                        Capacity
-                      </p>
-                      <p className="font-semibold">
-                        {venue.capacity}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {venues.map((venue)=>(
+              <VenueCard 
+                  key={venue.id}
+                  venue={venue}
+              />
+              // <div
+              //   key={venue.id}
+              //   onClick={() => navigate(`/user/venue/${venue._id}`)}
+              //   className=" cursor-pointer bg-white rounded-3xl overflow-hidden border hover:shadow-xl transition">
+              //   <div className="relative">
+              //     <img src={venue.images?.[0]?.url} alt={venue.name} className=" h-64 w-full object-cover"/>
+              //     <button className=" absolute right-4 top-4 bg-white rounded-full w-11 h-11 flex items-center justify-center shadow">
+              //       🤍
+              //     </button>
+              //     <span className=" absolute bottom-4 left-4 bg-amber-500 px-4 py-2 rounded-full text-sm font-semibold">
+              //       {venue.category}
+              //     </span>
+              //   </div>
+              //   <div className="p-6">
+              //     <div className="flex items-center gap-2 mb-4">
+              //       <span className="text-amber-500">
+              //         ⭐
+              //       </span>
+              //       <span className="font-semibold">
+              //         {venue.rating}
+              //       </span>
+              //       {/* <span className="text-gray-500">
+              //         ({venue.reviews})
+              //       </span> */}
+              //     </div>
+              //     <h3 className="text-xl font-bold text-slate-900 mb-3">{venue.name}</h3>
+              //     <p className="text-gray-500 border-b pb-4">
+              //       📍 {venue.address.city}, {venue.address.state}
+              //     </p>
+              //     <div className="flex justify-between mt-5">
+              //       <div>
+              //         <p className="text-gray-500 text-sm">
+              //           Starting from
+              //         </p>
+
+              //         <p className="font-bold text-xl">
+              //           ₹{venue.pricePerDay}
+              //           <span className="text-sm font-normal">/day</span>
+              //         </p>
+              //       </div>
+
+              //       <div className="text-right">
+              //         <p className="text-gray-500 text-sm">
+              //           Capacity
+              //         </p>
+
+              //         <p className="font-bold text-md">
+              //           {venue.seatingCapacity}
+              //           <span className="text-sm text-gray-400"> Seating</span>
+              //         </p>
+
+              //         <p className="font-bold text-md">
+              //           {venue.standingCapacity}
+              //           <span className="text-sm text-gray-400"> Standing</span>
+              //         </p>
+              //       </div>
+              //     </div>
+              //   </div>
+              // </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-gray-50 py-24">
+      {/* <section className="bg-gray-50 py-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold text-slate-900">
@@ -326,7 +214,7 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       <section className="bg-gradient-to-r from-slate-950 to-slate-900 text-white py-20">
         <div className="text-center">
@@ -337,10 +225,10 @@ export default function Home() {
             Start exploring thousands of verified venues across India
           </p>
           <div className="flex justify-center gap-5 mt-10">
-            <button className="bg-amber-500 text-black px-10 py-4 rounded-xl font-semibold text-lg">
+            <button onClick={() => navigate(ROUTES.USER.BROWSE_VENUES)} className="bg-amber-500 text-black px-10 py-4 rounded-xl font-semibold text-lg">
               Browse Venues →
             </button>
-            <button className=" border border-white px-10 py-4 rounded-xl font-semibold text-lg">
+            <button onClick={() => navigate(ROUTES.VENDOR.VENUES)} className=" border border-white px-10 py-4 rounded-xl font-semibold text-lg">
               List Your Venue
             </button>
           </div>

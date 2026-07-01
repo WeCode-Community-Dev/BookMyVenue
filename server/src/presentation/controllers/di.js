@@ -6,6 +6,7 @@ import { VendorDeleteVenueUsecase } from "../../application/vendor/usecases/venu
 import { VendorUpdateVenueStatusUsecase } from "../../application/vendor/usecases/venue/venue.updateVenueStatus.usecase.js";
 import { UserGetAllVenuesUsecase } from "../../application/user/usecases/venue/user.getAllVenue.usecase.js";
 import { UserGetVenueByIdUsecase } from "../../application/user/usecases/venue/user.getVenueById.usecase.js";
+import { UserGetTopVenuesUsecase } from "../../application/user/usecases/venue/user.getTopVenue.usacase.js";
 import RegisterUserUseCase from "../../application/user/usecases/RegisterUserUseCase.js";
 import LoginUserUseCase from "../../application/user/usecases/LoginUserUserCase.js";
 import LogoutUseCase from "../../application/user/usecases/LogoutUseCase.js";
@@ -170,6 +171,7 @@ const getBookingByIdUsecase = new GetBookingByIdUsecase(bookingRepository);
 //user
 const iUserGetAllVenues = new UserGetAllVenuesUsecase(iVenueRepository);
 const iUserGetVenueById = new UserGetVenueByIdUsecase(iVenueRepository);
+const iUserGetTopeVenues = new UserGetTopVenuesUsecase(iVenueRepository)
 
 //controller
 export const iVendorVenueController = new VendorVenueController(
@@ -219,6 +221,7 @@ export const iAdminBookingController =
 export const iUserVenueController = new UserVenueController (
     iUserGetAllVenues,
     iUserGetVenueById,
+    iUserGetTopeVenues
 )
 
 export const iAuthController = new AuthController(

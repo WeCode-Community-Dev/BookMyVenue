@@ -36,6 +36,7 @@ export class VendorCreateVenueUsecase {
         minimumBookingHours = 0,
         amenities = [],
         images = [],
+        license = []
 
     }) {
         // const owner = await this._ownerRepository.findById(ownerId)
@@ -52,6 +53,10 @@ export class VendorCreateVenueUsecase {
         
         if(images.length < 3){
             throw new ValidationError(VenueMessages.error.REQUIRE_ATLEAST_THREE_IMAGES)
+        }
+
+        if(license.length < 1){
+            throw new ValidationError(VenueMessages.error.VENUE_LICENSE_REQUIRED)
         }
 
         const newVenue = new VenueEntity({
@@ -80,11 +85,11 @@ export class VendorCreateVenueUsecase {
             minimumBookingHours,
             amenities,
             images,
-            status: VenueStatus.PENDING,
+            license,
             isDeleted: false,
             rating: 0,
             reviews: [],
-            isAdminVerified: false
+            approvalStatus: VenueStatus.PENDING
         })
 
         const savedVenue =  await this._venueRepository.create(newVenue)
