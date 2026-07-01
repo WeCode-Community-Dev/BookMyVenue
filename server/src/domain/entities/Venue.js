@@ -1,5 +1,4 @@
 import { VenueStatus } from "../enums/Venue.enum.js";
-import { VenueApprovalStatus } from "../enums/Venue.enum.js";
 
 export class VenueEntity {
     constructor ({
@@ -32,7 +31,7 @@ export class VenueEntity {
     isDeleted = false,
     rating = 0,
     reviews = [],
-    approvalStatus = VenueApprovalStatus.PENDING,
+    approvalStatus = VenueStatus.PENDING,
     isBlocked = false,
     rejectionReason = null
 

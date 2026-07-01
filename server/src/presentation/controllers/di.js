@@ -37,6 +37,11 @@ import { AdminApproveVenueUsecase } from '../../application/admin/usecases/venue
 import { AdminRejectVenueUsecase } from '../../application/admin/usecases/venue/admin.rejectVenue.usecase.js'
 import { AdminUpdateVenueBlockStatusUsecase } from '../../application/admin/usecases/venue/admin.updateVenueStatus.usecase.js'
 
+// usecases - admin booking
+import { AdminGetAllBookingsUsecase } from '../../application/admin/usecases/booking/admin.getAllBookings.usecase.js'
+import { AdminGetBookingByIdUsecase } from '../../application/admin/usecases/booking/admin.getBookingById.usecase.js'
+import { AdminGetBookingStatisticsUsecase } from '../../application/admin/usecases/booking/admin.getBookingStatistics.usecase.js'
+
 // usecases - vendor profile
 import { GetVendorProfileUsecase } from '../../application/vendor/usecases/profile/getVendorProfile.usecase.js'
 import { VendorUpdateProfileUsecase } from '../../application/vendor/usecases/profile/updateVendorProfile.usecase.js'
@@ -55,6 +60,7 @@ import { AuthController } from '../controllers/user/AuthController.js'
 import { AdminUserController } from '../controllers/admin/admin.userController.js'
 import { AdminVendorController } from '../controllers/admin/admin.vendorController.js'
 import { AdminVenueController } from './admin/admin.venueController.js'
+import { AdminBookingController } from './admin/admin.bookingController.js'
 import { VendorProfileController } from './vendor/vendorProfileController.js'
 import { VendorBookingController } from './vendor/VendorBookingController.js'
 import { VendorDashboardController } from './vendor/VendorDashboardController.js'
@@ -97,6 +103,11 @@ const iAdminGetVenueByIdUsecase = new AdminGetVenueByIdUsecase(iVenueRepository)
 const iAdminApproveVenueUsecase = new AdminApproveVenueUsecase(iVenueRepository, iMailService)
 const iAdminRejectVenueUsecase = new AdminRejectVenueUsecase(iVenueRepository, iMailService)
 const iAdminUpdateVenueBlockStatusUsecase = new AdminUpdateVenueBlockStatusUsecase(iVenueRepository)
+
+// --- admin booking usecases ---
+const iAdminGetAllBookingUsecase = new AdminGetAllBookingsUsecase(bookingRepository)
+const iAdminGetBookingByIdUsecase = new AdminGetBookingByIdUsecase(bookingRepository)
+const iAdminBookingStatisticsUsecase = new AdminGetBookingStatisticsUsecase(bookingRepository)
 
 // --- auth usecases ---
 const iRegisterUserUseCase = new RegisterUserUseCase(iUserRepository, HashService)
@@ -155,6 +166,12 @@ export const iAdminVenueController = new AdminVenueController(
     iAdminApproveVenueUsecase,
     iAdminRejectVenueUsecase,
     iAdminUpdateVenueBlockStatusUsecase
+)
+
+export const iAdminBookingController = new AdminBookingController(
+    iAdminGetAllBookingUsecase,
+    iAdminGetBookingByIdUsecase,
+    iAdminBookingStatisticsUsecase
 )
 
 export const iUserVenueController = new UserVenueController(

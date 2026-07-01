@@ -1,5 +1,5 @@
 import Express from 'express'
-import { iAdminUserController } from '../../controllers/di.js'
+import { iAdminBookingController, iAdminUserController } from '../../controllers/di.js'
 import { iAdminVendorController } from '../../controllers/di.js'
 import { ROUTES } from '../../../shared/constants/routes.js'
 import { getAllUsersQuerySchema, updateUserStatusSchema } from '../../validators/adminUser.validator.js'
@@ -12,6 +12,7 @@ import {
     updateVenueBlockStatusSchema
 } from "../../validators/adminVenue.validator.js";
 import { iAdminVenueController } from '../../controllers/di.js'
+import { adminGetAllBookingsSchema, adminGetBookingByIdSchema } from '../../validators/adminBooking.validator.js'
 
 const router = Express.Router()
 //User
@@ -62,6 +63,24 @@ router.patch( ROUTES.ADMIN.VENDOR.UPDATE_STATUS, validate(updateVendorStatusSche
         validate(venueIdParamSchema,'params',updateVenueBlockStatusSchema,'body'),
         iAdminVenueController.updateBlockStatus
     );
+
+    //booking
+    router.get(
+    ROUTES.ADMIN.BOOKING.GET_ALL,
+    validate(adminGetAllBookingsSchema,'query'),
+    iAdminBookingController.getAllBookings
+);
+
+router.get(
+    ROUTES.ADMIN.BOOKING.GET_STATISTICS,
+    iAdminBookingController.getBookingStatistics
+);
+
+router.get(
+    ROUTES.ADMIN.BOOKING.GET_BY_ID,
+    validate(adminGetBookingByIdSchema,'params'),
+    iAdminBookingController.getBookingById
+);
 
     export default router
 
