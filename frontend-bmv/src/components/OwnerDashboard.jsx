@@ -1,6 +1,4 @@
-import { useState, useEffect } from 'react';import { toast } from "react-toastify";
-function OwnerDashboard({ user, onLogout }) {
-  const [venues, setVenues]     = useState([]);  const [activeTab, setActiveTab] = useState('listings');
+import { useState, useEffect } from 'react';import { toast } from "react-toastify";function OwnerDashboard({ user, onLogout }) {  const [venues, setVenues]     = useState([]);  const [activeTab, setActiveTab] = useState('listings');
 
   // booking requests from customers
   const [bookingRequests, setBookingRequests] = useState([]);  const [requestsLoading, setRequestsLoading] = useState(true);
@@ -9,14 +7,22 @@ function OwnerDashboard({ user, onLogout }) {
   const [reviewModal, setReviewModal]   = useState(null);  const [ownerComment, setOwnerComment] = useState('');  const [reviewing, setReviewing]       = useState(false);
 
   // NEW: cancellation requests state
-  const [cancelRequests, setCancelRequests]   = useState([]);
-  const [cancelLoading, setCancelLoading]     = useState(true);
+  const [cancelRequests, setCancelRequests]   = useState([]);  const [cancelLoading, setCancelLoading]     = useState(true);
 
   // NEW: cancel review modal state
-  // null = closed, object = { cancellationId, venueName, bookingDate, action }
-  const [cancelReviewModal, setCancelReviewModal] = useState(null);
-  const [cancelOwnerResponse, setCancelOwnerResponse] = useState('');
-  const [cancelReviewing, setCancelReviewing]         = useState(false);
+  const [cancelReviewModal, setCancelReviewModal] = useState(null);  const [cancelOwnerResponse, setCancelOwnerResponse] = useState('');  const [cancelReviewing, setCancelReviewing]         = useState(false);
+
+  // ── Pagination: booking requests ───────────────────────────────────────────
+  const [requestsPage, setRequestsPage]                   = useState(0);
+  const [requestsTotalPages, setRequestsTotalPages]       = useState(0);
+  const [requestsTotalElements, setRequestsTotalElements] = useState(0);
+  const requestsSize = 10;
+
+  // ── Pagination: cancellation requests ─────────────────────────────────────
+  const [cancelPage, setCancelPage]                   = useState(0);
+  const [cancelTotalPages, setCancelTotalPages]       = useState(0);
+  const [cancelTotalElements, setCancelTotalElements] = useState(0);
+  const cancelSize = 10;
 
   // Form states for ADD VENUE
   const [name, setName]               = useState('');  const [type, setType]               = useState('');  const [location, setLocation]       = useState('');  const [description, setDescription] = useState('');  const [parking, setParking]         = useState('');  const [capacity, setCapacity]       = useState('');  const [price, setPrice]             = useState('');  const [image, setImage]             = useState('');  const [showTermsModal, setShowTermsModal] = useState(false);  const [termsAccepted, setTermsAccepted]   = useState(false);
@@ -30,19 +36,54 @@ function OwnerDashboard({ user, onLogout }) {
   // ── Fetch venues ────────────────────────────────────────────────────────────
   const fetchVenues = async () => {    try {      const response = await fetch('http://localhost:8080/api/owner/venue/owner', {        headers: { Authorization: `Bearer ${getToken()}` },      });      if (!response.ok) throw new Error('Failed to load venues');      setVenues(await response.json());    } catch (error) {      console.error(error);    }  };
 
-  // ── Fetch booking requests for owner's venues ───────────────────────────────
-  const fetchBookingRequests = async () => {    setRequestsLoading(true);    try {      const response = await fetch('http://localhost:8080/api/owner/bookings/reviews', {        headers: { Authorization: `Bearer ${getToken()}` },      });      if (!response.ok) throw new Error('Failed to load booking requests');      setBookingRequests(await response.json());    } catch (error) {      console.error(error);      toast.error('Could not load booking requests');    } finally {      setRequestsLoading(false);    }  };
+  // ── Fetch booking requests — with pagination ────────────────────────────────
+  const fetchBookingRequests = async (page = 0) => {
+    setRequestsLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/owner/bookings/reviews?page=${page}&size=${requestsSize}&sort=bookedOn,desc`,
+        { headers: { Authorization: `Bearer ${getToken()}` } }
+      );
+      if (!response.ok) throw new Error('Failed to load booking requests');
+      const data = await response.json();
+      // handles both plain array (not paginated yet) and Spring Page response
+      if (Array.isArray(data)) {
+        setBookingRequests(data);
+        setRequestsTotalPages(1);
+        setRequestsTotalElements(data.length);
+      } else {
+        setBookingRequests(data.content ?? []);
+        setRequestsTotalPages(data.totalPages ?? 1);
+        setRequestsTotalElements(data.totalElements ?? 0);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Could not load booking requests');
+    } finally {
+      setRequestsLoading(false);
+    }
+  };
 
-  // NEW: Fetch cancellation requests for owner's venues
-  // GET /api/owner/cancellations
-  const fetchCancelRequests = async () => {
+  // ── Fetch cancellation requests — with pagination ───────────────────────────
+  const fetchCancelRequests = async (page = 0) => {
     setCancelLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/owner/cancellations', {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      const response = await fetch(
+        `http://localhost:8080/api/owner/cancellations?page=${page}&size=${cancelSize}&sort=createdOn,desc`,
+        { headers: { Authorization: `Bearer ${getToken()}` } }
+      );
       if (!response.ok) throw new Error('Failed to load cancellation requests');
-      setCancelRequests(await response.json());
+      const data = await response.json();
+      // handles both plain array and Spring Page response
+      if (Array.isArray(data)) {
+        setCancelRequests(data);
+        setCancelTotalPages(1);
+        setCancelTotalElements(data.length);
+      } else {
+        setCancelRequests(data.content ?? []);
+        setCancelTotalPages(data.totalPages ?? 1);
+        setCancelTotalElements(data.totalElements ?? 0);
+      }
     } catch (error) {
       console.error(error);
       toast.error('Could not load cancellation requests');
@@ -51,7 +92,11 @@ function OwnerDashboard({ user, onLogout }) {
     }
   };
 
-  useEffect(() => {    fetchVenues();    fetchBookingRequests();    fetchCancelRequests();  }, []);
+  useEffect(() => {    fetchVenues();    fetchBookingRequests(0);    fetchCancelRequests(0);  }, []);
+
+  // re-fetch when page changes
+  useEffect(() => { fetchBookingRequests(requestsPage); }, [requestsPage]);
+  useEffect(() => { fetchCancelRequests(cancelPage); }, [cancelPage]);
 
   // ── Open review modal ──────────────────────────────────────────────────────
   const openReviewModal = (booking, action) => {    setReviewModal({      bookingId: booking.id,      venueName: booking.venueName,      bookingDate: booking.bookingDate,      action,    });    setOwnerComment('');  };
@@ -59,76 +104,21 @@ function OwnerDashboard({ user, onLogout }) {
   const closeReviewModal = () => {    setReviewModal(null);    setOwnerComment('');  };
 
   // ── Confirm approve or reject booking ──────────────────────────────────────
-  const handleConfirmReview = async () => {    if (reviewModal.action === 'REJECTED' && !ownerComment.trim()) {      toast.error('Please provide a reason for rejection');      return;    }    setReviewing(true);    try {      const res = await fetch(        `http://localhost:8080/api/owner/bookings/${reviewModal.bookingId}/review`,        {          method: 'PATCH',          headers: {            'Content-Type': 'application/json',            Authorization: `Bearer ${getToken()}`,          },          body: JSON.stringify({            bookingStatus: reviewModal.action,            ownerComments: ownerComment,          }),        }      );
-      const text = await res.text();      if (!res.ok) {        try {          const data = JSON.parse(text);          throw new Error(data.error || data.message || 'Failed to review booking');        } catch {          throw new Error(text || 'Failed to review booking');        }      }
-      toast.success(        `Booking ${reviewModal.action === 'APPROVED' ? 'approved' : 'rejected'} successfully!`      );      closeReviewModal();      await fetchBookingRequests();
-    } catch (err) {      toast.error(err.message);    } finally {      setReviewing(false);    }  };
+  const handleConfirmReview = async () => {    if (reviewModal.action === 'REJECTED' && !ownerComment.trim()) {      toast.error('Please provide a reason for rejection');      return;    }    setReviewing(true);    try {      const res = await fetch(        `http://localhost:8080/api/owner/bookings/${reviewModal.bookingId}/review`,        {          method: 'PATCH',          headers: {            'Content-Type': 'application/json',            Authorization: `Bearer ${getToken()}`,          },          body: JSON.stringify({            bookingStatus: reviewModal.action,            ownerComments: ownerComment,          }),        }      );      const text = await res.text();      if (!res.ok) {        try {          const data = JSON.parse(text);          throw new Error(data.error || data.message || 'Failed to review booking');        } catch {          throw new Error(text || 'Failed to review booking');        }      }      toast.success(        `Booking ${reviewModal.action === 'APPROVED' ? 'approved' : 'rejected'} successfully!`      );      closeReviewModal();      await fetchBookingRequests(requestsPage);    } catch (err) {      toast.error(err.message);    } finally {      setReviewing(false);    }  };
 
   // NEW: Open cancel review modal
-  const openCancelReviewModal = (cancelRequest, action) => {
-    setCancelReviewModal({
-      cancellationId: cancelRequest.id,
-      venueName:      cancelRequest.venueName,
-      bookingDate:    cancelRequest.bookingDate,
-      reason:         cancelRequest.reason,
-      action,         // 'APPROVED' or 'REJECTED'
-    });
-    setCancelOwnerResponse('');
-  };
+  const openCancelReviewModal = (cancelRequest, action) => {    setCancelReviewModal({      cancellationId: cancelRequest.id,      venueName:      cancelRequest.venueName,      bookingDate:    cancelRequest.bookingDate,      reason:         cancelRequest.reason,      action,    });    setCancelOwnerResponse('');  };
 
-  const closeCancelReviewModal = () => {
-    setCancelReviewModal(null);
-    setCancelOwnerResponse('');
-  };
+  const closeCancelReviewModal = () => {    setCancelReviewModal(null);    setCancelOwnerResponse('');  };
 
   // NEW: Confirm approve or reject cancellation request
-  // PATCH /api/owner/cancellations/{id}/review
-  const handleConfirmCancelReview = async () => {
-    if (cancelReviewModal.action === 'REJECTED' && !cancelOwnerResponse.trim()) {
-      toast.error('Please provide a reason for rejecting the cancellation');
-      return;
-    }
-    setCancelReviewing(true);
-    try {
-      const res = await fetch(
-        `http://localhost:8080/api/owner/cancellations/${cancelReviewModal.cancellationId}/review`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getToken()}`,
-          },
-          body: JSON.stringify({
-            status:        cancelReviewModal.action,    // "APPROVED" or "REJECTED"
-            ownerResponse: cancelOwnerResponse,         // message to user
-          }),
-        }
-      );
+  const handleConfirmCancelReview = async () => {    if (cancelReviewModal.action === 'REJECTED' && !cancelOwnerResponse.trim()) {      toast.error('Please provide a reason for rejecting the cancellation');      return;    }    setCancelReviewing(true);    try {      const res = await fetch(        `http://localhost:8080/api/owner/cancellations/${cancelReviewModal.cancellationId}/review`,        {          method: 'PATCH',          headers: {            'Content-Type': 'application/json',            Authorization: `Bearer ${getToken()}`,          },          body: JSON.stringify({            status:        cancelReviewModal.action,            ownerResponse: cancelOwnerResponse,          }),        }      );
 
-      const text = await res.text();
-      if (!res.ok) {
-        try {
-          const data = JSON.parse(text);
-          throw new Error(data.error || data.message || 'Failed to review cancellation');
-        } catch {
-          throw new Error(text || 'Failed to review cancellation');
-        }
-      }
+      const text = await res.text();      if (!res.ok) {        try {          const data = JSON.parse(text);          throw new Error(data.error || data.message || 'Failed to review cancellation');        } catch {          throw new Error(text || 'Failed to review cancellation');        }      }
 
-      toast.success(
-        cancelReviewModal.action === 'APPROVED'
-          ? 'Cancellation approved. Booking cancelled and refund initiated if applicable.'
-          : 'Cancellation rejected. Booking remains active.'
-      );
-      closeCancelReviewModal();
-      await fetchCancelRequests(); // refresh list
+      toast.success(        cancelReviewModal.action === 'APPROVED'          ? 'Cancellation approved. Booking cancelled and refund initiated if applicable.'          : 'Cancellation rejected. Booking remains active.'      );      closeCancelReviewModal();      await fetchCancelRequests(cancelPage);
 
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setCancelReviewing(false);
-    }
-  };
+    } catch (err) {      toast.error(err.message);    } finally {      setCancelReviewing(false);    }  };
 
   // ── ADD venue ──────────────────────────────────────────────────────────────
   const handleAddVenue = async (e) => {    e.preventDefault();    if (!name || !location || !capacity || !price) {      toast.warning('Please fill out all required fields.');      return;    }    try {      const response = await fetch('http://localhost:8080/api/owner/venue/register', {        method: 'POST',        headers: {          'Content-Type': 'application/json',          Authorization: `Bearer ${getToken()}`,        },        body: JSON.stringify({          venueName: name, venueType: type, location,          venueDescription: description,          capacity: Number(capacity), price: Number(price),          parkingAvailable: parking, imageUrl: image, termsAccepted,        }),      });      if (!response.ok) throw new Error('Failed to submit venue');      toast.success('Venue request submitted! Awaiting admin approval.');      await fetchVenues();    } catch (error) {      toast.error(error.message);    }    setName(''); setType(''); setLocation(''); setDescription('');    setCapacity(''); setParking(''); setPrice(''); setImage('');    setShowTermsModal(false); setTermsAccepted(false);    setActiveTab('listings');  };
@@ -157,6 +147,50 @@ function OwnerDashboard({ user, onLogout }) {
 
   // ── Textarea shared style ──────────────────────────────────────────────────
   const taStyle = {    fontFamily: 'var(--sans)', fontSize: 15,    padding: '10px 13px',    border: '1px solid var(--border)',    borderRadius: 8,    background: 'var(--bg)', color: 'var(--text-h)',    outline: 'none', resize: 'none', lineHeight: 1.6,    width: '100%', boxSizing: 'border-box',    marginTop: 6,    transition: 'border-color 0.2s, box-shadow 0.2s',  };
+
+  // ── Reusable pagination controls ───────────────────────────────────────────
+  const Pagination = ({ page, totalPages, totalElements, size, onPageChange, label }) => {
+    if (totalPages <= 1) return null;
+    const from = page * size + 1;
+    const to   = Math.min((page + 1) * size, totalElements);
+    const pageBtn = (disabled, active = false) => ({
+      padding: '4px 10px', borderRadius: 6, fontSize: 13,
+      border: '0.5px solid var(--border)',
+      background: active ? 'var(--accent)' : 'var(--bg)',
+      color: active ? '#fff' : disabled ? 'var(--border)' : 'var(--text-h)',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      fontFamily: 'var(--sans)', opacity: disabled ? 0.4 : 1,
+    });
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginTop: 16, padding: '10px 0',
+        borderTop: '0.5px solid var(--border)',
+      }}>
+        <span style={{ fontSize: 13, color: 'var(--text)' }}>
+          Showing {from}–{to} of {totalElements} {label}
+        </span>
+        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+          <button onClick={() => onPageChange(0)} disabled={page === 0} style={pageBtn(page === 0)} aria-label="First page">«</button>
+          <button onClick={() => onPageChange(page - 1)} disabled={page === 0} style={pageBtn(page === 0)} aria-label="Previous page">‹</button>
+          {Array.from({ length: totalPages }, (_, i) => i)
+            .filter(i => i === 0 || i === totalPages - 1 || (i >= page - 1 && i <= page + 1))
+            .reduce((acc, i, idx, arr) => {
+              if (idx > 0 && i - arr[idx - 1] > 1) acc.push('...');
+              acc.push(i); return acc;
+            }, [])
+            .map((item, idx) =>
+              item === '...'
+                ? <span key={`dots-${idx}`} style={{ padding: '0 4px', color: 'var(--text)' }}>…</span>
+                : <button key={item} onClick={() => onPageChange(item)} style={pageBtn(false, item === page)} aria-label={`Page ${item + 1}`}>{item + 1}</button>
+            )
+          }
+          <button onClick={() => onPageChange(page + 1)} disabled={page === totalPages - 1} style={pageBtn(page === totalPages - 1)} aria-label="Next page">›</button>
+          <button onClick={() => onPageChange(totalPages - 1)} disabled={page === totalPages - 1} style={pageBtn(page === totalPages - 1)} aria-label="Last page">»</button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="dashboard-container">
@@ -228,7 +262,7 @@ function OwnerDashboard({ user, onLogout }) {
           </div>
           <div className="metric-card">
             <span className="metric-title">Pending Requests</span>
-            <span className="metric-val">{pendingRequests}</span>
+            <span className="metric-val">{requestsTotalElements || pendingRequests}</span>
           </div>
           <div className="metric-card">
             <span className="metric-title">Approved Bookings</span>
@@ -569,6 +603,15 @@ function OwnerDashboard({ user, onLogout }) {
                     ))}
                   </tbody>
                 </table>
+                {/* Pagination for booking requests */}
+                <Pagination
+                  page={requestsPage}
+                  totalPages={requestsTotalPages}
+                  totalElements={requestsTotalElements}
+                  size={requestsSize}
+                  onPageChange={(p) => setRequestsPage(p)}
+                  label="requests"
+                />
               </div>
             )}
           </div>
@@ -576,8 +619,6 @@ function OwnerDashboard({ user, onLogout }) {
 
         {/* ════════════════════════════════════════════════
             NEW TAB 4 — CANCELLATION REQUESTS
-            GET  /api/owner/cancellations
-            PATCH /api/owner/cancellations/{id}/review
         ════════════════════════════════════════════════ */}
         {activeTab === 'cancellations' && (
           <div className="admin-users-section">
@@ -610,7 +651,6 @@ function OwnerDashboard({ user, onLogout }) {
                     {cancelRequests.map(cr => (
                       <tr key={cr.id}>
 
-                        {/* Venue name + location — from CancellationResponse */}
                         <td>
                           <div className="user-table-cell">
                             <span className="bold">{cr.venueName}</span>
@@ -618,7 +658,6 @@ function OwnerDashboard({ user, onLogout }) {
                           </div>
                         </td>
 
-                        {/* bookingDate from API */}
                         <td className="subtext">
                           {cr.bookingDate
                             ? new Date(cr.bookingDate + 'T00:00:00').toLocaleDateString('en-IN', {
@@ -627,12 +666,10 @@ function OwnerDashboard({ user, onLogout }) {
                             : '—'}
                         </td>
 
-                        {/* Customer's cancel reason */}
                         <td style={{ maxWidth: 200, fontSize: 13, color: 'var(--text)', fontStyle: 'italic' }}>
                           "{cr.reason}"
                         </td>
 
-                        {/* paymentStatus from booking */}
                         <td>
                           <span style={{
                             fontSize: 12, fontWeight: 600,
@@ -641,14 +678,12 @@ function OwnerDashboard({ user, onLogout }) {
                             color: cr.paymentStatus === 'PAID' ? '#1e40af' : '#374151',
                           }}>
                             {cr.paymentStatus}
-                            {/* Warn owner that approving will trigger refund */}
                             {cr.paymentStatus === 'PAID' && (
                               <span style={{ marginLeft: 4, fontSize: 11 }}> refund</span>
                             )}
                           </span>
                         </td>
 
-                        {/* Cancellation status badge */}
                         <td>
                           <span className={`status-badge ${
                             cr.status === 'APPROVED' ? 'active' :
@@ -659,7 +694,6 @@ function OwnerDashboard({ user, onLogout }) {
                           </span>
                         </td>
 
-                        {/* Approve / Reject — only for PENDING cancel requests */}
                         <td>
                           {cr.status === 'PENDING' ? (
                             <div style={{ display: 'flex', gap: 6 }}>
@@ -691,6 +725,15 @@ function OwnerDashboard({ user, onLogout }) {
                     ))}
                   </tbody>
                 </table>
+                {/* Pagination for cancellation requests */}
+                <Pagination
+                  page={cancelPage}
+                  totalPages={cancelTotalPages}
+                  totalElements={cancelTotalElements}
+                  size={cancelSize}
+                  onPageChange={(p) => setCancelPage(p)}
+                  label="cancellations"
+                />
               </div>
             )}
           </div>

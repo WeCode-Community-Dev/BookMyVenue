@@ -2,6 +2,10 @@ package com.bookmyvenue.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -32,8 +36,8 @@ public class AdminController {
     public final VenueRepository venueRepository;
 
     @GetMapping("/users")
-    public ResponseEntity<List<UserResponse>> getAllUsers(){
-        return ResponseEntity.ok(adminService.getAllUsers());
+    public ResponseEntity<Page<UserResponse>> getAllUsers(@PageableDefault(size = 10, sort ="createdAt", direction= Sort.Direction.DESC)Pageable pageable){
+        return ResponseEntity.ok(adminService.getAllUsers(pageable));
     }
 
     @GetMapping("/venue/review")
@@ -52,8 +56,8 @@ public class AdminController {
     }
 
     @GetMapping("/bookings")
-    public ResponseEntity<List<BookingResponse>> getAllBookings(){
-        return ResponseEntity.ok(adminService.getAllBookings());
+    public ResponseEntity<Page<BookingResponse>> getAllBookings(@PageableDefault(size = 10, sort ="bookedOn", direction= Sort.Direction.DESC)Pageable pageable){
+        return ResponseEntity.ok(adminService.getAllBookings(pageable));
     }
 
     @PatchMapping("/booking/{id}/status")
@@ -67,8 +71,8 @@ public class AdminController {
     }
 
     @GetMapping("/venues")
-    public ResponseEntity<List<VenueResponse>> getAllVenues(){
-        return ResponseEntity.ok(adminService.getAllVenues());
+    public ResponseEntity<Page<VenueResponse>> getAllVenues(@PageableDefault(size = 10, sort ="createdAt", direction= Sort.Direction.DESC)Pageable pageable){
+        return ResponseEntity.ok(adminService.getAllVenues(pageable));
     }
 
     @PatchMapping("/venue/{id}/status")

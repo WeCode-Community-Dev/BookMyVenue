@@ -3,6 +3,8 @@ package com.bookmyvenue.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -15,7 +17,7 @@ public interface  BookingCancellationRepository extends JpaRepository<BookingCan
     // All cancel requests for venues owned by a specific owner
     @Query("SELECT bc FROM BookingCancellation bc " +
            "WHERE bc.booking.venue.user.id = :ownerId")
-    List<BookingCancellation> findByVenueOwnerId(Integer ownerId);
+    Page<BookingCancellation> findByVenueOwnerId(Integer ownerId, Pageable pageable);
 
     // All pending cancel requests for owner
     @Query("SELECT bc FROM BookingCancellation bc " +

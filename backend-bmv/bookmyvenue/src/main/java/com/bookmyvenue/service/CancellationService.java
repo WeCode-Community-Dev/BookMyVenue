@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -74,14 +76,12 @@ public class CancellationService {
     }
  
     //OWNER: get all cancel requests for their venues
-    public List<CancellationResponse> getCancelRequestsForOwner(String ownerEmail) {
+    public Page<CancellationResponse> getCancelRequestsForOwner(String ownerEmail, Pageable pageable) {
         User owner = userRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return cancellationRepository.findByVenueOwnerId(owner.getId())
-                .stream()
-                .map(CancellationResponse::from)
-                .collect(Collectors.toList());
+        return cancellationRepository.findByVenueOwnerId(owner.getId(),pageable)
+                .map(CancellationResponse::from);
     }
     
 //OWNER: approve or reject cancel request

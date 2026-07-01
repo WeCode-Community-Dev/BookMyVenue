@@ -2,6 +2,10 @@ package com.bookmyvenue.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,8 +46,8 @@ public class UserController {
     }
 
     @GetMapping("/bookings/my")
-    public ResponseEntity<List<BookingResponse>> getMyBookings(@AuthenticationPrincipal UserDetails userDetails){
-        return ResponseEntity.ok(userService.getMyBookings(userDetails.getUsername()));
+    public ResponseEntity<Page<BookingResponse>> getMyBookings(@AuthenticationPrincipal UserDetails userDetails, @PageableDefault(size = 10, sort ="bookedOn", direction= Sort.Direction.DESC)Pageable pageable){
+        return ResponseEntity.ok(userService.getMyBookings(userDetails.getUsername(),pageable));
     }
 
     @GetMapping("/venues/search")

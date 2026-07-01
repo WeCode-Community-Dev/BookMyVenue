@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.bookmyvenue.dto.BookingResponse;
@@ -96,9 +98,9 @@ public class OwnerService {
         meilisearchService.removeVenue(venueId);
     }
 
-    public List<BookingResponse> getBookingsReviews(String userEmail){
+    public Page<BookingResponse> getBookingsReviews(String userEmail, Pageable pageable){
         User owner = userRepository.findByEmail(userEmail).orElseThrow(()->new  RuntimeException("User not found"));
-        return bookingRepository.findByVenueUserId(owner.getId()).stream().map(BookingResponse::from).collect(Collectors.toList());
+        return bookingRepository.findByVenueUserId(owner.getId(),pageable).map(BookingResponse::from);
 
     }
     

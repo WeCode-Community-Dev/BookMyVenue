@@ -2,6 +2,10 @@ package com.bookmyvenue.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -38,11 +42,11 @@ public class CancellationController {
 
     // OWNER: get all cancel requests for their venues
     @GetMapping("/api/owner/cancellations")
-    public ResponseEntity<List<CancellationResponse>> getCancelRequests(
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Page<CancellationResponse>> getCancelRequests(
+            @AuthenticationPrincipal UserDetails userDetails, @PageableDefault(size = 10, sort ="createdOn", direction= Sort.Direction.DESC)Pageable pageable) {
 
         return ResponseEntity.ok(
-            cancellationService.getCancelRequestsForOwner(userDetails.getUsername())
+            cancellationService.getCancelRequestsForOwner(userDetails.getUsername(),pageable)
         );
     }
 

@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.bookmyvenue.dto.BookingResponse;
@@ -29,8 +31,8 @@ public class AdminService {
     private final BookingRepository bookingRepository;
 
 
-    public List<UserResponse> getAllUsers(){
-        return userRepository.findAll().stream().map(UserResponse::from).collect(Collectors.toList());
+    public Page<UserResponse> getAllUsers(Pageable pageable){
+        return userRepository.findAll(pageable).map(UserResponse::from);
     }
 
     public List<VenueResponse> getAllPendingReviews(){
@@ -71,8 +73,8 @@ public class AdminService {
         return VenueResponse.from(venue);
     }
 
-    public List<BookingResponse> getAllBookings(){
-        return bookingRepository.findAll().stream().map(BookingResponse::from).collect(Collectors.toList());
+    public Page<BookingResponse> getAllBookings(Pageable pageable){
+        return bookingRepository.findAll(pageable).map(BookingResponse::from);
     }
 
     public BookingResponse updateBookingStatus(Integer bookingId, String bookingStatus){
@@ -91,8 +93,8 @@ public class AdminService {
         return BookingResponse.from(booking);
     }
 
-    public List<VenueResponse> getAllVenues(){
-        return venueRepository.findAll().stream().map(VenueResponse::from).collect(Collectors.toList());
+    public Page<VenueResponse> getAllVenues(Pageable pageable){
+        return venueRepository.findAll(pageable).map(VenueResponse::from);
     }
 
     public VenueResponse updateVenueStatus(Integer venueId, String status){

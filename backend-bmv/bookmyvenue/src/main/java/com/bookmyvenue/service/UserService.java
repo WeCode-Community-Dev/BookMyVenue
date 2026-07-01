@@ -3,6 +3,8 @@ package com.bookmyvenue.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.bookmyvenue.dto.BookingRequest;
@@ -57,9 +59,9 @@ public class UserService {
 
     }
 
-    public List<BookingResponse> getMyBookings(String userEmail){
+    public Page<BookingResponse> getMyBookings(String userEmail, Pageable pageable){
         User user = userRepository.findByEmail(userEmail).orElseThrow(()->new  RuntimeException("User not found"));
 
-        return bookingRepository.findByUserId(user.getId()).stream().map(BookingResponse::from).collect(Collectors.toList());
+        return bookingRepository.findByUserId(user.getId(),pageable).map(BookingResponse::from);
     }
 }
