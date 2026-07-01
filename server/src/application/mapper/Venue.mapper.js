@@ -4,6 +4,7 @@ import { Types } from 'mongoose'
 
 export class VenueMapper {
     static mapToEntity(doc){
+        console.log("VENUE DOC:", doc);
         const venue = new VenueEntity({
             id: doc._id.toString(),
             name: doc.name,
@@ -22,7 +23,8 @@ export class VenueMapper {
             minimumBookingHours: doc.minimumBookingHours,
             amenities: doc.amenities,
             images: doc.images,
-            status: doc.status,
+            license: doc.license,
+            // status: doc.status,
             isDeleted: doc.isDeleted,
             rating: doc.rating,
             reviews: doc.reviews,
@@ -50,7 +52,8 @@ export class VenueMapper {
             minimumBookingHours: entity.minimumBookingHours,
             amenities: entity.amenities,
             images: entity.images,
-            status: entity.status,
+            license: entity.license,
+            // status: entity.status,
             isDeleted: entity.isDeleted,
             rating: entity.rating,
             reviews: entity.reviews,

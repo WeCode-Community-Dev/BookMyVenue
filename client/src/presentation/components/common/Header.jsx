@@ -1,4 +1,3 @@
-import { ROUTES } from '@/constatnts/routes'
 import { Heart, User } from 'lucide-react'
 
 const Header = () => {
@@ -13,9 +12,9 @@ const Header = () => {
             <h1 className="text-2xl font-bold">Book My Venue</h1>
           </div>
 
-          <nav className="hidden md:flex items-center gap-10 text-gray-600">
+          {/* <nav className="hidden md:flex items-center gap-10 text-gray-600">
             <a href={ROUTES.USER.BROWSE_VENUES} className='font-bold'>Explore Venues</a>
-          </nav>
+          </nav> */}
 
           <div className="flex items-center gap-4">
             <Heart className="w-5 h-5" />

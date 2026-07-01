@@ -7,7 +7,7 @@ const cloudinaryUpload = (folderName) => {
     cloudinary,
     params: {
       folder: folderName,
-      allowed_formats: ["jpg", "jpeg", "png", "webp"],
+      allowed_formats: ["jpg", "jpeg", "png", "webp", "pdf"],
     },
   });
 

@@ -65,9 +65,6 @@ return (
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
-                    <button className="bg-slate-900 text-white px-8 rounded-xl">
-                        ☷ Filters
-                    </button>
                 </div>
             <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
                 <div className=" bg-white rounded-2xl p-6 h-fit border" >
@@ -165,7 +162,7 @@ return (
                         Venue Type
                     </h3>
                     {VenueCategory.map((item)=>(
-                        <label className="flex gap-3 mt-3 text-gray-700">
+                        <label key={item} className="flex gap-3 mt-3 text-gray-700">
                             <input
                                 value={item}
                                 type="radio"
@@ -178,7 +175,7 @@ return (
                     ))}
                     <h3 className="font-semibold mt-8 mb-3">Amenities</h3>
                     {Amenities.map(item=>(
-                        <label className="flex gap-3 mt-3">
+                        <label key={item} className="flex gap-3 mt-3">
                             <input
                                 value={item}
                                 type="checkbox"
@@ -254,11 +251,11 @@ return (
                         </button>
                     </div>
                 </div>
-                <div className="md:col-span-3 grid md:grid-cols-3 gap-8">
+                <div className="md:col-span-3 grid md:grid-cols-3 gap-x-8 gap-y-5">
                     {venues.map((venue)=>(
                         <VenueCard 
-                        key={venue._id}
-                        venue={venue}
+                            key={venue.id}
+                            venue={venue}
                         />
                     ))}
                 </div>

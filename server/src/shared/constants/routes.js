@@ -51,7 +51,8 @@ export const ROUTES = {
     USER: {
         VENUE: {
             GET_ALL: '/venues',
-            GET_BY_ID: '/venue/:venueId'
+            GET_BY_ID: '/venue/:venueId',
+            TOP_VENUES: '/top-venues',
         }
     }
 }
