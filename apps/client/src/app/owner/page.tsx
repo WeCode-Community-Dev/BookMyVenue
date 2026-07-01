@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Building2, CalendarCheck, CheckCircle2, IndianRupee, Plus } from "lucide-react";
 import { ensureOwnerRole } from "./actions";
 
-import { BOOKINGS, VENUES, fmt, type Venue } from "./types";
+import { BOOKINGS, VENUES, type Venue } from "./types";
 import StatCards from "@/components/owner/StatCards";
 import NavTabs from "@/components/owner/NavTabs";
 import OverviewTab from "@/components/owner/OverviewTab";
@@ -31,7 +31,7 @@ export default function OwnerDashboard() {
     const stats = [
         {
             label: "Total Revenue",
-            value: fmt(totalRevenue),
+            value: "₹" + totalRevenue,
             sub: "+18% this month",
             icon: IndianRupee,
             color: "bg-emerald-50 text-emerald-600",

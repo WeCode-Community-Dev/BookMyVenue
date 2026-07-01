@@ -237,7 +237,7 @@ export default function VenueBookingPage() {
                                                 </p>
                                             </div>
                                             <span className="text-sm font-bold text-primary">
-                                                ₹{session.price.toLocaleString("en-IN")}
+                                                ₹{(session.price/100).toLocaleString("en-IN")}
                                             </span>
                                         </div>
                                     ))}
@@ -249,7 +249,7 @@ export default function VenueBookingPage() {
                             <div className="border-t border-border pt-5 flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Total</span>
                                 <span className="text-lg font-bold text-foreground">
-                                    ₹{total.toLocaleString("en-IN")}
+                                    ₹{(total/100).toLocaleString("en-IN")}
                                 </span>
                             </div>
                         )}

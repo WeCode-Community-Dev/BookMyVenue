@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { CalendarCheck, ChevronLeft, ChevronRight, Clock, MapPin } from "lucide-react";
 
-import { fmt, STATUS_DOT, STATUS_STYLE, type BookingStatus } from "@/app/owner/types";
+import { STATUS_DOT, STATUS_STYLE, type BookingStatus } from "@/app/owner/types";
 import { useUserBookings } from "@/hooks/useBooking";
 import { fmt12h, fmtDate, formatEnum } from "@/lib/utils";
 import type { TypeOfBooking } from "@bookmyvenue/types";
@@ -84,6 +84,8 @@ export default function MyBookingsPage() {
             <div className="flex flex-col gap-4">
                 {bookings.map((b) => {
                     const status = toTitleStatus(b.status);
+                    console.log({status, "bstatus":b.status});
+                    
                     return (
                         <div
                             key={b.id}
@@ -122,7 +124,9 @@ export default function MyBookingsPage() {
                                                 {fmt12h(s.session.endTime)})
                                             </span>
                                         </div>
-                                        <span className="text-muted-foreground">{fmt(s.pricePaid)}</span>
+                                        <span className="text-muted-foreground">
+                                            {"₹" +  (s.pricePaid / 100).toLocaleString()}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
@@ -131,7 +135,9 @@ export default function MyBookingsPage() {
                             <div className="mt-4 flex flex-wrap items-center justify-start gap-4 border-t border-border pt-4 text-xs text-muted-foreground">
                                 <span className="">#{b.id.slice(0, 8)}</span>
                                 {b.purpose && <span className="truncate me-auto">For: {b.purpose}</span>}
-                                <span className="font-bold text-foreground">Total: {fmt(b.totalAmount)}</span>
+                                <span className="font-bold text-foreground">
+                                    Total: {"₹" + (b.totalAmount / 100).toLocaleString()}
+                                </span>
                             </div>
                         </div>
                     );

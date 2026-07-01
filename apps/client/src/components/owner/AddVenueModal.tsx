@@ -133,22 +133,6 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
             }
             imageUrls = [...imageUrls, ...(results as string[])];
         }
-        console.log({
-            name: form.name,
-            description: form.description,
-            capacity: Number(form.capacity),
-            category: form.category,
-            location: form.location,
-            district: form.district,
-            images: imageUrls,
-            amenities: form.amenities,
-            sessions: form.sessions.map(({ label, startTime, endTime, price }) => ({
-                label,
-                startTime,
-                endTime,
-                price: Number(price),
-            })),
-        });
 
         createVenue(
             {
@@ -164,7 +148,7 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
                     label,
                     startTime,
                     endTime,
-                    price: Number(price),
+                    price: Number(price) * 100,
                 })),
             },
             { onSuccess: onClose },

@@ -1,8 +1,8 @@
 import { CalendarCheck, Search } from "lucide-react";
 import { useState } from "react";
-import { fmt, STATUS_DOT, STATUS_STYLE, type BookingStatus } from "@/app/owner/types";
+import { STATUS_DOT, STATUS_STYLE, type BookingStatus } from "@/app/owner/types";
 import { useOwnerBookings } from "@/hooks/useBooking";
-import type { GetBookingQuery } from "@bookmyvenue/types";
+import type { GetOwnerBookingQuery } from "@bookmyvenue/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
     Pagination,
@@ -19,14 +19,13 @@ const toTitleStatus = (s: string): BookingStatus => (s.charAt(0) + s.slice(1).to
 
 const PAGE_SIZE = 10;
 
-
 export default function BookingsTab() {
     const [bookingFilter, setBookingFilter] = useState<BookingStatus | "All">("All");
     const [searchQ, setSearchQ] = useState("");
     const [page, setPage] = useState(1);
 
     const statusParam =
-        bookingFilter === "All" ? undefined : (bookingFilter.toUpperCase() as GetBookingQuery["status"]);
+        bookingFilter === "All" ? undefined : (bookingFilter.toUpperCase() as GetOwnerBookingQuery["status"]);
 
     // Reset to the first page whenever the status filter changes.
     const handleFilterChange = (filter: BookingStatus | "All") => {
@@ -125,7 +124,7 @@ export default function BookingsTab() {
                                         {b.purpose ?? "—"}
                                     </TableCell>
                                     <TableCell className="px-5 py-3.5 font-bold text-foreground whitespace-nowrap">
-                                        {fmt(b.totalAmount)}
+                                        {"₹" + (b.totalAmount / 100).toLocaleString()}
                                     </TableCell>
                                     <TableCell className="px-5 py-3.5">
                                         <span

@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { MapPin, Pencil, Plus, Star, Trash2 } from "lucide-react";
+import { MapPin, Pencil, Star, Trash2 } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
-import { fmt } from "@/app/owner/types";
 import { useOwnerVenues } from "@/hooks/useVenues";
 
 const STATUS_STYLE = {
@@ -121,7 +120,10 @@ export default function VenuesTab() {
                                     <div className="bg-muted rounded-lg p-2 text-center">
                                         <p className="text-xs font-bold">
                                             {v.sessions.length > 0
-                                                ? fmt(Math.min(...v.sessions.map((s) => s.price)))
+                                                ? "₹" +
+                                                  (
+                                                      Math.min(...v.sessions.map((s) => s.price)) / 100
+                                                  ).toLocaleString()
                                                 : "-"}
                                         </p>
                                         <p className="text-xs text-muted-foreground">Starting</p>

@@ -52,7 +52,6 @@ export const VENUES: Venue[] = [
     { id: "v2", name: "Lakeview Conference Centre", location: "Ernakulam", category: "Conference", capacity: 350, price: 15000, rating: 4.6, bookings: 21, status: "Active", image: "https://images.unsplash.com/photo-1780337092608-aad7948d7a60?w=400&h=260&fit=crop&auto=format" },
     { id: "v3", name: "Emerald Garden", location: "Kozhikode", category: "Wedding", capacity: 700, price: 32000, rating: 4.9, bookings: 18, status: "Active", image: "https://images.unsplash.com/photo-1779308936221-89739e035a53?w=400&h=260&fit=crop&auto=format" },
 ];
-
-export function fmt(n: number) {
+ function fmt(n: number) {
     return "₹" + n.toLocaleString("en-IN");
 }

@@ -165,7 +165,7 @@ export function VenueDetailModal({ venue, onClose }: Props) {
                                                     {s.startTime} – {s.endTime}
                                                 </td>
                                                 <td className="px-4 py-2.5 text-right font-semibold">
-                                                    Rs. {s.price.toLocaleString()}
+                                                    {"₹" + (s.price/100).toLocaleString()}
                                                 </td>
                                                 <td className="px-4 py-2.5 text-center">
                                                     <span

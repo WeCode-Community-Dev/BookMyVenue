@@ -1,6 +1,6 @@
 import { Plus, Users } from "lucide-react";
 import Image from "next/image";
-import { fmt, STATUS_STYLE, type BookingStatus, type Venue } from "@/app/owner/types";
+import { STATUS_STYLE, type BookingStatus, type Venue } from "@/app/owner/types";
 import { useOwnerBookings } from "@/hooks/useBooking";
 import { fmtDate } from "@/lib/utils";
 
@@ -14,7 +14,6 @@ interface OverviewTabProps {
 }
 
 const toTitleStatus = (s: string): BookingStatus => (s.charAt(0) + s.slice(1).toLowerCase()) as BookingStatus;
-
 
 export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: OverviewTabProps) {
     const { data, isLoading } = useOwnerBookings({ limit: 10 });
@@ -64,7 +63,7 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                                     </div>
                                     <div className="text-right shrink-0">
                                         <p className="text-sm font-bold text-foreground">
-                                            {fmt(b.totalAmount)}
+                                            {"₹" + (b.totalAmount / 100).toLocaleString()}
                                         </p>
                                         <span
                                             className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${STATUS_STYLE[status]}`}
@@ -161,7 +160,9 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                                 <span className="text-foreground font-medium truncate max-w-[60%]">
                                     {label}
                                 </span>
-                                <span className="text-muted-foreground">{fmt(amount)}</span>
+                                <span className="text-muted-foreground">
+                                    {"₹" + (amount / 100).toLocaleString()}
+                                </span>
                             </div>
                             <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                                 <div

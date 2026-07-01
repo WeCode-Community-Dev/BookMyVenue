@@ -74,7 +74,7 @@ const BookingDatePIcker = ({ venue }: BookingDatePickerProps) => {
                                         </p>
                                     </div>
                                     <span className="text-sm font-bold text-primary">
-                                        ₹{s.price.toLocaleString("en-IN")}
+                                        ₹{(s.price/100).toLocaleString("en-IN")}
                                     </span>
                                 </button>
                             ))}
