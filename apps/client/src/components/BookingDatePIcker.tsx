@@ -1,9 +1,9 @@
 import { CalendarDays, Clock, MapPin } from "lucide-react";
-import { Calendar } from "./ui/calendar";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useRouter } from "next/navigation";
-import { formatEnum } from "@/lib/utils";
-import {  VenueDetail } from "@bookmyvenue/types";
+import { formatEnum, toDateString } from "@/lib/utils";
+import { VenueDetail } from "@bookmyvenue/types";
+import { Calendar } from "./ui/calendar";
 
 type BookingDatePickerProps = {
     venue: VenueDetail;
@@ -16,6 +16,12 @@ const BookingDatePIcker = ({ venue }: BookingDatePickerProps) => {
     const toggleSession = useBookingStore((s) => s.toggleSession);
     const selectedDate = useBookingStore((s) => s.selectedDate);
     const setSelectedDate = useBookingStore((s) => s.setSelectedDate);
+
+    const tomorrow = new Date();
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+
     return (
         <aside className="lg:col-span-1">
             <div className="bg-card border border-border rounded-2xl p-6 lg:sticky lg:top-24 space-y-5">
@@ -34,7 +40,13 @@ const BookingDatePIcker = ({ venue }: BookingDatePickerProps) => {
                         <CalendarDays className="w-4 h-4" />
                         Select date
                     </h3>
-                    <Calendar value={selectedDate} onChange={setSelectedDate} />
+                    <Calendar
+                        mode="single"
+                        selected={selectedDate ? new Date(`${selectedDate}T00:00:00`) : undefined}
+                        onSelect={(date) => setSelectedDate(date ? toDateString(date) : null)}
+                        disabled={{ before: tomorrow }}
+                        className="w-full [--cell-size:--spacing(9)] rounded-md"
+                    />
                 </div>
 
                 <div className="border-t border-border pt-5">
