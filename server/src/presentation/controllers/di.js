@@ -15,6 +15,7 @@ import LogoutUseCase from '../../application/user/usecases/LogoutUseCase.js'
 import RefreshTokenUseCase from '../../application/user/usecases/RefreshTokenUseCase.js'
 import VerifyOtpUseCase from '../../application/user/usecases/VerifyOtpUseCase.js'
 import ResendOtpUseCase from '../../application/user/usecases/ResendOtpUseCase.js'
+
 import ForgotPasswordUseCase from '../../application/user/usecases/ForgotPasswordUseCase.js'
 import ResetPasswordUseCase from '../../application/user/usecases/ResetPasswordUseCase.js'
 // import GoogleAuthUseCase from '../../application/user/usecases/GoogleAuthUseCase.js'  // TODO: Google Auth - temporarily disabled
@@ -63,12 +64,14 @@ import { VendorDashboardController } from './vendor/VendorDashboardController.js
 import { VenueRepository } from '../../infrastructure/repositories/venue.repository.js'
 import { UserRepository } from '../../infrastructure/repositories/user.repository.js'
 import VendorRepository from '../../infrastructure/repositories/vendor.repository.js'
-import BookingRepositoryImpl from '../../infrastructure/repositories/booking.repository.js'
+import { BookingRepositoryImpl } from '../../infrastructure/repositories/booking.repository.js'
 
 // services
 import { CloudinaryService } from '../../infrastructure/services/cloudinaryService.js'
 import HashService from '../../infrastructure/services/HashService.js'
 import { MailServiceImpl } from '../../infrastructure/services/MailService.js'
+import TokenService from '../../infrastructure/services/TokenService.js'
+import OtpService from '../../infrastructure/services/OtpService.js'
 
 // --- repositories ---
 const iVenueRepository = new VenueRepository()
@@ -99,16 +102,44 @@ const iAdminRejectVenueUsecase = new AdminRejectVenueUsecase(iVenueRepository, i
 const iAdminUpdateVenueBlockStatusUsecase = new AdminUpdateVenueBlockStatusUsecase(iVenueRepository)
 
 // --- auth usecases ---
-const iRegisterUserUseCase = new RegisterUserUseCase(iUserRepository, HashService)
-const iLoginUserUseCase = new LoginUserUseCase(iUserRepository, HashService)
-const iLogoutUseCase = new LogoutUseCase(iUserRepository)
-const iRefreshTokenUseCase = new RefreshTokenUseCase(iUserRepository)
-const iVerifyOtpUseCase = new VerifyOtpUseCase(iUserRepository)
-const iResendOtpUseCase = new ResendOtpUseCase(iUserRepository, HashService)
-const iForgotPasswordUseCase = new ForgotPasswordUseCase(iUserRepository)
-const iResetPasswordUseCase = new ResetPasswordUseCase(iUserRepository, HashService)
-// export const iGoogleAuthUseCase = new GoogleAuthUseCase(iUserRepository)  // TODO: Google Auth - temporarily disabled
+const iRegisterUserUseCase = new RegisterUserUseCase(
+  iUserRepository,
+  HashService,
+  OtpService
+)
 
+const iLoginUserUseCase = new LoginUserUseCase(
+  iUserRepository,
+  HashService,
+  TokenService
+)
+
+const iLogoutUseCase = new LogoutUseCase(iUserRepository)
+
+const iRefreshTokenUseCase = new RefreshTokenUseCase(
+  iUserRepository,
+  TokenService
+)
+
+const iVerifyOtpUseCase = new VerifyOtpUseCase(
+  iUserRepository,
+  OtpService
+)
+
+const iResendOtpUseCase = new ResendOtpUseCase(
+  iUserRepository,
+  OtpService
+)
+
+const iForgotPasswordUseCase = new ForgotPasswordUseCase(iUserRepository,TokenService,iMailService)
+
+const iResetPasswordUseCase = new ResetPasswordUseCase(iUserRepository,HashService)
+
+//export const iGoogleAuthUseCase = new GoogleAuthUseCase(iUserRepository)
+
+const iRegisterVendorUseCase = new RegisterVendorUseCase(iVendorRepository,HashService)
+
+const iLoginVendorUseCase = new LoginVendorUseCase(iVendorRepository,HashService)
 // --- vendor usecases ---
 const iCreateVenueUsecase = new VendorCreateVenueUsecase(iVenueRepository)
 const iUpdateVenueUsecase = new VendorEditVenueUsecase(iVenueRepository, iCloudinaryService)
@@ -184,5 +215,6 @@ export const iAuthController = new AuthController(
     iVerifyOtpUseCase,
     iResendOtpUseCase,
     iForgotPasswordUseCase,
-    iResetPasswordUseCase
+    iResetPasswordUseCase,
+    TokenService
 )

@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { UnauthorizedError } from "../../domain/errors/UnauthorizedError.js";
 
 class TokenService {
@@ -12,6 +13,14 @@ class TokenService {
         return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
             expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d"
         });
+    }
+
+    generateResetToken() {
+        return crypto.randomBytes(32).toString('hex');
+    }
+
+    getResetTokenExpiry() {
+        return new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     }
 
     verifyRefreshToken(token) {

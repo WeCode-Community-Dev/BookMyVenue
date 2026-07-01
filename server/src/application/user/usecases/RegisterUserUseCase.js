@@ -4,23 +4,28 @@ import { UserEntity } from "../../../domain/entities/User.js";
 import { sendMail } from "../../../infrastructure/services/MailService.js";
 import { otpTemplate } from "../../../infrastructure/emailTemplates/otpTemplate.js";
 
+import { authMessages } from "../../../shared/constants/messages/authMessages.js";
+
+
+
 class RegisterUserUseCase {
-    constructor(userRepository, hashService) {
+    constructor(userRepository, hashService, otpService) {
         this._userRepository = userRepository;
         this._hashService = hashService;
+        this._otpService = otpService;
     }
 
     async execute(userData) {
         const existing = await this._userRepository.findByEmail(userData.email);
 
         if (existing) {
-            throw new ConflictError("Email already exists");
+            throw new ConflictError(authMessages.error.EMAIL_ALREADY_EXISTS);
         }
 
         const hashedPassword = await this._hashService.hash(userData.password);
-        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const hashedOtpCode = await this._hashService.hash(otpCode);
-        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        const otpCode = this._otpService.generate();
+        const hashedOtpCode = await this._otpService.hash(otpCode);
+        const otpExpiresAt = this._otpService.getExpiry(10);
 
         const userEntity = new UserEntity({
             fullName: userData.fullName,

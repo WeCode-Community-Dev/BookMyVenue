@@ -1,27 +1,28 @@
 import { UnauthorizedError } from "../../../domain/errors/UnauthorizedError.js";
-import TokenService from "../../../infrastructure/services/TokenService.js";
+import { authMessages } from "../../../shared/constants/messages/authMessages.js";
 
 export default class RefreshTokenUseCase {
-    constructor(userRepository) {
+    constructor(userRepository, tokenService) {
         this._userRepository = userRepository;
+        this._tokenService = tokenService;
     }
 
     async execute(refreshToken) {
         if (!refreshToken) {
-            throw new UnauthorizedError("No refresh token provided");
+            throw new UnauthorizedError(authMessages.error.NO_REFRESH_TOKEN);
         }
 
-        const decoded = TokenService.verifyRefreshToken(refreshToken);
+        const decoded = this._tokenService.verifyRefreshToken(refreshToken);
 
         const user = await this._userRepository.findByRefreshToken(refreshToken);
 
         if (!user) {
-            throw new UnauthorizedError("Refresh token is invalid or has been revoked");
+            throw new UnauthorizedError(authMessages.error.REFRESH_TOKEN_REVOKED);
         }
 
         const payload = { userId: user.id, role: user.role };
-        const newAccessToken = TokenService.generateAccessToken(payload);
-        const newRefreshToken = TokenService.generateRefreshToken(payload);
+        const newAccessToken = this._tokenService.generateAccessToken(payload);
+        const newRefreshToken = this._tokenService.generateRefreshToken(payload);
 
         await this._userRepository.updateRefreshToken(user.id, newRefreshToken);
 

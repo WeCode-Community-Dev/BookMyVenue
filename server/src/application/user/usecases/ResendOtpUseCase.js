@@ -1,23 +1,24 @@
 import { NotFoundError } from "../../../domain/errors/NotFoundError.js";
 import { sendMail } from "../../../infrastructure/services/MailService.js";
 import { otpTemplate } from "../../../infrastructure/emailTemplates/otpTemplate.js";
+import { authMessages } from "../../../shared/constants/messages/authMessages.js";
 
 export default class ResendOtpUseCase {
-    constructor(userRepository, hashService) {
+    constructor(userRepository, otpService) {
         this._userRepository = userRepository;
-        this._hashService = hashService;
+        this._otpService = otpService;
     }
 
     async execute(email) {
         const user = await this._userRepository.findByEmail(email);
 
         if (!user) {
-            throw new NotFoundError("User not found");
+            throw new NotFoundError(authMessages.error.USER_NOT_FOUND);
         }
 
-        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const hashedOtpCode = await this._hashService.hash(otpCode);
-        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const otpCode = this._otpService.generate();
+        const hashedOtpCode = await this._otpService.hash(otpCode);
+        const otpExpiresAt = this._otpService.getExpiry(10);
 
         await this._userRepository.update(user.id, {
             otpCode: hashedOtpCode,
@@ -30,9 +31,6 @@ export default class ResendOtpUseCase {
             otpTemplate(user.fullName, otpCode)
         );
 
-        return {
-            email,
-            message: "New OTP sent successfully. Check your email."
-        };
+        return { email };
     }
 }

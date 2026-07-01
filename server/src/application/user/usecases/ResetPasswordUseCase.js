@@ -1,6 +1,8 @@
 import { NotFoundError } from "../../../domain/errors/NotFoundError.js";
 import { UnauthorizedError } from "../../../domain/errors/UnauthorizedError.js";
-import { InternalServerError } from "../../../domain/errors/InternalServerError.js";
+import { AppError } from "../../../domain/errors/app.error.js";
+import { statusCode } from "../../../shared/constants/enums/statusCode.js";
+import { authMessages } from "../../../shared/constants/messages/authMessages.js";
 
 export default class ResetPasswordUseCase {
     constructor(userRepository, hashService) {
@@ -9,44 +11,26 @@ export default class ResetPasswordUseCase {
     }
 
     async execute(email, resetToken, newPassword) {
-
-        // Validate password
-        if (!newPassword || newPassword.trim().length < 8) {
-            throw new UnauthorizedError(
-                "Password must be at least 8 characters long"
-            );
-        }
-
-        // Find user
         const user = await this._userRepository.findByEmail(email, true);
 
         if (!user) {
-            throw new NotFoundError("User not found");
+            throw new NotFoundError(authMessages.error.USER_NOT_FOUND);
         }
 
-        // Check if a password reset request exists
         if (!user.resetToken || !user.resetTokenExpiry) {
-            throw new UnauthorizedError(
-                "No password reset request found for this email"
-            );
+            throw new UnauthorizedError(authMessages.error.NO_RESET_REQUEST);
         }
 
-        // Verify token
         if (user.resetToken !== resetToken) {
-            throw new UnauthorizedError("Invalid reset token");
+            throw new UnauthorizedError(authMessages.error.INVALID_RESET_TOKEN);
         }
 
-        // Check token expiry
         if (new Date() > new Date(user.resetTokenExpiry)) {
-            throw new UnauthorizedError(
-                "Password reset link has expired"
-            );
+            throw new UnauthorizedError(authMessages.error.RESET_TOKEN_EXPIRED);
         }
 
-        // Hash new password
         const hashedPassword = await this._hashService.hash(newPassword);
 
-        // Update password and clear reset fields
         const updatedUser = await this._userRepository.update(user.id, {
             password: hashedPassword,
             resetToken: null,
@@ -54,15 +38,9 @@ export default class ResetPasswordUseCase {
         });
 
         if (!updatedUser) {
-            throw new InternalServerError(
-                "Failed to reset password"
-            );
+            throw new AppError(authMessages.error.RESET_PASSWORD_FAILED, statusCode.SERVER_ERROR);
         }
 
-        return {
-            email: updatedUser.email,
-            message:
-                "Password reset successfully. You can now login with your new password.",
-        };
+        return { email: updatedUser.email };
     }
 }

@@ -1,47 +1,44 @@
 import { NotFoundError } from "../../../domain/errors/NotFoundError.js";
 import { UnauthorizedError } from "../../../domain/errors/UnauthorizedError.js";
-import crypto from "crypto";
-import HashService from "../../../infrastructure/services/HashService.js";
+import { authMessages } from "../../../shared/constants/messages/authMessages.js";
 
 export default class VerifyOtpUseCase {
-    constructor(userRepository) {
+    constructor(userRepository, otpService) {
         this._userRepository = userRepository;
+        this._otpService = otpService;
     }
 
     async execute(email, otpCode) {
         const user = await this._userRepository.findByEmail(email, false, true);
 
         if (!user) {
-            throw new NotFoundError("User not found");
+            throw new NotFoundError(authMessages.error.USER_NOT_FOUND);
         }
 
         if (user.isOtpVerified) {
-            throw new UnauthorizedError("User is already OTP verified");
+            throw new UnauthorizedError(authMessages.error.ALREADY_OTP_VERIFIED);
         }
 
         if (!user.otpCode || !user.otpExpiresAt) {
-            throw new UnauthorizedError("OTP not generated or already used");
+            throw new UnauthorizedError(authMessages.error.OTP_NOT_GENERATED);
         }
 
-        // Check if OTP has expired
         if (new Date() > new Date(user.otpExpiresAt)) {
-            throw new UnauthorizedError("OTP code has expired");
+            throw new UnauthorizedError(authMessages.error.OTP_EXPIRED);
         }
 
-        // Use constant-time comparison to prevent timing attacks
-        const isOtpValid = await HashService.compare(otpCode, user.otpCode);
+        const isOtpValid = await this._otpService.compare(otpCode, user.otpCode);
 
         if (!isOtpValid) {
-            throw new UnauthorizedError("Invalid OTP code");
+            throw new UnauthorizedError(authMessages.error.INVALID_OTP);
         }
 
         const verifiedUser = await this._userRepository.verifyOtp(user.id);
 
         if (!verifiedUser) {
-            throw new UnauthorizedError("Unable to verify OTP");
+            throw new UnauthorizedError(authMessages.error.OTP_VERIFY_FAILED);
         }
 
         return verifiedUser;
     }
 }
-

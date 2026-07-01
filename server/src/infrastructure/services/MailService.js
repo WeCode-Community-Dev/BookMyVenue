@@ -4,6 +4,18 @@ import { vendorApprovalTemplate } from "../emailTemplates/admin.vendorApprovalTe
 import { vendorRejectionTemplate } from "../emailTemplates/admin.vendorRejectionTemplate.js";
 import { adminVenueApprovalTemplate } from "../emailTemplates/admin.venueApprovalTemplate.js";
 import { adminVenueRejectionTemplate } from "../emailTemplates/admin.venueRejectionTemplate.js";
+import { forgotPasswordTemplate } from "../emailTemplates/forgotPasswordTemplate.js";
+import { otpTemplate } from "../emailTemplates/otpTemplate.js";
+
+// General-purpose send function used by auth use cases
+export const sendMail = async (to, subject, html) => {
+    await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to,
+        subject,
+        html
+    });
+};
 
 export class MailServiceImpl extends MailService {
 
@@ -67,31 +79,45 @@ export class MailServiceImpl extends MailService {
 
 }
 
-async sendVenueRejectionMail(venue, reason) {
+    async sendVenueRejectionMail(venue, reason) {
 
-    const { subject, html } =
-        adminVenueRejectionTemplate({
+        const { subject, html } =
+            adminVenueRejectionTemplate({
+                venueName: venue.name,
+                vendorName: venue.vendorId.fullName,
+                reason
+            });
 
-            venueName: venue.name,
-            vendorName: venue.vendorId.fullName,
-            reason
-
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: venue.vendorId.email,
+            subject,
+            html
         });
 
-    await transporter.sendMail({
+        console.log("Venue rejection mail sent.");
+    }
 
-        from: process.env.EMAIL_USER,
+    async sendForgotPasswordMail(user, resetLink) {
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: 'Reset Your BookMyVenue Password',
+            html: forgotPasswordTemplate(user.fullName, resetLink)
+        });
 
-        to: venue.vendorId.email,
+        console.log("Forgot password mail sent.");
+    }
 
-        subject,
+    async sendOtpMail(user, otpCode) {
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: 'Your BookMyVenue OTP Code - Verify Your Email',
+            html: otpTemplate(user.fullName, otpCode)
+        });
 
-        html
-
-    });
-
-    console.log("Venue rejection mail sent.");
-
-}
+        console.log("OTP mail sent.");
+    }
 
 }
