@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Cookies from "js-cookie"
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../assets/Logo.png'
 import { Layout, Building } from '@mynaui/icons-react';
 import apiService from '../services/apiService';
-import toast from 'react-hot-toast';
+import toast, {Toaster} from 'react-hot-toast';
 
 // ==========================================
 // 1. DUMMY DATA (Replace with API data)
@@ -40,6 +40,8 @@ const SidebarItem = ({ iconName, label, isActive, onClick, link }) => (
 // 3. MAIN PARENT COMPONENT
 // ==========================================
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -63,11 +65,18 @@ export default function AdminDashboard() {
   }
 
   useEffect(() => {
-    const getAllUsersList = async () => {
-      const response = await apiService.GetUserListForAdmin();
-      setAllUsers(response);
-    }
 
+    const getAllUsersList = async () => {
+      try {
+        const response = await apiService.GetUserListForAdmin();
+        setAllUsers(response);
+
+      } catch (error) {
+        toast.error(error.message)
+        console.log(error.message);
+      }
+    }
+    
     getAllUsersList()
     fetchPendingVenues()
   }, [])  
@@ -86,11 +95,13 @@ export default function AdminDashboard() {
     } catch (error) {
       console.log("Failed to Approve/Reject the Venue!" ,error);
       toast.error("Failed to Approve/Reject the Venue!")
+      
     }
   }
 
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans overflow-hidden">
+      < Toaster />
       
       {/* MOBILE OVERLAY */}
       {isMobileMenuOpen && (
