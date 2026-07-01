@@ -164,6 +164,7 @@ export default function SpaceListing() {
                         const verifyPayload = {
                             "user_id": parseInt(Cookies.get('userId')),
                             "venue_id": venue.id,
+                            "order_id": orderResponse.order_id,
                             "razorpay_order_id": response.razorpay_order_id,
                             "razorpay_payment_id": response.razorpay_payment_id,
                             "razorpay_signature": response.razorpay_signature
@@ -315,22 +316,22 @@ export default function SpaceListing() {
             <div>
                 <h2 className="text-xl font-semibold mb-6">What this place offers</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
-                <div className="flex items-center gap-3 text-gray-700">
-                    <Wifi className="w-6 h-6 text-gray-600" />
-                    <span>High-speed Wi-Fi</span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-700">
-                    <Parking className="w-6 h-6 text-gray-600" />
-                    <span>Free street parking</span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-700">
-                    <Monitor className="w-6 h-6 text-gray-600" />
-                    <span>AV Equipment</span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-700">
-                    <Coffee className="w-6 h-6 text-gray-600" />
-                    <span>Kitchen access</span>
-                </div>
+                    <div className="flex items-center gap-3 text-gray-700">
+                        <Wifi className="w-6 h-6 text-gray-600" />
+                        <span>High-speed Wi-Fi</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-700">
+                        <Parking className="w-6 h-6 text-gray-600" />
+                        <span>Free street parking</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-700">
+                        <Monitor className="w-6 h-6 text-gray-600" />
+                        <span>AV Equipment</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-700">
+                        <Coffee className="w-6 h-6 text-gray-600" />
+                        <span>Kitchen access</span>
+                    </div>
                 </div>
             </div>
             </div>
