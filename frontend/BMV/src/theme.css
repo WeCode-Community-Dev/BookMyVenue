@@ -1,0 +1,102 @@
+/* BookMyVenue - Maroon/Burgundy Theme */
+
+:root {
+  --primary-maroon: #8B1538;
+  --primary-maroon-dark: #6B0F2A;
+  --primary-maroon-light: #A91D47;
+  --bg-pink-light: #FFF5F7;
+  --bg-pink: #FFE4E9;
+}
+
+/* Override default blue classes with maroon */
+.bg-blue-600 {
+  background-color: var(--primary-maroon) !important;
+}
+
+.bg-blue-700 {
+  background-color: var(--primary-maroon-dark) !important;
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: var(--primary-maroon-dark) !important;
+}
+
+.hover\:bg-blue-600:hover {
+  background-color: var(--primary-maroon) !important;
+}
+
+.text-blue-600 {
+  color: var(--primary-maroon) !important;
+}
+
+.text-blue-700 {
+  color: var(--primary-maroon-dark) !important;
+}
+
+.text-blue-800 {
+  color: var(--primary-maroon-dark) !important;
+}
+
+.text-blue-900 {
+  color: var(--primary-maroon-dark) !important;
+}
+
+.hover\:text-blue-700:hover {
+  color: var(--primary-maroon-dark) !important;
+}
+
+.border-blue-200 {
+  border-color: #FFB3C6 !important;
+}
+
+.border-blue-500 {
+  border-color: var(--primary-maroon-light) !important;
+}
+
+.bg-blue-50 {
+  background-color: var(--bg-pink-light) !important;
+}
+
+.bg-blue-100 {
+  background-color: var(--bg-pink) !important;
+}
+
+.ring-blue-500 {
+  --tw-ring-color: var(--primary-maroon-light) !important;
+}
+
+.focus\:ring-blue-500:focus {
+  --tw-ring-color: var(--primary-maroon-light) !important;
+}
+
+/* Gradient updates for venue cards */
+.bg-gradient-to-br.from-blue-500.to-purple-600 {
+  background: linear-gradient(to bottom right, var(--primary-maroon), #6B0F2A) !important;
+}
+
+/* Body background */
+body {
+  background-color: #FAFAFA;
+}
+
+.bg-gray-50 {
+  background-color: var(--bg-pink-light) !important;
+}
+
+/* Button styles */
+button.bg-blue-600,
+a.bg-blue-600 {
+  background-color: var(--primary-maroon) !important;
+  transition: background-color 0.2s;
+}
+
+button.bg-blue-600:hover,
+a.bg-blue-600:hover {
+  background-color: var(--primary-maroon-dark) !important;
+}
+
+/* Specific overrides for badges */
+.bg-blue-100.text-blue-800 {
+  background-color: #FFE4E9 !important;
+  color: var(--primary-maroon-dark) !important;
+}

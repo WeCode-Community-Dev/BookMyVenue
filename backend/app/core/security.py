@@ -3,6 +3,8 @@ from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 from app.core.config import settings
 from app.db.deps import get_db
 from app.models.user import User
@@ -68,3 +70,23 @@ def get_current_user(
         )
 
     return user
+
+
+
+# function to verify Google ID token
+
+def verify_google_token(token: str) -> dict:
+    try:
+        idinfo = id_token.verify_oauth2_token(
+            token,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID
+        )
+        return idinfo
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google token"
+        )
+        
+        

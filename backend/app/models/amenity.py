@@ -10,5 +10,6 @@ class Amenity(Base):
 
     venues = relationship(
         "Venue",
-        secondary="venue_amenities"
+        secondary="venue_amenities",
+        back_populates="amenities"
     )

@@ -23,13 +23,10 @@ client.interceptors.request.use(
 client.interceptors.response.use(
   (response) => response,
   (error) => {
-    const err = error.response?.data?.error;
-    const code = err?.code || "INTERNAL_ERROR";
-    const message = err?.message || "Something went wrong.";
-    const details = err?.details || [];
+    const message = error.response?.data?.detail || "Something went wrong."
     const status = error.response?.status || 500;
 
-    return Promise.reject({ code, message, details, status });
+    return Promise.reject({ message, status });
   },
 );
 

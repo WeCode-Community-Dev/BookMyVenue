@@ -3,9 +3,9 @@ from app.models.venue import Venue
 from app.schemas.venue import VenueCreate
 from fastapi import HTTPException
 
-def create_venue(db: Session, venue_data: VenueCreate) -> Venue:
+def create_venue(db: Session, venue_data: VenueCreate, owner_id: int) -> Venue:
     new_venue = Venue(
-        owner_id=1,
+        owner_id=owner_id,
         name=venue_data.name,
         location=venue_data.location,
         price_per_day=venue_data.price_per_day
@@ -58,7 +58,8 @@ def get_venue_by_id(db: Session, venue_id: int):
 def update_venue(
     db: Session,
     venue_id: int,
-    venue_data
+    venue_data,
+    owner_id: int
 ):
     venue = db.query(Venue).filter(
         Venue.id == venue_id
@@ -68,6 +69,13 @@ def update_venue(
         raise HTTPException(
             status_code=404,
             detail="Venue not found"
+        )
+    
+    # Check if the current user owns this venue
+    if venue.owner_id != owner_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You don't have permission to update this venue"
         )
 
     venue.name = venue_data.name
@@ -79,7 +87,7 @@ def update_venue(
 
     return venue
 
-def delete_venue(db: Session, venue_id: int):
+def delete_venue(db: Session, venue_id: int, owner_id: int):
     venue = db.query(Venue).filter(
         Venue.id == venue_id
     ).first()
@@ -89,11 +97,18 @@ def delete_venue(db: Session, venue_id: int):
             status_code=404,
             detail="Venue not found"
         )
+    
+    # Check if the current user owns this venue
+    if venue.owner_id != owner_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You don't have permission to delete this venue"
+        )
 
     db.delete(venue)
     db.commit()
 
-    return venue
+    return {"message": "Venue deleted successfully"}
 
 def get_my_venues(
     db: Session,
