@@ -78,11 +78,11 @@ async def verify_payment(payload: VerifyPaymentRequest, db: Session = Depends(ge
 
         create_booking(
             db,
-            user_id=payload.user_id,
             venue_id=payload.venue_id,
             order_id=payload.order_id,
             booking_date=payload.booking_date,
             status="confirmed",
+            user_id=payload.user_id,
             start_time=payload.start_time,
             end_time=payload.end_time
         )

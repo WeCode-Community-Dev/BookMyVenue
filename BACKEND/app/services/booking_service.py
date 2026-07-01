@@ -7,16 +7,16 @@ from typing import Optional
 
 def create_booking(
     db: Session,
-    user_id: int,
     venue_id: int,
     order_id: str,
     booking_date: str,
     status: str,
+    user_id: Optional[int] = None,
     start_time: Optional[str] = None,
     end_time: Optional[str] = None,
 ):
     try:
-        
+        print("here")
         new_booking = Booking(
             user_id=user_id,
             venue_id=venue_id,
