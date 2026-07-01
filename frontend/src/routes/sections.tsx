@@ -25,6 +25,7 @@ export const BookingPage = lazy(() => import('src/pages/user/booking'));
 // Authenticated User Pages
 export const MyBookingsPage = lazy(() => import('src/pages/user/my-bookings'));
 export const BookingDetailsPage = lazy(() => import('src/pages/user/booking-details'));
+export const PaymentPage = lazy(() => import('src/pages/user/payment'));
 export const FavoritesPage = lazy(() => import('src/pages/user/favorites'));
 export const ProfilePage = lazy(() => import('src/pages/user/profile'));
 
@@ -139,6 +140,14 @@ export const routesSection: RouteObject[] = [
             element: (
               <Suspense fallback={renderFallback()}>
                 <MyBookingsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'my/bookings/:bookingId/payment',
+            element: (
+              <Suspense fallback={renderFallback()}>
+                <PaymentPage />
               </Suspense>
             ),
           },

@@ -2,7 +2,7 @@ import type { BookingStatus } from 'src/api/types/venue.type';
 
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
@@ -25,6 +25,7 @@ import {
     CircularProgress,
 } from '@mui/material';
 
+import { PaymentStatus } from 'src/api/types/payment.type';
 import { UserBookingApiService } from 'src/api/user-booking';
 
 import { Iconify } from 'src/components/iconify';
@@ -107,7 +108,13 @@ export function BookingDetailsView() {
     const nights = Math.max(1, dayjs(booking.endDate).diff(dayjs(booking.startDate), 'day'));
     const baseAmount = booking.totalAmount ? Math.round(booking.totalAmount / 1.1) : 0;
     const serviceFee = booking.totalAmount ? booking.totalAmount - baseAmount : 0;
-    const canCancel = ['PENDING', 'CONFIRMED'].includes(booking.status);
+    const canCancel = booking.status === 'BOOKED';
+    const paymentStatus = booking.paymentStatus ?? PaymentStatus.PENDING;
+    const showPayButton =
+        booking.status === 'BOOKED'
+        && paymentStatus !== PaymentStatus.PAID
+        && paymentStatus !== PaymentStatus.REFUNDED;
+    const venueId = booking.venue?.id ?? booking.venueId;
 
     return (
         <Box sx={{ bgcolor: 'grey.50', minHeight: '100vh', pb: 8 }}>
@@ -196,7 +203,7 @@ export function BookingDetailsView() {
                                         size="small"
                                         variant="outlined"
                                         startIcon={<Iconify icon="mdi:domain" />}
-                                        onClick={() => navigate(`/venues/${booking.venueId}`)}
+                                        onClick={() => venueId && navigate(`/venues/${venueId}`)}
                                         sx={{ borderRadius: 2, fontWeight: 600 }}
                                     >
                                         View Venue
@@ -317,7 +324,9 @@ export function BookingDetailsView() {
                                     </Stack>
                                     <Divider />
                                     <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                        <Typography variant="subtitle2" fontWeight={800}>Total Paid</Typography>
+                                        <Typography variant="subtitle2" fontWeight={800}>
+                                            {paymentStatus === PaymentStatus.PAID ? 'Total Paid' : 'Total Amount'}
+                                        </Typography>
                                         <Typography variant="h6" fontWeight={800} color="primary.main">
                                             ₹{(booking.totalAmount ?? 0).toLocaleString('en-IN')}
                                         </Typography>
@@ -353,6 +362,23 @@ export function BookingDetailsView() {
 
                             {/* Actions */}
                             <Stack spacing={1.5}>
+                                {showPayButton && (
+                                    <Button
+                                        component={Link}
+                                        to={`/my/bookings/${booking.id}/payment`}
+                                        variant="contained"
+                                        fullWidth
+                                        startIcon={<Iconify icon="mdi:credit-card-outline" />}
+                                        sx={{
+                                            borderRadius: 2.5,
+                                            fontWeight: 700,
+                                            background: 'linear-gradient(135deg, #1877F2 0%, #8E33FF 100%)',
+                                        }}
+                                    >
+                                        {paymentStatus === PaymentStatus.FAILED ? 'Retry Payment' : 'Go to Payment'}
+                                    </Button>
+                                )}
+
                                 <Button
                                     variant="outlined"
                                     fullWidth

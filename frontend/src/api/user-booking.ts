@@ -1,5 +1,6 @@
 import { axiosClient } from 'src/lib/axios';
 
+import type { PaymentStatus } from './types/payment.type';
 import type { BookingStatus, BookingSummary } from './types/venue.type';
 
 interface Pagination<T> {
@@ -15,23 +16,33 @@ interface Pagination<T> {
 export interface BookingDetails {
     id?: string;
     bookingId?: string;
-    venueId: string;
-    venueName: string;
-    venueCity: string;
-    venueState: string;
+    venueId?: string;
+    venueName?: string;
+    venueCity?: string;
+    venueState?: string;
     venueThumbnail?: string;
     venue?: {
-        title?: string;
+        id: string;
+        title: string;
+        address?: string;
         images?: string[];
+    };
+    user?: {
+        id: string;
+        firstName: string;
+        lastName?: string;
+        email: string;
+        phone?: string | null;
     };
     startDate: string;
     endDate: string;
     guestsCount: number;
     totalAmount: number;
     status: BookingStatus;
+    paymentStatus?: PaymentStatus;
     specialRequests?: string;
     createdAt: string;
-    updatedAt: string;
+    updatedAt?: string;
 }
 
 export interface CreateBookingRequest {
