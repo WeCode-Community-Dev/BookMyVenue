@@ -26,15 +26,6 @@ func (r *repository) getSlotForUpdate(ctx context.Context, tx pgx.Tx, slotID str
 	return qtx.GetSlotForUpdate(ctx, slotUUID)
 }
 
-func (r *repository) updateAvailabilityBooked(ctx context.Context, slotID string) error {
-	slotUUID, err := utils.StringToUUID(slotID)
-	if err != nil {
-		return err
-	}
-
-	return r.db.MarkSlotBooked(ctx, slotUUID)
-}
-
 func (r *repository) markSlotBooked(ctx context.Context, slotID string) error {
 	slotUUID, err := utils.StringToUUID(slotID)
 	if err != nil {

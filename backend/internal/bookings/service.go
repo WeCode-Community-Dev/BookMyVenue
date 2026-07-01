@@ -101,11 +101,6 @@ func (s *service) confirmBooking(ctx context.Context, bookingID, slotID string) 
 		return errors.New("failed to confirm booking")
 	}
 
-	err = s.repo.updateAvailabilityBooked(ctx, slotID)
-	if err != nil {
-		return errors.New("failed to mark slot as booked")
-	}
-
 	// release Redis lock — slot is now permanently booked in DB
 	s.lock.Release(ctx, slotID)
 
