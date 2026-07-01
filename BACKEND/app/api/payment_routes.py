@@ -13,7 +13,7 @@ from app.services.order_service import (
     update_order_payment_status,
 )
 from app.services.booking_service import create_booking
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
@@ -44,6 +44,7 @@ async def create_order(payload: CreateOrderRequest, db: Session = Depends(get_db
             razorpay_order_id=razorpay_order["id"],
             amount=order_data["amount"],
             currency=order_data["currency"],
+            payment_time=datetime.now(timezone.utc),
             status="pending",
         )
         

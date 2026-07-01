@@ -16,7 +16,6 @@ def create_booking(
     end_time: Optional[str] = None,
 ):
     try:
-        print(f"Creating booking: user_id={user_id}, venue_id={venue_id}, order_id={order_id}, booking_date={booking_date}, status={status}")
         
         new_booking = Booking(
             user_id=user_id,
