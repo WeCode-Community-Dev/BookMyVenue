@@ -38,8 +38,8 @@ class Booking(Base):
     )
 
     booking_date = Column(Date, nullable=False)
-    start_time = Column(String(100), nullable=False)
-    end_time = Column(String(100), nullable=False)
+    start_time = Column(String(100), nullable=True)
+    end_time = Column(String(100), nullable=True)
 
     status = Column(String(50), nullable=False, default="created")
     # status can be "created", "confirmed", "cancelled", "completed", "offline"

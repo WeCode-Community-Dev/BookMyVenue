@@ -3,6 +3,7 @@ from app.core.config import settings
 from typing import List
 from sqlalchemy.orm import Session
 from app.model.bookings import Booking
+from typing import Optional
 
 def create_booking(
     db: Session,
@@ -10,17 +11,20 @@ def create_booking(
     venue_id: int,
     order_id: str,
     booking_date: str,
-    booking_time: str,
-    status: str
+    status: str,
+    start_time: Optional[str] = None,
+    end_time: Optional[str] = None,
 ):
     try:
+        
         new_booking = Booking(
             user_id=user_id,
             venue_id=venue_id,
             order_id=order_id,
             booking_date=booking_date,
-            booking_time=booking_time,
-            status=status
+            status=status,
+            start_time=start_time,
+            end_time=end_time
         )
 
         db.add(new_booking)
@@ -31,7 +35,7 @@ def create_booking(
 
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=400,
             detail=f"Error creating booking: {e}"
         )
 
