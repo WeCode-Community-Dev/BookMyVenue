@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Calendar, Clock, Info, Star } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +17,10 @@ import {
   getVenueRating,
   getVenueReviewCount,
 } from "@/lib/data/venue-detail";
+import {
+  buildBookingIsoRange,
+  createBooking,
+} from "@/services/bookingServices";
 
 type SpaceBookingSummaryProps = {
   spaceId: string;
@@ -27,12 +33,43 @@ export function SpaceBookingSummary({
   selectedDate,
   selectedRange,
 }: SpaceBookingSummaryProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const hourlyRate = getSpaceHourlyPrice(spaceId);
   const rating = getVenueRating();
   const reviewCount = getVenueReviewCount();
   const breakdown = selectedRange
     ? computeSpaceBookingTotal(hourlyRate, selectedRange.hours)
     : null;
+
+  async function handleContinueBooking() {
+    if (!selectedRange) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { startAt, endAt } = buildBookingIsoRange(selectedDate, selectedRange);
+      const result = await createBooking({
+        spaceId,
+        startAt,
+        endAt,
+        pricingType: "HOURLY",
+      });
+
+      const statusMessage =
+        result.data.status === "CONFIRMED"
+          ? "confirmed"
+          : "submitted for approval";
+
+      toast.success(`Booking ${result.data.bookingNumber} ${statusMessage}`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create booking",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <Card className="sticky top-24 gap-0 overflow-hidden rounded-xl border border-outline-variant/40 py-0 shadow-elevation-2">
@@ -97,9 +134,10 @@ export function SpaceBookingSummary({
         <Button
           type="button"
           className="h-11 w-full bg-surface-tint hover:bg-surface-tint/90"
-          disabled={!selectedRange}
+          disabled={!selectedRange || isSubmitting}
+          onClick={handleContinueBooking}
         >
-          Continue Booking
+          {isSubmitting ? "Booking..." : "Continue Booking"}
         </Button>
 
         <p className="text-center text-xs text-on-surface-variant">

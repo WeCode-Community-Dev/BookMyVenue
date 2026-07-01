@@ -13,19 +13,6 @@ datasource db {
   provider = "postgresql"
 }
 
-enum UserRole {
-  CUSTOMER
-  VENUE_OWNER
-  ADMIN
-}
-
-enum UserStatus {
-  PENDING_VERIFICATION
-  ACTIVE
-  SUSPENDED
-  INACTIVE
-}
-
 model User {
   id String @id @default(uuid())
 
@@ -60,6 +47,8 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  bookings Booking[]
 
   @@index([email])
   @@index([role])
@@ -114,6 +103,7 @@ model Venue {
   spaces    Space[]
   amenities VenueAmenity[]
   images    VenueImage[]
+  bookings  Booking[]
 
   @@index([ownerId])
   @@index([city])
@@ -156,8 +146,9 @@ model Space {
   isActive Boolean @default(true)
   rules    String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  bookingPolicy BookingPolicy @default(INSTANT_ONLY)
 
   venue    Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
   category SpaceCategory @relation(fields: [categoryId], references: [id])
@@ -167,6 +158,7 @@ model Space {
   spaceOperatingHours SpaceOperatingHour[]
   spaceBlockedPeriods SpaceBlockedPeriod[]
   spacePricing        SpacePricing[]
+  bookings            Booking[]
 
   @@index([venueId])
   @@index([categoryId])
@@ -340,9 +332,65 @@ model SpacePricing {
   @@map("space_pricing")
 }
 
+model Booking {
+  id String @id @default(uuid())
+
+  userId  String
+  venueId String
+  spaceId String
+
+  bookingNumber String @unique
+
+  startAt DateTime
+  endAt   DateTime
+
+  guests Int?
+
+  pricingType PricingType
+  amount      Decimal     @db.Decimal(10, 2)
+  currency    String      @default("INR")
+
+  status BookingStatus @default(PENDING)
+
+  specialRequest String?
+
+  ownerNote String?
+
+  cancelledAt DateTime?
+  cancelledBy UserRole?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  venue Venue @relation(fields: [venueId], references: [id])
+  space Space @relation(fields: [spaceId], references: [id])
+
+  @@index([userId])
+  @@index([venueId])
+  @@index([spaceId])
+  @@index([status])
+  @@index([startAt])
+  @@index([endAt])
+  @@map("bookings")
+}
+
 // =========================
 // ENUMS
 // =========================
+
+enum UserRole {
+  CUSTOMER
+  VENUE_OWNER
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
 
 enum CapacityType {
   PEOPLE
@@ -359,4 +407,18 @@ enum PricingType {
   DAILY
   EVENT
   CUSTOM
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum BookingPolicy {
+  INSTANT_ONLY
+  REQUEST_ONLY
+  BOTH
 }
