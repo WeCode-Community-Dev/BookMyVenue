@@ -22,7 +22,7 @@ async def get_my_bookings(
     try:
         return get_booking(
             db,
-            user_id=current_user["id"],
+            user_id=current_user["sub"],
             venue_id=None,
             page_no=page_no,
             limit=limit
@@ -46,7 +46,7 @@ async def get_venue_bookings(
     try:
         return get_booking(
             db,
-            user_id=current_user["id"],
+            user_id=current_user["sub"],
             venue_id=venue_id,
             page_no=page_no,
             limit=limit

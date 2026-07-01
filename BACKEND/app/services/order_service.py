@@ -11,6 +11,7 @@ async def add_order_details(
     razorpay_order_id: str,
     amount: int,
     currency: str,
+    payment_time: str,
     status: str
 ):
     try:
@@ -20,6 +21,7 @@ async def add_order_details(
             razorpay_order_id=razorpay_order_id,
             amount=amount,
             currency=currency,
+            payment_time=payment_time,
             status=status
         )
 
@@ -31,7 +33,7 @@ async def add_order_details(
 
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=400,
             detail=f"Error adding order details: {e}"
         )
 

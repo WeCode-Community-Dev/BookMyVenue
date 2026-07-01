@@ -29,7 +29,7 @@ class Order(Base):
     refund_reason = Column(String(255), nullable=True)
     refund_percentage = Column(Integer, nullable=True)  # store percentage as an integer (e.g., 50 for 50%)
 
-    payment_time = Column(DateTime(timezone=True), nullable=True)
+    payment_time = Column(DateTime(timezone=True), server_default=func.now())
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(

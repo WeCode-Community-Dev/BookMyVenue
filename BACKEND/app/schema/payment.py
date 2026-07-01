@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class CreateOrderRequest(BaseModel):
     user_id: int
@@ -9,6 +10,9 @@ class CreateOrderRequest(BaseModel):
 class VerifyPaymentRequest(BaseModel):
     user_id: int
     venue_id: int
+    order_id: int
     razorpay_order_id: str
     razorpay_payment_id: str
     razorpay_signature: str
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
