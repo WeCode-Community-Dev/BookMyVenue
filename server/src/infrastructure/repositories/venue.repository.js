@@ -1,11 +1,10 @@
 import { VenueMapper } from "../../application/mapper/Venue.mapper.js";
 import { IVenueRepository } from "../../domain/repositories/IVenue.repository.js";
 import { VenueModel } from "../database/Venue.model.js";
-import { VenueApprovalStatus } from "../../domain/enums/Venue.enum.js";
+import { VenueStatus } from "../../domain/enums/Venue.enum.js";
 
 export class VenueRepository extends IVenueRepository {
 
-  
     async findById(id) {
         const document = await VenueModel.findById(id)
 
@@ -32,7 +31,7 @@ export class VenueRepository extends IVenueRepository {
 
     async findByOwnerAndName(vendorId, name) {
         const document = await VenueModel.findOne({
-            ownerId,
+            vendorId,
             name
         })
         if (!document) return null
@@ -40,6 +39,7 @@ export class VenueRepository extends IVenueRepository {
     }
 
     async findAllFiltered(query = {}) {
+        console.log('query: ', query)
 
         const filter = {
             isDeleted: false
@@ -79,22 +79,37 @@ export class VenueRepository extends IVenueRepository {
         }
 
         // Min / Max price
-        if (query.minPrice || query.maxPrice) {
+        if (query.priceType) {
 
-            filter.pricePerDay = {};
+            if(query.priceType === 'day'){
+                filter.pricePerDay = {};
 
-            if (query.minPrice) {
-                filter.pricePerDay.$gte = query.minPrice;
+                if (query.minPrice) {
+                    filter.pricePerDay.$gte = query.minPrice;
+                }
+
+                if (query.maxPrice) {
+                    filter.pricePerDay.$lte = query.maxPrice;
+                }
             }
+            if(query.priceType === 'hour'){
+                filter.pricePerHour = {};
 
-            if (query.maxPrice) {
-                filter.pricePerDay.$lte = query.maxPrice;
+                if (query.minPrice) {
+                    filter.pricePerHour.$gte = query.minPrice;
+                }
+
+                if (query.maxPrice) {
+                    filter.pricePerHour.$lte = query.maxPrice;
+                }
             }
         }
 
         // Rating
         if (query.rating) {
-            filter.rating = query.rating;
+            filter.rating = {
+                $gte: query.rating
+            }
         }
 
         // Amenities
@@ -104,6 +119,18 @@ export class VenueRepository extends IVenueRepository {
             };
         }
 
+        if(query.capacityType){
+            if(query.capacityType === 'seating'){
+                filter.seatingCapacity = {
+                    $gte: query.capacity
+                }
+            }
+            if(query.capacityType === 'standing'){
+                filter.standingCapacity = {
+                    $gte: query.capacity
+                }
+            }
+        }
         // Search
         if (query.search) {
 
@@ -163,7 +190,7 @@ export class VenueRepository extends IVenueRepository {
 
         return {
 
-            data: documents,
+            data: documents.map((d) => VenueMapper.mapToEntity(d)),
 
             totalCount,
 
@@ -182,7 +209,7 @@ export class VenueRepository extends IVenueRepository {
 
                 {
 
-                    approvalStatus: VenueApprovalStatus.APPROVED,
+                    approvalStatus: VenueStatus.ACTIVE,
 
                     rejectionReason: null
 
@@ -214,7 +241,7 @@ export class VenueRepository extends IVenueRepository {
 
                 {
 
-                    approvalStatus: VenueApprovalStatus.REJECTED,
+                    approvalStatus: VenueStatus.REJECTED,
 
                     rejectionReason: reason
 
@@ -272,19 +299,6 @@ export class VenueRepository extends IVenueRepository {
             { new: true }
         )
     }
-    // mapToEntity(doc){
-    //     return VenueMapper.mapToEntity(doc)
-    // }
-
-
- 
-  // mapToEntity(doc){
-  //     return VenueMapper.mapToEntity(doc)
-  // }
-
-  // mapToPersistence(entity){
-  //     return VenueMapper.mapToPersistence(entity)
-  // }
 
   async countByOwnerId(ownerId) {
     return await VenueModel.countDocuments({
@@ -292,5 +306,21 @@ export class VenueRepository extends IVenueRepository {
 
       isDeleted: false,
     });
+  }
+
+  async findTopVenues() {
+    const documents = await VenueModel
+        .find({
+            isDeleted: false,
+            isBlocked: false,
+            approvalStatus: VenueStatus.ACTIVE
+        })
+        .sort({ 
+            rating: -1,
+            createdAt: -1
+        })
+        .limit(4)
+        .lean()
+    return documents.map(d => VenueMapper.mapToEntity(d))
   }
 }

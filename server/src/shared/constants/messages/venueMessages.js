@@ -18,6 +18,7 @@ export const VenueMessages = {
         VENUE_ALREADY_APPROVED:"Venue already approved",
         VENUE_ALREADY_REJECTED:"Venue already rejected",
         REJECTION_REASON_REQUIRED:"Rejection reason is required",
-        ONLY_APPROVED_VENUE_CAN_BE_BLOCKED:"Only approved venues ca be blocked or unblocked"
+        ONLY_APPROVED_VENUE_CAN_BE_BLOCKED:"Only approved venues ca be blocked or unblocked",
+        VENUE_LICENSE_REQUIRED: 'Venue license is required',
     }
 }

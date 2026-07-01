@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types } from 'mongoose'
-import { VenueCategory, VenueStatus, VenueApprovalStatus } from '../../domain/enums/Venue.enum.js'
+import { VenueCategory, VenueStatus } from '../../domain/enums/Venue.enum.js'
 
 const VenueSchema = new Schema({
     name: {
@@ -116,11 +116,21 @@ const VenueSchema = new Schema({
         type: Number,
         default: 1
     },
-    status: {
-        type: String,
-        enum: Object.values(VenueStatus),
-        default: VenueStatus.PENDING
-    },
+    // status: {
+    //     type: String,
+    //     enum: Object.values(VenueStatus),
+    //     default: VenueStatus.PENDING
+    // },
+    license: [{
+        publicId: {
+            type: String,
+            required: true
+        },
+        url: {
+            type: String,
+            required: true
+        }
+    }],
     rating: {
         type: Number,
         default: 0
@@ -158,13 +168,9 @@ const VenueSchema = new Schema({
     },
     approvalStatus : {
         type: String,
-        enum:  Object.values(VenueApprovalStatus),
-         default: VenueApprovalStatus.PENDING,
-
+        enum:  Object.values(VenueStatus),
+        default: VenueStatus.PENDING,
     }
-
-
-
 }, {
     timestamps: true
 })

@@ -6,6 +6,7 @@ import { VendorDeleteVenueUsecase } from "../../application/vendor/usecases/venu
 import { VendorUpdateVenueStatusUsecase } from "../../application/vendor/usecases/venue/venue.updateVenueStatus.usecase.js";
 import { UserGetAllVenuesUsecase } from "../../application/user/usecases/venue/user.getAllVenue.usecase.js";
 import { UserGetVenueByIdUsecase } from "../../application/user/usecases/venue/user.getVenueById.usecase.js";
+import { UserGetTopVenuesUsecase } from "../../application/user/usecases/venue/user.getTopVenue.usacase.js";
 import RegisterUserUseCase from "../../application/user/usecases/RegisterUserUseCase.js";
 import LoginUserUseCase from "../../application/user/usecases/LoginUserUserCase.js";
 import LogoutUseCase from "../../application/user/usecases/LogoutUseCase.js";
@@ -31,6 +32,11 @@ import { AdminApproveVenueUsecase } from '../../application/admin/usecases/venue
 import { AdminRejectVenueUsecase } from '../../application/admin/usecases/venue/admin.rejectVenue.usecase.js'
 import { AdminUpdateVenueBlockStatusUsecase } from '../../application/admin/usecases/venue/admin.updateVenueStatus.usecase.js'
 
+//AdminBookingUsecases
+import { AdminGetAllBookingsUsecase } from '../../application/admin/usecases/booking/admin.getAllBookings.usecase.js'
+import { AdminGetBookingByIdUsecase } from '../../application/admin/usecases/booking/admin.getBookingById.usecase.js'
+import { AdminGetBookingStatisticsUsecase } from '../../application/admin/usecases/booking/admin.getBookingStatistics.usecase.js'
+
 // AdminUserController
 import { AdminUserController } from '../controllers/admin/admin.userController.js'
 
@@ -39,6 +45,9 @@ import { AdminVendorController } from '../controllers/admin/admin.vendorControll
 
 //AdminVenueController
 import { AdminVenueController } from './admin/admin.venueController.js'
+
+//AdminBookingController
+import { AdminBookingController } from './admin/admin.bookingController.js'
 
 import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
 
@@ -63,7 +72,7 @@ import { VendorProfileController } from "./vendor/vendorProfileController.js";
 
 //Vendorbookingmanagement
 
-import BookingRepositoryImpl from "../../infrastructure/repositories/booking.repository.js";
+import { BookingRepositoryImpl } from "../../infrastructure/repositories/booking.repository.js";
 import { GetVendorBookingsUsecase } from "../../application/vendor/usecases/booking/getVendorBookingsUsecase.js";
 import { GetBookingByIdUsecase } from "../../application/vendor/usecases/booking/getBookingByIdUsecase.js";
 import { VendorBookingController } from "./vendor/VendorBookingController.js";
@@ -135,6 +144,12 @@ const iAdminGetVenueByIdUsecase = new AdminGetVenueByIdUsecase(iVenueRepository)
 const iAdminApproveVenueUsecase = new AdminApproveVenueUsecase(iVenueRepository,iMailSErvice)
 const iAdminRejectVenueUsecase = new AdminRejectVenueUsecase(iVenueRepository,iMailSErvice)
 const iAdminUpdateVenueBlockStatusUsecase = new AdminUpdateVenueBlockStatusUsecase(iVenueRepository)
+
+//adminBookingUsecases
+const iAdminGetAllBookingUsecase = new AdminGetAllBookingsUsecase(bookingRepository)
+const iAdminGetBookingByIdUsecase = new AdminGetBookingByIdUsecase(bookingRepository)
+const iAdminBookingStatisticsUsecase = new AdminGetBookingStatisticsUsecase(bookingRepository)
+
 
 //auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(
@@ -229,6 +244,7 @@ const iUserUpdateAccountStatus = new UserUpdateAccountStatusUsecase(
 
 const iUserGetAllVenues = new UserGetAllVenuesUsecase(iVenueRepository);
 const iUserGetVenueById = new UserGetVenueByIdUsecase(iVenueRepository);
+const iUserGetTopeVenues = new UserGetTopVenuesUsecase(iVenueRepository)
 
 
 //controller
@@ -288,11 +304,20 @@ export const iAdminVenueController =
         iAdminUpdateVenueBlockStatusUsecase,
     )
 
+//adminBookingController
+export const iAdminBookingController =
+    new AdminBookingController(
+        iAdminGetAllBookingUsecase,
+        iAdminGetBookingByIdUsecase,
+        iAdminBookingStatisticsUsecase
 
-export const iUserVenueController = new UserVenueController(
-  iUserGetAllVenues,
-  iUserGetVenueById
-);
+    )
+
+export const iUserVenueController = new UserVenueController (
+    iUserGetAllVenues,
+    iUserGetVenueById,
+    iUserGetTopeVenues
+)
 
 export const iAuthController = new AuthController(
   iRegisterUserUseCase,

@@ -7,8 +7,7 @@ from "../../../../domain/errors/BadRequestError.js";
 import { VenueMessages }
 from "../../../../shared/constants/messages/venueMessages.js";
 
-import { VenueApprovalStatus }
-from "../../../../domain/enums/Venue.enum.js";
+import { VenueStatus } from "../../../../domain/enums/Venue.enum.js";
 
 export class AdminRejectVenueUsecase {
 
@@ -50,7 +49,7 @@ export class AdminRejectVenueUsecase {
 
         if (
             venue.approvalStatus ===
-            VenueApprovalStatus.REJECTED
+            VenueStatus.REJECTED
         ) {
 
             throw new BadRequestError(

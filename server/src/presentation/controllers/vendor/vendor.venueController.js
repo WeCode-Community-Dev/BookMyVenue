@@ -23,23 +23,33 @@ export class VendorVenueController {
 
     createVenue = asyncHandler( async (req, res) => {
         const ownerId = req.body.ownerId
-        const images = (req.files || []).map(file => ({
+        console.log('files', req.files)
+        const images = (req.files.images || []).map(file => ({
             publicId: file.filename,
             url: file.path
         }))
-        const venue = await this._vendorCreateVenueUsecase.execute({ownerId,...req.body, images})
+        const license = (req.files.license || []).map(file => ({
+            publicId: file.filename,
+            url: file.path
+        }))
+        const venue = await this._vendorCreateVenueUsecase.execute({ownerId,...req.body, images, license})
         return sendSuccess(res, statusCode.OK, VenueMessages.success.VENUE_CREATED, venue)
     })
 
     updateVenue = asyncHandler( async(req, res) => {
         const ownerId = req.body.ownerId
         const venueId = req.params.venueId
-        const newImages = (req.files || []).map(file => ({
+        const newImages = (req.files.images || []).map(file => ({
             publicId: file.filename,
             url: file.path
         }))
 
-        const venue = await this._vendorEditVenueUsecase.execute({ownerId, venueId, newImages, ...req.body})
+        const newLicense = (req.files.license || []).map(file => ({
+            publicId: file.filename,
+            url: file.path
+        }))
+
+        const venue = await this._vendorEditVenueUsecase.execute({ownerId, venueId, newImages, newLicense, ...req.body})
         return sendSuccess(res, statusCode.OK, '', venue)
     })
 

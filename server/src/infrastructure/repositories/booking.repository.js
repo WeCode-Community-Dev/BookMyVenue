@@ -1,28 +1,35 @@
 import { BookingRepository } from "../../domain/repositories/IBooking.repository.js";
 import mongoose from "mongoose";
-
-
 import BookingModel from "../database/models/BookingModel.js";
-
+import { UserModel } from "../database/models/User.model.js";
+import VendorModel from "../database/models/Vendor.model.js";
+import { VenueModel } from "../database/Venue.model.js";
 import { BookingMapper } from "../../application/mapper/Booking.mapper.js";
+import { BookingStatus } from "../../domain/enums/Booking.enum.js";
+import { Types } from "mongoose";
 
-class BookingRepositoryImpl extends BookingRepository {
-  async create(entity) {
-    const doc = await BookingModel.create(
-      BookingMapper.mapToPersistence(entity)
-    );
 
-    return BookingMapper.mapToEntity(doc);
-  }
+
+export class BookingRepositoryImpl extends BookingRepository {
+
+    async create(entity) {
+
+        const doc = await BookingModel.create(
+
+            BookingMapper.mapToPersistence(entity)
+
+        );
+    }
 
   async findById(id) {
-    const doc = await BookingModel.findById(id)
-
-      .populate("userId", "fullName email phone")
-
-      .populate("venueId", "name category address");
-
-    return doc;
+    const booking =
+        await BookingModel
+            .findById(id)
+            .populate("userId", "fullName email phone")
+            .populate("vendorId", "fullName email phone")
+            .populate("venueId", "name");
+    if (!booking) return null;
+    return BookingMapper.mapToEntity(booking);
   }
 
   async findByUserId(userId) {
@@ -34,25 +41,22 @@ class BookingRepositoryImpl extends BookingRepository {
   }
 
   async findByOwnerId(
-    ownerId,
+    vendorId,
     {
-      page = 1,
+      page,
 
-      limit = 10,
+      limit,
 
       status,
 
       search,
     }
   ) {
-    const filter = { ownerId };
+    const filter = { vendorId };
 
     if (status) {
       filter.status = status;
     }
-
-    console.log("ownerId:", ownerId);
-    console.log("filter:", filter);
 
     let docs = await BookingModel.find(filter)
 
@@ -128,29 +132,29 @@ class BookingRepositoryImpl extends BookingRepository {
     return BookingMapper.mapToEntity(doc);
   }
 
-  async countByOwnerId(ownerId) {
+  async countByOwnerId(vendorId) {
     return await BookingModel.countDocuments({
-      ownerId,
+      vendorId,
     });
   }
 
   async countByOwnerIdAndStatus(
-    ownerId,
+    vendorId,
 
     status
   ) {
     return await BookingModel.countDocuments({
-      ownerId,
+      vendorId,
 
       status,
     });
   }
 
-  async getTopVenues(ownerId) {
+  async getTopVenues(vendorId) {
     const result = await BookingModel.aggregate([
       {
         $match: {
-          ownerId: new mongoose.Types.ObjectId(ownerId),
+          vendorId: new mongoose.Types.ObjectId(vendorId),
         },
       },
 
@@ -197,10 +201,9 @@ class BookingRepositoryImpl extends BookingRepository {
     return result;
   }
 
-  async getRecentBookings(ownerId) {
+  async getRecentBookings(vendorId) {
     const docs = await BookingModel.find({
-      ownerId,
-    })
+      vendorId    })
 
       .populate("userId", "fullName")
 
@@ -226,6 +229,261 @@ class BookingRepositoryImpl extends BookingRepository {
       bookingDate: doc.bookingDate,
     }));
   }
+
+
+async findAllFiltered(query) {
+
+    const filter = {};
+
+    if (query.status) {
+        filter.status = query.status;
+    }
+
+    if (query.paymentStatus) {
+        filter.paymentStatus = query.paymentStatus;
+    }
+
+    if (query.search) {
+
+        const regex = new RegExp(query.search, "i");
+
+        const userIds = await UserModel.find({
+            fullName: regex
+        }).distinct("_id");
+
+        const vendorIds = await VendorModel.find({
+            $or: [
+                { fullName: regex },
+                { companyName: regex }
+            ]
+        }).distinct("_id");
+
+        const venueIds = await VenueModel.find({
+            name: regex
+        }).distinct("_id");
+
+        const searchFilter = [
+            { userId: { $in: userIds } },
+            { vendorId: { $in: vendorIds } },
+            { venueId: { $in: venueIds } }
+        ];
+
+        if (Types.ObjectId.isValid(query.search)) {
+            searchFilter.push({
+                _id: new Types.ObjectId(query.search)
+            });
+        }
+
+        filter.$or = searchFilter;
+    }
+
+    const totalCount = await BookingModel.countDocuments(filter);
+
+    const totalPages = Math.ceil(totalCount / query.limit);
+
+    const data = await BookingModel.aggregate([
+
+        {
+            $match: filter
+        },
+
+        {
+            $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+
+        {
+            $unwind: {
+                path: "$user",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+
+        {
+            $lookup: {
+                from: "vendors",
+                localField: "vendorId",
+                foreignField: "_id",
+                as: "vendor"
+            }
+        },
+
+        {
+            $unwind: {
+                path: "$vendor",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+
+        {
+            $lookup: {
+                from: "venues",
+                localField: "venueId",
+                foreignField: "_id",
+                as: "venue"
+            }
+        },
+
+        {
+            $unwind: {
+                path: "$venue",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+
+        {
+            $sort: {
+                bookingDate: query.sortBy === "asc" ? 1 : -1
+            }
+        },
+  {
+            $skip: (query.page - 1) * query.limit
+        },
+
+        {
+            $limit: query.limit
+        }
+
+    ]);
+
+    return {
+        data,
+        totalCount,
+        totalPages
+    };
+
+}
+async getBookingStatistics() {
+
+    const result =
+        await BookingModel.aggregate([
+
+            {
+
+                $group: {
+
+                    _id: null,
+
+                    totalBookings: {
+                        $sum: 1
+                    },
+
+                    pendingBookings: {
+
+                        $sum: {
+
+                            $cond: [
+
+                                {
+                                    $eq: [
+                                        "$status",
+                                        BookingStatus.PENDING
+                                    ]
+                                },
+
+                                1,
+
+                                0
+
+                            ]
+
+                        }
+
+                    },
+
+                    confirmedBookings: {
+
+                        $sum: {
+
+                            $cond: [
+
+                                {
+                                    $eq: [
+                                        "$status",
+                                        BookingStatus.CONFIRMED
+                                    ]
+                                },
+
+                                1,
+
+                                0
+
+                            ]
+
+                        }
+
+                    },
+
+                    cancelledBookings: {
+
+                        $sum: {
+
+                            $cond: [
+
+                                {
+                                    $eq: [
+                                        "$status",
+                                        BookingStatus.CANCELLED
+                                    ]
+                                },
+
+                                1,
+
+                                0
+
+                            ]
+
+                        }
+
+                    },
+
+                    completedBookings: {
+
+                        $sum: {
+
+                            $cond: [
+
+                                {
+                                    $eq: [
+                                        "$status",
+                                        BookingStatus.COMPLETED
+                                    ]
+                                },
+
+                                1,
+
+                                0
+
+                            ]
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        ]);
+
+    return result[0] || {
+
+        totalBookings: 0,
+
+        pendingBookings: 0,
+
+        confirmedBookings: 0,
+
+        cancelledBookings: 0,
+
+        completedBookings: 0
+
+    };
+
 }
 
-export default BookingRepositoryImpl;
+}
