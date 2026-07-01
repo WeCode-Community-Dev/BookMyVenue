@@ -1,3 +1,4 @@
+import base64
 import random
 
 import structlog
@@ -42,8 +43,15 @@ def upload_media_to_imagekit(venue_id:int,cover_image,gallery:List,venue_name:st
         
         
         try:
+            base64_str = cover_image
+
+            if "base64," in base64_str:
+                base64_str = base64_str.split("base64,")[1]
+
+            # Convert the string to raw image bytes
+            cover_image_bytes = base64.b64decode(base64_str.encode("utf-8"))
             uploaded_media =  imagekit.files.upload(
-                file=cover_image,
+                file=cover_image_bytes,
                 file_name=f'{venue_name}-cover-{random.randint(0,10000)}',
                 folder='/covers'
             )
@@ -54,8 +62,14 @@ def upload_media_to_imagekit(venue_id:int,cover_image,gallery:List,venue_name:st
             
             idx=0
             for img in gallery:
+
+                base64_str = img
+                if "base64," in base64_str:
+                    base64_str = base64_str.split("base64,")[1]
+
+                gallery_image_bytes = base64.b64decode(base64_str.encode("utf-8"))
                 uploaded_media_gallery =  imagekit.files.upload(
-                    file=img,
+                    file=gallery_image_bytes,
                     file_name= f'{venue_name}-gallery-idx',
                     folder='/gallery'
                 )   
