@@ -55,3 +55,24 @@ async def get_venue_bookings(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
+@router.get("/all-bookings")
+async def get_all_bookings(
+    page_no: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Records per page"),
+    db: Session = Depends(get_db)
+):
+    """
+    Get all bookings for the current user.
+    """ 
+    try:
+        return get_booking(
+            db,
+            user_id=None,
+            venue_id=None,
+            page_no=page_no,
+            limit=limit
+        ) 
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
