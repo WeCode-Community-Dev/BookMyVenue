@@ -26,9 +26,9 @@ function HeroContent() {
                 loop
                 muted
                 playsInline
-                poster="poster.png"
+                poster="/poster.png"
             >
-                <source src="NewHeroVid1.mp4" type="video/webm" />
+                <source src="/NewHeroVid1.mp4" type="video/webm" />
             </video>
             <div className=" z-10 mx-auto">
                 <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4">
