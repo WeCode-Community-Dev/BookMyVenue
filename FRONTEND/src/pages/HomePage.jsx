@@ -1,7 +1,6 @@
 import NavBar from "../components/Navbar";
 import Filters from "../components/Filters";
 import VenueGrid from "../components/VenueGrid";
-import Poster from "../../public/poster.png"
 
 export default function HomePage() {
     
@@ -27,7 +26,7 @@ function HeroContent() {
                 loop
                 muted
                 playsInline
-                poster={Poster}
+                poster="poster.png"
             >
                 <source src="NewHeroVid1.mp4" type="video/webm" />
             </video>
