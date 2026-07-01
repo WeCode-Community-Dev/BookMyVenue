@@ -24,8 +24,8 @@ export class BookingsController {
   }
 
   @Get()
-  findAll(@Headers('authorization') _authorization: string) {
-    return this.bookingsService.findAllForUser();
+  findAll(@Headers('authorization') authorization: string) {
+    return this.bookingsService.findAllForUser(authorization);
   }
 
   @Get('spaces/:spaceId/occupancy')

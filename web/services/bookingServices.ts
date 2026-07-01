@@ -34,6 +34,36 @@ export type CreateBookingResponse = {
   };
 };
 
+export type BookingListItem = {
+  id: string;
+  bookingNumber: string;
+  startAt: string;
+  endAt: string;
+  status: BookingStatus;
+  customer: {
+    firstName: string;
+    lastName: string | null;
+  };
+  space: {
+    id: string;
+    name: string;
+  };
+};
+
+function redirectToLogin(): never {
+  const returnUrl = window.location.pathname + window.location.search;
+  window.location.href = `/login?returnUrl=${encodeURIComponent(returnUrl)}`;
+  throw new Error("Redirecting to login");
+}
+
+function getAccessToken(): string {
+  const accessToken = localStorage.getItem("accessToken");
+  if (!accessToken) {
+    redirectToLogin();
+  }
+  return accessToken;
+}
+
 function parseTimeParts(time: string): { hours: number; minutes: number } {
   const [hours, minutes] = time.split(":").map(Number);
   return { hours, minutes };
@@ -58,28 +88,36 @@ export function buildBookingIsoRange(
   };
 }
 
-function redirectToLogin(): never {
-  const returnUrl = window.location.pathname + window.location.search;
-  window.location.href = `/login?returnUrl=${encodeURIComponent(returnUrl)}`;
-  throw new Error("Redirecting to login");
-}
-
 export async function createBooking(
   payload: CreateBookingPayload,
 ): Promise<CreateBookingResponse> {
   try {
-  const accessToken = localStorage.getItem("accessToken");
-  if (!accessToken) {
-    redirectToLogin();
-  }
+    const accessToken = getAccessToken();
 
-  return apiFetch("/bookings", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: accessToken,
-    },
+    return apiFetch("/bookings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: accessToken,
+      },
       body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+export async function getBookings(): Promise<BookingListItem[]> {
+  try {
+    const accessToken = getAccessToken();
+
+    return apiFetch("/bookings", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: accessToken,
+      },
     });
   } catch (error) {
     console.error(error);

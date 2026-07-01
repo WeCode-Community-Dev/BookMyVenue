@@ -1,21 +1,30 @@
 import { Badge } from "@/components/ui/badge";
-import type { BookingStatus } from "@/lib/data/dashboard";
+import type { BookingStatus } from "@/services/bookingServices";
 import { cn } from "@/lib/utils";
 
 const statusConfig: Record<
   BookingStatus,
   { label: string; className: string }
 > = {
-  confirmed: {
+  CONFIRMED: {
     label: "Confirmed",
-    className: "bg-primary-container text-on-primary-container border-transparent",
+    className:
+      "bg-primary-container text-on-primary-container border-transparent",
   },
-  pending: {
+  PENDING: {
     label: "Pending",
     className: "bg-tertiary-fixed text-tertiary-container border-transparent",
   },
-  draft: {
-    label: "Draft",
+  REJECTED: {
+    label: "Rejected",
+    className: "bg-muted text-muted-foreground border-transparent",
+  },
+  CANCELLED: {
+    label: "Cancelled",
+    className: "bg-muted text-muted-foreground border-transparent",
+  },
+  COMPLETED: {
+    label: "Completed",
     className: "bg-muted text-muted-foreground border-transparent",
   },
 };

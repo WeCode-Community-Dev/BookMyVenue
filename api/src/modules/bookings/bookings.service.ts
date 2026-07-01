@@ -35,6 +35,22 @@ export type CreateBookingResponse = {
   };
 };
 
+export type BookingListItem = {
+  id: string;
+  bookingNumber: string;
+  startAt: Date;
+  endAt: Date;
+  status: BookingStatus;
+  customer: {
+    firstName: string;
+    lastName: string | null;
+  };
+  space: {
+    id: string;
+    name: string;
+  };
+};
+
 const ACTIVE_BOOKING_STATUSES: BookingStatus[] = [
   BookingStatus.PENDING,
   BookingStatus.CONFIRMED,
@@ -202,8 +218,43 @@ export class BookingsService {
     }
   }
 
-  findAllForUser() {
-    throw new NotImplementedException();
+  async findAllForUser(authorization: string): Promise<BookingListItem[]> {
+    const payload = verifyAccessToken(this.jwtService, authorization);
+    if (payload.role !== UserRole.VENUE_OWNER) {
+      throw new UnauthorizedException(
+        'You are not authorized to view these bookings',
+      );
+    }
+
+    const bookings = await this.prismaService.booking.findMany({
+      where: {
+        venue: { ownerId: payload.sub },
+        startAt: { gte: new Date() },
+        status: { in: ACTIVE_BOOKING_STATUSES },
+      },
+      include: {
+        user: { select: { firstName: true, lastName: true } },
+        space: { select: { id: true, name: true } },
+      },
+      orderBy: { startAt: 'asc' },
+      take: 10,
+    });
+
+    return bookings.map((booking) => ({
+      id: booking.id,
+      bookingNumber: booking.bookingNumber,
+      startAt: booking.startAt,
+      endAt: booking.endAt,
+      status: booking.status,
+      customer: {
+        firstName: booking.user.firstName,
+        lastName: booking.user.lastName,
+      },
+      space: {
+        id: booking.space.id,
+        name: booking.space.name,
+      },
+    }));
   }
 
   findOne(_id: string) {
