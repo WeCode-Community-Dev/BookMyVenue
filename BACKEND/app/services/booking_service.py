@@ -66,3 +66,25 @@ def get_booking(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error retrieving bookings: {e}"
         )
+
+def cancel_booking(db: Session, booking_id: int):
+    try:
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        if not booking:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Booking with ID {booking_id} not found."
+            )
+
+        booking.status = "cancelled"
+        db.commit()
+        db.refresh(booking)
+
+        return booking
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error cancelling booking: {e}"
+        )
+    
