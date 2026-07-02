@@ -180,22 +180,24 @@ def search_semantic(db: Session, params: SearchParams) -> Page[SearchResult]:
 
 
 # ── Hybrid search ─────────────────────────────────────────────────────────────
-
 def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
-    """Hybrid search: 0.6 × FTS score + 0.4 × semantic score.
+    """Hybrid Search using Full-Text Search + Vector Search + Category Boost"""
 
-    Falls back to search_fts when no embeddings exist yet.
-    """
     if not params.q:
         return search_fts(db, params)
 
-    # Check if any embeddings are populated yet.
-    has_embeddings = db.query(Venue).filter(
-        Venue.status == VenueStatus.approved,
-        Venue.is_active == True,
-        Venue.deleted_at.is_(None),
-        Venue.embedding.isnot(None),
-    ).limit(1).count() > 0
+    has_embeddings = (
+        db.query(Venue)
+        .filter(
+            Venue.status == VenueStatus.approved,
+            Venue.is_active == True,
+            Venue.deleted_at.is_(None),
+            Venue.embedding.isnot(None),
+        )
+        .limit(1)
+        .count()
+        > 0
+    )
 
     if not has_embeddings:
         return search_fts(db, params)
@@ -205,69 +207,117 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
     try:
         query_vec = generate_query_embedding(params.q)
     except Exception as exc:
-        logger.warning("search_hybrid: embedding generation failed (%s), falling back to FTS", exc)
+        logger.warning("Embedding generation failed: %s", exc)
         return search_fts(db, params)
 
-    # Build base filter conditions as a subquery using raw SQL for the hybrid score.
-    # We apply city / venue_type / capacity as additional WHERE clauses below.
     base_filters = [
         "v.status = 'approved'",
         "v.is_active = true",
         "v.deleted_at IS NULL",
         "(v.search_vector @@ plainto_tsquery('english', :q) OR v.embedding IS NOT NULL)",
     ]
-    extra_params: dict = {"q": params.q, "qvec": str(query_vec)}
+
+    extra_params = {
+        "q": params.q,
+        "qvec": str(query_vec),
+    }
 
     if params.city:
         base_filters.append("v.city ILIKE :city")
         extra_params["city"] = f"%{params.city}%"
+
     if params.capacity > 0:
         base_filters.append("v.max_capacity >= :capacity")
         extra_params["capacity"] = params.capacity
 
-    where_clause = " AND ".join(base_filters)
-
-    venue_type_join = ""
     if params.venue_type:
-        venue_type_join = "JOIN venue_categories vc ON v.category_id = vc.id"
-        where_clause += " AND vc.slug = :venue_type"
+        base_filters.append("vc.slug = :venue_type")
         extra_params["venue_type"] = params.venue_type
 
+    where_clause = " AND ".join(base_filters)
+
+    boost_case = """
+        CASE
+            WHEN vc.slug IN ('wedding_hall', 'banquet_hall') THEN 1.85
+            WHEN vc.slug IN ('event_space', 'rooftop', 'resort', 'lawn') THEN 1.40
+            ELSE 1.00
+        END
+    """
+
+    # Total count (before pagination)
     count_sql = text(f"""
-        SELECT COUNT(*) FROM venues v
-        {venue_type_join}
+        SELECT COUNT(*)
+        FROM venues v
+        LEFT JOIN venue_categories vc
+            ON vc.id = v.category_id
         WHERE {where_clause}
     """)
-    total_count = db.execute(count_sql, extra_params).scalar()
 
-    offset = (params.page - 1) * params.page_size
+    total = db.execute(count_sql, extra_params).scalar() or 0
+
+    # Paginated hybrid search
     rows_sql = text(f"""
-        SELECT v.id,
-               (0.6 * COALESCE(ts_rank(v.search_vector, plainto_tsquery('english', :q)), 0))
-               + (0.4 * COALESCE(1 - (v.embedding <=> :qvec::vector), 0)) AS hybrid_score
+        SELECT
+            v.id,
+            (
+                (
+                    0.62 * COALESCE(
+                        ts_rank(
+                            v.search_vector,
+                            plainto_tsquery('english', :q)
+                        ),
+                        0
+                    )
+                    +
+                    0.38 * COALESCE(
+                        1 - (
+                            v.embedding <=> CAST(:qvec AS vector)
+                        ),
+                        0
+                    )
+                )
+                * {boost_case}
+            ) AS hybrid_score
         FROM venues v
-        {venue_type_join}
+        LEFT JOIN venue_categories vc
+            ON vc.id = v.category_id
         WHERE {where_clause}
         ORDER BY hybrid_score DESC
-        LIMIT :limit OFFSET :offset
+        LIMIT :limit
+        OFFSET :offset
     """)
+
     extra_params["limit"] = params.page_size
-    extra_params["offset"] = offset
+    extra_params["offset"] = (params.page - 1) * params.page_size
 
     rows = db.execute(rows_sql, extra_params).fetchall()
-    venue_ids: list[UUID] = [row[0] for row in rows]
+
+    venue_ids: list[UUID] = [row.id for row in rows]
 
     if not venue_ids:
-        return Page(items=[], total=0, page=params.page, page_size=params.page_size)
+        return Page(
+            items=[],
+            total=0,
+            page=params.page,
+            page_size=params.page_size,
+        )
 
-    # Fetch full Venue objects preserving the ranked order.
     venues_by_id = {
-        v.id: v
-        for v in db.query(Venue)
-        .options(joinedload(Venue.category))
-        .filter(Venue.id.in_(venue_ids))
-        .all()
+        venue.id: venue
+        for venue in (
+            db.query(Venue)
+            .options(joinedload(Venue.category))
+            .filter(Venue.id.in_(venue_ids))
+            .all()
+        )
     }
+
     venues = [venues_by_id[vid] for vid in venue_ids if vid in venues_by_id]
     covers = _cover_photos(db, venue_ids)
-    return Page(items=_to_results(venues, covers), total=total_count or 0, page=params.page, page_size=params.page_size)
+
+    return Page(
+        items=_to_results(venues, covers),
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+    )

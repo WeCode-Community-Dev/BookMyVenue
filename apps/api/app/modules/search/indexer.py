@@ -4,6 +4,7 @@ from datetime import datetime, timezone, timedelta
 from uuid import UUID
 
 import httpx
+import numpy as np
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
@@ -54,26 +55,54 @@ def enqueue_job(db: Session, entity_id: UUID, operation: str) -> None:
 
 
 def _build_search_document(venue: Venue) -> str:
+    """Rich document for better semantic search"""
     parts = [venue.name]
-    if venue.description:
-        parts.append(venue.description)
-    parts.append(f"{venue.city} {venue.state}")
+
+    if venue.description and len(venue.description.strip()) > 10:
+        parts.append(venue.description.strip())
+
+    parts.append(f"{venue.city} {venue.state} India")
+
+    if venue.category:
+        slug = venue.category.slug
+        parts.append(venue.category.label)
+
+        keywords = {
+            "wedding_hall": "wedding marriage reception function banquet hall mandap sadya",
+            "banquet_hall": "banquet hall wedding reception marriage function",
+            "event_space": "event space party celebration function",
+            "rooftop": "rooftop terrace open air rooftop party",
+            "club": "club nightclub party lounge discotheque",
+            "resort": "resort destination wedding luxury staycation",
+            "lawn": "lawn garden outdoor",
+            "auditorium": "auditorium theatre hall",
+        }
+        if slug in keywords:
+            parts.append(keywords[slug])
+
+    parts.append(f"capacity {venue.max_capacity} pax people guests")
+    if venue.min_capacity and venue.min_capacity > 0:
+        parts.append(f"minimum {venue.min_capacity} guests")
+
     if venue.amenities:
         parts.append(" ".join(a.name for a in venue.amenities))
-    if venue.category:
-        parts.append(venue.category.label)
+
     return "\n".join(parts)
 
 
 def _update_fts(db: Session, venue_id: UUID, document: str) -> None:
     db.execute(
-        text("UPDATE venues SET search_vector = to_tsvector('english', :doc) WHERE id = :id"),
+        text(
+            "UPDATE venues SET search_vector = to_tsvector('english', :doc) WHERE id = :id"
+        ),
         {"doc": document, "id": str(venue_id)},
     )
 
 
-def _generate_embedding(text_input: str, task: str = "retrieval.passage") -> list[float]:
-    """Call Jina AI embeddings API and return a 1024-dim float list."""
+def _generate_embedding(
+    text_input: str, task: str = "retrieval.passage"
+) -> list[float]:
+    """Generate normalized embedding (L2 norm)"""
     response = httpx.post(
         "https://api.jina.ai/v1/embeddings",
         headers={
@@ -88,11 +117,18 @@ def _generate_embedding(text_input: str, task: str = "retrieval.passage") -> lis
         timeout=30.0,
     )
     response.raise_for_status()
-    return response.json()["data"][0]["embedding"]
+    embedding = response.json()["data"][0]["embedding"]
+
+    # L2 Normalization - Critical for good semantic search
+    embedding = np.array(embedding, dtype=np.float32)
+    norm = np.linalg.norm(embedding)
+    if norm > 0:
+        embedding = embedding / norm
+
+    return embedding.tolist()
 
 
 def generate_query_embedding(query: str) -> list[float]:
-    """Public helper used by the search service for query-time embedding."""
     return _generate_embedding(query, task="retrieval.query")
 
 
