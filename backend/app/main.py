@@ -27,6 +27,7 @@ from app.routers import (
     owner_profile,
     bookings,
     payments,
+    admin,
 )
 
 from app.seeds.amenity_seed import seed_amenities
@@ -90,6 +91,8 @@ app.include_router(venue_amenity.router)
 app.include_router(owner_profile.router)
 app.include_router(bookings.router)
 app.include_router(payments.router)
+# register admin routes for superadmin panel
+app.include_router(admin.router)
 
 
 @app.get("/")
