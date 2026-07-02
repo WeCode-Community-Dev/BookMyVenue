@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom'
-import { Card, SectionHeader, Button, Input, LocationPickerMap, InfoTooltip, Skeleton } from '@venue404/ui'
+import { Card, Button, Input, LocationPickerMap, InfoTooltip, Skeleton } from '@venue404/ui'
 import { ArrowLeft } from 'lucide-react'
 import * as Icons from 'lucide-react'
+import toast from 'react-hot-toast'
+import { confirmAction } from '../../lib/confirm'
 import { createClient, venueEndpoints } from '@venue404/api-client'
-import type { Venue, VenuePhoto, Amenity, VenueCategory } from '@venue404/api-client'
+import type { Venue, VenuePhoto } from '@venue404/api-client'
+import { useQuery } from '@tanstack/react-query'
 import { StateSelect } from '../../components/StateSelect'
 import { DurationInput } from '../../components/DurationInput'
 import { TimeSelect } from '../../components/TimeSelect'
@@ -44,17 +48,14 @@ export default function VenueEdit() {
   const location = useLocation()
   const navigate = useNavigate()
   
-  const [venue, setVenue] = useState<Venue | null>(null)
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
   const [localPhotos, setLocalPhotos] = useState<VenuePhoto[]>([])
 
   const [allowFullDay, setAllowFullDay] = useState(false)
   const [allowTimeSlot, setAllowTimeSlot] = useState(false)
 
-  const [platformAmenities, setPlatformAmenities] = useState<Amenity[]>([])
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
-  const [venueCategories, setVenueCategories] = useState<VenueCategory[]>([])
 
   // E.g. /venues/123/edit/pricing -> 'pricing'
   const editSection = location.pathname.split('/').pop() || 'details'
@@ -64,6 +65,37 @@ export default function VenueEdit() {
       navigate(`/venues/${venueId}/calendar`, { replace: true })
     }
   }, [editSection, navigate, venueId])
+
+  const [venue, setVenue] = useState<Venue | null>(null)
+
+  const { data: fetchedVenue, isLoading: loadingVenue, refetch: refetchVenue } = useQuery({
+    queryKey: ['venue', venueId],
+    queryFn: async () => {
+      if (!venueId) return null
+      return venueEndpoints(createClient()).getMyVenue(venueId)
+    },
+    enabled: !!venueId,
+  })
+
+  const { data: platformAmenities = [] } = useQuery({
+    queryKey: ['platform-amenities'],
+    queryFn: async () => venueEndpoints(createClient()).getPlatformAmenities(),
+    enabled: editSection === 'amenities',
+  })
+
+  const { data: venueCategories = [] } = useQuery({
+    queryKey: ['venue-categories'],
+    queryFn: async () => venueEndpoints(createClient()).getVenueCategories(),
+    enabled: editSection === 'details',
+  })
+
+  const loading = loadingVenue
+
+  useEffect(() => {
+    if (fetchedVenue && !isEditing) {
+      setVenue(fetchedVenue)
+    }
+  }, [fetchedVenue, isEditing])
 
   useEffect(() => {
     if (venue?.photos) {
@@ -77,20 +109,6 @@ export default function VenueEdit() {
       setSelectedAmenities(venue.amenities.map(a => a.id))
     }
   }, [venue])
-
-  useEffect(() => {
-    async function loadAmenities() {
-      if (editSection !== 'amenities') return
-      try {
-        const client = createClient()
-        const data = await venueEndpoints(client).getPlatformAmenities()
-        setPlatformAmenities(data)
-      } catch (err) {
-        console.error('Failed to load amenities', err)
-      }
-    }
-    loadAmenities()
-  }, [editSection])
 
   const makeCover = (index: number) => {
     const newPhotos = [...localPhotos]
@@ -116,35 +134,7 @@ export default function VenueEdit() {
     'policies': 'Cancellation Policies'
   }
 
-  useEffect(() => {
-    async function loadVenue() {
-      if (!venueId) return
-      try {
-        const client = createClient()
-        const data = await venueEndpoints(client).getMyVenue(venueId)
-        setVenue(data)
-      } catch (err) {
-        console.error("Failed to fetch venue", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadVenue()
-  }, [venueId])
 
-  useEffect(() => {
-    async function loadCategories() {
-      if (editSection !== 'details') return
-      try {
-        const client = createClient()
-        const data = await venueEndpoints(client).getVenueCategories()
-        setVenueCategories(data)
-      } catch (err) {
-        console.error('Failed to load categories', err)
-      }
-    }
-    loadCategories()
-  }, [editSection])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -161,7 +151,7 @@ export default function VenueEdit() {
       
       if (minCapStr && maxCapStr) {
         if (parseInt(minCapStr, 10) > parseInt(maxCapStr, 10)) {
-          alert("Min Capacity cannot exceed Max Capacity.")
+          toast.error("Min Capacity cannot exceed Max Capacity.")
           setSaving(false)
           return
         }
@@ -187,7 +177,7 @@ export default function VenueEdit() {
       
       if (!spansNextDay) {
         if (ct <= ot) {
-          alert("Closing time must be after opening time unless 'Closes next day' is checked.")
+          toast.error("Closing time must be after opening time unless 'Closes next day' is checked.")
           setSaving(false)
           return
         }
@@ -205,7 +195,7 @@ export default function VenueEdit() {
       if (allowTimeSlot) newAllowedTypes.push('time_slot')
 
       if (newAllowedTypes.length === 0) {
-        alert("You must allow at least one booking type.")
+        toast.error("You must allow at least one booking type.")
         setSaving(false)
         return
       }
@@ -222,7 +212,7 @@ export default function VenueEdit() {
 
       if (minDurStr && maxDurStr) {
         if (parseInt(minDurStr, 10) > parseInt(maxDurStr, 10)) {
-          alert("Min Booking Duration cannot exceed Max Booking Duration.")
+          toast.error("Min Booking Duration cannot exceed Max Booking Duration.")
           setSaving(false)
           return
         }
@@ -254,17 +244,17 @@ export default function VenueEdit() {
 
         // Pairing checks
         if ((t1h && !t1p) || (!t1h && t1p)) {
-          alert("Tier 1: Hours and Refund % must both be filled or both be empty.")
+          toast.error("Tier 1: Hours and Refund % must both be filled or both be empty.")
           setSaving(false)
           return
         }
         if ((t2h && !t2p) || (!t2h && t2p)) {
-          alert("Tier 2: Hours and Refund % must both be filled or both be empty.")
+          toast.error("Tier 2: Hours and Refund % must both be filled or both be empty.")
           setSaving(false)
           return
         }
         if ((t3h && !t3p) || (!t3h && t3p)) {
-          alert("Tier 3: Hours and Refund % must both be filled or both be empty.")
+          toast.error("Tier 3: Hours and Refund % must both be filled or both be empty.")
           setSaving(false)
           return
         }
@@ -275,12 +265,12 @@ export default function VenueEdit() {
         const t3hv = t3h ? parseInt(t3h, 10) : null
 
         if (t1hv !== null && t2hv !== null && t1hv <= t2hv) {
-          alert("Tier 1 hours must be strictly greater than Tier 2 hours.")
+          toast.error("Tier 1 hours must be strictly greater than Tier 2 hours.")
           setSaving(false)
           return
         }
         if (t2hv !== null && t3hv !== null && t2hv <= t3hv) {
-          alert("Tier 2 hours must be strictly greater than Tier 3 hours.")
+          toast.error("Tier 2 hours must be strictly greater than Tier 3 hours.")
           setSaving(false)
           return
         }
@@ -326,21 +316,21 @@ export default function VenueEdit() {
         setVenue({ ...venue, photos: localPhotos })
       } else if (editSection === 'amenities') {
         await venueEndpoints(client).updateVenueAmenities(venueId, { amenity_ids: selectedAmenities })
-        const currentPlatformAmenities = platformAmenities.length ? platformAmenities : []
-        const updatedAmenities = selectedAmenities.map(id => currentPlatformAmenities.find(pa => pa.id === id)).filter((a): a is Amenity => !!a)
-        setVenue({ ...venue, amenities: updatedAmenities })
+        
+        await refetchVenue()
       } else if (editSection === 'blocked-dates') {
         // Blocked dates are managed immediately via inline actions. No overarching save needed.
       } else {
-        const updated = await venueEndpoints(client).updateVenue(venueId, updates)
-        setVenue(updated)
+        await venueEndpoints(client).updateVenue(venueId, updates)
+        await refetchVenue()
       }
       
-      // Navigate back to overview after success
-      navigate(`/venues/${venueId}/overview`)
+      // Navigate back to overview after success if not in edit mode
+      // Wait, we just exit edit mode on success instead of navigating away
+      setIsEditing(false)
     } catch (err) {
       console.error("Failed to update venue", err)
-      alert("Failed to save changes. Please try again.")
+      toast.error("Failed to save changes. Please try again.")
     } finally {
       setSaving(false)
     }
@@ -378,20 +368,45 @@ export default function VenueEdit() {
     return <div className="text-center py-12 text-zinc-500">Venue not found.</div>
   }
 
+  const portalTarget = typeof document !== 'undefined' ? document.getElementById('topbar-portal-target') : null;
+
   return (
-    <div className="max-w-4xl mx-auto pb-12 space-y-6">
-      <Link to={`/venues/${venueId}/overview`} className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors">
-        <ArrowLeft className="h-4 w-4" />
-        Back to Overview
-      </Link>
-      
-      <SectionHeader 
-        title={`Edit ${titleMap[editSection] || 'Venue'}`} 
-        description="Update your venue settings below. Changes take effect immediately." 
-      />
+    <div className="max-w-4xl mx-auto pb-12 space-y-6 pt-6">
+      {portalTarget && createPortal(
+        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1.5 bg-white border border-zinc-200 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Overview
+        </Link>,
+        portalTarget
+      )}
+
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Card className="p-8">
+        <Card className="">
+          <div className="flex items-center justify-between p-6 border-b border-zinc-100 bg-zinc-50/50 rounded-t-xl">
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-900">{titleMap[editSection] || 'Venue'}</h2>
+              <p className="text-sm text-zinc-500">Update your venue settings below.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {!isEditing ? (
+                <Button variant="primary" type="button" onClick={() => setIsEditing(true)}>
+                  <Icons.Edit2 className="w-4 h-4 mr-2" />
+                  Edit {titleMap[editSection] || 'Details'}
+                </Button>
+              ) : (
+                <>
+                  <Button variant="ghost" type="button" onClick={() => setIsEditing(false)} disabled={saving}>
+                    Cancel
+                  </Button>
+                  <Button variant="primary" type="submit" disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+          <div className={`p-8 ${!isEditing ? 'opacity-90 pointer-events-none' : ''}`}>
           
           {editSection === 'details' && (
             <div className="space-y-6">
@@ -549,52 +564,50 @@ export default function VenueEdit() {
 
           {editSection === 'photos' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
-                <div>
-                  <h4 className="font-medium text-zinc-900">Venue Photos</h4>
-                  <p className="text-sm text-zinc-500">Manage the photos displayed for your venue. The first photo is the cover.</p>
-                </div>
+              <div className="flex items-center justify-end pb-2">
                 <div className="relative">
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    multiple
-                    onChange={async (e) => {
-                      const files = e.target.files
-                      if (!files || files.length === 0 || !venueId) return
-                      
-                      setSaving(true)
-                      try {
-                        const newPhotos: VenuePhoto[] = []
-                        const client = createClient()
+                  {isEditing && (
+                    <>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        multiple
+                        onChange={async (e) => {
+                          const files = e.target.files
+                          if (!files || files.length === 0 || !venueId) return
+                          
+                          setSaving(true)
+                          try {
+                            const newPhotos: VenuePhoto[] = []
+                            const client = createClient()
 
-                        // Upload all selected files sequentially to avoid overwhelming the server/Cloudinary
-                        for (let i = 0; i < files.length; i++) {
-                          const formData = new FormData()
-                          formData.append('file', files[i])
-                          const newPhoto = await venueEndpoints(client).addVenuePhoto(venueId, formData)
-                          newPhotos.push(newPhoto)
-                        }
+                            for (let i = 0; i < files.length; i++) {
+                              const formData = new FormData()
+                              formData.append('file', files[i])
+                              const newPhoto = await venueEndpoints(client).addVenuePhoto(venueId, formData)
+                              newPhotos.push(newPhoto)
+                            }
 
-                        // Update local venue state
-                        setVenue(prev => prev ? ({
-                          ...prev,
-                          photos: [...(prev.photos ?? []), ...newPhotos]
-                        }) : null)
-                      } catch (err) {
-                        console.error('Failed to upload photos', err)
-                        alert('Upload failed for one or more images. Ensure they are valid images.')
-                      } finally {
-                        setSaving(false)
-                        e.target.value = '' // reset input
-                      }
-                    }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
-                    disabled={saving}
-                  />
-                  <Button variant="secondary" type="button" disabled={saving}>
-                    {saving ? 'Uploading...' : 'Upload Photos'}
-                  </Button>
+                            setVenue(prev => prev ? ({
+                              ...prev,
+                              photos: [...(prev.photos ?? []), ...newPhotos]
+                            }) : null)
+                          } catch (err) {
+                            console.error('Failed to upload photos', err)
+                            toast.error('Upload failed for one or more images. Ensure they are valid images.')
+                          } finally {
+                            setSaving(false)
+                            e.target.value = '' // reset input
+                          }
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
+                        disabled={saving}
+                      />
+                      <Button variant="secondary" type="button" disabled={saving}>
+                        {saving ? 'Uploading...' : 'Upload Photos'}
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -605,80 +618,87 @@ export default function VenueEdit() {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {localPhotos.map((photo, index) => (
-                    <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-zinc-200 aspect-video bg-zinc-100 flex flex-col shadow-sm hover:shadow-md transition-all duration-300">
+                    <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-zinc-200/60 aspect-video bg-zinc-100 flex flex-col shadow-sm hover:shadow-md transition-all duration-300 ring-1 ring-zinc-900/5">
                       <img src={photo.image_url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Venue" />
                       
+                      {/* Subtle top gradient for badge contrast */}
+                      {index === 0 && (
+                        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/50 to-transparent z-[5] pointer-events-none" />
+                      )}
+
                       {/* Cover Badge */}
                       {index === 0 && (
-                        <div className="absolute top-3 left-3 bg-white text-zinc-900 text-xs font-bold px-3 py-1.5 rounded-md shadow-md flex items-center gap-1.5 z-10">
-                          <Icons.Star className="w-3.5 h-3.5 fill-brand text-brand" />
-                          <span>Cover Photo</span>
+                        <div className="absolute top-3 left-3 bg-zinc-900/70 backdrop-blur-md text-white text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5 z-10 tracking-wide">
+                          <Icons.Star className="w-3.5 h-3.5 fill-white text-white" />
+                          <span>COVER PHOTO</span>
                         </div>
                       )}
 
-                      {/* Controls overlay */}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10">
-                        {/* Center "Make Cover" Button */}
-                        {index !== 0 && (
-                          <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[1px]">
-                            <button type="button" onClick={() => makeCover(index)} className="bg-white text-zinc-900 text-sm font-semibold px-4 py-2 rounded-full shadow-lg hover:bg-brand hover:text-white hover:scale-105 transition-all duration-200 flex items-center gap-2">
-                              <Icons.Image className="w-4 h-4" />
-                              Make Cover
+                      {/* Controls overlay - only show if editing */}
+                      {isEditing && (
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10">
+                          {/* Center "Make Cover" Button */}
+                          {index !== 0 && (
+                            <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[1px]">
+                              <button type="button" onClick={() => makeCover(index)} className="bg-white text-zinc-900 text-sm font-semibold px-4 py-2 rounded-full shadow-lg hover:bg-brand hover:text-white hover:scale-105 transition-all duration-200 flex items-center gap-2">
+                                <Icons.Image className="w-4 h-4" />
+                                Make Cover
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Top Right Trash Button */}
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (!(await confirmAction("Are you sure you want to delete this photo?"))) return
+                              if (!venueId) return
+                              setSaving(true)
+                              try {
+                                const client = createClient()
+                                await venueEndpoints(client).deleteVenuePhoto(venueId, photo.id)
+                                setLocalPhotos(prev => prev.filter(p => p.id !== photo.id))
+                                setVenue(prev => prev ? ({
+                                  ...prev,
+                                  photos: prev.photos?.filter(p => p.id !== photo.id)
+                                }) : null)
+                              } catch (err) {
+                                console.error('Failed to delete photo', err)
+                                toast.error('Deletion failed.')
+                              } finally {
+                                setSaving(false)
+                              }
+                            }}
+                            className="absolute top-3 right-3 bg-red-600/90 text-white p-2 rounded-full hover:bg-red-600 shadow-md transition-all hover:scale-110 disabled:opacity-50"
+                            title="Delete Photo"
+                            disabled={saving}
+                          >
+                            <Icons.Trash2 className="w-4 h-4" />
+                          </button>
+
+                          {/* Bottom Center Move Controls */}
+                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-zinc-900/80 backdrop-blur-md rounded-full p-1 shadow-lg border border-white/10">
+                            <button 
+                              type="button" 
+                              onClick={() => movePhoto(index, -1)} 
+                              disabled={index === 0} 
+                              className="p-1.5 text-white/70 hover:text-white hover:bg-white/20 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                              title="Move Left"
+                            >
+                              <Icons.ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <button 
+                              type="button" 
+                              onClick={() => movePhoto(index, 1)} 
+                              disabled={index === localPhotos.length - 1} 
+                              className="p-1.5 text-white/70 hover:text-white hover:bg-white/20 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                              title="Move Right"
+                            >
+                              <Icons.ChevronRight className="w-4 h-4" />
                             </button>
                           </div>
-                        )}
-
-                        {/* Top Right Trash Button */}
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (!confirm("Are you sure you want to delete this photo?")) return
-                            if (!venueId) return
-                            setSaving(true)
-                            try {
-                              const client = createClient()
-                              await venueEndpoints(client).deleteVenuePhoto(venueId, photo.id)
-                              setLocalPhotos(prev => prev.filter(p => p.id !== photo.id))
-                              setVenue(prev => prev ? ({
-                                ...prev,
-                                photos: prev.photos?.filter(p => p.id !== photo.id)
-                              }) : null)
-                            } catch (err) {
-                              console.error('Failed to delete photo', err)
-                              alert('Deletion failed.')
-                            } finally {
-                              setSaving(false)
-                            }
-                          }}
-                          className="absolute top-3 right-3 bg-red-600/90 text-white p-2 rounded-full hover:bg-red-600 shadow-md transition-all hover:scale-110 disabled:opacity-50"
-                          title="Delete Photo"
-                          disabled={saving}
-                        >
-                          <Icons.Trash2 className="w-4 h-4" />
-                        </button>
-
-                        {/* Bottom Center Move Controls */}
-                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-zinc-900/80 backdrop-blur-md rounded-full p-1 shadow-lg border border-white/10">
-                          <button 
-                            type="button" 
-                            onClick={() => movePhoto(index, -1)} 
-                            disabled={index === 0} 
-                            className="p-1.5 text-white/70 hover:text-white hover:bg-white/20 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                            title="Move Left"
-                          >
-                            <Icons.ChevronLeft className="w-4 h-4" />
-                          </button>
-                          <button 
-                            type="button" 
-                            onClick={() => movePhoto(index, 1)} 
-                            disabled={index === localPhotos.length - 1} 
-                            className="p-1.5 text-white/70 hover:text-white hover:bg-white/20 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                            title="Move Right"
-                          >
-                            <Icons.ChevronRight className="w-4 h-4" />
-                          </button>
                         </div>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -691,9 +711,15 @@ export default function VenueEdit() {
               <h4 className="font-medium text-zinc-900">Select Amenities</h4>
               {platformAmenities.length === 0 ? (
                 <p className="text-sm text-zinc-500">Loading amenities...</p>
+              ) : !isEditing && selectedAmenities.length === 0 ? (
+                <div className="text-center py-12 border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50">
+                  <p className="text-sm text-zinc-500">No amenities selected.</p>
+                </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {platformAmenities.map(amenity => {
+                  {platformAmenities
+                    .filter(amenity => isEditing || selectedAmenities.includes(amenity.id))
+                    .map(amenity => {
                     const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[amenity.icon || 'Check'] ?? Icons.Check
                     const isSelected = selectedAmenities.includes(amenity.id)
                     
@@ -788,16 +814,8 @@ export default function VenueEdit() {
               </div>
             </div>
           )}
+          </div>
         </Card>
-
-        <div className="flex justify-end gap-3">
-          <Link to={`/venues/${venueId}/overview`}>
-            <Button variant="ghost" type="button">Back</Button>
-          </Link>
-          <Button variant="primary" type="submit" disabled={saving}>
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </div>
       </form>
     </div>
   )

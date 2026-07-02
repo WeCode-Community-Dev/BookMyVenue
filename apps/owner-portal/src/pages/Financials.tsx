@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
-import { Card, SectionHeader, EmptyState, Skeleton } from '@venue404/ui'
+import { useState } from 'react'
+import { Card, EmptyState, Skeleton } from '@venue404/ui'
 import { IndianRupee, TrendingDown, ArrowUpRight, ArrowDownRight, Building2, User, FileText, ArrowRightLeft } from 'lucide-react'
 import { createClient } from '@venue404/api-client'
-import { paymentEndpoints, type OwnerLedgerStats, type LedgerEntry } from '@venue404/api-client/src/endpoints/payments'
+import { paymentEndpoints } from '@venue404/api-client/src/endpoints/payments'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 
 function formatDateTime(isoString: string): string {
   if (!isoString) return '—'
@@ -23,49 +24,37 @@ const CELL = 'px-4 py-4 text-sm text-zinc-700 align-middle'
 
 export default function Financials() {
   const [tab, setTab] = useState('all')
-  const [entries, setEntries] = useState<LedgerEntry[]>([])
-  const [stats, setStats] = useState<OwnerLedgerStats>({
+
+  const { data: stats = {
     gross_volume_paise: 0,
     platform_fees_paise: 0,
     refunds_issued_paise: 0,
     net_revenue_paise: 0,
     payouts_completed_paise: 0,
     available_balance_paise: 0,
+  }, isLoading: loadingStats } = useQuery({
+    queryKey: ['financial-stats'],
+    queryFn: async () => {
+      const data = await paymentEndpoints(createClient()).getOwnerStats()
+      return data || {
+        gross_volume_paise: 0,
+        platform_fees_paise: 0,
+        refunds_issued_paise: 0,
+        net_revenue_paise: 0,
+        payouts_completed_paise: 0,
+        available_balance_paise: 0,
+      }
+    }
   })
-  const [loadingStats, setLoadingStats] = useState(true)
-  const [loadingLedger, setLoadingLedger] = useState(true)
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const client = createClient()
-        const data = await paymentEndpoints(client).getOwnerStats()
-        if (data) setStats(data)
-      } catch (err) {
-        console.error('Failed to fetch stats', err)
-      } finally {
-        setLoadingStats(false)
-      }
+  const { data: entries = [], isLoading: loadingLedger } = useQuery({
+    queryKey: ['financial-ledger', tab],
+    queryFn: async () => {
+      const apiTab = tab === 'all' ? undefined : tab
+      const data = await paymentEndpoints(createClient()).getOwnerLedger(apiTab)
+      return data || []
     }
-    fetchStats()
-  }, [])
-
-  useEffect(() => {
-    const fetchLedger = async () => {
-      setLoadingLedger(true)
-      try {
-        const client = createClient()
-        const apiTab = tab === 'all' ? undefined : tab
-        const data = await paymentEndpoints(client).getOwnerLedger(apiTab)
-        setEntries(data || [])
-      } catch (err) {
-        console.error('Failed to fetch ledger entries', err)
-      } finally {
-        setLoadingLedger(false)
-      }
-    }
-    fetchLedger()
-  }, [tab])
+  })
 
   const TABS = [
     { id: 'all', label: 'All Transactions' },
@@ -84,16 +73,6 @@ export default function Financials() {
 
   return (
     <div className="space-y-8 pb-12 max-w-[1400px] mx-auto">
-      <div className="flex items-center justify-between">
-        <SectionHeader
-          title="Financial Ledger"
-          description="Real-time transaction history and financial metrics."
-        />
-        <div className="flex gap-3">
-            {/* Future placement for Request Payout or Export CSV buttons */}
-        </div>
-      </div>
-
       {/* Industrial Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         

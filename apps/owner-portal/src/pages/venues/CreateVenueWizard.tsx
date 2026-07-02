@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button, Card, Input, SectionHeader, LocationPickerMap, InfoTooltip } from '@venue404/ui'
 import * as Icons from 'lucide-react'
 import { createClient, venueEndpoints } from '@venue404/api-client'
-import type { VenuePhoto, Amenity, VenueCategory } from '@venue404/api-client'
+import type { VenuePhoto } from '@venue404/api-client'
+import { useQuery } from '@tanstack/react-query'
 import { StateSelect } from '../../components/StateSelect'
 import { DurationInput } from '../../components/DurationInput'
 import { TimeSelect } from '../../components/TimeSelect'
@@ -82,100 +83,80 @@ export default function CreateVenueWizard() {
 
   const [photos, setPhotos] = useState<File[]>([])
   const [existingPhotos, setExistingPhotos] = useState<VenuePhoto[]>([])
-  const [platformAmenities, setPlatformAmenities] = useState<Amenity[]>([])
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([])
-  const [venueCategories, setVenueCategories] = useState<VenueCategory[]>([])
-  const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(!!venueId)
+  const { data: platformAmenities = [] } = useQuery({
+    queryKey: ['platform-amenities'],
+    queryFn: async () => venueEndpoints(createClient()).getPlatformAmenities()
+  })
+
+  const { data: venueCategories = [] } = useQuery({
+    queryKey: ['venue-categories'],
+    queryFn: async () => venueEndpoints(createClient()).getVenueCategories()
+  })
+
+  const { data: draftVenue, isLoading: isLoadingDraft = !!venueId } = useQuery({
+    queryKey: ['venue', venueId],
+    queryFn: async () => {
+      if (!venueId) return null
+      return venueEndpoints(createClient()).getMyVenue(venueId)
+    },
+    enabled: !!venueId,
+  })
 
   useEffect(() => {
-    async function loadAmenities() {
-      try {
-        const client = createClient()
-        const data = await venueEndpoints(client).getPlatformAmenities()
-        setPlatformAmenities(data)
-      } catch (err) {
-        console.error('Failed to load amenities', err)
-      }
-    }
-    async function loadCategories() {
-      try {
-        const client = createClient()
-        const data = await venueEndpoints(client).getVenueCategories()
-        setVenueCategories(data)
-      } catch (err) {
-        console.error('Failed to load categories', err)
-      }
-    }
-    loadAmenities()
-    loadCategories()
-  }, [])
-
-  useEffect(() => {
-    async function loadDraft() {
-      if (!venueId) return
-      try {
-        setIsLoadingDraft(true)
-        const client = createClient()
-        const data = await venueEndpoints(client).getMyVenue(venueId)
+    if (draftVenue) {
+      const data = draftVenue
+      setFormData(prev => ({
+        ...prev,
+        name: data.name || '',
+        category_id: data.category?.id || '',
+        description: data.description || '',
+        min_capacity: data.min_capacity?.toString() || '',
+        max_capacity: data.max_capacity?.toString() || '',
+        address_line1: data.address_line1 || '',
+        address_line2: data.address_line2 || '',
+        city: data.city || '',
+        state: data.state || '',
+        country: data.country || 'India',
+        postal_code: data.postal_code || '',
+        latitude: data.latitude ? parseFloat(data.latitude) : null,
+        longitude: data.longitude ? parseFloat(data.longitude) : null,
+        open_time: data.open_time ? data.open_time.slice(0, 5) : '09:00',
+        close_time: data.close_time ? data.close_time.slice(0, 5) : '23:00',
+        min_booking_duration_minutes: data.min_booking_duration_minutes || 60,
+        max_booking_duration_minutes: data.max_booking_duration_minutes || 1440,
+        slot_interval_minutes: data.slot_interval_minutes || 30,
+        pre_buffer_minutes: data.pre_buffer_minutes || 30,
+        post_buffer_minutes: data.post_buffer_minutes || 30,
+        pricing_mode: data.pricing_mode || 'flat',
+        base_price: data.starting_price_paise ? (data.starting_price_paise / 100).toString() : '',
+        hourly_rate: data.hourly_rate_paise ? (data.hourly_rate_paise / 100).toString() : '',
+        advance_pct: data.advance_pct ? parseFloat(String(data.advance_pct)) : 30,
+        balance_due: data.balance_due_days_before_event || 7,
+        spans_next_day: data.spans_next_day || false,
+        allowed_booking_types: data.allowed_booking_types || ['full_day', 'time_slot'],
+        owner_action_window_hours: data.owner_action_window_hours || 48,
+        overdue_advance_refund_pct: data.overdue_advance_refund_pct ? parseFloat(data.overdue_advance_refund_pct) : 0,
         
-        // Populate formData
-        setFormData(prev => ({
-          ...prev,
-          name: data.name || '',
-          category_id: data.category?.id || '',
-          description: data.description || '',
-          min_capacity: data.min_capacity?.toString() || '',
-          max_capacity: data.max_capacity?.toString() || '',
-          address_line1: data.address_line1 || '',
-          address_line2: data.address_line2 || '',
-          city: data.city || '',
-          state: data.state || '',
-          country: data.country || 'India',
-          postal_code: data.postal_code || '',
-          latitude: data.latitude ? parseFloat(data.latitude) : null,
-          longitude: data.longitude ? parseFloat(data.longitude) : null,
-          open_time: data.open_time ? data.open_time.slice(0, 5) : '09:00',
-          close_time: data.close_time ? data.close_time.slice(0, 5) : '23:00',
-          min_booking_duration_minutes: data.min_booking_duration_minutes || 60,
-          max_booking_duration_minutes: data.max_booking_duration_minutes || 1440,
-          slot_interval_minutes: data.slot_interval_minutes || 30,
-          pre_buffer_minutes: data.pre_buffer_minutes || 30,
-          post_buffer_minutes: data.post_buffer_minutes || 30,
-          pricing_mode: data.pricing_mode || 'flat',
-          base_price: data.starting_price_paise ? (data.starting_price_paise / 100).toString() : '',
-          hourly_rate: data.hourly_rate_paise ? (data.hourly_rate_paise / 100).toString() : '',
-          advance_pct: data.advance_pct ? parseFloat(String(data.advance_pct)) : 30,
-          balance_due: data.balance_due_days_before_event || 7,
-          spans_next_day: data.spans_next_day || false,
-          allowed_booking_types: data.allowed_booking_types || ['full_day', 'time_slot'],
-          owner_action_window_hours: data.owner_action_window_hours || 48,
-          overdue_advance_refund_pct: data.overdue_advance_refund_pct ? parseFloat(data.overdue_advance_refund_pct) : 0,
-          
-          tier_1_hours: data.cancellation_policy?.tier_1_hours?.toString() || '',
-          tier_1_refund_pct: data.cancellation_policy?.tier_1_refund_pct?.toString() || '',
-          tier_2_hours: data.cancellation_policy?.tier_2_hours?.toString() || '',
-          tier_2_refund_pct: data.cancellation_policy?.tier_2_refund_pct?.toString() || '',
-          tier_3_hours: data.cancellation_policy?.tier_3_hours?.toString() || '',
-          tier_3_refund_pct: data.cancellation_policy?.tier_3_refund_pct?.toString() || '',
-          no_show_refund_pct: data.cancellation_policy?.no_show_refund_pct?.toString() || '0',
-          notes: data.cancellation_policy?.notes || '',
-        }))
+        tier_1_hours: data.cancellation_policy?.tier_1_hours?.toString() || '',
+        tier_1_refund_pct: data.cancellation_policy?.tier_1_refund_pct?.toString() || '',
+        tier_2_hours: data.cancellation_policy?.tier_2_hours?.toString() || '',
+        tier_2_refund_pct: data.cancellation_policy?.tier_2_refund_pct?.toString() || '',
+        tier_3_hours: data.cancellation_policy?.tier_3_hours?.toString() || '',
+        tier_3_refund_pct: data.cancellation_policy?.tier_3_refund_pct?.toString() || '',
+        no_show_refund_pct: data.cancellation_policy?.no_show_refund_pct?.toString() || '0',
+        notes: data.cancellation_policy?.notes || '',
+      }))
 
-        if (data.amenities) {
-          setSelectedAmenities(data.amenities.map(a => a.id))
-        }
-        
-        if (data.photos) {
-          setExistingPhotos(data.photos)
-        }
-      } catch (err) {
-        console.error('Failed to load draft venue', err)
-      } finally {
-        setIsLoadingDraft(false)
+      if (data.amenities) {
+        setSelectedAmenities(data.amenities.map(a => a.id))
+      }
+      
+      if (data.photos) {
+        setExistingPhotos(data.photos)
       }
     }
-    loadDraft()
-  }, [venueId])
+  }, [draftVenue])
 
   useEffect(() => {
     const hasFullDay = formData.allowed_booking_types.includes('full_day')

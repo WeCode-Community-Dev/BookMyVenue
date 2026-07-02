@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Card, Button, StatusBadge, PaymentStatusBadge, Modal, Skeleton } from '@venue404/ui'
 import { createClient, bookingEndpoints } from '@venue404/api-client'
-import type { Booking } from '@venue404/api-client'
-import { Calendar, MapPin, User, Clock, ArrowLeft, Check, CheckCircle2, X, AlertTriangle, History, AlignLeft, Info, Receipt, MessageSquare, Lock } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+
+import { Calendar, MapPin, User, Clock, ArrowLeft, Check, CheckCircle2, X, AlertTriangle, History, AlignLeft, Info, Receipt, MessageSquare, Lock, CalendarDays } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -163,8 +165,7 @@ function DoubleMonthCalendar({
 export default function BookingDetail() {
   const { bookingId } = useParams<{ bookingId: string }>()
   const navigate = useNavigate()
-  const [booking, setBooking] = useState<Booking | null>(null)
-  const [loading, setLoading] = useState(true)
+  
   const [tab, setTab] = useState('overview')
   const [actionLoading, setActionLoading] = useState(false)
   const [rejectModalOpen, setRejectModalOpen] = useState(false)
@@ -176,22 +177,14 @@ export default function BookingDetail() {
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [cancelType, setCancelType] = useState<'forfeit' | 'goodwill' | null>(null)
 
-  const fetchBooking = async () => {
-    if (!bookingId) return
-    try {
-      const client = createClient()
-      const data = await bookingEndpoints(client).getBooking(bookingId)
-      setBooking(data)
-    } catch (err) {
-      console.error("Failed to fetch booking detail", err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchBooking()
-  }, [bookingId])
+  const { data: booking, isLoading: loading, refetch } = useQuery({
+    queryKey: ['booking', bookingId],
+    queryFn: async () => {
+      if (!bookingId) return null
+      return bookingEndpoints(createClient()).getBooking(bookingId)
+    },
+    enabled: !!bookingId,
+  })
 
   const handleAction = async (action: 'accept' | 'reject' | 'cancelForfeit' | 'cancelGoodwill' | 'extendBalanceDeadline' | 'updateOwnerNotes', payload?: Record<string, unknown>) => {
     if (!bookingId) return
@@ -213,10 +206,10 @@ export default function BookingDetail() {
         await bookingEndpoints(client).updateOwnerNotes(bookingId, (payload?.notes as string) || null)
         setIsEditingNotes(false)
       }
-      await fetchBooking()
+      await refetch()
     } catch (err) {
       console.error(`Failed to ${action} booking`, err)
-      alert(`Error performing action: ${err}`)
+      toast.error(`Error performing action: ${err}`)
     } finally {
       setActionLoading(false)
     }
@@ -330,10 +323,15 @@ export default function BookingDetail() {
               </Button>
             </>
           )}
-          {(booking.status === 'confirmed' || booking.status === 'owner_accepted') && (
-            <Button variant="secondary" className="text-rose-600 border-rose-200 hover:bg-rose-50" onClick={() => { setCancelType(null); setCancelModalOpen(true); }} disabled={actionLoading}>
-              <X className="h-4 w-4 mr-2" /> Cancel Booking
-            </Button>
+          {booking.status === 'confirmed' && booking.balance_overdue_at && (new Date() >= new Date(booking.balance_overdue_at)) && booking.payment_status !== 'paid' && (
+            <div className="flex items-center gap-3">
+              <Button variant="secondary" className="text-zinc-600 border-zinc-200 hover:bg-zinc-100 bg-white" onClick={() => setExtendModalOpen(true)} disabled={actionLoading}>
+                <Calendar className="h-4 w-4 mr-2" /> Extend Deadline
+              </Button>
+              <Button variant="secondary" className="text-rose-600 border-rose-200 hover:bg-rose-50 bg-white shadow-sm" onClick={() => { setCancelType(null); setCancelModalOpen(true); }} disabled={actionLoading}>
+                <X className="h-4 w-4 mr-2" /> Cancel Overdue Booking
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -533,7 +531,7 @@ export default function BookingDetail() {
                       <MapPin className="h-3.5 w-3.5 mr-1" /> {booking.venue_city || 'City not specified'}
                     </div>
                     <Link to={`/venues/${booking.venue_id}/overview`} className="text-sm text-brand-600 hover:text-brand-700 font-semibold mt-4 inline-block">
-                      View Venue Details →
+                      View Venue Details â†’
                     </Link>
                   </div>
                 </Card>
@@ -562,157 +560,398 @@ export default function BookingDetail() {
           </div>
         )}
 
-        {tab === 'financials' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            {/* Left Column: Ledger */}
-            <Card className="p-0 overflow-hidden border-zinc-200 shadow-sm rounded-xl flex flex-col">
-              <div className="p-6 bg-zinc-50/50 border-b border-zinc-100 flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-lg text-zinc-900">Financial Ledger</h3>
-                  <p className="text-xs text-zinc-500 mt-1">Breakdown of pricing and payouts</p>
+        {tab === 'financials' && (() => {
+          /**
+           * ——————————————————————————————————————————————————
+           * DERIVED STATE — all logic mirrors the backend models exactly.
+           * ——————————————————————————————————————————————————
+           *
+           * BookingStatus enum (from models.py):
+           *   requested | owner_accepted | confirmed | completed
+           *   hold_expired | request_expired | conflict_cancelled
+           *   user_cancelled | admin_cancelled | owner_rejected
+           *   balance_overdue_cancelled
+           *
+           * PaymentStatus enum (from models.py):
+           *   unpaid | advance_paid | fully_paid | refunded | partially_refunded
+           *
+           * Cancellation types (from cancellation.py):
+           *   balance_overdue_cancelled  â†’ FORFEIT: owner keeps advance, refund_amount_paise stays 0
+           *   user_cancelled (by owner)  â†’ GOODWILL: refund_amount_paise set per overdue_advance_refund_pct
+           *   user_cancelled (by user)   â†’ USER CANCEL: refund_amount_paise set per cancellation policy tiers
+           *   admin_cancelled            â†’ ADMIN: no refund logic
+           *
+           * Key constraint (from models.py CheckConstraint):
+           *   advance_due_paise + balance_due_paise = quoted_price_paise (always true)
+           */
+
+          const fmt = (paise: number) =>
+            `₹${(paise / 100).toLocaleString('en-IN')}`;
+
+          const s = booking.status;
+          const ps = booking.payment_status;
+
+          // Payment facts — directly from backend fields
+          const totalDue = booking.quoted_price_paise || 0;
+          const advanceDue = booking.advance_due_paise || 0;
+          const balanceDue = booking.balance_due_paise || 0;
+          const amountPaid = booking.amount_paid_paise || 0;
+          const refundAmount = booking.refund_amount_paise || 0;
+          const platformFee = booking.platform_fee_paise || 0;
+          const ownerPayoutProjected = booking.owner_payout_paise || 0; // projected full payout
+          const commissionPct = booking.platform_commission_pct || 0;
+
+          // Payment status booleans — match PaymentStatus enum exactly
+          const isAdvancePaid = ps === 'advance_paid';
+          const isFullyPaid = ps === 'fully_paid';
+          const isRefunded = ps === 'refunded';
+          const isPartiallyRefunded = ps === 'partially_refunded';
+          const isBalancePaid = isFullyPaid || (amountPaid >= totalDue && totalDue > 0);
+
+          // Booking status booleans — match BookingStatus enum exactly
+          const isCompleted = s === 'completed';
+          const isForfeitCancelled = s === 'balance_overdue_cancelled'; // owner kept the advance
+          const isUserCancelled = s === 'user_cancelled';               // goodwill or user self-cancel
+          const isAdminCancelled = s === 'admin_cancelled';
+          const isTerminated = isForfeitCancelled || isUserCancelled || isAdminCancelled ||
+            s === 'hold_expired' || s === 'request_expired' || s === 'conflict_cancelled';
+
+          // For a FORFEIT: owner retains the advance minus commission
+          const forfeitOwnerRetains = isForfeitCancelled
+            ? Math.floor(advanceDue * (1 - commissionPct / 100))
+            : 0;
+
+          // For GOODWILL / USER CANCEL: actual retained = (paid - refunded) after commission
+          const actualOwnerNet = isTerminated && !isForfeitCancelled
+            ? Math.floor((amountPaid - refundAmount) * (1 - commissionPct / 100))
+            : 0;
+
+          // The true "Final Owner Payout" after cancellation
+          const finalPayout = isForfeitCancelled
+            ? forfeitOwnerRetains
+            : isTerminated
+            ? actualOwnerNet
+            : (booking.owner_payout_paise || 0);
+
+          // Calculate the actual platform fee charged based on what was retained
+          const actualPlatformFee = isForfeitCancelled
+            ? Math.floor(advanceDue * (commissionPct / 100))
+            : isTerminated
+            ? Math.floor((amountPaid - refundAmount) * (commissionPct / 100))
+            : platformFee;
+          // Overdue state
+          const isOverdue = booking.balance_overdue_at
+            ? new Date() >= new Date(booking.balance_overdue_at)
+            : false;
+          const balanceDatePassed = booking.balance_due_date
+            ? new Date() > new Date(booking.balance_due_date)
+            : false;
+
+          return (
+            <div className="space-y-5 max-w-5xl mx-auto">
+
+              {/* ── HERO BANNER ── */}
+              <div className={`rounded-2xl overflow-hidden shadow-lg ${
+                isTerminated
+                  ? 'bg-gradient-to-r from-zinc-900 to-zinc-800'
+                  : isCompleted
+                  ? 'bg-gradient-to-r from-emerald-900 to-teal-800'
+                  : 'bg-gradient-to-r from-zinc-900 to-zinc-800'
+              }`}>
+                <div className="px-8 py-6 md:px-10 md:py-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+
+                  {/* Payout number */}
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">
+                      {finalPayout !== null ? 'Final Owner Payout' : 'Projected Owner Payout'}
+                    </p>
+                    <p className="text-4xl md:text-5xl font-black text-white tracking-tight">
+                      {finalPayout !== null ? fmt(finalPayout) : fmt(ownerPayoutProjected)}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3">
+                      <span className="text-sm text-zinc-400">Quoted {fmt(totalDue)}</span>
+                      <span className="text-zinc-700 text-xs">|</span>
+                      <span className="text-sm text-zinc-400">Commission {commissionPct}%</span>
+                      {amountPaid > 0 && (
+                        <>
+                          <span className="text-zinc-700 text-xs">|</span>
+                          <span className="text-sm text-zinc-300 font-medium">Collected {fmt(amountPaid)}</span>
+                        </>
+                      )}
+                      {refundAmount > 0 && (
+                        <>
+                          <span className="text-zinc-700 text-xs">|</span>
+                          <span className="text-sm text-rose-400 font-medium">Refunded {fmt(refundAmount)}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Status pills */}
+                  <div className="flex flex-wrap gap-2 shrink-0">
+                    {/* Advance pill */}
+                    <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border ${
+                      isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                        : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                    }`}>
+                      {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
+                        ? <CheckCircle2 className="w-4 h-4" />
+                        : <Clock className="w-4 h-4" />
+                      }
+                      Advance {fmt(advanceDue)}
+                    </div>
+                    {/* Balance pill */}
+                    <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border ${
+                      isFullyPaid
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                        : isForfeitCancelled
+                        ? 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400'
+                        : isTerminated
+                        ? 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400'
+                        : isOverdue
+                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                        : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                    }`}>
+                      {isFullyPaid ? <CheckCircle2 className="w-4 h-4" /> : isOverdue ? <AlertTriangle className="w-4 h-4" /> : <CalendarDays className="w-4 h-4" />}
+                      Balance {fmt(balanceDue)}
+                    </div>
+                    {/* Commission pill */}
+                    <div className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border bg-rose-500/10 border-rose-500/20 text-rose-400">
+                      <Receipt className="w-4 h-4" />
+                      Fee -{fmt(actualPlatformFee)}
+                    </div>
+                  </div>
                 </div>
-                <div className="p-2.5 bg-white rounded-xl shadow-sm border border-zinc-200/60">
-                  <Receipt className="h-5 w-5 text-zinc-400" />
-                </div>
+
+                {/* Progress bar (only on active bookings) */}
+                {!isTerminated && !isCompleted && (
+                  <div className="px-8 md:px-10 pb-6">
+                    <div className="flex justify-between text-xs text-zinc-500 mb-1.5">
+                      <span>Payment Progress</span>
+                      <span className="font-bold text-zinc-400">
+                        {Math.round((amountPaid / (totalDue || 1)) * 100)}% collected
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-zinc-700/60 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-300 rounded-full transition-all duration-700"
+                        style={{ width: `${Math.min(100, (amountPaid / (totalDue || 1)) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-              
-              <div className="p-6 space-y-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-zinc-500 font-medium">Base Quoted Price</span>
-                    <span className="font-semibold text-zinc-900">{booking.display?.quoted_price || `₹${(booking.quoted_price_paise || 0)/100}`}</span>
-                  </div>
-                  
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-zinc-500 font-medium">Platform Commission ({booking.platform_commission_pct}%)</span>
-                    <span className="font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md">-{booking.display?.platform_fee || `₹${(booking.platform_fee_paise || 0)/100}`}</span>
-                  </div>
 
-                  <div className="border-t-2 border-dashed border-zinc-200 pt-4 mt-2 flex justify-between items-center">
-                    <span className="font-bold text-zinc-900 text-base">Net Owner Payout</span>
-                    <span className="text-2xl font-black text-emerald-600 tracking-tight">{booking.display?.owner_payout || `₹${(booking.owner_payout_paise || 0)/100}`}</span>
+              {/* ── CANCELLATION OUTCOME (only when terminated) ── */}
+              {isTerminated && (
+                <div className={`rounded-xl border p-5 flex items-start gap-4 ${
+                  isForfeitCancelled
+                    ? 'bg-amber-50 border-amber-200'
+                    : refundAmount > 0
+                    ? 'bg-rose-50 border-rose-200'
+                    : 'bg-zinc-50 border-zinc-200'
+                }`}>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                    isForfeitCancelled ? 'bg-amber-100 text-amber-700' : refundAmount > 0 ? 'bg-rose-100 text-rose-600' : 'bg-zinc-200 text-zinc-600'
+                  }`}>
+                    {isForfeitCancelled ? <Lock className="w-4 h-4" /> : refundAmount > 0 ? <AlertTriangle className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-bold text-sm ${isForfeitCancelled ? 'text-amber-900' : refundAmount > 0 ? 'text-rose-900' : 'text-zinc-800'}`}>
+                      {isForfeitCancelled && 'Balance Overdue — Deposit Forfeited'}
+                      {isUserCancelled && refundAmount > 0 && 'User Cancelled — Refund Issued'}
+                      {isUserCancelled && refundAmount === 0 && 'User Cancelled — No Refund'}
+                      {isAdminCancelled && 'Admin Cancelled'}
+                      {(s === 'hold_expired' || s === 'request_expired') && 'Booking Expired'}
+                      {s === 'conflict_cancelled' && 'Cancelled — Conflict'}
+                    </p>
+                    <p className={`text-sm mt-0.5 leading-relaxed ${isForfeitCancelled ? 'text-amber-800/80' : refundAmount > 0 ? 'text-rose-700/80' : 'text-zinc-500'}`}>
+                      {isForfeitCancelled && `Customer missed the balance payment deadline. Advance of ${fmt(advanceDue)} is forfeited. Your net share after ${commissionPct}% commission: ${fmt(forfeitOwnerRetains)}.`}
+                      {isUserCancelled && refundAmount > 0 && `${fmt(refundAmount)} was refunded to the customer based on your cancellation policy. You retain ${fmt(amountPaid - refundAmount)} minus platform commission.`}
+                      {isUserCancelled && refundAmount === 0 && `No refund was issued to the customer based on your cancellation policy. You retain the full collected amount.`}
+                      {isAdminCancelled && 'This booking was cancelled by a platform administrator.'}
+                    </p>
+                    {booking.cancelled_at && (
+                      <p className="text-xs text-zinc-400 mt-1.5">
+                        Cancelled {new Date(booking.cancelled_at).toLocaleString()}
+                      </p>
+                    )}
                   </div>
                 </div>
-
-                <div className="pt-6 border-t border-zinc-100">
-                  <h4 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-4">Payment Milestones</h4>
-                  
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 p-4 bg-zinc-50 rounded-lg border border-zinc-100/80 transition-colors hover:bg-zinc-100/50">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-zinc-900 text-sm">Advance Deposit</span>
-                          <span className="text-[10px] font-bold bg-zinc-200/60 text-zinc-600 px-1.5 py-0.5 rounded uppercase tracking-wider">{booking.advance_pct}%</span>
-                        </div>
-                        {booking.stripe_advance_payment_intent_id ? (
-                          <div className="text-xs text-zinc-400 font-mono">Ref: {booking.stripe_advance_payment_intent_id}</div>
-                        ) : (
-                          <div className="text-xs text-zinc-500">Required to confirm booking</div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 text-right">
-                        {(booking.amount_paid_paise || 0) >= (booking.advance_due_paise || 0) ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200/50"><CheckCircle2 className="w-3 h-3" /> Paid</span>
-                        ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-1 rounded-md border border-amber-200/50"><Clock className="w-3 h-3" /> Pending</span>
-                        )}
-                        <span className="font-bold text-zinc-900 text-base">{booking.display?.advance_due || `₹${(booking.advance_due_paise || 0)/100}`}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 p-4 bg-zinc-50 rounded-lg border border-zinc-100/80 transition-colors hover:bg-zinc-100/50">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-zinc-900 text-sm">Balance Due</span>
-                          <span className="text-[10px] font-bold bg-zinc-200/60 text-zinc-600 px-1.5 py-0.5 rounded uppercase tracking-wider">{100 - booking.advance_pct}%</span>
-                        </div>
-                        {booking.stripe_balance_payment_intent_id ? (
-                          <div className="text-xs text-zinc-400 font-mono">Ref: {booking.stripe_balance_payment_intent_id}</div>
-                        ) : booking.balance_due_date ? (
-                          <div className="text-xs font-semibold text-brand-600 bg-brand-50 inline-block px-2 py-0.5 rounded-md">Due: {new Date(booking.balance_due_date).toLocaleDateString()}</div>
-                        ) : null}
-                      </div>
-                      <div className="flex items-center gap-4 text-right">
-                        {(booking.amount_paid_paise || 0) >= ((booking.advance_due_paise || 0) + (booking.balance_due_paise || 0)) ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200/50"><CheckCircle2 className="w-3 h-3" /> Paid</span>
-                        ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-1 rounded-md border border-amber-200/50"><Clock className="w-3 h-3" /> Pending</span>
-                        )}
-                        <span className="font-bold text-zinc-900 text-base">{booking.display?.balance_due || `₹${(booking.balance_due_paise || 0)/100}`}</span>
-                      </div>
-                    </div>
-                  </div>
-                  {booking.balance_due_date && new Date() > new Date(booking.balance_due_date) && booking.payment_status !== 'paid' && (
-                    <div className="bg-rose-50 border border-rose-200 p-4 rounded-xl flex items-start gap-3 mt-6 text-rose-800">
-                      <AlertTriangle className="h-5 w-5 shrink-0 text-rose-600" />
-                      <div>
-                        <h4 className="font-semibold">Payment Overdue</h4>
-                        <p className="text-sm mt-1 opacity-90">
-                          The balance payment was due on {new Date(booking.balance_due_date).toLocaleDateString()}.
-                          {booking.balance_overdue_at && ` Marked overdue at ${new Date(booking.balance_overdue_at).toLocaleString()}.`}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-
-            {/* Right Column: Summaries & Alerts */}
-            <div className="space-y-6">
-              <Card className="p-0 overflow-hidden border-zinc-200 shadow-sm rounded-xl">
-                <div className="p-6 bg-zinc-50/50 border-b border-zinc-100">
-                  <h3 className="font-bold text-lg text-zinc-900">Transaction Summary</h3>
-                  <p className="text-xs text-zinc-500 mt-1">Real-time payment status</p>
-                </div>
-                
-                <div className="p-6 grid grid-cols-2 gap-4">
-                  <div className="p-5 bg-emerald-500/10 rounded-lg border border-emerald-500/20 text-center flex flex-col items-center justify-center">
-                    <div className="text-[10px] text-emerald-700/80 font-bold uppercase tracking-widest mb-1.5">Amount Paid</div>
-                    <div className="text-3xl font-black text-emerald-700 tracking-tight">₹{((booking.amount_paid_paise || 0) / 100).toLocaleString('en-IN')}</div>
-                  </div>
-                  
-                  <div className="p-5 bg-rose-500/10 rounded-lg border border-rose-500/20 text-center flex flex-col items-center justify-center">
-                    <div className="text-[10px] text-rose-700/80 font-bold uppercase tracking-widest mb-1.5">Refunded</div>
-                    <div className="text-3xl font-black text-rose-700 tracking-tight">₹{((booking.refund_amount_paise || 0) / 100).toLocaleString('en-IN')}</div>
-                  </div>
-                </div>
-              </Card>
-
-              {booking.status === 'confirmed' && booking.payment_status === 'advance_paid' && booking.balance_overdue_at && (
-                <Card className="p-0 overflow-hidden bg-amber-50/50 border-amber-200 shadow-sm rounded-xl">
-                  <div className="flex h-full">
-                    <div className="w-1.5 bg-amber-400 shrink-0"></div>
-                    <div className="p-6 flex-1">
-                      <div className="flex items-start gap-4">
-                        <div className="p-2.5 bg-amber-100 text-amber-700 rounded-lg shrink-0">
-                          <AlertTriangle className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-amber-900 text-base">Payment Overdue</h4>
-                          <p className="text-sm text-amber-700 mt-1 leading-relaxed">
-                            The user has not completed the required payments. They have used <span className="font-bold">{booking.deadline_extension_count}</span> deadline extension(s) so far.
-                          </p>
-                          <div className="mt-5">
-                            <Button 
-                              variant="secondary" 
-                              className="w-full sm:w-auto h-10 px-5 bg-white text-amber-800 border-amber-200 hover:bg-amber-100 hover:border-amber-300 font-semibold shadow-sm transition-all rounded-xl" 
-                              onClick={() => setExtendModalOpen(true)}
-                            >
-                              Extend Deadline
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
               )}
+
+              {/* ── OVERDUE ALERT (active confirmed bookings only) ── */}
+              {s === 'confirmed' && isAdvancePaid && balanceDatePassed && !isTerminated && (
+                <div className="rounded-xl border border-rose-200 bg-rose-50 p-5 flex items-start gap-4">
+                  <div className="w-9 h-9 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center shrink-0">
+                    <AlertTriangle className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-rose-900 text-sm">Balance Payment Overdue</p>
+                    <p className="text-sm text-rose-700/80 mt-0.5 leading-relaxed">
+                      Due date was {booking.balance_due_date && new Date(booking.balance_due_date).toLocaleDateString()}.
+                      {isOverdue && ` Marked overdue at ${new Date(booking.balance_overdue_at!).toLocaleString()}.`}
+                      {' '}Customer has used <strong className="text-rose-900">{booking.deadline_extension_count}</strong> of 2 allowed extension(s).
+                    </p>
+                    {booking.owner_action_deadline && (
+                      <p className="text-xs text-rose-700 mt-1.5 font-medium">
+                        Action window closes: {new Date(booking.owner_action_deadline).toLocaleString()}
+                      </p>
+                    )}
+                    {isOverdue && (
+                      <div className="mt-3 pt-3 border-t border-rose-200">
+                        <Button
+                          variant="secondary"
+                          className="bg-white text-rose-700 border-rose-200 hover:bg-rose-100 font-semibold shadow-sm text-sm"
+                          onClick={() => setExtendModalOpen(true)}
+                        >
+                          Extend Deadline
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ── BOTTOM GRID: RECEIPT + MILESTONES ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+
+                {/* Receipt card */}
+                <div className="lg:col-span-2">
+                  <Card className="p-0 overflow-hidden border-zinc-200 shadow-sm rounded-xl h-full">
+                    <div className="px-5 py-4 border-b border-zinc-100 bg-zinc-50 flex items-center gap-2">
+                      <Receipt className="w-4 h-4 text-zinc-400" />
+                      <h3 className="font-bold text-sm text-zinc-700">Price Breakdown</h3>
+                    </div>
+                    <div className="p-5 space-y-0">
+                      {[
+                        { label: 'Quoted Price', value: fmt(totalDue), color: 'text-zinc-800' },
+                        { label: `Advance (${booking.advance_pct}%)`, value: fmt(advanceDue), color: 'text-zinc-600' },
+                        { label: `Balance (${100 - booking.advance_pct}%)`, value: fmt(balanceDue), color: 'text-zinc-600' },
+                      ].map(row => (
+                        <div key={row.label} className="flex justify-between items-center py-2.5 border-b border-zinc-100">
+                          <span className="text-sm text-zinc-500">{row.label}</span>
+                          <span className={`text-sm font-semibold ${row.color}`}>{row.value}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between items-center py-2.5 border-b border-zinc-100">
+                        <span className="text-sm text-zinc-500">Platform Fee ({commissionPct}%)</span>
+                        <span className="text-sm font-semibold text-rose-600">-{fmt(actualPlatformFee)}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-3 pb-1">
+                        <span className="font-bold text-zinc-900 text-sm">
+                          {finalPayout !== null ? 'Final Payout' : 'Projected Payout'}
+                        </span>
+                        <span className="font-black text-emerald-600 text-base">{fmt(finalPayout !== null ? finalPayout : ownerPayoutProjected)}</span>
+                      </div>
+                      {amountPaid > 0 && amountPaid < totalDue && (
+                        <div className="mt-2 pt-3 border-t border-dashed border-zinc-200 space-y-1.5">
+                          <div className="flex justify-between">
+                            <span className="text-xs text-zinc-400">Collected so far</span>
+                            <span className="text-xs text-zinc-600 font-medium">{fmt(amountPaid)}</span>
+                          </div>
+                          {refundAmount > 0 && (
+                            <div className="flex justify-between">
+                              <span className="text-xs text-zinc-400">Refunded to customer</span>
+                              <span className="text-xs text-rose-500 font-medium">-{fmt(refundAmount)}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Milestones */}
+                <div className="lg:col-span-3 space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">Payment Milestones</p>
+
+                  {/* Advance */}
+                  <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
+                    isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
+                      ? 'border-emerald-100'
+                      : 'border-zinc-200'
+                  }`}>
+                    <div className="p-4 flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                        isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
+                          ? 'bg-emerald-100 text-emerald-600'
+                          : 'bg-amber-100 text-amber-600'
+                      }`}>
+                        {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
+                          ? <CheckCircle2 className="w-5 h-5" />
+                          : <Clock className="w-5 h-5" />
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-zinc-900 text-sm">Advance Deposit</h4>
+                          <span className="text-[10px] font-bold bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded uppercase">{booking.advance_pct}%</span>
+                        </div>
+                        {booking.stripe_advance_payment_intent_id
+                          ? <p className="text-xs text-zinc-400 font-mono mt-0.5 truncate">Ref: {booking.stripe_advance_payment_intent_id}</p>
+                          : <p className="text-xs text-zinc-400 mt-0.5">Required to confirm booking</p>
+                        }
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-black text-zinc-900 text-base">{fmt(advanceDue)}</div>
+                        {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
+                          ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
+                          : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
+                        }
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Balance */}
+                  <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
+                    isBalancePaid ? 'border-emerald-100'
+                    : isOverdue ? 'border-rose-200'
+                    : isForfeitCancelled || isTerminated ? 'border-zinc-100 opacity-70'
+                    : 'border-zinc-200'
+                  }`}>
+                    <div className="p-4 flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                        isBalancePaid ? 'bg-emerald-100 text-emerald-600'
+                        : isOverdue ? 'bg-rose-100 text-rose-600'
+                        : 'bg-zinc-100 text-zinc-400'
+                      }`}>
+                        {isBalancePaid ? <CheckCircle2 className="w-5 h-5" /> : isOverdue ? <AlertTriangle className="w-5 h-5" /> : <CalendarDays className="w-5 h-5" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-zinc-900 text-sm">Balance Due</h4>
+                          <span className="text-[10px] font-bold bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded uppercase">{100 - booking.advance_pct}%</span>
+                        </div>
+                        {booking.stripe_balance_payment_intent_id
+                          ? <p className="text-xs text-zinc-400 font-mono mt-0.5 truncate">Ref: {booking.stripe_balance_payment_intent_id}</p>
+                          : booking.balance_due_date
+                          ? <p className={`text-xs mt-0.5 font-medium ${isOverdue ? 'text-rose-600' : 'text-zinc-500'}`}>
+                              Due {new Date(booking.balance_due_date).toLocaleDateString()}{isOverdue && ' — OVERDUE'}
+                            </p>
+                          : <p className="text-xs text-zinc-400 mt-0.5">Paid before event</p>
+                        }
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-black text-zinc-900 text-base">{fmt(balanceDue)}</div>
+                        {isBalancePaid ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
+                        : isForfeitCancelled ? <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Forfeited</span>
+                        : isTerminated ? <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Waived</span>
+                        : isOverdue ? <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wide">Overdue</span>
+                        : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
+                        }
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {tab === 'timeline' && (
+
           <div className="max-w-2xl mx-auto">
             <div className="rounded-lg border border-zinc-100 bg-white p-6 shadow-sm">
               <div className="space-y-8">
@@ -996,7 +1235,7 @@ export default function BookingDetail() {
                   )}
                 </div>
                 <p className="text-xs text-zinc-500 leading-relaxed font-medium">
-                  Enforces your cancellation policy. The customer forfeits their deposit or paid amount. You keep the money.
+                  The customer forfeits their deposit (0% refund). You retain the full collected advance amount, minus the standard platform commission.
                 </p>
               </button>
               
@@ -1018,7 +1257,7 @@ export default function BookingDetail() {
                   )}
                 </div>
                 <p className="text-xs text-zinc-500 leading-relaxed font-medium">
-                  Waives the cancellation penalty. The customer receives a full refund of their payment as a gesture of goodwill.
+                  Calculates a refund based on your venue's "Overdue Advance Refund (%)" policy. Platform commission applies to any amount you retain.
                 </p>
               </button>
             </div>

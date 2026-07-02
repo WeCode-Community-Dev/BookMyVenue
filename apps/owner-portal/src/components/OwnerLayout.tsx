@@ -1,8 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
-import { AppShell, Logo, type NavItemConfig } from '@venue404/ui'
+import { AppShell, Logo, type NavItemConfig, Button } from '@venue404/ui'
 import {
-  LayoutDashboard, Building2, CalendarDays, Wallet
+  LayoutDashboard, Building2, CalendarDays, Wallet, Plus
 } from 'lucide-react'
 
 const NAV: NavItemConfig[] = [
@@ -28,13 +28,56 @@ export function OwnerLayout({ pageTitle, pageSubtitle, children }: OwnerLayoutPr
     navigate('/login', { replace: true })
   }
 
+  let displayTitle = pageTitle
+  let displaySubtitle = pageSubtitle
+  let topbarActions: React.ReactNode = <div id="topbar-portal-target" className="flex items-center gap-3 h-full w-full justify-end"></div>
+
+  if (location.pathname === '/venues' || location.pathname === '/venues/') {
+    displayTitle = 'My Venues'
+    displaySubtitle = 'Manage your listed properties and their settings.'
+    topbarActions = (
+      <div className="flex items-center gap-3">
+        <Button variant="primary" onClick={() => navigate('/venues/new')} className="gap-2 h-9 px-4 text-sm font-medium bg-[#2d6a4f] hover:bg-[#1b4332] border-none text-white shadow-sm rounded-md flex items-center">
+          <Plus className="h-4 w-4" /> Add New Venue
+        </Button>
+      </div>
+    )
+  } else if (location.pathname.endsWith('/overview')) {
+    displayTitle = 'Venue Overview'
+    displaySubtitle = 'Manage your venue\'s performance and settings.'
+  } else if (location.pathname.includes('/edit/')) {
+    const editSection = location.pathname.split('/').pop() || 'details'
+    const titleMap: Record<string, string> = {
+      'details': 'Basic Details',
+      'photos': 'Manage Photos',
+      'amenities': 'Amenities',
+      'operating-hours': 'Operating Hours',
+      'booking-settings': 'Booking Settings',
+      'pricing': 'Pricing',
+      'policies': 'Cancellation Policies'
+    }
+    displayTitle = `Edit ${titleMap[editSection] || 'Venue'}`
+    displaySubtitle = 'Update your venue settings below. Changes take effect immediately.'
+  } else if (location.pathname === '/') {
+    displayTitle = 'Dashboard'
+  } else if (location.pathname.startsWith('/bookings')) {
+    displayTitle = 'All Bookings'
+    displaySubtitle = 'View and manage all booking requests across your venues.'
+  } else if (location.pathname.startsWith('/financials')) {
+    displayTitle = 'Financial Ledger'
+    displaySubtitle = 'Real-time transaction history and financial metrics.'
+  } else if (location.pathname.endsWith('/calendar')) {
+    displayTitle = 'Calendar & Availability'
+    displaySubtitle = 'Manage your regular weekly hours and set specific dates when your venue is unavailable.'
+  }
+
   return (
     <AppShell
       navItems={NAV}
       activePath={location.pathname}
       onNavigate={navigate}
-      pageTitle={pageTitle}
-      pageSubtitle={pageSubtitle}
+      pageTitle={displayTitle}
+      pageSubtitle={displaySubtitle}
       brand={<Logo variant="dark" />}
       user={user ? {
         name: user.profile.full_name ?? user.email ?? 'Owner',
@@ -42,6 +85,7 @@ export function OwnerLayout({ pageTitle, pageSubtitle, children }: OwnerLayoutPr
         role: 'Venue Owner',
       } : undefined}
       onSignOut={handleSignOut}
+      topbarActions={topbarActions}
     >
       {children}
     </AppShell>

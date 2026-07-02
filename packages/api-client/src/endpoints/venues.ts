@@ -1,5 +1,5 @@
 import { createClient } from '../client'
-import type { Venue, VenuePhoto, Amenity, VenueAvailability, BlockedDate, VenueCategory, CalendarResponse, AvailabilityResponse, PricingQuote, ValidationResponse, SearchPage } from '../model'
+import type { Venue, VenuePhoto, Amenity, VenueAvailability, BlockedDate, VenueCategory, CalendarResponse, AvailabilityResponse, PricingQuote, ValidationResponse, SearchPage, VenueListResponse, VenueStatsResponse } from '../model'
 
 export const venueEndpoints = (client: ReturnType<typeof createClient>) => ({
   getVenueCategories: () => client.get<VenueCategory[]>('/api/venues/categories'),
@@ -12,8 +12,9 @@ export const venueEndpoints = (client: ReturnType<typeof createClient>) => ({
     client.delete<void>(`/api/venues/${venueId}/photos/${photoId}`),
   bulkUpdateVenuePhotos: (id: string, body: unknown) =>
     client.put<void>(`/api/venues/${id}/photos/bulk-update`, body),
-  getMyVenues: () => client.get<Venue[]>('/api/venues/my/venues'),
+  getMyVenues: () => client.get<VenueListResponse[]>('/api/venues/my/venues'),
   getMyVenue: (id: string) => client.get<Venue>(`/api/venues/my/venues/${id}`),
+  getVenueStats: (id: string) => client.get<VenueStatsResponse>(`/api/venues/my/venues/${id}/stats`),
   getVenueBookings: (id: string) => client.get<unknown[]>(`/api/venues/${id}/bookings`),
   getPendingVenueBookings: (id: string) =>
     client.get<unknown[]>(`/api/venues/${id}/bookings/pending`),

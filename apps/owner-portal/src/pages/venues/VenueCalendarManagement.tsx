@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
-import { Card, SectionHeader, Button, Input, Skeleton } from '@venue404/ui'
+import { Button, Input, Skeleton } from '@venue404/ui'
 import { ArrowLeft, ArrowRight, Loader2, Save, Trash2, Clock, Ban } from 'lucide-react'
 import { createClient, venueEndpoints } from '@venue404/api-client'
 import type { VenueAvailability as Availability, BlockedDate } from '@venue404/api-client'
+import { useQuery } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
+import { confirmAction } from '../../lib/confirm'
 import { TimeSelect } from '../../components/TimeSelect'
 
 const DAYS_OF_WEEK = [
@@ -14,7 +18,6 @@ export default function VenueCalendarManagement() {
   const { venueId } = useParams()
   const [activeTab, setActiveTab] = useState<'weekly' | 'blocked'>('weekly')
   
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
   // Weekly state
@@ -28,51 +31,38 @@ export default function VenueCalendarManagement() {
   const [startsTime, setStartsTime] = useState('09:00:00')
   const [endsTime, setEndsTime] = useState('17:00:00')
 
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ['calendar-data', venueId],
+    queryFn: async () => {
+      if (!venueId) return null
+      const client = createClient()
+      const [availData, blockedData] = await Promise.all([
+        venueEndpoints(client).getVenueAvailability(venueId),
+        venueEndpoints(client).getBlockedDates(venueId)
+      ])
+      return { availData, blockedData }
+    },
+    enabled: !!venueId,
+  })
+
   useEffect(() => {
-    async function loadData() {
-      if (!venueId) return
-      setLoading(true)
-      try {
-        const client = createClient()
-        const [availData, blockedData] = await Promise.all([
-          venueEndpoints(client).getVenueAvailability(venueId),
-          venueEndpoints(client).getBlockedDates(venueId)
-        ])
-        
-        // Always show all 7 days; merge backend data over defaults
-        const defaults: Availability[] = DAYS_OF_WEEK.map((_, idx) => ({
-          day_of_week: idx,
-          is_available: true,
-          opens_at: '09:00:00',
-          closes_at: '18:00:00',
-          spans_next_day: false,
-        }))
-
-        const merged = defaults.map(def => {
-          const existing = availData?.find(a => a.day_of_week === def.day_of_week)
-          return existing ? {
-            day_of_week: existing.day_of_week,
-            is_available: existing.is_available,
-            opens_at: existing.opens_at,
-            closes_at: existing.closes_at,
-            spans_next_day: existing.spans_next_day,
-          } : def
-        })
-
-        setAvailabilities(merged)
-        
-        if (blockedData) {
-          setBlockedDates(blockedData)
-        }
-      } catch (err: unknown) {
-        console.error("Failed to fetch calendar data", err)
-        setError(err instanceof Error ? err.message : 'Failed to load calendar data.')
-      } finally {
-        setLoading(false)
-      }
+    if (data) {
+      const { availData, blockedData } = data
+      const defaults: Availability[] = DAYS_OF_WEEK.map((_, idx) => ({
+        day_of_week: idx,
+        is_available: true,
+        opens_at: '09:00:00',
+        closes_at: '18:00:00',
+        spans_next_day: false,
+      }))
+      const merged = defaults.map(def => {
+        const existing = availData?.find(a => a.day_of_week === def.day_of_week)
+        return existing ? { ...def, ...existing } : def
+      })
+      setAvailabilities(merged)
+      if (blockedData) setBlockedDates(blockedData)
     }
-    loadData()
-  }, [venueId])
+  }, [data])
 
   const handleWeeklyChange = (index: number, field: keyof Availability, value: string | boolean | null) => {
     setAvailabilities(prev => {
@@ -132,7 +122,7 @@ export default function VenueCalendarManagement() {
         } : def
       })
       setAvailabilities(merged)
-      alert("Weekly schedule saved successfully.")
+      toast.success("Weekly schedule saved successfully.")
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to save schedule")
     } finally {
@@ -182,12 +172,13 @@ export default function VenueCalendarManagement() {
   }
 
   const handleDeleteBlockedDate = async (id: string) => {
-    if (!venueId || !window.confirm("Are you sure you want to unblock this date?")) return
+    if (!venueId || !(await confirmAction("Are you sure you want to unblock this date?"))) return
     setError(null)
     try {
       const client = createClient()
       await venueEndpoints(client).deleteBlockedDate(venueId, id)
       setBlockedDates(prev => prev.filter(b => b.id !== id))
+      toast.success("Blocked date removed.")
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to unblock date")
     }
@@ -227,17 +218,18 @@ export default function VenueCalendarManagement() {
     )
   }
 
-  return (
-    <div className="space-y-6 pb-12 max-w-5xl mx-auto">
-      <Link to={`/venues/${venueId}/overview`} className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors">
-        <ArrowLeft className="h-4 w-4" />
-        Back to Overview
-      </Link>
+  const portalTarget = typeof document !== 'undefined' ? document.getElementById('topbar-portal-target') : null;
 
-      <SectionHeader 
-        title="Calendar & Availability" 
-        description="Manage your regular weekly hours and set specific dates when your venue is unavailable." 
-      />
+  return (
+    <div className="space-y-6 pb-12 max-w-5xl mx-auto pt-6">
+      {portalTarget && createPortal(
+        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1.5 bg-white border border-zinc-200 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Overview
+        </Link>,
+        portalTarget
+      )}
+
 
       {error && (
         <div className="p-4 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
@@ -346,55 +338,71 @@ export default function VenueCalendarManagement() {
 
       {/* Blocked Dates */}
       {activeTab === 'blocked' && (
-        <div className="space-y-8">
-          <Card className="p-6">
-            <h4 className="font-medium text-zinc-900 mb-4">Add Blocked Date</h4>
-            <form onSubmit={handleAddBlockedDate}>
-              <div className="grid grid-cols-1 md:grid-cols-2 items-start bg-zinc-50 rounded-lg border border-zinc-200 divide-y md:divide-y-0 md:divide-x divide-zinc-200">
-                <div className="space-y-4 p-6">
-                  <h5 className="text-sm font-medium text-zinc-900 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded bg-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-500">1</span>
-                    Start Range
-                  </h5>
-                  <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-10">
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h4 className="text-lg font-semibold text-zinc-900">Add Blocked Date</h4>
+                <p className="text-sm text-zinc-500">Prevent bookings for specific time periods</p>
+              </div>
+            </div>
+            
+            <form onSubmit={handleAddBlockedDate} className="bg-white p-6 md:p-8 rounded-2xl border border-zinc-200 shadow-sm space-y-8 relative overflow-hidden">
+              {/* Subtle background gradient blob */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+                {/* Start Range */}
+                <div className="space-y-5 p-5 bg-gradient-to-br from-zinc-50 to-white rounded-xl border border-zinc-100 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+                  <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                    <span className="w-7 h-7 rounded-full bg-brand/10 flex items-center justify-center text-sm font-bold text-brand">1</span>
+                    <h5 className="font-semibold text-zinc-900">Start Range</h5>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <Input label="Date" name="starts_date" type="date" required />
                     <TimeSelect label="Time" name="starts_time" value={startsTime} onChange={(e) => setStartsTime(e.target.value)} required />
                   </div>
                 </div>
 
-                <div className="space-y-4 p-6">
-                  <h5 className="text-sm font-medium text-zinc-900 flex items-center gap-2">
-                    <span className="w-6 h-6 rounded bg-zinc-200 flex items-center justify-center text-xs font-bold text-zinc-500">2</span>
-                    End Range
-                  </h5>
-                  <div className="grid grid-cols-2 gap-3">
+                {/* End Range */}
+                <div className="space-y-5 p-5 bg-gradient-to-br from-zinc-50 to-white rounded-xl border border-zinc-100 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+                  <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                    <span className="w-7 h-7 rounded-full bg-brand/10 flex items-center justify-center text-sm font-bold text-brand">2</span>
+                    <h5 className="font-semibold text-zinc-900">End Range</h5>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <Input label="Date" name="ends_date" type="date" required />
                     <TimeSelect label="Time" name="ends_time" value={endsTime} onChange={(e) => setEndsTime(e.target.value)} required />
                   </div>
                 </div>
               </div>
               
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div className="md:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end relative">
+                <div className="md:col-span-9">
                   <Input label="Reason (Optional)" name="reason" placeholder="e.g. Maintenance, Private Event, Renovation" />
                 </div>
-                <Button type="submit" variant="primary" disabled={addingBlock} className="w-full h-[42px]">
-                  {addingBlock ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  {addingBlock ? 'Adding...' : 'Block Date'}
-                </Button>
+                <div className="md:col-span-3">
+                  <Button type="submit" variant="primary" disabled={addingBlock} className="w-full h-10 shadow-md hover:shadow-lg transition-shadow bg-zinc-900 hover:bg-zinc-800 text-white border-transparent">
+                    {addingBlock ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Ban className="h-4 w-4 mr-2 opacity-70" />}
+                    {addingBlock ? 'Adding...' : 'Block Date'}
+                  </Button>
+                </div>
               </div>
             </form>
-          </Card>
+          </section>
 
-          <div>
-            <h4 className="font-medium text-zinc-900 mb-4">Upcoming Blocked Dates</h4>
+          <section>
+            <h4 className="text-lg font-semibold text-zinc-900 mb-6">Upcoming Blocked Dates</h4>
             {blockedDates.length === 0 ? (
-              <div className="text-center py-8 text-zinc-500 bg-zinc-50 rounded-lg border border-zinc-200">
-                <Ban className="h-8 w-8 mx-auto text-zinc-300 mb-2" />
-                <p>No upcoming blocked dates.</p>
+              <div className="flex flex-col items-center justify-center py-16 px-4 bg-zinc-50/50 rounded-2xl border-2 border-dashed border-zinc-200">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 border border-zinc-100">
+                  <Ban className="h-8 w-8 text-zinc-300" />
+                </div>
+                <p className="text-zinc-600 font-medium">No upcoming blocked dates.</p>
+                <p className="text-sm text-zinc-400 mt-1 max-w-sm text-center">Dates you block will appear here so you can easily unblock them later.</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
                 {blockedDates.map(block => {
                   const start = new Date(block.starts_at)
                   const end = new Date(block.ends_at)
@@ -402,42 +410,47 @@ export default function VenueCalendarManagement() {
                   const timeOpts: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit' }
                   
                   return (
-                    <div key={block.id} className="group flex flex-col md:flex-row justify-between md:items-center p-5 bg-white border border-zinc-200 rounded-xl shadow-sm hover:border-red-200 hover:shadow-md transition-all duration-300">
-                      <div className="flex items-start gap-4">
-                        <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-red-50 text-red-500 shrink-0">
+                    <div key={block.id} className="group relative flex flex-col md:flex-row justify-between md:items-center p-5 pl-6 bg-white border border-zinc-200 rounded-xl shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-all duration-300 overflow-hidden">
+                      {/* Left border accent */}
+                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
+
+                      <div className="flex items-start gap-5">
+                        <div className="hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-red-50 border border-red-100 text-red-500 shrink-0">
                           <Ban className="w-5 h-5" />
                         </div>
                         <div>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-zinc-900 font-semibold mb-1">
-                            <div className="flex items-center gap-1.5">
-                              <span>{start.toLocaleString('en-US', dateOpts)}</span>
-                              <span className="text-zinc-400 font-normal">at</span>
-                              <span className="text-brand">{start.toLocaleString('en-US', timeOpts)}</span>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-zinc-900 mb-2">
+                            <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-zinc-100">
+                              <span className="font-semibold">{start.toLocaleString('en-US', dateOpts)}</span>
+                              <span className="text-zinc-400 text-sm font-normal">at</span>
+                              <span className="font-medium text-brand">{start.toLocaleString('en-US', timeOpts)}</span>
                             </div>
                             <ArrowRight className="w-4 h-4 text-zinc-300 hidden md:block" />
-                            <div className="flex items-center gap-1.5">
-                              <span>{end.toLocaleString('en-US', dateOpts)}</span>
-                              <span className="text-zinc-400 font-normal">at</span>
-                              <span className="text-brand">{end.toLocaleString('en-US', timeOpts)}</span>
+                            <div className="flex items-center gap-2 bg-zinc-50 px-3 py-1.5 rounded-lg border border-zinc-100">
+                              <span className="font-semibold">{end.toLocaleString('en-US', dateOpts)}</span>
+                              <span className="text-zinc-400 text-sm font-normal">at</span>
+                              <span className="font-medium text-brand">{end.toLocaleString('en-US', timeOpts)}</span>
                             </div>
                           </div>
                           
                           {block.reason ? (
-                            <div className="text-sm text-zinc-500 flex items-center gap-1.5">
+                            <div className="text-sm text-zinc-600 flex items-center gap-2 mt-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
                               <span>{block.reason}</span>
                             </div>
                           ) : (
-                            <div className="text-sm text-zinc-400 italic flex items-center gap-1.5">
+                            <div className="text-sm text-zinc-400 italic flex items-center gap-2 mt-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-zinc-200"></span>
                               <span>No specific reason provided</span>
                             </div>
                           )}
                         </div>
                       </div>
+                      
+                      {/* Subtly visible Unblock button (not hidden on mobile) */}
                       <button 
                         onClick={() => handleDeleteBlockedDate(block.id)}
-                        className="mt-4 md:mt-0 self-start md:self-center flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors md:opacity-0 group-hover:opacity-100 focus:opacity-100 shrink-0"
+                        className="mt-5 md:mt-0 self-start md:self-center flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50/50 hover:bg-red-50 border border-transparent hover:border-red-100 px-4 py-2.5 rounded-lg transition-all shrink-0"
                         title="Unblock date"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -448,7 +461,7 @@ export default function VenueCalendarManagement() {
                 })}
               </div>
             )}
-          </div>
+          </section>
         </div>
       )}
     </div>
