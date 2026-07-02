@@ -13,6 +13,13 @@ from app.modules.auth.models import User, UserRole
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SEED_USERS = [
+
+    {
+        "name": "abin",
+        "email": "abin@gmail.com",
+        "role": UserRole.USER.value,
+        "is_active": True,
+    },
     {
         "name": "Alan User",
         "email": "alan@gmail.com",
