@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { BookingStatus,  prisma, VerificationStatus } from "@bookmyvenue/database";
-import { CreateVenueBody, EditVenueBody, GetVenuesQuery } from "@bookmyvenue/types";
+import { BookingStatus, prisma, VerificationStatus } from "@bookmyvenue/database";
+import { CreateVenueBody, EditVenueBody, GetVenuesQuery, SessionInput } from "@bookmyvenue/types";
 import { fetchVenues, formatVenue, OWNER_VENUE_LIST_SELECT, toSmallUnit } from "../services/venue.service";
 
 // Get all approved venues
@@ -205,6 +205,7 @@ export const editVenue = async (
     }
 
     await prisma.$transaction(async (tx) => {
+        // Update venue
         await tx.venue.update({
             where: { id: venueId },
             data: {
@@ -216,49 +217,42 @@ export const editVenue = async (
                 category: body.category,
                 location: body.location,
                 district: body.district,
+
+                ...(venue.verificationStatus === VerificationStatus.REJECTED && {
+                    verificationStatus: VerificationStatus.PENDING,
+                    verificationReason: null,
+                }),
             },
         });
 
-        const existingIds = venue.sessions.map((s) => s.id);
+        const existingSessions = body.sessions.filter(
+            (session): session is SessionInput & { id: number } => session.id !== undefined,
+        );
 
-        const incomingIds = body.sessions.filter((s) => s.id).map((s) => s.id!);
-
-        // Deactivate removed sessions
-        await tx.venueSession.updateMany({
-            where: {
-                id: {
-                    in: existingIds.filter((id) => !incomingIds.includes(id)),
-                },
-            },
-            data: {
-                isActive: false,
-            },
-        });
-
-        if (incomingIds.length) {
-            await tx.venueSession.updateMany({
-                where: {
-                    id: {
-                        in: incomingIds,
+        await Promise.all(
+            existingSessions.map((session) =>
+                tx.venueSession.update({
+                    where: {
+                        id: session.id,
                     },
-                },
-                data: {
-                    isActive: true,
-                },
-            });
-        }
+                    data: {
+                        isActive: session.isActive,
+                    },
+                }),
+            ),
+        );
 
-        // Create  new sessions
-        const newSessions = body.sessions.filter((s) => !s.id);
+        const newSessions = body.sessions.filter((session) => !session.id);
 
-        if (newSessions.length) {
+        if (newSessions.length > 0) {
             await tx.venueSession.createMany({
-                data: newSessions.map((s) => ({
+                data: newSessions.map((session) => ({
                     venueId,
-                    label: s.label,
-                    startTime: s.startTime,
-                    endTime: s.endTime,
-                    price: toSmallUnit(s.price),
+                    label: session.label,
+                    startTime: session.startTime,
+                    endTime: session.endTime,
+                    price: toSmallUnit(session.price),
+                    isActive: true,
                 })),
             });
         }

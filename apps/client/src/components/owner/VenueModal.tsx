@@ -157,6 +157,10 @@ const VenueModal = ({ mode, venue, onClose }: VenueModalProps) => {
             sessions: form.sessions,
         };
 
+        console.log({payload});
+  
+        
+
         if (mode === "CREATE") {
             createVenue(payload, {
                 onSuccess: () => {

@@ -35,10 +35,10 @@ export default function RootLayout({
                         <Navbar />
                         <main className="flex-1">{children}</main>
                         <Footer />
+                        <Toaster position="top-right" richColors />
                     </body>
                 </QueryProvider>
             </ClerkProvider>
-            <Toaster position="top-right" richColors />
         </html>
     );
 }

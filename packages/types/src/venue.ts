@@ -35,6 +35,7 @@ export interface SessionInput {
     startTime: string;
     endTime: string;
     price: number;
+    isActive?: boolean
 }
 
 

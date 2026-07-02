@@ -32,6 +32,16 @@ export const OWNER_VENUE_LIST_SELECT = {
     verificationStatus: true,
     verificationReason: true,
     isActive: true,
+    sessions: {
+        select: {
+            id: true,
+            label: true,
+            startTime: true,
+            endTime: true,
+            price: true,
+            isActive: true,
+        },
+    },
     _count: {
         select: {
             bookings: true,
