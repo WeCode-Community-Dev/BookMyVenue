@@ -7,7 +7,19 @@ import LoginPage from "./pages/LoginPage";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import DashboardPage from "./pages/DashboardPage";
 import RequireAuth from "./components/RequireAuth";
-import MyBookingsPage from "./pages/MyBookingsPage";
+import RequireAdmin from "./components/RequireAdmin";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminLoginPage from "./pages/admin/AdminLoginPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import PendingVenuesPage from "./pages/admin/PendingVenuesPage";
+import VenuesPage from "./pages/admin/VenuesPage";
+import VenueEditPage from "./pages/admin/VenueEditPage";
+import VenueCreatePage from "./pages/admin/VenueCreatePage";
+import BookingsPage from "./pages/admin/BookingsPage";
+import UsersPage from "./pages/admin/UsersPage";
+import UserCreatePage from "./pages/admin/UserCreatePage";
+import UserEditPage from "./pages/admin/UserEditPage";
+import OrderHistoryPage from "./pages/OrderHistoryPage";
 import BookingDetailPage from "./pages/BookingDetailPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import VenueListPage from "./modules/venues/pages/VenueListPage";
@@ -47,12 +59,29 @@ function App() {
             <Route path="/my-venues" element={<MyVenuesPage />} />
             <Route path="/venues/add" element={<AddVenuePage />} />
             <Route path="/venues/:id/edit" element={<EditVenuePage />} />
+            <Route path="/order-history" element={<OrderHistoryPage />} />
+            <Route path="/my-bookings" element={<OrderHistoryPage />} />
+            <Route path="/bookings/:id" element={<BookingDetailPage />} />
+            <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
           </Route>
           <Route path="/venues" element={<VenueListPage />} />
           <Route path="/venues/:id" element={<VenueDetailPage />} />
-          <Route path="/my-bookings" element={<MyBookingsPage />} />
-          <Route path="/bookings/:id" element={<BookingDetailPage />} />
-          <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
+
+          {/* superadmin panel routes */}
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route element={<RequireAdmin />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/admin/pending" element={<PendingVenuesPage />} />
+              <Route path="/admin/venues" element={<VenuesPage />} />
+              <Route path="/admin/venues/new" element={<VenueCreatePage />} />
+              <Route path="/admin/venues/:id/edit" element={<VenueEditPage />} />
+              <Route path="/admin/bookings" element={<BookingsPage />} />
+              <Route path="/admin/users" element={<UsersPage />} />
+              <Route path="/admin/users/new" element={<UserCreatePage />} />
+              <Route path="/admin/users/:id/edit" element={<UserEditPage />} />
+            </Route>
+          </Route>
         </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>
