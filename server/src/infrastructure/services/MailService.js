@@ -4,6 +4,7 @@ import { vendorApprovalTemplate } from "../emailTemplates/admin.vendorApprovalTe
 import { vendorRejectionTemplate } from "../emailTemplates/admin.vendorRejectionTemplate.js";
 import { adminVenueApprovalTemplate } from "../emailTemplates/admin.venueApprovalTemplate.js";
 import { adminVenueRejectionTemplate } from "../emailTemplates/admin.venueRejectionTemplate.js";
+import { emailChangeOtpTemplate } from "../emailTemplates/user.emailChangeOtpTemplate.js";
 
 export class MailServiceImpl extends MailService {
 
@@ -65,33 +66,58 @@ export class MailServiceImpl extends MailService {
 
     });
 
-}
+    }
 
-async sendVenueRejectionMail(venue, reason) {
+    async sendVenueRejectionMail(venue, reason) {
 
-    const { subject, html } =
-        adminVenueRejectionTemplate({
+        const { subject, html } =
+            adminVenueRejectionTemplate({
 
-            venueName: venue.name,
-            vendorName: venue.vendorId.fullName,
-            reason
+                venueName: venue.name,
+                vendorName: venue.vendorId.fullName,
+                reason
+
+            });
+
+        await transporter.sendMail({
+
+            from: process.env.EMAIL_USER,
+
+            to: venue.vendorId.email,
+
+            subject,
+
+            html
 
         });
 
-    await transporter.sendMail({
+        console.log("Venue rejection mail sent.");
 
-        from: process.env.EMAIL_USER,
+    }
+    async sendEmailChangeOtp(email, otp) {
 
-        to: venue.vendorId.email,
+        const { subject, html } =
+            emailChangeOtpTemplate({ otp });
 
-        subject,
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject,
+            html
+        });
+    }
 
-        html
+    async resendEmailChangeOtp(email, otp) {
 
-    });
+        const { subject, html } =
+            emailChangeOtpTemplate({ otp });
 
-    console.log("Venue rejection mail sent.");
-
-}
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject,
+            html
+        });
+    }
 
 }

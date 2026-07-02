@@ -1,5 +1,7 @@
+import { UserMessage } from "../../../../shared/constants/messages/userMessages.js";
 import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
 import { ValidationError } from "../../../../domain/errors/ValidationError.js";
+
 
 export class UserUpdateProfileImageUsecase {
 
@@ -12,17 +14,21 @@ export class UserUpdateProfileImageUsecase {
         const user = await this._userRepository.findById(userId);
 
         if(!user){
-            throw new NotFoundError("User not found");
+            throw new NotFoundError(
+            UserMessage.error.USER_NOT_FOUND
+        );
         }
 
         if(user.isBlocked){
             throw new ValidationError(
-                "Blocked users cannot update profile image"
-            );
+            UserMessage.error.USER_BLOCKED_UPDATE_PROFILE_IMAGE
+        );
         }
 
         if(!profileImage){
-            throw new ValidationError("Profile image is required");
+            throw new ValidationError(
+            UserMessage.error.PROFILE_IMAGE_REQUIRED
+        );
         }
 
         const updatedUser = await this._userRepository.updateProfileImage(

@@ -49,10 +49,25 @@ export const ROUTES = {
         DASHBOARD: '/dashboard'
     },
     USER: {
-        VENUE: {
-            GET_ALL: '/venues',
-            GET_BY_ID: '/venue/:venueId',
-            TOP_VENUES: '/top-venues',
-        }
-    }
+    VENUE: {
+        GET_ALL: "/venues",
+        GET_BY_ID: "/venue/:venueId",
+        TOP_VENUES: "/top-venues",
+    },
+    PROFILE: {
+        PROFILE: "/profile",
+        REQUEST_EMAIL_CHANGE_OTP: "/profile/email/request-otp",
+        VERIFY_EMAIL_CHANGE_OTP: "/profile/email/verify-otp",
+        RESEND_EMAIL_CHANGE_OTP: "/profile/email/resend-otp",
+        PROFILE_IMAGE: "/profile/image",
+    },
+    WISHLIST: {
+        WISHLIST: "/wishlist/:venueId",
+        GET: "/wishlist",
+    },
+    ACCOUNT: {
+        UPDATE_STATUS: "/account/status",
+    },
+}
+   
 }
