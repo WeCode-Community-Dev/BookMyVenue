@@ -15,7 +15,7 @@ async function searchVenues(params: URLSearchParams) {
   if (params.get('city')) query.city = params.get('city')!
   if (params.get('venue_type')) query.venue_type = params.get('venue_type')!
   if (params.get('capacity')) query.capacity = params.get('capacity')!
-  return venueEndpoints(client).search(query)
+  return venueEndpoints(client).hybrid_search(query)
 }
 
 export default function Search() {
