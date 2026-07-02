@@ -20,12 +20,12 @@ func (r *repository) getAllVenues(ctx context.Context) ([]sqlc.Venue, error) {
 	return r.db.GetAllVenues(ctx)
 }
 
-func (r *repository) getAmenitiesForVenue(ctx context.Context, venueID pgtype.UUID) ([]sqlc.Amenity, error) {
-	return r.db.GetAmenitiesForVenue(ctx, venueID)
+func (r *repository) getVenueAmenitiesByVenueIDs(ctx context.Context, venueIDs []pgtype.UUID) ([]sqlc.GetVenueAmenitiesByVenueIDsRow, error) {
+	return r.db.GetVenueAmenitiesByVenueIDs(ctx, venueIDs)
 }
 
-func (r *repository) getVenueImagesByVenueID(ctx context.Context, venueID pgtype.UUID) ([]sqlc.VenueImage, error) {
-	return r.db.GetVenueImages(ctx, venueID)
+func (r *repository) getVenueImagesByVenueIDs(ctx context.Context, imageIDs []pgtype.UUID) ([]sqlc.VenueImage, error) {
+	return r.db.GetVenueImagesByVenueIDs(ctx, imageIDs)
 }
 
 func (r *repository) getVenueByID(ctx context.Context, venueID string) (sqlc.Venue, error) {

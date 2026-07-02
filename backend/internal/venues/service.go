@@ -3,7 +3,6 @@ package venues
 import (
 	"context"
 	"errors"
-	"fmt"
 	"mime/multipart"
 	"strings"
 
@@ -134,8 +133,6 @@ func (s *service) uploadImage(ctx *gin.Context, venueID, ownerID string, file *m
 }
 
 func (s *service) viewRejectedVenues(ctx context.Context, ownerID string) (*viewVenuesResponse, error) {
-	// TODO: Optimize by fetching amenities for all venues in a single query
-	// instead of querying each venue individually inside the loop.
 	venues, err := s.repo.getRejectedVenuesByOwnerID(ctx, ownerID)
 	if err != nil {
 		return nil, err
@@ -145,30 +142,40 @@ func (s *service) viewRejectedVenues(ctx context.Context, ownerID string) (*view
 		return nil, errors.New("No Rejected Venues")
 	}
 
+	var venueIDs []pgtype.UUID
+	amenityMap := make(map[pgtype.UUID][]string)
+	imageMap := make(map[pgtype.UUID][]string)
+
+	for _, venue := range venues {
+		venueIDs = append(venueIDs, venue.ID)
+	}
+
+	amenities, err := s.repo.getVenueAmenitiesByVenueIDs(ctx, venueIDs)
+	if err != nil {
+		return nil, errors.New("cannot fetch amenities")
+	}
+
+	images, err := s.repo.getVenueImagesByVenueIDs(ctx, venueIDs)
+	if err != nil {
+		return nil, errors.New("Cannot fetch images")
+	}
+
+	for _, amenity := range amenities {
+		amenityMap[amenity.VenueID] = append(amenityMap[amenity.VenueID], amenity.Name)
+	}
+
+	for _, image := range images {
+		imgURL := strings.TrimPrefix(image.ImageUrl, "./internal/venues")
+		imageMap[image.VenueID] = append(imageMap[image.VenueID], imgURL)
+	}
+
 	rejectedVenues := &viewVenuesResponse{}
 
 	for _, venue := range venues {
-		amenities, err := s.repo.getAmenitiesForVenue(ctx, venue.ID)
-		if err != nil {
-			return nil, errors.New("Cannot fetch amenities")
-		}
-
-		images, err := s.repo.getVenueImagesByVenueID(ctx, venue.ID)
-		if err != nil {
-			return nil, errors.New("Cannot fetch images")
-		}
-
-		var imgURLS []string
-		for _, img := range images {
-			imgURL := strings.TrimPrefix(img.ImageUrl, "./internal/venues")
-			imgURLS = append(imgURLS, imgURL)
-		}
-		fmt.Println(venue.ID)
-
 		rejectedVenues.Venues = append(rejectedVenues.Venues, venueWithAmenitiesAndImages{
 			Venue:     venue,
-			Amenities: amenities,
-			Images:    imgURLS,
+			Amenities: amenityMap[venue.ID],
+			Images:    imageMap[venue.ID],
 		})
 	}
 
@@ -176,93 +183,109 @@ func (s *service) viewRejectedVenues(ctx context.Context, ownerID string) (*view
 }
 
 func (s *service) viewPendingVenues(ctx context.Context, ownerID string) (*viewVenuesResponse, error) {
-	// TODO: Optimize by fetching amenities for all venues in a single query
-	// instead of querying each venue individually inside the loop.
 	venues, err := s.repo.getPendingVenuesByOwnerID(ctx, ownerID)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(venues) == 0 {
-		return nil, errors.New("No Rejected Venues")
+		return nil, errors.New("No Pending Venues")
 	}
 
-	rejectedVenues := &viewVenuesResponse{}
+	var venueIDs []pgtype.UUID
+	amenityMap := make(map[pgtype.UUID][]string)
+	imageMap := make(map[pgtype.UUID][]string)
 
 	for _, venue := range venues {
-		amenities, err := s.repo.getAmenitiesForVenue(ctx, venue.ID)
-		if err != nil {
-			return nil, errors.New("Cannot fetch amenities")
-		}
+		venueIDs = append(venueIDs, venue.ID)
+	}
 
-		images, err := s.repo.getVenueImagesByVenueID(ctx, venue.ID)
-		if err != nil {
-			return nil, errors.New("Cannot fetch images")
-		}
+	amenities, err := s.repo.getVenueAmenitiesByVenueIDs(ctx, venueIDs)
+	if err != nil {
+		return nil, errors.New("cannot fetch amenities")
+	}
 
-		var imgURLS []string
-		for _, img := range images {
-			imgURL := strings.TrimPrefix(img.ImageUrl, "./internal/venues")
-			imgURLS = append(imgURLS, imgURL)
-		}
-		fmt.Println(venue.ID)
+	images, err := s.repo.getVenueImagesByVenueIDs(ctx, venueIDs)
+	if err != nil {
+		return nil, errors.New("Cannot fetch images")
+	}
 
-		rejectedVenues.Venues = append(rejectedVenues.Venues, venueWithAmenitiesAndImages{
+	for _, amenity := range amenities {
+		amenityMap[amenity.VenueID] = append(amenityMap[amenity.VenueID], amenity.Name)
+	}
+
+	for _, image := range images {
+		imgURL := strings.TrimPrefix(image.ImageUrl, "./internal/venues")
+		imageMap[image.VenueID] = append(imageMap[image.VenueID], imgURL)
+	}
+
+	pendingVenues := &viewVenuesResponse{}
+
+	for _, venue := range venues {
+		pendingVenues.Venues = append(pendingVenues.Venues, venueWithAmenitiesAndImages{
 			Venue:     venue,
-			Amenities: amenities,
-			Images:    imgURLS,
+			Amenities: amenityMap[venue.ID],
+			Images:    imageMap[venue.ID],
 		})
 	}
 
-	return rejectedVenues, nil
+	return pendingVenues, nil
 }
 
 func (s *service) viewApprovedVenues(ctx context.Context, ownerID string) (*viewVenuesResponse, error) {
-	// TODO: Optimize by fetching amenities for all venues in a single query
-	// instead of querying each venue individually inside the loop.
 	venues, err := s.repo.getApprovedVenuesByOwnerID(ctx, ownerID)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(venues) == 0 {
-		return nil, errors.New("No Rejected Venues")
+		return nil, errors.New("No Approved Venues")
 	}
 
-	rejectedVenues := &viewVenuesResponse{}
+	var venueIDs []pgtype.UUID
+	amenityMap := make(map[pgtype.UUID][]string)
+	imageMap := make(map[pgtype.UUID][]string)
 
 	for _, venue := range venues {
-		amenities, err := s.repo.getAmenitiesForVenue(ctx, venue.ID)
-		if err != nil {
-			return nil, errors.New("Cannot fetch amenities")
-		}
+		venueIDs = append(venueIDs, venue.ID)
+	}
 
-		images, err := s.repo.getVenueImagesByVenueID(ctx, venue.ID)
-		if err != nil {
-			return nil, errors.New("Cannot fetch images")
-		}
+	amenities, err := s.repo.getVenueAmenitiesByVenueIDs(ctx, venueIDs)
+	if err != nil {
+		return nil, errors.New("cannot fetch amenities")
+	}
 
-		var imgURLS []string
-		for _, img := range images {
-			imgURL := strings.TrimPrefix(img.ImageUrl, "./internal/venues")
-			imgURLS = append(imgURLS, imgURL)
-		}
-		fmt.Println(venue.ID)
+	images, err := s.repo.getVenueImagesByVenueIDs(ctx, venueIDs)
+	if err != nil {
+		return nil, errors.New("Cannot fetch images")
+	}
 
-		rejectedVenues.Venues = append(rejectedVenues.Venues, venueWithAmenitiesAndImages{
+	for _, amenity := range amenities {
+		amenityMap[amenity.VenueID] = append(amenityMap[amenity.VenueID], amenity.Name)
+	}
+
+	for _, image := range images {
+		imgURL := strings.TrimPrefix(image.ImageUrl, "./internal/venues")
+		imageMap[image.VenueID] = append(imageMap[image.VenueID], imgURL)
+	}
+
+	approvedVenues := &viewVenuesResponse{}
+
+	for _, venue := range venues {
+		approvedVenues.Venues = append(approvedVenues.Venues, venueWithAmenitiesAndImages{
 			Venue:     venue,
-			Amenities: amenities,
-			Images:    imgURLS,
+			Amenities: amenityMap[venue.ID],
+			Images:    imageMap[venue.ID],
 		})
 	}
 
-	return rejectedVenues, nil
+	return approvedVenues, nil
 }
 
 type venueWithAmenitiesAndImages struct {
-	Venue     sqlc.Venue     `json:"venue"`
-	Amenities []sqlc.Amenity `json:"amenities"`
-	Images    []string       `json:"images"`
+	Venue     sqlc.Venue `json:"venue"`
+	Amenities []string   `json:"amenities"`
+	Images    []string   `json:"images"`
 }
 
 type viewVenuesResponse struct {

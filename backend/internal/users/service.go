@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 	"strings"
 
@@ -22,8 +21,6 @@ func newService(db *sqlc.Queries) *service {
 }
 
 func (s *service) viewVenues(ctx context.Context) (*viewVenuesResponse, error) {
-	// TODO: Optimize by fetching amenities for all venues in a single query
-	// instead of querying each venue individually inside the loop.
 	venues, err := s.repo.getAllVenues(ctx)
 	if err != nil {
 		return nil, errors.New("Cannot get venues: " + err.Error())
@@ -33,34 +30,44 @@ func (s *service) viewVenues(ctx context.Context) (*viewVenuesResponse, error) {
 		return nil, errors.New("No Rejected Venues")
 	}
 
-	rejectedVenues := &viewVenuesResponse{}
+	var venueIDs []pgtype.UUID
+	amenityMap := make(map[pgtype.UUID][]string)
+	imageMap := make(map[pgtype.UUID][]string)
 
 	for _, venue := range venues {
-		amenities, err := s.repo.getAmenitiesForVenue(ctx, venue.ID)
-		if err != nil {
-			return nil, errors.New("Cannot fetch amenities")
-		}
+		venueIDs = append(venueIDs, venue.ID)
+	}
 
-		images, err := s.repo.getVenueImagesByVenueID(ctx, venue.ID)
-		if err != nil {
-			return nil, errors.New("Cannot fetch images")
-		}
+	amenities, err := s.repo.getVenueAmenitiesByVenueIDs(ctx, venueIDs)
+	if err != nil {
+		return nil, errors.New("cannot fetch amenities")
+	}
 
-		var imgURLS []string
-		for _, img := range images {
-			imgURL := strings.TrimPrefix(img.ImageUrl, "./internal/venues")
-			imgURLS = append(imgURLS, imgURL)
-		}
-		fmt.Println(venue.ID)
+	images, err := s.repo.getVenueImagesByVenueIDs(ctx, venueIDs)
+	if err != nil {
+		return nil, errors.New("Cannot fetch images")
+	}
 
-		rejectedVenues.Venues = append(rejectedVenues.Venues, venueWithAmenitiesAndImages{
+	for _, amenity := range amenities {
+		amenityMap[amenity.VenueID] = append(amenityMap[amenity.VenueID], amenity.Name)
+	}
+
+	for _, image := range images {
+		imgURL := strings.TrimPrefix(image.ImageUrl, "./internal/venues")
+		imageMap[image.VenueID] = append(imageMap[image.VenueID], imgURL)
+	}
+
+	allVenues := &viewVenuesResponse{}
+
+	for _, venue := range venues {
+		allVenues.Venues = append(allVenues.Venues, venueWithAmenitiesAndImages{
 			Venue:     venue,
-			Amenities: amenities,
-			Images:    imgURLS,
+			Amenities: amenityMap[venue.ID],
+			Images:    imageMap[venue.ID],
 		})
 	}
 
-	return rejectedVenues, nil
+	return allVenues, nil
 }
 
 func (s *service) viewVenueByVenueID(ctx context.Context, venueID string) (sqlc.Venue, error) {
@@ -122,9 +129,9 @@ func (s *service) getBookedVenues(ctx context.Context, userID string) (*bookedVe
 }
 
 type venueWithAmenitiesAndImages struct {
-	Venue     sqlc.Venue     `json:"venue"`
-	Amenities []sqlc.Amenity `json:"amenities"`
-	Images    []string       `json:"images"`
+	Venue     sqlc.Venue `json:"venue"`
+	Amenities []string   `json:"amenities"`
+	Images    []string   `json:"images"`
 }
 
 type viewVenuesResponse struct {

@@ -46,7 +46,6 @@
 
         venueData.data.venues.forEach(element => {
             const row = document.createElement("tr");
-            const amenitiesString = element.amenities.map(amenity => amenity.name).join(", ")
             // TODO: Implement support for rendering all uploaded venue images (currently only the first image is displayed).
             const imagePath = element.images?.[0] ?? null
             // console.log(amenitiesString)
@@ -61,7 +60,7 @@
                 <td>${element.venue.capacity}</td>
                 <td>${element.venue.price_per_hour}</td>
                 <td>${element.venue.price_per_day}</td>
-                <td>${amenitiesString}</td>
+                <td>${element.amenities.join(", ")}</td>
                 <td><img src="${imagePath}" width="100" height="100"></td>
                 <td>${element.venue.status}</td>
                 <td><a href=/owner/venues/${element.venue.id}/setslot>set slot</a></td>

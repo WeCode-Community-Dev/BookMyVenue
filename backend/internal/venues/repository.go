@@ -54,12 +54,12 @@ func (r *repository) getRejectedVenuesByOwnerID(ctx context.Context, ownerID str
 	return r.db.GetRejectedVenuesByOwnerID(ctx, UUID)
 }
 
-func (r *repository) getAmenitiesForVenue(ctx context.Context, venueID pgtype.UUID) ([]sqlc.Amenity, error) {
-	return r.db.GetAmenitiesForVenue(ctx, venueID)
+func (r *repository) getVenueAmenitiesByVenueIDs(ctx context.Context, venueIDs []pgtype.UUID) ([]sqlc.GetVenueAmenitiesByVenueIDsRow, error) {
+	return r.db.GetVenueAmenitiesByVenueIDs(ctx, venueIDs)
 }
 
-func (r *repository) getVenueImagesByVenueID(ctx context.Context, venuID pgtype.UUID) ([]sqlc.VenueImage, error) {
-	return r.db.GetVenueImages(ctx, venuID)
+func (r *repository) getVenueImagesByVenueIDs(ctx context.Context, imageIDs []pgtype.UUID) ([]sqlc.VenueImage, error) {
+	return r.db.GetVenueImagesByVenueIDs(ctx, imageIDs)
 }
 
 func (r *repository) getPendingVenuesByOwnerID(ctx context.Context, ownerID string) ([]sqlc.Venue, error) {
