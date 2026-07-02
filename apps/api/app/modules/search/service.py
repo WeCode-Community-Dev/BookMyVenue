@@ -5,7 +5,13 @@ import numpy as np
 from sqlalchemy import func as sa_func, text, or_
 from sqlalchemy.orm import Session, joinedload
 
-from app.modules.search.category_intent import detect_category_intents
+from app.modules.search import search_metadata_cache
+from app.modules.search.category_intent import (
+    GROUP_CORPORATE,
+    GROUP_EVENT,
+    GROUP_WEDDING,
+    detect_category_intents,
+)
 from app.modules.search.query_normalizer import normalize_query
 from app.modules.search.schemas import SearchParams, SearchResult
 from app.modules.venue.models import Venue, VenueCategory, VenueStatus, VenuePhoto
@@ -119,41 +125,10 @@ def search(db: Session, params: SearchParams) -> Page[SearchResult]:
     )
 
     venue_ids = [v.id for v in venues]
-    cover_photos = {}
-    if venue_ids:
-        photos = (
-            db.query(VenuePhoto)
-            .filter(
-                VenuePhoto.venue_id.in_(venue_ids),
-                VenuePhoto.is_cover == True,
-                VenuePhoto.deleted_at.is_(None),
-            )
-            .all()
-        )
-        cover_photos = {p.venue_id: p.image_url for p in photos}
-
-    results = []
-    for v in venues:
-        starting_price = (
-            v.starting_price_paise
-            if v.pricing_mode in ("flat", "mixed")
-            else v.hourly_rate_paise
-        )
-        results.append(
-            SearchResult(
-                id=v.id,
-                name=v.name,
-                city=v.city,
-                category=v.category,
-                capacity=v.max_capacity,
-                pricing_mode=v.pricing_mode,
-                starting_price_paise=starting_price,
-                cover_photo_url=cover_photos.get(v.id),
-            )
-        )
+    covers = _cover_photos(db, venue_ids)
 
     return Page(
-        items=results,
+        items=_to_results(venues, covers),
         total=total_count,
         page=params.page,
         page_size=params.page_size,
@@ -224,6 +199,22 @@ def search_semantic(db: Session, params: SearchParams) -> Page[SearchResult]:
 # ── Hybrid search ─────────────────────────────────────────────────────────────
 
 
+def _has_any_embeddings(db: Session) -> bool:
+    """Cheap existence check — was `.limit(1).count()`, which still runs a
+    count aggregate. `.exists()` short-circuits at the first matching row."""
+    exists_query = (
+        db.query(Venue.id)
+        .filter(
+            Venue.status == VenueStatus.approved,
+            Venue.is_active == True,
+            Venue.deleted_at.is_(None),
+            Venue.embedding.isnot(None),
+        )
+        .exists()
+    )
+    return db.query(exists_query).scalar()
+
+
 def _log_hybrid_diagnostics(
     db: Session,
     raw_query: str,
@@ -231,7 +222,11 @@ def _log_hybrid_diagnostics(
     query_vec: list[float],
     intents: dict,
 ) -> None:
-    """Debug diagnostics comparing the FTS-only and vector-only result sets."""
+    """Debug diagnostics comparing the FTS-only and vector-only result sets.
+
+    Runs 3 extra queries — only call this when settings.search_diagnostics_enabled
+    is on (dev/staging), not unconditionally on every production request.
+    """
     try:
         vec_norm = float(np.linalg.norm(np.array(query_vec, dtype=np.float32)))
 
@@ -285,8 +280,8 @@ def _log_hybrid_diagnostics(
             fts_top_ids,
             vec_top_ids,
             overlap,
-            intents.get("wedding_hall_banquet_hall", 1.0),
-            intents.get("event_space_rooftop_resort_lawn", 1.0),
+            intents.get(GROUP_WEDDING, 1.0),
+            intents.get(GROUP_EVENT, 1.0),
         )
     except Exception:
         logger.exception("search_hybrid: diagnostics logging failed")
@@ -317,21 +312,7 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
     raw_query = params.q
     normalized_q = normalize_query(raw_query)
 
-    # Early fallback if no embeddings exist in the system
-    has_embeddings = (
-        db.query(Venue)
-        .filter(
-            Venue.status == VenueStatus.approved,
-            Venue.is_active == True,
-            Venue.deleted_at.is_(None),
-            Venue.embedding.isnot(None),
-        )
-        .limit(1)
-        .count()
-        > 0
-    )
-
-    if not has_embeddings:
+    if not _has_any_embeddings(db):
         return search_fts(db, params)
 
     from app.modules.search.indexer import generate_query_embedding
@@ -343,9 +324,18 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
         return search_fts(db, params)
 
     intents = detect_category_intents(normalized_q)
-    _log_hybrid_diagnostics(db, raw_query, normalized_q, query_vec, intents)
 
-    # Build dynamic filters
+    if settings.search_diagnostics_enabled:
+        _log_hybrid_diagnostics(db, raw_query, normalized_q, query_vec, intents)
+
+    # Slug lists per boost group now come from the DB-backed cache instead
+    # of being hardcoded here — see search_metadata_cache.py. Passed as
+    # array bind params (`= ANY(:param)`), not string-interpolated, so a
+    # category added via the admin panel doesn't need a redeploy.
+    wedding_slugs = search_metadata_cache.slugs_in_group(GROUP_WEDDING)
+    event_slugs = search_metadata_cache.slugs_in_group(GROUP_EVENT)
+    corporate_slugs = search_metadata_cache.slugs_in_group(GROUP_CORPORATE)
+
     base_filters = [
         "v.status = 'approved'",
         "v.is_active = true",
@@ -371,98 +361,94 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
         """,
     ]
 
-    extra_params = {
+    query_params = {
         "q": normalized_q,
         "qvec": str(query_vec),
         "min_vector_score": settings.search_min_vector_similarity,
+        # Boost values and slug lists are now bind params rather than
+        # f-string-interpolated literals: the SQL *text* is identical across
+        # calls regardless of which intent was detected, so Postgres can
+        # reuse a cached plan instead of re-planning every query.
+        "wedding_slugs": wedding_slugs,
+        "event_slugs": event_slugs,
+        "corporate_slugs": corporate_slugs,
+        "wedding_boost": intents.get(GROUP_WEDDING, 1.0),
+        "event_boost": intents.get(GROUP_EVENT, 1.0),
+        "corporate_boost": intents.get(GROUP_CORPORATE, 1.0),
+        "fts_weight": settings.search_fts_weight,
+        "vector_weight": settings.search_vector_weight,
     }
 
     if params.city:
         base_filters.append("v.city ILIKE :city")
-        extra_params["city"] = f"%{params.city}%"
+        query_params["city"] = f"%{params.city}%"
 
     if params.capacity > 0:
         base_filters.append("v.max_capacity >= :capacity")
-        extra_params["capacity"] = params.capacity
+        query_params["capacity"] = params.capacity
 
     if params.venue_type:
         base_filters.append("vc.slug = :venue_type")
-        extra_params["venue_type"] = params.venue_type
+        query_params["venue_type"] = params.venue_type
 
     where_clause = " AND ".join(base_filters)
 
-    # Category boost (only apply if intent is detected)
-    boost_case = f"""
-        CASE
-            WHEN vc.slug IN ('wedding_hall', 'banquet_hall') THEN {intents['wedding_hall_banquet_hall']}
-            WHEN vc.slug IN ('event_space', 'rooftop', 'resort', 'lawn') THEN {intents['event_space_rooftop_resort_lawn']}
-            ELSE 1.00
-        END
-    """
+    query_params["limit"] = params.page_size
+    query_params["offset"] = (params.page - 1) * params.page_size
 
-    # Total count
-    count_sql = text(f"""
-        SELECT COUNT(*)
-        FROM venues v
-        LEFT JOIN venue_categories vc ON vc.id = v.category_id
-        WHERE {where_clause}
-    """)
-
-    total = db.execute(count_sql, extra_params).scalar() or 0
-
-    # Main hybrid query
+    # Boost/score computed once in a CTE (was duplicated inline in both the
+    # `boost` column and `hybrid_score` expression) and total count comes
+    # from a window function on the same query instead of a separate
+    # COUNT(*) round trip over the whole WHERE clause.
     rows_sql = text(f"""
+        WITH scored AS (
+            SELECT
+                v.id,
+                v.name,
+                vc.slug AS category_slug,
+                COALESCE(
+                    ts_rank(v.search_vector, plainto_tsquery('english', :q)),
+                    0
+                ) AS fts_score,
+                COALESCE(
+                    1 - (v.embedding <=> CAST(:qvec AS vector)),
+                    0
+                ) AS vector_score,
+                CASE
+                    WHEN vc.slug = ANY(:wedding_slugs) THEN :wedding_boost
+                    WHEN vc.slug = ANY(:event_slugs) THEN :event_boost
+                    WHEN vc.slug = ANY(:corporate_slugs) THEN :corporate_boost
+                    ELSE 1.00
+                END AS boost
+            FROM venues v
+            LEFT JOIN venue_categories vc ON vc.id = v.category_id
+            WHERE {where_clause}
+        )
         SELECT
-            v.id,
-            v.name,
-            vc.slug AS category_slug,
-            COALESCE(
-                ts_rank(v.search_vector, plainto_tsquery('english', :q)),
-                0
-            ) AS fts_score,
-            COALESCE(
-                1 - (v.embedding <=> CAST(:qvec AS vector)),
-                0
-            ) AS vector_score,
-            ({boost_case}) AS boost,
-            (
-                (
-                    0.3 * COALESCE(
-                        ts_rank(v.search_vector, plainto_tsquery('english', :q)),
-                        0
-                    )
-                    +
-                    0.7 * COALESCE(
-                        1 - (v.embedding <=> CAST(:qvec AS vector)),
-                        0
-                    )
-                )
-                * {boost_case}
-            ) AS hybrid_score
-        FROM venues v
-        LEFT JOIN venue_categories vc ON vc.id = v.category_id
-        WHERE {where_clause}
+            id,
+            name,
+            category_slug,
+            fts_score,
+            vector_score,
+            boost,
+            (:fts_weight * fts_score + :vector_weight * vector_score) * boost AS hybrid_score,
+            COUNT(*) OVER() AS total_count
+        FROM scored
         ORDER BY hybrid_score DESC
         LIMIT :limit
         OFFSET :offset
     """)
 
-    extra_params["limit"] = params.page_size
-    extra_params["offset"] = (params.page - 1) * params.page_size
+    rows = db.execute(rows_sql, query_params).fetchall()
 
-    rows = db.execute(rows_sql, extra_params).fetchall()
+    if settings.search_diagnostics_enabled:
+        _log_hybrid_result_scores(rows)
 
-    _log_hybrid_result_scores(rows)
+    if not rows:
+        return Page(items=[], total=0, page=params.page, page_size=params.page_size)
 
+    total = rows[0].total_count
     venue_ids: list[UUID] = [row.id for row in rows]
-
-    if not venue_ids:
-        return Page(
-            items=[],
-            total=0,
-            page=params.page,
-            page_size=params.page_size,
-        )
 
     # Fetch full venue objects with relationships
     venues_by_id = {

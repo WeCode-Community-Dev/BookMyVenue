@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.config import settings
 from app.infrastructure.embeddings.jina import embed_passage, embed_query
+from app.modules.search import search_metadata_cache
 from app.modules.search.models import SearchIndexJob
 from app.modules.venue.models import Venue
 
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 # Exponential backoff delays in seconds per retry attempt index.
 # Attempt 0 → immediate, 1 → 5 min, 2 → 15 min, 3 → 1 hr, 4 → 6 hr
 _BACKOFF_SECONDS = [0, 300, 900, 3600, 21600]
+MAX_RETRIES = len(_BACKOFF_SECONDS)  # was a hardcoded `5` in two places below
 
 
 def _redis_client():
@@ -67,26 +69,18 @@ def _build_search_document(venue: Venue) -> str:
         slug = venue.category.slug
         parts.append(venue.category.label)
 
-        keywords = {
-            "wedding_hall": (
-                "wedding marriage reception function banquet hall mandap sadya "
-                "kalyanam kalyana mandapam vivaham nikah shaadi shadi vivah "
-                "engagement muhurtham sangeet mehendi haldi baraat "
-                "wedding venue marriage hall wedding function hall"
-            ),
-            "banquet_hall": (
-                "banquet hall wedding reception marriage function party hall "
-                "conference hall corporate event convention hall"
-            ),
-            "event_space": "event space party celebration function birthday anniversary get together",
-            "rooftop": "rooftop terrace open air rooftop party sundowner",
-            "club": "club nightclub party lounge discotheque dj night",
-            "resort": "resort destination wedding luxury staycation getaway resort wedding",
-            "lawn": "lawn garden outdoor open lawn poolside function lawn",
-            "auditorium": "auditorium theatre hall seminar convocation stage",
-        }
-        if slug in keywords:
-            parts.append(keywords[slug])
+        # Was a hardcoded dict of slug -> synonym string; now sourced from
+        # VenueCategory.search_keywords via the startup-loaded cache, so
+        # adding/editing a category's synonyms doesn't require a deploy.
+        keywords = search_metadata_cache.keywords_for(slug)
+        if keywords:
+            parts.append(keywords)
+        elif not search_metadata_cache.is_loaded():
+            logger.warning(
+                "search_metadata_cache not loaded when indexing venue %s — "
+                "keyword expansion skipped for this document",
+                venue.id,
+            )
 
     parts.append(f"capacity {venue.max_capacity} pax people guests")
     if venue.min_capacity and venue.min_capacity > 0:
@@ -163,7 +157,9 @@ def process_job(db: Session, job_id: str) -> None:
         if job:
             job.retry_count += 1
             job.error_message = str(exc)
-            job.status = "failed" if job.retry_count < 5 else "failed_permanently"
+            job.status = (
+                "failed" if job.retry_count < MAX_RETRIES else "failed_permanently"
+            )
             db.commit()
         logger.error("search_indexer: job %s failed (%s)", job_id, exc)
 
@@ -186,7 +182,7 @@ def retryable_job_ids(db: Session, limit: int = 10) -> list[str]:
             db.query(SearchIndexJob)
             .filter(
                 SearchIndexJob.status == "failed",
-                SearchIndexJob.retry_count < 5,
+                SearchIndexJob.retry_count < MAX_RETRIES,
             )
             .order_by(SearchIndexJob.created_at.asc())
             .all()
