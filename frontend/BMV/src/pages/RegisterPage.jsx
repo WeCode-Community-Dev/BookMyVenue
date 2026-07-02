@@ -6,17 +6,17 @@ import { GoogleLogin } from "@react-oauth/google";
 import { googleAuthAsync } from "../modules/auth/authSlice";
 
 import {
-  EyeIcon,
   CalendarIcon,
   UserIcon,
-  MailIcon,
-  PhoneIcon,
-  LockIcon,
   ArrowRightIcon,
   ShieldIcon,
   BoltIcon,
   HeartIcon,
+  LockIcon,
 } from "../icons/icons";
+
+import AccountFieldsSection from "../components/AccountFieldSection";
+import Field from "../components/Field";
 
 const validate = (fields) => {
   const errors = {};
@@ -82,7 +82,6 @@ function RegisterPage() {
     }
   }, [isAuthenticated, navigate]);
 
-  
   useEffect(() => {
     return () => dispatch(resetAuthStatus());
   }, [dispatch]);
@@ -137,7 +136,6 @@ function RegisterPage() {
 
       <div className="relative z-10 h-full p-4 md:p-8 flex">
         <div className="relative w-full max-w-6xl h-full mx-auto rounded-[2rem] border border-white/25 bg-white/10 backdrop-blur-xl shadow-2xl overflow-hidden flex">
-          {/* ── Left — Hero ─────────────────────────────────────────── */}
           <div className="hidden md:flex w-3/5 flex-col justify-start gap-8 p-8 overflow-y-auto scrollbar-hide">
             <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-2xl px-4 py-2.5 w-fit">
               <span className="text-rose-400">
@@ -203,7 +201,6 @@ function RegisterPage() {
             </div>
           </div>
 
-          {/* ── Right — Form ────────────────────────────────────────── */}
           <div className="flex flex-1 items-start justify-center p-4 md:p-6 overflow-y-auto scrollbar-hide">
             <div className="relative w-full max-w-sm bg-white/90 backdrop-blur-md rounded-3xl shadow-xl px-7 py-6 my-auto">
               <div className="flex md:hidden items-center gap-2 text-gray-800 mb-5 justify-center">
@@ -239,91 +236,16 @@ function RegisterPage() {
               )}
 
               <form onSubmit={handleSubmit} noValidate className="space-y-2.5">
-                <Field label="Full Name" error={errors.name}>
-                  <UserIcon className="w-4 h-4" />
-                  <input
-                    name="name"
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={fields.name}
-                    onChange={handleChange}
-                    autoComplete="name"
-                    disabled={isLoading || success}
-                    className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400 disabled:opacity-50"
-                  />
-                </Field>
-
-                <Field label="Email Address" error={errors.email}>
-                  <MailIcon className="w-4 h-4" />
-                  <input
-                    name="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={fields.email}
-                    onChange={handleChange}
-                    autoComplete="email"
-                    disabled={isLoading || success}
-                    className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400 disabled:opacity-50"
-                  />
-                </Field>
-
-                <Field label="Phone Number">
-                  <PhoneIcon className="w-4 h-4" />
-                  <input
-                    name="phone"
-                    type="tel"
-                    placeholder="Enter your phone number"
-                    value={fields.phone}
-                    onChange={handleChange}
-                    autoComplete="tel"
-                    disabled={isLoading || success}
-                    className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400 disabled:opacity-50"
-                  />
-                </Field>
-
-                <Field label="Password" error={errors.password}>
-                  <LockIcon className="w-4 h-4" />
-                  <input
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
-                    value={fields.password}
-                    onChange={handleChange}
-                    autoComplete="new-password"
-                    disabled={isLoading || success}
-                    className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400 disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="text-gray-400 hover:text-gray-600 transition"
-                    tabIndex={-1}
-                  >
-                    <EyeIcon open={showPassword} />
-                  </button>
-                </Field>
-
-                <Field label="Confirm Password" error={errors.confirmPassword}>
-                  <LockIcon className="w-4 h-4" />
-                  <input
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
-                    value={fields.confirmPassword}
-                    onChange={handleChange}
-                    autoComplete="new-password"
-                    disabled={isLoading || success}
-                    className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400 disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword((v) => !v)}
-                    className="text-gray-400 hover:text-gray-600 transition"
-                    tabIndex={-1}
-                  >
-                    <EyeIcon open={showConfirmPassword} />
-                  </button>
-                </Field>
+                <AccountFieldsSection
+                  fields={fields}
+                  errors={errors}
+                  onChange={handleChange}
+                  showPassword={showPassword}
+                  setShowPassword={setShowPassword}
+                  showConfirmPassword={showConfirmPassword}
+                  setShowConfirmPassword={setShowConfirmPassword}
+                  isDisabled={isLoading || success}
+                />
 
                 <button
                   type="submit"
@@ -394,23 +316,6 @@ function RegisterPage() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Field({ label, error, children }) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-gray-600 mb-1">
-        {label}
-      </label>
-      <div
-        className={`flex items-center gap-2 border rounded-xl px-3.5 py-2 text-gray-400 transition
-          ${error ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50 focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-transparent"}`}
-      >
-        {children}
-      </div>
-      {error && <p className="mt-1 text-xs text-red-500">⚠ {error}</p>}
     </div>
   );
 }

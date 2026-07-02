@@ -2,12 +2,20 @@ from sqlalchemy.orm import Session
 from app.models.venue import Venue
 from app.schemas.venue import VenueCreate
 from fastapi import HTTPException
+from app.models.user import User
 
-def create_venue(db: Session, venue_data: VenueCreate) -> Venue:
+
+
+def create_venue(db: Session, venue_data: VenueCreate, current_user: User) -> Venue:
     new_venue = Venue(
+        owner_id=current_user.id,
         name=venue_data.name,
         location=venue_data.location,
-        price_per_day=venue_data.price_per_day
+        price_per_day=venue_data.price_per_day,
+        venue_type_id=venue_data.venue_type_id,
+        capacity=venue_data.capacity,
+        image_url=venue_data.image_url,
+        description=venue_data.description,
     )
 
     db.add(new_venue)
@@ -72,6 +80,10 @@ def update_venue(
     venue.name = venue_data.name
     venue.location = venue_data.location
     venue.price_per_day = venue_data.price_per_day
+    venue.venue_type_id = venue_data.venue_type_id
+    venue.description = venue_data.description
+    venue.capacity = venue_data.capacity
+    venue.image_url = venue_data.image_url
 
     db.commit()
     db.refresh(venue)
@@ -93,5 +105,12 @@ def delete_venue(db: Session, venue_id: int):
     db.commit()
 
     return venue
-def get_my_venues(db: Session):
-    return db.query(Venue).all()    
+
+
+def get_my_venues(db: Session, current_user: User):
+    return (
+        db.query(Venue)
+        .filter(Venue.owner_id == current_user.id)
+        .order_by(Venue.created_at.desc())
+        .all()
+    )   

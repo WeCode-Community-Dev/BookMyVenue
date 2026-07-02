@@ -12,23 +12,27 @@ from app.services.venue_service import(
     get_my_venues
 
 )
+from app.core.security import get_current_venue_owner
+from app.models.user import User
 
 
 router = APIRouter(prefix="/venues", tags=["Venues"])
 
 @router.get("/my-venues", response_model=list[VenueOut])
 def list_my_venues(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
 ):
-    return get_my_venues(db)
+    return get_my_venues(db, current_user)
 
 
 @router.post("/", response_model=VenueOut)
 def create_new_venue(
     venue: VenueCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
 ):
-    return create_venue(db, venue)
+    return create_venue(db, venue, current_user)
 
 @router.get("/", response_model=list[VenueOut])
 def list_venues(
@@ -53,11 +57,13 @@ def get_single_venue(
 ):
     return get_venue_by_id(db, venue_id)
 
+
 @router.put("/{venue_id}", response_model=VenueOut)
 def update_existing_venue(
     venue_id: int,
     venue: VenueUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
 ):
     return update_venue(
         db,
@@ -68,7 +74,8 @@ def update_existing_venue(
 @router.delete("/{venue_id}")
 def delete_existing_venue(
     venue_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
 ):
     return delete_venue(
         db,

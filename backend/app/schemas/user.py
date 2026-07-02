@@ -9,7 +9,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     phone_number: str
     password: str = Field(..., min_length=8, max_length=72)
-    role: Literal["user","host"] = "user"
+    # New users are always created with the default "user" role server-side
 
     
     
@@ -31,6 +31,7 @@ class UserOut(BaseModel):
     is_active: bool
     auth_provider: str
     created_at: datetime
+    is_venue_owner: bool = False
     
     model_config = {"from_attributes": True}
     

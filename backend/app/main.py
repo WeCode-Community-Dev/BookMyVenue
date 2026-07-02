@@ -4,9 +4,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-from app.db.database import Base, engine
-from app.models import user, venue, booking, payment
-from app.routers import auth,bookings,payments
+from app.db.database import Base, engine, SessionLocal
+from app.seeds.venue_type_seed import seed_venue_types
+from app.models import user, venue, booking, payment, venue_owner, review, notification, amenity, venue_amenity, venue_type
+from app.routers import auth,bookings,payments, venue_owner as venue_owner_router, venue as venue_router, venue_owner_dashboard, venue_type as venue_type_router
 
 
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +24,13 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         logger.error("Database connection failed: %s", exc)
         raise
+    
+    seed_db = SessionLocal()
+    try:
+        seed_venue_types(seed_db)
+    finally:
+        seed_db.close()
+    
     yield
 
 
@@ -53,9 +61,12 @@ app.add_middleware(
 
 
 app.include_router(auth.router)
-app.include_router(bookings.router) 
+app.include_router(bookings.router)
 app.include_router(payments.router)
-
+app.include_router(venue_owner_router.router)
+app.include_router(venue_router.router)
+app.include_router(venue_owner_dashboard.router)
+app.include_router(venue_type_router.router)
 
 @app.get("/")
 def root():

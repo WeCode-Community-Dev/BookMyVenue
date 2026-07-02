@@ -43,7 +43,7 @@ function LoginPage() {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
 
-  const { isLoading, error, isAuthenticated } = useSelector(
+  const { isLoading, error, isAuthenticated, user } = useSelector(
     (state) => state.auth,
   );
 
@@ -51,10 +51,14 @@ function LoginPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard", { replace: true });
+    if (isAuthenticated && user) {
+      if (user.is_venue_owner) {
+        navigate("/owner/dashboard", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated,user, navigate]);
 
   useEffect(() => {
     return () => dispatch(resetAuthStatus());

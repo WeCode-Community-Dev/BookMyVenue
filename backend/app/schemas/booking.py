@@ -4,9 +4,11 @@ from typing import Optional
 
 class BookingCreate(BaseModel):
     venue_id: int
-    booking_date: date          # "YYYY-MM-DD"
-    time_slot: time             # "HH:MM"
+    booking_date: date          
+    time_slot: time             
     notes: Optional[str] = None 
+    event_type: Optional[str] = None
+    guest_count: Optional[int] = None
 
 class BookingOut(BaseModel):
     id: int
@@ -14,7 +16,21 @@ class BookingOut(BaseModel):
     booking_date: date
     time_slot: time
     notes: Optional[str] = None
+    event_type: Optional[str] = None
+    guest_count: Optional[int] = None
     status: str
+    owner_status: str
     amount: float
     created_at: datetime
     model_config = {"from_attributes": True} 
+    
+    
+class BookingCancelRequest(BaseModel):
+    cancellation_reason: Optional[str] = None
+
+
+class PaginatedBookingsOut(BaseModel):
+    items: list[BookingOut]
+    total: int
+    page: int
+    limit: int

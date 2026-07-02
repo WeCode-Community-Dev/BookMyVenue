@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from app.db.deps import get_db
 from app.core.security import get_current_user
 from app.models.user import User
-from app.schemas.booking import BookingCreate, BookingOut
+from app.schemas.booking import BookingCreate, BookingOut, BookingCancelRequest, PaginatedBookingsOut
 from app.services import booking_service 
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"]) 
@@ -16,4 +16,33 @@ def create_booking(
 ):
     return booking_service.create_booking(db, current_user, data) 
 
-    
+   
+@router.get("/my-bookings", response_model=PaginatedBookingsOut)
+def my_bookings(
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return booking_service.get_my_bookings(db, current_user, page, limit)
+
+
+@router.get("/{booking_id}", response_model=BookingOut)
+def booking_detail(
+    booking_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return booking_service.get_booking_detail(db, current_user, booking_id)
+
+
+@router.patch("/{booking_id}/cancel", response_model=BookingOut)
+def cancel_booking(
+    booking_id: int,
+    data: BookingCancelRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return booking_service.cancel_booking(
+        db, current_user, booking_id, data.cancellation_reason
+    ) 
