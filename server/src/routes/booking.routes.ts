@@ -25,7 +25,7 @@ router.post('/', createBooking);
 router.post('/verify-payment', verifyPayment);
 router.post('/pay-balance', payBalance);
 router.post('/verify-balance', verifyBalancePayment);
-router.delete('/pending/:bookingId', cancelPendingBooking);
+
 router.patch('/:bookingId/cancel', cancelBooking);
 
 // Delete an unpaid (PENDING) booking — called on payment failure, dismiss, or explicit cancel

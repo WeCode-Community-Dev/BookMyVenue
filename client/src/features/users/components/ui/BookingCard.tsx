@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CreditCard, Loader2, XCircle } from 'lucide-react';
+import { CreditCard, Loader2, XCircle, WalletMinimal, Clock, CheckCircle2, Ban } from 'lucide-react';
 import { toast } from 'sonner';
 import { bookingsApi } from '@/features/bookings/services/bookings.api';
 import type { Booking } from '../../types';
@@ -15,7 +15,7 @@ interface BookingCardProps {
 const BookingCard = ({ booking, onCancelSuccess }: BookingCardProps) => {
   const [cancelling, setCancelling] = useState(false);
   const [payingBalance, setPayingBalance] = useState(false);
-  
+
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
 
@@ -34,6 +34,20 @@ const BookingCard = ({ booking, onCancelSuccess }: BookingCardProps) => {
         toast.success('Booking cancelled successfully.');
         setShowCancelModal(false);
         setCancelReason('');
+        onCancelSuccess();
+      } else {
+        toast.error(res.message || 'Failed to cancel booking.');
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to cancel booking.');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleDeleteBooking = async () => {
+    try {
+      setCancelling(true);
       const res = await bookingsApi.deleteBooking(booking.id);
       if (res.success) {
         toast.success('Booking deleted successfully.');
@@ -183,6 +197,54 @@ const BookingCard = ({ booking, onCancelSuccess }: BookingCardProps) => {
     }
   };
 
+  const getRefundBadge = () => {
+    if (booking.bookingStatus !== 'cancelled') return null;
+    const { refundStatus, cancellationType } = booking;
+    if (cancellationType === 'SYSTEM' || refundStatus === 'NOT_ELIGIBLE') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border bg-zinc-500/10 text-zinc-400 border-zinc-500/20">
+          <Ban className="w-2.5 h-2.5" />
+          No Refund
+        </span>
+      );
+    }
+    if (refundStatus === 'PENDING') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border bg-warning/10 text-warning border-warning/20">
+          <Clock className="w-2.5 h-2.5" />
+          Refund Pending
+        </span>
+      );
+    }
+    if (refundStatus === 'PROCESSING') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
+          <Loader2 className="w-2.5 h-2.5 animate-spin" />
+          Refund Processing
+        </span>
+      );
+    }
+    if (refundStatus === 'FAILED') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border bg-error/10 text-error border-error/20">
+          <XCircle className="w-2.5 h-2.5" />
+          Refund Failed
+        </span>
+      );
+    }
+    if (refundStatus === 'COMPLETED') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border bg-success/10 text-success border-success/20">
+          <CheckCircle2 className="w-2.5 h-2.5" />
+          Refunded ₹{booking.refundAmount.toLocaleString('en-IN')}
+        </span>
+      );
+    }
+    return null;
+  };
+
+  const refundBadge = getRefundBadge();
+
   const formatStatus = (status: string, paymentStatus: string) => {
     if (status === 'reserved' && paymentStatus === 'pending') {
       return 'PENDING PAYMENT';
@@ -211,13 +273,14 @@ const BookingCard = ({ booking, onCancelSuccess }: BookingCardProps) => {
             No image available
           </div>
         )}
-        <div className="absolute top-4 right-4">
-          <span
-            className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border ${getStatusStyle(booking.bookingStatus, booking.paymentStatus)}`}
-          >
-            {formatStatus(booking.bookingStatus, booking.paymentStatus)}
-          </span>
-        </div>
+          <div className="absolute top-4 right-4 flex flex-col items-end gap-1.5">
+            <span
+              className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold border ${getStatusStyle(booking.bookingStatus, booking.paymentStatus)}`}
+            >
+              {formatStatus(booking.bookingStatus, booking.paymentStatus)}
+            </span>
+            {refundBadge}
+          </div>
       </div>
 
       {/* Main Content */}
@@ -247,37 +310,69 @@ const BookingCard = ({ booking, onCancelSuccess }: BookingCardProps) => {
                 Paid: ₹{booking.amountPaid.toLocaleString('en-IN')}
               </span>
             )}
+            {/* Show wallet credit chip when refund is completed */}
+            {booking.refundStatus === 'COMPLETED' && booking.bookingStatus === 'cancelled' && (
+              <span className="text-[11px] font-semibold text-indigo-400 bg-indigo-500/5 border border-indigo-500/15 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                <WalletMinimal className="w-3 h-3" />
+                Wallet credited
+              </span>
+            )}
 
-            <div className="flex items-center gap-2">
-              {booking.bookingStatus === 'reserved' && (booking.paymentStatus === 'partial' || booking.paymentStatus === 'overdue') && (
-            <Link
-              to={`/account/bookings/${booking.id}`}
-              className="px-3 py-2 border border-border/70 text-foreground/75 hover:bg-muted/10 text-[11px] font-semibold rounded-xl transition-all"
-            >
-              View Details
-            </Link>
+            <div className="flex items-center gap-2 flex-wrap">
 
-            <div>
-              {booking.bookingStatus === 'pending' && booking.paymentStatus === 'pending' ? (
-                // Booking was created but payment never completed — let user delete it to free the slot
+              {/* ── Case 1: PENDING booking (slot held, deposit never paid) ── */}
+              {/* Payment failed or modal was dismissed — only action is to free the slot */}
+              {booking.bookingStatus === 'pending' && booking.paymentStatus === 'pending' && (
                 <button
-                  onClick={handlePayBalance}
-                  disabled={payingBalance}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow hover:scale-[1.02] active:scale-[0.98]"
+                  onClick={handleDeleteBooking}
+                  disabled={cancelling}
+                  className="px-4 py-2 bg-error/10 border border-error/30 text-error hover:bg-error/20 text-xs font-semibold rounded-xl transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
                 >
-                  {payingBalance ? (
+                  {cancelling ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      Processing...
+                      Deleting...
                     </>
                   ) : (
                     <>
-                      <CreditCard className="w-3.5 h-3.5" />
-                      Pay Balance
+                      <XCircle className="w-3.5 h-3.5" />
+                      Delete Booking
                     </>
                   )}
                 </button>
               )}
+
+              {/* ── Case 2: RESERVED booking with deposit paid (partial/overdue) ── */}
+              {/* User can view details, pay remaining balance via Razorpay, or cancel */}
+              {booking.bookingStatus === 'reserved' && (booking.paymentStatus === 'partial' || booking.paymentStatus === 'overdue') && (
+                <>
+                  <Link
+                    to={`/account/bookings/${booking.id}`}
+                    className="px-3 py-2 border border-border/70 text-foreground/75 hover:bg-muted/10 text-[11px] font-semibold rounded-xl transition-all"
+                  >
+                    View Details
+                  </Link>
+                  <button
+                    onClick={handlePayBalance}
+                    disabled={payingBalance}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    {payingBalance ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-3.5 h-3.5" />
+                        Pay Balance
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
+
+              {/* ── Case 3: Cancel button — shown whenever booking is within cancellation window ── */}
               {isCancellable && (
                 <button
                   onClick={() => setShowCancelModal(true)}
@@ -297,7 +392,8 @@ const BookingCard = ({ booking, onCancelSuccess }: BookingCardProps) => {
                   )}
                 </button>
               )}
-              {!isCancellable && booking.bookingStatus !== 'reserved' && booking.amountPaid === 0 && (
+
+              {!isCancellable && booking.bookingStatus !== 'reserved' && booking.bookingStatus !== 'pending' && booking.amountPaid === 0 && (
                 <span className="text-[11px] font-medium text-foreground/40">Unpaid</span>
               )}
             </div>

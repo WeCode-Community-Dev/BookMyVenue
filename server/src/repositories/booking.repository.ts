@@ -1,7 +1,7 @@
 import Booking from '@/models/booking.model';
 import { IBooking, CreateBookingPayload } from '@/types/booking.types';
-import { BookingStatus, BookingScenario, PaymentMethod, PaymentStatus } from '@/constants/booking';
-import mongoose from 'mongoose';
+import { BookingStatus, BookingScenario, PaymentMethod, PaymentStatus, RefundStatus, CancellationType } from '@/constants/booking';
+import mongoose, { ClientSession } from 'mongoose';
 
 // ── Types ───────────────────────────────────────────────────
 
@@ -22,28 +22,28 @@ export const createBooking = async (
   payload: CreateBookingPayload,
   reservation: ReservationDetails
 ): Promise<IBooking> => {
-    const doc = await Booking.create({
-        venue: new mongoose.Types.ObjectId(payload.venueId),
-        user: new mongoose.Types.ObjectId(userId),
-        startDateTime: new Date(payload.startDateTime),
-        endDateTime: new Date(payload.endDateTime),
-        guests: payload.guests,
-        contactName: payload.contactName,
-        contactEmail: payload.contactEmail,
-        contactPhone: payload.contactPhone,
-        specialRequests: payload.specialRequests || '',
-        bookingScenario: reservation.bookingScenario,
-        paymentMethod: PaymentMethod.RAZORPAY,
-        bookingStatus: BookingStatus.PENDING,
-        paymentStatus: PaymentStatus.PENDING,
-        totalAmount: reservation.totalAmount,
-        reservationDeposit: reservation.reservationDeposit,
-        remainingBalance: reservation.remainingBalance,
-        amountPaid: 0,
-        remainingPaymentDueDate: reservation.remainingPaymentDueDate,
-        autoCancellationDate: reservation.autoCancellationDate,
-        isImmediatePaymentRequired: reservation.isImmediatePaymentRequired,
-    });
+  const doc = await Booking.create({
+    venue: new mongoose.Types.ObjectId(payload.venueId),
+    user: new mongoose.Types.ObjectId(userId),
+    startDateTime: new Date(payload.startDateTime),
+    endDateTime: new Date(payload.endDateTime),
+    guests: payload.guests,
+    contactName: payload.contactName,
+    contactEmail: payload.contactEmail,
+    contactPhone: payload.contactPhone,
+    specialRequests: payload.specialRequests || '',
+    bookingScenario: reservation.bookingScenario,
+    paymentMethod: PaymentMethod.RAZORPAY,
+    bookingStatus: BookingStatus.PENDING,
+    paymentStatus: PaymentStatus.PENDING,
+    totalAmount: reservation.totalAmount,
+    reservationDeposit: reservation.reservationDeposit,
+    remainingBalance: reservation.remainingBalance,
+    amountPaid: 0,
+    remainingPaymentDueDate: reservation.remainingPaymentDueDate,
+    autoCancellationDate: reservation.autoCancellationDate,
+    isImmediatePaymentRequired: reservation.isImmediatePaymentRequired,
+  });
 
   return doc as IBooking;
 };
@@ -230,7 +230,12 @@ export const updateBookingStatus = async (
 export const cancelBooking = async (
   id: string,
   cancellationReason: string,
-  session: mongoose.ClientSession
+  session: mongoose.ClientSession,
+  cancellationDetails?: {
+    cancellationType: string;
+    refundStatus: string;
+    refundAmount: number;
+  }
 ): Promise<IBooking | null> => {
   return Booking.findByIdAndUpdate(
     id,
@@ -238,6 +243,7 @@ export const cancelBooking = async (
       bookingStatus: BookingStatus.CANCELLED,
       cancellationReason,
       cancelledAt: new Date(),
+      ...(cancellationDetails ? cancellationDetails : {}),
     },
     { new: true, session }
   ) as Promise<IBooking | null>;
@@ -259,3 +265,22 @@ export const deleteBookingById = async (id: string): Promise<boolean> => {
   const res = await Booking.findByIdAndDelete(id);
   return res !== null;
 };
+
+
+export const updateRefundBookingStatus = async (
+  bookingId: string,
+  refundStatus: RefundStatus,
+  session: ClientSession
+) => {
+  const doc = await Booking.findOneAndUpdate(
+    {
+      _id: bookingId,
+      refundStatus,
+      cancellationType: CancellationType.USER,
+      bookingStatus: BookingStatus.CANCELLED,
+    },
+    { refundStatus: RefundStatus.PROCESSING },
+    { session, new: true }
+  );
+  return doc
+}

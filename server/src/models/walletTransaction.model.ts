@@ -110,6 +110,17 @@ const walletTransactionSchema = new Schema<IWalletTransaction>(
   }
 );
 
+// Prevent duplicate refund transactions for the same booking at the database level.
+// sparse: true ensures the index only applies when bookingId is present (non-booking transactions are unaffected).
+walletTransactionSchema.index(
+  { bookingId: 1, source: 1 },
+  {
+    unique: true,
+    sparse: true,
+    partialFilterExpression: { source: 'REFUND' },
+  }
+);
+
 export const WalletTransaction = mongoose.model<IWalletTransaction>(
   'WalletTransaction',
   walletTransactionSchema

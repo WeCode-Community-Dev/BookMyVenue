@@ -29,6 +29,19 @@ export enum BookingScenario {
   IMMEDIATE = 'IMMEDIATE', // <= 7 days — pay 100% now
 }
 
+export enum CancellationType {
+  SYSTEM = 'SYSTEM',
+  USER = 'USER',
+}
+
+export enum RefundStatus {
+  NOT_ELIGIBLE = 'NOT_ELIGIBLE',
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+}
+
 // Platform-wide reservation policy constants
 export const RESERVATION_POLICY = {
   DEPOSIT_PERCENTAGE: 0.2,

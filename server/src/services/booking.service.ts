@@ -4,13 +4,18 @@ import {
   BookingStatus,
   PaymentStatus,
   RESERVATION_POLICY,
+  CancellationType,
+  RefundStatus,
 } from '@/constants/booking';
 import { CreateBookingPayload } from '@/types/booking.types';
 import { AppError } from '@/utils/AppError';
 import { getAvailabilityByVenueId } from '@/repositories/availability.repository';
 import { IAvailability } from '@/types/availability.types';
 import * as bookingRepo from '@/repositories/booking.repository';
+import * as availabilityRepo from '@/repositories/availability.repository';
 import { verifyPaymentSignature } from './razorpay.service';
+import { processRefund } from './refund.service';
+import logger from '@/libs/logger';
 import mongoose from 'mongoose';
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -368,15 +373,37 @@ export const getUserBookingsService = async (
       }
     }
 
+    const venueDoc = (booking.venue as any) ?? {};
+    const venueImages: string[] = venueDoc.images ?? [];
+
+    const rawPaymentStatus: string = booking.paymentStatus ?? '';
+    const paymentStatus =
+      rawPaymentStatus.toUpperCase() === PaymentStatus.DEPOSIT_PAID
+        ? 'partial'
+        : rawPaymentStatus.toLowerCase();
+
+    const bookingStatus = (booking.bookingStatus ?? '').toLowerCase();
+
     return {
       ...booking,
-      isCancellable
+      id: String(booking._id),
+      bookingStatus,
+      paymentStatus,
+      isCancellable,
+      venue: {
+        id: String(venueDoc._id ?? venueDoc.id ?? ''),
+        name: venueDoc.name ?? '',
+        imageUrl: venueImages[0] ?? null,
+        location: venueDoc.address
+          ? [venueDoc.address.city, venueDoc.address.state].filter(Boolean).join(', ')
+          : '',
+      },
     };
   });
 
   return {
-    ...result,
-    bookings: processedBookings
+    bookings: processedBookings,
+    pagination: result.pagination,
   };
 };
 
@@ -442,10 +469,29 @@ export const cancelBookingService = async (userId: string, bookingId: string, ca
   try {
     session.startTransaction();
 
+    // Calculate refund
+    const refundAmount = booking.amountPaid || 0;
+    const isRefundEligible = refundAmount > 0;
+
+    const cancellationDetails = {
+      cancellationType: CancellationType.USER,
+      refundStatus: isRefundEligible ? RefundStatus.PENDING : RefundStatus.NOT_ELIGIBLE,
+      refundAmount,
+    };
+
     // Slot release and booking update
-    await bookingRepo.cancelBooking(bookingId, cancellationReason, session);
+    await bookingRepo.cancelBooking(bookingId, cancellationReason, session, cancellationDetails);
 
     await session.commitTransaction();
+
+    //Refund Processing
+    if (isRefundEligible) {
+      try {
+        await processRefund(bookingId, RefundStatus.PENDING);
+      } catch (error) {
+        logger.error(`Refund processing failed for booking ${bookingId}`);
+      }
+    }
   } catch (error) {
     await session.abortTransaction();
     throw new AppError('Failed to cancel booking due to internal error', HTTP_STATUS.SERVER_ERROR);
