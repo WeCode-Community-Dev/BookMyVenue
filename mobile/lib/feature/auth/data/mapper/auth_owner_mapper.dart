@@ -61,6 +61,9 @@ extension OwnerProfileStatusMapper on OwnerProfileStatusModel {
   OwnerProfileStatusEntity toEntity() {
     return OwnerProfileStatusEntity(
       ownerId: ownerId,
+      statusMessage: statusMessage,
+      statusCode: statusCode,
+      rejectReason: rejectReason,
       approvalStatus: approvalStatus,
     );
   }

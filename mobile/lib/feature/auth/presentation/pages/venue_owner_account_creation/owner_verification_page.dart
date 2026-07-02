@@ -27,14 +27,27 @@ class OwnerVerificationPage extends StatelessWidget {
               type: ToastType.error,
               title: state.verificationErrorMessage!,
             );
-          } else if (state.verificationSuccessMessage != null) {
-            AppLogger.info('user statget aproved ${state.approvalStatus}');
+          } else if (state.verificationSuccessMessage != null &&
+              state.verificationSuccessMessage!.isNotEmpty) {
+            AppLogger.info('user status code ${state.verificationStatusCode}');
+
+            ToastType type = ToastType.info;
+            if (state.verificationStatusCode == 0) {
+              type = ToastType.success;
+            } else if (state.verificationStatusCode == 1) {
+              type = ToastType.error;
+            } else if (state.verificationStatusCode == 2) {
+              type = ToastType.error;
+            } else if (state.verificationStatusCode == 3) {
+              type = ToastType.info;
+            }
+
             SnackbarCommand.show(
-              type: ToastType.success,
+              type: type,
               title: state.verificationSuccessMessage!,
             );
-            if (state.approvalStatus == ApprovalStatus.approved) {
-              AppLogger.info('user statget aproved ${state.approvalStatus}');
+
+            if (state.verificationStatusCode == 0) {
               Future.delayed(const Duration(seconds: 2), () {
                 if (!context.mounted) {
                   return;

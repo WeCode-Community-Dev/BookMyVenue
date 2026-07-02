@@ -16,5 +16,6 @@ abstract class OwnerAuthState with _$OwnerAuthState {
     @Default(false) bool isVerificationError,
     String? verificationErrorMessage,
     @Default(ApprovalStatus.pending) ApprovalStatus approvalStatus,
+    @Default(3) int verificationStatusCode,
   }) = _OwnerAuthState;
 }

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OwnerProfileStatusModel {
 
-@JsonKey(name: 'owner_id') String get ownerId;@JsonKey(name: 'approval_status') ApprovalStatus get approvalStatus;
+@JsonKey(name: 'owner_id') String get ownerId;@JsonKey(name: 'status_message') String get statusMessage;@JsonKey(name: 'status_code') int get statusCode;@JsonKey(name: 'reject_reason') String? get rejectReason;@JsonKey(name: 'approval_status') ApprovalStatus get approvalStatus;
 /// Create a copy of OwnerProfileStatusModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $OwnerProfileStatusModelCopyWith<OwnerProfileStatusModel> get copyWith => _$Owne
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OwnerProfileStatusModel&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.approvalStatus, approvalStatus) || other.approvalStatus == approvalStatus));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OwnerProfileStatusModel&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.statusMessage, statusMessage) || other.statusMessage == statusMessage)&&(identical(other.statusCode, statusCode) || other.statusCode == statusCode)&&(identical(other.rejectReason, rejectReason) || other.rejectReason == rejectReason)&&(identical(other.approvalStatus, approvalStatus) || other.approvalStatus == approvalStatus));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,ownerId,approvalStatus);
+int get hashCode => Object.hash(runtimeType,ownerId,statusMessage,statusCode,rejectReason,approvalStatus);
 
 @override
 String toString() {
-  return 'OwnerProfileStatusModel(ownerId: $ownerId, approvalStatus: $approvalStatus)';
+  return 'OwnerProfileStatusModel(ownerId: $ownerId, statusMessage: $statusMessage, statusCode: $statusCode, rejectReason: $rejectReason, approvalStatus: $approvalStatus)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $OwnerProfileStatusModelCopyWith<$Res>  {
   factory $OwnerProfileStatusModelCopyWith(OwnerProfileStatusModel value, $Res Function(OwnerProfileStatusModel) _then) = _$OwnerProfileStatusModelCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'owner_id') String ownerId,@JsonKey(name: 'approval_status') ApprovalStatus approvalStatus
+@JsonKey(name: 'owner_id') String ownerId,@JsonKey(name: 'status_message') String statusMessage,@JsonKey(name: 'status_code') int statusCode,@JsonKey(name: 'reject_reason') String? rejectReason,@JsonKey(name: 'approval_status') ApprovalStatus approvalStatus
 });
 
 
@@ -65,10 +65,13 @@ class _$OwnerProfileStatusModelCopyWithImpl<$Res>
 
 /// Create a copy of OwnerProfileStatusModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? ownerId = null,Object? approvalStatus = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? ownerId = null,Object? statusMessage = null,Object? statusCode = null,Object? rejectReason = freezed,Object? approvalStatus = null,}) {
   return _then(_self.copyWith(
 ownerId: null == ownerId ? _self.ownerId : ownerId // ignore: cast_nullable_to_non_nullable
-as String,approvalStatus: null == approvalStatus ? _self.approvalStatus : approvalStatus // ignore: cast_nullable_to_non_nullable
+as String,statusMessage: null == statusMessage ? _self.statusMessage : statusMessage // ignore: cast_nullable_to_non_nullable
+as String,statusCode: null == statusCode ? _self.statusCode : statusCode // ignore: cast_nullable_to_non_nullable
+as int,rejectReason: freezed == rejectReason ? _self.rejectReason : rejectReason // ignore: cast_nullable_to_non_nullable
+as String?,approvalStatus: null == approvalStatus ? _self.approvalStatus : approvalStatus // ignore: cast_nullable_to_non_nullable
 as ApprovalStatus,
   ));
 }
@@ -151,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'owner_id')  String ownerId, @JsonKey(name: 'approval_status')  ApprovalStatus approvalStatus)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'owner_id')  String ownerId, @JsonKey(name: 'status_message')  String statusMessage, @JsonKey(name: 'status_code')  int statusCode, @JsonKey(name: 'reject_reason')  String? rejectReason, @JsonKey(name: 'approval_status')  ApprovalStatus approvalStatus)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OwnerProfileStatusModel() when $default != null:
-return $default(_that.ownerId,_that.approvalStatus);case _:
+return $default(_that.ownerId,_that.statusMessage,_that.statusCode,_that.rejectReason,_that.approvalStatus);case _:
   return orElse();
 
 }
@@ -172,10 +175,10 @@ return $default(_that.ownerId,_that.approvalStatus);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'owner_id')  String ownerId, @JsonKey(name: 'approval_status')  ApprovalStatus approvalStatus)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'owner_id')  String ownerId, @JsonKey(name: 'status_message')  String statusMessage, @JsonKey(name: 'status_code')  int statusCode, @JsonKey(name: 'reject_reason')  String? rejectReason, @JsonKey(name: 'approval_status')  ApprovalStatus approvalStatus)  $default,) {final _that = this;
 switch (_that) {
 case _OwnerProfileStatusModel():
-return $default(_that.ownerId,_that.approvalStatus);}
+return $default(_that.ownerId,_that.statusMessage,_that.statusCode,_that.rejectReason,_that.approvalStatus);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -189,10 +192,10 @@ return $default(_that.ownerId,_that.approvalStatus);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'owner_id')  String ownerId, @JsonKey(name: 'approval_status')  ApprovalStatus approvalStatus)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'owner_id')  String ownerId, @JsonKey(name: 'status_message')  String statusMessage, @JsonKey(name: 'status_code')  int statusCode, @JsonKey(name: 'reject_reason')  String? rejectReason, @JsonKey(name: 'approval_status')  ApprovalStatus approvalStatus)?  $default,) {final _that = this;
 switch (_that) {
 case _OwnerProfileStatusModel() when $default != null:
-return $default(_that.ownerId,_that.approvalStatus);case _:
+return $default(_that.ownerId,_that.statusMessage,_that.statusCode,_that.rejectReason,_that.approvalStatus);case _:
   return null;
 
 }
@@ -204,10 +207,13 @@ return $default(_that.ownerId,_that.approvalStatus);case _:
 @JsonSerializable()
 
 class _OwnerProfileStatusModel implements OwnerProfileStatusModel {
-  const _OwnerProfileStatusModel({@JsonKey(name: 'owner_id') required this.ownerId, @JsonKey(name: 'approval_status') required this.approvalStatus});
+  const _OwnerProfileStatusModel({@JsonKey(name: 'owner_id') required this.ownerId, @JsonKey(name: 'status_message') required this.statusMessage, @JsonKey(name: 'status_code') required this.statusCode, @JsonKey(name: 'reject_reason') this.rejectReason, @JsonKey(name: 'approval_status') required this.approvalStatus});
   factory _OwnerProfileStatusModel.fromJson(Map<String, dynamic> json) => _$OwnerProfileStatusModelFromJson(json);
 
 @override@JsonKey(name: 'owner_id') final  String ownerId;
+@override@JsonKey(name: 'status_message') final  String statusMessage;
+@override@JsonKey(name: 'status_code') final  int statusCode;
+@override@JsonKey(name: 'reject_reason') final  String? rejectReason;
 @override@JsonKey(name: 'approval_status') final  ApprovalStatus approvalStatus;
 
 /// Create a copy of OwnerProfileStatusModel
@@ -223,16 +229,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OwnerProfileStatusModel&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.approvalStatus, approvalStatus) || other.approvalStatus == approvalStatus));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OwnerProfileStatusModel&&(identical(other.ownerId, ownerId) || other.ownerId == ownerId)&&(identical(other.statusMessage, statusMessage) || other.statusMessage == statusMessage)&&(identical(other.statusCode, statusCode) || other.statusCode == statusCode)&&(identical(other.rejectReason, rejectReason) || other.rejectReason == rejectReason)&&(identical(other.approvalStatus, approvalStatus) || other.approvalStatus == approvalStatus));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,ownerId,approvalStatus);
+int get hashCode => Object.hash(runtimeType,ownerId,statusMessage,statusCode,rejectReason,approvalStatus);
 
 @override
 String toString() {
-  return 'OwnerProfileStatusModel(ownerId: $ownerId, approvalStatus: $approvalStatus)';
+  return 'OwnerProfileStatusModel(ownerId: $ownerId, statusMessage: $statusMessage, statusCode: $statusCode, rejectReason: $rejectReason, approvalStatus: $approvalStatus)';
 }
 
 
@@ -243,7 +249,7 @@ abstract mixin class _$OwnerProfileStatusModelCopyWith<$Res> implements $OwnerPr
   factory _$OwnerProfileStatusModelCopyWith(_OwnerProfileStatusModel value, $Res Function(_OwnerProfileStatusModel) _then) = __$OwnerProfileStatusModelCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'owner_id') String ownerId,@JsonKey(name: 'approval_status') ApprovalStatus approvalStatus
+@JsonKey(name: 'owner_id') String ownerId,@JsonKey(name: 'status_message') String statusMessage,@JsonKey(name: 'status_code') int statusCode,@JsonKey(name: 'reject_reason') String? rejectReason,@JsonKey(name: 'approval_status') ApprovalStatus approvalStatus
 });
 
 
@@ -260,10 +266,13 @@ class __$OwnerProfileStatusModelCopyWithImpl<$Res>
 
 /// Create a copy of OwnerProfileStatusModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? ownerId = null,Object? approvalStatus = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? ownerId = null,Object? statusMessage = null,Object? statusCode = null,Object? rejectReason = freezed,Object? approvalStatus = null,}) {
   return _then(_OwnerProfileStatusModel(
 ownerId: null == ownerId ? _self.ownerId : ownerId // ignore: cast_nullable_to_non_nullable
-as String,approvalStatus: null == approvalStatus ? _self.approvalStatus : approvalStatus // ignore: cast_nullable_to_non_nullable
+as String,statusMessage: null == statusMessage ? _self.statusMessage : statusMessage // ignore: cast_nullable_to_non_nullable
+as String,statusCode: null == statusCode ? _self.statusCode : statusCode // ignore: cast_nullable_to_non_nullable
+as int,rejectReason: freezed == rejectReason ? _self.rejectReason : rejectReason // ignore: cast_nullable_to_non_nullable
+as String?,approvalStatus: null == approvalStatus ? _self.approvalStatus : approvalStatus // ignore: cast_nullable_to_non_nullable
 as ApprovalStatus,
   ));
 }

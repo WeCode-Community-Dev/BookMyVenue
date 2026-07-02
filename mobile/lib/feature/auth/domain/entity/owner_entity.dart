@@ -87,14 +87,26 @@ class OwnerProfileStatusResult extends Equatable {
 class OwnerProfileStatusEntity extends Equatable {
   const OwnerProfileStatusEntity({
     required this.ownerId,
+    required this.statusMessage,
+    required this.statusCode,
+    this.rejectReason,
     required this.approvalStatus,
   });
 
   final String ownerId;
+  final String statusMessage;
+  final int statusCode;
+  final String? rejectReason;
   final ApprovalStatus approvalStatus;
 
   @override
-  List<Object?> get props => <Object?>[ownerId, approvalStatus];
+  List<Object?> get props => <Object?>[
+        ownerId,
+        statusMessage,
+        statusCode,
+        rejectReason,
+        approvalStatus,
+      ];
 }
 
 class UserEntity extends Equatable {
