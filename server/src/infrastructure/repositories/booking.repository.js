@@ -1,6 +1,6 @@
 import { BookingRepository } from "../../domain/repositories/IBooking.repository.js";
 import mongoose from "mongoose";
-import BookingModel from "../database/models/BookingModel.js";
+import { BookingModel } from "../database/models/BookingModel.js";
 import { UserModel } from "../database/models/User.model.js";
 import VendorModel from "../database/models/Vendor.model.js";
 import { VenueModel } from "../database/Venue.model.js";
@@ -235,12 +235,16 @@ async findAllFiltered(query) {
 
     const filter = {};
 
-    if (query.status) {
-        filter.status = query.status;
-    }
-
     if (query.paymentStatus) {
         filter.paymentStatus = query.paymentStatus;
+    }
+
+    if (query.paymentType) {
+        filter.paymentType = query.paymentType;
+    }
+
+    if (query.paymentMethod) {
+        filter.paymentMethod = query.paymentMethod;
     }
 
     if (query.search) {
@@ -258,102 +262,135 @@ async findAllFiltered(query) {
             ]
         }).distinct("_id");
 
-        const venueIds = await VenueModel.find({
-            name: regex
-        }).distinct("_id");
+        const bookingIds = await BookingModel.find({}).distinct("_id");
 
         const searchFilter = [
+
             { userId: { $in: userIds } },
-            { vendorId: { $in: vendorIds } },
-            { venueId: { $in: venueIds } }
+
+            { vendorId: { $in: vendorIds } }
+
         ];
 
         if (Types.ObjectId.isValid(query.search)) {
+
+            searchFilter.push({
+                bookingId: new Types.ObjectId(query.search)
+            });
+
             searchFilter.push({
                 _id: new Types.ObjectId(query.search)
             });
+
         }
 
         filter.$or = searchFilter;
+
     }
 
-    const totalCount = await BookingModel.countDocuments(filter);
+    const totalCount =
+        await PaymentModel.countDocuments(filter);
 
-    const totalPages = Math.ceil(totalCount / query.limit);
+    const totalPages =
+        Math.ceil(totalCount / query.limit);
 
-    const data = await BookingModel.aggregate([
+    const data =
+        await PaymentModel.aggregate([
 
-        {
-            $match: filter
-        },
+            {
+                $match: filter
+            },
 
-        {
-            $lookup: {
-                from: "users",
-                localField: "userId",
-                foreignField: "_id",
-                as: "user"
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+
+            {
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+
+            {
+                $lookup: {
+                    from: "vendors",
+                    localField: "vendorId",
+                    foreignField: "_id",
+                    as: "vendor"
+                }
+            },
+
+            {
+                $unwind: {
+                    path: "$vendor",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+
+            {
+                $lookup: {
+                    from: "bookings",
+                    localField: "bookingId",
+                    foreignField: "_id",
+                    as: "booking"
+                }
+            },
+
+            {
+                $unwind: {
+                    path: "$booking",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+
+            {
+                /*$sort: {
+                    createdAt:
+                        query.sortBy === "asc" ? 1 : -1
+                }*/
+               
+    $sort: {
+
+        amount:
+
+            query.sortBy === "highestAmount" ? -1 :
+
+            query.sortBy === "lowestAmount" ? 1 : undefined,
+
+        createdAt:
+
+            query.sortBy === "oldest" ? 1 : -1
+
+    }
+
+            },
+
+            {
+                $skip:
+                    (query.page - 1) * query.limit
+            },
+
+            {
+                $limit:
+                    query.limit
             }
-        },
 
-        {
-            $unwind: {
-                path: "$user",
-                preserveNullAndEmptyArrays: true
-            }
-        },
-
-        {
-            $lookup: {
-                from: "vendors",
-                localField: "vendorId",
-                foreignField: "_id",
-                as: "vendor"
-            }
-        },
-
-        {
-            $unwind: {
-                path: "$vendor",
-                preserveNullAndEmptyArrays: true
-            }
-        },
-
-        {
-            $lookup: {
-                from: "venues",
-                localField: "venueId",
-                foreignField: "_id",
-                as: "venue"
-            }
-        },
-
-        {
-            $unwind: {
-                path: "$venue",
-                preserveNullAndEmptyArrays: true
-            }
-        },
-
-        {
-            $sort: {
-                bookingDate: query.sortBy === "asc" ? 1 : -1
-            }
-        },
-  {
-            $skip: (query.page - 1) * query.limit
-        },
-
-        {
-            $limit: query.limit
-        }
-
-    ]);
+        ]);
 
     return {
+
         data,
+
         totalCount,
+
         totalPages
+
     };
 
 }

@@ -1,5 +1,5 @@
 import Express from 'express'
-import { iAdminBookingController, iAdminUserController } from '../../controllers/di.js'
+import { iAdminBookingController, iAdminUserController,iAdminPaymentController } from '../../controllers/di.js'
 import { iAdminVendorController } from '../../controllers/di.js'
 import { ROUTES } from '../../../shared/constants/routes.js'
 import { getAllUsersQuerySchema, updateUserStatusSchema } from '../../validators/adminUser.validator.js'
@@ -13,6 +13,7 @@ import {
 } from "../../validators/adminVenue.validator.js";
 import { iAdminVenueController } from '../../controllers/di.js'
 import { adminGetAllBookingsSchema, adminGetBookingByIdSchema } from '../../validators/adminBooking.validator.js'
+import { adminGetAllPaymentsSchema, adminGetPaymentByIdSchema} from '../../validators/adminPayment.validator.js'
 
 const router = Express.Router()
 //User
@@ -29,45 +30,45 @@ router.patch(
 router.get(ROUTES.ADMIN.VENDOR.GET_ALL, validate(getAllVendorsQuerySchema, 'query'), iAdminVendorController.getAllVendors)
 router.get(ROUTES.ADMIN.VENDOR.GET_BY_ID, iAdminVendorController.getVendorById)
 router.patch(ROUTES.ADMIN.VENDOR.APPROVE_VENDOR, iAdminVendorController.approveVendor)
-router.patch(ROUTES.ADMIN.VENDOR.REJECT_VENDOR,validate(rejectVendorBodySchema,'body'), iAdminVendorController.rejectVendor)
-router.patch( ROUTES.ADMIN.VENDOR.UPDATE_STATUS, validate(updateVendorStatusSchema, 'body'),iAdminVendorController.updateVendorStatus)
+router.patch(ROUTES.ADMIN.VENDOR.REJECT_VENDOR, validate(rejectVendorBodySchema, 'body'), iAdminVendorController.rejectVendor)
+router.patch(ROUTES.ADMIN.VENDOR.UPDATE_STATUS, validate(updateVendorStatusSchema, 'body'), iAdminVendorController.updateVendorStatus)
 
 //venue
 
-    router.get(
-        ROUTES.ADMIN.VENUE.GET_ALL,
-        validate(getAllVenuesQuerySchema,'query'),
-        iAdminVenueController.getAllVenues
-    );
+router.get(
+    ROUTES.ADMIN.VENUE.GET_ALL,
+    validate(getAllVenuesQuerySchema, 'query'),
+    iAdminVenueController.getAllVenues
+);
 
-    router.get(
-        ROUTES.ADMIN.VENUE.GET_BY_ID,
-        validate(venueIdParamSchema,'params'),
-        iAdminVenueController.getVenueById
-    );
+router.get(
+    ROUTES.ADMIN.VENUE.GET_BY_ID,
+    validate(venueIdParamSchema, 'params'),
+    iAdminVenueController.getVenueById
+);
 
-    router.patch(
-        ROUTES.ADMIN.VENUE.APPROVE_VENUE,
-        validate(venueIdParamSchema,'params'),
-        iAdminVenueController.approveVenue
-    );
+router.patch(
+    ROUTES.ADMIN.VENUE.APPROVE_VENUE,
+    validate(venueIdParamSchema, 'params'),
+    iAdminVenueController.approveVenue
+);
 
-    router.patch(
-        ROUTES.ADMIN.VENUE.REJECT_VENUE,
-        validate(venueIdParamSchema,'params',rejectVenueSchema,'body'),
-        iAdminVenueController.rejectVenue
-    );
+router.patch(
+    ROUTES.ADMIN.VENUE.REJECT_VENUE,
+    validate(venueIdParamSchema, 'params', rejectVenueSchema, 'body'),
+    iAdminVenueController.rejectVenue
+);
 
-    router.patch(
-        ROUTES.ADMIN.VENUE.UPDATE_STATUS,
-        validate(venueIdParamSchema,'params',updateVenueBlockStatusSchema,'body'),
-        iAdminVenueController.updateBlockStatus
-    );
+router.patch(
+    ROUTES.ADMIN.VENUE.UPDATE_STATUS,
+    validate(venueIdParamSchema, 'params', updateVenueBlockStatusSchema, 'body'),
+    iAdminVenueController.updateBlockStatus
+);
 
-    //booking
-    router.get(
+//booking
+router.get(
     ROUTES.ADMIN.BOOKING.GET_ALL,
-    validate(adminGetAllBookingsSchema,'query'),
+    validate(adminGetAllBookingsSchema, 'query'),
     iAdminBookingController.getAllBookings
 );
 
@@ -78,9 +79,27 @@ router.get(
 
 router.get(
     ROUTES.ADMIN.BOOKING.GET_BY_ID,
-    validate(adminGetBookingByIdSchema,'params'),
+    validate(adminGetBookingByIdSchema, 'params'),
     iAdminBookingController.getBookingById
 );
 
-    export default router
+//payment
+router.get(
+    ROUTES.ADMIN.PAYMENT.GET_ALL,
+    validate(adminGetAllPaymentsSchema, 'query'),
+    iAdminPaymentController.getAllPayments
+);
+
+router.get(
+    ROUTES.ADMIN.PAYMENT.GET_STATISTICS,
+    iAdminPaymentController.getPaymentStatistics
+);
+
+router.get(
+    ROUTES.ADMIN.PAYMENT.GET_BY_ID,
+    validate(adminGetPaymentByIdSchema, 'params'),
+    iAdminPaymentController.getPaymentById
+);
+
+export default router
 
