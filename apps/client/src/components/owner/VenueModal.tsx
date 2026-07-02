@@ -6,6 +6,8 @@ import { Step2AmenitiesInfo } from "./steps/Step2AmenitiesInfo";
 import { Step3Sessions } from "./steps/Step3Sessions";
 import { useCreateVenue } from "@/hooks/useCreateVenue";
 import { SessionInput, Venue } from "@bookmyvenue/types";
+import type { District, VenueCategory } from "@bookmyvenue/database/enums";
+import { useEditVenue } from "@/hooks/useEditVenue";
 
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
@@ -52,6 +54,7 @@ interface VenueModalProps {
 
 const VenueModal = ({ mode, venue, onClose }: VenueModalProps) => {
     const { mutate: createVenue, isPending, error } = useCreateVenue();
+    const { mutate: editVenue, isPending: editPending, error: editError } = useEditVenue();
 
     const [step, setStep] = useState<number>(1);
     const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -145,18 +148,15 @@ const VenueModal = ({ mode, venue, onClose }: VenueModalProps) => {
             name: form.name,
             description: form.description,
             capacity: Number(form.capacity),
-            category: form.category,
+            category: form.category as VenueCategory,
             location: form.location,
-            district: form.district,
+            district: form.district as District,
             images: imageUrls,
             amenities: form.amenities,
-            sessions: form.sessions.map(({ label, startTime, endTime, price }) => ({
-                label,
-                startTime,
-                endTime,
-                price: Number(price) * 100,
-            })),
+            sessions: form.sessions,
         };
+
+
 
         if (mode === "CREATE") {
             createVenue(payload, {
@@ -167,19 +167,11 @@ const VenueModal = ({ mode, venue, onClose }: VenueModalProps) => {
 
             console.log({ payload });
 
-            // editVenue(
-            //     {
-            //         id: venue!.id,
-            //         ...payload,
-            //     },
-            //     {
-            //         onSuccess: onClose,
-            //     },
-            // );
+            editVenue({ id: venue!.id, payload }, { onSuccess: onClose });
         }
     };
 
-    const isSubmitting = uploadingImages || isPending;
+    const isSubmitting = uploadingImages || isPending || editPending;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -245,7 +237,7 @@ const VenueModal = ({ mode, venue, onClose }: VenueModalProps) => {
 
                 {/* Footer */}
                 <div className="px-6 py-4 border-t border-border bg-muted/30 flex flex-col gap-2 shrink-0">
-                    {(error || errors.submit) && (
+                    {(error || errors.submit || editError) && (
                         <p className="text-xs text-destructive text-center">
                             {error?.message ?? errors.submit}
                         </p>
@@ -290,9 +282,11 @@ const VenueModal = ({ mode, venue, onClose }: VenueModalProps) => {
                                     ? "Uploading images..."
                                     : isPending
                                       ? "Publishing..."
-                                      : mode === "CREATE"
-                                        ? "Publish Venue"
-                                        : "Save Changes"}
+                                      : editPending
+                                        ? "Saving Changes..."
+                                        : mode === "CREATE"
+                                          ? "Publish Venue"
+                                          : "Save Changes"}
                             </button>
                         )}
                     </div>

@@ -17,9 +17,7 @@ const newSessionSchema = z
         label: z.string().min(1, "Session name is required"),
         startTime: z.string().min(1, "Start time is required"),
         endTime: z.string().min(1, "End time is required"),
-        price: z
-            .string()
-            .refine((v) => v !== "" && !isNaN(Number(v)) && Number(v) > 0, "Valid price is required"),
+        price: z.number("Valid price is required").positive("Valid price is required"),
     })
     .refine((d) => d.startTime < d.endTime, {
         message: "End time must be after start time",
@@ -40,7 +38,12 @@ interface Step3Props {
 }
 
 export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
-    const [newSession, setNewSession] = useState<SessionInput>({ label: "", startTime: "", endTime: "", price: 0 });
+    const [newSession, setNewSession] = useState<SessionInput>({
+        label: "",
+        startTime: "",
+        endTime: "",
+        price: 0,
+    });
     const [sessionError, setSessionError] = useState("");
 
     const addCustomSession = () => {
@@ -50,11 +53,14 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
             return;
         }
         setSessionError("");
-        setSessions([...form.sessions, { id: Date.now(), ...newSession }]);
+        setSessions([...form.sessions, { ...newSession }]);
         setNewSession({ label: "", startTime: "", endTime: "", price: 0 });
     };
 
-    const removeSession = (id: number) => setSessions(form.sessions.filter((s) => s.id !== id));
+    // const removeSession = (id: number) => setSessions(form.sessions.filter((s) => s.id !== id));
+    const removeSession = (index: number) => {
+        setSessions(form.sessions.filter((_, i) => i !== index));
+    };
 
     return (
         <div className="space-y-5">
@@ -114,9 +120,9 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
                         Sessions ({form.sessions.length})
                     </p>
                     <div className="space-y-2">
-                        {form.sessions.map((s) => (
+                        {form.sessions.map((s, index) => (
                             <div
-                                key={s.id}
+                                key={s.id ?? index}
                                 className="flex items-center justify-between px-4 py-3 rounded-xl border border-border bg-input-background"
                             >
                                 <div className="flex items-center gap-3">
@@ -138,7 +144,7 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
                                     )}
                                     <button
                                         type="button"
-                                        onClick={() => removeSession(Number(s.id))}
+                                        onClick={() => removeSession(Number(index))}
                                         className="text-muted-foreground hover:text-red-500 transition-colors"
                                     >
                                         <Trash2 className="w-4 h-4" />

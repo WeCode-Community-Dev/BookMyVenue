@@ -260,13 +260,10 @@ export const createVenue = async (
     return reply.status(201).send({ venue });
 };
 
-export async function editVenue(
-    request: FastifyRequest<{
-        Params: { id: string };
-        Body: EditVenueBody;
-    }>,
+export const editVenue = async (
+    request: FastifyRequest<{ Params: { id: string }; Body: EditVenueBody }>,
     reply: FastifyReply,
-) {
+) => {
     const venueId = Number(request.params.id);
     const body = request.body;
     const userId = request.userId;
@@ -355,4 +352,4 @@ export async function editVenue(
     return reply.send({
         message: "Venue updated successfully",
     });
-}
+};

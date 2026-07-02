@@ -6,7 +6,12 @@ import { bookingRoute } from "./routes/booking.route";
 import { reviewRoute } from "./routes/review.route";
 
 const app = Fastify({ logger: true });
-app.register(cors, { origin: true });
+// app.register(cors, { origin: true });
+await app.register(cors, {
+    origin: true, 
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+});
 app.register(clerkPlugin);
 
 app.register(venueRoute, { prefix: "/venue" });
