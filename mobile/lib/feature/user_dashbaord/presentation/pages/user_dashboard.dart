@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
+import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_cached_image.dart';
 import '../../../../core/widgets/app_text.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
+import '../../../../core/widgets/custom_text_field.dart';
 
 class UserDashboard extends StatefulWidget {
   const UserDashboard({super.key});
@@ -63,6 +65,7 @@ class _UserDashboardState extends State<UserDashboard> {
               vertical: 32.0,
             ),
             child: Column(
+              spacing: AppSpacing.spaceMd,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 // Top Greeting
@@ -86,75 +89,17 @@ class _UserDashboardState extends State<UserDashboard> {
                 Row(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: AppShapes.defaultBorder,
-                          boxShadow: <BoxShadow>[
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.04),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: TextFormField(
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText:
-                                'Search by city, venue name, or category...',
-                            prefixIcon: Icon(
-                              Icons.search,
-                              color: AppColors.onSurfaceVariant,
-                            ),
-                            suffixIcon: _searchController.text.isNotEmpty
-                                ? IconButton(
-                                    icon: const Icon(Icons.clear),
-                                    onPressed: () {
-                                      setState(() {
-                                        _searchController.clear();
-                                      });
-                                    },
-                                  )
-                                : null,
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: AppShapes.defaultBorder,
-                              borderSide: const BorderSide(
-                                color: AppColors.primary,
-                                width: 1.5,
-                              ),
-                            ),
-                          ),
-                          onChanged: (String val) {
-                            setState(() {});
-                          },
-                        ),
+                      child: CustomTextField(
+                        controller: _searchController,
+                        hint: 'Search by city, venue name...',
                       ),
                     ),
 
                     // Quick Action explore button
-                    Expanded(
-                      child: SizedBox(
-                        height: 56,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: AppShapes.defaultBorder,
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            elevation: 0,
-                          ),
-                          onPressed: () {
-                            // Change index tab to Explore (1)
-                            // appState.setActiveTab(1);
-                          },
-                          child: const Icon(Icons.tune),
-                        ),
-                      ),
+                    AppIconButton(
+                      icon: Icons.tune,
+                      onPressed: () {},
+                      size: AppSpacing.iconXl,
                     ),
                   ],
                 ),
@@ -171,6 +116,7 @@ class _UserDashboardState extends State<UserDashboard> {
                       return Container(
                         margin: const EdgeInsets.only(right: 12),
                         child: ChoiceChip(
+                          showCheckmark: false,
                           avatar: Icon(
                             cat['icon'] as IconData,
                             size: 16,
@@ -178,7 +124,12 @@ class _UserDashboardState extends State<UserDashboard> {
                                 ? Colors.white
                                 : AppColors.onSurfaceVariant,
                           ),
-                          label: AppText(cat['name'].toString()),
+                          label: AppText(
+                            cat['name'].toString(),
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.primaryDark,
+                          ),
                           selected: isSelected,
                           onSelected: (bool selected) {
                             setState(() {
@@ -401,15 +352,16 @@ class _UserDashboardState extends State<UserDashboard> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: <Color>[
-            AppColors.outlineFocus,
-            AppColors.primary,
-            AppColors.primaryDark,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+        color: AppColors.surface,
+        // gradient: const LinearGradient(
+        //   colors: <Color>[
+        //     AppColors.outlineFocus,
+        //     AppColors.primary,
+        //     AppColors.primaryDark,
+        //   ],
+        //   begin: Alignment.topCenter,
+        //   end: Alignment.bottomCenter,
+        // ),
         borderRadius: AppShapes.lg,
         boxShadow: <BoxShadow>[
           BoxShadow(
@@ -421,6 +373,7 @@ class _UserDashboardState extends State<UserDashboard> {
       ),
       padding: const EdgeInsets.all(24),
       child: Column(
+        spacing: AppSpacing.spaceMd,
         crossAxisAlignment: .start,
         children: <Widget>[
           Container(
