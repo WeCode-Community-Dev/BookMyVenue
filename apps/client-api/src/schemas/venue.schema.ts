@@ -43,6 +43,33 @@ export const getVenuesSchema = {
     },
 };
 
+const sessionProperties = {
+    label: { type: "string", minLength: 1 },
+    startTime: { type: "string" },
+    endTime: { type: "string" },
+    price: { type: "integer", minimum: 1 },
+};
+
+const existingSessionSchema = {
+    type: "object",
+    required: ["id", "label", "startTime", "endTime", "price", "isActive"],
+    properties: {
+        id: { type: "integer" },
+        ...sessionProperties,
+        isActive: { type: "boolean" },
+    },
+    additionalProperties: false,
+};
+
+const newSessionSchema = {
+    type: "object",
+    required: ["label", "startTime", "endTime", "price"],
+    properties: {
+        ...sessionProperties,
+    },
+    additionalProperties: false,
+};
+
 export const editVenueSchema = {
     body: {
         type: "object",
@@ -71,23 +98,7 @@ export const editVenueSchema = {
                 type: "array",
                 items: {
                     type: "object",
-                    oneOf: [
-                        {
-                            required: ["id"],
-                            properties: { id: { type: "integer" } },
-                            additionalProperties: false,
-                        },
-                        {
-                            required: ["label", "startTime", "endTime", "price"],
-                            properties: {
-                                label: { type: "string" },
-                                startTime: { type: "string" },
-                                endTime: { type: "string" },
-                                price: { type: "integer", minimum: 1 },
-                            },
-                            additionalProperties: false,
-                        },
-                    ],
+                    oneOf: [existingSessionSchema, newSessionSchema],
                 },
             },
         },

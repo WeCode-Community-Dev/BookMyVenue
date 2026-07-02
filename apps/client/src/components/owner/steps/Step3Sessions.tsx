@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { z } from "zod";
 import { fmt12h } from "@/lib/utils";
-import { Clock, Plus, Trash2 } from "lucide-react";
+import { Clock, Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { SessionInput } from "@bookmyvenue/types";
 
 // export interface Session {
@@ -62,6 +62,15 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
         setSessions(form.sessions.filter((_, i) => i !== index));
     };
 
+    const toggleSession = (index: number) => {
+        setSessions(
+            form.sessions.map((s, i) =>
+                i === index ? { ...s, isActive: s.isActive === false ? true : false } : s,
+            ),
+        );
+    };
+
+
     return (
         <div className="space-y-5">
             <div className="border border-border rounded-xl p-4 space-y-3 bg-secondary/30">
@@ -120,38 +129,83 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
                         Sessions ({form.sessions.length})
                     </p>
                     <div className="space-y-2">
-                        {form.sessions.map((s, index) => (
-                            <div
-                                key={s.id ?? index}
-                                className="flex items-center justify-between px-4 py-3 rounded-xl border border-border bg-input-background"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <Clock className="w-4 h-4 text-primary shrink-0" />
-                                    <div>
-                                        <p className="text-sm font-semibold text-foreground">{s.label}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {fmt12h(s.startTime)} – {fmt12h(s.endTime)}
-                                        </p>
+                        {form.sessions.map((s, index) => {
+                            const isInactive = s.isActive === false;
+                            return (
+                                <div
+                                    key={s.id ?? index}
+                                    className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${
+                                        isInactive
+                                            ? "border-dashed border-border bg-secondary/20 opacity-60"
+                                            : "border-border bg-input-background"
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <Clock
+                                            className={`w-4 h-4 shrink-0 ${
+                                                isInactive ? "text-muted-foreground" : "text-primary"
+                                            }`}
+                                        />
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <p
+                                                    className={`text-sm font-semibold ${
+                                                        isInactive
+                                                            ? "text-muted-foreground line-through"
+                                                            : "text-foreground"
+                                                    }`}
+                                                >
+                                                    {s.label}
+                                                </p>
+                                                {isInactive && (
+                                                    <span className="px-1.5 py-0.5 rounded-full bg-muted text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                                                        Inactive
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                {fmt12h(s.startTime)} – {fmt12h(s.endTime)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        {s.price ? (
+                                            <span
+                                                className={`text-sm font-medium ${
+                                                    isInactive ? "text-muted-foreground" : "text-foreground"
+                                                }`}
+                                            >
+                                                ₹{Number(s.price).toLocaleString("en-IN")}
+                                            </span>
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground">Base price</span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleSession(index)}
+                                            title={isInactive ? "Activate session" : "Deactivate session"}
+                                            className="text-muted-foreground hover:text-primary transition-colors"
+                                        >
+                                            {isInactive ? (
+                                                <EyeOff className="w-4 h-4" />
+                                            ) : (
+                                                <Eye className="w-4 h-4" />
+                                            )}
+                                        </button>
+                                        {/* Show delete button only when session is just created */}
+                                        {s.isActive == undefined && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeSession(Number(index))}
+                                                className="text-muted-foreground hover:text-red-500 transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    {s.price ? (
-                                        <span className="text-sm font-medium text-foreground">
-                                            ₹{Number(s.price).toLocaleString("en-IN")}
-                                        </span>
-                                    ) : (
-                                        <span className="text-xs text-muted-foreground">Base price</span>
-                                    )}
-                                    <button
-                                        type="button"
-                                        onClick={() => removeSession(Number(index))}
-                                        className="text-muted-foreground hover:text-red-500 transition-colors"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             )}

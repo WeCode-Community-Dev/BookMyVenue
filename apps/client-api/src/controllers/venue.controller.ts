@@ -205,7 +205,6 @@ export const editVenue = async (
     }
 
     await prisma.$transaction(async (tx) => {
-        // Update venue
         await tx.venue.update({
             where: { id: venueId },
             data: {
