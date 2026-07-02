@@ -183,7 +183,7 @@ class VerificationStatusCard extends StatelessWidget {
                       ? null
                       : () {
                           context.read<OwnerAuthBloc>().add(
-                            const OwnerAuthEvent.getOwnerProfile(),
+                            const OwnerAuthEvent.getOwnerProfileStatus(),
                           );
                         },
                 ),

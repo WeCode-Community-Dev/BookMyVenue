@@ -6,6 +6,7 @@ import '../../../../core/network/api_response_wrapper.dart';
 import '../../../../core/network/base_remote_data_source.dart';
 import '../../../../core/network/endpoints/auth_endpoints.dart';
 import '../model/owner/reqeust_model/register_request_model.dart';
+import '../model/owner/response_model/owner_profile_status_model.dart';
 import '../model/owner/response_model/register_response_model.dart';
 import '../model/user/request_model/otp_request/otp_request.dart';
 import '../model/user/request_model/verify_otp_request/verify_otp_request.dart';
@@ -93,17 +94,18 @@ class AuthOwnerRemoteDataSourceImpl extends BaseRemoteDataSourceImpl
   }
 
   @override
-  Future<ApiResponse<UserModel>> getOwnerProfile() {
+  Future<ApiResponse<OwnerProfileStatusModel>> getOwnerProfileStatus() {
     return safeApiCall(() async {
       final Response<dynamic> res = await dio.get(
-        AuthOwnerEndpoints.ownerProfile,
+        AuthOwnerEndpoints.ownerProfileStatus,
       );
 
       AppLogger.debug('${res.data} data source');
 
       return ApiResponseMapper.fromJson(
         res.data as Map<String, dynamic>,
-        (Object? data) => UserModel.fromJson(data! as Map<String, dynamic>),
+        (Object? data) =>
+            OwnerProfileStatusModel.fromJson(data! as Map<String, dynamic>),
       );
     });
   }

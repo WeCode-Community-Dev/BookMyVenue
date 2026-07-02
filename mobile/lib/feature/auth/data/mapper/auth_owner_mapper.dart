@@ -1,4 +1,5 @@
 import '../../domain/entity/owner_entity.dart';
+import '../model/owner/response_model/owner_profile_status_model.dart';
 import '../model/owner/response_model/register_response_model.dart';
 
 extension RegisterDataMapper on RegisterResponseModel {
@@ -52,6 +53,15 @@ extension OwnerBusinessProfileModelMapper on OwnerBusinessProfileModel {
       approvalStatus: approvalStatus,
       createdAt: createdAt,
       updatedAt: updatedAt,
+    );
+  }
+}
+
+extension OwnerProfileStatusMapper on OwnerProfileStatusModel {
+  OwnerProfileStatusEntity toEntity() {
+    return OwnerProfileStatusEntity(
+      ownerId: ownerId,
+      approvalStatus: approvalStatus,
     );
   }
 }

@@ -9,5 +9,5 @@ abstract class OwnerAuthEvent with _$OwnerAuthEvent {
   const factory OwnerAuthEvent.verifyOwnerOtp({
     required VerifyOwnerOtpParams requestParam,
   }) = _VerifyOwnerOtpEvent;
-  const factory OwnerAuthEvent.getOwnerProfile() = _GetOwnerProfile;
+  const factory OwnerAuthEvent.getOwnerProfileStatus() = _GetOwnerProfileStatus;
 }

@@ -15,6 +15,7 @@ class AuthOwnerEndpoints {
 
   static String get requestOtp => '$_v1/request-otp';
   static String get verifyOtp => '$_v1/verify-otp';
+  static String get ownerProfileStatus => '$_v1/profile-status';
   static String get ownerProfile => '$_v1/profile';
   static String get refreshToken => '$_v1/refresh-token';
 }

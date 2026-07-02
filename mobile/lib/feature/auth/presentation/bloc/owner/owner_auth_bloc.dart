@@ -11,7 +11,7 @@ import '../../../../../core/usecase/usecase.dart';
 import '../../../domain/entity/owner_entity.dart';
 import '../../../domain/enums/approval_status.dart';
 import '../../../domain/params/auth_param.dart';
-import '../../../domain/usecase/get_owner_profile_usecase.dart';
+import '../../../domain/usecase/get_owner_profile_status_usecase.dart';
 import '../../../domain/usecase/register_account_usecase.dart';
 import '../../../domain/usecase/verify_owner_otp_usecase.dart';
 
@@ -24,21 +24,21 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
     required RegisterAccountUseCase registerAccountUseCase,
     required VerifyOwnerOtpUseCase verifyOwnerOtpUseCase,
     required NotificationService notificationService,
-    required GetOwnerProfileUseCase ownerProfileUseCase,
-  }) : _ownerProfileUseCase = ownerProfileUseCase,
+    required GetOwnerProfileStatusUseCase ownerProfileStatusUseCase,
+  }) : _ownerProfileStatusUseCase = ownerProfileStatusUseCase,
        _registerAccountUseCase = registerAccountUseCase,
        _verifyOwnerOtpUseCase = verifyOwnerOtpUseCase,
        _notificationService = notificationService,
        super(const _OwnerAuthState()) {
     on<_RegisterAccountEvent>(_onRegisterAccountEvent);
     on<_VerifyOwnerOtpEvent>(_onVerifyOwnerOtp);
-    on<_GetOwnerProfile>(_onGetOwnerProfile);
+    on<_GetOwnerProfileStatus>(_onGetOwnerProfileStatus);
   }
 
   final RegisterAccountUseCase _registerAccountUseCase;
   final VerifyOwnerOtpUseCase _verifyOwnerOtpUseCase;
   final NotificationService _notificationService;
-  final GetOwnerProfileUseCase _ownerProfileUseCase;
+  final GetOwnerProfileStatusUseCase _ownerProfileStatusUseCase;
 
   FutureOr<void> _onRegisterAccountEvent(
     _RegisterAccountEvent event,
@@ -126,8 +126,8 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
     );
   }
 
-  FutureOr<void> _onGetOwnerProfile(
-    _GetOwnerProfile event,
+  FutureOr<void> _onGetOwnerProfileStatus(
+    _GetOwnerProfileStatus event,
     Emitter<OwnerAuthState> emit,
   ) async {
     emit(
@@ -139,8 +139,8 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
       ),
     );
 
-    final Either<Failure, OwnerProfileResponseResult> result =
-        await _ownerProfileUseCase(const NoParams());
+    final Either<Failure, OwnerProfileStatusResult> result =
+        await _ownerProfileStatusUseCase(const NoParams());
 
     result.fold(
       (Failure failure) {
@@ -152,17 +152,12 @@ class OwnerAuthBloc extends Bloc<OwnerAuthEvent, OwnerAuthState> {
           ),
         );
       },
-      (OwnerProfileResponseResult verifyOtpResult) {
+      (OwnerProfileStatusResult statusResult) {
         emit(
           state.copyWith(
             isVerificationRequestLoading: false,
-            approvalStatus:
-                verifyOtpResult
-                    .user
-                    .ownerBusinessProfileEntity
-                    ?.approvalStatus ??
-                ApprovalStatus.pending,
-            verificationSuccessMessage: verifyOtpResult.message,
+            approvalStatus: statusResult.status.approvalStatus,
+            verificationSuccessMessage: statusResult.message,
           ),
         );
       },

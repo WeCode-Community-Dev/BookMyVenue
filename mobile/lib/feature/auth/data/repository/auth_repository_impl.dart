@@ -15,6 +15,7 @@ import '../datasource/i_auth_remote_datasource.dart';
 import '../mapper/auth_owner_mapper.dart';
 import '../mapper/auth_user_mapper.dart';
 import '../model/owner/reqeust_model/register_request_model.dart';
+import '../model/owner/response_model/owner_profile_status_model.dart';
 import '../model/owner/response_model/register_response_model.dart';
 import '../model/user/request_model/otp_request/otp_request.dart';
 import '../model/user/request_model/verify_otp_request/verify_otp_request.dart';
@@ -26,8 +27,10 @@ class AuthRepositoryImpl extends BaseRepository implements IAuthRepository {
     required this.remoteDataSource,
     required this.localDatasource,
   });
+
   final IAuthRemoteDatasource remoteDataSource;
   final IAuthLocalDatasource localDatasource;
+
   @override
   ResultFuture<OtpResponseResult> requestOtp({
     required OtpRequestParams params,
@@ -37,10 +40,12 @@ class AuthRepositoryImpl extends BaseRepository implements IAuthRepository {
       final ApiResponse<OtpResponse> response = await remoteDataSource
           .requestOtp(request);
 
-      return OtpResponseResult(
+      final OtpResponseResult result = OtpResponseResult(
         user: response.data!.toEntity(),
         message: response.message ?? '',
       );
+
+      return result;
     });
   }
 
@@ -153,25 +158,25 @@ class OwnerAuthRepositoryImpl extends BaseRepository
   }
 
   @override
-  ResultFuture<OwnerProfileResponseResult> getOwnerProfile() {
+  ResultFuture<OwnerProfileStatusResult> getOwnerProfileStatus() {
     return handleRequest(() async {
-      final ApiResponse<UserModel> response = await remoteDataSource
-          .getOwnerProfile();
+      final ApiResponse<OwnerProfileStatusModel> response = await remoteDataSource
+          .getOwnerProfileStatus();
 
       if (response.data != null) {
         AuthSessionModel? authSession = await sl<SecureStorageService>()
             .getSession();
         if (authSession != null) {
           authSession = authSession.copyWith(
-            status: response.data?.ownerProfile?.approvalStatus,
+            status: response.data!.approvalStatus,
           );
           await localDatasource.saveToken(authSession);
           await AuthSession.init();
         }
       }
 
-      return OwnerProfileResponseResult(
-        user: response.data!.toEntity(),
+      return OwnerProfileStatusResult(
+        status: response.data!.toEntity(),
         message: response.message ?? '',
       );
     });

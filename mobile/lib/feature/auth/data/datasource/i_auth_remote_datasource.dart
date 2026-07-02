@@ -1,5 +1,6 @@
 import '../../../../core/model/api_response.dart';
 import '../model/owner/reqeust_model/register_request_model.dart';
+import '../model/owner/response_model/owner_profile_status_model.dart';
 import '../model/owner/response_model/register_response_model.dart';
 import '../model/user/request_model/otp_request/otp_request.dart';
 import '../model/user/request_model/verify_otp_request/verify_otp_request.dart';
@@ -18,5 +19,5 @@ abstract interface class IAuthOwnerDataSource {
   Future<ApiResponse<VerifyOwnerOtpResponseModel>> verifyOwnerOtp(
     VerifyOwnerOtpRequest request,
   );
-  Future<ApiResponse<UserModel>> getOwnerProfile();
+  Future<ApiResponse<OwnerProfileStatusModel>> getOwnerProfileStatus();
 }

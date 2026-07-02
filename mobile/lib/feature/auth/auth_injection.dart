@@ -8,7 +8,7 @@ import 'data/datasource/auth_remote_datasource_impl.dart';
 import 'data/datasource/i_auth_remote_datasource.dart';
 import 'data/repository/auth_repository_impl.dart';
 import 'domain/repository/i_auth_repository.dart';
-import 'domain/usecase/get_owner_profile_usecase.dart';
+import 'domain/usecase/get_owner_profile_status_usecase.dart';
 import 'domain/usecase/register_account_usecase.dart';
 import 'domain/usecase/request_otp_usecase.dart';
 import 'domain/usecase/verify_otp_usecase.dart';
@@ -76,8 +76,9 @@ Future<void> registerOwnerAuthDependencies() async {
         VerifyOwnerOtpUseCase(ownerAuthRepository: sl<IOwnerAuthRepository>()),
   );
   sl.registerLazySingleton(
-    () =>
-        GetOwnerProfileUseCase(ownerAuthRepository: sl<IOwnerAuthRepository>()),
+    () => GetOwnerProfileStatusUseCase(
+      ownerAuthRepository: sl<IOwnerAuthRepository>(),
+    ),
   );
 
   /// Bloc
@@ -86,7 +87,7 @@ Future<void> registerOwnerAuthDependencies() async {
       registerAccountUseCase: sl<RegisterAccountUseCase>(),
       verifyOwnerOtpUseCase: sl<VerifyOwnerOtpUseCase>(),
       notificationService: sl<NotificationService>(),
-      ownerProfileUseCase: sl<GetOwnerProfileUseCase>(),
+      ownerProfileStatusUseCase: sl<GetOwnerProfileStatusUseCase>(),
     ),
   );
 }

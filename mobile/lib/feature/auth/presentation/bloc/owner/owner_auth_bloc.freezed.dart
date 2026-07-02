@@ -55,13 +55,13 @@ extension OwnerAuthEventPatterns on OwnerAuthEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _RegisterAccountEvent value)?  registerAccount,TResult Function( _VerifyOwnerOtpEvent value)?  verifyOwnerOtp,TResult Function( _GetOwnerProfile value)?  getOwnerProfile,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _RegisterAccountEvent value)?  registerAccount,TResult Function( _VerifyOwnerOtpEvent value)?  verifyOwnerOtp,TResult Function( _GetOwnerProfileStatus value)?  getOwnerProfileStatus,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _RegisterAccountEvent() when registerAccount != null:
 return registerAccount(_that);case _VerifyOwnerOtpEvent() when verifyOwnerOtp != null:
-return verifyOwnerOtp(_that);case _GetOwnerProfile() when getOwnerProfile != null:
-return getOwnerProfile(_that);case _:
+return verifyOwnerOtp(_that);case _GetOwnerProfileStatus() when getOwnerProfileStatus != null:
+return getOwnerProfileStatus(_that);case _:
   return orElse();
 
 }
@@ -79,13 +79,13 @@ return getOwnerProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _RegisterAccountEvent value)  registerAccount,required TResult Function( _VerifyOwnerOtpEvent value)  verifyOwnerOtp,required TResult Function( _GetOwnerProfile value)  getOwnerProfile,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _RegisterAccountEvent value)  registerAccount,required TResult Function( _VerifyOwnerOtpEvent value)  verifyOwnerOtp,required TResult Function( _GetOwnerProfileStatus value)  getOwnerProfileStatus,}){
 final _that = this;
 switch (_that) {
 case _RegisterAccountEvent():
 return registerAccount(_that);case _VerifyOwnerOtpEvent():
-return verifyOwnerOtp(_that);case _GetOwnerProfile():
-return getOwnerProfile(_that);case _:
+return verifyOwnerOtp(_that);case _GetOwnerProfileStatus():
+return getOwnerProfileStatus(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -102,13 +102,13 @@ return getOwnerProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _RegisterAccountEvent value)?  registerAccount,TResult? Function( _VerifyOwnerOtpEvent value)?  verifyOwnerOtp,TResult? Function( _GetOwnerProfile value)?  getOwnerProfile,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _RegisterAccountEvent value)?  registerAccount,TResult? Function( _VerifyOwnerOtpEvent value)?  verifyOwnerOtp,TResult? Function( _GetOwnerProfileStatus value)?  getOwnerProfileStatus,}){
 final _that = this;
 switch (_that) {
 case _RegisterAccountEvent() when registerAccount != null:
 return registerAccount(_that);case _VerifyOwnerOtpEvent() when verifyOwnerOtp != null:
-return verifyOwnerOtp(_that);case _GetOwnerProfile() when getOwnerProfile != null:
-return getOwnerProfile(_that);case _:
+return verifyOwnerOtp(_that);case _GetOwnerProfileStatus() when getOwnerProfileStatus != null:
+return getOwnerProfileStatus(_that);case _:
   return null;
 
 }
@@ -125,12 +125,12 @@ return getOwnerProfile(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( OwnerRegisterParams requestParam)?  registerAccount,TResult Function( VerifyOwnerOtpParams requestParam)?  verifyOwnerOtp,TResult Function()?  getOwnerProfile,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( OwnerRegisterParams requestParam)?  registerAccount,TResult Function( VerifyOwnerOtpParams requestParam)?  verifyOwnerOtp,TResult Function()?  getOwnerProfileStatus,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _RegisterAccountEvent() when registerAccount != null:
 return registerAccount(_that.requestParam);case _VerifyOwnerOtpEvent() when verifyOwnerOtp != null:
-return verifyOwnerOtp(_that.requestParam);case _GetOwnerProfile() when getOwnerProfile != null:
-return getOwnerProfile();case _:
+return verifyOwnerOtp(_that.requestParam);case _GetOwnerProfileStatus() when getOwnerProfileStatus != null:
+return getOwnerProfileStatus();case _:
   return orElse();
 
 }
@@ -148,12 +148,12 @@ return getOwnerProfile();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( OwnerRegisterParams requestParam)  registerAccount,required TResult Function( VerifyOwnerOtpParams requestParam)  verifyOwnerOtp,required TResult Function()  getOwnerProfile,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( OwnerRegisterParams requestParam)  registerAccount,required TResult Function( VerifyOwnerOtpParams requestParam)  verifyOwnerOtp,required TResult Function()  getOwnerProfileStatus,}) {final _that = this;
 switch (_that) {
 case _RegisterAccountEvent():
 return registerAccount(_that.requestParam);case _VerifyOwnerOtpEvent():
-return verifyOwnerOtp(_that.requestParam);case _GetOwnerProfile():
-return getOwnerProfile();case _:
+return verifyOwnerOtp(_that.requestParam);case _GetOwnerProfileStatus():
+return getOwnerProfileStatus();case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -170,12 +170,12 @@ return getOwnerProfile();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( OwnerRegisterParams requestParam)?  registerAccount,TResult? Function( VerifyOwnerOtpParams requestParam)?  verifyOwnerOtp,TResult? Function()?  getOwnerProfile,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( OwnerRegisterParams requestParam)?  registerAccount,TResult? Function( VerifyOwnerOtpParams requestParam)?  verifyOwnerOtp,TResult? Function()?  getOwnerProfileStatus,}) {final _that = this;
 switch (_that) {
 case _RegisterAccountEvent() when registerAccount != null:
 return registerAccount(_that.requestParam);case _VerifyOwnerOtpEvent() when verifyOwnerOtp != null:
-return verifyOwnerOtp(_that.requestParam);case _GetOwnerProfile() when getOwnerProfile != null:
-return getOwnerProfile();case _:
+return verifyOwnerOtp(_that.requestParam);case _GetOwnerProfileStatus() when getOwnerProfileStatus != null:
+return getOwnerProfileStatus();case _:
   return null;
 
 }
@@ -318,8 +318,8 @@ as VerifyOwnerOtpParams,
 /// @nodoc
 
 
-class _GetOwnerProfile implements OwnerAuthEvent {
-  const _GetOwnerProfile();
+class _GetOwnerProfileStatus implements OwnerAuthEvent {
+  const _GetOwnerProfileStatus();
   
 
 
@@ -329,7 +329,7 @@ class _GetOwnerProfile implements OwnerAuthEvent {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GetOwnerProfile);
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GetOwnerProfileStatus);
 }
 
 
@@ -338,7 +338,7 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'OwnerAuthEvent.getOwnerProfile()';
+  return 'OwnerAuthEvent.getOwnerProfileStatus()';
 }
 
 
