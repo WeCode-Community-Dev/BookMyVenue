@@ -58,6 +58,10 @@ export type PaymentMethod = 'online' | 'cash';
 
 export type BookingStatus = 'pending' | 'reserved' | 'confirmed' | 'cancelled' | 'completed' | 'expired';
 
+export type CancellationType = 'SYSTEM' | 'USER';
+
+export type RefundStatus = 'NOT_ELIGIBLE' | 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+
 export type PaymentStatus =
   | 'pending'
   | 'partial'
@@ -105,6 +109,9 @@ export interface Booking {
   isImmediatePaymentRequired: boolean;
 
   cancellationReason: string;
+  cancellationType: CancellationType | null;
+  refundStatus: RefundStatus;
+  refundAmount: number;
 
   createdAt: string;
   updatedAt: string;

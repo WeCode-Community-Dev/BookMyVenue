@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { Loader2, Calendar } from 'lucide-react';
 import { useAsyncFetch } from '@/shared/hooks/useAsyncFetch';
 import { usersApi } from '../../services/users.api';
-import BookingCard from '../ui/BookingCard';
 import BookingFilters from '../ui/BookingFilters';
 import type { MyBookingsResponse } from '../../types';
+import BookingCard from '../ui/BookingCard';
 
 export default function UserBookings() {
   const {

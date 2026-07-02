@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { BookingStatus, BookingScenario, PaymentMethod, PaymentStatus } from '../constants/booking';
+import { BookingStatus, BookingScenario, PaymentMethod, PaymentStatus, CancellationType, RefundStatus } from '../constants/booking';
 
 const bookingSchema = new Schema(
   {
@@ -127,6 +127,24 @@ const bookingSchema = new Schema(
     cancelledAt: {
       type: Date,
       default: null,
+    },
+
+    cancellationType: {
+      type: String,
+      enum: Object.values(CancellationType),
+      default: null,
+    },
+
+    refundStatus: {
+      type: String,
+      enum: Object.values(RefundStatus),
+      default: RefundStatus.NOT_ELIGIBLE,
+    },
+
+    refundAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   {

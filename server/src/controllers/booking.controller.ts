@@ -7,7 +7,6 @@ import {
   createBookingService,
   getBookingByVenueId,
   verifyAndConfirmDepositService,
-  cancelPendingBookingService,
   cancelBookingService,
   deleteBookingService,
   payBalanceService,
