@@ -3,8 +3,6 @@ import { ChevronDown } from "lucide-react";
 import { ImageUpload } from "../ImageUpload";
 import { formatEnum } from "@/lib/utils";
 
-
-
 interface Step1Props {
     form: {
         name: string;
@@ -24,9 +22,7 @@ export function Step1BasicDetails({ form, errors, set, setImages, onPendingChang
     return (
         <div className="space-y-4">
             <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">
-                    Venue Name
-                </label>
+                <label className="block text-sm font-semibold text-foreground mb-1.5">Venue Name</label>
                 <input
                     className={`w-full px-4 py-2.5 bg-input-background border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${errors.name ? "border-red-400" : "border-border"}`}
                     placeholder="e.g. The Royal Pavilion"
@@ -38,9 +34,7 @@ export function Step1BasicDetails({ form, errors, set, setImages, onPendingChang
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">
-                        District
-                    </label>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">District</label>
                     <div className="relative">
                         <select
                             className={`w-full px-4 py-2.5 bg-input-background border rounded-xl text-sm text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring ${errors.district ? "border-red-400" : "border-border"}`}
@@ -49,20 +43,18 @@ export function Step1BasicDetails({ form, errors, set, setImages, onPendingChang
                         >
                             <option value="">Select district</option>
                             {DISTRICTS.map((d) => (
-                                <option key={d} value={d}>{formatEnum(d)}</option>
+                                <option key={d} value={d}>
+                                    {formatEnum(d)}
+                                </option>
                             ))}
                         </select>
                         <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-muted-foreground pointer-events-none" />
                     </div>
-                    {errors.district && (
-                        <p className="text-red-500 text-xs mt-1">{errors.district}</p>
-                    )}
+                    {errors.district && <p className="text-red-500 text-xs mt-1">{errors.district}</p>}
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold text-foreground mb-1.5">
-                        Category
-                    </label>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">Category</label>
                     <div className="relative">
                         <select
                             className={`w-full px-4 py-2.5 bg-input-background border rounded-xl text-sm text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring ${errors.category ? "border-red-400" : "border-border"}`}
@@ -71,14 +63,14 @@ export function Step1BasicDetails({ form, errors, set, setImages, onPendingChang
                         >
                             <option value="">Select category</option>
                             {VENUE_CATEGORIES.map((c) => (
-                                <option key={c} value={c}>{formatEnum(c)}</option>
+                                <option key={c} value={c}>
+                                    {formatEnum(c)}
+                                </option>
                             ))}
                         </select>
                         <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-muted-foreground pointer-events-none" />
                     </div>
-                    {errors.category && (
-                        <p className="text-red-500 text-xs mt-1">{errors.category}</p>
-                    )}
+                    {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                 </div>
             </div>
 
@@ -94,16 +86,12 @@ export function Step1BasicDetails({ form, errors, set, setImages, onPendingChang
                         value={form.capacity}
                         onChange={(e) => set("capacity", e.target.value)}
                     />
-                    {errors.capacity && (
-                        <p className="text-red-500 text-xs mt-1">{errors.capacity}</p>
-                    )}
+                    {errors.capacity && <p className="text-red-500 text-xs mt-1">{errors.capacity}</p>}
                 </div>
             </div>
 
             <div>
-                <label className="block text-sm font-semibold text-foreground mb-1.5">
-                    Full Address
-                </label>
+                <label className="block text-sm font-semibold text-foreground mb-1.5">Full Address</label>
                 <input
                     className={`w-full px-4 py-2.5 bg-input-background border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${errors.location ? "border-red-400" : "border-border"}`}
                     placeholder="Street, city, PIN code"
@@ -113,7 +101,12 @@ export function Step1BasicDetails({ form, errors, set, setImages, onPendingChang
                 {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
             </div>
 
-            <ImageUpload images={form.images} setImages={setImages} onPendingChange={onPendingChange} error={errors.images} />
+            <ImageUpload
+                images={form.images}
+                setImages={setImages}
+                onPendingChange={onPendingChange}
+                error={errors.images}
+            />
             {errors.images && <p className="text-red-500 text-xs mt-1">{errors.images}</p>}
         </div>
     );

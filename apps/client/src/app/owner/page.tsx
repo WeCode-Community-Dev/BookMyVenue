@@ -11,7 +11,8 @@ import NavTabs from "@/components/owner/NavTabs";
 import OverviewTab from "@/components/owner/OverviewTab";
 import BookingsTab from "@/components/owner/BookingsTab";
 import VenuesTab from "@/components/owner/VenuesTab";
-import AddVenueModal from "@/components/owner/AddVenueModal";
+import AddVenueModal from "@/components/owner/VenueModal";
+import VenueModal from "@/components/owner/VenueModal";
 
 type Tab = "overview" | "bookings" | "venues";
 
@@ -68,7 +69,7 @@ export default function OwnerDashboard() {
                 </div>
             )}
 
-            {showModal && <AddVenueModal onClose={() => setShowModal(false)} />}
+            {showModal && <VenueModal mode="CREATE" onClose={() => setShowModal(false)} />}
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">

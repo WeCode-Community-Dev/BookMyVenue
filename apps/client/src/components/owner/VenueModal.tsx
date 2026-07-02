@@ -3,8 +3,9 @@ import { z } from "zod";
 import { X, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Step1BasicDetails } from "./steps/Step1BasicDetails";
 import { Step2AmenitiesInfo } from "./steps/Step2AmenitiesInfo";
-import { Step3Sessions, type Session } from "./steps/Step3Sessions";
+import { Step3Sessions } from "./steps/Step3Sessions";
 import { useCreateVenue } from "@/hooks/useCreateVenue";
+import { SessionInput, Venue } from "@bookmyvenue/types";
 
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
@@ -43,29 +44,35 @@ const step3Schema = z.object({
 
 const STEP_LABELS = ["Basic Details", "Amenities & Info", "Sessions"];
 
-function AddVenueModal({ onClose }: { onClose: () => void }) {
+interface VenueModalProps {
+    mode: "CREATE" | "EDIT";
+    venue?: Venue;
+    onClose: () => void;
+}
+
+const VenueModal = ({ mode, venue, onClose }: VenueModalProps) => {
     const { mutate: createVenue, isPending, error } = useCreateVenue();
 
     const [step, setStep] = useState<number>(1);
     const [pendingFiles, setPendingFiles] = useState<File[]>([]);
     const [uploadingImages, setUploadingImages] = useState(false);
     const [form, setForm] = useState({
-        name: "",
-        district: "",
-        category: "",
-        capacity: "",
-        description: "",
-        location: "",
-        images: [] as string[],
-        amenities: [] as string[],
-        sessions: [] as Session[],
+        name: venue?.name ?? "",
+        district: venue?.district ?? "",
+        category: venue?.category ?? "",
+        capacity: venue?.capacity.toString() ?? "",
+        description: venue?.description ?? "",
+        location: venue?.location ?? "",
+        images: venue?.images ?? [],
+        amenities: venue?.amenities ?? [],
+        sessions: venue?.sessions ?? [],
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
     const setImages = (images: string[]) => setForm((f) => ({ ...f, images }));
     const setAmenities = (amenities: string[]) => setForm((f) => ({ ...f, amenities }));
-    const setSessions = (sessions: Session[]) => setForm((f) => ({ ...f, sessions }));
+    const setSessions = (sessions: SessionInput[]) => setForm((f) => ({ ...f, sessions }));
 
     const validate1 = () => {
         const result = step1Schema.safeParse(form);
@@ -134,25 +141,42 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
             imageUrls = [...imageUrls, ...(results as string[])];
         }
 
-        createVenue(
-            {
-                name: form.name,
-                description: form.description,
-                capacity: Number(form.capacity),
-                category: form.category,
-                location: form.location,
-                district: form.district,
-                images: imageUrls,
-                amenities: form.amenities,
-                sessions: form.sessions.map(({ label, startTime, endTime, price }) => ({
-                    label,
-                    startTime,
-                    endTime,
-                    price: Number(price) * 100,
-                })),
-            },
-            { onSuccess: onClose },
-        );
+        const payload = {
+            name: form.name,
+            description: form.description,
+            capacity: Number(form.capacity),
+            category: form.category,
+            location: form.location,
+            district: form.district,
+            images: imageUrls,
+            amenities: form.amenities,
+            sessions: form.sessions.map(({ label, startTime, endTime, price }) => ({
+                label,
+                startTime,
+                endTime,
+                price: Number(price) * 100,
+            })),
+        };
+
+        if (mode === "CREATE") {
+            createVenue(payload, {
+                onSuccess: onClose,
+            });
+        } else {
+            console.log("EDIT >> ");
+
+            console.log({ payload });
+
+            // editVenue(
+            //     {
+            //         id: venue!.id,
+            //         ...payload,
+            //     },
+            //     {
+            //         onSuccess: onClose,
+            //     },
+            // );
+        }
     };
 
     const isSubmitting = uploadingImages || isPending;
@@ -165,7 +189,9 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
                 {/* Header */}
                 <div className="bg-primary px-6 py-5 flex items-center justify-between shrink-0">
                     <div>
-                        <h2 className="text-lg font-bold text-primary-foreground">Add New Venue</h2>
+                        <h2 className="text-lg font-bold text-primary-foreground">
+                            {mode === "CREATE" ? "Add New Venue" : "Edit Venue"}
+                        </h2>
                         <p className="text-primary-foreground/60 text-xs mt-0.5">
                             Step {step} of 3 — {STEP_LABELS[step - 1]}
                         </p>
@@ -264,7 +290,9 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
                                     ? "Uploading images..."
                                     : isPending
                                       ? "Publishing..."
-                                      : "Publish Venue"}
+                                      : mode === "CREATE"
+                                        ? "Publish Venue"
+                                        : "Save Changes"}
                             </button>
                         )}
                     </div>
@@ -272,6 +300,6 @@ function AddVenueModal({ onClose }: { onClose: () => void }) {
             </div>
         </div>
     );
-}
+};
 
-export default AddVenueModal;
+export default VenueModal;

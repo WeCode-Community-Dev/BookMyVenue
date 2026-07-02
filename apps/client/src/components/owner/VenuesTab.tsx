@@ -5,6 +5,8 @@ import Image from "next/image";
 import { MapPin, Pencil, Star, Trash2 } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { useOwnerVenues } from "@/hooks/useVenues";
+import { Venue } from "@bookmyvenue/types";
+import VenueModal from "./VenueModal";
 
 const STATUS_STYLE = {
     APPROVED: "bg-emerald-200 text-emerald-700 border-emerald-700",
@@ -13,8 +15,9 @@ const STATUS_STYLE = {
 } as const;
 
 export default function VenuesTab() {
-    const { getToken } = useAuth();
+    const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
     const [token, setToken] = useState("");
+    const { getToken } = useAuth();
 
     useEffect(() => {
         const fetchToken = async () => {
@@ -137,6 +140,7 @@ export default function VenuesTab() {
 
                                 <div className="flex gap-2 pt-3 border-t border-border">
                                     <button
+                                        onClick={() => setEditingVenue(v)}
                                         disabled={v.verificationStatus === "PENDING"}
                                         className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-foreground bg-muted hover:bg-secondary rounded-lg py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
@@ -152,6 +156,9 @@ export default function VenuesTab() {
                         </div>
                     ))}
                 </div>
+            )}
+            {editingVenue && (
+                <VenueModal mode="EDIT" venue={editingVenue} onClose={() => setEditingVenue(null)} />
             )}
         </div>
     );

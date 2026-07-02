@@ -2,14 +2,15 @@ import { useState } from "react";
 import { z } from "zod";
 import { fmt12h } from "@/lib/utils";
 import { Clock, Plus, Trash2 } from "lucide-react";
+import { SessionInput } from "@bookmyvenue/types";
 
-export interface Session {
-    id: string;
-    label: string;
-    startTime: string;
-    endTime: string;
-    price: string;
-}
+// export interface Session {
+//     id?: number;
+//     label: string;
+//     startTime: string;
+//     endTime: string;
+//     price: string;
+// }
 
 const newSessionSchema = z
     .object({
@@ -32,14 +33,14 @@ interface Step3Props {
         category: string;
         capacity: string;
         amenities: string[];
-        sessions: Session[];
+        sessions: SessionInput[];
     };
-    setSessions: (sessions: Session[]) => void;
+    setSessions: (sessions: SessionInput[]) => void;
     stepError?: string;
 }
 
 export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
-    const [newSession, setNewSession] = useState({ label: "", startTime: "", endTime: "", price: "" });
+    const [newSession, setNewSession] = useState<SessionInput>({ label: "", startTime: "", endTime: "", price: 0 });
     const [sessionError, setSessionError] = useState("");
 
     const addCustomSession = () => {
@@ -49,12 +50,11 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
             return;
         }
         setSessionError("");
-        setSessions([...form.sessions, { id: Date.now().toString(), ...newSession }]);
-        setNewSession({ label: "", startTime: "", endTime: "", price: "" });
+        setSessions([...form.sessions, { id: Date.now(), ...newSession }]);
+        setNewSession({ label: "", startTime: "", endTime: "", price: 0 });
     };
 
-    const removeSession = (id: string) =>
-        setSessions(form.sessions.filter((s) => s.id !== id));
+    const removeSession = (id: number) => setSessions(form.sessions.filter((s) => s.id !== id));
 
     return (
         <div className="space-y-5">
@@ -87,15 +87,13 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
                     </div>
                 </div>
                 <div>
-                    <label className="block text-xs text-muted-foreground mb-1">
-                        Session Price (₹)
-                    </label>
+                    <label className="block text-xs text-muted-foreground mb-1">Session Price (₹)</label>
                     <input
                         type="number"
                         className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="e.g. 18000"
                         value={newSession.price}
-                        onChange={(e) => setNewSession((s) => ({ ...s, price: e.target.value }))}
+                        onChange={(e) => setNewSession((s) => ({ ...s, price: Number(e.target.value) }))}
                     />
                 </div>
                 {sessionError && <p className="text-red-500 text-xs">{sessionError}</p>}
@@ -140,7 +138,7 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
                                     )}
                                     <button
                                         type="button"
-                                        onClick={() => removeSession(s.id)}
+                                        onClick={() => removeSession(Number(s.id))}
                                         className="text-muted-foreground hover:text-red-500 transition-colors"
                                     >
                                         <Trash2 className="w-4 h-4" />

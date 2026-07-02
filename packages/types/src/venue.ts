@@ -37,18 +37,7 @@ export interface SessionInput {
     price: number;
 }
 
-// export interface ExistingSessionInput {
-//     id: number;
-// }
 
-// export interface NewSessionInput {
-//     label: string;
-//     startTime: string;
-//     endTime: string;
-//     price: number;
-// }
-
-// export type SessionInput = ExistingSessionInput | NewSessionInput;
 
 export interface CreateVenuePayload {
     name: string;
@@ -62,13 +51,13 @@ export interface CreateVenuePayload {
     sessions: SessionInput[];
 }
 
-export type VenueSession = {
-    id: number;
-    label: string;
-    startTime: string;
-    endTime: string;
-    price: number;
-};
+// export type VenueSession = {
+//     id: number;
+//     label: string;
+//     startTime: string;
+//     endTime: string;
+//     price: number;
+// };
 
 export type VenueOwner = {
     id: string;
@@ -95,7 +84,7 @@ export interface Venue {
     verificationStatus: VerificationStatus;
     verificationReason: string | null;
 
-    sessions: VenueSession[];
+    sessions: SessionInput[];
 
     isActive: boolean;
 
