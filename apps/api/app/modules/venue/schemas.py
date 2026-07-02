@@ -110,6 +110,54 @@ class BulkUpdateVenuePhotosRequest(BaseModel):
     photos: list[UpdateVenuePhotoItem]
 
 
+from typing import Any
+from pydantic import model_validator
+
+class VenueListResponse(BaseModel):
+    id: UUID
+    name: str
+    slug: Optional[str] = None
+    city: str
+    max_capacity: int
+    status: VenueStatus
+    is_active: bool
+    category_name: str
+    cover_photo_url: Optional[str] = None
+    last_completed_step: Optional[int] = Field(default=0, ge=0)
+
+    @model_validator(mode="before")
+    @classmethod
+    def flatten_nested(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            return data
+        
+        result = {
+            "id": data.id,
+            "name": data.name,
+            "slug": data.slug,
+            "city": data.city,
+            "max_capacity": data.max_capacity,
+            "status": data.status,
+            "is_active": data.is_active,
+            "last_completed_step": data.last_completed_step,
+        }
+
+        category = getattr(data, 'category', None)
+        result["category_name"] = category.label if category else "Uncategorized"
+
+        photos = getattr(data, 'photos', [])
+        if photos:
+            cover = next((p for p in photos if p.is_cover), photos[0])
+            result["cover_photo_url"] = cover.image_url
+        else:
+            result["cover_photo_url"] = None
+
+        return result
+
+class VenueStatsResponse(BaseModel):
+    active_bookings: int
+    revenue_this_month_paise: int
+
 class VenueResponse(BaseModel):
     id: UUID
     owner_id: UUID

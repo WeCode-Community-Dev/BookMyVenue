@@ -192,9 +192,10 @@ def get_dashboard_chart(db: Session, owner_id: UUID, time_range: str = "6M") -> 
         if key not in bucket_map:
             continue
             
-        if status_val == BookingStatus.requested:
-            bucket_map[key]["enquiries"] += cnt
-        elif status_val == BookingStatus.completed:
+        # Every booking created is considered an enquiry, regardless of its final status
+        bucket_map[key]["enquiries"] += cnt
+        
+        if status_val == BookingStatus.completed:
             bucket_map[key]["completed"] += cnt
         elif status_val in CANCELLED_STATUSES:
             bucket_map[key]["cancelled"] += cnt

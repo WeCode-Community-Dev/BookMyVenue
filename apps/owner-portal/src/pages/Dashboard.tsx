@@ -6,7 +6,7 @@ import { CalendarDays, Clock, FileEdit, Calendar, Wallet, Store } from 'lucide-r
 import { Link } from 'react-router-dom'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { createClient, ownerEndpoints } from '@venue404/api-client'
-import type { DashboardStats, ChartDataPoint, UpcomingEvent } from '@venue404/api-client'
+import { useQuery } from '@tanstack/react-query'
 
 function formatPaise(paise: number): string {
   const rupees = paise / 100
@@ -35,65 +35,30 @@ function eventTypeLabel(type: string | null): string {
 export default function Dashboard() {
   const { user } = useAuth()
   const userName = user?.profile?.full_name?.split(' ')[0] || 'Owner'
-  const [initialLoad, setInitialLoad] = useState(true)
-  const [chartLoading, setChartLoading] = useState(false)
   const [timeRange, setTimeRange] = useState('6M')
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([])
-  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([])
-  const [error, setError] = useState<string | null>(null)
   const [portalTarget, setPortalTarget] = useState<Element | null>(null)
 
   useEffect(() => {
     setPortalTarget(document.getElementById('topbar-portal-target'))
   }, [])
 
-  // Initial load: stats and upcoming events
-  useEffect(() => {
-    let mounted = true
-    async function loadInitial() {
-      try {
-        const client = createClient()
-        const api = ownerEndpoints(client)
-        const [statsRes, eventsRes] = await Promise.all([
-          api.getDashboardStats(),
-          api.getUpcomingEvents()
-        ])
-        if (mounted) {
-          setStats(statsRes)
-          setUpcomingEvents(eventsRes)
-        }
-      } catch (err) {
-        console.error('Dashboard initial load error:', err)
-        if (mounted) setError('Failed to load dashboard data.')
-      } finally {
-        if (mounted) setInitialLoad(false)
-      }
-    }
-    loadInitial()
-    return () => { mounted = false }
-  }, [])
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: () => ownerEndpoints(createClient()).getDashboardStats()
+  })
 
-  // Chart load: depends on timeRange
-  useEffect(() => {
-    let mounted = true
-    async function loadChart() {
-      setChartLoading(true)
-      try {
-        const client = createClient()
-        const result = await ownerEndpoints(client).getDashboardChart(timeRange)
-        if (mounted) {
-          setChartData(result)
-        }
-      } catch (err) {
-        console.error('Chart load error:', err)
-      } finally {
-        if (mounted) setChartLoading(false)
-      }
-    }
-    loadChart()
-    return () => { mounted = false }
-  }, [timeRange])
+  const { data: upcomingEvents = [], isLoading: eventsLoading } = useQuery({
+    queryKey: ['upcoming-events'],
+    queryFn: () => ownerEndpoints(createClient()).getUpcomingEvents()
+  })
+
+  const { data: chartData = [], isLoading: chartLoading } = useQuery({
+    queryKey: ['dashboard-chart', timeRange],
+    queryFn: () => ownerEndpoints(createClient()).getDashboardChart(timeRange)
+  })
+
+  const initialLoad = statsLoading || eventsLoading
+  const error = statsError ? 'Failed to load dashboard data.' : null
 
   const quickActions = [
     { label: 'Create new venue', icon: FileEdit, link: '/venues/new' },

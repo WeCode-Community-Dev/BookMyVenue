@@ -1330,6 +1330,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/owner/dashboard/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Owner Dashboard Stats
+         * @description Aggregated KPI and financial stats for the owner dashboard.
+         */
+        get: operations["get_owner_dashboard_stats_api_owner_dashboard_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/owner/dashboard/chart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Owner Dashboard Chart
+         * @description Monthly performance chart data for the owner dashboard.
+         */
+        get: operations["get_owner_dashboard_chart_api_owner_dashboard_chart_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/owner/dashboard/upcoming-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Owner Dashboard Upcoming Events
+         * @description Upcoming confirmed events for the owner dashboard.
+         */
+        get: operations["get_owner_dashboard_upcoming_events_api_owner_dashboard_upcoming_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -2058,6 +2118,17 @@ export interface components {
             /** Is Active */
             is_active?: boolean | null;
         };
+        /** ChartDataPoint */
+        ChartDataPoint: {
+            /** Month */
+            month: string;
+            /** Enquiries */
+            enquiries: number;
+            /** Completed */
+            completed: number;
+            /** Cancelled */
+            cancelled: number;
+        };
         /** CreateBlockedDateRequest */
         CreateBlockedDateRequest: {
             /**
@@ -2199,6 +2270,31 @@ export interface components {
              * @default 0
              */
             last_completed_step: number | null;
+        };
+        /** DashboardStats */
+        DashboardStats: {
+            /** Active Venues */
+            active_venues: number;
+            /** Pending Requests */
+            pending_requests: number;
+            /** Active Bookings */
+            active_bookings: number;
+            /** Completed Bookings */
+            completed_bookings: number;
+            /** Cancelled Bookings */
+            cancelled_bookings: number;
+            /** Gross Volume Paise */
+            gross_volume_paise: number;
+            /** Net Revenue Paise */
+            net_revenue_paise: number;
+            /** Available Balance Paise */
+            available_balance_paise: number;
+            /** Platform Fees Paise */
+            platform_fees_paise: number;
+            /** Refunds Issued Paise */
+            refunds_issued_paise: number;
+            /** Payouts Completed Paise */
+            payouts_completed_paise: number;
         };
         /** DeleteResponse */
         DeleteResponse: {
@@ -2517,6 +2613,21 @@ export interface components {
         SuspendUserRequest: {
             /** Reason */
             reason: string;
+        };
+        /** UpcomingEventOut */
+        UpcomingEventOut: {
+            /** Booking Id */
+            booking_id: string;
+            /** Event Type */
+            event_type?: string | null;
+            /** Venue Name */
+            venue_name: string;
+            /** Status */
+            status: string;
+            /** Starts At */
+            starts_at?: string | null;
+            /** Guest Count */
+            guest_count: number;
         };
         /** UpdateCancellationPolicyRequest */
         UpdateCancellationPolicyRequest: {
@@ -5930,6 +6041,101 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_owner_dashboard_stats_api_owner_dashboard_stats_get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardStats"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_owner_dashboard_chart_api_owner_dashboard_chart_get: {
+        parameters: {
+            query?: {
+                time_range?: string;
+            };
+            header: {
+                authorization: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChartDataPoint"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_owner_dashboard_upcoming_events_api_owner_dashboard_upcoming_events_get: {
+        parameters: {
+            query?: never;
+            header: {
+                authorization: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpcomingEventOut"][];
                 };
             };
             /** @description Validation Error */

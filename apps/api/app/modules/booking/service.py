@@ -340,13 +340,8 @@ def owner_extend_deadline(
     booking.deadline_extension_count += 1
     booking.balance_overdue_at = None
     booking.owner_action_deadline = None
-    db.add(_history(
-        booking,
-        booking.status,
-        booking.status,
-        changed_by=owner_id,
-        metadata={"new_due_date": body.new_due_date.isoformat()},
-    ))
+    # No status change — skip history insert (DB constraint disallows same-status transitions)
+
     db.flush()
     db.refresh(booking)
     notifications.notify(

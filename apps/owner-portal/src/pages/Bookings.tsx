@@ -4,7 +4,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { StatusBadge, PaymentStatusBadge, EmptyState, Skeleton } from '@venue404/ui'
 import { Search, Calendar, Users, ChevronDown } from 'lucide-react'
 import { createClient, venueEndpoints, bookingEndpoints } from '@venue404/api-client'
-import type { Booking, Venue } from '@venue404/api-client'
+import type { Booking } from '@venue404/api-client'
+import { useQuery } from '@tanstack/react-query'
 
 function timeAgo(dateStr: string): string {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
@@ -50,9 +51,6 @@ const CELL = 'px-4 py-4 text-sm text-zinc-700 align-middle'
 export default function Bookings() {
   const [searchParams] = useSearchParams()
   const [tab, setTab] = useState(searchParams.get('tab') || 'all')
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [venues, setVenues] = useState<Venue[]>([])
-  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selectedVenue, setSelectedVenue] = useState(searchParams.get('venue_id') || 'all')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -76,33 +74,25 @@ export default function Bookings() {
     return () => { if (searchTimeout.current) clearTimeout(searchTimeout.current) }
   }, [search])
 
-  useEffect(() => {
-    let isCurrent = true
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const client = createClient()
-        const [venuesData, allBookings] = await Promise.all([
-          venueEndpoints(client).getMyVenues(),
-          bookingEndpoints(client).getOwnerBookings({
-            tab: tab !== 'all' ? tab : undefined,
-            venue_id: selectedVenue !== 'all' ? selectedVenue : undefined,
-            search: debouncedSearch || undefined
-          })
-        ])
-        if (!isCurrent) return
-        setBookings(allBookings || [])
-        setVenues((venuesData || []).filter(v => v.is_active && v.status === 'approved'))
-      } catch (err) {
-        if (!isCurrent) return
-        console.error('Failed to fetch bookings', err)
-      } finally {
-        if (isCurrent) setLoading(false)
-      }
+  const { data: venues = [] } = useQuery({
+    queryKey: ['approved-venues'],
+    queryFn: async () => {
+      const data = await venueEndpoints(createClient()).getMyVenues()
+      return (data || []).filter(v => v.is_active && v.status === 'approved')
     }
-    fetchData()
-    return () => { isCurrent = false }
-  }, [tab, selectedVenue, debouncedSearch])
+  })
+
+  const { data: bookings = [], isLoading: loading } = useQuery({
+    queryKey: ['owner-bookings', tab, selectedVenue, debouncedSearch],
+    queryFn: async () => {
+      const data = await bookingEndpoints(createClient()).getOwnerBookings({
+        tab: tab !== 'all' ? tab : undefined,
+        venue_id: selectedVenue !== 'all' ? selectedVenue : undefined,
+        search: debouncedSearch || undefined
+      })
+      return data || []
+    }
+  })
 
   const TABS = [
     { id: 'all', label: 'All Bookings' },
