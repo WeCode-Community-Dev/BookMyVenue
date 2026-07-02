@@ -267,6 +267,59 @@ class VenueOwnerAuthService:
                 detail=str(e),
             )
 
+    def get_owner_profile_status(
+        self,
+        db: Session,
+        owner_id: str,
+    ) -> UpdateOwnerStatusResponse:
+        try:
+            user = user_service.get_user_by_id(
+                db=db,
+                user_id=owner_id,
+            )
+            owner_status = user.owner_profile.approval_status
+            approval_status = ApprovalStatus.PENDING
+            status_message = "Profile under verification"
+            status_code = 3
+            reject_reason = None
+
+            if owner_status == ApprovalStatus.APPROVED:
+                approval_status = ApprovalStatus.APPROVED
+                status_message = "Profile Verified"
+                status_code = 0
+            elif owner_status == ApprovalStatus.REJECTED:
+                approval_status = ApprovalStatus.REJECTED
+                status_message = "Profile Rejected"
+                status_code = 1
+                reject_reason = "contact support"
+            elif owner_status == ApprovalStatus.SUSPENDED:
+                approval_status = ApprovalStatus.SUSPENDED
+                status_message = "Profile Suspended"
+                status_code = 2
+                reject_reason = "contact support"
+            else:
+                approval_status = ApprovalStatus.PENDING
+                status_message = "Profile under verification"
+                status_code = 3
+                reject_reason = None
+
+            return UpdateOwnerStatusResponse(
+                owner_id=owner_id,
+                approval_status=approval_status,
+                status_message=status_message,
+                status_code=status_code,
+                reject_reason=reject_reason,
+            )
+        except HTTPException:
+            raise
+
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail=str(e),
+            )
+
     def get_all_venue_owners(
         self,
         db: Session,

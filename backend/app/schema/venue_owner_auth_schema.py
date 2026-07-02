@@ -166,5 +166,8 @@ class UpdateOwnerStatusRequest(BaseModel):
 
 
 class UpdateOwnerStatusResponse(BaseModel):
-    owner_id: str
+    owner_id: UUID
+    status_message: str
+    status_code: int  # 0:APPROVED,1: REJECTED, 2: SUSPENDED, 3 PENDING
+    reject_reason: str | None
     approval_status: ApprovalStatus

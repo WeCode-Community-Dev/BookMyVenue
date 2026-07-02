@@ -107,6 +107,25 @@ def get_owner_profile(
     )
 
 
+@router.get(
+    "/profile-status",
+    response_model=SuccessResponse[UpdateOwnerStatusResponse],
+    summary="Get owner profile",
+    description="Get owner details based on token",
+)
+def get_owner_profile_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    owner_profile = venue_owner_auth_service.get_owner_profile_status(
+        db=db, owner_id=current_user.id
+    )
+    return SuccessResponse(
+        message="Owner profile retrieved successfully",
+        data=owner_profile,
+    )
+
+
 # Get all Venue owner details
 @router.get(
     "",
