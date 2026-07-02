@@ -68,33 +68,14 @@ export const getBookingsByOwnerId = async (
             skip,
             take: limit,
             include: {
-                user: {
-                    select: {
-                        name: true,
-                        email: true,
-                    },
-                },
-                venue: {
-                    select: {
-                        name: true,
-                    },
-                },
+                user: { select: { name: true, email: true } },
+                venue: { select: { name: true } },
                 bookingSessions: {
-                    include: {
-                        session: {
-                            select: {
-                                label: true,
-                            },
-                        },
-                    },
-                    orderBy: {
-                        eventDate: "asc",
-                    },
+                    include: { session: { select: { label: true } } },
+                    orderBy: { eventDate: "asc" },
                 },
             },
-            orderBy: {
-                createdAt: "desc",
-            },
+            orderBy: { createdAt: "desc" },
         }),
         prisma.booking.count({ where }),
     ]);
@@ -153,31 +134,13 @@ export const getBookingByUserId = async (
             skip,
             take: limit,
             include: {
-                venue: {
-                    select: {
-                        name: true,
-                        district: true,
-                        location: true,
-                    },
-                },
+                venue: { select: { name: true, district: true, location: true } },
                 bookingSessions: {
-                    include: {
-                        session: {
-                            select: {
-                                label: true,
-                                startTime: true,
-                                endTime: true,
-                            },
-                        },
-                    },
-                    orderBy: {
-                        eventDate: "asc",
-                    },
+                    include: { session: { select: { label: true, startTime: true, endTime: true } } },
+                    orderBy: { eventDate: "asc" },
                 },
             },
-            orderBy: {
-                createdAt: "desc",
-            },
+            orderBy: { createdAt: "desc" },
         }),
         prisma.booking.count({ where }),
     ]);

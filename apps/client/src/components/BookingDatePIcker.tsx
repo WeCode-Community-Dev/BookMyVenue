@@ -66,15 +66,15 @@ const BookingDatePIcker = ({ venue }: BookingDatePickerProps) => {
                     ) : (
                         <div className="space-y-2">
                             {venue.sessions.map((s) => {
-                                const isBooked = booked.includes(s.id);
-                                const isSelected = selectedSessions.includes(s.id);
+                                const isBooked = booked.includes(s.id!);
+                                const isSelected = selectedSessions.includes(s.id!);
 
                                 return (
                                     <button
                                         key={s.id}
                                         type="button"
                                         disabled={isBooked}
-                                        onClick={() => toggleSession(s.id)}
+                                        onClick={() => toggleSession(s.id!)}
                                         className={`
                 w-full flex items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-all
                 ${
@@ -100,7 +100,7 @@ const BookingDatePIcker = ({ venue }: BookingDatePickerProps) => {
 
                                         <div className="flex flex-col items-end">
                                             <span className="text-sm font-bold text-primary">
-                                                ₹{(s.price / 100).toLocaleString("en-IN")}
+                                                ₹{s.price.toLocaleString("en-IN")}
                                             </span>
 
                                             {isBooked && (

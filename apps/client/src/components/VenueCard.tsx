@@ -73,7 +73,7 @@ export function VenueCard({ venue }: VenueCardProps) {
                         {startingPrice !== null ? (
                             <>
                                 <span className="text-lg font-bold text-primary">
-                                    ₹{(startingPrice/100).toLocaleString("en-IN")}
+                                    ₹{startingPrice.toLocaleString("en-IN")}
                                 </span>
                                 <span className="text-xs text-muted-foreground ml-1">per session</span>
                             </>

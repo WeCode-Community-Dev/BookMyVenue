@@ -63,7 +63,7 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                                     </div>
                                     <div className="text-right shrink-0">
                                         <p className="text-sm font-bold text-foreground">
-                                            {"₹" + (b.totalAmount / 100).toLocaleString()}
+                                            {"₹" + b.totalAmount.toLocaleString()}
                                         </p>
                                         <span
                                             className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${STATUS_STYLE[status]}`}
@@ -161,7 +161,7 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                                     {label}
                                 </span>
                                 <span className="text-muted-foreground">
-                                    {"₹" + (amount / 100).toLocaleString()}
+                                    {"₹" + amount.toLocaleString()}
                                 </span>
                             </div>
                             <div className="h-1.5 bg-muted rounded-full overflow-hidden">

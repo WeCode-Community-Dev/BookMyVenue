@@ -97,7 +97,7 @@ export default function VenueBookingPage() {
     }
 
     const venue = data.venue;
-    const activeSessions = venue.sessions.filter((s) => selectedSessions.includes(s.id));
+    const activeSessions = venue.sessions.filter((s) => selectedSessions.includes(s.id!));
     const total = activeSessions.reduce((sum, s) => sum + s.price, 0);
     const formattedDate = formatToDetailedDate(selectedDate) ?? null;
 
@@ -233,7 +233,7 @@ export default function VenueBookingPage() {
                                                 </p>
                                             </div>
                                             <span className="text-sm font-bold text-primary">
-                                                ₹{(session.price / 100).toLocaleString("en-IN")}
+                                                ₹{session.price.toLocaleString("en-IN")}
                                             </span>
                                         </div>
                                     ))}
@@ -245,7 +245,7 @@ export default function VenueBookingPage() {
                             <div className="border-t border-border pt-5 flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Total</span>
                                 <span className="text-lg font-bold text-foreground">
-                                    ₹{(total / 100).toLocaleString("en-IN")}
+                                    ₹{total.toLocaleString("en-IN")}
                                 </span>
                             </div>
                         )}

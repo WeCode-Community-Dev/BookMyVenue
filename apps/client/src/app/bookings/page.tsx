@@ -125,7 +125,7 @@ export default function MyBookingsPage() {
                                             </span>
                                         </div>
                                         <span className="text-muted-foreground">
-                                            {"₹" +  (s.pricePaid / 100).toLocaleString()}
+                                            {"₹" +  s.pricePaid.toLocaleString()}
                                         </span>
                                     </div>
                                 ))}
@@ -136,7 +136,7 @@ export default function MyBookingsPage() {
                                 <span className="">#{b.id.slice(0, 8)}</span>
                                 {b.purpose && <span className="truncate me-auto">For: {b.purpose}</span>}
                                 <span className="font-bold text-foreground">
-                                    Total: {"₹" + (b.totalAmount / 100).toLocaleString()}
+                                    Total: {"₹" + b.totalAmount.toLocaleString()}
                                 </span>
                             </div>
                         </div>

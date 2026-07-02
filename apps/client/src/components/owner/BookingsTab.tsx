@@ -124,7 +124,7 @@ export default function BookingsTab() {
                                         {b.purpose ?? "—"}
                                     </TableCell>
                                     <TableCell className="px-5 py-3.5 font-bold text-foreground whitespace-nowrap">
-                                        {"₹" + (b.totalAmount / 100).toLocaleString()}
+                                        {"₹" + b.totalAmount.toLocaleString()}
                                     </TableCell>
                                     <TableCell className="px-5 py-3.5">
                                         <span

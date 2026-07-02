@@ -1,92 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { BookingStatus, Prisma, prisma, VerificationStatus } from "@bookmyvenue/database";
-import { CreateVenueBody, EditVenueBody, GetVenuesQuery, SessionInput } from "@bookmyvenue/types";
-
-const VENUE_LIST_SELECT = {
-    id: true,
-    name: true,
-    description: true,
-    capacity: true,
-    images: true,
-    amenities: true,
-    category: true,
-    location: true,
-    district: true,
-    createdAt: true,
-    sessions: {
-        where: { isActive: true },
-        select: {
-            id: true,
-            label: true,
-            startTime: true,
-            endTime: true,
-            price: true,
-        },
-    },
-    reviews: {
-        select: { rating: true },
-    },
-} satisfies Prisma.VenueSelect;
-
-const OWNER_VENUE_LIST_SELECT = {
-    ...VENUE_LIST_SELECT,
-    verificationStatus: true,
-    verificationReason: true,
-    isActive: true,
-    _count: {
-        select: {
-            bookings: true,
-        },
-    },
-} satisfies Prisma.VenueSelect;
-
-const getPagination = (page = 1, limit = 10) => {
-    const take = Math.min(Number(limit), 50);
-    return {
-        take,
-        skip: (Number(page) - 1) * take,
-    };
-};
-
-const withRating = <T extends { reviews: { rating: number }[] }>(venue: T) => {
-    const { reviews, ...rest } = venue;
-
-    return {
-        ...rest,
-        averageRating: reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : null,
-        reviewCount: reviews.length,
-    };
-};
-
-const fetchVenues = async (
-    where: Prisma.VenueWhereInput,
-    page: number,
-    limit: number,
-    select: Prisma.VenueSelect = VENUE_LIST_SELECT,
-) => {
-    const { take, skip } = getPagination(page, limit);
-
-    const [venues, total] = await prisma.$transaction([
-        prisma.venue.findMany({
-            where,
-            skip,
-            take,
-            select,
-            orderBy: { createdAt: "desc" },
-        }),
-        prisma.venue.count({ where }),
-    ]);
-
-    return {
-        venues: venues.map(withRating),
-        pagination: {
-            total,
-            page,
-            limit: take,
-            totalPages: Math.ceil(total / take),
-        },
-    };
-};
+import { BookingStatus,  prisma, VerificationStatus } from "@bookmyvenue/database";
+import { CreateVenueBody, EditVenueBody, GetVenuesQuery } from "@bookmyvenue/types";
+import { fetchVenues, formatVenue, OWNER_VENUE_LIST_SELECT, toSmallUnit } from "../services/venue.service";
 
 // Get all approved venues
 export const getVenues = async (
@@ -205,13 +120,13 @@ export const getVenueById = async (
 
     const { _count, ...rest } = venue;
     return reply.send({
-        venue: {
+        venue: formatVenue({
             ...rest,
             reviewCount: venue._count.reviews,
             averageRating: rating._avg.rating,
             bookedSessions: bookedSessionsByDate,
             disabledDates,
-        },
+        }),
     });
 };
 
@@ -249,7 +164,7 @@ export const createVenue = async (
                               label,
                               startTime,
                               endTime,
-                              price,
+                              price: toSmallUnit(price),
                           })),
                       }
                     : undefined,
@@ -343,7 +258,7 @@ export const editVenue = async (
                     label: s.label,
                     startTime: s.startTime,
                     endTime: s.endTime,
-                    price: s.price,
+                    price: toSmallUnit(s.price),
                 })),
             });
         }

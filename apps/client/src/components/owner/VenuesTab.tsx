@@ -124,9 +124,7 @@ export default function VenuesTab() {
                                         <p className="text-xs font-bold">
                                             {v.sessions.length > 0
                                                 ? "₹" +
-                                                  (
-                                                      Math.min(...v.sessions.map((s) => s.price)) / 100
-                                                  ).toLocaleString()
+                                                  Math.min(...v.sessions.map((s) => s.price)).toLocaleString()
                                                 : "-"}
                                         </p>
                                         <p className="text-xs text-muted-foreground">Starting</p>

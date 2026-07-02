@@ -138,7 +138,7 @@ model Booking {
   user   User   @relation(fields: [userId], references: [id])
   userId String
 
-  venue   Venue @relation(fields: [venueId], references: [id])
+  venue   Venue @relation(fields: [venueId], references: [id], onDelete: Restrict)
   venueId Int
 
   phone   String?
