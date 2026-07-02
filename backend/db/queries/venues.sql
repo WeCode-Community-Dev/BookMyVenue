@@ -80,6 +80,10 @@ WHERE venue_id = $1;
 DELETE FROM venue_images
 WHERE id = $1;
 
+-- name: GetVenueImagesByVenueIDs :many
+SELECT *
+FROM venue_images
+WHERE venue_id = ANY($1::uuid[]);
 
 -- name: CreateAmenity :one
 INSERT INTO amenities (name)
@@ -111,6 +115,13 @@ WHERE va.venue_id = $1;
 -- name: RemoveAmenityFromVenue :exec
 DELETE FROM venue_amenities
 WHERE venue_id = $1 AND amenity_id = $2;
+
+-- name: GetVenueAmenitiesByVenueIDs :many
+SELECT va.venue_id, a.name
+FROM venue_amenities AS va
+JOIN amenities AS a
+ON a.id = va.amenity_id
+WHERE va.venue_id = ANY($1::uuid[]);
 
 
 -- name: FindVenuesInACity :many

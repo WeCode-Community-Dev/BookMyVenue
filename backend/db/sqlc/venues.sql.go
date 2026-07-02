@@ -615,6 +615,39 @@ func (q *Queries) GetRejectedVenuesByOwnerID(ctx context.Context, ownerID pgtype
 	return items, nil
 }
 
+const getVenueAmenitiesByVenueIDs = `-- name: GetVenueAmenitiesByVenueIDs :many
+SELECT va.venue_id, a.name
+FROM venue_amenities AS va
+JOIN amenities AS a
+ON a.id = va.amenity_id
+WHERE va.venue_id = ANY($1::uuid[])
+`
+
+type GetVenueAmenitiesByVenueIDsRow struct {
+	VenueID pgtype.UUID `json:"venue_id"`
+	Name    string      `json:"name"`
+}
+
+func (q *Queries) GetVenueAmenitiesByVenueIDs(ctx context.Context, dollar_1 []pgtype.UUID) ([]GetVenueAmenitiesByVenueIDsRow, error) {
+	rows, err := q.db.Query(ctx, getVenueAmenitiesByVenueIDs, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetVenueAmenitiesByVenueIDsRow
+	for rows.Next() {
+		var i GetVenueAmenitiesByVenueIDsRow
+		if err := rows.Scan(&i.VenueID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getVenueByID = `-- name: GetVenueByID :one
 SELECT id, owner_id, name, description, category, address, city, state, pincode, capacity, price_per_hour, price_per_day, status, created_at, updated_at, location FROM venues
 WHERE id = $1
@@ -651,6 +684,32 @@ WHERE venue_id = $1
 
 func (q *Queries) GetVenueImages(ctx context.Context, venueID pgtype.UUID) ([]VenueImage, error) {
 	rows, err := q.db.Query(ctx, getVenueImages, venueID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []VenueImage
+	for rows.Next() {
+		var i VenueImage
+		if err := rows.Scan(&i.ID, &i.VenueID, &i.ImageUrl); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getVenueImagesByVenueIDs = `-- name: GetVenueImagesByVenueIDs :many
+SELECT id, venue_id, image_url
+FROM venue_images
+WHERE venue_id = ANY($1::uuid[])
+`
+
+func (q *Queries) GetVenueImagesByVenueIDs(ctx context.Context, dollar_1 []pgtype.UUID) ([]VenueImage, error) {
+	rows, err := q.db.Query(ctx, getVenueImagesByVenueIDs, dollar_1)
 	if err != nil {
 		return nil, err
 	}
