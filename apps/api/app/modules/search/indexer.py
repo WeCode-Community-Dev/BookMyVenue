@@ -3,12 +3,13 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from uuid import UUID
 
-import httpx
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.config import settings
+from app.infrastructure.embeddings.jina import embed_passage, embed_query
+from app.modules.search import search_metadata_cache
 from app.modules.search.models import SearchIndexJob
 from app.modules.venue.models import Venue
 
@@ -17,10 +18,12 @@ logger = logging.getLogger(__name__)
 # Exponential backoff delays in seconds per retry attempt index.
 # Attempt 0 → immediate, 1 → 5 min, 2 → 15 min, 3 → 1 hr, 4 → 6 hr
 _BACKOFF_SECONDS = [0, 300, 900, 3600, 21600]
+MAX_RETRIES = len(_BACKOFF_SECONDS)  # was a hardcoded `5` in two places below
 
 
 def _redis_client():
     from upstash_redis import Redis
+
     return Redis(url=settings.upstash_redis_url, token=settings.upstash_redis_token)
 
 
@@ -54,51 +57,61 @@ def enqueue_job(db: Session, entity_id: UUID, operation: str) -> None:
 
 
 def _build_search_document(venue: Venue) -> str:
+    """Rich document for better semantic search"""
     parts = [venue.name]
-    if venue.description:
-        parts.append(venue.description)
-    parts.append(f"{venue.city} {venue.state}")
+
+    if venue.description and len(venue.description.strip()) > 10:
+        parts.append(venue.description.strip())
+
+    parts.append(f"{venue.city} {venue.state} India")
+
+    if venue.category:
+        slug = venue.category.slug
+        parts.append(venue.category.label)
+
+        # Was a hardcoded dict of slug -> synonym string; now sourced from
+        # VenueCategory.search_keywords via the startup-loaded cache, so
+        # adding/editing a category's synonyms doesn't require a deploy.
+        keywords = search_metadata_cache.keywords_for(slug)
+        if keywords:
+            parts.append(keywords)
+        elif not search_metadata_cache.is_loaded():
+            logger.warning(
+                "search_metadata_cache not loaded when indexing venue %s — "
+                "keyword expansion skipped for this document",
+                venue.id,
+            )
+
+    parts.append(f"capacity {venue.max_capacity} pax people guests")
+    if venue.min_capacity and venue.min_capacity > 0:
+        parts.append(f"minimum {venue.min_capacity} guests")
+
     if venue.amenities:
         parts.append(" ".join(a.name for a in venue.amenities))
-    if venue.category:
-        parts.append(venue.category.label)
+
     return "\n".join(parts)
 
 
 def _update_fts(db: Session, venue_id: UUID, document: str) -> None:
     db.execute(
-        text("UPDATE venues SET search_vector = to_tsvector('english', :doc) WHERE id = :id"),
+        text(
+            "UPDATE venues SET search_vector = to_tsvector('english', :doc) WHERE id = :id"
+        ),
         {"doc": document, "id": str(venue_id)},
     )
 
 
-def _generate_embedding(text_input: str, task: str = "retrieval.passage") -> list[float]:
-    """Call Jina AI embeddings API and return a 1024-dim float list."""
-    response = httpx.post(
-        "https://api.jina.ai/v1/embeddings",
-        headers={
-            "Authorization": f"Bearer {settings.jina_api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "model": settings.jina_embedding_model,
-            "input": [text_input],
-            "task": task,
-        },
-        timeout=30.0,
-    )
-    response.raise_for_status()
-    return response.json()["data"][0]["embedding"]
-
-
 def generate_query_embedding(query: str) -> list[float]:
-    """Public helper used by the search service for query-time embedding."""
-    return _generate_embedding(query, task="retrieval.query")
+    """Kept as a thin wrapper so search/service.py doesn't need to import the
+    embeddings client directly — it only ever talks to the search module."""
+    return embed_query(query)
 
 
 def process_job(db: Session, job_id: str) -> None:
     """Process a single search index job end-to-end."""
-    job = db.query(SearchIndexJob).filter(SearchIndexJob.id == uuid.UUID(job_id)).first()
+    job = (
+        db.query(SearchIndexJob).filter(SearchIndexJob.id == uuid.UUID(job_id)).first()
+    )
     if not job:
         logger.warning("search_indexer: job %s not found", job_id)
         return
@@ -125,7 +138,7 @@ def process_job(db: Session, job_id: str) -> None:
         _update_fts(db, venue.id, document)
 
         if settings.jina_api_key:
-            embedding = _generate_embedding(document)
+            embedding = embed_passage(document)
             venue.embedding = embedding
             venue.embedding_updated_at = datetime.now(timezone.utc)
 
@@ -136,11 +149,17 @@ def process_job(db: Session, job_id: str) -> None:
 
     except Exception as exc:
         db.rollback()
-        job = db.query(SearchIndexJob).filter(SearchIndexJob.id == uuid.UUID(job_id)).first()
+        job = (
+            db.query(SearchIndexJob)
+            .filter(SearchIndexJob.id == uuid.UUID(job_id))
+            .first()
+        )
         if job:
             job.retry_count += 1
             job.error_message = str(exc)
-            job.status = "failed" if job.retry_count < 5 else "failed_permanently"
+            job.status = (
+                "failed" if job.retry_count < MAX_RETRIES else "failed_permanently"
+            )
             db.commit()
         logger.error("search_indexer: job %s failed (%s)", job_id, exc)
 
@@ -163,7 +182,7 @@ def retryable_job_ids(db: Session, limit: int = 10) -> list[str]:
             db.query(SearchIndexJob)
             .filter(
                 SearchIndexJob.status == "failed",
-                SearchIndexJob.retry_count < 5,
+                SearchIndexJob.retry_count < MAX_RETRIES,
             )
             .order_by(SearchIndexJob.created_at.asc())
             .all()
@@ -172,7 +191,9 @@ def retryable_job_ids(db: Session, limit: int = 10) -> list[str]:
             if len(results) >= limit:
                 break
             delay = _BACKOFF_SECONDS[min(job.retry_count, len(_BACKOFF_SECONDS) - 1)]
-            eligible_at = job.created_at.replace(tzinfo=timezone.utc) + timedelta(seconds=delay)
+            eligible_at = job.created_at.replace(tzinfo=timezone.utc) + timedelta(
+                seconds=delay
+            )
             if now >= eligible_at:
                 results.append(job)
 

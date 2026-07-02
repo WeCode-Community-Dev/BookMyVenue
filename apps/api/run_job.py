@@ -1,19 +1,20 @@
-# apps/api/run_job.py
-# Manual / CLI entrypoint for the background jobs. The job catalogue lives in
-# app/jobs/runner.py (the SAME functions the in-process APScheduler and the
-# /api/internal/run-jobs endpoint use); each manages its own session and returns
-# the number of rows it processed.
+import logging
 import sys
 from pathlib import Path
 
-# Force load all models so SQLAlchemy relationships resolve.
 sys.path.insert(0, str(Path(__file__).parent))
+
+from app.core.logging import setup_logging
+
+setup_logging()
+
+logger = logging.getLogger(__name__)
 
 import app.modules.venue.models  # noqa: F401
 import app.modules.profile.models  # noqa: F401
 import app.modules.booking.models  # noqa: F401
 
-from app.jobs.runner import JOBS, run_job as _run_job, run_all as _run_all
+from app.jobs.runner import JOBS, run_job as _run_job
 
 
 def run_job(job_name: str) -> bool:
@@ -21,25 +22,28 @@ def run_job(job_name: str) -> bool:
         print(f"Unknown job: {job_name}")
         return False
 
-    print(f"🚀 Running {job_name}...")
-    try:
-        count = _run_job(job_name)
-        print(f"✅ {job_name} completed. Processed: {count}")
-        return True
-    except Exception as e:
-        print(f"❌ Error in {job_name}: {e}")
-        import traceback
+    print(f"\n🚀 Running {job_name}")
 
-        traceback.print_exc()
+    try:
+        processed = _run_job(job_name)
+        print(f"✅ {job_name} completed. Processed: {processed}")
+        return True
+
+    except Exception:
+        logger.exception("%s failed", job_name)
+        print(f"❌ {job_name} failed")
         return False
 
 
 def run_all():
     print("Running ALL jobs...\n")
+
     success = 0
-    for name in JOBS.keys():
-        if run_job(name):
+
+    for job_name in JOBS:
+        if run_job(job_name):
             success += 1
+
     print(f"\nCompleted {success}/{len(JOBS)} jobs.")
 
 
