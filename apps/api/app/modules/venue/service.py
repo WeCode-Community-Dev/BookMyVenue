@@ -224,8 +224,23 @@ def list_owner_venues(db: Session, owner_id: UUID) -> list[Venue]:
 
 
 def get_owner_venue(db: Session, venue_id: UUID, owner_id: UUID) -> Venue:
-    venue = _get_venue_or_404(db, venue_id)
-    _assert_owner(venue, owner_id)
+    venue = (
+        db.query(Venue)
+        .options(
+            joinedload(Venue.category),
+            selectinload(Venue.photos),
+            selectinload(Venue.amenities),
+            joinedload(Venue.cancellation_policy)
+        )
+        .filter(
+            Venue.id == venue_id,
+            Venue.owner_id == owner_id,
+            Venue.deleted_at.is_(None),
+        )
+        .first()
+    )
+    if not venue:
+        raise NotFoundError("Venue not found")
     return venue
 
 

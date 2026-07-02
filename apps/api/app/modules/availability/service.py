@@ -3,7 +3,7 @@ from uuid import UUID
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.modules.booking.models import BookingSlot
 from app.modules.booking.models import Booking
@@ -486,6 +486,7 @@ def _build_calendar_for_venue(
     if include_owner_details:
         owner_bookings = (
             db.query(Booking)
+            .options(joinedload(Booking.slot))
             .join(BookingSlot, BookingSlot.booking_id == Booking.id)
             .filter(
                 Booking.venue_id == venue.id,
