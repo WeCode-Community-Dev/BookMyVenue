@@ -16,7 +16,7 @@ export const createVenueSchema = z.object({
         .max(2000, "Description cannot exceed 2000 characters"),
 
     category: z.nativeEnum(VenueCategory),
-    vendorId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid vendor ID'),
+    vendorId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid owner ID'),
 
     websiteUrl: z
         .string()
@@ -121,7 +121,7 @@ export const editVenueSchema = z.object({
         .min(10, "Description must be at least 10 characters")
         .max(2000, "Description cannot exceed 2000 characters"),
     category: z.nativeEnum(VenueCategory),
-    vendorId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid vendor ID'),
+    ownerId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid owner ID'),
     websiteUrl: z
         .string()
         .url("Invalid website URL")
@@ -214,17 +214,66 @@ export const editVenueSchema = z.object({
 })
 
 export const VenueQuerySchema = z.object({
-    vendorId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid venue ID').optional(),
-    minPrice: z.coerce.number().min(0).optional(),
-    maxPrice: z.coerce.number().min(1).optional(),
-    category: z.nativeEnum(VenueCategory).optional(),
-    rating: z.coerce.number().min(0).max(5).optional(),
-    amenities: z.nativeEnum(Amenities).optional(),
-    search: z.string().optional(),
-    status: z.nativeEnum(VenueStatus).optional(),
-    price: z.coerce.number().optional(),
-    page: z.coerce.number().default(1),
-    limit: z.coerce.number().default(1)
+    vendorId: z
+        .string()
+        .regex(/^[0-9a-fA-F]{24}$/, 'Invalid venue ID')
+        .optional(),
+    capacityType: z
+        .string()
+        .optional(),
+    capacity: z
+        .coerce
+        .number()
+        .optional(),
+
+    priceType: z
+        .string()
+        .optional(),
+
+    minPrice: z.coerce
+        .number()
+        .optional(),
+
+    maxPrice: z.coerce
+        .number()
+        .optional(),
+
+    category: z
+        .nativeEnum(VenueCategory)
+        .optional(),
+
+    rating: z.coerce
+        .number()
+        .min(0)
+        .max(5)
+        .optional(),
+
+    amenities: z
+        .union([
+            z.nativeEnum(Amenities),
+            z.array(z.nativeEnum(Amenities))
+        ])
+        .optional(),
+
+    search: z
+        .string()
+        .optional(),
+
+    status: z
+        .nativeEnum(VenueStatus)
+        .optional(),
+
+    price: z.coerce
+        .number()
+        .optional(),
+
+    page: z.coerce
+        .number()
+        .default(1),
+
+    limit: z.coerce
+        .number()
+        .default(10)
 })
 
 export const VenueUpdateStatusSchema = z.object({
