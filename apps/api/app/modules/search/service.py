@@ -10,6 +10,7 @@ from app.modules.search.query_normalizer import normalize_query
 from app.modules.search.schemas import SearchParams, SearchResult
 from app.modules.venue.models import Venue, VenueCategory, VenueStatus, VenuePhoto
 from app.shared.pagination import Page
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -230,10 +231,7 @@ def _log_hybrid_diagnostics(
     query_vec: list[float],
     intents: dict,
 ) -> None:
-    """Debug diagnostics comparing the FTS-only and vector-only result sets,
-    so score-weight/vocabulary tuning can be evaluated against real queries.
-    Best-effort: never let a logging failure break the actual search request.
-    """
+    """Debug diagnostics comparing the FTS-only and vector-only result sets."""
     try:
         vec_norm = float(np.linalg.norm(np.array(query_vec, dtype=np.float32)))
 
@@ -274,28 +272,28 @@ def _log_hybrid_diagnostics(
         overlap = len(set(fts_top_ids) & set(vec_top_ids))
 
         logger.info(
-            "search_hybrid diagnostics | raw_query=%r normalized_query=%r "
-            "fts_matches=%s query_vec_norm=%.4f fts_top10=%s vector_top10=%s overlap=%s "
-            "wedding_boost=%s event_boost=%s",
+            "search_hybrid diagnostics | "
+            "raw_query=%r normalized_query=%r fts_matches=%d "
+            "query_vec_norm=%.4f vector_threshold=%.2f "
+            "fts_top10=%s vector_top10=%s overlap=%d "
+            "wedding_boost=%.2f event_boost=%.2f",
             raw_query,
             normalized_q,
             fts_matches,
             vec_norm,
+            settings.search_min_vector_similarity,
             fts_top_ids,
             vec_top_ids,
             overlap,
-            intents["wedding_hall_banquet_hall"],
-            intents["event_space_rooftop_resort_lawn"],
+            intents.get("wedding_hall_banquet_hall", 1.0),
+            intents.get("event_space_rooftop_resort_lawn", 1.0),
         )
     except Exception:
         logger.exception("search_hybrid: diagnostics logging failed")
 
 
 def _log_hybrid_result_scores(rows, limit: int = 20) -> None:
-    """Log the FTS/vector/boost/hybrid score breakdown for each of the top
-    results actually returned, so ranking decisions are inspectable per-row.
-    Best-effort: never let a logging failure break the actual search request.
-    """
+    """Log the FTS/vector/boost/hybrid score breakdown for top results."""
     try:
         lines = [
             f"  #{i+1:>2} id={row.id} cat={row.category_slug or '-':<14} "
@@ -319,6 +317,7 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
     raw_query = params.q
     normalized_q = normalize_query(raw_query)
 
+    # Early fallback if no embeddings exist in the system
     has_embeddings = (
         db.query(Venue)
         .filter(
@@ -346,16 +345,36 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
     intents = detect_category_intents(normalized_q)
     _log_hybrid_diagnostics(db, raw_query, normalized_q, query_vec, intents)
 
+    # Build dynamic filters
     base_filters = [
         "v.status = 'approved'",
         "v.is_active = true",
         "v.deleted_at IS NULL",
-        "(v.search_vector @@ plainto_tsquery('english', :q) OR v.embedding IS NOT NULL)",
+        """
+        (
+            v.search_vector @@ plainto_tsquery('english', :q)
+
+            OR
+
+            (
+                v.embedding IS NOT NULL
+                AND NOT (
+                    v.search_vector @@ plainto_tsquery('english', :q)
+                )
+                AND (
+                    1 - (
+                        v.embedding <=> CAST(:qvec AS vector)
+                    )
+                ) >= :min_vector_score
+            )
+        )
+        """,
     ]
 
     extra_params = {
         "q": normalized_q,
         "qvec": str(query_vec),
+        "min_vector_score": settings.search_min_vector_similarity,
     }
 
     if params.city:
@@ -372,8 +391,7 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
 
     where_clause = " AND ".join(base_filters)
 
-    # Only boost a category group if the (normalized) query actually implies
-    # that intent — e.g. "rooftop party" shouldn't get a wedding-hall boost.
+    # Category boost (only apply if intent is detected)
     boost_case = f"""
         CASE
             WHEN vc.slug IN ('wedding_hall', 'banquet_hall') THEN {intents['wedding_hall_banquet_hall']}
@@ -382,18 +400,17 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
         END
     """
 
-    # Total count (before pagination)
+    # Total count
     count_sql = text(f"""
         SELECT COUNT(*)
         FROM venues v
-        LEFT JOIN venue_categories vc
-            ON vc.id = v.category_id
+        LEFT JOIN venue_categories vc ON vc.id = v.category_id
         WHERE {where_clause}
     """)
 
     total = db.execute(count_sql, extra_params).scalar() or 0
 
-    # Paginated hybrid search
+    # Main hybrid query
     rows_sql = text(f"""
         SELECT
             v.id,
@@ -411,25 +428,19 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
             (
                 (
                     0.3 * COALESCE(
-                        ts_rank(
-                            v.search_vector,
-                            plainto_tsquery('english', :q)
-                        ),
+                        ts_rank(v.search_vector, plainto_tsquery('english', :q)),
                         0
                     )
                     +
                     0.7 * COALESCE(
-                        1 - (
-                            v.embedding <=> CAST(:qvec AS vector)
-                        ),
+                        1 - (v.embedding <=> CAST(:qvec AS vector)),
                         0
                     )
                 )
                 * {boost_case}
             ) AS hybrid_score
         FROM venues v
-        LEFT JOIN venue_categories vc
-            ON vc.id = v.category_id
+        LEFT JOIN venue_categories vc ON vc.id = v.category_id
         WHERE {where_clause}
         ORDER BY hybrid_score DESC
         LIMIT :limit
@@ -453,6 +464,7 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
             page_size=params.page_size,
         )
 
+    # Fetch full venue objects with relationships
     venues_by_id = {
         venue.id: venue
         for venue in (

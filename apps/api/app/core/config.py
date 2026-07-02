@@ -58,6 +58,7 @@ class Settings(BaseSettings):
     jina_api_key: str = ""
     jina_embedding_model: str = "jina-embeddings-v3"
     embedding_dimensions: int = 1024
+    search_min_vector_similarity: float = 0.15
 
     log_level: str = "INFO"  # DEBUG / INFO / WARNING / ERROR
 
