@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Navbar } from "@/components/Navbar";
 import QueryProvider from "@/provider/QueryProvider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -37,6 +38,7 @@ export default function RootLayout({
                     </body>
                 </QueryProvider>
             </ClerkProvider>
+            <Toaster position="top-right" richColors />
         </html>
     );
 }

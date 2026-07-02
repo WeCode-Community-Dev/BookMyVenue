@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWriteReview } from "@/hooks/useWriteReview";
+import { toast } from "sonner";
 
 interface ReviewModalProps {
     open: boolean;
@@ -30,6 +31,7 @@ export function ReviewModal({ open, onOpenChange, venueId }: ReviewModalProps) {
                     setRating(0);
                     setComment("");
                     onOpenChange(false);
+                    toast.success("Review created successfully.");
                 },
             },
         );

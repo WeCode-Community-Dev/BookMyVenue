@@ -8,6 +8,7 @@ import { useCreateVenue } from "@/hooks/useCreateVenue";
 import { SessionInput, Venue } from "@bookmyvenue/types";
 import type { District, VenueCategory } from "@bookmyvenue/database/enums";
 import { useEditVenue } from "@/hooks/useEditVenue";
+import { toast } from "sonner";
 
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
 const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
@@ -36,7 +37,7 @@ const step1Schema = z.object({
 });
 
 const step2Schema = z.object({
-    description: z.string().min(1, "Description is required"),
+    description: z.string().min(10, "Description must be at least 10 characters"),
     amenities: z.array(z.string()).min(1, "Select at least one amenity"),
 });
 
@@ -156,18 +157,29 @@ const VenueModal = ({ mode, venue, onClose }: VenueModalProps) => {
             sessions: form.sessions,
         };
 
-
-
         if (mode === "CREATE") {
             createVenue(payload, {
-                onSuccess: onClose,
+                onSuccess: () => {
+                    toast.success("Venue created successfully.");
+                    onClose();
+                },
+                onError: (error) => {
+                    toast.error(error.message || "Failed to create venue.");
+                },
             });
         } else {
-            console.log("EDIT >> ");
-
-            console.log({ payload });
-
-            editVenue({ id: venue!.id, payload }, { onSuccess: onClose });
+            editVenue(
+                { id: venue!.id, payload },
+                {
+                    onSuccess: () => {
+                        toast.success("Venue updated successfully.");
+                        onClose();
+                    },
+                    onError: (error) => {
+                        toast.error(error.message || "Failed to update venue.");
+                    },
+                },
+            );
         }
     };
 
