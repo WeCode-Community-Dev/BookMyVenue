@@ -15,6 +15,7 @@ from app.modules.notification.routes import router as notification_router
 from app.modules.admin.routes import router as admin_router
 from app.modules.payment.routes import router as payment_router
 from app.modules.internal.routes import router as internal_router
+from app.modules.owner.routes import router as owner_router
 from app.modules.admin.service import seed_super_admin
 
 
@@ -49,6 +50,7 @@ app.include_router(notification_router, prefix="/api/notifications", tags=["noti
 app.include_router(admin_router, prefix="/api/admin", tags=["admin"])
 app.include_router(payment_router, prefix="/api/payments", tags=["payments"])
 app.include_router(internal_router, prefix="/api/internal", tags=["internal"])
+app.include_router(owner_router, prefix="/api/owner", tags=["owner"])
 
 @app.get("/health", tags=["health"])
 async def health_check():

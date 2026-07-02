@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Card, SectionHeader, EmptyState, Skeleton } from '@venue404/ui'
+import { Card, EmptyState, Skeleton } from '@venue404/ui'
 import { IndianRupee, TrendingDown, ArrowUpRight, ArrowDownRight, Building2, User, FileText, ArrowRightLeft } from 'lucide-react'
 import { createClient } from '@venue404/api-client'
 import { paymentEndpoints, type OwnerLedgerStats, type LedgerEntry } from '@venue404/api-client/src/endpoints/payments'
@@ -84,16 +84,6 @@ export default function Financials() {
 
   return (
     <div className="space-y-8 pb-12 max-w-[1400px] mx-auto">
-      <div className="flex items-center justify-between">
-        <SectionHeader
-          title="Financial Ledger"
-          description="Real-time transaction history and financial metrics."
-        />
-        <div className="flex gap-3">
-            {/* Future placement for Request Payout or Export CSV buttons */}
-        </div>
-      </div>
-
       {/* Industrial Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         

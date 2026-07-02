@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, SectionHeader, Skeleton, EmptyState } from '@venue404/ui'
+import { Button, Skeleton, EmptyState } from '@venue404/ui'
 import {
-  Plus,
   MapPin,
   Users,
   Calendar,
@@ -74,20 +73,6 @@ export default function ManageVenues() {
 
   return (
     <div className="space-y-6 pb-10">
-
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <SectionHeader
-          title="My Venues"
-          description="Manage your listed properties and their settings."
-        />
-        <Link to="/venues/new" className="shrink-0">
-          <Button variant="primary" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Add New Venue
-          </Button>
-        </Link>
-      </div>
 
       {/* ── Tabs ── */}
       <div className="border-b border-zinc-200">
