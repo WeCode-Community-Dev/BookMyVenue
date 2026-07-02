@@ -1,4 +1,5 @@
 import { UserEntity } from "../../domain/entities/User.js";
+import { VenueMapper } from "./Venue.mapper.js";
 
 export class UserMapper {
 
@@ -20,6 +21,13 @@ export class UserMapper {
             refreshToken: doc.refreshToken,
             resetToken: doc.resetToken,
             resetTokenExpiry: doc.resetTokenExpiry,
+            isVerified: doc.isVerified,
+            profileImage: doc.profileImage,
+            wishlist: doc.wishlist?.map(item =>
+                item?._id
+                    ? VenueMapper.mapToEntity(item)
+                    : item.toString()
+                 ) || [],
         });
     }
 
@@ -37,7 +45,12 @@ export class UserMapper {
             isBlocked: entity.isBlocked,
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
-            refreshToken: entity.refreshToken
+            refreshToken: entity.refreshToken,
+            isVerified: entity.isVerified,
+            profileImage: entity.profileImage,
+            wishlist: entity.wishlist?.map(item =>
+                    item.id ? item.id : item
+                ) || [],
         };
     }
 }

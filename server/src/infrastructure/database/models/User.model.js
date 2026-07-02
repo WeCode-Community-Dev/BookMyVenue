@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { UserRole } from "../../../domain/enums/UserRole.enum.js";
+
 const userSchema = new mongoose.Schema({
     fullName: {
         type: String,
@@ -37,13 +38,27 @@ const userSchema = new mongoose.Schema({
     },
     otpCode: {
         type: String,
+        default: null,
         select: false
     },
     otpExpiresAt: {
         type: Date,
+        default: null,
         select: false
     },
     isBlocked: {
+        type: Boolean,
+        default: false
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    isDeleted: {
         type: Boolean,
         default: false
     },
@@ -59,13 +74,28 @@ const userSchema = new mongoose.Schema({
     resetTokenExpiry: {
         type: Date,
         select: false
-    }
-
+    },
+    profileImage: {
+        publicId: {
+            type: String,
+            default: ""
+        },
+        url: {
+            type: String,
+            default: ""
+        }
+    },
+    pendingEmail: {
+        type: String,
+        default: null
+    },
+    wishlist: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Venue"
+    }]
 },
-    {
-        timestamps: true
-    })
-
+{
+    timestamps: true
+})
 
 export const UserModel = mongoose.model("User", userSchema)
-

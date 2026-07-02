@@ -40,6 +40,7 @@ app.post(
   }
 );
 
+
 app.get('/test', (req, res) => {
     res.status(200).json({
         status: true, 
@@ -49,6 +50,9 @@ app.get('/test', (req, res) => {
 
 app.use('/api', routes)
 const PORT = process.env.PORT || 4000
+
+
+
 
 app.listen(PORT, () => {
     console.log('Server connected')

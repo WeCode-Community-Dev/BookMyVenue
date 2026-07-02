@@ -4,6 +4,7 @@ import { VenueModel } from "../database/Venue.model.js";
 import { VenueStatus } from "../../domain/enums/Venue.enum.js";
 
 export class VenueRepository extends IVenueRepository {
+
     async findById(id) {
         const document = await VenueModel.findById(id)
 
@@ -298,14 +299,6 @@ export class VenueRepository extends IVenueRepository {
             { new: true }
         )
     }
-
-  async delete(id) {
-    return await VenueModel.findByIdAndUpdate(
-      id,
-      { isDeleted: true },
-      { new: true }
-    );
-  }
 
   async countByOwnerId(ownerId) {
     return await VenueModel.countDocuments({
