@@ -29,7 +29,7 @@ function CheckoutPage() {
     if (confirmPaymentAsync.fulfilled.match(result)) {
       setDone(true);
       if (result.payload.status === "paid") {
-        setTimeout(() => navigate("/my-bookings"), 1200);
+        setTimeout(() => navigate("/order-history"), 1200);
       }
     }
   };
