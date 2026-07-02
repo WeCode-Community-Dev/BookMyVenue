@@ -21,481 +21,344 @@ export class BookingRepositoryImpl extends BookingRepository {
         );
     }
 
-  async findById(id) {
-    const booking =
-        await BookingModel
-            .findById(id)
-            .populate("userId", "fullName email phone")
-            .populate("vendorId", "fullName email phone")
-            .populate("venueId", "name");
-    if (!booking) return null;
-    return BookingMapper.mapToEntity(booking);
-  }
-
-  async findByUserId(userId) {
-    const docs = await BookingModel.find({
-      userId,
-    });
-
-    return docs.map((doc) => BookingMapper.mapToEntity(doc));
-  }
-
-  async findByOwnerId(
-    vendorId,
-    {
-      page,
-
-      limit,
-
-      status,
-
-      search,
-    }
-  ) {
-    const filter = { vendorId };
-
-    if (status) {
-      filter.status = status;
+    async findById(id) {
+        const booking =
+            await BookingModel
+                .findById(id)
+                .populate("userId", "fullName email phone")
+                .populate("vendorId", "fullName email phone")
+                .populate("venueId", "name");
+        if (!booking) return null;
+        return BookingMapper.mapToEntity(booking);
     }
 
-    let docs = await BookingModel.find(filter)
+    async findByUserId(userId) {
+        const docs = await BookingModel.find({
+            userId,
+        });
 
-      .populate("userId", "fullName email")
-
-      .populate("venueId", "name")
-
-      .sort({
-        createdAt: -1,
-      });
-
-    if (search) {
-      const keyword = search.trim().toLowerCase();
-
-      docs = docs.filter(
-        (doc) =>
-          doc.userId?.fullName?.toLowerCase().includes(keyword) ||
-          doc.venueId?.name?.toLowerCase().includes(keyword) ||
-          doc._id.toString().includes(keyword)
-      );
+        return docs.map((doc) => BookingMapper.mapToEntity(doc));
     }
 
-    const total = docs.length;
+    async findByOwnerId(
+        vendorId,
+        {
+            page,
 
-    const skip = (page - 1) * limit;
+            limit,
 
-    docs = docs.slice(skip, skip + Number(limit));
+            status,
 
-    return {
-      bookings: docs.map((doc) => BookingMapper.mapToEntity(doc)),
+            search,
+        }
+    ) {
+        const filter = { vendorId };
 
-      pagination: {
-        total,
-
-        page: Number(page),
-
-        limit: Number(limit),
-
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
-
-  async findByVenueAndDate(
-    venueId,
-
-    bookingDate
-  ) {
-    const docs = await BookingModel.find({
-      venueId,
-
-      bookingDate,
-    });
-
-    return docs.map((doc) => BookingMapper.mapToEntity(doc));
-  }
-
-  async update(
-    id,
-
-    entity
-  ) {
-    const doc = await BookingModel.findByIdAndUpdate(
-      id,
-
-      BookingMapper.mapToPersistence(entity),
-
-      {
-        new: true,
-      }
-    );
-
-    return BookingMapper.mapToEntity(doc);
-  }
-
-  async countByOwnerId(vendorId) {
-    return await BookingModel.countDocuments({
-      vendorId,
-    });
-  }
-
-  async countByOwnerIdAndStatus(
-    vendorId,
-
-    status
-  ) {
-    return await BookingModel.countDocuments({
-      vendorId,
-
-      status,
-    });
-  }
-
-  async getTopVenues(vendorId) {
-    const result = await BookingModel.aggregate([
-      {
-        $match: {
-          vendorId: new mongoose.Types.ObjectId(vendorId),
-        },
-      },
-
-      {
-        $group: {
-          _id: "$venueId",
-          bookings: { $sum: 1 },
-        },
-      },
-
-      {
-        $sort: {
-          bookings: -1,
-        },
-      },
-
-      {
-        $limit: 5,
-      },
-
-      {
-        $lookup: {
-          from: "venues",
-          localField: "_id",
-          foreignField: "_id",
-          as: "venue",
-        },
-      },
-
-      {
-        $unwind: "$venue",
-      },
-
-      {
-        $project: {
-          _id: 0,
-          venueId: "$venue._id",
-          name: "$venue.name",
-          bookings: 1,
-        },
-      },
-    ]);
-
-    return result;
-  }
-
-  async getRecentBookings(vendorId) {
-    const docs = await BookingModel.find({
-      vendorId    })
-
-      .populate("userId", "fullName")
-
-      .populate("venueId", "name")
-
-      .sort({
-        createdAt: -1,
-      })
-
-      .limit(5);
-
-    return docs.map((doc) => ({
-      bookingId: doc._id,
-
-      customer: doc.userId?.fullName,
-
-      venue: doc.venueId?.name,
-
-      amount: doc.totalAmount,
-
-      status: doc.status,
-
-      bookingDate: doc.bookingDate,
-    }));
-  }
-
-
-async findAllFiltered(query) {
-
-    const filter = {};
-
-    if (query.paymentStatus) {
-        filter.paymentStatus = query.paymentStatus;
-    }
-
-    if (query.paymentType) {
-        filter.paymentType = query.paymentType;
-    }
-
-    if (query.paymentMethod) {
-        filter.paymentMethod = query.paymentMethod;
-    }
-
-    if (query.search) {
-
-        const regex = new RegExp(query.search, "i");
-
-        const userIds = await UserModel.find({
-            fullName: regex
-        }).distinct("_id");
-
-        const vendorIds = await VendorModel.find({
-            $or: [
-                { fullName: regex },
-                { companyName: regex }
-            ]
-        }).distinct("_id");
-
-        const bookingIds = await BookingModel.find({}).distinct("_id");
-
-        const searchFilter = [
-
-            { userId: { $in: userIds } },
-
-            { vendorId: { $in: vendorIds } }
-
-        ];
-
-        if (Types.ObjectId.isValid(query.search)) {
-
-            searchFilter.push({
-                bookingId: new Types.ObjectId(query.search)
-            });
-
-            searchFilter.push({
-                _id: new Types.ObjectId(query.search)
-            });
-
+        if (status) {
+            filter.status = status;
         }
 
-        filter.$or = searchFilter;
+        let docs = await BookingModel.find(filter)
 
+            .populate("userId", "fullName email")
+
+            .populate("venueId", "name")
+
+            .sort({
+                createdAt: -1,
+            });
+
+        if (search) {
+            const keyword = search.trim().toLowerCase();
+
+            docs = docs.filter(
+                (doc) =>
+                    doc.userId?.fullName?.toLowerCase().includes(keyword) ||
+                    doc.venueId?.name?.toLowerCase().includes(keyword) ||
+                    doc._id.toString().includes(keyword)
+            );
+        }
+
+        const total = docs.length;
+
+        const skip = (page - 1) * limit;
+
+        docs = docs.slice(skip, skip + Number(limit));
+
+        return {
+            bookings: docs.map((doc) => BookingMapper.mapToEntity(doc)),
+
+            pagination: {
+                total,
+
+                page: Number(page),
+
+                limit: Number(limit),
+
+                totalPages: Math.ceil(total / limit),
+            },
+        };
     }
 
-    const totalCount =
-        await PaymentModel.countDocuments(filter);
+    async findByVenueAndDate(
+        venueId,
 
-    const totalPages =
-        Math.ceil(totalCount / query.limit);
+        bookingDate
+    ) {
+        const docs = await BookingModel.find({
+            venueId,
 
-    const data =
-        await PaymentModel.aggregate([
+            bookingDate,
+        });
 
-            {
-                $match: filter
-            },
-
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userId",
-                    foreignField: "_id",
-                    as: "user"
-                }
-            },
-
-            {
-                $unwind: {
-                    path: "$user",
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-
-            {
-                $lookup: {
-                    from: "vendors",
-                    localField: "vendorId",
-                    foreignField: "_id",
-                    as: "vendor"
-                }
-            },
-
-            {
-                $unwind: {
-                    path: "$vendor",
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-
-            {
-                $lookup: {
-                    from: "bookings",
-                    localField: "bookingId",
-                    foreignField: "_id",
-                    as: "booking"
-                }
-            },
-
-            {
-                $unwind: {
-                    path: "$booking",
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-
-            {
-                /*$sort: {
-                    createdAt:
-                        query.sortBy === "asc" ? 1 : -1
-                }*/
-               
-    $sort: {
-
-        amount:
-
-            query.sortBy === "highestAmount" ? -1 :
-
-            query.sortBy === "lowestAmount" ? 1 : undefined,
-
-        createdAt:
-
-            query.sortBy === "oldest" ? 1 : -1
-
+        return docs.map((doc) => BookingMapper.mapToEntity(doc));
     }
 
-            },
+    async update(
+        id,
+
+        entity
+    ) {
+        const doc = await BookingModel.findByIdAndUpdate(
+            id,
+
+            BookingMapper.mapToPersistence(entity),
 
             {
-                $skip:
-                    (query.page - 1) * query.limit
-            },
-
-            {
-                $limit:
-                    query.limit
+                new: true,
             }
+        );
 
+        return BookingMapper.mapToEntity(doc);
+    }
+
+    async countByOwnerId(vendorId) {
+        return await BookingModel.countDocuments({
+            vendorId,
+        });
+    }
+
+    async countByOwnerIdAndStatus(
+        vendorId,
+
+        status
+    ) {
+        return await BookingModel.countDocuments({
+            vendorId,
+
+            status,
+        });
+    }
+
+    async getTopVenues(vendorId) {
+        const result = await BookingModel.aggregate([
+            {
+                $match: {
+                    vendorId: new mongoose.Types.ObjectId(vendorId),
+                },
+            },
+
+            {
+                $group: {
+                    _id: "$venueId",
+                    bookings: { $sum: 1 },
+                },
+            },
+
+            {
+                $sort: {
+                    bookings: -1,
+                },
+            },
+
+            {
+                $limit: 5,
+            },
+
+            {
+                $lookup: {
+                    from: "venues",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "venue",
+                },
+            },
+
+            {
+                $unwind: "$venue",
+            },
+
+            {
+                $project: {
+                    _id: 0,
+                    venueId: "$venue._id",
+                    name: "$venue.name",
+                    bookings: 1,
+                },
+            },
         ]);
 
-    return {
+        return result;
+    }
 
-        data,
+    async getRecentBookings(vendorId) {
+        const docs = await BookingModel.find({
+            vendorId
+        })
 
-        totalCount,
+            .populate("userId", "fullName")
 
-        totalPages
+            .populate("venueId", "name")
 
-    };
+            .sort({
+                createdAt: -1,
+            })
 
-}
-async getBookingStatistics() {
+            .limit(5);
 
-    const result =
-        await BookingModel.aggregate([
+        return docs.map((doc) => ({
+            bookingId: doc._id,
 
-            {
+            customer: doc.userId?.fullName,
 
-                $group: {
+            venue: doc.venueId?.name,
 
-                    _id: null,
+            amount: doc.totalAmount,
 
-                    totalBookings: {
-                        $sum: 1
-                    },
+            status: doc.status,
 
-                    pendingBookings: {
+            bookingDate: doc.bookingDate,
+        }));
+    }
 
-                        $sum: {
 
-                            $cond: [
+    async findAllFiltered(query) {
+        const filter = {};
+        if (query.status) { filter.status = query.status; }
+        if (query.paymentStatus) { filter.paymentStatus = query.paymentStatus; }
+        if (query.search) {
+            const regex = new RegExp(query.search, "i");
+            const userIds = await UserModel.find({ fullName: regex }).distinct("_id");
+            const vendorIds = await VendorModel.find({ $or: [{ fullName: regex }, { companyName: regex }] }).distinct("_id"); const venueIds = await VenueModel.find({ name: regex }).distinct("_id"); const searchFilter = [{ userId: { $in: userIds } }, { vendorId: { $in: vendorIds } }, { venueId: { $in: venueIds } }];
+            if (Types.ObjectId.isValid(query.search)) { searchFilter.push({ _id: new Types.ObjectId(query.search) }); }
+            filter.$or = searchFilter;
+        }
+        const totalCount = await BookingModel.countDocuments(filter);
+        const totalPages = Math.ceil(totalCount / query.limit);
+        const data = await BookingModel.aggregate([
+            { $match: filter }, { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "user" } }, { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+            { $lookup: { from: "vendors", localField: "vendorId", foreignField: "_id", as: "vendor" } },
+            { $unwind: { path: "$vendor", preserveNullAndEmptyArrays: true } },
+            { $lookup: { from: "venues", localField: "venueId", foreignField: "_id", as: "venue" } },
+            { $unwind: { path: "$venue", preserveNullAndEmptyArrays: true } },
+            { $sort: { bookingDate: query.sortBy === "asc" ? 1 : -1 } },
+            { $skip: (query.page - 1) * query.limit }, { $limit: query.limit }]);
+        return { data, totalCount, totalPages };
+    }
+    async getBookingStatistics() {
 
-                                {
-                                    $eq: [
-                                        "$status",
-                                        BookingStatus.PENDING
-                                    ]
-                                },
+        const result =
+            await BookingModel.aggregate([
 
-                                1,
+                {
 
-                                0
+                    $group: {
 
-                            ]
+                        _id: null,
 
-                        }
+                        totalBookings: {
+                            $sum: 1
+                        },
 
-                    },
+                        pendingBookings: {
 
-                    confirmedBookings: {
+                            $sum: {
 
-                        $sum: {
+                                $cond: [
 
-                            $cond: [
+                                    {
+                                        $eq: [
+                                            "$status",
+                                            BookingStatus.PENDING
+                                        ]
+                                    },
 
-                                {
-                                    $eq: [
-                                        "$status",
-                                        BookingStatus.CONFIRMED
-                                    ]
-                                },
+                                    1,
 
-                                1,
+                                    0
 
-                                0
+                                ]
 
-                            ]
+                            }
 
-                        }
+                        },
 
-                    },
+                        confirmedBookings: {
 
-                    cancelledBookings: {
+                            $sum: {
 
-                        $sum: {
+                                $cond: [
 
-                            $cond: [
+                                    {
+                                        $eq: [
+                                            "$status",
+                                            BookingStatus.CONFIRMED
+                                        ]
+                                    },
 
-                                {
-                                    $eq: [
-                                        "$status",
-                                        BookingStatus.CANCELLED
-                                    ]
-                                },
+                                    1,
 
-                                1,
+                                    0
 
-                                0
+                                ]
 
-                            ]
+                            }
 
-                        }
+                        },
 
-                    },
+                        cancelledBookings: {
 
-                    completedBookings: {
+                            $sum: {
 
-                        $sum: {
+                                $cond: [
 
-                            $cond: [
+                                    {
+                                        $eq: [
+                                            "$status",
+                                            BookingStatus.CANCELLED
+                                        ]
+                                    },
 
-                                {
-                                    $eq: [
-                                        "$status",
-                                        BookingStatus.COMPLETED
-                                    ]
-                                },
+                                    1,
 
-                                1,
+                                    0
 
-                                0
+                                ]
 
-                            ]
+                            }
+
+                        },
+
+                        completedBookings: {
+
+                            $sum: {
+
+                                $cond: [
+
+                                    {
+                                        $eq: [
+                                            "$status",
+                                            BookingStatus.COMPLETED
+                                        ]
+                                    },
+
+                                    1,
+
+                                    0
+
+                                ]
+
+                            }
 
                         }
 
@@ -503,24 +366,22 @@ async getBookingStatistics() {
 
                 }
 
-            }
+            ]);
 
-        ]);
+        return result[0] || {
 
-    return result[0] || {
+            totalBookings: 0,
 
-        totalBookings: 0,
+            pendingBookings: 0,
 
-        pendingBookings: 0,
+            confirmedBookings: 0,
 
-        confirmedBookings: 0,
+            cancelledBookings: 0,
 
-        cancelledBookings: 0,
+            completedBookings: 0
 
-        completedBookings: 0
+        };
 
-    };
-
-}
+    }
 
 }

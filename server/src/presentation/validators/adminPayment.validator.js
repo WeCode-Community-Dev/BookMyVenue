@@ -26,21 +26,10 @@ export const adminGetAllPaymentsSchema = z.object({
 
             .optional(),
 
-    sortBy:
+sortBy: z
+    .enum(["asc", "desc"])
+    .default("desc"),
 
-        z.enum([
-
-            "latest",
-
-            "oldest",
-
-            "highestAmount",
-
-            "lowestAmount"
-
-        ])
-
-            .default("latest"),
 
     page:
 

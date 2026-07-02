@@ -226,7 +226,7 @@ async findAllFiltered(query = {}) {
 
             .sort({
                 createdAt:
-                    query.sortBy === "oldest"
+                    query.sortBy === "asc"
                         ? 1
                         : -1
             })
