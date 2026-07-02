@@ -3,13 +3,12 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from uuid import UUID
 
-import httpx
-import numpy as np
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.config import settings
+from app.infrastructure.embeddings.jina import embed_passage, embed_query
 from app.modules.search.models import SearchIndexJob
 from app.modules.venue.models import Venue
 
@@ -22,6 +21,7 @@ _BACKOFF_SECONDS = [0, 300, 900, 3600, 21600]
 
 def _redis_client():
     from upstash_redis import Redis
+
     return Redis(url=settings.upstash_redis_url, token=settings.upstash_redis_token)
 
 
@@ -68,14 +68,22 @@ def _build_search_document(venue: Venue) -> str:
         parts.append(venue.category.label)
 
         keywords = {
-            "wedding_hall": "wedding marriage reception function banquet hall mandap sadya",
-            "banquet_hall": "banquet hall wedding reception marriage function",
-            "event_space": "event space party celebration function",
-            "rooftop": "rooftop terrace open air rooftop party",
-            "club": "club nightclub party lounge discotheque",
-            "resort": "resort destination wedding luxury staycation",
-            "lawn": "lawn garden outdoor",
-            "auditorium": "auditorium theatre hall",
+            "wedding_hall": (
+                "wedding marriage reception function banquet hall mandap sadya "
+                "kalyanam kalyana mandapam vivaham nikah shaadi shadi vivah "
+                "engagement muhurtham sangeet mehendi haldi baraat "
+                "wedding venue marriage hall wedding function hall"
+            ),
+            "banquet_hall": (
+                "banquet hall wedding reception marriage function party hall "
+                "conference hall corporate event convention hall"
+            ),
+            "event_space": "event space party celebration function birthday anniversary get together",
+            "rooftop": "rooftop terrace open air rooftop party sundowner",
+            "club": "club nightclub party lounge discotheque dj night",
+            "resort": "resort destination wedding luxury staycation getaway resort wedding",
+            "lawn": "lawn garden outdoor open lawn poolside function lawn",
+            "auditorium": "auditorium theatre hall seminar convocation stage",
         }
         if slug in keywords:
             parts.append(keywords[slug])
@@ -99,42 +107,17 @@ def _update_fts(db: Session, venue_id: UUID, document: str) -> None:
     )
 
 
-def _generate_embedding(
-    text_input: str, task: str = "retrieval.passage"
-) -> list[float]:
-    """Generate normalized embedding (L2 norm)"""
-    response = httpx.post(
-        "https://api.jina.ai/v1/embeddings",
-        headers={
-            "Authorization": f"Bearer {settings.jina_api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "model": settings.jina_embedding_model,
-            "input": [text_input],
-            "task": task,
-        },
-        timeout=30.0,
-    )
-    response.raise_for_status()
-    embedding = response.json()["data"][0]["embedding"]
-
-    # L2 Normalization - Critical for good semantic search
-    embedding = np.array(embedding, dtype=np.float32)
-    norm = np.linalg.norm(embedding)
-    if norm > 0:
-        embedding = embedding / norm
-
-    return embedding.tolist()
-
-
 def generate_query_embedding(query: str) -> list[float]:
-    return _generate_embedding(query, task="retrieval.query")
+    """Kept as a thin wrapper so search/service.py doesn't need to import the
+    embeddings client directly — it only ever talks to the search module."""
+    return embed_query(query)
 
 
 def process_job(db: Session, job_id: str) -> None:
     """Process a single search index job end-to-end."""
-    job = db.query(SearchIndexJob).filter(SearchIndexJob.id == uuid.UUID(job_id)).first()
+    job = (
+        db.query(SearchIndexJob).filter(SearchIndexJob.id == uuid.UUID(job_id)).first()
+    )
     if not job:
         logger.warning("search_indexer: job %s not found", job_id)
         return
@@ -161,7 +144,7 @@ def process_job(db: Session, job_id: str) -> None:
         _update_fts(db, venue.id, document)
 
         if settings.jina_api_key:
-            embedding = _generate_embedding(document)
+            embedding = embed_passage(document)
             venue.embedding = embedding
             venue.embedding_updated_at = datetime.now(timezone.utc)
 
@@ -172,7 +155,11 @@ def process_job(db: Session, job_id: str) -> None:
 
     except Exception as exc:
         db.rollback()
-        job = db.query(SearchIndexJob).filter(SearchIndexJob.id == uuid.UUID(job_id)).first()
+        job = (
+            db.query(SearchIndexJob)
+            .filter(SearchIndexJob.id == uuid.UUID(job_id))
+            .first()
+        )
         if job:
             job.retry_count += 1
             job.error_message = str(exc)
@@ -208,7 +195,9 @@ def retryable_job_ids(db: Session, limit: int = 10) -> list[str]:
             if len(results) >= limit:
                 break
             delay = _BACKOFF_SECONDS[min(job.retry_count, len(_BACKOFF_SECONDS) - 1)]
-            eligible_at = job.created_at.replace(tzinfo=timezone.utc) + timedelta(seconds=delay)
+            eligible_at = job.created_at.replace(tzinfo=timezone.utc) + timedelta(
+                seconds=delay
+            )
             if now >= eligible_at:
                 results.append(job)
 
