@@ -6,28 +6,44 @@ export const venueEndpoints = (client: ReturnType<typeof createClient>) => ({
   getVenue: (id: string) => client.get<Venue>(`/api/venues/${id}`),
   createVenue: (body: unknown) => client.post<Venue>('/api/venues/', body),
   updateVenue: (id: string, body: unknown) => client.patch<Venue>(`/api/venues/${id}`, body),
-  addVenuePhoto: (id: string, body: FormData) => client.post<VenuePhoto>(`/api/venues/${id}/photos`, body),
-  deleteVenuePhoto: (venueId: string, photoId: string) => client.delete<void>(`/api/venues/${venueId}/photos/${photoId}`),
-  bulkUpdateVenuePhotos: (id: string, body: unknown) => client.put<void>(`/api/venues/${id}/photos/bulk-update`, body),
+  addVenuePhoto: (id: string, body: FormData) =>
+    client.post<VenuePhoto>(`/api/venues/${id}/photos`, body),
+  deleteVenuePhoto: (venueId: string, photoId: string) =>
+    client.delete<void>(`/api/venues/${venueId}/photos/${photoId}`),
+  bulkUpdateVenuePhotos: (id: string, body: unknown) =>
+    client.put<void>(`/api/venues/${id}/photos/bulk-update`, body),
   getMyVenues: () => client.get<VenueListResponse[]>('/api/venues/my/venues'),
   getMyVenue: (id: string) => client.get<Venue>(`/api/venues/my/venues/${id}`),
   getVenueStats: (id: string) => client.get<VenueStatsResponse>(`/api/venues/my/venues/${id}/stats`),
   getVenueBookings: (id: string) => client.get<unknown[]>(`/api/venues/${id}/bookings`),
-  getPendingVenueBookings: (id: string) => client.get<unknown[]>(`/api/venues/${id}/bookings/pending`),
-  updateCancellationPolicy: (id: string, body: unknown) => client.put<void>(`/api/venues/${id}/cancellation-policy`, body),
+  getPendingVenueBookings: (id: string) =>
+    client.get<unknown[]>(`/api/venues/${id}/bookings/pending`),
+  updateCancellationPolicy: (id: string, body: unknown) =>
+    client.put<void>(`/api/venues/${id}/cancellation-policy`, body),
   getPlatformAmenities: () => client.get<Amenity[]>('/api/venues/amenities'),
-  updateVenueAmenities: (id: string, body: unknown) => client.put<void>(`/api/venues/${id}/amenities`, body),
-  getVenueAvailability: (id: string) => client.get<VenueAvailability[]>(`/api/venues/${id}/availability`),
-  bulkUpdateVenueAvailability: (id: string, body: unknown) => client.put<VenueAvailability[]>(`/api/venues/${id}/availability`, body),
+  updateVenueAmenities: (id: string, body: unknown) =>
+    client.put<void>(`/api/venues/${id}/amenities`, body),
+  getVenueAvailability: (id: string) =>
+    client.get<VenueAvailability[]>(`/api/venues/${id}/availability`),
+  bulkUpdateVenueAvailability: (id: string, body: unknown) =>
+    client.put<VenueAvailability[]>(`/api/venues/${id}/availability`, body),
   getBlockedDates: (id: string) => client.get<BlockedDate[]>(`/api/venues/${id}/blocked-dates`),
-  createBlockedDate: (id: string, body: unknown) => client.post<BlockedDate>(`/api/venues/${id}/blocked-dates`, body),
-  deleteBlockedDate: (venueId: string, blockedId: string) => client.delete<void>(`/api/venues/${venueId}/blocked-dates/${blockedId}`),
+  createBlockedDate: (id: string, body: unknown) =>
+    client.post<BlockedDate>(`/api/venues/${id}/blocked-dates`, body),
+  deleteBlockedDate: (venueId: string, blockedId: string) =>
+    client.delete<void>(`/api/venues/${venueId}/blocked-dates/${blockedId}`),
   submitVenue: (id: string) => client.post<Venue>(`/api/venues/${id}/submit`, {}),
   search: (params: Record<string, string | number>) => {
     const qs = new URLSearchParams(
       Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)]))
     ).toString()
     return client.get<SearchPage>(`/api/search/?${qs}`)
+  },
+  hybrid_search: (params: Record<string, string | number>) => {
+    const qs = new URLSearchParams(
+      Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)]))
+    ).toString()
+    return client.get<SearchPage>(`/api/search/hybrid?${qs}`)
   },
   getCancellationPolicy: (id: string) =>
     client.get<unknown>(`/api/venues/${id}/cancellation-policy`),
