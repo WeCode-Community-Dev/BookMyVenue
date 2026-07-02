@@ -46,6 +46,18 @@ export const getVenuesSchema = {
 export const editVenueSchema = {
     body: {
         type: "object",
+        additionalProperties: false,
+        required: [
+            "name",
+            "description",
+            "capacity",
+            "category",
+            "location",
+            "district",
+            "images",
+            "amenities",
+            "sessions",
+        ],
         properties: {
             name: { type: "string", minLength: 2 },
             description: { type: "string", minLength: 10 },
@@ -55,6 +67,29 @@ export const editVenueSchema = {
             district: { type: "string", enum: Object.values(District) },
             images: { type: "array", items: { type: "string" } },
             amenities: { type: "array", items: { type: "string" } },
+            sessions: {
+                type: "array",
+                items: {
+                    type: "object",
+                    oneOf: [
+                        {
+                            required: ["id"],
+                            properties: { id: { type: "integer" } },
+                            additionalProperties: false,
+                        },
+                        {
+                            required: ["label", "startTime", "endTime", "price"],
+                            properties: {
+                                label: { type: "string" },
+                                startTime: { type: "string" },
+                                endTime: { type: "string" },
+                                price: { type: "integer", minimum: 1 },
+                            },
+                            additionalProperties: false,
+                        },
+                    ],
+                },
+            },
         },
     },
 };

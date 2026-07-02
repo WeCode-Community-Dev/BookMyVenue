@@ -28,7 +28,7 @@ export const venueRoute = async (fastify: FastifyInstance) => {
     );
 
     fastify.put<{ Params: { id: string }; Body: EditVenueBody }>(
-        "/venue/:id",
+        "/:id",
         { preHandler: ownerAuthMiddleware, schema: editVenueSchema },
         editVenue,
     );

@@ -30,11 +30,25 @@ export const VENUE_CATEGORIES = [
 ] as const;
 
 export interface SessionInput {
+    id?: number;
     label: string;
     startTime: string;
     endTime: string;
     price: number;
 }
+
+// export interface ExistingSessionInput {
+//     id: number;
+// }
+
+// export interface NewSessionInput {
+//     label: string;
+//     startTime: string;
+//     endTime: string;
+//     price: number;
+// }
+
+// export type SessionInput = ExistingSessionInput | NewSessionInput;
 
 export interface CreateVenuePayload {
     name: string;
@@ -139,14 +153,16 @@ export interface CreateVenueBody {
 }
 
 export interface EditVenueBody {
-    name?: string;
-    description?: string;
-    capacity?: number;
-    category?: VenueCategory;
-    location?: string;
-    district?: District;
-    images?: string[];
-    amenities?: string[];
+    name: string;
+    description: string;
+    capacity: number;
+    images: string[];
+    amenities: string[];
+    category: VenueCategory;
+    location: string;
+    district: District;
+
+    sessions: SessionInput[];
 }
 
 export interface GetVenuesQuery {
