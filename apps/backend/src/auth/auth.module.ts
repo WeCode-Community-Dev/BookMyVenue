@@ -1,0 +1,1 @@
+// Authentication layer (handles JWT & sessions)

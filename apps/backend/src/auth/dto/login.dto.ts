@@ -1,0 +1,1 @@
+// Validation DTO for login endpoint

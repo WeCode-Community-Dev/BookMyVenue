@@ -1,0 +1,1 @@
+// Exposes: /api/v1/auth/signup, /login, /logout
