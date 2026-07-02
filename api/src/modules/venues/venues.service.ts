@@ -151,6 +151,7 @@ export class VenuesService {
 
 
   async createVenue(dto: CreateVenueDto, authorization: string): Promise<VenueDetails> {
+    try {
     const payload = verifyAccessToken(this.jwtService, authorization);
     if (payload.role !== UserRole.VENUE_OWNER) {
       throw new UnauthorizedException('You are not authorized to create a venue');
@@ -159,12 +160,10 @@ export class VenuesService {
     const venueAmenityIds = this.normalizeIds(dto.venueAmenityIds);
     const venueImageIds = this.normalizeIds(dto.venueImageIds);
 
-    this.assertNoDuplicateIds(venueAmenityIds, 'Venue amenity ids');
-    this.assertNoDuplicateIds(venueImageIds, 'Venue image ids');
 
     return this.prismaService.$transaction(async (tx) => {
-      await this.ensureAmenitiesExist(tx, venueAmenityIds);
-      await this.ensureImagesExist(tx, venueImageIds);
+      await this.ensureIdsExist(tx.amenity,venueAmenityIds, 'Amenity');
+      await this.ensureIdsExist(tx.image,venueImageIds, 'Image');
 
       const venue = await tx.venue.create({
         data: {
@@ -211,8 +210,11 @@ export class VenuesService {
         throw new NotFoundException('Venue not found');
       }
 
-      return createdVenue;
-    });
+        return createdVenue;
+      });
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to create venue', error);
+    }
   }
 
   async getOwnedVenues(authorization: string): Promise<OwnedVenueDetails[]> {
@@ -248,28 +250,37 @@ export class VenuesService {
   }
 
   async findAllVenues(): Promise<VenueDetails[]> {
-    return this.prismaService.venue.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-      include: venueDetailsInclude,
-    });
+    try {
+      return this.prismaService.venue.findMany({
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: venueDetailsInclude,
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findOneVenue(id: string): Promise<VenueDetails> {
-    const venue = await this.prismaService.venue.findUnique({
-      where: { id },
-      include: venueDetailsInclude,
-    });
+    try {
+      const venue = await this.prismaService.venue.findUnique({
+        where: { id },
+        include: venueDetailsInclude,
+      });
 
-    if (!venue) {
-      throw new NotFoundException('Venue not found');
+      if (!venue) {
+        throw new NotFoundException('Venue not found');
+      }
+
+      return venue;
+    } catch (error) {
+      throw error;
     }
-
-    return venue;
   }
 
   async updateVenue(id: string, dto: UpdateVenueDto): Promise<VenueDetails> {
+    try {
     const venueAmenityIds = dto.venueAmenityIds
       ? this.normalizeIds(dto.venueAmenityIds)
       : undefined;
@@ -277,12 +288,6 @@ export class VenuesService {
       ? this.normalizeIds(dto.venueImageIds)
       : undefined;
 
-    if (venueAmenityIds) {
-      this.assertNoDuplicateIds(venueAmenityIds, 'Venue amenity ids');
-    }
-    if (venueImageIds) {
-      this.assertNoDuplicateIds(venueImageIds, 'Venue image ids');
-    }
 
     return this.prismaService.$transaction(async (tx) => {
       const existingVenue = await tx.venue.findUnique({
@@ -295,10 +300,10 @@ export class VenuesService {
       }
 
       if (venueAmenityIds) {
-        await this.ensureAmenitiesExist(tx, venueAmenityIds);
+        await this.ensureIdsExist(tx.amenity,venueAmenityIds, 'Amenity');
       }
       if (venueImageIds) {
-        await this.ensureImagesExist(tx, venueImageIds);
+        await this.ensureIdsExist(tx.image,venueImageIds, 'Image');
       }
 
       const data: Prisma.VenueUpdateInput = {};
@@ -365,35 +370,40 @@ export class VenuesService {
 
       return updatedVenue;
     });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async removeVenue(id: string): Promise<void> {
-    const venue = await this.prismaService.venue.findUnique({
-      where: { id },
-      select: { id: true },
-    });
+    try {
+      const venue = await this.prismaService.venue.findUnique({
+        where: { id },
+        select: { id: true },
+      });
 
-    if (!venue) {
-      throw new NotFoundException('Venue not found');
+      if (!venue) {
+        throw new NotFoundException('Venue not found');
+      }
+
+      await this.prismaService.venue.delete({
+        where: { id },
+      });
+    } catch (error) {
+      throw error;
     }
-
-    await this.prismaService.venue.delete({
-      where: { id },
-    });
   }
 
   async createSpace(venueId: string, dto: CreateSpaceDto): Promise<SpaceDetails> {
+    try {
     const spaceAmenityIds = this.normalizeIds(dto.spaceAmenityIds);
     const spaceImageIds = this.normalizeIds(dto.spaceImageIds);
 
-    this.assertNoDuplicateIds(spaceAmenityIds, 'Space amenity ids');
-    this.assertNoDuplicateIds(spaceImageIds, 'Space image ids');
-
     return this.prismaService.$transaction(async (tx) => {
-      await this.ensureVenueExists(tx, venueId);
-      await this.ensureCategoryExists(tx, dto.categoryId);
-      await this.ensureAmenitiesExist(tx, spaceAmenityIds);
-      await this.ensureImagesExist(tx, spaceImageIds);
+      await this.ensureIdExits(tx.venue, venueId, 'Venue');
+      await this.ensureIdExits(tx.spaceCategory, dto.categoryId, 'Space category');
+      await this.ensureIdsExist(tx.amenity,spaceAmenityIds, 'Amenity');
+      await this.ensureIdsExist(tx.image,spaceImageIds, 'Image');
 
       const space = await tx.space.create({
         data: {
@@ -439,34 +449,46 @@ export class VenuesService {
 
       return createdSpace;
     });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findSpacesByVenue(venueId: string): Promise<SpaceDetails[]> {
-    await this.ensureVenueExists(this.prismaService, venueId);
+    try {
+      await this.ensureIdExits(this.prismaService.venue, venueId, 'Venue');
 
-    return this.prismaService.space.findMany({
-      where: { venueId },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      include: spaceDetailsInclude,
-    });
+      return this.prismaService.space.findMany({
+        where: { venueId },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: spaceDetailsInclude,
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findOneSpace(id: string): Promise<SpaceDetails> {
-    const space = await this.prismaService.space.findUnique({
-      where: { id },
-      include: spaceDetailsInclude,
-    });
+    try {
+      const space = await this.prismaService.space.findUnique({
+        where: { id },
+        include: spaceDetailsInclude,
+      });
 
-    if (!space) {
-      throw new NotFoundException('Space not found');
+      if (!space) {
+        throw new NotFoundException('Space not found');
+      }
+
+      return space;
+    } catch (error) {
+      throw error;
     }
-
-    return space;
   }
 
   async updateSpace(id: string, dto: UpdateSpaceDto): Promise<SpaceDetails> {
+    try {
     const spaceAmenityIds = dto.spaceAmenityIds
       ? this.normalizeIds(dto.spaceAmenityIds)
       : undefined;
@@ -474,12 +496,6 @@ export class VenuesService {
       ? this.normalizeIds(dto.spaceImageIds)
       : undefined;
 
-    if (spaceAmenityIds) {
-      this.assertNoDuplicateIds(spaceAmenityIds, 'Space amenity ids');
-    }
-    if (spaceImageIds) {
-      this.assertNoDuplicateIds(spaceImageIds, 'Space image ids');
-    }
 
     return this.prismaService.$transaction(async (tx) => {
       const existingSpace = await tx.space.findUnique({
@@ -492,13 +508,13 @@ export class VenuesService {
       }
 
       if (dto.categoryId !== undefined) {
-        await this.ensureCategoryExists(tx, dto.categoryId);
+        await this.ensureIdExits(tx.spaceCategory, dto.categoryId, 'Space category');
       }
       if (spaceAmenityIds) {
-        await this.ensureAmenitiesExist(tx, spaceAmenityIds);
+        await this.ensureIdsExist(tx.amenity,spaceAmenityIds, 'Amenity');
       }
       if (spaceImageIds) {
-        await this.ensureImagesExist(tx, spaceImageIds);
+        await this.ensureIdsExist(tx.image,spaceImageIds, 'Image');
       }
 
       const data: Prisma.SpaceUpdateInput = {};
@@ -567,34 +583,45 @@ export class VenuesService {
 
       return updatedSpace;
     });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async removeSpace(id: string): Promise<void> {
-    const space = await this.prismaService.space.findUnique({
-      where: { id },
-      select: { id: true },
-    });
+    try {
+      const space = await this.prismaService.space.findUnique({
+        where: { id },
+        select: { id: true },
+      });
 
-    if (!space) {
-      throw new NotFoundException('Space not found');
+      if (!space) {
+        throw new NotFoundException('Space not found');
+      }
+
+      await this.prismaService.space.delete({
+        where: { id },
+      });
+    } catch (error) {
+      throw error;
     }
-
-    await this.prismaService.space.delete({
-      where: { id },
-    });
   }
 
   async findAllAmenities(): Promise<AmenityDetails[]> {
-    return this.prismaService.amenity.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-      },
-    });
+    try {
+      return this.prismaService.amenity.findMany({
+        orderBy: {
+          createdAt: 'desc',
+        },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async createImages(dto: CreateImagesDto): Promise<ImageDetails[]> {
@@ -659,39 +686,43 @@ export class VenuesService {
     spaceId: string,
     dto: UpsertSpacePricingDto,
   ): Promise<SpacePricingDetails> {
-    await this.ensureSpaceExists(this.prismaService, spaceId);
+    try {
+      await this.ensureIdExits(this.prismaService.space, spaceId, 'Space');
 
-    const data = {
-      amount: dto.amount,
-      currency: dto.currency,
-      minBooking: dto.minBooking,
-      maxBooking: dto.maxBooking,
-    };
+      const data = {
+        amount: dto.amount,
+        currency: dto.currency,
+        minBooking: dto.minBooking,
+        maxBooking: dto.maxBooking,
+      };
 
-    const existing = await this.prismaService.spacePricing.findFirst({
-      where: {
-        spaceId,
-        pricingType: dto.pricingType,
-      },
-      select: { id: true },
-    });
+      const existing = await this.prismaService.spacePricing.findFirst({
+        where: {
+          spaceId,
+          pricingType: dto.pricingType,
+        },
+        select: { id: true },
+      });
 
-    if (existing) {
-      return this.prismaService.spacePricing.update({
-        where: { id: existing.id },
-        data,
+      if (existing) {
+        return this.prismaService.spacePricing.update({
+          where: { id: existing.id },
+          data,
+          select: spacePricingSelect,
+        });
+      }
+
+      return this.prismaService.spacePricing.create({
+        data: {
+          spaceId,
+          pricingType: dto.pricingType,
+          ...data,
+        },
         select: spacePricingSelect,
       });
+    } catch (error) {
+      throw error;
     }
-
-    return this.prismaService.spacePricing.create({
-      data: {
-        spaceId,
-        pricingType: dto.pricingType,
-        ...data,
-      },
-      select: spacePricingSelect,
-    });
   }
 
   async getSpacePricing(spaceId: string): Promise<SpacePricingDetails[]> {
@@ -739,18 +770,22 @@ export class VenuesService {
   }
 
   async getSpaceOperatingHours(spaceId: string): Promise<SpaceOperatingHourDetails[]> {
-    return this.prismaService.spaceOperatingHour.findMany({
-      where: { spaceId },
-      orderBy:{
-        weekday: 'asc',
-      },
-      select: {
-        weekday: true,
-        openTime: true,
-        closeTime: true,
-        isClosed: true,
-      },
-    });
+    try {
+      return this.prismaService.spaceOperatingHour.findMany({
+        where: { spaceId },
+        orderBy:{
+          weekday: 'asc',
+        },
+        select: {
+          weekday: true,
+          openTime: true,
+          closeTime: true,
+          isClosed: true,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
 
@@ -822,108 +857,71 @@ export class VenuesService {
 
 
   private normalizeIds(ids: readonly string[]): string[] {
-    return [...new Set(ids)];
-  }
-
-  private assertNoDuplicateIds(ids: readonly string[], label: string): void {
-    if (new Set(ids).size !== ids.length) {
-      throw new ConflictException(`${label} must be unique`);
+    try {
+      return [...new Set(ids)];
+    } catch (error) {
+      throw error;
     }
   }
 
-  private async ensureSpaceExists(
-    client: Prisma.TransactionClient | PrismaService,
-    spaceId: string,
-  ): Promise<void> {
-    const space = await client.space.findUnique({
-      where: { id: spaceId },
-      select: { id: true },
-    });
 
-    if (!space) {
-      throw new NotFoundException('Space not found');
+  private async ensureIdExits<
+  T extends { 
+    findUnique(args: {
+      where: { id: string };
+      select: { id: true };
+    }): Promise<{ id: string } | null>;
+  }>(
+    model: T,
+    id: string,
+    modalName: string,
+  ){
+    try {
+      const existing = await model.findUnique({
+        where: { id },
+        select: { id: true },
+      });
+      if (!existing) {
+        throw new NotFoundException(`${modalName} not found: ${id}`);
+      }
+    } catch (error) {
+      throw error;
     }
   }
 
-  private async ensureVenueExists(
-    client: Prisma.TransactionClient | PrismaService,
-    venueId: string,
-  ): Promise<void> {
-    const venue = await client.venue.findUnique({
-      where: { id: venueId },
-      select: { id: true },
-    });
 
-    if (!venue) {
-      throw new NotFoundException('Venue not found');
-    }
-  }
-
-  private async ensureCategoryExists(
-    client: Prisma.TransactionClient | PrismaService,
-    categoryId: string,
-  ): Promise<void> {
-    const category = await client.spaceCategory.findUnique({
-      where: { id: categoryId },
-      select: { id: true },
-    });
-
-    if (!category) {
-      throw new NotFoundException('Category not found');
-    }
-  }
-
-  private async ensureAmenitiesExist(
-    client: Prisma.TransactionClient | PrismaService,
-    amenityIds: string[],
-  ): Promise<void> {
-    if (amenityIds.length === 0) {
-      return;
-    }
-
-    const amenities = await client.amenity.findMany({
-      where: {
-        id: {
-          in: amenityIds,
+  private async ensureIdsExist<
+  T extends {
+    findMany(args: {
+      where: { id: { in: string[] } };
+      select: { id: true };
+    }): Promise<{ id: string }[]>;
+  },
+>(
+    model: T,
+    ids: string[],
+    modalName: string,
+  ){
+    try {
+      if (ids.length === 0) {
+        return;
+      }
+      const existingIds = await model.findMany({
+        where: {
+          id: {
+            in: ids,
+          },
         },
-      },
-      select: {
-        id: true,
-      },
-    });
+        select: { id: true },
+      });
 
-    const existingIds = new Set(amenities.map((amenity) => amenity.id));
-    const missingIds = amenityIds.filter((amenityId) => !existingIds.has(amenityId));
-
-    if (missingIds.length > 0) {
-      throw new NotFoundException(`Amenity not found: ${missingIds.join(', ')}`);
-    }
-  }
-
-  private async ensureImagesExist(
-    client: Prisma.TransactionClient | PrismaService,
-    imageIds: string[],
-  ): Promise<void> {
-    if (imageIds.length === 0) {
-      return;
-    }
-
-    const images = await client.image.findMany({
-      where: {
-        id: {
-          in: imageIds,
-        },
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    const existingIds = new Set(images.map((image) => image.id));
-    const missingIds = imageIds.filter((imageId) => !existingIds.has(imageId));
-
-    if (missingIds.length > 0) {
-      throw new NotFoundException(`Image not found: ${missingIds.join(', ')}`);
+      const existingIdsSet = new Set(existingIds.map((id) => id.id));
+      const missingIds = ids.filter((id) => !existingIdsSet.has(id));
+      if (missingIds.length > 0) {
+        throw new NotFoundException(`${modalName} not found: ${missingIds.join(', ')}`);
+      }
+    } catch (error) {
+      throw error;
     }
   }
 }

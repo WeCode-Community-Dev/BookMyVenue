@@ -1,5 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { UserRole } from '../../../../generated/prisma/enums.js';
+import { UnauthorizedException } from '@nestjs/common';
 
 export type AccessTokenPayload = {
   sub: string;
@@ -24,7 +25,11 @@ export function verifyAccessToken(
   jwtService: JwtService,
   token: string,
 ): AccessTokenPayload {
-  return jwtService.verify(token);
+  try {
+    return jwtService.verify(token);
+  } catch (error) {
+    throw new UnauthorizedException('Invalid or expired token');
+  }
 }
 
 // export function decodeAccessToken(
