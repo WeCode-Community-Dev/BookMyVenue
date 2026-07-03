@@ -104,7 +104,7 @@ class Venue(Base):
     latitude: Mapped[float | None]
     longitude: Mapped[float | None]
 
-    min_capacity: Mapped[int] = mapped_column(
+    venue_size: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
     )

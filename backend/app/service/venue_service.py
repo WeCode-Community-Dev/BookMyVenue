@@ -51,7 +51,7 @@ class VenueService:
                 latitude=venue.latitude,
                 longitude=venue.longitude,
             ),
-            min_capacity=venue.min_capacity,
+            venue_size=venue.venue_size,
             max_capacity=venue.max_capacity,
             cover_image_url=venue.cover_image_url,
             virtual_tour_url=venue.virtual_tour_url,
@@ -169,7 +169,7 @@ class VenueService:
                 pincode=data.location.pincode,
                 latitude=data.location.latitude,
                 longitude=data.location.longitude,
-                min_capacity=data.min_capacity,
+                venue_size=data.venue_size,
                 max_capacity=data.max_capacity,
                 cover_image_url=str(data.cover_image_url),
                 virtual_tour_url=(
@@ -350,7 +350,6 @@ class VenueService:
     def get_all_amenities(
         self,
         db: Session,
-        owner_id: str,
     ) -> List[VenueResponse]:
 
         try:

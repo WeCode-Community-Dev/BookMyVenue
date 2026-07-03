@@ -214,7 +214,7 @@ class CreateVenueRequest(BaseModel):
 
     location: VenueLocation
 
-    min_capacity: int = Field(
+    venue_size: int = Field(
         ...,
         ge=1,
         le=100000,
@@ -285,15 +285,6 @@ class CreateVenueRequest(BaseModel):
         return value.strip().lower()
 
     @model_validator(mode="after")
-    def validate_capacity(self):
-        if self.max_capacity < self.min_capacity:
-            raise ValueError(
-                "max_capacity must be greater than or equal to min_capacity."
-            )
-
-        return self
-
-    @model_validator(mode="after")
     def validate_cover_gallery(self):
         if len(self.gallery_images) > 20:
             raise ValueError("Maximum 20 gallery images allowed.")
@@ -357,7 +348,7 @@ class VenueResponse(BaseModel):
     category: VenueCategory
     description: Optional[str]
     location: VenueLocation
-    min_capacity: int
+    venue_size: int
     max_capacity: int
     amenities: List[AmenityResponse]
     cover_image_url: str

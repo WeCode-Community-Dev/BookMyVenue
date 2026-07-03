@@ -114,9 +114,9 @@ def update_status(
 )
 def get_all_amenities(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    # TODO(Jiyad): Separate get api for user and admin
 ):
-    result = venue_service.get_all_amenities(db=db, owner_id=current_user.id)
+    result = venue_service.get_all_amenities(db=db)
 
     return SuccessResponse(
         message="Amenities list retrieved successfully",
