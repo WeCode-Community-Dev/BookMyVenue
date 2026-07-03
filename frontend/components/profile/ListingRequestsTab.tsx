@@ -154,22 +154,74 @@ export default function ListingRequestsTab() {
                   </div>
 
                   {isDocOpen && (
-                    <div className="bg-slate-50/70 border border-slate-200/40 rounded-xl p-4 mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1 duration-150 text-left">
-                      <div className="space-y-1">
-                        <span className="text-[10px] text-slate-400 font-bold block uppercase leading-none">Property Registration Certificate</span>
-                        <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 bg-white border border-slate-200 rounded-lg p-2.5 mt-1 select-none">
-                          <FileText className="size-4.5 text-rose-650" />
-                          <span className="truncate">deed_reg_verify_signed.pdf</span>
-                          <span className="ml-auto text-[9px] uppercase font-black bg-emerald-50 text-emerald-750 px-1.5 py-0.5 rounded-sm">Valid</span>
+                    <div className="bg-slate-50/70 border border-slate-200/40 rounded-xl p-4 sm:p-5 mt-2 space-y-4 animate-in fade-in slide-in-from-top-1 duration-150 text-left">
+                      {/* Documents Row */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-200/60 pb-4">
+                        <div className="space-y-1">
+                          <span className="text-[10px] text-slate-400 font-bold block uppercase leading-none">Property Registration Certificate</span>
+                          <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 bg-white border border-slate-200 rounded-lg p-2.5 mt-1 select-none">
+                            <FileText className="size-4.5 text-rose-650" />
+                            <span className="truncate">deed_reg_verify_signed.pdf</span>
+                            <span className="ml-auto text-[9px] uppercase font-black bg-emerald-50 text-emerald-750 px-1.5 py-0.5 rounded-sm">Valid</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[10px] text-slate-400 font-bold block uppercase leading-none">Owner Identity Document</span>
+                          <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 bg-white border border-slate-200 rounded-lg p-2.5 mt-1 select-none">
+                            <ShieldCheck className="size-4.5 text-blue-600" />
+                            <span className="truncate">national_id_card_front.jpg</span>
+                            <span className="ml-auto text-[9px] uppercase font-black bg-blue-50 text-blue-750 px-1.5 py-0.5 rounded-sm">Verified</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="space-y-1">
-                        <span className="text-[10px] text-slate-400 font-bold block uppercase leading-none">Owner Identity Document</span>
-                        <div className="flex items-center gap-2 text-xs font-extrabold text-slate-700 bg-white border border-slate-200 rounded-lg p-2.5 mt-1 select-none">
-                          <ShieldCheck className="size-4.5 text-blue-600" />
-                          <span className="truncate">national_id_card_front.jpg</span>
-                          <span className="ml-auto text-[9px] uppercase font-black bg-blue-50 text-blue-750 px-1.5 py-0.5 rounded-sm">Verified</span>
+
+                      {/* Venue Full Details Row */}
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider block mb-1">Venue Description</h4>
+                          <p className="text-xs text-slate-600 leading-relaxed bg-white border border-slate-100 p-3 rounded-xl font-medium">
+                            {venue.description || "No description provided."}
+                          </p>
                         </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider block mb-1.5">Specific Location</h4>
+                            <div className="text-xs font-bold text-slate-700 bg-white border border-slate-100 p-3 rounded-xl space-y-1">
+                              <p className="text-slate-800 font-extrabold">{venue.address}</p>
+                              <p className="text-slate-450">{venue.city}, India</p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider block mb-1.5">Amenities Offered</h4>
+                            <div className="flex flex-wrap gap-1.5 p-2 bg-white border border-slate-100 rounded-xl min-h-[50px] items-center px-3">
+                              {venue.amenities && venue.amenities.length > 0 ? (
+                                venue.amenities.map((amenity, index) => (
+                                  <span key={index} className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                                    {amenity}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-[10px] font-semibold text-slate-400">No amenities selected.</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Images preview gallery */}
+                        {venue.images && venue.images.length > 0 && (
+                          <div>
+                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider block mb-2">Venue Images Gallery</h4>
+                            <div className="flex gap-3 overflow-x-auto pb-1 select-none">
+                              {venue.images.map((image, index) => (
+                                <div key={index} className="relative w-24 h-16 rounded-lg overflow-hidden shrink-0 border border-slate-200">
+                                  <Image src={image} alt={`Gallery ${index + 1}`} fill className="object-cover" />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
