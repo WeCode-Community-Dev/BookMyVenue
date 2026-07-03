@@ -1,13 +1,16 @@
 from typing import List
+from uuid import UUID
 
 from fastapi import APIRouter, status, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.schema.base_schema import SuccessResponse
 from app.schema.venue_schema import (
+    AmenityRequest,
     AmenityResponse,
     CreateVenueRequest,
     CreateVenueResponse,
+    DeleteAmenityResponse,
     UpdateVenueStatusRequest,
     UpdateVenueStatusResponse,
     VenueResponse,
@@ -117,5 +120,43 @@ def get_all_amenities(
 
     return SuccessResponse(
         message="Amenities list retrieved successfully",
+        data=result,
+    )
+
+
+@router.post(
+    "/amenities",
+    response_model=SuccessResponse[AmenityResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Create amenities",
+    description="Admin Create all amenities",
+)
+def create_amenity(
+    data: AmenityRequest,
+    db: Session = Depends(get_db),
+):
+    result = venue_service.create_amenity(data=data, db=db)
+
+    return SuccessResponse(
+        message="Amenities created successfully",
+        data=result,
+    )
+
+
+@router.delete(
+    "/amenities/{amenity_id}",
+    response_model=SuccessResponse[DeleteAmenityResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Delete amenities",
+    description="Admin Delete amenities by id",
+)
+def delete_amenity(
+    amenity_id: UUID,
+    db: Session = Depends(get_db),
+):
+    result = venue_service.delete_amenity(db=db, amenity_id=amenity_id)
+
+    return SuccessResponse(
+        message="Amenities deleted successfully",
         data=result,
     )

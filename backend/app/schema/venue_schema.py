@@ -319,6 +319,19 @@ class AmenityResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DeleteAmenityResponse(BaseModel):
+    id: UUID
+    message: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AmenityRequest(BaseModel):
+    name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class VenueServiceResponse(BaseModel):
     id: UUID
     service_name: str

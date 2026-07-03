@@ -3,14 +3,17 @@ import re
 from typing import List
 from uuid import UUID
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
 
 from app.schema.venue_schema import (
+    AmenityRequest,
     AmenityResponse,
     CreateVenueRequest,
     CreateVenueResponse,
+    DeleteAmenityResponse,
     UpdateVenueStatusResponse,
     VenueImageResponse,
     VenueLocation,
@@ -362,6 +365,90 @@ class VenueService:
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
+    def create_amenity(
+        self,
+        db: Session,
+        data: AmenityRequest,
+    ) -> AmenityResponse:
+        try:
+
+            amenity_name = " ".join(data.name.split())
+
+            existing_amenity = db.execute(
+                select(Amenity)
+                .where(func.lower(Amenity.name) == amenity_name.lower())
+                .with_for_update()
+            ).scalar_one_or_none()
+
+            if existing_amenity:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Amenity already exists.",
+                )
+
+            new_amenity = Amenity(name=data.name)
+            db.add(new_amenity)
+            db.commit()
+            db.refresh(new_amenity)
+
+            return AmenityResponse(
+                id=new_amenity.id,
+                name=new_amenity.name,
+            )
+        except HTTPException:
+            db.rollback()
+            raise
+
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=str(e))
+
+    def delete_amenity(
+        self,
+        db: Session,
+        amenity_id: UUID,
+    ) -> DeleteAmenityResponse:
+        try:
+
+            amenity = db.execute(
+                select(Amenity).where(Amenity.id == amenity_id)
+            ).scalar_one_or_none()
+
+            if not amenity:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Amenity not found.",
+                )
+
+            is_used = db.execute(
+                select(VenueAmenity).where(VenueAmenity.amenity_id == amenity_id)
+            ).scalar_one_or_none()
+
+            if is_used:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Amenity is assigned to one or more venues and cannot be deleted.",
+                )
+
+            db.delete(amenity)
+            db.commit()
+
+            return DeleteAmenityResponse(
+                id=amenity_id,
+                message="Amenity deleted successfully.",
+            )
+
+        except HTTPException:
+            db.rollback()
+            raise
+
+        except Exception:
+            db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to delete amenity.",
+            )
 
 
 # Singleton instance

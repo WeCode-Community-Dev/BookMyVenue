@@ -228,11 +228,41 @@ class VenueOwnerAuthService:
                 ApprovalStatus.PENDING,
             )
 
+            approval_status = ApprovalStatus.PENDING
+            status_message = "Profile under verification"
+            status_code = 3
+            reject_reason = None
+
+            if status == 0:
+                approval_status = ApprovalStatus.APPROVED
+                status_message = "Profile Verified"
+                status_code = 0
+
+            elif status == 1:
+                approval_status = ApprovalStatus.REJECTED
+                status_message = "Profile Rejected"
+                status_code = 1
+                reject_reason = "contact support"
+            elif status == 2:
+                approval_status = ApprovalStatus.SUSPENDED
+                status_message = "Profile Suspended"
+                status_code = 2
+                reject_reason = "contact support"
+
+            else:
+                approval_status = ApprovalStatus.PENDING
+                status_message = "Profile under verification"
+                status_code = 3
+                reject_reason = None
+
             db.commit()
             db.refresh(user)
 
             return UpdateOwnerStatusResponse(
                 owner_id=owner_id,
+                status_message=status_message,
+                status_code=status_code,
+                reject_reason=None,
                 approval_status=user.owner_profile.approval_status,
             )
 
