@@ -160,11 +160,14 @@ export default function SpaceListing() {
         selectedTimesArray.forEach(slot => {
             const [start, end] = slot.split(" - ")
             
-            const start24 = SetTimeFromString(undefined, start, "razorpay");
-            const end24 = SetTimeFromString(undefined, end, "razorpay");
+            let start24 = SetTimeFromString(undefined, start, "razorpay");
+            let end24 = SetTimeFromString(undefined, end, "razorpay");
 
             if(start24 < minStart) minStart = start24;
             if(end24 > maxEnd) maxEnd = end24;
+            console.log(minStart);
+            console.log(maxEnd);
+            
         })
 
         return { start_time: minStart, end_time: maxEnd };
@@ -238,7 +241,7 @@ export default function SpaceListing() {
                         const verifyResponse = await apiService.verifyPayment(verifyPayload);
 
                         if(verifyResponse.success){
-                            toast.success("Successfully Verified!")
+                            toast.success("Successfully Booked the Venue! Check your bookings in the dashboard.")
                         }
                         
                     } catch (verifyError) {
