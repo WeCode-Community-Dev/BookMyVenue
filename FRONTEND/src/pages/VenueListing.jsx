@@ -154,14 +154,14 @@ export default function SpaceListing() {
 
     // Get the earliest start time and latest end time from selected time slots
     const getFormattedStartAndEndTimes = (selectedTimesArray) => {
-        const minStart = "23:59";
-        const maxEnd = "00:00";
+        let minStart = "23:59";
+        let maxEnd = "00:00";
 
         selectedTimesArray.forEach(slot => {
             const [start, end] = slot.split(" - ")
             
-            let start24 = SetTimeFromString(undefined, start, "razorpay");
-            let end24 = SetTimeFromString(undefined, end, "razorpay");
+            const start24 = SetTimeFromString(undefined, start, "razorpay");
+            const end24 = SetTimeFromString(undefined, end, "razorpay");
 
             if(start24 < minStart) minStart = start24;
             if(end24 > maxEnd) maxEnd = end24;
@@ -199,8 +199,8 @@ export default function SpaceListing() {
         try {
             const formattedDate = handleSelectedTimeFormat(selectedDate);
 
-            const startTime = "";
-            const endTime = "";
+            let startTime = "";
+            let endTime = "";
 
             if(venue_type === "hourly" && selectedTimes.length === 0){
                 const times = getFormattedStartAndEndTimes(selectedTimes);
