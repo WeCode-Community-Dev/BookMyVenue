@@ -261,6 +261,31 @@ def add_venue_images(
         "message": "Images added successfully",
     }
     
+def update_venue_image(
+    db: Session,
+    image_id: int,
+    new_image_url: str
+):
+    image = (
+        db.query(VenueImages)
+        .filter(VenueImages.id == image_id)
+        .first()
+    )
+    print(new_image_url, "new_image_url")
+    if not image:
+        raise Exception("Image not found")
+
+    image.image_url = new_image_url[0]["url"]
+    db.commit()
+    db.refresh(image)
+
+    return {
+        "message": "Image updated successfully",
+        "image_id": image.id,
+        "new_image_url": image.image_url
+    }
+
+
 def update_venue_approval_status(
     db: Session,
     venue_id: int,
@@ -410,6 +435,33 @@ def edit_venue_amenities(
     return {
         "message": "Amenities updated successfully"
     }
+
+def get_venue_images(
+    db: Session,
+    venue_id: int
+):
+    images = (
+        db.query(VenueImages)
+        .filter(VenueImages.venue_id == venue_id)
+        .all()
+    )
+
+    if not images:
+        return {
+            "message": "No images found for this venue"
+        }
+
+    return [
+        {
+            "id": image.id,
+            "venue_id": image.venue_id,
+            "image_url": image.image_url,
+            "created_at": image.created_at,
+            "updated_at": image.updated_at
+        }
+        for image in images
+    ]
+
 
 def search_venues(
     db: Session,
