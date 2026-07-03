@@ -1,1 +1,44 @@
-# Database schema containing the User model
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  VENUE_OWNER
+  ADMIN
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
+model User {
+  id       String  @id @default(uuid())
+  name     String?
+  email    String  @unique
+  phone    String? @unique
+  password String? // null for Google users
+
+  authProvider AuthProvider @default(EMAIL)
+  googleId     String?      @unique
+
+  avatarUrl String?
+
+  role Role @default(USER)
+
+  isVerified Boolean @default(false)
+  isActive   Boolean @default(true)
+
+  profileIssues Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+}
