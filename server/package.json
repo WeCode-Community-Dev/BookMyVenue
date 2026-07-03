@@ -16,6 +16,7 @@
     "dotenv": "^17.0.0",
     "express": "^5.0.0",
     "jsonwebtoken": "^9.0.0",
+    "multer": "^2.2.0",
     "pg": "^8.0.0"
   },
   "devDependencies": {
@@ -23,6 +24,7 @@
     "@types/cors": "^2.8.0",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.0",
+    "@types/multer": "^2.2.0",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.0.0",
     "tsx": "^4.0.0",

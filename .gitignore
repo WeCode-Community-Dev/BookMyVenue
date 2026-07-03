@@ -9,4 +9,6 @@ build/
 server/.env
 client/.env
 
+server/uploads/
+
 *.log

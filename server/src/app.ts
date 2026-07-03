@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { pool } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import venueRoutes from "./routes/venueRoutes.js";
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.get("/db-test", async (req, res) => {
 });
 
 app.use("/auth", authRoutes);
+app.use("/venues", venueRoutes);
 
 const PORT = process.env.PORT || 5000;
 
