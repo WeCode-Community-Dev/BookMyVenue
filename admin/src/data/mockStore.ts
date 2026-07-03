@@ -382,3 +382,17 @@ export const defaultSettings: PlatformSettings = {
   supportEmail: 'operations@bookmyvenue.com',
   supportPhone: '+91 1800 200 400'
 };
+
+export interface Amenity {
+  id: string;
+  name: string;
+}
+
+export const initialAmenities: Amenity[] = [
+  { id: '111e4567-e89b-12d3-a456-426614174000', name: 'Air Conditioning' },
+  { id: '222e4567-e89b-12d3-a456-426614174001', name: 'Valet Parking' },
+  { id: '333e4567-e89b-12d3-a456-426614174002', name: 'Stage & Sound System' },
+  { id: '444e4567-e89b-12d3-a456-426614174003', name: 'Bridal Suite' },
+  { id: '555e4567-e89b-12d3-a456-426614174004', name: 'Catering Kitchen' },
+  { id: '666e4567-e89b-12d3-a456-426614174005', name: 'High-speed Wi-Fi' }
+];

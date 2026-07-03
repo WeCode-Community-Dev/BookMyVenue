@@ -1,4 +1,4 @@
-import type { Customer, Venue, VenueOwner } from '../data/mockStore';
+import type { Customer, Venue, VenueOwner, Amenity } from '../data/mockStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() ?? '';
 const USERS_ENDPOINT = import.meta.env.VITE_USERS_ENDPOINT?.trim() ?? '';
@@ -32,6 +32,7 @@ export const hasDirectoryApiConfig = Boolean(
 );
 
 export const hasVenuesApiConfig = Boolean(API_BASE_URL && VENUES_ENDPOINT);
+export const hasAmenitiesApiConfig = Boolean(API_BASE_URL);
 
 const buildUrl = (endpoint: string) => {
   const base = API_BASE_URL.replace(/\/+$/, '');
@@ -241,6 +242,44 @@ const getJson = async (endpoint: string) => {
 
   return response.json() as Promise<unknown>;
 };
+const postJson = async (endpoint: string, body: unknown) => {
+  const response = await fetch(buildUrl(endpoint), {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed with status ${response.status}`);
+  }
+
+  return response.json() as Promise<unknown>;
+};
+
+const deleteJson = async (endpoint: string) => {
+  const response = await fetch(buildUrl(endpoint), {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed with status ${response.status}`);
+  }
+
+  if (response.status === 204) {
+    return null;
+  }
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return response.json() as Promise<unknown>;
+  }
+  return null;
+};
 
 const patchJson = async (endpoint: string, body: unknown) => {
   const response = await fetch(buildUrl(endpoint), {
@@ -297,3 +336,25 @@ export const updateVenueOwnerApprovalStatus = async (
     approvalStatus: normalizeKycStatus(readString(data, ['approval_status', 'kycStatus', 'verificationStatus'], fallbackStatus))
   };
 };
+
+export const fetchAmenitiesApi = async (): Promise<Amenity[]> => {
+  const payload = await getJson('/api/v1/admin/venue/amenities');
+  return readArray(payload).map((entity, index) => {
+    const id = readString(entity, ['id', 'uuid', '_id'], `AMEN-${index + 1}`);
+    const name = readString(entity, ['name'], 'Unnamed Amenity');
+    return { id, name };
+  });
+};
+
+export const createAmenityApi = async (name: string): Promise<Amenity> => {
+  const payload = await postJson('/api/v1/admin/venue/amenities', { name });
+  const entity = payload !== null && typeof payload === 'object' ? payload as ApiEntity : {};
+  const id = readString(entity, ['id', 'uuid', '_id'], 'temp-id');
+  const responseName = readString(entity, ['name'], name);
+  return { id, name: responseName };
+};
+
+export const deleteAmenityApi = async (id: string): Promise<void> => {
+  await deleteJson(`/api/v1/admin/venue/amenities/${id}`);
+};
+

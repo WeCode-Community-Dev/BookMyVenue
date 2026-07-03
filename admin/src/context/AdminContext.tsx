@@ -8,7 +8,8 @@ import type {
   PlatformSettings,
   SystemNotification,
   Banner,
-  Promotion
+  Promotion,
+  Amenity
 } from '../data/mockStore';
 
 import {
@@ -20,14 +21,19 @@ import {
   initialBanners,
   initialPromotions,
   initialNotifications,
-  defaultSettings
+  defaultSettings,
+  initialAmenities
 } from '../data/mockStore';
 import {
   fetchAdminDirectoryData,
   fetchAdminVenuesData,
   hasDirectoryApiConfig,
   hasVenuesApiConfig,
-  updateVenueOwnerApprovalStatus
+  updateVenueOwnerApprovalStatus,
+  fetchAmenitiesApi,
+  createAmenityApi,
+  deleteAmenityApi,
+  hasAmenitiesApiConfig
 } from '../api/adminApi';
 
 interface ApiResourceState {
@@ -46,12 +52,17 @@ interface AdminContextProps {
   notifications: SystemNotification[];
   banners: Banner[];
   promotions: Promotion[];
+  amenities: Amenity[];
   apiState: {
     users: ApiResourceState;
     venues: ApiResourceState;
+    amenities: ApiResourceState;
   };
   refreshUsers: () => Promise<void>;
   refreshVenues: () => Promise<void>;
+  refreshAmenities: () => Promise<void>;
+  createAmenity: (name: string) => Promise<void>;
+  deleteAmenity: (id: string) => Promise<void>;
   
   // Handlers for Customers
   blockCustomer: (id: string) => void;
@@ -133,6 +144,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [notifications, setNotifications] = useState<SystemNotification[]>(initialNotifications);
   const [banners, setBanners] = useState<Banner[]>(initialBanners);
   const [promotions, setPromotions] = useState<Promotion[]>(initialPromotions);
+  const [amenities, setAmenities] = useState<Amenity[]>(initialAmenities);
   const [usersApiState, setUsersApiState] = useState<ApiResourceState>({
     loading: hasDirectoryApiConfig,
     error: null,
@@ -142,6 +154,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     loading: hasVenuesApiConfig,
     error: null,
     usingMockData: !hasVenuesApiConfig
+  });
+  const [amenitiesApiState, setAmenitiesApiState] = useState<ApiResourceState>({
+    loading: hasAmenitiesApiConfig,
+    error: null,
+    usingMockData: !hasAmenitiesApiConfig
   });
 
   const refreshUsers = useCallback(async () => {
@@ -217,6 +234,39 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
+  const refreshAmenities = useCallback(async () => {
+    if (!hasAmenitiesApiConfig) {
+      setAmenitiesApiState({
+        loading: false,
+        error: null,
+        usingMockData: true
+      });
+      return;
+    }
+
+    setAmenitiesApiState(prev => ({
+      ...prev,
+      loading: true,
+      error: null
+    }));
+
+    try {
+      const data = await fetchAmenitiesApi();
+      setAmenities(data);
+      setAmenitiesApiState({
+        loading: false,
+        error: null,
+        usingMockData: false
+      });
+    } catch (error) {
+      setAmenitiesApiState({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unable to load amenities from API.',
+        usingMockData: true
+      });
+    }
+  }, []);
+
   useEffect(() => {
     if (!hasDirectoryApiConfig) {
       return;
@@ -268,6 +318,30 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       });
   }, []);
+
+  useEffect(() => {
+    if (!hasAmenitiesApiConfig) {
+      return;
+    }
+
+    fetchAmenitiesApi()
+      .then((data) => {
+        setAmenities(data);
+        setAmenitiesApiState({
+          loading: false,
+          error: null,
+          usingMockData: false
+        });
+      })
+      .catch((error: unknown) => {
+        setAmenitiesApiState({
+          loading: false,
+          error: error instanceof Error ? error.message : 'Unable to load amenities from API.',
+          usingMockData: true
+        });
+      });
+  }, []);
+
 
   // CUSTOMERS HANDLERS
   const blockCustomer = (id: string) => {
@@ -460,6 +534,46 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPromotions(prev => prev.filter(p => p.id !== id));
   };
 
+  // AMENITIES HANDLERS
+  const createAmenity = async (name: string) => {
+    if (!name.trim()) return;
+
+    if (!hasAmenitiesApiConfig) {
+      const newAmenity: Amenity = {
+        id: `MOCK-${Date.now().toString().slice(-4)}`,
+        name: name.trim()
+      };
+      setAmenities(prev => [...prev, newAmenity]);
+      sendNotification('Amenity Created (Mock)', `Amenity "${name}" created in mock storage.`, 'all', 'broadcast');
+      return;
+    }
+
+    try {
+      const created = await createAmenityApi(name.trim());
+      setAmenities(prev => [...prev, created]);
+      sendNotification('Amenity Created', `Amenity "${name}" created successfully.`, 'all', 'broadcast');
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to create amenity via API.');
+    }
+  };
+
+  const deleteAmenity = async (id: string) => {
+    if (!hasAmenitiesApiConfig) {
+      setAmenities(prev => prev.filter(a => a.id !== id));
+      sendNotification('Amenity Deleted (Mock)', `Amenity with ID ${id} deleted from mock storage.`, 'all', 'broadcast');
+      return;
+    }
+
+    try {
+      await deleteAmenityApi(id);
+      setAmenities(prev => prev.filter(a => a.id !== id));
+      sendNotification('Amenity Deleted', `Amenity was deleted successfully.`, 'all', 'broadcast');
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to delete amenity via API.');
+    }
+  };
+
+
   // DYNAMIC STATS CALCULATOR
   const activeBookings = bookings.filter(b => b.status !== 'failed' && b.status !== 'cancelled');
   const totalBookingRevenue = activeBookings.reduce((sum, b) => sum + b.amount, 0);
@@ -509,12 +623,15 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         notifications,
         banners,
         promotions,
+        amenities,
         apiState: {
           users: usersApiState,
-          venues: venuesApiState
+          venues: venuesApiState,
+          amenities: amenitiesApiState
         },
         refreshUsers,
         refreshVenues,
+        refreshAmenities,
         blockCustomer,
         unblockCustomer,
         deleteCustomer,
@@ -541,7 +658,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addPromotion,
         togglePromotionActive,
         deletePromotion,
+        createAmenity,
+        deleteAmenity,
         stats
+
       }}
     >
       {children}

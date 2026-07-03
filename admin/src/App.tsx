@@ -12,13 +12,14 @@ import { SettingsView as Settings } from './pages/Settings';
 import { CMSView as CMS } from './pages/CMS';
 import type { Booking } from './data/mockStore';
 import { CustomCursor } from './components/CustomCursor';
+import { AmenitiesView } from './pages/Amenities';
 
 // Lucide icons
 import {
   Users as UsersIcon, Building, Calendar, DollarSign, ShieldAlert,
   Settings as SettingsIcon, Image,
   Bell, Menu, X, ChevronDown, ChevronRight,
-  LayoutDashboard, LogOut, Sun, Moon
+  LayoutDashboard, LogOut, Sun, Moon, Sparkles
 } from 'lucide-react';
 
 function AppContent() {
@@ -128,6 +129,9 @@ function AppContent() {
         return <Venues initialTab="pending" onSelectBooking={handleSelectBookingFromDashboard} />;
       case 'venues-blocked':
         return <Venues initialTab="blocked" onSelectBooking={handleSelectBookingFromDashboard} />;
+      case 'venues-amenities':
+        return <AmenitiesView />;
+
 
       // BOOKINGS FOLDER
       case 'bookings-all':
@@ -359,6 +363,15 @@ function AppContent() {
                   <Building className="w-3.5 h-3.5 text-rose-400" />
                   <span>Blocked Venues</span>
                 </button>
+                <button
+                  onClick={() => handleNav('venues-amenities')}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition ${currentSection === 'venues-amenities' ? 'bg-primary/20 text-white border-l-2 border-primary' : 'text-slate-400 hover:text-white hover:bg-slate-900/30'
+                    }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Amenities</span>
+                </button>
+
               </div>
             )}
           </div>
@@ -527,6 +540,8 @@ function AppContent() {
                     {stats.pendingVenueApprovals > 0 && <span className="bg-amber-500 text-slate-950 text-[8px] px-1.5 py-0.2 rounded font-bold">{stats.pendingVenueApprovals}</span>}
                   </button>
                   <button onClick={() => handleNav('venues-blocked')} className="w-full px-3 py-2 pl-6 text-xs font-semibold text-left rounded hover:bg-slate-900 text-slate-300">Blocked Spaces</button>
+                  <button onClick={() => handleNav('venues-amenities')} className="w-full px-3 py-2 pl-6 text-xs font-semibold text-left rounded hover:bg-slate-900 text-slate-300">Amenities</button>
+
                 </div>
 
                 <div className="space-y-1">
