@@ -75,7 +75,7 @@ export function ListVenueStepOneForm({
           onLocationSelect={(lat: number, lng: number) => {
             onChange({ ...value, latitude: lat.toString(), longitude: lng.toString() });
           }} 
-          initialLocation={{ lat: parseFloat(value.latitude), lng: parseFloat(value.longitude) }} />
+          initialLocation={value.latitude && value.longitude ? { lat: parseFloat(value.latitude), lng: parseFloat(value.longitude) } : null} />
           <Input
             id="coordinates"
             name="coordinates"

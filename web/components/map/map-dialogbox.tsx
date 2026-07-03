@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import MapPicker from "./map-picker";
@@ -11,6 +11,10 @@ export default function MapDialogBox({ onLocationSelect, initialLocation }: { on
         lat: number;
         lng: number;
     } | null>(initialLocation);
+
+    useEffect(()=>{
+        setSelectedLocation(initialLocation)
+    }, [open])
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -38,6 +42,7 @@ export default function MapDialogBox({ onLocationSelect, initialLocation }: { on
                             onLocationSelect={(lat: number, lng: number) => {
                                 setSelectedLocation({ lat: parseFloat(lat.toFixed(6)), lng: parseFloat(lng.toFixed(6)) });
                             }}
+                            selectedLocation={selectedLocation}
                         />
                     )}
                 </div>
