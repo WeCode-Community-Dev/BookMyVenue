@@ -24,7 +24,9 @@ from app.services.venue_service import (
     edit_venue,
     edit_venue_amenities,
     search_venues,
-    add_venue_availability
+    add_venue_availability,
+    get_venue_images,
+    update_venue_image
 )
 
 from fastapi import APIRouter, HTTPException, status, UploadFile, File
@@ -175,6 +177,49 @@ async def upload_venue_images(
 
         return images_urls
             
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+@router.get("/{venue_id}/images")
+async def get_images(
+    venue_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return get_venue_images(
+            db=db,
+            venue_id=venue_id
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+
+@router.put("/{image_id}/images")
+async def update_images(
+    image_id: int,
+    image: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    try:
+
+        new_image_url = await upload_images(
+            images=[image],
+            venue_id=image_id
+        )
+
+        return update_venue_image(
+            db=db,
+            image_id=image_id,
+            new_image_url=new_image_url
+        )
 
     except Exception as e:
         raise HTTPException(
