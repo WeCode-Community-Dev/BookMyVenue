@@ -20,18 +20,23 @@ export class RegisterUserUseCase {
         this._mailService = mailService
     }
 
-    async execute(userData) {
-        const existing = await this._userRepository.findByEmail(userData.email);
-
+    async execute({
+        fullName,
+        email, 
+        phone,
+        password
+    }) {
+        const existing = await this._userRepository.findByEmail(email);
+        console.log('existing user: ', existing)
         if (existing) {
             throw new ConflictError(authMessages.error.EMAIL_ALREADY_EXISTS);
         }
 
-        const hashedPassword = await this._hashService.hash(userData.password);
+        const hashedPassword = await this._hashService.hash(password);
         const user = new UserEntity({
-            fullName: userData.fullName,
-            email: userData.email,
-            phone: userData.phone,
+            fullName: fullName,
+            email: email,
+            phone: phone,
             password: hashedPassword,
             role: UserRole.CUSTOMER,
         });
@@ -39,6 +44,7 @@ export class RegisterUserUseCase {
         const savedUser = await this._userRepository.create(user)
         
         const otp = this._otpService.generate();
+        console.log('otp is:', otp)
         const hashedOtp = await this._otpService.hash(otp);
         // const otpExpiresAt = this._otpService.getExpiry(10);
         await this._otpStoreService.saveOtp(savedUser.id, hashedOtp, 120)

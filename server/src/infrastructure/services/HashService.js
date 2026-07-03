@@ -4,7 +4,7 @@ import { IHashService } from '../../application/services/hashService.js'
 
 export class HashService extends IHashService {
     async hash(password) {
-        const saltRounds = process.env.BCRYPT_SALT_ROUNDS
+        const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS)
         return await bcrypt.hash(password, saltRounds);
     }
 

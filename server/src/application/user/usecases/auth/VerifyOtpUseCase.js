@@ -3,13 +3,18 @@ import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.j
 import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
 
 export default class VerifyOtpUseCase {
-    constructor(userRepository, otpService) {
+    constructor(
+        userRepository, 
+        otpService,
+        otpStoreService
+    ) {
         this._userRepository = userRepository;
         this._otpService = otpService;
+        this._otpStoeService = otpStoreService
     }
 
-    async execute(email, otpCode) {
-        const user = await this._userRepository.findByEmail(email, false, true);
+    async execute({email, otpCode}) {
+        const user = await this._userRepository.findByEmail(email);
 
         if (!user) {
             throw new NotFoundError(authMessages.error.USER_NOT_FOUND);
@@ -19,15 +24,12 @@ export default class VerifyOtpUseCase {
             throw new UnauthorizedError(authMessages.error.ALREADY_OTP_VERIFIED);
         }
 
-        if (!user.otpCode || !user.otpExpiresAt) {
-            throw new UnauthorizedError(authMessages.error.OTP_NOT_GENERATED);
+        const storedOtp = await this._otpStoeService.getOtp(user.id)
+        if(!storedOtp){
+            throw new NotFoundError(authMessages.error.OTP_EXPIRED)
         }
 
-        if (new Date() > new Date(user.otpExpiresAt)) {
-            throw new UnauthorizedError(authMessages.error.OTP_EXPIRED);
-        }
-
-        const isOtpValid = await this._otpService.compare(otpCode, user.otpCode);
+        const isOtpValid = await this._otpService.compare(otpCode, storedOtp);
 
         if (!isOtpValid) {
             throw new UnauthorizedError(authMessages.error.INVALID_OTP);
@@ -39,6 +41,8 @@ export default class VerifyOtpUseCase {
             throw new UnauthorizedError(authMessages.error.OTP_VERIFY_FAILED);
         }
 
-        return verifiedUser;
+        return {
+            success: true
+        }
     }
 }

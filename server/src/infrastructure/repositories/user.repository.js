@@ -92,21 +92,11 @@ export class UserRepository extends IUserRepository {
         return UserMapper.mapToEntity(document);
     }
 
-    async findByEmail(email, includePassword = false, includeOtp = false) {
-        let query = UserModel.findOne({
+    async findByEmail(email) {
+        let document = await UserModel.findOne({
             email,
             isDeleted: { $ne: true }
         });
-
-        const select = [];
-        if (includePassword) select.push('+password');
-        if (includeOtp) select.push('+otpCode +otpExpiresAt');
-
-        if (select.length) {
-            query = query.select(select.join(' '));
-        }
-
-        const document = await query;
 
         if (!document) return null;
 
@@ -118,8 +108,6 @@ export class UserRepository extends IUserRepository {
             userId,
             {
                 isOtpVerified: true,
-                otpCode: null,
-                otpExpiresAt: null
             },
             {
                 new: true

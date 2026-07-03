@@ -45,7 +45,7 @@ import { AdminBookingController } from './admin/admin.bookingController.js'
 import { AdminPaymentController } from "./admin/admin.paymentController.js";
 import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
 import { UserVenueController } from '../controllers/user/user.venueController.js'
-import { AuthController } from '../controllers/user/AuthController.js'
+import { UserAuthController } from '../controllers/user/user.authController.js'
 import { VendorProfileController } from './vendor/vendorProfileController.js'
 import { VendorBookingController } from './vendor/VendorBookingController.js'
 import { VendorDashboardController } from './vendor/VendorDashboardController.js'
@@ -130,21 +130,24 @@ const iRegisterUserUseCase = new RegisterUserUseCase(
 )
 const iLoginUserUseCase = new LoginUserUseCase(
   iUserRepository,
-  HashService,
-  TokenService
+  iHashService,
+  iTokenService
 )
 const iLogoutUseCase = new LogoutUseCase(iUserRepository)
 const iRefreshTokenUseCase = new RefreshTokenUseCase(
   iUserRepository,
-  TokenService
+  iTokenService
 )
 const iVerifyOtpUseCase = new VerifyOtpUseCase(
   iUserRepository,
-  OtpService
+  iOtpService,
+  iOtpStoreService
 )
 const iResendOtpUseCase = new ResendOtpUseCase(
   iUserRepository,
-  OtpService
+  iOtpService,
+  iOtpStoreService,
+  iMailService
 )
 const iForgotPasswordUseCase = new ForgotPasswordUseCase(iUserRepository,TokenService,iMailService)
 const iResetPasswordUseCase = new ResetPasswordUseCase(iUserRepository,HashService)
@@ -285,7 +288,7 @@ export const iAdminPaymentController = new AdminPaymentController(
     iAdminPaymentStatisticsUsecase
 );
 
-export const iAuthController = new AuthController(
+export const iUserAuthController = new UserAuthController(
     iRegisterUserUseCase,
     iLoginUserUseCase,
     iLogoutUseCase,

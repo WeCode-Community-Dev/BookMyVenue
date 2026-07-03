@@ -12,9 +12,9 @@ export const registerSchema = z.object({
         .email("Valid email is required"),
 
     phone: z
-        .string()
-        .trim()
-        .regex(/^[\d\s\-\+\(\)]{7,}$/, "Valid phone number is required"),
+    .string()
+    .trim()
+    .regex(/^[\d\s]{7,}$/, "Valid phone number is required"),
 
     password: z
         .string()
@@ -32,8 +32,10 @@ export const verifyOtpSchema = z.object({
         .email("Valid email is required"),
 
     otpCode: z
-        .string()
-        .regex(/^\d{6}$/, "OTP code must be exactly 6 digits")
+      .string()
+      .trim()
+      .regex(/^\d{6}$/, 'OTP must contain only numbers')
+      .min(6, "OTP must be exactly 6 digit") 
 })
 
 export const loginSchema = z.object({

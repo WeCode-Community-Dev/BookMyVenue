@@ -8,12 +8,12 @@ export class OtpStoreService extends IOtpStoreService {
         this._redis = redis
     }
 
-    async saveOtp(userId, otp, ttiSeconds) {
-        await this._redis.set(userId, otp, "EX", ttiSeconds)
+    async saveOtp(userId, otp, ttlSeconds) {
+        await this._redis.set(userId, otp, "EX", ttlSeconds)
     }
 
     async getOtp(userId) {
-        return this._redis.get(userId)
+        return await this._redis.get(userId)
     }
 
     async deleteOtp(userId) {
