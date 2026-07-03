@@ -75,6 +75,8 @@ export const ROUTES = {
             RESET_PASSWORD: '/user/resetpassword',
             VERIFY_EMAIL: "/user/verifyemail",
             VERIFY_OTP_RESET: '/user/verifyotpforforgotpassword',
+            REFRESH: '/user/refresh',
+            LOGOUT: '/user/logout'
         },
         VENUE: {
             GET_ALL: "/venues",

@@ -168,16 +168,12 @@ export class UserRepository extends IUserRepository {
         return UserMapper.mapToEntity(document);
     }
 
-    async clearRefreshToken(userId) {
-        const document = await UserModel.findByIdAndUpdate(
-            userId,
-            { refreshToken: [] },
+    async clearRefreshToken(token) {
+        await UserModel.findByOneAndUpdate(
+            {refreshToken: token},
+            { $pull: {refreshToken: token } },
             { new: true }
         );
-
-        if (!document) return null;
-
-        return UserMapper.mapToEntity(document);
     }
 
     async softDelete(id) {

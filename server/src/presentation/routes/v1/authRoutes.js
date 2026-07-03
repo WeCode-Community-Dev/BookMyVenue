@@ -11,10 +11,8 @@ router.post(ROUTES.USER.AUTH.REGISTER, validate(registerSchema, 'body'), iUserAu
 router.post(ROUTES.USER.AUTH.VERIFY_OTP, validate(verifyOtpSchema, 'body'), iUserAuthController.verifyOtp)
 router.post(ROUTES.USER.AUTH.RESEND_OTP, validate(resendOtpSchema, 'body'), iUserAuthController.resendOtp)
 router.post(ROUTES.USER.AUTH.LOGIN, validate(loginSchema, 'body'), iUserAuthController.login)
-
-// router.post('/admin-login', iUserAuthController.adminLogin)
-router.post('/refresh-token', iUserAuthController.refreshToken)
-router.post('/logout', iUserAuthController.logout)
+router.post(ROUTES.USER.AUTH.REFRESH, iUserAuthController.refreshToken)
+router.post(ROUTES.USER.AUTH.LOGOUT, iUserAuthController.logout)
 
 router.post('/forgot-password', validate(forgotPasswordSchema, 'body'), iUserAuthController.forgotPassword)
 router.post('/reset-password', validate(resetPasswordSchema, 'body'), iUserAuthController.resetPassword)

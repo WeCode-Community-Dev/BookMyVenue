@@ -133,10 +133,15 @@ const iLoginUserUseCase = new LoginUserUseCase(
   iHashService,
   iTokenService
 )
-const iLogoutUseCase = new LogoutUseCase(iUserRepository)
+const iLogoutUseCase = new LogoutUseCase(
+    iUserRepository,
+    iHashService,
+    iTokenService
+)
 const iRefreshTokenUseCase = new RefreshTokenUseCase(
   iUserRepository,
-  iTokenService
+  iTokenService,
+  iHashService
 )
 const iVerifyOtpUseCase = new VerifyOtpUseCase(
   iUserRepository,

@@ -46,9 +46,9 @@ export class UserAuthController {
     });
 
     refreshToken = asyncHandler(async (req, res) => {
-        const refreshToken = req.cookies?.refreshToken;
-        const { accessToken, refreshToken: newRefreshToken } =await this._refreshTokenUseCase.execute(refreshToken);
-        res.cookie("refreshToken", newRefreshToken, REFRESH_COOKIE_OPTIONS);
+        const token = req.cookies?.refreshToken;
+        const { accessToken, refreshToken } = await this._refreshTokenUseCase.execute(token);
+        res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
         return sendSuccess(res, statusCode.OK, authMessages.success.TOKEN_REFRESHED, { accessToken });
     });
 
@@ -64,8 +64,9 @@ export class UserAuthController {
     });
 
     logout = asyncHandler(async (req, res) => {
+        const accessToken = req.headers.authorization?.split(' ')[1]
         const refreshToken = req.cookies?.refreshToken;
-        await this._logoutUseCase.execute(refreshToken);
+        await this._logoutUseCase.execute(refreshToken, accessToken);
         res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
         return sendSuccess(res, statusCode.OK, authMessages.success.LOGOUT);
     });

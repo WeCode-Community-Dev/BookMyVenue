@@ -50,7 +50,7 @@ export class IUserRepository {
         throw new Error("Method not implemented");
     }
 
-    async clearRefreshToken(userId) {
+    async clearRefreshToken(token) {
         throw new Error('Method not implemented');
     }
 
