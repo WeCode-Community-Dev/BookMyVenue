@@ -11,15 +11,20 @@ extension UserVenueMapper on UserVenueModel {
       category: category,
       description: description,
       location: location.toEntity(),
-      minCapacity: minCapacity,
+      venueSize: venueSize,
       maxCapacity: maxCapacity,
-      amenities: amenities.map((UserVenueAmenityModel e) => e.toEntity()).toList(),
+      amenities: amenities
+          .map((UserVenueAmenityModel e) => e.toEntity())
+          .toList(),
       coverImageUrl: coverImageUrl,
-      galleryImages:
-          galleryImages.map((UserVenueGalleryImageModel e) => e.toEntity()).toList(),
+      galleryImages: galleryImages
+          .map((UserVenueGalleryImageModel e) => e.toEntity())
+          .toList(),
       virtualTourUrl: virtualTourUrl,
       slots: slots.map((UserVenueSlotModel e) => e.toEntity()).toList(),
-      services: services.map((UserVenueServiceModel e) => e.toEntity()).toList(),
+      services: services
+          .map((UserVenueServiceModel e) => e.toEntity())
+          .toList(),
       instantBooking: instantBooking,
       status: status,
       averageRating: averageRating,
@@ -54,10 +59,7 @@ extension UserVenueLocationMapper on UserVenueLocationModel {
 
 extension UserVenueAmenityMapper on UserVenueAmenityModel {
   UserVenueAmenityEntity toEntity() {
-    return UserVenueAmenityEntity(
-      id: id,
-      name: name,
-    );
+    return UserVenueAmenityEntity(id: id, name: name);
   }
 }
 

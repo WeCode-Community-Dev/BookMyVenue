@@ -13,7 +13,7 @@ sealed class VenueResponseModel with _$VenueResponseModel {
     required String category,
     required String description,
     required VenueLocation location,
-    @JsonKey(name: 'min_capacity') required int minCapacity,
+    @JsonKey(name: 'venue_size') required int venueSize,
     @JsonKey(name: 'max_capacity') required int maxCapacity,
     required List<VenueAmenity> amenities,
     @JsonKey(name: 'cover_image_url') required String coverImageUrl,

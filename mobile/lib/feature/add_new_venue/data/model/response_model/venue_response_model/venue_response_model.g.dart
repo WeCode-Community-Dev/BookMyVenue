@@ -17,7 +17,7 @@ _VenueResponseModel _$VenueResponseModelFromJson(Map<String, dynamic> json) =>
       location: VenueLocation.fromJson(
         json['location'] as Map<String, dynamic>,
       ),
-      minCapacity: (json['min_capacity'] as num).toInt(),
+      venueSize: (json['venue_size'] as num).toInt(),
       maxCapacity: (json['max_capacity'] as num).toInt(),
       amenities: (json['amenities'] as List<dynamic>)
           .map((e) => VenueAmenity.fromJson(e as Map<String, dynamic>))
@@ -62,7 +62,7 @@ Map<String, dynamic> _$VenueResponseModelToJson(_VenueResponseModel instance) =>
       'category': instance.category,
       'description': instance.description,
       'location': instance.location,
-      'min_capacity': instance.minCapacity,
+      'venue_size': instance.venueSize,
       'max_capacity': instance.maxCapacity,
       'amenities': instance.amenities,
       'cover_image_url': instance.coverImageUrl,

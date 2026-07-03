@@ -20,27 +20,27 @@ class ExploreFiltersState {
   const ExploreFiltersState({
     this.selectedCategory = 'All',
     this.maxHourlyRate = 500.0,
-    this.minCapacity = 0,
+    this.venueSize = 0,
     this.onlyVerified = false,
     this.sortOption = VenueSortOption.popularity,
   });
   final String selectedCategory;
   final double maxHourlyRate;
-  final int minCapacity;
+  final int venueSize;
   final bool onlyVerified;
   final VenueSortOption sortOption;
 
   ExploreFiltersState copyWith({
     String? selectedCategory,
     double? maxHourlyRate,
-    int? minCapacity,
+    int? venueSize,
     bool? onlyVerified,
     VenueSortOption? sortOption,
   }) {
     return ExploreFiltersState(
       selectedCategory: selectedCategory ?? this.selectedCategory,
       maxHourlyRate: maxHourlyRate ?? this.maxHourlyRate,
-      minCapacity: minCapacity ?? this.minCapacity,
+      venueSize: venueSize ?? this.venueSize,
       onlyVerified: onlyVerified ?? this.onlyVerified,
       sortOption: sortOption ?? this.sortOption,
     );

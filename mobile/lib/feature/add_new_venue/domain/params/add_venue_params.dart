@@ -6,7 +6,7 @@ class AddNewVenueRequestParams extends Equatable {
     required this.category,
     required this.description,
     required this.location,
-    required this.minCapacity,
+    required this.venueSize,
     required this.maxCapacity,
     required this.amenityIds,
     required this.coverImageUrl,
@@ -21,7 +21,7 @@ class AddNewVenueRequestParams extends Equatable {
   final String venueName;
   final String category;
   final String description;
-  final int minCapacity;
+  final int venueSize;
   final int maxCapacity;
   final List<String> amenityIds;
 
@@ -44,7 +44,7 @@ class AddNewVenueRequestParams extends Equatable {
     category,
     description,
     location,
-    minCapacity,
+    venueSize,
     maxCapacity,
     amenityIds,
     coverImageUrl,

@@ -18,14 +18,14 @@ class VenueBasicInfoState {
     required this.venueName,
     required this.category,
     required this.description,
-    required this.minCapacity,
+    required this.venueSize,
     required this.maxCapacity,
     required this.amenities,
   });
   final String venueName;
   final VenueCategory category;
   final String description;
-  final int minCapacity;
+  final int venueSize;
   final int maxCapacity;
   final List<VenueAmenityEntity> amenities;
 
@@ -33,7 +33,7 @@ class VenueBasicInfoState {
     String? venueName,
     VenueCategory? category,
     String? description,
-    int? minCapacity,
+    int? venueSize,
     int? maxCapacity,
     List<VenueAmenityEntity>? amenities,
   }) {
@@ -41,7 +41,7 @@ class VenueBasicInfoState {
       venueName: venueName ?? this.venueName,
       category: category ?? this.category,
       description: description ?? this.description,
-      minCapacity: minCapacity ?? this.minCapacity,
+      venueSize: venueSize ?? this.venueSize,
       maxCapacity: maxCapacity ?? this.maxCapacity,
       amenities: amenities ?? this.amenities,
     );
@@ -49,7 +49,7 @@ class VenueBasicInfoState {
 
   @override
   String toString() {
-    return 'VenueBasicInfoState(venueName: $venueName, category: $category, description: $description, minCapacity: $minCapacity, maxCapacity: $maxCapacity, amenities: $amenities)';
+    return 'VenueBasicInfoState(venueName: $venueName, category: $category, description: $description, venueSize: $venueSize, maxCapacity: $maxCapacity, amenities: $amenities)';
   }
 }
 

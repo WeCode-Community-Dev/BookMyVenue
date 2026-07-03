@@ -11,7 +11,7 @@ extension VenueResponseMapper on VenueResponseModel {
       category: category,
       description: description,
       location: location.toEntity(),
-      minCapacity: minCapacity,
+      venueSize: venueSize,
       maxCapacity: maxCapacity,
       amenities: amenities.map((VenueAmenity e) => e.toEntity()).toList(),
       coverImageUrl: coverImageUrl,

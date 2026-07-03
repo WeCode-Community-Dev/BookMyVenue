@@ -43,8 +43,8 @@ class _BuildStep1BasicsState extends State<BuildStep1Basics> {
     if (basicInfo != null) {
       _nameController.text = basicInfo.venueName;
       _descController.text = basicInfo.description;
-      _capacityController.text = basicInfo.minCapacity.toString();
-      _sizeController.text = basicInfo.maxCapacity.toString();
+      _sizeController.text = basicInfo.venueSize.toString();
+      _capacityController.text = basicInfo.maxCapacity.toString();
       _selectedCategory = basicInfo.category;
       _selectedAmenities.addAll(basicInfo.amenities);
     }
@@ -236,8 +236,8 @@ class _BuildStep1BasicsState extends State<BuildStep1Basics> {
                   venueName: _nameController.text.trim(),
                   category: _selectedCategory!,
                   description: _descController.text.trim(),
-                  minCapacity: int.parse(_capacityController.text.trim()),
-                  maxCapacity: int.parse(_sizeController.text.trim()),
+                  maxCapacity: int.parse(_capacityController.text.trim()),
+                  venueSize: int.parse(_sizeController.text.trim()),
                   amenities: _selectedAmenities,
                 ),
               );

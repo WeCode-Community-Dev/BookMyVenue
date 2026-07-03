@@ -10,7 +10,7 @@ sealed class AddNewVenueRequest with _$AddNewVenueRequest {
     required String category,
     required String description,
     required VenueLocationRequest location,
-    @JsonKey(name: 'min_capacity') required int minCapacity,
+    @JsonKey(name: 'venue_size') required int venueSize,
     @JsonKey(name: 'max_capacity') required int maxCapacity,
     @JsonKey(name: 'amenity_ids') required List<String> amenityIds,
     @JsonKey(name: 'cover_image_url') required String coverImageUrl,

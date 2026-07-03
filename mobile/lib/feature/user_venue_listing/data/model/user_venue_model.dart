@@ -13,7 +13,7 @@ sealed class UserVenueModel with _$UserVenueModel {
     required String category,
     required String description,
     required UserVenueLocationModel location,
-    @JsonKey(name: 'min_capacity') required int minCapacity,
+    @JsonKey(name: 'venue_size') required int venueSize,
     @JsonKey(name: 'max_capacity') required int maxCapacity,
     required List<UserVenueAmenityModel> amenities,
     @JsonKey(name: 'cover_image_url') required String coverImageUrl,

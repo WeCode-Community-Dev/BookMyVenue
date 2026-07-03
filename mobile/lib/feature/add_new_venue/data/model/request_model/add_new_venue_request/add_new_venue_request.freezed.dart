@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AddNewVenueRequest {
 
-@JsonKey(name: 'venue_name') String get venueName; String get category; String get description; VenueLocationRequest get location;@JsonKey(name: 'min_capacity') int get minCapacity;@JsonKey(name: 'max_capacity') int get maxCapacity;@JsonKey(name: 'amenity_ids') List<String> get amenityIds;@JsonKey(name: 'cover_image_url') String get coverImageUrl;@JsonKey(name: 'gallery_images') List<String> get galleryImages;@JsonKey(name: 'virtual_tour_url') String? get virtualTourUrl; List<VenueSlotRequest> get slots; List<VenueServiceRequest> get services;@JsonKey(name: 'instant_booking') bool get instantBooking;
+@JsonKey(name: 'venue_name') String get venueName; String get category; String get description; VenueLocationRequest get location;@JsonKey(name: 'venue_size') int get venueSize;@JsonKey(name: 'max_capacity') int get maxCapacity;@JsonKey(name: 'amenity_ids') List<String> get amenityIds;@JsonKey(name: 'cover_image_url') String get coverImageUrl;@JsonKey(name: 'gallery_images') List<String> get galleryImages;@JsonKey(name: 'virtual_tour_url') String? get virtualTourUrl; List<VenueSlotRequest> get slots; List<VenueServiceRequest> get services;@JsonKey(name: 'instant_booking') bool get instantBooking;
 /// Create a copy of AddNewVenueRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $AddNewVenueRequestCopyWith<AddNewVenueRequest> get copyWith => _$AddNewVenueReq
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AddNewVenueRequest&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.category, category) || other.category == category)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.minCapacity, minCapacity) || other.minCapacity == minCapacity)&&(identical(other.maxCapacity, maxCapacity) || other.maxCapacity == maxCapacity)&&const DeepCollectionEquality().equals(other.amenityIds, amenityIds)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&const DeepCollectionEquality().equals(other.galleryImages, galleryImages)&&(identical(other.virtualTourUrl, virtualTourUrl) || other.virtualTourUrl == virtualTourUrl)&&const DeepCollectionEquality().equals(other.slots, slots)&&const DeepCollectionEquality().equals(other.services, services)&&(identical(other.instantBooking, instantBooking) || other.instantBooking == instantBooking));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AddNewVenueRequest&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.category, category) || other.category == category)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.venueSize, venueSize) || other.venueSize == venueSize)&&(identical(other.maxCapacity, maxCapacity) || other.maxCapacity == maxCapacity)&&const DeepCollectionEquality().equals(other.amenityIds, amenityIds)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&const DeepCollectionEquality().equals(other.galleryImages, galleryImages)&&(identical(other.virtualTourUrl, virtualTourUrl) || other.virtualTourUrl == virtualTourUrl)&&const DeepCollectionEquality().equals(other.slots, slots)&&const DeepCollectionEquality().equals(other.services, services)&&(identical(other.instantBooking, instantBooking) || other.instantBooking == instantBooking));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,venueName,category,description,location,minCapacity,maxCapacity,const DeepCollectionEquality().hash(amenityIds),coverImageUrl,const DeepCollectionEquality().hash(galleryImages),virtualTourUrl,const DeepCollectionEquality().hash(slots),const DeepCollectionEquality().hash(services),instantBooking);
+int get hashCode => Object.hash(runtimeType,venueName,category,description,location,venueSize,maxCapacity,const DeepCollectionEquality().hash(amenityIds),coverImageUrl,const DeepCollectionEquality().hash(galleryImages),virtualTourUrl,const DeepCollectionEquality().hash(slots),const DeepCollectionEquality().hash(services),instantBooking);
 
 @override
 String toString() {
-  return 'AddNewVenueRequest(venueName: $venueName, category: $category, description: $description, location: $location, minCapacity: $minCapacity, maxCapacity: $maxCapacity, amenityIds: $amenityIds, coverImageUrl: $coverImageUrl, galleryImages: $galleryImages, virtualTourUrl: $virtualTourUrl, slots: $slots, services: $services, instantBooking: $instantBooking)';
+  return 'AddNewVenueRequest(venueName: $venueName, category: $category, description: $description, location: $location, venueSize: $venueSize, maxCapacity: $maxCapacity, amenityIds: $amenityIds, coverImageUrl: $coverImageUrl, galleryImages: $galleryImages, virtualTourUrl: $virtualTourUrl, slots: $slots, services: $services, instantBooking: $instantBooking)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $AddNewVenueRequestCopyWith<$Res>  {
   factory $AddNewVenueRequestCopyWith(AddNewVenueRequest value, $Res Function(AddNewVenueRequest) _then) = _$AddNewVenueRequestCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'venue_name') String venueName, String category, String description, VenueLocationRequest location,@JsonKey(name: 'min_capacity') int minCapacity,@JsonKey(name: 'max_capacity') int maxCapacity,@JsonKey(name: 'amenity_ids') List<String> amenityIds,@JsonKey(name: 'cover_image_url') String coverImageUrl,@JsonKey(name: 'gallery_images') List<String> galleryImages,@JsonKey(name: 'virtual_tour_url') String? virtualTourUrl, List<VenueSlotRequest> slots, List<VenueServiceRequest> services,@JsonKey(name: 'instant_booking') bool instantBooking
+@JsonKey(name: 'venue_name') String venueName, String category, String description, VenueLocationRequest location,@JsonKey(name: 'venue_size') int venueSize,@JsonKey(name: 'max_capacity') int maxCapacity,@JsonKey(name: 'amenity_ids') List<String> amenityIds,@JsonKey(name: 'cover_image_url') String coverImageUrl,@JsonKey(name: 'gallery_images') List<String> galleryImages,@JsonKey(name: 'virtual_tour_url') String? virtualTourUrl, List<VenueSlotRequest> slots, List<VenueServiceRequest> services,@JsonKey(name: 'instant_booking') bool instantBooking
 });
 
 
@@ -65,13 +65,13 @@ class _$AddNewVenueRequestCopyWithImpl<$Res>
 
 /// Create a copy of AddNewVenueRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? venueName = null,Object? category = null,Object? description = null,Object? location = null,Object? minCapacity = null,Object? maxCapacity = null,Object? amenityIds = null,Object? coverImageUrl = null,Object? galleryImages = null,Object? virtualTourUrl = freezed,Object? slots = null,Object? services = null,Object? instantBooking = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? venueName = null,Object? category = null,Object? description = null,Object? location = null,Object? venueSize = null,Object? maxCapacity = null,Object? amenityIds = null,Object? coverImageUrl = null,Object? galleryImages = null,Object? virtualTourUrl = freezed,Object? slots = null,Object? services = null,Object? instantBooking = null,}) {
   return _then(_self.copyWith(
 venueName: null == venueName ? _self.venueName : venueName // ignore: cast_nullable_to_non_nullable
 as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,location: null == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
-as VenueLocationRequest,minCapacity: null == minCapacity ? _self.minCapacity : minCapacity // ignore: cast_nullable_to_non_nullable
+as VenueLocationRequest,venueSize: null == venueSize ? _self.venueSize : venueSize // ignore: cast_nullable_to_non_nullable
 as int,maxCapacity: null == maxCapacity ? _self.maxCapacity : maxCapacity // ignore: cast_nullable_to_non_nullable
 as int,amenityIds: null == amenityIds ? _self.amenityIds : amenityIds // ignore: cast_nullable_to_non_nullable
 as List<String>,coverImageUrl: null == coverImageUrl ? _self.coverImageUrl : coverImageUrl // ignore: cast_nullable_to_non_nullable
@@ -171,10 +171,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'venue_name')  String venueName,  String category,  String description,  VenueLocationRequest location, @JsonKey(name: 'min_capacity')  int minCapacity, @JsonKey(name: 'max_capacity')  int maxCapacity, @JsonKey(name: 'amenity_ids')  List<String> amenityIds, @JsonKey(name: 'cover_image_url')  String coverImageUrl, @JsonKey(name: 'gallery_images')  List<String> galleryImages, @JsonKey(name: 'virtual_tour_url')  String? virtualTourUrl,  List<VenueSlotRequest> slots,  List<VenueServiceRequest> services, @JsonKey(name: 'instant_booking')  bool instantBooking)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'venue_name')  String venueName,  String category,  String description,  VenueLocationRequest location, @JsonKey(name: 'venue_size')  int venueSize, @JsonKey(name: 'max_capacity')  int maxCapacity, @JsonKey(name: 'amenity_ids')  List<String> amenityIds, @JsonKey(name: 'cover_image_url')  String coverImageUrl, @JsonKey(name: 'gallery_images')  List<String> galleryImages, @JsonKey(name: 'virtual_tour_url')  String? virtualTourUrl,  List<VenueSlotRequest> slots,  List<VenueServiceRequest> services, @JsonKey(name: 'instant_booking')  bool instantBooking)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AddNewVenueRequest() when $default != null:
-return $default(_that.venueName,_that.category,_that.description,_that.location,_that.minCapacity,_that.maxCapacity,_that.amenityIds,_that.coverImageUrl,_that.galleryImages,_that.virtualTourUrl,_that.slots,_that.services,_that.instantBooking);case _:
+return $default(_that.venueName,_that.category,_that.description,_that.location,_that.venueSize,_that.maxCapacity,_that.amenityIds,_that.coverImageUrl,_that.galleryImages,_that.virtualTourUrl,_that.slots,_that.services,_that.instantBooking);case _:
   return orElse();
 
 }
@@ -192,10 +192,10 @@ return $default(_that.venueName,_that.category,_that.description,_that.location,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'venue_name')  String venueName,  String category,  String description,  VenueLocationRequest location, @JsonKey(name: 'min_capacity')  int minCapacity, @JsonKey(name: 'max_capacity')  int maxCapacity, @JsonKey(name: 'amenity_ids')  List<String> amenityIds, @JsonKey(name: 'cover_image_url')  String coverImageUrl, @JsonKey(name: 'gallery_images')  List<String> galleryImages, @JsonKey(name: 'virtual_tour_url')  String? virtualTourUrl,  List<VenueSlotRequest> slots,  List<VenueServiceRequest> services, @JsonKey(name: 'instant_booking')  bool instantBooking)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'venue_name')  String venueName,  String category,  String description,  VenueLocationRequest location, @JsonKey(name: 'venue_size')  int venueSize, @JsonKey(name: 'max_capacity')  int maxCapacity, @JsonKey(name: 'amenity_ids')  List<String> amenityIds, @JsonKey(name: 'cover_image_url')  String coverImageUrl, @JsonKey(name: 'gallery_images')  List<String> galleryImages, @JsonKey(name: 'virtual_tour_url')  String? virtualTourUrl,  List<VenueSlotRequest> slots,  List<VenueServiceRequest> services, @JsonKey(name: 'instant_booking')  bool instantBooking)  $default,) {final _that = this;
 switch (_that) {
 case _AddNewVenueRequest():
-return $default(_that.venueName,_that.category,_that.description,_that.location,_that.minCapacity,_that.maxCapacity,_that.amenityIds,_that.coverImageUrl,_that.galleryImages,_that.virtualTourUrl,_that.slots,_that.services,_that.instantBooking);}
+return $default(_that.venueName,_that.category,_that.description,_that.location,_that.venueSize,_that.maxCapacity,_that.amenityIds,_that.coverImageUrl,_that.galleryImages,_that.virtualTourUrl,_that.slots,_that.services,_that.instantBooking);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -209,10 +209,10 @@ return $default(_that.venueName,_that.category,_that.description,_that.location,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'venue_name')  String venueName,  String category,  String description,  VenueLocationRequest location, @JsonKey(name: 'min_capacity')  int minCapacity, @JsonKey(name: 'max_capacity')  int maxCapacity, @JsonKey(name: 'amenity_ids')  List<String> amenityIds, @JsonKey(name: 'cover_image_url')  String coverImageUrl, @JsonKey(name: 'gallery_images')  List<String> galleryImages, @JsonKey(name: 'virtual_tour_url')  String? virtualTourUrl,  List<VenueSlotRequest> slots,  List<VenueServiceRequest> services, @JsonKey(name: 'instant_booking')  bool instantBooking)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'venue_name')  String venueName,  String category,  String description,  VenueLocationRequest location, @JsonKey(name: 'venue_size')  int venueSize, @JsonKey(name: 'max_capacity')  int maxCapacity, @JsonKey(name: 'amenity_ids')  List<String> amenityIds, @JsonKey(name: 'cover_image_url')  String coverImageUrl, @JsonKey(name: 'gallery_images')  List<String> galleryImages, @JsonKey(name: 'virtual_tour_url')  String? virtualTourUrl,  List<VenueSlotRequest> slots,  List<VenueServiceRequest> services, @JsonKey(name: 'instant_booking')  bool instantBooking)?  $default,) {final _that = this;
 switch (_that) {
 case _AddNewVenueRequest() when $default != null:
-return $default(_that.venueName,_that.category,_that.description,_that.location,_that.minCapacity,_that.maxCapacity,_that.amenityIds,_that.coverImageUrl,_that.galleryImages,_that.virtualTourUrl,_that.slots,_that.services,_that.instantBooking);case _:
+return $default(_that.venueName,_that.category,_that.description,_that.location,_that.venueSize,_that.maxCapacity,_that.amenityIds,_that.coverImageUrl,_that.galleryImages,_that.virtualTourUrl,_that.slots,_that.services,_that.instantBooking);case _:
   return null;
 
 }
@@ -224,14 +224,14 @@ return $default(_that.venueName,_that.category,_that.description,_that.location,
 @JsonSerializable()
 
 class _AddNewVenueRequest implements AddNewVenueRequest {
-  const _AddNewVenueRequest({@JsonKey(name: 'venue_name') required this.venueName, required this.category, required this.description, required this.location, @JsonKey(name: 'min_capacity') required this.minCapacity, @JsonKey(name: 'max_capacity') required this.maxCapacity, @JsonKey(name: 'amenity_ids') required final  List<String> amenityIds, @JsonKey(name: 'cover_image_url') required this.coverImageUrl, @JsonKey(name: 'gallery_images') required final  List<String> galleryImages, @JsonKey(name: 'virtual_tour_url') this.virtualTourUrl, required final  List<VenueSlotRequest> slots, required final  List<VenueServiceRequest> services, @JsonKey(name: 'instant_booking') required this.instantBooking}): _amenityIds = amenityIds,_galleryImages = galleryImages,_slots = slots,_services = services;
+  const _AddNewVenueRequest({@JsonKey(name: 'venue_name') required this.venueName, required this.category, required this.description, required this.location, @JsonKey(name: 'venue_size') required this.venueSize, @JsonKey(name: 'max_capacity') required this.maxCapacity, @JsonKey(name: 'amenity_ids') required final  List<String> amenityIds, @JsonKey(name: 'cover_image_url') required this.coverImageUrl, @JsonKey(name: 'gallery_images') required final  List<String> galleryImages, @JsonKey(name: 'virtual_tour_url') this.virtualTourUrl, required final  List<VenueSlotRequest> slots, required final  List<VenueServiceRequest> services, @JsonKey(name: 'instant_booking') required this.instantBooking}): _amenityIds = amenityIds,_galleryImages = galleryImages,_slots = slots,_services = services;
   factory _AddNewVenueRequest.fromJson(Map<String, dynamic> json) => _$AddNewVenueRequestFromJson(json);
 
 @override@JsonKey(name: 'venue_name') final  String venueName;
 @override final  String category;
 @override final  String description;
 @override final  VenueLocationRequest location;
-@override@JsonKey(name: 'min_capacity') final  int minCapacity;
+@override@JsonKey(name: 'venue_size') final  int venueSize;
 @override@JsonKey(name: 'max_capacity') final  int maxCapacity;
  final  List<String> _amenityIds;
 @override@JsonKey(name: 'amenity_ids') List<String> get amenityIds {
@@ -278,16 +278,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddNewVenueRequest&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.category, category) || other.category == category)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.minCapacity, minCapacity) || other.minCapacity == minCapacity)&&(identical(other.maxCapacity, maxCapacity) || other.maxCapacity == maxCapacity)&&const DeepCollectionEquality().equals(other._amenityIds, _amenityIds)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&const DeepCollectionEquality().equals(other._galleryImages, _galleryImages)&&(identical(other.virtualTourUrl, virtualTourUrl) || other.virtualTourUrl == virtualTourUrl)&&const DeepCollectionEquality().equals(other._slots, _slots)&&const DeepCollectionEquality().equals(other._services, _services)&&(identical(other.instantBooking, instantBooking) || other.instantBooking == instantBooking));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AddNewVenueRequest&&(identical(other.venueName, venueName) || other.venueName == venueName)&&(identical(other.category, category) || other.category == category)&&(identical(other.description, description) || other.description == description)&&(identical(other.location, location) || other.location == location)&&(identical(other.venueSize, venueSize) || other.venueSize == venueSize)&&(identical(other.maxCapacity, maxCapacity) || other.maxCapacity == maxCapacity)&&const DeepCollectionEquality().equals(other._amenityIds, _amenityIds)&&(identical(other.coverImageUrl, coverImageUrl) || other.coverImageUrl == coverImageUrl)&&const DeepCollectionEquality().equals(other._galleryImages, _galleryImages)&&(identical(other.virtualTourUrl, virtualTourUrl) || other.virtualTourUrl == virtualTourUrl)&&const DeepCollectionEquality().equals(other._slots, _slots)&&const DeepCollectionEquality().equals(other._services, _services)&&(identical(other.instantBooking, instantBooking) || other.instantBooking == instantBooking));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,venueName,category,description,location,minCapacity,maxCapacity,const DeepCollectionEquality().hash(_amenityIds),coverImageUrl,const DeepCollectionEquality().hash(_galleryImages),virtualTourUrl,const DeepCollectionEquality().hash(_slots),const DeepCollectionEquality().hash(_services),instantBooking);
+int get hashCode => Object.hash(runtimeType,venueName,category,description,location,venueSize,maxCapacity,const DeepCollectionEquality().hash(_amenityIds),coverImageUrl,const DeepCollectionEquality().hash(_galleryImages),virtualTourUrl,const DeepCollectionEquality().hash(_slots),const DeepCollectionEquality().hash(_services),instantBooking);
 
 @override
 String toString() {
-  return 'AddNewVenueRequest(venueName: $venueName, category: $category, description: $description, location: $location, minCapacity: $minCapacity, maxCapacity: $maxCapacity, amenityIds: $amenityIds, coverImageUrl: $coverImageUrl, galleryImages: $galleryImages, virtualTourUrl: $virtualTourUrl, slots: $slots, services: $services, instantBooking: $instantBooking)';
+  return 'AddNewVenueRequest(venueName: $venueName, category: $category, description: $description, location: $location, venueSize: $venueSize, maxCapacity: $maxCapacity, amenityIds: $amenityIds, coverImageUrl: $coverImageUrl, galleryImages: $galleryImages, virtualTourUrl: $virtualTourUrl, slots: $slots, services: $services, instantBooking: $instantBooking)';
 }
 
 
@@ -298,7 +298,7 @@ abstract mixin class _$AddNewVenueRequestCopyWith<$Res> implements $AddNewVenueR
   factory _$AddNewVenueRequestCopyWith(_AddNewVenueRequest value, $Res Function(_AddNewVenueRequest) _then) = __$AddNewVenueRequestCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'venue_name') String venueName, String category, String description, VenueLocationRequest location,@JsonKey(name: 'min_capacity') int minCapacity,@JsonKey(name: 'max_capacity') int maxCapacity,@JsonKey(name: 'amenity_ids') List<String> amenityIds,@JsonKey(name: 'cover_image_url') String coverImageUrl,@JsonKey(name: 'gallery_images') List<String> galleryImages,@JsonKey(name: 'virtual_tour_url') String? virtualTourUrl, List<VenueSlotRequest> slots, List<VenueServiceRequest> services,@JsonKey(name: 'instant_booking') bool instantBooking
+@JsonKey(name: 'venue_name') String venueName, String category, String description, VenueLocationRequest location,@JsonKey(name: 'venue_size') int venueSize,@JsonKey(name: 'max_capacity') int maxCapacity,@JsonKey(name: 'amenity_ids') List<String> amenityIds,@JsonKey(name: 'cover_image_url') String coverImageUrl,@JsonKey(name: 'gallery_images') List<String> galleryImages,@JsonKey(name: 'virtual_tour_url') String? virtualTourUrl, List<VenueSlotRequest> slots, List<VenueServiceRequest> services,@JsonKey(name: 'instant_booking') bool instantBooking
 });
 
 
@@ -315,13 +315,13 @@ class __$AddNewVenueRequestCopyWithImpl<$Res>
 
 /// Create a copy of AddNewVenueRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? venueName = null,Object? category = null,Object? description = null,Object? location = null,Object? minCapacity = null,Object? maxCapacity = null,Object? amenityIds = null,Object? coverImageUrl = null,Object? galleryImages = null,Object? virtualTourUrl = freezed,Object? slots = null,Object? services = null,Object? instantBooking = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? venueName = null,Object? category = null,Object? description = null,Object? location = null,Object? venueSize = null,Object? maxCapacity = null,Object? amenityIds = null,Object? coverImageUrl = null,Object? galleryImages = null,Object? virtualTourUrl = freezed,Object? slots = null,Object? services = null,Object? instantBooking = null,}) {
   return _then(_AddNewVenueRequest(
 venueName: null == venueName ? _self.venueName : venueName // ignore: cast_nullable_to_non_nullable
 as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,location: null == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
-as VenueLocationRequest,minCapacity: null == minCapacity ? _self.minCapacity : minCapacity // ignore: cast_nullable_to_non_nullable
+as VenueLocationRequest,venueSize: null == venueSize ? _self.venueSize : venueSize // ignore: cast_nullable_to_non_nullable
 as int,maxCapacity: null == maxCapacity ? _self.maxCapacity : maxCapacity // ignore: cast_nullable_to_non_nullable
 as int,amenityIds: null == amenityIds ? _self._amenityIds : amenityIds // ignore: cast_nullable_to_non_nullable
 as List<String>,coverImageUrl: null == coverImageUrl ? _self.coverImageUrl : coverImageUrl // ignore: cast_nullable_to_non_nullable

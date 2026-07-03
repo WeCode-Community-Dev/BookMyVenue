@@ -29,7 +29,7 @@ class VenueEntity extends Equatable {
     required this.category,
     required this.description,
     required this.location,
-    required this.minCapacity,
+    required this.venueSize,
     required this.maxCapacity,
     required this.amenities,
     required this.coverImageUrl,
@@ -60,7 +60,7 @@ class VenueEntity extends Equatable {
   final String category;
   final String description;
   final VenueLocationEntity location;
-  final int minCapacity;
+  final int venueSize;
   final int maxCapacity;
   final List<VenueAmenityEntity> amenities;
   final String coverImageUrl;
@@ -92,7 +92,7 @@ class VenueEntity extends Equatable {
     category,
     description,
     location,
-    minCapacity,
+    venueSize,
     maxCapacity,
     amenities,
     coverImageUrl,

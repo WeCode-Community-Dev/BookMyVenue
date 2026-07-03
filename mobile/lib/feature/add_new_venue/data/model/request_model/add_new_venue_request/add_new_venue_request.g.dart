@@ -14,7 +14,7 @@ _AddNewVenueRequest _$AddNewVenueRequestFromJson(Map<String, dynamic> json) =>
       location: VenueLocationRequest.fromJson(
         json['location'] as Map<String, dynamic>,
       ),
-      minCapacity: (json['min_capacity'] as num).toInt(),
+      venueSize: (json['venue_size'] as num).toInt(),
       maxCapacity: (json['max_capacity'] as num).toInt(),
       amenityIds: (json['amenity_ids'] as List<dynamic>)
           .map((e) => e as String)
@@ -39,7 +39,7 @@ Map<String, dynamic> _$AddNewVenueRequestToJson(_AddNewVenueRequest instance) =>
       'category': instance.category,
       'description': instance.description,
       'location': instance.location,
-      'min_capacity': instance.minCapacity,
+      'venue_size': instance.venueSize,
       'max_capacity': instance.maxCapacity,
       'amenity_ids': instance.amenityIds,
       'cover_image_url': instance.coverImageUrl,

@@ -8,7 +8,7 @@ extension AddNewVenueRequestParamsMapper on AddNewVenueRequestParams {
       category: category,
       description: description,
       location: location.toRequest(),
-      minCapacity: minCapacity,
+      venueSize: venueSize,
       maxCapacity: maxCapacity,
       amenityIds: amenityIds,
       coverImageUrl: coverImageUrl,

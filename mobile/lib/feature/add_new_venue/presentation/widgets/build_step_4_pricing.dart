@@ -152,7 +152,7 @@ class _BuildStep4PricingState extends State<BuildStep4Pricing> {
         latitude: location.latitude,
         longitude: location.longitude,
       ),
-      minCapacity: basic.minCapacity,
+      venueSize: basic.venueSize,
       maxCapacity: basic.maxCapacity,
       amenityIds: basic.amenities.map((VenueAmenityEntity e) => e.id).toList(),
       coverImageUrl: media.coverImageUrl,
