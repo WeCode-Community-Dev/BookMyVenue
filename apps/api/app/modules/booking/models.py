@@ -185,6 +185,11 @@ class Booking(Base):
         default=0,
     )
 
+    pricing_breakdown: Mapped[list[dict] | None] = mapped_column(
+        JSONB,
+        nullable=True,
+    )
+
     platform_commission_pct: Mapped[float] = mapped_column(
         Numeric(5, 2),
         nullable=False,

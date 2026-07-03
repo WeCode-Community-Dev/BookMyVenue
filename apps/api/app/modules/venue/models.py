@@ -1,9 +1,9 @@
 import enum
 import uuid
-from datetime import datetime, time
+from datetime import datetime, date, time
 from typing import Any
 from sqlalchemy import (
-    Integer, Boolean, Numeric, BigInteger, Text, Time, DateTime,
+    Integer, Boolean, Numeric, BigInteger, Text, Time, DateTime, Date,
     ForeignKey, CheckConstraint, Index, func, Enum, text
 )
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, TSVECTOR
@@ -83,6 +83,11 @@ class Venue(Base):
     platform_commission_pct: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, server_default="10.00")
     advance_pct: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, server_default="30.00")
 
+    min_price_pct: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, server_default="50.00")
+    max_price_pct: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, server_default="200.00")
+    display_price_min_paise: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    display_price_max_paise: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
     balance_due_days_before_event: Mapped[int] = mapped_column(Integer, nullable=False, server_default="7")
     owner_action_window_hours: Mapped[int] = mapped_column(Integer, nullable=False, server_default="48")
     overdue_advance_refund_pct: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, server_default="0.00")
@@ -146,12 +151,22 @@ class Venue(Base):
         CheckConstraint("balance_due_days_before_event > 0", name="ck_venues_balance_days"),
         CheckConstraint("owner_action_window_hours BETWEEN 24 AND 72", name="ck_venues_action_window"),
         CheckConstraint("overdue_advance_refund_pct BETWEEN 0 AND 100", name="ck_venues_overdue_refund_pct"),
+        CheckConstraint("min_price_pct > 0 AND min_price_pct <= 100", name="ck_venues_min_price_pct"),
+        CheckConstraint("max_price_pct >= 100 AND max_price_pct <= 500", name="ck_venues_max_price_pct"),
+        CheckConstraint("min_price_pct <= max_price_pct", name="ck_venues_price_pct_range"),
         Index("idx_venues_search", "city", "category_id", "status", "is_active", postgresql_where=text("deleted_at IS NULL")),
     )
 
     bookings = relationship(
         "Booking",
         back_populates="venue",
+    )
+
+    pricing_rules: Mapped[list["VenuePricingRule"]] = relationship(
+        back_populates="venue",
+        cascade="all, delete-orphan",
+        primaryjoin="and_(Venue.id==VenuePricingRule.venue_id, VenuePricingRule.deleted_at.is_(None))",
+        order_by="VenuePricingRule.priority.desc()",
     )
 
 
@@ -246,6 +261,55 @@ class VenueBlockedDate(Base):
     __table_args__ = (
         CheckConstraint("ends_at > starts_at", name="ck_venue_blocked_dates_order"),
         Index("idx_venue_blocked_dates_venue", "venue_id", postgresql_where=text("deleted_at IS NULL")),
+    )
+
+
+class VenuePricingRule(Base):
+    __tablename__ = "venue_pricing_rules"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    venue_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("venues.id", ondelete="CASCADE"), nullable=False)
+
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+
+    days_of_week: Mapped[list[int] | None] = mapped_column(ARRAY(Integer), nullable=True)
+    start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    start_time: Mapped[time | None] = mapped_column(Time, nullable=True)
+    end_time: Mapped[time | None] = mapped_column(Time, nullable=True)
+
+    adjustment_type: Mapped[str] = mapped_column(Text, nullable=False)
+    multiplier: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
+    amount_paise: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
+    applies_to: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("'both'"))
+    priority: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    source: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("'owner'"))
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
+
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+
+    # Relationships
+    venue: Mapped["Venue"] = relationship(back_populates="pricing_rules")
+
+    __table_args__ = (
+        CheckConstraint("adjustment_type IN ('multiplier', 'fixed_delta', 'override')", name="ck_venue_pricing_rules_adjustment_type"),
+        CheckConstraint(
+            "(adjustment_type = 'multiplier' AND multiplier IS NOT NULL AND multiplier > 0 AND amount_paise IS NULL) OR "
+            "(adjustment_type = 'fixed_delta' AND amount_paise IS NOT NULL AND multiplier IS NULL) OR "
+            "(adjustment_type = 'override' AND amount_paise IS NOT NULL AND amount_paise >= 0 AND multiplier IS NULL)",
+            name="ck_venue_pricing_rules_adjustment_payload",
+        ),
+        CheckConstraint("applies_to IN ('full_day', 'time_slot', 'both')", name="ck_venue_pricing_rules_applies_to"),
+        CheckConstraint("source IN ('owner', 'system')", name="ck_venue_pricing_rules_source"),
+        CheckConstraint("start_date IS NULL OR end_date IS NULL OR start_date <= end_date", name="ck_venue_pricing_rules_date_range"),
+        Index(
+            "idx_venue_pricing_rules_priority",
+            "venue_id", "priority",
+            postgresql_where=text("deleted_at IS NULL AND is_active = true"),
+        ),
     )
 
 

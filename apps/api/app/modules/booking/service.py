@@ -93,6 +93,7 @@ def create_booking_request(
         balance_due_date=starts_at.date() - timedelta(days=venue.balance_due_days_before_event),
         pricing_mode=quote.pricing_mode,
         quoted_price_paise=quote.quoted_price_paise,
+        pricing_breakdown=[item.model_dump(mode="json") for item in quote.breakdown] or None,
         platform_commission_pct=quote.platform_commission_pct,
         platform_fee_paise=quote.platform_fee_paise,
         owner_payout_paise=quote.owner_payout_paise,

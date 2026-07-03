@@ -1,18 +1,19 @@
 import re
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_EVEN
 from uuid import UUID
 
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.exceptions import NotFoundError, ForbiddenError, ConflictError
-from app.modules.venue.models import Venue, VenueCategory, VenueStatus, VenueAvailability, VenueBlockedDate, VenueCancellationPolicy, VenueAmenity, Amenity, VenuePhoto
+from app.modules.venue.models import Venue, VenueCategory, VenueStatus, VenueAvailability, VenueBlockedDate, VenueCancellationPolicy, VenueAmenity, Amenity, VenuePhoto, VenuePricingRule
 from app.modules.venue.schemas import (
     CreateVenueRequest,
     UpdateVenueRequest,
     PricingPreviewResponse,
     PricingDisplay,
+    PricingBreakdownItem,
     PricingQuote,
     VenueAvailabilityUpdate,
     CreateBlockedDateRequest,
@@ -20,6 +21,7 @@ from app.modules.venue.schemas import (
     UpdateVenueAmenitiesRequest,
     BulkUpdateVenuePhotosRequest,
 )
+from app.modules.venue import pricing_engine
 from app.modules.booking.models import BookingType
 from app.core.storage import upload_image_to_cloudinary, delete_image_from_cloudinary
 
@@ -149,19 +151,90 @@ def get_pricing_preview(
     if ends_at <= starts_at:
         raise ConflictError("ends_at must be after starts_at")
 
+    active_rules = [
+        r for r in db.query(VenuePricingRule).filter(
+            VenuePricingRule.venue_id == venue.id,
+            VenuePricingRule.deleted_at.is_(None),
+            VenuePricingRule.is_active.is_(True),
+        ).all()
+    ]
+    applies_to = "full_day" if booking_type == BookingType.full_day else "time_slot"
+    has_matching_rules = any(r.applies_to in (applies_to, "both") for r in active_rules)
+
+    breakdown: list[PricingBreakdownItem] = []
+    any_clamped = False
+
     # ── Pricing Logic ─────────────────────────────────────
     if booking_type == BookingType.full_day:
-        days = (ends_at.date() - starts_at.date()).days + 1
         base = venue.starting_price_paise or 0
-        quoted_price_paise = base * days
+
+        if not has_matching_rules:
+            days = (ends_at.date() - starts_at.date()).days + 1
+            quoted_price_paise = base * days
+        else:
+            quoted_price_paise = 0
+            current_date = starts_at.date()
+            end_date = ends_at.date()
+            while current_date <= end_date:
+                unit = pricing_engine.price_unit(
+                    active_rules,
+                    base_paise=base,
+                    target_date=current_date,
+                    target_time=None,
+                    applies_to="full_day",
+                    min_price_pct=Decimal(str(venue.min_price_pct)),
+                    max_price_pct=Decimal(str(venue.max_price_pct)),
+                )
+                quoted_price_paise += unit.final_paise
+                any_clamped = any_clamped or unit.clamped
+                breakdown.append(PricingBreakdownItem(
+                    period_date=current_date,
+                    base_paise=unit.base_paise,
+                    applied_rule_id=unit.applied_rule_id,
+                    applied_rule_name=unit.applied_rule_name,
+                    clamped=unit.clamped,
+                    final_paise=unit.final_paise,
+                ))
+                current_date += timedelta(days=1)
         used_mode = "flat"  # full_day always uses base price (per day)
 
     elif booking_type == BookingType.time_slot:
-        duration_seconds = (ends_at - starts_at).total_seconds()
-        duration_hours = Decimal(str(duration_seconds)) / Decimal("3600")
-        quoted_price_paise = _banker_round(
-            Decimal(str(venue.hourly_rate_paise or 0)) * duration_hours
-        )
+        hourly_rate = venue.hourly_rate_paise or 0
+
+        if not has_matching_rules:
+            duration_seconds = (ends_at - starts_at).total_seconds()
+            duration_hours = Decimal(str(duration_seconds)) / Decimal("3600")
+            quoted_price_paise = _banker_round(Decimal(str(hourly_rate)) * duration_hours)
+        else:
+            interval_minutes = venue.slot_interval_minutes or 30
+            quoted_price_paise = 0
+            cursor = starts_at
+            while cursor < ends_at:
+                segment_end = min(cursor + timedelta(minutes=interval_minutes), ends_at)
+                segment_hours = Decimal(str((segment_end - cursor).total_seconds())) / Decimal("3600")
+                segment_base = _banker_round(Decimal(str(hourly_rate)) * segment_hours)
+                unit = pricing_engine.price_unit(
+                    active_rules,
+                    base_paise=segment_base,
+                    target_date=cursor.date(),
+                    target_time=cursor.time(),
+                    applies_to="time_slot",
+                    min_price_pct=Decimal(str(venue.min_price_pct)),
+                    max_price_pct=Decimal(str(venue.max_price_pct)),
+                )
+                quoted_price_paise += unit.final_paise
+                any_clamped = any_clamped or unit.clamped
+                breakdown.append(PricingBreakdownItem(
+                    period_date=cursor.date(),
+                    start_time=cursor.time(),
+                    end_time=segment_end.time(),
+                    base_paise=unit.base_paise,
+                    applied_rule_id=unit.applied_rule_id,
+                    applied_rule_name=unit.applied_rule_name,
+                    clamped=unit.clamped,
+                    final_paise=unit.final_paise,
+                ))
+                cursor = segment_end
         used_mode = "hourly"
 
     else:
@@ -199,6 +272,8 @@ def get_pricing_preview(
             platform_fee=_format_inr(platform_fee_paise),
             owner_payout=_format_inr(owner_payout_paise),
         ),
+        breakdown=breakdown,
+        clamped=any_clamped,
     )
 
 
@@ -297,7 +372,10 @@ def create_venue(db: Session, owner_id: UUID, body: CreateVenueRequest) -> Venue
         owner_action_window_hours=body.owner_action_window_hours,
         overdue_advance_refund_pct=body.overdue_advance_refund_pct,
 
-        
+        min_price_pct=body.min_price_pct,
+        max_price_pct=body.max_price_pct,
+
+
         status=VenueStatus.draft,
 
         last_completed_step=body.last_completed_step,
@@ -386,6 +464,8 @@ def update_venue(
         raise ConflictError("min_capacity cannot exceed max_capacity")
     if venue.min_booking_duration_minutes > venue.max_booking_duration_minutes:
         raise ConflictError("min_booking_duration_minutes cannot exceed max_booking_duration_minutes")
+    if venue.min_price_pct > venue.max_price_pct:
+        raise ConflictError("min_price_pct cannot exceed max_price_pct")
 
     db.commit()
     db.refresh(venue)
@@ -747,6 +827,8 @@ def get_pricing_quote(
         advance_due_paise=preview.advance_due_paise,
         balance_due_paise=preview.balance_due_paise,
         pricing_mode=preview.pricing_mode,
+        breakdown=preview.breakdown,
+        clamped=preview.clamped,
     )
 
 

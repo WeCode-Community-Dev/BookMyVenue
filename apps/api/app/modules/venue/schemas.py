@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator, Field
 from uuid import UUID
-from datetime import datetime, time
+from datetime import datetime, date, time
 from typing import Optional
 from decimal import Decimal
 from enum import Enum
@@ -164,7 +164,12 @@ class VenueResponse(BaseModel):
     owner_action_window_hours: int
     overdue_advance_refund_pct: Decimal
 
-    
+    min_price_pct: Decimal
+    max_price_pct: Decimal
+    display_price_min_paise: Optional[int] = None
+    display_price_max_paise: Optional[int] = None
+
+
     status: VenueStatus
     is_active: bool
 
@@ -235,6 +240,9 @@ class CreateVenueRequest(BaseModel):
     owner_action_window_hours: int = Field(default=48, ge=24, le=72)
     overdue_advance_refund_pct: Decimal = Field(default=Decimal("0.00"), ge=0, le=100)
 
+    min_price_pct: Decimal = Field(default=Decimal("50.00"), gt=0, le=100)
+    max_price_pct: Decimal = Field(default=Decimal("200.00"), ge=100, le=500)
+
     cancellation_policy: Optional[UpdateCancellationPolicyRequest] = None
     amenity_ids: Optional[list[UUID]] = None
 
@@ -293,6 +301,9 @@ class CreateVenueRequest(BaseModel):
         if not self.spans_next_day and self.close_time <= self.open_time:
             raise ValueError("close_time must be after open_time unless spans_next_day is true")
 
+        if self.min_price_pct > self.max_price_pct:
+            raise ValueError("min_price_pct cannot exceed max_price_pct")
+
 
 class UpdateVenueRequest(BaseModel):
     name: Optional[str] = None
@@ -332,6 +343,9 @@ class UpdateVenueRequest(BaseModel):
     balance_due_days_before_event: Optional[int] = Field(default=None, gt=0)
     owner_action_window_hours: Optional[int] = Field(default=None, ge=24, le=72)
     overdue_advance_refund_pct: Optional[Decimal] = Field(default=None, ge=0, le=100)
+
+    min_price_pct: Optional[Decimal] = Field(default=None, gt=0, le=100)
+    max_price_pct: Optional[Decimal] = Field(default=None, ge=100, le=500)
 
     last_completed_step: Optional[int] = None
 
@@ -386,6 +400,13 @@ class UpdateVenueRequest(BaseModel):
             if not spans_next and self.close_time <= self.open_time:
                 raise ValueError("close_time must be after open_time unless spans_next_day is true")
 
+        if (
+            self.min_price_pct is not None
+            and self.max_price_pct is not None
+            and self.min_price_pct > self.max_price_pct
+        ):
+            raise ValueError("min_price_pct cannot exceed max_price_pct")
+
 
 class PricingDisplay(BaseModel):
     quoted_price: str
@@ -393,6 +414,17 @@ class PricingDisplay(BaseModel):
     balance_due: str
     platform_fee: str
     owner_payout: str
+
+
+class PricingBreakdownItem(BaseModel):
+    period_date: date
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+    base_paise: int
+    applied_rule_id: Optional[UUID] = None
+    applied_rule_name: Optional[str] = None
+    clamped: bool
+    final_paise: int
 
 
 class PricingPreviewResponse(BaseModel):
@@ -405,6 +437,8 @@ class PricingPreviewResponse(BaseModel):
     advance_due_paise: int
     balance_due_paise: int
     display: PricingDisplay
+    breakdown: list[PricingBreakdownItem] = Field(default_factory=list)
+    clamped: bool = False
 
 
 # ─── Search Result (used by search module) ────────────────────────────────────
@@ -504,3 +538,6 @@ class PricingQuote(BaseModel):
     balance_due_paise: int
 
     pricing_mode: str
+
+    breakdown: list[PricingBreakdownItem] = Field(default_factory=list)
+    clamped: bool = False
