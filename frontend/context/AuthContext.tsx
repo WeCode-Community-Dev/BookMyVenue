@@ -198,6 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       thumbnail: venueData.thumbnail || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80",
       capacity: venueData.capacity || 100,
       category: venueData.category || "Wedding",
+      categories: venueData.categories || [venueData.category || "Wedding"],
       description: venueData.description || "Beautiful custom venue.",
       address: venueData.address || "123 Venue Street",
       amenities: venueData.amenities || [],

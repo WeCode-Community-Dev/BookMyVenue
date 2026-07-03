@@ -4,13 +4,14 @@ import { Users, Info, Calendar, Sparkles } from "lucide-react";
 interface VenueInfoProps {
   capacity: number;
   category: string;
+  categories?: string[];
   rating: number;
   reviewCount: number;
   startingPrice: number;
   city: string;
 }
 
-export default function VenueInfo({ capacity, category, rating, reviewCount, startingPrice, city }: VenueInfoProps) {
+export default function VenueInfo({ capacity, category, categories, rating, reviewCount, startingPrice, city }: VenueInfoProps) {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -29,7 +30,7 @@ export default function VenueInfo({ capacity, category, rating, reviewCount, sta
     {
       icon: <Sparkles className="size-5 text-rose-600" />,
       title: "Category",
-      value: category,
+      value: categories && categories.length > 0 ? categories.join(", ") : category,
       desc: "Premium event type space",
     },
     {

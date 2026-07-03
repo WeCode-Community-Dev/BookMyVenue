@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Plus, Check, Trash2, ArrowLeft, Star, MapPin } from "lucide-react";
+import { Plus, Check, Trash2, ArrowLeft, Star, MapPin, UploadCloud } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Venue } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,6 @@ export default function MyVenuesTab() {
 
   // Form states
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("Wedding");
   const [city, setCity] = useState("Kochi");
   const [address, setAddress] = useState("");
   const [capacity, setCapacity] = useState("");
@@ -35,7 +34,21 @@ export default function MyVenuesTab() {
   const [description, setDescription] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [coverUrl, setCoverUrl] = useState(COVER_PRESETS[0]);
-  const [customCover, setCustomCover] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["Wedding"]);
+
+  // File states
+  const [governmentIdUploaded, setGovernmentIdUploaded] = useState(false);
+  const [propertyTitleUploaded, setPropertyTitleUploaded] = useState(false);
+  const [customCoverPreviewUrl, setCustomCoverPreviewUrl] = useState("");
+
+  const toggleCategory = (categoryName: string) => {
+    setSelectedCategories((prev) => {
+      const next = prev.includes(categoryName)
+        ? prev.filter((c) => c !== categoryName)
+        : [...prev, categoryName];
+      return next.length > 0 ? next : ["Wedding"];
+    });
+  };
 
   const hostVenues = venues.filter(
     (v) => v.owner?.name === user.name || v.id === "v1" || v.id === "v2"
@@ -49,16 +62,17 @@ export default function MyVenuesTab() {
 
   const handleSelectPreset = (url: string) => {
     setCoverUrl(url);
-    setCustomCover("");
+    setCustomCoverPreviewUrl("");
   };
 
   const handlePublish = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && address.trim() && capacity && price && description.trim()) {
-      const finalCover = customCover.trim() || coverUrl;
+    if (name.trim() && address.trim() && capacity && price && description.trim() && selectedCategories.length > 0 && !!(governmentIdUploaded && propertyTitleUploaded)) {
+      const finalCover = customCoverPreviewUrl || coverUrl;
       addVenue({
         name: name.trim(),
-        category,
+        category: selectedCategories[0] || "Wedding",
+        categories: selectedCategories,
         city,
         address: address.trim(),
         capacity: parseInt(capacity),
@@ -81,12 +95,22 @@ export default function MyVenuesTab() {
       setPrice("");
       setDescription("");
       setSelectedAmenities([]);
+      setSelectedCategories(["Wedding"]);
+      setGovernmentIdUploaded(false);
+      setPropertyTitleUploaded(false);
+      setCustomCoverPreviewUrl("");
       setIsAdding(false);
     }
   };
 
   const isFormValid =
-    name.trim() && address.trim() && capacity && price && description.trim();
+    name.trim() &&
+    address.trim() &&
+    capacity &&
+    price &&
+    description.trim() &&
+    selectedCategories.length > 0 &&
+    !!(governmentIdUploaded && propertyTitleUploaded);
 
   if (isAdding) {
     return (
@@ -110,7 +134,7 @@ export default function MyVenuesTab() {
           
           {/* Grid inputs */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 md:col-span-2">
               <label htmlFor="name" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                 Venue Name
               </label>
@@ -121,22 +145,6 @@ export default function MyVenuesTab() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
-            </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="category" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                Category
-              </label>
-              <select
-                id="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-800 outline-none transition focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 cursor-pointer"
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
             </div>
 
             <div className="space-y-1.5">
@@ -211,6 +219,37 @@ export default function MyVenuesTab() {
               />
             </div>
 
+            {/* Categories Checklist */}
+            <div className="space-y-2 md:col-span-2 select-none border-t border-slate-100 pt-4">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                Categories (Select multiple if applicable)
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {CATEGORIES.map((cat) => {
+                  const isChecked = selectedCategories.includes(cat);
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => toggleCategory(cat)}
+                      className={`flex items-center gap-2 px-3 py-2 border rounded-xl cursor-pointer text-xs font-extrabold transition text-left bg-white ${
+                        isChecked
+                          ? "bg-rose-50 border-rose-200 text-rose-700"
+                          : "bg-white border-slate-200 text-slate-650 hover:border-slate-350"
+                      }`}
+                    >
+                      <div className={`size-4 rounded-sm border flex items-center justify-center transition ${
+                        isChecked ? "bg-rose-600 border-rose-600 text-white" : "border-slate-300"
+                      }`}>
+                        {isChecked && <Check className="size-3 stroke-[3]" />}
+                      </div>
+                      <span>{cat}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Amenities Checklist */}
             <div className="space-y-2 md:col-span-2 select-none border-t border-slate-100 pt-4">
               <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Amenities Offered</label>
@@ -243,14 +282,17 @@ export default function MyVenuesTab() {
             {/* Cover photo presets */}
             <div className="space-y-3.5 md:col-span-2 select-none border-t border-slate-100 pt-4">
               <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Cover Photo</label>
-              <div className="grid grid-cols-5 gap-3">
+              <div className="grid grid-cols-5 gap-3 mb-4">
                 {COVER_PRESETS.map((url, idx) => {
-                  const isSelected = coverUrl === url && !customCover;
+                  const isSelected = coverUrl === url && !customCoverPreviewUrl;
                   return (
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => handleSelectPreset(url)}
+                      onClick={() => {
+                        setCoverUrl(url);
+                        setCustomCoverPreviewUrl("");
+                      }}
                       className={`relative aspect-video w-full rounded-lg overflow-hidden cursor-pointer active:scale-95 transition border-2 ${
                         isSelected ? "border-rose-600 ring-2 ring-rose-500/10" : "border-transparent hover:border-slate-300"
                       }`}
@@ -265,15 +307,91 @@ export default function MyVenuesTab() {
                   );
                 })}
               </div>
-              
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold text-slate-400 block uppercase">Or custom cover image url</span>
-                <Input
-                  placeholder="https://example.com/custom-photo.jpg"
-                  value={customCover}
-                  onChange={(e) => setCustomCover(e.target.value)}
-                  className="text-xs"
-                />
+
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold text-slate-400 block uppercase">Or upload a custom cover photo</span>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setCustomCoverPreviewUrl("https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80")}
+                    className="flex items-center gap-2 px-4 py-2 border rounded-xl cursor-pointer text-xs font-bold hover:bg-slate-50 transition bg-white"
+                  >
+                    <UploadCloud className="size-4" />
+                    <span>{customCoverPreviewUrl ? "Change Custom Photo" : "Upload Custom Photo"}</span>
+                  </button>
+                  {customCoverPreviewUrl && (
+                    <span className="text-xs text-slate-500 font-semibold truncate max-w-xs">
+                      custom-cover.jpg (Uploaded)
+                    </span>
+                  )}
+                </div>
+                {customCoverPreviewUrl && (
+                  <div className="mt-3 relative w-full max-w-sm aspect-video rounded-xl overflow-hidden border border-slate-200">
+                    <Image src={customCoverPreviewUrl} alt="Cover Preview" fill className="object-cover" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Documents Verification Section */}
+            <div className="space-y-4 md:col-span-2 select-none border-t border-slate-100 pt-4">
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Document Verification</label>
+                <p className="text-[11px] text-slate-450 font-semibold mt-0.5 leading-relaxed">
+                  Upload mock verification files for this venue. Clicking the boxes will immediately simulate a successful document upload.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Box 1 */}
+                <button
+                  type="button"
+                  onClick={() => setGovernmentIdUploaded(true)}
+                  className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 cursor-pointer transition active:scale-99 w-full bg-transparent flex flex-col items-center justify-center ${
+                    governmentIdUploaded
+                      ? "border-emerald-500 bg-emerald-50/10"
+                      : "border-slate-200 hover:border-slate-350"
+                  }`}
+                >
+                  <UploadCloud className={`size-8 ${governmentIdUploaded ? "text-emerald-600" : "text-slate-400"}`} />
+                  <div>
+                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider block">1. Government Photo ID</h4>
+                    <p className="text-[10px] text-slate-400 font-medium">Aadhar Card, Passport, or License</p>
+                  </div>
+                  {governmentIdUploaded ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100/50 px-2 py-0.5 rounded-full select-none">
+                      <Check className="size-3 stroke-[3]" />
+                      <span>Identity Document Uploaded</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-rose-600 hover:text-rose-700">Click to Upload mock file</span>
+                  )}
+                </button>
+
+                {/* Box 2 */}
+                <button
+                  type="button"
+                  onClick={() => setPropertyTitleUploaded(true)}
+                  className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 cursor-pointer transition active:scale-99 w-full bg-transparent flex flex-col items-center justify-center ${
+                    propertyTitleUploaded
+                      ? "border-emerald-500 bg-emerald-50/10"
+                      : "border-slate-200 hover:border-slate-350"
+                  }`}
+                >
+                  <UploadCloud className={`size-8 ${propertyTitleUploaded ? "text-emerald-600" : "text-slate-400"}`} />
+                  <div>
+                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider block">2. Property Title/Reg Doc</h4>
+                    <p className="text-[10px] text-slate-400 font-medium">Utility bill, license, or deed registration</p>
+                  </div>
+                  {propertyTitleUploaded ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100/50 px-2 py-0.5 rounded-full select-none">
+                      <Check className="size-3 stroke-[3]" />
+                      <span>Property Document Uploaded</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-rose-600 hover:text-rose-700">Click to Upload mock file</span>
+                  )}
+                </button>
               </div>
             </div>
 
@@ -355,12 +473,22 @@ export default function MyVenuesTab() {
                 {/* Content */}
                 <div className="flex-grow p-4 text-left flex flex-col justify-between space-y-3">
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100/50 uppercase leading-none">
-                        {venue.category}
-                      </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-wrap gap-1">
+                        {venue.categories && venue.categories.length > 0 ? (
+                          venue.categories.map((cat) => (
+                            <span key={cat} className="text-[9px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100/50 uppercase leading-none shrink-0">
+                              {cat}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[9px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100/50 uppercase leading-none shrink-0">
+                            {venue.category}
+                          </span>
+                        )}
+                      </div>
                       {venue.rating > 0 && (
-                        <div className="flex items-center gap-0.5 text-[10px] font-extrabold text-slate-900">
+                        <div className="flex items-center gap-0.5 text-[10px] font-extrabold text-slate-900 shrink-0">
                           <Star className="size-3 text-amber-500 fill-amber-500" />
                           <span>{venue.rating.toFixed(1)}</span>
                         </div>

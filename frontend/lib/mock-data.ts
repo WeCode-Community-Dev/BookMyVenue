@@ -348,6 +348,7 @@ export const MOCK_VENUES: Venue[] = BASE_MOCK_VENUES.map((venue, idx) => {
   ];
   return {
     ...venue,
+    categories: [venue.category],
     area: venue.city === "Kochi" 
       ? ["Marine Drive", "Kadavanthra", "Edappally", "Vyttila", "Fort Kochi"][idx % 5] 
       : ["Indiranagar", "Koramangala", "HSR Layout", "Jayanagar"][idx % 4],
@@ -489,7 +490,13 @@ export function getDetailedVenue(id: string): Venue | undefined {
 
   // Find 4 similar venues in the same city or category, excluding current
   const similarVenueIds = MOCK_VENUES
-    .filter((v) => v.id !== id && (v.city === venue.city || v.category === venue.category))
+    .filter(
+      (v) =>
+        v.id !== id &&
+        (v.city === venue.city ||
+          v.category === venue.category ||
+          (venue.categories && v.categories && venue.categories.some((cat) => v.categories?.includes(cat))))
+    )
     .slice(0, 4)
     .map((v) => v.id);
 

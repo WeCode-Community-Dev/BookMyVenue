@@ -33,22 +33,31 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
   const [businessPhone, setBusinessPhone] = useState("");
   const [businessCity, setBusinessCity] = useState("Kochi");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [filesUploaded, setFilesUploaded] = useState<Record<string, boolean>>({});
+
+  // File states
+  const [governmentIdUploaded, setGovernmentIdUploaded] = useState(false);
+  const [propertyTitleUploaded, setPropertyTitleUploaded] = useState(false);
+  const [customCoverPreviewUrl, setCustomCoverPreviewUrl] = useState("");
 
   // Venue states
-  const [venueName, setVenueName] = useState("");
-  const [venueCategory, setVenueCategory] = useState("Wedding");
-  const [venueCity, setVenueCity] = useState("Kochi");
   const [venueAddress, setVenueAddress] = useState("");
   const [venueCapacity, setVenueCapacity] = useState("");
   const [venuePrice, setVenuePrice] = useState("");
-  const [venueDescription, setVenueDescription] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [venueCoverUrl, setVenueCoverUrl] = useState(COVER_PRESETS[0]);
-  const [venueCustomCover, setVenueCustomCover] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["Wedding"]);
+
+  const toggleCategory = (categoryName: string) => {
+    setSelectedCategories((prev) => {
+      const next = prev.includes(categoryName)
+        ? prev.filter((c) => c !== categoryName)
+        : [...prev, categoryName];
+      return next.length > 0 ? next : ["Wedding"];
+    });
+  };
 
   const handleFileUpload = (docType: string) => {
-    setFilesUploaded((prev) => ({ ...prev, [docType]: true }));
+    // Logic for file handling
   };
 
   const handleNextStep = () => {
@@ -67,7 +76,7 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
 
   const handleSelectPreset = (url: string) => {
     setVenueCoverUrl(url);
-    setVenueCustomCover("");
+    setCustomCoverPreviewUrl("");
   };
 
   const handleSubmitApplication = () => {
@@ -80,15 +89,16 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
       });
 
       // 2. Add the first venue
-      const finalCover = venueCustomCover.trim() || venueCoverUrl;
+      const finalCover = customCoverPreviewUrl || venueCoverUrl;
       addVenue({
-        name: venueName.trim(),
-        category: venueCategory,
-        city: venueCity,
+        name: businessName.trim(),
+        category: selectedCategories[0] || "Wedding",
+        categories: selectedCategories,
+        city: businessCity,
         address: venueAddress.trim(),
         capacity: parseInt(venueCapacity),
         startingPrice: parseInt(venuePrice),
-        description: venueDescription.trim(),
+        description: businessBio.trim(),
         amenities: selectedAmenities,
         thumbnail: finalCover,
         images: [
@@ -107,8 +117,8 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
   };
 
   const isStep2Valid = businessName.trim() && businessPhone.trim() && businessBio.trim();
-  const isStep3Valid = !!(filesUploaded["id"] && filesUploaded["property"]);
-  const isStep4Valid = venueName.trim() && venueAddress.trim() && venueCapacity.trim() && venuePrice.trim() && venueDescription.trim();
+  const isStep3Valid = governmentIdUploaded && propertyTitleUploaded;
+  const isStep4Valid = venueAddress.trim() && venueCapacity.trim() && venuePrice.trim() && selectedCategories.length > 0;
 
   return (
     <div className="bg-white border border-slate-200/60 shadow-xs rounded-3xl p-6 sm:p-8 space-y-8 select-none text-left">
@@ -304,19 +314,19 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
               {/* Box 1 */}
               <button
                 type="button"
-                onClick={() => handleFileUpload("id")}
-                className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 cursor-pointer transition active:scale-99 w-full bg-transparent flex flex-col items-center ${
-                  filesUploaded["id"]
+                onClick={() => setGovernmentIdUploaded(true)}
+                className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 cursor-pointer transition active:scale-99 w-full bg-transparent flex flex-col items-center justify-center ${
+                  governmentIdUploaded
                     ? "border-emerald-500 bg-emerald-50/10"
                     : "border-slate-200 hover:border-slate-350"
                 }`}
               >
-                <UploadCloud className={`size-8 ${filesUploaded["id"] ? "text-emerald-600" : "text-slate-400"}`} />
+                <UploadCloud className={`size-8 ${governmentIdUploaded ? "text-emerald-600" : "text-slate-400"}`} />
                 <div>
                   <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider block">1. Government Photo ID</h4>
                   <p className="text-[10px] text-slate-400 font-medium">Aadhar Card, Passport, or License</p>
                 </div>
-                {filesUploaded["id"] ? (
+                {governmentIdUploaded ? (
                   <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100/50 px-2 py-0.5 rounded-full select-none">
                     <Check className="size-3 stroke-[3]" />
                     <span>Identity Document Uploaded</span>
@@ -329,19 +339,19 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
               {/* Box 2 */}
               <button
                 type="button"
-                onClick={() => handleFileUpload("property")}
-                className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 cursor-pointer transition active:scale-99 w-full bg-transparent flex flex-col items-center ${
-                  filesUploaded["property"]
+                onClick={() => setPropertyTitleUploaded(true)}
+                className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 cursor-pointer transition active:scale-99 w-full bg-transparent flex flex-col items-center justify-center ${
+                  propertyTitleUploaded
                     ? "border-emerald-500 bg-emerald-50/10"
                     : "border-slate-200 hover:border-slate-350"
                 }`}
               >
-                <UploadCloud className={`size-8 ${filesUploaded["property"] ? "text-emerald-600" : "text-slate-400"}`} />
+                <UploadCloud className={`size-8 ${propertyTitleUploaded ? "text-emerald-600" : "text-slate-400"}`} />
                 <div>
                   <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider block">2. Property Title/Reg Doc</h4>
                   <p className="text-[10px] text-slate-400 font-medium">Utility bill, license, or deed registration</p>
                 </div>
-                {filesUploaded["property"] ? (
+                {propertyTitleUploaded ? (
                   <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100/50 px-2 py-0.5 rounded-full select-none">
                     <Check className="size-3 stroke-[3]" />
                     <span>Property Document Uploaded</span>
@@ -382,52 +392,7 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-1.5">
-                <label htmlFor="venueName" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                  Venue Name
-                </label>
-                <Input
-                  id="venueName"
-                  placeholder="e.g. Grand Ballroom at Palace"
-                  value={venueName}
-                  onChange={(e) => setVenueName(e.target.value)}
-                  className="h-10"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="venueCategory" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                  Category
-                </label>
-                <select
-                  id="venueCategory"
-                  value={venueCategory}
-                  onChange={(e) => setVenueCategory(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-800 outline-none transition focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 cursor-pointer"
-                >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="venueCity" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                  City Location
-                </label>
-                <select
-                  id="venueCity"
-                  value={venueCity}
-                  onChange={(e) => setVenueCity(e.target.value)}
-                  className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-800 outline-none transition focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 cursor-pointer"
-                >
-                  {CITIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 md:col-span-2">
                 <label htmlFor="venueAddress" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                   Full Physical Address
                 </label>
@@ -468,18 +433,35 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
                 />
               </div>
 
-              <div className="space-y-1.5 md:col-span-2">
-                <label htmlFor="venueDescription" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                  Venue Description
+              {/* Categories Checklist */}
+              <div className="space-y-2 md:col-span-2 select-none border-t border-slate-100 pt-4">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  Categories (Select multiple if applicable)
                 </label>
-                <textarea
-                  id="venueDescription"
-                  rows={3}
-                  placeholder="Describe layout configs, access rules, event suitability, etc..."
-                  value={venueDescription}
-                  onChange={(e) => setVenueDescription(e.target.value)}
-                  className="flex w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 min-h-[80px]"
-                />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {CATEGORIES.map((cat) => {
+                    const isChecked = selectedCategories.includes(cat);
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => toggleCategory(cat)}
+                        className={`flex items-center gap-2 px-3 py-2 border rounded-xl cursor-pointer text-xs font-extrabold transition text-left bg-white ${
+                          isChecked
+                            ? "bg-rose-50 border-rose-200 text-rose-700"
+                            : "bg-white border-slate-200 text-slate-650 hover:border-slate-350"
+                        }`}
+                      >
+                        <div className={`size-4 rounded-sm border flex items-center justify-center transition ${
+                          isChecked ? "bg-rose-600 border-rose-600 text-white" : "border-slate-300"
+                        }`}>
+                          {isChecked && <Check className="size-3 stroke-[3]" />}
+                        </div>
+                        <span>{cat}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Amenities Checklist */}
@@ -514,14 +496,17 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
               {/* Cover photo presets */}
               <div className="space-y-3.5 md:col-span-2 select-none border-t border-slate-100 pt-4">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Cover Photo</label>
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid grid-cols-5 gap-3 mb-4">
                   {COVER_PRESETS.map((url, idx) => {
-                    const isSelected = venueCoverUrl === url && !venueCustomCover;
+                    const isSelected = venueCoverUrl === url && !customCoverPreviewUrl;
                     return (
                       <button
                         key={idx}
                         type="button"
-                        onClick={() => handleSelectPreset(url)}
+                        onClick={() => {
+                          setVenueCoverUrl(url);
+                          setCustomCoverPreviewUrl("");
+                        }}
                         className={`relative aspect-video w-full rounded-lg overflow-hidden cursor-pointer active:scale-95 transition border-2 ${
                           isSelected ? "border-rose-600 ring-2 ring-rose-500/10" : "border-transparent hover:border-slate-300"
                         }`}
@@ -536,15 +521,29 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
                     );
                   })}
                 </div>
-                
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 block uppercase">Or custom cover image url</span>
-                  <Input
-                    placeholder="https://example.com/custom-photo.jpg"
-                    value={venueCustomCover}
-                    onChange={(e) => setVenueCustomCover(e.target.value)}
-                    className="text-xs h-10"
-                  />
+
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold text-slate-400 block uppercase">Or upload a custom cover photo</span>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setCustomCoverPreviewUrl("https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80")}
+                      className="flex items-center gap-2 px-4 py-2 border rounded-xl cursor-pointer text-xs font-bold hover:bg-slate-50 transition bg-white"
+                    >
+                      <UploadCloud className="size-4" />
+                      <span>{customCoverPreviewUrl ? "Change Custom Photo" : "Upload Custom Photo"}</span>
+                    </button>
+                    {customCoverPreviewUrl && (
+                      <span className="text-xs text-slate-500 font-semibold truncate max-w-xs">
+                        custom-cover.jpg (Uploaded)
+                      </span>
+                    )}
+                  </div>
+                  {customCoverPreviewUrl && (
+                    <div className="mt-3 relative w-full max-w-sm aspect-video rounded-xl overflow-hidden border border-slate-200">
+                      <Image src={customCoverPreviewUrl} alt="Cover Preview" fill className="object-cover" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -79,7 +79,7 @@ export default function ListingRequestsTab() {
                         Pending Admin Review
                       </span>
                       <span className="text-xs font-bold text-slate-400">
-                        Category: <span className="font-extrabold text-slate-700">{venue.category}</span>
+                        Category: <span className="font-extrabold text-slate-700">{venue.categories && venue.categories.length > 0 ? venue.categories.join(", ") : venue.category}</span>
                       </span>
                     </div>
 

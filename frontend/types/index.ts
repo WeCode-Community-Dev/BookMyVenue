@@ -8,6 +8,7 @@ export interface Venue {
   thumbnail: string;
   capacity: number;
   category: string;
+  categories?: string[];
 
   // Detailed fields
   description?: string;

@@ -17,12 +17,15 @@ export default function Home() {
   // Filter venues based on category AND search input keywords
   const filteredVenues = venues.filter((venue) => {
     const matchesCategory = selectedCategory
-      ? venue.category.toLowerCase() === selectedCategory.toLowerCase()
+      ? (venue.categories && venue.categories.length > 0
+          ? venue.categories.some((c) => c.toLowerCase() === selectedCategory.toLowerCase())
+          : venue.category.toLowerCase() === selectedCategory.toLowerCase())
       : true;
     const matchesQuery = searchQuery
       ? venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         venue.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        venue.category.toLowerCase().includes(searchQuery.toLowerCase())
+        venue.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (venue.categories && venue.categories.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase())))
       : true;
     return matchesCategory && matchesQuery;
   });

@@ -17,76 +17,135 @@ enum Role {
   ADMIN
 }
 
-model User {
-  id                String   @id @default(uuid())
-  email             String   @unique
-  passwordHash      String?
-  refreshTokenHash  String?
-  googleId          String?  @unique
-  role              Role     @default(USER)
-  isEmailVerified   Boolean  @default(false)
-  emailVerifyExpiry DateTime?
-  emailVerifyOtp    String?
-  profile           Profile?
-  venues             Venue[]  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+enum VenueStatus {
+  PENDING_DOCUMENTS
+  PENDING
+  APPROVED
+  REJECTED
 }
 
+enum VenueCategory {
+  WEDDING
+  BIRTHDAY
+  CONFERENCE
+  SPORTS
+  PARTY
+  AUDITORIUM
+  RESORT
+  MEETING
+  OTHER
+}
+
+enum VenueAmenity {
+  WIFI
+  PARKING
+  AIR_CONDITIONING
+  CATERING
+  RESTROOM
+  SOUND_SYSTEM
+  PROJECTOR
+  STAGE
+  GENERATOR
+  OTHER
+}
+
+enum VenueDocumentType {
+  GOVERNMENT_ID
+  PROPERTY_DOCUMENT
+}
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  passwordHash      String?
+  refreshTokenHash  String?
+  googleId          String?   @unique
+  role              Role      @default(USER)
+
+  isEmailVerified   Boolean   @default(false)
+  emailVerifyExpiry DateTime?
+  emailVerifyOtp    String?
+
+  profile           Profile?
+  venues            Venue[]
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
 
 model Profile {
-  id            String   @id @default(cuid())
+  id               String    @id @default(cuid())
 
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  name          String
-  profilePicture String?
+  name             String
+  profilePicture   String?
 
-  phoneNumber   String?
-  dateOfBirth   DateTime?
-  gender        String?
-  biography     String?
+  phoneNumber      String?
+  dateOfBirth      DateTime?
+  gender           String?
+  biography        String?
 
-  address       String?
-  city          String?
-  state         String?
-  country       String?
+  address          String?
+  city             String?
+  state            String?
+  country          String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model Venue {
-  id            String        @id @default(uuid())
+  id               String            @id @default(uuid())
 
-  name          String
-  description   String?
+  name             String
+  description      String?
 
-  address       String
+  city             String
+  address          String
 
-  latitude       Float
-  longitude      Float
+  latitude         Float?
+  longitude        Float?
 
-  price          Float?
-  capacity       Int?
+  capacity         Int?
+  price            Float?
 
-  ownerId        String
-  owner          User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  categories       VenueCategory[]
+  amenities        VenueAmenity[]
 
-  images         VenueImage[]
+  status           VenueStatus       @default(PENDING_DOCUMENTS)
+  rejectionReason  String?
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  ownerId          String
+  owner            User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  images           VenueImage[]
+  documents        VenueDocument[]
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 }
 
 model VenueImage {
-  id            String       @id @default(uuid())
+  id               String            @id @default(uuid())
 
-  imageUrl      String
+  imageUrl         String
 
-  venueId        String
-  venue          Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venueId          String
+  venue            Venue             @relation(fields: [venueId], references: [id], onDelete: Cascade)
 
-  createdAt      DateTime     @default(now())
+  createdAt        DateTime          @default(now())
+}
+
+model VenueDocument {
+  id               String            @id @default(uuid())
+
+  type             VenueDocumentType
+  documentUrl      String
+
+  venueId          String
+  venue            Venue             @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime          @default(now())
 }

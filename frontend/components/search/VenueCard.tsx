@@ -45,11 +45,19 @@ export default function VenueCard({ venue }: VenueCardProps) {
           className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
         />
         
-        {/* Category Tag Badge */}
-        <div className="absolute top-3.5 left-3.5 z-10">
-          <Badge variant="rose" className="shadow-sm backdrop-blur-md bg-white/90 border-slate-200/50">
-            {venue.category}
-          </Badge>
+        {/* Category Tag Badges */}
+        <div className="absolute top-3.5 left-3.5 z-10 flex flex-wrap gap-1 max-w-[80%]">
+          {venue.categories && venue.categories.length > 0 ? (
+            venue.categories.map((cat) => (
+              <Badge key={cat} variant="rose" className="shadow-sm backdrop-blur-md bg-white/90 border-slate-200/50 text-[10px] py-0.5 px-2 font-bold">
+                {cat}
+              </Badge>
+            ))
+          ) : (
+            <Badge variant="rose" className="shadow-sm backdrop-blur-md bg-white/90 border-slate-200/50 text-[10px] py-0.5 px-2 font-bold">
+              {venue.category}
+            </Badge>
+          )}
         </div>
 
         {/* Favorite Heart Button Overlay */}

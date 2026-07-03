@@ -65,6 +65,7 @@ function SearchPageContent() {
           v.name.toLowerCase().includes(q) ||
           v.city.toLowerCase().includes(q) ||
           v.category.toLowerCase().includes(q) ||
+          (v.categories && v.categories.some((c) => c.toLowerCase().includes(q))) ||
           (v.area && v.area.toLowerCase().includes(q))
       );
     }
@@ -84,7 +85,11 @@ function SearchPageContent() {
           }
         });
       } else {
-        list = list.filter((v) => v.category.toLowerCase() === categoryLower);
+        list = list.filter((v) =>
+          v.categories && v.categories.length > 0
+            ? v.categories.some((c) => c.toLowerCase() === categoryLower)
+            : v.category.toLowerCase() === categoryLower
+        );
       }
     }
 

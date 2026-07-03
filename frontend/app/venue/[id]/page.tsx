@@ -91,6 +91,7 @@ export default function VenueDetailPage({ params }: PageProps) {
               <VenueInfo
                 capacity={venue.capacity}
                 category={venue.category}
+                categories={venue.categories}
                 rating={venue.rating}
                 reviewCount={venue.reviewCount}
                 startingPrice={venue.startingPrice}

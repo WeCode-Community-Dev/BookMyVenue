@@ -20,9 +20,19 @@ export default function VenueHeader({ venue }: VenueHeaderProps) {
     <div className="space-y-3 pb-6 border-b border-slate-200/80">
       {/* Category Badge & Actions Row */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <Badge variant="rose" className="font-extrabold uppercase px-3 py-1 tracking-wider text-[11px]">
-          {venue.category}
-        </Badge>
+        <div className="flex flex-wrap gap-1">
+          {venue.categories && venue.categories.length > 0 ? (
+            venue.categories.map((cat) => (
+              <Badge key={cat} variant="rose" className="font-extrabold uppercase px-3 py-1 tracking-wider text-[11px]">
+                {cat}
+              </Badge>
+            ))
+          ) : (
+            <Badge variant="rose" className="font-extrabold uppercase px-3 py-1 tracking-wider text-[11px]">
+              {venue.category}
+            </Badge>
+          )}
+        </div>
         
         <div className="flex items-center gap-3">
           <button

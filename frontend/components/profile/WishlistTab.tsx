@@ -61,7 +61,7 @@ export default function WishlistTab() {
                 <Link href={`/venue/${venue.id}`} className="block p-4 text-left space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                      {venue.category}
+                      {venue.categories && venue.categories.length > 0 ? venue.categories.join(", ") : venue.category}
                     </span>
                     <div className="flex items-center gap-1 text-slate-900 font-bold text-xs">
                       <Star className="size-3 text-amber-500 fill-amber-500" />
