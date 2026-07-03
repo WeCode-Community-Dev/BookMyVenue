@@ -56,6 +56,8 @@ def _to_results(venues: list[Venue], cover_photos: dict) -> list[SearchResult]:
             capacity=v.max_capacity,
             pricing_mode=v.pricing_mode,
             starting_price_paise=starting_price,
+            display_price_min_paise=v.display_price_min_paise,
+            display_price_max_paise=v.display_price_max_paise,
             cover_photo_url=cover_photos.get(v.id),
         ))
     return results
@@ -120,6 +122,8 @@ def search(db: Session, params: SearchParams) -> Page[SearchResult]:
             capacity=v.max_capacity,
             pricing_mode=v.pricing_mode,
             starting_price_paise=starting_price,
+            display_price_min_paise=v.display_price_min_paise,
+            display_price_max_paise=v.display_price_max_paise,
             cover_photo_url=cover_photos.get(v.id),
         ))
 

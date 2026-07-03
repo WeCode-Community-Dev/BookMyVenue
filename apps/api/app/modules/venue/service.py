@@ -20,6 +20,10 @@ from app.modules.venue.schemas import (
     UpdateCancellationPolicyRequest,
     UpdateVenueAmenitiesRequest,
     BulkUpdateVenuePhotosRequest,
+    VenuePricingRuleResponse,
+    CreatePricingRuleRequest,
+    UpdatePricingRuleRequest,
+    MAX_ACTIVE_PRICING_RULES_PER_VENUE,
 )
 from app.modules.venue import pricing_engine
 from app.modules.booking.models import BookingType
@@ -145,9 +149,32 @@ def get_pricing_preview(
     ends_at: datetime,
     booking_type: BookingType,
 ) -> PricingPreviewResponse:
-
     venue = _get_active_venue_or_404(db, venue_id)
+    return _compute_pricing_preview(db, venue, starts_at, ends_at, booking_type)
 
+
+def get_owner_pricing_preview(
+    db: Session,
+    venue_id: UUID,
+    owner_id: UUID,
+    starts_at: datetime,
+    ends_at: datetime,
+    booking_type: BookingType,
+) -> PricingPreviewResponse:
+    """Owner-facing dry run: same engine as the public quote, but usable on
+    draft/pending venues too (ownership-gated instead of approval-gated)."""
+    venue = _get_venue_or_404(db, venue_id)
+    _assert_owner(venue, owner_id)
+    return _compute_pricing_preview(db, venue, starts_at, ends_at, booking_type)
+
+
+def _compute_pricing_preview(
+    db: Session,
+    venue: Venue,
+    starts_at: datetime,
+    ends_at: datetime,
+    booking_type: BookingType,
+) -> PricingPreviewResponse:
     if ends_at <= starts_at:
         raise ConflictError("ends_at must be after starts_at")
 
@@ -467,6 +494,8 @@ def update_venue(
     if venue.min_price_pct > venue.max_price_pct:
         raise ConflictError("min_price_pct cannot exceed max_price_pct")
 
+    _recompute_display_price_range(venue)
+
     db.commit()
     db.refresh(venue)
 
@@ -610,6 +639,191 @@ def delete_blocked_date(db: Session, venue_id: UUID, blocked_id: UUID, owner_id:
         raise NotFoundError("Blocked date not found")
 
     blocked_date.deleted_at = datetime.now(timezone.utc)
+    db.commit()
+
+
+# Pricing rules
+
+def _rule_exceeds_bounds(rule: VenuePricingRule, venue: Venue) -> bool:
+    if rule.adjustment_type != "multiplier" or rule.multiplier is None:
+        return False
+    rule_pct = Decimal(str(rule.multiplier)) * Decimal("100")
+    return rule_pct < Decimal(str(venue.min_price_pct)) or rule_pct > Decimal(str(venue.max_price_pct))
+
+
+def _rule_to_response(rule: VenuePricingRule, venue: Venue) -> VenuePricingRuleResponse:
+    return VenuePricingRuleResponse.model_validate(
+        rule, from_attributes=True
+    ).model_copy(update={"exceeds_bounds": _rule_exceeds_bounds(rule, venue)})
+
+
+def _recompute_display_price_range(venue: Venue) -> None:
+    """Recompute the venue's listing display range from its active multiplier rules.
+    Called transactionally on every pricing-rule / bounds write (PRD §6.6): no worker,
+    no cache invalidation -- just a cheap read-time-equivalent computation stored for
+    index-only listing queries.
+    """
+    base = venue.starting_price_paise if venue.pricing_mode in ("flat", "mixed") else venue.hourly_rate_paise
+
+    active_multiplier_rules = [
+        r for r in venue.pricing_rules
+        if r.is_active and r.adjustment_type == "multiplier" and r.multiplier is not None
+    ]
+
+    if base is None or not active_multiplier_rules:
+        venue.display_price_min_paise = None
+        venue.display_price_max_paise = None
+        return
+
+    multipliers = [Decimal(str(r.multiplier)) for r in active_multiplier_rules]
+    low_multiplier = min(Decimal("1.0"), min(multipliers))
+    high_multiplier = max(Decimal("1.0"), max(multipliers))
+
+    min_pct = Decimal(str(venue.min_price_pct))
+    max_pct = Decimal(str(venue.max_price_pct))
+
+    display_min, _ = pricing_engine.clamp_price(
+        _banker_round(Decimal(str(base)) * low_multiplier), base, min_pct, max_pct
+    )
+    display_max, _ = pricing_engine.clamp_price(
+        _banker_round(Decimal(str(base)) * high_multiplier), base, min_pct, max_pct
+    )
+    venue.display_price_min_paise = display_min
+    venue.display_price_max_paise = display_max
+
+
+def list_pricing_rules(db: Session, venue_id: UUID, owner_id: UUID) -> list[VenuePricingRuleResponse]:
+    venue = _get_venue_or_404(db, venue_id)
+    _assert_owner(venue, owner_id)
+
+    rules = (
+        db.query(VenuePricingRule)
+        .filter(VenuePricingRule.venue_id == venue_id, VenuePricingRule.deleted_at.is_(None))
+        .order_by(VenuePricingRule.priority.desc(), VenuePricingRule.created_at.desc())
+        .all()
+    )
+    return [_rule_to_response(r, venue) for r in rules]
+
+
+def _get_pricing_rule_or_404(db: Session, venue_id: UUID, rule_id: UUID) -> VenuePricingRule:
+    rule = db.query(VenuePricingRule).filter(
+        VenuePricingRule.id == rule_id,
+        VenuePricingRule.venue_id == venue_id,
+        VenuePricingRule.deleted_at.is_(None),
+    ).first()
+    if not rule:
+        raise NotFoundError("Pricing rule not found")
+    return rule
+
+
+def create_pricing_rule(
+    db: Session,
+    venue_id: UUID,
+    owner_id: UUID,
+    body: CreatePricingRuleRequest,
+) -> VenuePricingRuleResponse:
+    venue = _get_venue_or_404(db, venue_id)
+    _assert_owner(venue, owner_id)
+
+    if body.is_active:
+        active_count = db.query(VenuePricingRule).filter(
+            VenuePricingRule.venue_id == venue_id,
+            VenuePricingRule.deleted_at.is_(None),
+            VenuePricingRule.is_active.is_(True),
+        ).count()
+        if active_count >= MAX_ACTIVE_PRICING_RULES_PER_VENUE:
+            raise ConflictError(
+                f"Venue already has the maximum of {MAX_ACTIVE_PRICING_RULES_PER_VENUE} active pricing rules"
+            )
+
+    rule = VenuePricingRule(
+        id=uuid.uuid4(),
+        venue_id=venue_id,
+        name=body.name,
+        days_of_week=body.days_of_week,
+        start_date=body.start_date,
+        end_date=body.end_date,
+        start_time=body.start_time,
+        end_time=body.end_time,
+        adjustment_type=body.adjustment_type.value,
+        multiplier=body.multiplier,
+        amount_paise=body.amount_paise,
+        applies_to=body.applies_to.value,
+        priority=body.priority,
+        source="owner",
+        is_active=body.is_active,
+    )
+    db.add(rule)
+    db.flush()
+    db.refresh(venue)
+
+    _recompute_display_price_range(venue)
+    db.commit()
+    db.refresh(rule)
+    return _rule_to_response(rule, venue)
+
+
+def update_pricing_rule(
+    db: Session,
+    venue_id: UUID,
+    rule_id: UUID,
+    owner_id: UUID,
+    body: UpdatePricingRuleRequest,
+) -> VenuePricingRuleResponse:
+    venue = _get_venue_or_404(db, venue_id)
+    _assert_owner(venue, owner_id)
+    rule = _get_pricing_rule_or_404(db, venue_id, rule_id)
+
+    if body.is_active and not rule.is_active:
+        active_count = db.query(VenuePricingRule).filter(
+            VenuePricingRule.venue_id == venue_id,
+            VenuePricingRule.deleted_at.is_(None),
+            VenuePricingRule.is_active.is_(True),
+        ).count()
+        if active_count >= MAX_ACTIVE_PRICING_RULES_PER_VENUE:
+            raise ConflictError(
+                f"Venue already has the maximum of {MAX_ACTIVE_PRICING_RULES_PER_VENUE} active pricing rules"
+            )
+
+    update_data = body.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        if hasattr(value, "value"):
+            value = value.value
+        setattr(rule, field, value)
+
+    if rule.adjustment_type == "multiplier":
+        if rule.multiplier is None:
+            raise ConflictError("multiplier is required when adjustment_type is 'multiplier'")
+        if rule.amount_paise is not None:
+            raise ConflictError("amount_paise must be null when adjustment_type is 'multiplier'")
+    else:
+        if rule.amount_paise is None:
+            raise ConflictError("amount_paise is required when adjustment_type is 'fixed_delta' or 'override'")
+        if rule.multiplier is not None:
+            raise ConflictError("multiplier must be null when adjustment_type is not 'multiplier'")
+        if rule.adjustment_type == "override" and rule.amount_paise < 0:
+            raise ConflictError("amount_paise must be >= 0 when adjustment_type is 'override'")
+
+    if rule.start_date is not None and rule.end_date is not None and rule.start_date > rule.end_date:
+        raise ConflictError("start_date cannot be after end_date")
+
+    db.flush()
+    db.refresh(venue)
+    _recompute_display_price_range(venue)
+    db.commit()
+    db.refresh(rule)
+    return _rule_to_response(rule, venue)
+
+
+def delete_pricing_rule(db: Session, venue_id: UUID, rule_id: UUID, owner_id: UUID) -> None:
+    venue = _get_venue_or_404(db, venue_id)
+    _assert_owner(venue, owner_id)
+    rule = _get_pricing_rule_or_404(db, venue_id, rule_id)
+
+    rule.deleted_at = datetime.now(timezone.utc)
+    db.flush()
+    db.refresh(venue)
+    _recompute_display_price_range(venue)
     db.commit()
 
 

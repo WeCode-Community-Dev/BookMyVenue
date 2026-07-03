@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Card, StatusBadge, Button, MetricCard, Skeleton } from '@venue404/ui'
-import { Users, IndianRupee, CalendarDays, ArrowLeft, Info, Loader2 } from 'lucide-react'
+import { Users, IndianRupee, CalendarDays, ArrowLeft, Info, Loader2, Tag } from 'lucide-react'
 import { createClient, venueEndpoints } from '@venue404/api-client'
 import type { Venue } from '@venue404/api-client'
 
@@ -157,6 +157,24 @@ export default function VenueOverview() {
               <Button variant="primary">
                 <CalendarDays className="h-4 w-4 mr-2" />
                 Manage Calendar
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      {/* Dynamic Pricing */}
+      {venue.status === 'approved' && (
+        <Card className="p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-medium text-zinc-900">Dynamic Pricing</h3>
+              <p className="text-sm text-zinc-500 mt-1">Set weekend, peak-hour, and special-date percentage rules on top of your base price.</p>
+            </div>
+            <Link to={`/venues/${venueId}/pricing-rules`}>
+              <Button variant="primary">
+                <Tag className="h-4 w-4 mr-2" />
+                Manage Pricing Rules
               </Button>
             </Link>
           </div>

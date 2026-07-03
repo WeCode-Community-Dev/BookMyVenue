@@ -18,6 +18,7 @@ import CreateVenueWizard from './pages/venues/CreateVenueWizard'
 import VenueOverview from './pages/venues/VenueOverview'
 import VenueEdit from './pages/venues/VenueEdit'
 import VenueCalendarManagement from './pages/venues/VenueCalendarManagement'
+import VenuePricingRules from './pages/venues/VenuePricingRules'
 import BookingDetail from './pages/bookings/BookingDetail'
 
 // Placeholders for future pages
@@ -55,6 +56,7 @@ export const router = createBrowserRouter([
       { path: 'venues/:venueId/overview', element: <VenueOverview /> },
       { path: 'venues/:venueId/edit/*', element: <VenueEdit /> },
       { path: 'venues/:venueId/calendar', element: <VenueCalendarManagement /> },
+      { path: 'venues/:venueId/pricing-rules', element: <VenuePricingRules /> },
 
       // Bookings
       { path: 'bookings', element: <Bookings /> },

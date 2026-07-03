@@ -5,6 +5,12 @@ import type { components } from './types'
 export type Booking = components['schemas']['BookingOut']
 export type Venue = components['schemas']['VenueResponse'] & {
   rejection_reason?: string | null
+  // Hand-added until `pnpm generate` is run (mirrors VenueResponse in venue/schemas.py).
+  // Decimal fields serialize as strings, matching platform_commission_pct/advance_pct above.
+  min_price_pct: string
+  max_price_pct: string
+  display_price_min_paise?: number | null
+  display_price_max_paise?: number | null
 }
 export type VenueCategory = components['schemas']['VenueCategoryResponse']
 export type Amenity = components['schemas']['AmenityResponse']
@@ -14,7 +20,68 @@ export type BlockedDate = components['schemas']['VenueBlockedDateResponse']
 export type CancellationPolicy = components['schemas']['CancellationPolicyResponse']
 export type CalendarResponse = components['schemas']['CalendarResponse']
 export type AvailabilityResponse = components['schemas']['AvailabilityResponse']
-export type PricingQuote = components['schemas']['PricingQuote']
+export type PricingQuote = components['schemas']['PricingQuote'] & {
+  // Hand-added until `pnpm generate` is run (mirrors PricingQuote in venue/schemas.py)
+  breakdown?: PricingBreakdownItem[]
+  clamped?: boolean
+}
 export type ValidationResponse = components['schemas']['ValidationResponse']
 export type SearchResult = components['schemas']['SearchResult']
 export type SearchPage = components['schemas']['Page_SearchResult_']
+
+// Hand-written until `pnpm generate` is run against a live API (mirrors
+// app/modules/venue/schemas.py — VenuePricingRuleResponse / PricingBreakdownItem).
+export type PricingRuleAdjustmentType = 'multiplier' | 'fixed_delta' | 'override'
+export type PricingRuleAppliesTo = 'full_day' | 'time_slot' | 'both'
+
+export interface PricingBreakdownItem {
+  period_date: string
+  start_time?: string | null
+  end_time?: string | null
+  base_paise: number
+  applied_rule_id?: string | null
+  applied_rule_name?: string | null
+  clamped: boolean
+  final_paise: number
+}
+
+export interface PricingRule {
+  id: string
+  venue_id: string
+  name: string
+  days_of_week?: number[] | null
+  start_date?: string | null
+  end_date?: string | null
+  start_time?: string | null
+  end_time?: string | null
+  adjustment_type: PricingRuleAdjustmentType
+  multiplier?: number | null
+  amount_paise?: number | null
+  applies_to: PricingRuleAppliesTo
+  priority: number
+  source: 'owner' | 'system'
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  exceeds_bounds: boolean
+}
+
+export interface PricingPreview {
+  pricing_mode: string
+  quoted_price_paise: number
+  platform_commission_pct: number
+  platform_fee_paise: number
+  owner_payout_paise: number
+  advance_pct: number
+  advance_due_paise: number
+  balance_due_paise: number
+  display: {
+    quoted_price: string
+    advance_due: string
+    balance_due: string
+    platform_fee: string
+    owner_payout: string
+  }
+  breakdown: PricingBreakdownItem[]
+  clamped: boolean
+}

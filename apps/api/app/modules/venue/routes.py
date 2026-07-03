@@ -24,6 +24,9 @@ from app.modules.venue.schemas import (
     PublicVenueBlockedDateResponse,
     VenuePhotoResponse,
     BulkUpdateVenuePhotosRequest,
+    VenuePricingRuleResponse,
+    CreatePricingRuleRequest,
+    UpdatePricingRuleRequest,
 )
 from app.modules.venue import service
 from app.modules.booking import service as booking_service
@@ -124,6 +127,61 @@ def delete_blocked_date(
 ):
     service.delete_blocked_date(db, venue_id, blocked_id, auth.user_id)
     return DeleteResponse(id=blocked_id, message="Blocked date removed successfully")
+
+
+@router.get("/{venue_id}/pricing-rules", response_model=list[VenuePricingRuleResponse])
+def list_pricing_rules(
+    venue_id: UUID,
+    auth: AuthContext = Depends(require_owner),
+    db: Session = Depends(get_db),
+):
+    return service.list_pricing_rules(db, venue_id, auth.user_id)
+
+
+@router.post("/{venue_id}/pricing-rules", response_model=VenuePricingRuleResponse, status_code=201)
+def create_pricing_rule(
+    venue_id: UUID,
+    body: CreatePricingRuleRequest,
+    auth: AuthContext = Depends(require_owner),
+    db: Session = Depends(get_db),
+):
+    return service.create_pricing_rule(db, venue_id, auth.user_id, body)
+
+
+@router.patch("/{venue_id}/pricing-rules/{rule_id}", response_model=VenuePricingRuleResponse)
+def update_pricing_rule(
+    venue_id: UUID,
+    rule_id: UUID,
+    body: UpdatePricingRuleRequest,
+    auth: AuthContext = Depends(require_owner),
+    db: Session = Depends(get_db),
+):
+    return service.update_pricing_rule(db, venue_id, rule_id, auth.user_id, body)
+
+
+@router.delete("/{venue_id}/pricing-rules/{rule_id}", response_model=DeleteResponse, status_code=200)
+def delete_pricing_rule(
+    venue_id: UUID,
+    rule_id: UUID,
+    auth: AuthContext = Depends(require_owner),
+    db: Session = Depends(get_db),
+):
+    service.delete_pricing_rule(db, venue_id, rule_id, auth.user_id)
+    return DeleteResponse(id=rule_id, message="Pricing rule removed successfully")
+
+
+@router.get("/{venue_id}/pricing-preview", response_model=PricingPreviewResponse)
+def get_owner_pricing_preview(
+    venue_id: UUID,
+    starts_at: str = Query(..., description="ISO 8601 datetime with timezone offset"),
+    ends_at: str = Query(..., description="ISO 8601 datetime with timezone offset"),
+    booking_type: BookingType = Query(..., description="full_day or time_slot"),
+    auth: AuthContext = Depends(require_owner),
+    db: Session = Depends(get_db),
+):
+    starts_dt = parse_timezone_datetime(starts_at, "starts_at")
+    ends_dt = parse_timezone_datetime(ends_at, "ends_at")
+    return service.get_owner_pricing_preview(db, venue_id, auth.user_id, starts_dt, ends_dt, booking_type)
 
 
 @router.put("/{venue_id}/cancellation-policy", response_model=CancellationPolicyResponse)

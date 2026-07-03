@@ -525,6 +525,107 @@ class CreateBlockedDateRequest(BaseModel):
             raise ValueError("ends_at must be strictly after starts_at")
 
 
+class PricingRuleAdjustmentType(str, Enum):
+    multiplier = "multiplier"
+    fixed_delta = "fixed_delta"
+    override = "override"
+
+
+class PricingRuleAppliesTo(str, Enum):
+    full_day = "full_day"
+    time_slot = "time_slot"
+    both = "both"
+
+
+MAX_ACTIVE_PRICING_RULES_PER_VENUE = 20
+
+
+class VenuePricingRuleResponse(BaseModel):
+    id: UUID
+    venue_id: UUID
+    name: str
+    days_of_week: Optional[list[int]] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+    adjustment_type: PricingRuleAdjustmentType
+    multiplier: Optional[Decimal] = None
+    amount_paise: Optional[int] = None
+    applies_to: PricingRuleAppliesTo
+    priority: int
+    source: str
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    exceeds_bounds: bool = False
+
+    model_config = {"from_attributes": True}
+
+
+class CreatePricingRuleRequest(BaseModel):
+    name: str = Field(min_length=1)
+    days_of_week: Optional[list[int]] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+    adjustment_type: PricingRuleAdjustmentType = PricingRuleAdjustmentType.multiplier
+    multiplier: Optional[Decimal] = Field(default=None, gt=0)
+    amount_paise: Optional[int] = None
+    applies_to: PricingRuleAppliesTo = PricingRuleAppliesTo.both
+    priority: int = 0
+    is_active: bool = True
+
+    def model_post_init(self, __context) -> None:
+        if self.days_of_week is not None:
+            if not self.days_of_week:
+                raise ValueError("days_of_week cannot be empty if provided")
+            if any(d < 0 or d > 6 for d in self.days_of_week):
+                raise ValueError("days_of_week values must be between 0 (Mon) and 6 (Sun)")
+
+        if self.start_date is not None and self.end_date is not None and self.start_date > self.end_date:
+            raise ValueError("start_date cannot be after end_date")
+
+        if self.adjustment_type == PricingRuleAdjustmentType.multiplier:
+            if self.multiplier is None:
+                raise ValueError("multiplier is required when adjustment_type is 'multiplier'")
+            if self.amount_paise is not None:
+                raise ValueError("amount_paise must be null when adjustment_type is 'multiplier'")
+        else:
+            if self.amount_paise is None:
+                raise ValueError("amount_paise is required when adjustment_type is 'fixed_delta' or 'override'")
+            if self.multiplier is not None:
+                raise ValueError("multiplier must be null when adjustment_type is not 'multiplier'")
+            if self.adjustment_type == PricingRuleAdjustmentType.override and self.amount_paise < 0:
+                raise ValueError("amount_paise must be >= 0 when adjustment_type is 'override'")
+
+
+class UpdatePricingRuleRequest(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=1)
+    days_of_week: Optional[list[int]] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    start_time: Optional[time] = None
+    end_time: Optional[time] = None
+    adjustment_type: Optional[PricingRuleAdjustmentType] = None
+    multiplier: Optional[Decimal] = Field(default=None, gt=0)
+    amount_paise: Optional[int] = None
+    applies_to: Optional[PricingRuleAppliesTo] = None
+    priority: Optional[int] = None
+    is_active: Optional[bool] = None
+
+    def model_post_init(self, __context) -> None:
+        if self.days_of_week is not None:
+            if not self.days_of_week:
+                raise ValueError("days_of_week cannot be empty if provided")
+            if any(d < 0 or d > 6 for d in self.days_of_week):
+                raise ValueError("days_of_week values must be between 0 (Mon) and 6 (Sun)")
+
+        if self.start_date is not None and self.end_date is not None and self.start_date > self.end_date:
+            raise ValueError("start_date cannot be after end_date")
+
+
 class PricingQuote(BaseModel):
     quoted_price_paise: int
 

@@ -19,6 +19,7 @@ class BookingRequestIn(BaseModel):
     guest_count: int = Field(gt=0)
     event_type: str | None = None
     user_notes: str | None = None
+    expected_total_paise: int | None = None
 
 
 class BookingDisplay(BaseModel):

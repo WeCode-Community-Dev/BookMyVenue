@@ -15,6 +15,8 @@ type Props = {
   selectedEnd: string | null
   onSelect: (start: string, end: string | null) => void
   onClear: () => void
+  /** Minute-of-day values (0-1439) priced above the venue's base rate for this date. */
+  peakMinutes?: Set<number>
 }
 
 function toMinutes(timeStr: string): number {
@@ -48,6 +50,7 @@ export function TimeSlotPicker({
   selectedEnd,
   onSelect,
   onClear,
+  peakMinutes,
 }: Props) {
   const { operating_window, blocked_slots = [] } = availability
   const { slot_interval_minutes, min_booking_duration_minutes, max_booking_duration_minutes } =
@@ -216,18 +219,31 @@ const handleSlotClick = useCallback(
             cls += 'hover:bg-blue-50 hover:border-blue-200 border-zinc-200 active:bg-blue-100'
           }
 
+          const isPeak = peakMinutes?.has(minutes) ?? false
+
           return (
             <button
               key={slotISO}
               onClick={() => !isDisabled && handleSlotClick(minutes)}
               disabled={isDisabled}
-              className={cls}
+              className={`relative ${cls}`}
+              title={isPeak ? 'Peak pricing applies to this slot' : undefined}
             >
               {formatTime(slotISO)}
+              {isPeak && !isDisabled && !isStart && !isEnd && (
+                <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-amber-500" />
+              )}
             </button>
           )
         })}
       </div>
+
+      {peakMinutes && peakMinutes.size > 0 && (
+        <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+          Peak pricing applies to marked slots
+        </p>
+      )}
 
       <p className="mt-2 text-xs text-zinc-400">
         Min {min_booking_duration_minutes / 60}h · Max {max_booking_duration_minutes / 60}h
