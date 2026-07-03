@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { VenueStatus } from "../../domain/enums/Venue.enum";
 
 export const getAllVenuesQuerySchema = z.object({
 
@@ -11,11 +12,7 @@ export const getAllVenuesQuerySchema = z.object({
     category: z.string().optional(),
 
     approvalStatus: z
-        .enum([
-            "PENDING",
-            "APPROVED",
-            "REJECTED"
-        ])
+     .nativeEnum(VenueStatus)
         .optional(),
 
     isBlocked: z
@@ -45,6 +42,6 @@ export const rejectVenueSchema = z.object({
 
 export const venueIdParamSchema = z.object({
 
-    venueId: z.string()
+    venueId:z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid owner ID'),
 
 });
