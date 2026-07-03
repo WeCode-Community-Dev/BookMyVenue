@@ -12,6 +12,7 @@
     "dependencies": {
         "@bookmyvenue/database": "workspace:*",
         "@bookmyvenue/types": "workspace:*",
+        "@bookmyvenue/kafka": "workspace:*",
         "@clerk/nextjs": "^7.5.6",
         "@radix-ui/react-dialog": "^1.1.17",
         "@tanstack/react-query": "^5.101.0",

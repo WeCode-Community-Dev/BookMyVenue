@@ -4,11 +4,12 @@ import { clerkPlugin } from "@clerk/fastify";
 import { venueRoute } from "./routes/venue.route";
 import { bookingRoute } from "./routes/booking.route";
 import { reviewRoute } from "./routes/review.route";
+import { consumer, producer } from "./utils/kafka";
 
 const app = Fastify({ logger: true });
 // app.register(cors, { origin: true });
 await app.register(cors, {
-    origin: true, 
+    origin: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 });
@@ -22,6 +23,8 @@ app.get("/health", async () => ({ status: "ok", uptime: process.uptime() }));
 
 const start = async () => {
     try {
+        await producer.connect();
+        await consumer.connect();
         await app.listen({ port: Number(process.env.PORT ?? 4000), host: "0.0.0.0" });
     } catch (err) {
         app.log.error(err);

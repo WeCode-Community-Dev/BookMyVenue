@@ -1,0 +1,16 @@
+{
+    "name": "@bookmyvenue/kafka",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "main": "src/index.ts",
+    "scripts": {
+        "check-types": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@bookmyvenue/typescript-config": "workspace:*"
+    },
+    "dependencies": {
+        "kafkajs": "^2.2.4"
+    }
+}

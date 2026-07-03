@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { BookingStatus, prisma, VerificationStatus } from "@bookmyvenue/database";
 import { CreateVenueBody, EditVenueBody, GetVenuesQuery, SessionInput } from "@bookmyvenue/types";
 import { fetchVenues, formatVenue, OWNER_VENUE_LIST_SELECT, toSmallUnit } from "../services/venue.service";
+import { producer } from "../utils/kafka";
 
 // Get all approved venues
 export const getVenues = async (
@@ -256,6 +257,9 @@ export const editVenue = async (
             });
         }
     });
+    console.log({ venue });
+
+    await producer.send("venue-created", venue);
 
     return reply.send({
         message: "Venue updated successfully",

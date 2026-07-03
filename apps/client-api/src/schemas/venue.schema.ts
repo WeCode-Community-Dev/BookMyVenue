@@ -55,7 +55,7 @@ const existingSessionSchema = {
     required: ["id", "label", "startTime", "endTime", "price", "isActive"],
     properties: {
         id: { type: "integer" },
-        ...sessionProperties,
+        // ...sessionProperties,
         isActive: { type: "boolean" },
     },
     additionalProperties: false,

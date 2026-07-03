@@ -23,6 +23,9 @@ importers:
       '@bookmyvenue/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@bookmyvenue/kafka':
+        specifier: workspace:*
+        version: link:../../packages/kafka
       '@bookmyvenue/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -205,6 +208,9 @@ importers:
       '@bookmyvenue/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@bookmyvenue/kafka':
+        specifier: workspace:*
+        version: link:../../packages/kafka
       '@clerk/fastify':
         specifier: ^3.1.39
         version: 3.1.40(fastify@5.8.5)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -218,6 +224,22 @@ importers:
       '@bookmyvenue/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@bookmyvenue/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      tsx:
+        specifier: ^4.22.4
+        version: 4.22.4
+
+  apps/email-service:
+    dependencies:
+      '@bookmyvenue/kafka':
+        specifier: workspace:*
+        version: link:../../packages/kafka
+      nodemailer:
+        specifier: ^9.0.3
+        version: 9.0.3
+    devDependencies:
       '@bookmyvenue/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -282,6 +304,16 @@ importers:
       typescript-eslint:
         specifier: ^8.50.0
         version: 8.61.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.2)
+
+  packages/kafka:
+    dependencies:
+      kafkajs:
+        specifier: ^2.2.4
+        version: 2.2.4
+    devDependencies:
+      '@bookmyvenue/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
 
   packages/types:
     devDependencies:
@@ -3634,6 +3666,10 @@ packages:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
     engines: {node: '>=4.0'}
 
+  kafkajs@2.2.4:
+    resolution: {integrity: sha512-j/YeapB1vfPT2iOIUn/vxdyKEuhuY2PxMBvf5JWux6iSaukAccrMtXEY/Lb7OvavDhOWME589bpLrEdnVHjfjA==}
+    engines: {node: '>=14.0.0'}
+
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
@@ -3887,6 +3923,10 @@ packages:
   node-releases@2.0.47:
     resolution: {integrity: sha512-Uzmd6LXpouKo8EUK68IjH4+E01w/hXyV3R3g/geCJo+rXLNfh1xucB+LOzYEOQPSiUK3h/xZf0cQGcSsmyL2Og==}
     engines: {node: '>=18'}
+
+  nodemailer@9.0.3:
+    resolution: {integrity: sha512-n+YP+NKwR5zRWa60k3GiQ6Q3B4KXCoAw40dAKeCtYn020iNN74aWK2liXIC3ZEATeGql7we3tE3t8QwhY0eskw==}
+    engines: {node: '>=6.0.0'}
 
   npm-run-path@4.0.1:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
@@ -8390,6 +8430,8 @@ snapshots:
       object.assign: 4.1.7
       object.values: 1.2.1
 
+  kafkajs@2.2.4: {}
+
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
@@ -8606,6 +8648,8 @@ snapshots:
       formdata-polyfill: 4.0.10
 
   node-releases@2.0.47: {}
+
+  nodemailer@9.0.3: {}
 
   npm-run-path@4.0.1:
     dependencies:
