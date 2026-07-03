@@ -50,7 +50,8 @@ def get_booking(
 ) -> List[Booking]:
     try:
         query = db.query(Booking).options(
-            joinedload(Booking.user)
+            joinedload(Booking.user),
+            joinedload(Booking.venue)
         )
 
         if user_id is not None:
