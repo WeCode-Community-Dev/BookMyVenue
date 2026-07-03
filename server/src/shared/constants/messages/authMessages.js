@@ -24,6 +24,7 @@ export const authMessages = {
         OTP_VERIFY_FAILED: 'Unable to verify OTP',
         NO_REFRESH_TOKEN: 'No refresh token provided',
         INVALID_REFRESH_TOKEN: 'Invalid refresh token',
+        INVALID_ACCESS_TOKEN: 'Invalid access token',
         REFRESH_TOKEN_REVOKED: 'Refresh token is invalid or has been revoked',
         INVALID_ADMIN_CREDENTIALS: 'Invalid admin credentials',
         PASSWORD_TOO_SHORT: 'Password must be at least 8 characters long',

@@ -5,17 +5,18 @@ import { vendorRejectionTemplate } from "../emailTemplates/admin.vendorRejection
 import { adminVenueApprovalTemplate } from "../emailTemplates/admin.venueApprovalTemplate.js";
 import { adminVenueRejectionTemplate } from "../emailTemplates/admin.venueRejectionTemplate.js";
 import { forgotPasswordTemplate } from "../emailTemplates/forgotPasswordTemplate.js";
-import { otpTemplate } from "../emailTemplates/otpTemplate.js";
+import { VerifyRegisterotpTemplate } from "../emailTemplates/verifyRegisterOtpTemplate.js";
+import { emailChangeOtpTemplate } from "../emailTemplates/user.emailChangeOtpTemplate.js";
 
 // General-purpose send function used by auth use cases
-export const sendMail = async (to, subject, html) => {
-    await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to,
-        subject,
-        html
-    });
-};
+// export const sendMail = async (to, subject, html) => {
+//     await transporter.sendMail({
+//         from: process.env.EMAIL_USER,
+//         to,
+//         subject,
+//         html
+//     });
+// };
 
 export class MailServiceImpl extends MailService {
 
@@ -57,27 +58,27 @@ export class MailServiceImpl extends MailService {
 
     async sendVenueApprovalMail(venue){
 
-    const { subject, html } =
-        adminVenueApprovalTemplate({
+        const { subject, html } =
+            adminVenueApprovalTemplate({
 
-            venueName: venue.name,
-            vendorName: venue.vendorId.fullName
+                venueName: venue.name,
+                vendorName: venue.vendorId.fullName
+
+            });
+
+        await transporter.sendMail({
+
+            from: process.env.EMAIL_USER,
+
+            to: venue.vendorId.email,
+
+            subject,
+
+            html
 
         });
 
-    await transporter.sendMail({
-
-        from: process.env.EMAIL_USER,
-
-        to: venue.vendorId.email,
-
-        subject,
-
-        html
-
-    });
-
-}
+    }
 
     async sendVenueRejectionMail(venue, reason) {
 
@@ -109,15 +110,24 @@ export class MailServiceImpl extends MailService {
         console.log("Forgot password mail sent.");
     }
 
-    async sendOtpMail(user, otpCode) {
+    async sendVerifiyRegisterOtp(email, name, otpCode) {
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
-            to: user.email,
+            to: email,
             subject: 'Your BookMyVenue OTP Code - Verify Your Email',
-            html: otpTemplate(user.fullName, otpCode)
+            html: VerifyRegisterotpTemplate(name, otpCode)
         });
 
         console.log("OTP mail sent.");
+    }
+
+    async sendEmailChangeOtp(email,name, otp) {
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Your Email change OTP',
+            html: emailChangeOtpTemplate(name, otp)
+        })
     }
 
 }

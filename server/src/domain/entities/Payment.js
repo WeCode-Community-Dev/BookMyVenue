@@ -7,11 +7,14 @@ export class Payment {
     id = null,
     bookingId,
     userId,
-    ownerId,
+    vendorId,
     amount,
     paymentType,
     paymentMethod,
-    status = PaymentStatus.PENDING,
+    paymentStatus = PaymentStatus.PENDING,
+    refundAmount = 0,
+    refundReason = null,
+    refundedAt = null,
     createdAt = new Date(),
     updatedAt = new Date(),
   }) {
@@ -23,34 +26,10 @@ export class Payment {
     this.paymentType = paymentType;
     this.paymentMethod = paymentMethod;
     this.status = status;
+    this.refundAmount = refundAmount;
+    this.refundReason = refundReason;
+    this.refundedAt = refundedAt
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
-  }
-
-  markAsPaid() {
-    this.status = PaymentStatus.PAID;
-    this.touch();
-  }
-
-  markFailed() {
-    this.status = PaymentStatus.FAILED;
-    this.touch();
-  }
-
-  refund() {
-    if (this.status === PaymentStatus.REFUNDED) {
-      return;
-    }
-
-    if (this.status !== PaymentStatus.PAID) {
-      throw new Error("Only paid payments can be refunded");
-    }
-
-    this.status = PaymentStatus.REFUNDED;
-    this.touch();
-  }
-
-  touch() {
-    this.updatedAt = new Date();
   }
 }

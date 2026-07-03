@@ -1,5 +1,5 @@
-import { UnauthorizedError } from "../../../domain/errors/UnauthorizedError.js";
-import { authMessages } from "../../../shared/constants/messages/authMessages.js";
+import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.js";
+import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
 
 export default class RefreshTokenUseCase {
     constructor(userRepository, tokenService) {

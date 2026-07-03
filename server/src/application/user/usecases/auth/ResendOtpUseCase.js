@@ -1,7 +1,5 @@
-import { NotFoundError } from "../../../domain/errors/NotFoundError.js";
-import { sendMail } from "../../../infrastructure/services/MailService.js";
-import { otpTemplate } from "../../../infrastructure/emailTemplates/otpTemplate.js";
-import { authMessages } from "../../../shared/constants/messages/authMessages.js";
+import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
+import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
 
 export default class ResendOtpUseCase {
     constructor(userRepository, otpService) {
@@ -25,11 +23,11 @@ export default class ResendOtpUseCase {
             otpExpiresAt
         });
 
-        await sendMail(
-            email,
-            'Your New BookMyVenue OTP Code - Resent',
-            otpTemplate(user.fullName, otpCode)
-        );
+        // await sendMail(
+        //     email,
+        //     'Your New BookMyVenue OTP Code - Resent',
+        //     otpTemplate(user.fullName, otpCode)
+        // );
 
         return { email };
     }

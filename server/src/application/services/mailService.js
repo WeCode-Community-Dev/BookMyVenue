@@ -19,11 +19,15 @@ export class MailService {
     async sendForgotPasswordMail(user, resetLink) {
         throw new Error("Method not implemented");
     }
-    async sendEmailChangeOtp(email, otp) {
+    async sendEmailChangeOtp(email, name, otp) {
         throw new Error("Method not implemented");
     }
 
-    async resendEmailChangeOtp(email, otp) {
-        throw new Error("Method not implemented");
+    // async resendEmailChangeOtp(email, otp) {
+    //     throw new Error("Method not implemented");
+    // }
+
+    async verifiyRegisterOtp(email, name, otp) {
+        throw new Error("Method not implemented")
     }
 }

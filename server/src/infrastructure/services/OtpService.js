@@ -1,13 +1,14 @@
-import { IOtpService } from "../../domain/interfaces/IOtpService.js";
+import { IOtpService } from '../../application/services/otpService.js'
 import bcrypt from "bcryptjs";
 
-class OtpService extends IOtpService {
+export class OtpService extends IOtpService {
     generate() {
         return Math.floor(100000 + Math.random() * 900000).toString();
     }
 
     async hash(otp) {
-        return await bcrypt.hash(otp, 10);
+        const saltRounds = process.env.BCRYPT_SALT_ROUNDS
+        return await bcrypt.hash(otp, saltRounds);
     }
 
     async compare(otp, hashedOtp) {
@@ -18,5 +19,3 @@ class OtpService extends IOtpService {
         return new Date(Date.now() + minutes * 60 * 1000);
     }
 }
-
-export default new OtpService();

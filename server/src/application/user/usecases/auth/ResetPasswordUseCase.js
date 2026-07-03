@@ -1,8 +1,8 @@
-import { NotFoundError } from "../../../domain/errors/NotFoundError.js";
-import { UnauthorizedError } from "../../../domain/errors/UnauthorizedError.js";
-import { AppError } from "../../../domain/errors/app.error.js";
-import { statusCode } from "../../../shared/constants/enums/statusCode.js";
-import { authMessages } from "../../../shared/constants/messages/authMessages.js";
+import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
+import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.js";
+import { AppError } from "../../../../domain/errors/app.error.js";
+import { statusCode } from "../../../../shared/constants/enums/statusCode.js";
+import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
 
 export default class ResetPasswordUseCase {
     constructor(userRepository, hashService) {

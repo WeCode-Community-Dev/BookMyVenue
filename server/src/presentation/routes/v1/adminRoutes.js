@@ -1,5 +1,5 @@
 import Express from 'express'
-import { iAdminBookingController, iAdminUserController } from '../../controllers/di.js'
+import { iAdminUserController } from '../../controllers/di.js'
 import { iAdminVendorController } from '../../controllers/di.js'
 import { ROUTES } from '../../../shared/constants/routes.js'
 import { getAllUsersQuerySchema, updateUserStatusSchema } from '../../validators/adminUser.validator.js'
@@ -34,35 +34,35 @@ router.patch( ROUTES.ADMIN.VENDOR.UPDATE_STATUS, validate(updateVendorStatusSche
 
 //venue
 
-    router.get(
-        ROUTES.ADMIN.VENUE.GET_ALL,
-        validate(getAllVenuesQuerySchema,'query'),
-        iAdminVenueController.getAllVenues
-    );
+router.get(
+    ROUTES.ADMIN.VENUE.GET_ALL,
+    validate(getAllVenuesQuerySchema,'query'),
+    iAdminVenueController.getAllVenues
+);
 
-    router.get(
-        ROUTES.ADMIN.VENUE.GET_BY_ID,
-        validate(venueIdParamSchema,'params'),
-        iAdminVenueController.getVenueById
-    );
+router.get(
+    ROUTES.ADMIN.VENUE.GET_BY_ID,
+    validate(venueIdParamSchema,'params'),        
+    iAdminVenueController.getVenueById
+);
 
-    router.patch(
-        ROUTES.ADMIN.VENUE.APPROVE_VENUE,
-        validate(venueIdParamSchema,'params'),
-        iAdminVenueController.approveVenue
-    );
+router.patch(
+    ROUTES.ADMIN.VENUE.APPROVE_VENUE,
+    validate(venueIdParamSchema,'params'),
+    iAdminVenueController.approveVenue
+);
 
-    router.patch(
-        ROUTES.ADMIN.VENUE.REJECT_VENUE,
-        validate(venueIdParamSchema,'params',rejectVenueSchema,'body'),
-        iAdminVenueController.rejectVenue
-    );
+router.patch(
+    ROUTES.ADMIN.VENUE.REJECT_VENUE,
+    validate(venueIdParamSchema,'params',rejectVenueSchema,'body'),
+    iAdminVenueController.rejectVenue
+);
 
-    router.patch(
-        ROUTES.ADMIN.VENUE.UPDATE_STATUS,
-        validate(venueIdParamSchema,'params',updateVenueBlockStatusSchema,'body'),
-        iAdminVenueController.updateBlockStatus
-    );
+router.patch(
+    ROUTES.ADMIN.VENUE.UPDATE_STATUS,
+    validate(venueIdParamSchema,'params',updateVenueBlockStatusSchema,'body'),
+    iAdminVenueController.updateBlockStatus
+);
 
     //booking
     router.get(
@@ -82,5 +82,5 @@ router.get(
     iAdminBookingController.getBookingById
 );
 
-    export default router
+export default router
 

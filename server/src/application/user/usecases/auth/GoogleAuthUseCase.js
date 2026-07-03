@@ -1,5 +1,5 @@
-import { UserEntity } from "../../../domain/entities/User.js";
-import { UserRole } from "../../../domain/enums/UserRole.enum.js";
+import { UserEntity } from "../../../../domain/entities/User.js";
+import { UserRole } from "../../../../domain/enums/UserRole.enum.js";
 
 export default class GoogleAuthUseCase {
     constructor(userRepository) {

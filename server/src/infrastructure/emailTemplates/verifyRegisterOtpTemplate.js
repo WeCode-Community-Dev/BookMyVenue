@@ -1,4 +1,4 @@
-export const otpTemplate = (fullName, otpCode) => `
+export const VerifyRegisterotpTemplate = (fullName, otpCode) => `
 <!DOCTYPE html>
 <html>
 <head>

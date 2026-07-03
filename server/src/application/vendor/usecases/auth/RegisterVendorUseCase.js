@@ -1,5 +1,5 @@
-import { ConflictError } from "../../../domain/errors/ConflictError.js";
-import VendorEntity from "../../../domain/entities/Vendor.js";
+import { ConflictError } from "../../../../domain/errors/ConflictError.js";
+import VendorEntity from "../../../../domain/entities/Vendor.js";
 
 export default class RegisterVendorUseCase {
     constructor(vendorRepository, hashService) {

@@ -1,5 +1,5 @@
-import { NotFoundError } from "../../../domain/errors/NotFoundError.js";
-import { authMessages } from "../../../shared/constants/messages/authMessages.js";
+import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
+import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
 
 export default class ForgotPasswordUseCase {
     constructor(userRepository, tokenService, mailService) {

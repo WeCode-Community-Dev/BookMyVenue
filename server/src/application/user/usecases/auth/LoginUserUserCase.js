@@ -1,7 +1,7 @@
-import { NotFoundError } from "../../../domain/errors/NotFoundError.js";
-import { UnauthorizedError } from "../../../domain/errors/UnauthorizedError.js";
-import { UserMapper } from "../../mapper/User.mapper.js";
-import { authMessages } from "../../../shared/constants/messages/authMessages.js";
+import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
+import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.js";
+import { UserMapper } from "../../../mapper/User.mapper.js";
+import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
 
 export default class LoginUserUseCase {
     constructor(userRepository, hashService, tokenService) {

@@ -1,5 +1,5 @@
-import TokenService from "../../../infrastructure/services/TokenService.js";
-import { UnauthorizedError } from "../../../domain/errors/UnauthorizedError.js";
+import TokenService from "../../../../infrastructure/services/TokenService.js";
+import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.js";
 
 export default class LoginVendorUseCase {
     constructor(vendorRepository, hashService) {
