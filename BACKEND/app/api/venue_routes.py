@@ -10,7 +10,8 @@ from app.schema.venue import (
     VenueAmenitiesUpdate,
     VenueActiveStatusRequest,
     VenueDetailsUpdate,
-    VenueAvailabilityCreate
+    VenueAvailabilityCreate,
+    VenueAvailabilityUpdate
 )
 from app.services.venue_service import ( 
     get_venues, 
@@ -26,7 +27,8 @@ from app.services.venue_service import (
     search_venues,
     add_venue_availability,
     get_venue_images,
-    update_venue_image
+    update_venue_image,
+    update_venue_availability
 )
 
 from fastapi import APIRouter, HTTPException, status, UploadFile, File
@@ -325,6 +327,29 @@ def upload_venue_availability(
 ):
     try:
         return add_venue_availability(
+            db=db,
+            venue_id=venue_id,
+            booking_types=payload.booking_types,
+            open_time=payload.open_time,
+            closing_time=payload.closing_time,
+            minimum_hours=payload.minimum_hours,
+            gap_between_bookings=payload.gap_between_bookings,
+            venue_price=payload.venue_price,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+
+@router.put("/{venue_id}/availability")
+def update_availability(
+    venue_id: int,
+    payload: VenueAvailabilityUpdate,
+    db: Session = Depends(get_db),
+):
+    try:
+        return update_venue_availability(
             db=db,
             venue_id=venue_id,
             booking_types=payload.booking_types,

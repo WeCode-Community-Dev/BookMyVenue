@@ -47,3 +47,11 @@ class VenueAvailabilityCreate(BaseModel):
     minimum_hours: Optional[int] = None
     gap_between_bookings: Optional[int] = None
     venue_price: int
+
+class VenueAvailabilityUpdate(BaseModel):
+    booking_types: Optional[Literal["hourly", "daily"]] = None
+    open_time: Optional[str] = None
+    closing_time: Optional[str] = None
+    minimum_hours: Optional[int] = None
+    gap_between_bookings: Optional[int] = None
+    venue_price: Optional[int] = None

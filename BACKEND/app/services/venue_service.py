@@ -31,6 +31,7 @@ def get_venues(
         for venue in venues:
             first_image = venue.venue_images[0] if venue.venue_images else None
             price = venue.venue_availability.venue_price if venue.venue_availability else None
+            booking_types = venue.venue_availability.booking_types if venue.venue_availability else None
 
             result.append({
                 "id": venue.id,
@@ -45,7 +46,8 @@ def get_venues(
                 "created_at": venue.created_at,
                 "updated_at": venue.updated_at,
                 "image": first_image.image_url if first_image else None,
-                "price": price
+                "price": price,
+                "booking_types": booking_types
             })
         
         return result
@@ -74,6 +76,7 @@ def get_venues_all(
         for venue in venues:
             first_image = venue.venue_images[0] if venue.venue_images else None
             price = venue.venue_availability.venue_price if venue.venue_availability else None
+            booking_types = venue.venue_availability.booking_types if venue.venue_availability else None
 
             result.append({
                 "id": venue.id,
@@ -88,7 +91,8 @@ def get_venues_all(
                 "created_at": venue.created_at,
                 "updated_at": venue.updated_at,
                 "image": first_image.image_url if first_image else None,
-                "price": price
+                "price": price,
+                "booking_types": booking_types
             })
         
         return result
@@ -118,6 +122,7 @@ def get_venues_by_user(
         for venue in venues:
             first_image = venue.venue_images[0] if venue.venue_images else None
             price = venue.venue_availability.venue_price if venue.venue_availability else None
+            booking_types = venue.venue_availability.booking_types if venue.venue_availability else None
 
             result.append({
                 "id": venue.id,
@@ -132,7 +137,8 @@ def get_venues_by_user(
                 "created_at": venue.created_at,
                 "updated_at": venue.updated_at,
                 "image": first_image.image_url if first_image else None,
-                "price": price
+                "price": price,
+                "booking_types": booking_types
             })
         
         return result
@@ -157,6 +163,7 @@ def get_venue_details_by_id(
         }
 
     venue_price = venue.venue_availability.venue_price if venue.venue_availability else None
+    booking_types = venue.venue_availability.booking_types if venue.venue_availability else None
 
     return {
         "id": venue.id,
@@ -172,7 +179,8 @@ def get_venue_details_by_id(
         "updated_at": venue.updated_at,
         "amenities": venue.venue_amenities,
         "images": venue.venue_images,
-        "availability": venue.venue_availability
+        "availability": venue.venue_availability,
+        "booking_types": booking_types
     }
 
 def add_venue(
@@ -573,4 +581,45 @@ def add_venue_availability(
     return {
         "message": "Venue availability added successfully",
         "availability_id": new_availability.id
+    }
+
+
+def update_venue_availability(
+    db: Session,
+    venue_id: int,
+    booking_types: str | None,
+    open_time: str | None,
+    closing_time: str | None,
+    minimum_hours: int | None,
+    gap_between_bookings: int | None,
+    venue_price: int | None,
+):
+    availability = (
+        db.query(VenueAvailability)
+        .filter(VenueAvailability.venue_id == venue_id)
+        .first()
+    )
+
+    if not availability:
+        raise Exception("Venue availability not found")
+
+    if booking_types is not None:
+        availability.booking_types = booking_types
+    if open_time is not None:
+        availability.open_time = open_time
+    if closing_time is not None:
+        availability.closing_time = closing_time
+    if minimum_hours is not None:
+        availability.minimum_hours = minimum_hours
+    if gap_between_bookings is not None:
+        availability.gap_between_bookings = gap_between_bookings
+    if venue_price is not None:
+        availability.venue_price = venue_price
+
+    db.commit()
+    db.refresh(availability)
+
+    return {
+        "message": "Venue availability updated successfully",
+        "availability_id": availability.id
     }
