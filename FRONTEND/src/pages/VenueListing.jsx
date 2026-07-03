@@ -199,8 +199,8 @@ export default function SpaceListing() {
         try {
             const formattedDate = handleSelectedTimeFormat(selectedDate);
 
-            const startTime = "";
-            const endTime = "";
+            let startTime = "";
+            let endTime = "";
 
             if(venue_type === "hourly" && selectedTimes.length === 0){
                 const times = getFormattedStartAndEndTimes(selectedTimes);
