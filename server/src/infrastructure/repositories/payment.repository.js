@@ -5,6 +5,7 @@ import { UserModel } from "../database/models/User.model.js";
 import VendorModel from "../database/models/Vendor.model.js";
 import { BookingModel } from "../database/models/BookingModel.js";
 import { Types } from "mongoose";
+import { PaymentStatus } from "../../domain/enums/Payment.enum.js";
 
 export class PaymentRepository extends IPaymentRepository {
 
@@ -87,19 +88,19 @@ async getPaymentStatistics() {
         PaymentModel.countDocuments(),
 
         PaymentModel.countDocuments({
-            paymentStatus: "SUCCESS"
+            paymentStatus: PaymentStatus.SUCCESS
         }),
 
         PaymentModel.countDocuments({
-            paymentStatus: "PENDING"
+            paymentStatus: PaymentStatus.PENDING
         }),
 
         PaymentModel.countDocuments({
-            paymentStatus: "FAILED"
+            paymentStatus: PaymentStatus.FAILED
         }),
 
         PaymentModel.countDocuments({
-            paymentStatus: "REFUNDED"
+            paymentStatus: PaymentStatus.REFUNDED
         })
 
     ]);
@@ -108,7 +109,7 @@ async getPaymentStatistics() {
 
         {
             $match: {
-                paymentStatus: "SUCCESS"
+                paymentStatus: PaymentStatus.SUCCESS
             }
         },
 
