@@ -1,6 +1,8 @@
 node_modules/
 server/node_modules/
 client/node_modules/
+server/test-docs/
+server/preview-document.pdf
 
 dist/
 build/
