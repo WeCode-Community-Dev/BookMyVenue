@@ -31,6 +31,7 @@ def get_venues(
         for venue in venues:
             first_image = venue.venue_images[0] if venue.venue_images else None
             price = venue.venue_availability.venue_price if venue.venue_availability else None
+            booking_types = venue.venue_availability.booking_types if venue.venue_availability else None
 
             result.append({
                 "id": venue.id,
@@ -45,7 +46,8 @@ def get_venues(
                 "created_at": venue.created_at,
                 "updated_at": venue.updated_at,
                 "image": first_image.image_url if first_image else None,
-                "price": price
+                "price": price,
+                "booking_types": booking_types
             })
         
         return result
@@ -74,6 +76,7 @@ def get_venues_all(
         for venue in venues:
             first_image = venue.venue_images[0] if venue.venue_images else None
             price = venue.venue_availability.venue_price if venue.venue_availability else None
+            booking_types = venue.venue_availability.booking_types if venue.venue_availability else None
 
             result.append({
                 "id": venue.id,
@@ -88,7 +91,8 @@ def get_venues_all(
                 "created_at": venue.created_at,
                 "updated_at": venue.updated_at,
                 "image": first_image.image_url if first_image else None,
-                "price": price
+                "price": price,
+                "booking_types": booking_types
             })
         
         return result
