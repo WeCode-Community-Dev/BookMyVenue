@@ -3,29 +3,32 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 
 const Hero = () => (
-  <section className="max-w-7xl mx-auto px-8 py-12 md:py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-    <div className="space-y-6 md:pr-10">
+  // Fixed padding for mobile
+  <section className="max-w-7xl mx-auto px-4 md:px-8 py-10 md:py-20 grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 items-center">
+    <div className="space-y-6 md:pr-10 text-center lg:text-left flex flex-col items-center lg:items-start">
       <div className="inline-block bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
         Host Community
       </div>
-      <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight">
+      {/* Scaled text for mobile */}
+      <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
         Turn your extra space into <span className="text-[#ff6660] italic font-serif">community impact.</span>
       </h1>
-      <p className="text-gray-600 text-lg leading-relaxed">
+      <p className="text-gray-600 text-base md:text-lg leading-relaxed">
         Earn extra income while providing a sanctuary for local creators, teachers, and neighbors. Our platform makes it effortless to list, manage, and grow your neighborhood venue.
       </p>
       
-      <div className="flex flex-wrap items-center gap-4 pt-4">
-        <Link to="/host/dashboard" className="bg-[#ff6660] cursor-pointer text-white px-6 py-3 rounded-xl font-medium flex items-center hover:bg-[#e55b56] transition-colors shadow-sm">
+      {/* Full-width buttons on mobile, inline on desktop */}
+      <div className="flex flex-col sm:flex-row items-center w-full sm:w-auto gap-4 pt-4">
+        <Link to="/host/dashboard" className="w-full sm:w-auto justify-center bg-[#ff6660] cursor-pointer text-white px-6 py-3 rounded-xl font-medium flex items-center hover:bg-[#e55b56] transition-colors shadow-sm">
             Start Listing
             <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
         </Link>
-        <a href='#howitworks' className="border border-gray-300 bg-white text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors" >
+        <a href='#howitworks' className="w-full sm:w-auto justify-center text-center border border-gray-300 bg-white text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors" >
             How it works
         </a>
       </div>
 
-      <div className="flex items-center gap-3 pt-6">
+      <div className="flex flex-col sm:flex-row items-center gap-3 pt-6">
         <div className="flex -space-x-2">
           <img className="w-8 h-8 rounded-full border-2 border-white" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=64&h=64" alt="User 1" />
           <img className="w-8 h-8 rounded-full border-2 border-white" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=64&h=64" alt="User 2" />
@@ -35,20 +38,22 @@ const Hero = () => (
       </div>
     </div>
 
-    <div className="relative">
+    <div className="relative mt-8 lg:mt-0">
       <img 
         src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=800&q=80" 
         alt="Empty studio space with large windows" 
-        className="rounded-3xl object-cover w-full h-[500px] shadow-lg"
+        // Reduced fixed height on mobile so it doesn't dominate the screen
+        className="rounded-3xl object-cover w-full h-72 sm:h-96 lg:h-[500px] shadow-lg"
       />
-      <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-sm p-4 rounded-2xl flex justify-between items-center shadow-md">
+      {/* Adjusted overlay box for mobile screens */}
+      <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6 bg-white/90 backdrop-blur-sm p-4 rounded-2xl flex justify-between items-center shadow-md">
         <div>
-          <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Micro-Venue</p>
-          <p className="font-bold text-gray-900 text-lg">Sunset Yoga Studio</p>
+          <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Micro-Venue</p>
+          <p className="font-bold text-gray-900 text-sm md:text-lg truncate max-w-[120px] md:max-w-none">Sunset Yoga Studio</p>
         </div>
-        <div className="text-right">
-          <p className="font-bold text-xl text-gray-900">$450</p>
-          <p className="text-xs text-gray-500 font-medium">Earned today</p>
+        <div className="text-right pl-2">
+          <p className="font-bold text-lg md:text-xl text-gray-900">$450</p>
+          <p className="text-[10px] md:text-xs text-gray-500 font-medium">Earned today</p>
         </div>
       </div>
     </div>
@@ -87,19 +92,19 @@ const Features = () => {
   ];
 
   return (
-    <section className="bg-[#faf9f8] py-20 px-8">
+    <section className="bg-[#faf9f8] py-16 md:py-20 px-4 md:px-8">
       <div className="max-w-7xl mx-auto text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">Everything you need to succeed</h2>
-        <p className="text-gray-600 max-w-2xl mx-auto mb-12">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">Everything you need to succeed</h2>
+        <p className="text-gray-600 max-w-2xl mx-auto mb-10 md:mb-12 px-2">
           We've built the tools so you can focus on building your community and growing your revenue.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {features.map((f, i) => (
-            <div key={i} className="bg-white p-8 rounded-2xl text-left border border-gray-100">
-              <div className="w-12 h-12 bg-[#faf9f8] rounded-md flex items-center justify-center mb-6">
+            <div key={i} className="bg-white p-6 md:p-8 rounded-2xl text-left border border-gray-100 flex flex-col items-center md:items-start text-center md:text-left shadow-sm">
+              <div className="w-12 h-12 bg-[#faf9f8] rounded-md flex items-center justify-center mb-5 md:mb-6">
                 {f.icon}
               </div>
-              <h3 className="font-bold text-xl text-gray-900 mb-3">{f.title}</h3>
+              <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-2 md:mb-3">{f.title}</h3>
               <p className="text-gray-600 leading-relaxed text-sm">{f.desc}</p>
             </div>
           ))}
@@ -129,26 +134,27 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section id='howitworks' className="max-w-7xl mx-auto py-24 px-8 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-      <div className="space-y-10">
+    <section id='howitworks' className="max-w-7xl mx-auto py-16 md:py-24 px-4 md:px-8 grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center">
+      {/* Reordered image on mobile to sit above text for better flow */}
+      <div className="order-2 lg:order-1 space-y-8 md:space-y-10">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6 lg:hidden text-center">How it works</h2>
         {steps.map((step, i) => (
-          <div key={i} className="flex gap-6">
-            {/* Updated number bubble to #ff6660 */}
-            <div className="shrink-0 w-8 h-8 rounded-full bg-[#ff6660] text-white flex items-center justify-center font-bold text-sm shadow-sm">
+          <div key={i} className="flex gap-4 md:gap-6">
+            <div className="shrink-0 w-8 h-8 rounded-full bg-[#ff6660] text-white flex items-center justify-center font-bold text-sm shadow-sm mt-1">
               {step.num}
             </div>
             <div>
-              <h3 className="font-bold text-xl text-gray-900 mb-2">{step.title}</h3>
-              <p className="text-gray-600">{step.desc}</p>
+              <h3 className="font-bold text-lg md:text-xl text-gray-900 mb-2">{step.title}</h3>
+              <p className="text-gray-600 text-sm md:text-base leading-relaxed">{step.desc}</p>
             </div>
           </div>
         ))}
       </div>
-      <div>
+      <div className="order-1 lg:order-2">
         <img 
           src="https://images.unsplash.com/photo-1487700160041-babef9c3cb55?auto=format&fit=crop&w=800&q=80" 
           alt="Plants on a credenza" 
-          className="rounded-3xl w-full h-[500px] object-cover shadow-lg"
+          className="rounded-3xl w-full h-64 sm:h-80 lg:h-[500px] object-cover shadow-lg"
         />
       </div>
     </section>
@@ -163,38 +169,39 @@ const EarningPotential = () => {
   ];
 
   return (
-    <section className="bg-[#e9e4d5] py-24 px-8">
-      <div className="max-w-6xl mx-auto bg-white rounded-[2.5rem] p-8 md:p-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center shadow-sm">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">See your earning potential</h2>
-          <p className="text-gray-600 mb-8 leading-relaxed">
-            {/* Updated highlight text to #ff6660 */}
+    <section className="bg-[#e9e4d5] py-16 md:py-24 px-4 md:px-8">
+      {/* Reduced inner padding for mobile */}
+      <div className="max-w-6xl mx-auto bg-white rounded-3xl md:rounded-[2.5rem] p-6 md:p-16 grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 items-center shadow-sm">
+        <div className="text-center lg:text-left">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">See your earning potential</h2>
+          <p className="text-gray-600 mb-6 md:mb-8 leading-relaxed text-sm md:text-base">
             Hosts in neighborhoods like yours are earning an average of <span className="font-bold text-[#ff6660]">$1,200/month</span> by listing under-utilized spaces.
           </p>
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {spaces.map((space, i) => (
-              <div key={i} className="flex justify-between items-center bg-gray-50 px-6 py-4 rounded-xl border border-gray-100">
-                <span className="font-semibold text-gray-800">{space.name}</span>
-                <div className="text-gray-900 font-bold text-lg">
-                  {space.price} <span className="text-gray-500 font-normal text-sm">/ hr</span>
+              <div key={i} className="flex justify-between items-center bg-gray-50 px-4 md:px-6 py-4 rounded-xl border border-gray-100">
+                <span className="font-semibold text-gray-800 text-sm md:text-base">{space.name}</span>
+                <div className="text-gray-900 font-bold text-base md:text-lg">
+                  {space.price} <span className="text-gray-500 font-normal text-xs md:text-sm">/ hr</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-[#ff6660] text-white rounded-3xl p-10 text-center relative overflow-hidden shadow-md">
+        {/* Reduced padding inside spotlight for mobile */}
+        <div className="bg-[#ff6660] text-white rounded-[2rem] p-6 md:p-10 text-center relative overflow-hidden shadow-md">
           <div className="relative z-10">
-            <h3 className="font-bold text-lg mb-6">Host Spotlight</h3>
+            <h3 className="font-bold text-base md:text-lg mb-4 md:mb-6">Host Spotlight</h3>
             <img 
               src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100" 
               alt="Davis K." 
-              className="w-16 h-16 rounded-full mx-auto mb-6 border-2 border-white/40"
+              className="w-14 h-14 md:w-16 md:h-16 rounded-full mx-auto mb-4 md:mb-6 border-2 border-white/40"
             />
-            <p className="italic text-white mb-6 leading-relaxed">
+            <p className="italic text-white mb-4 md:mb-6 leading-relaxed text-sm md:text-base">
               "BookMyVenue transformed my extra garage into a vibrant community pottery studio. It's paying my mortgage and I've met the most incredible local artists."
             </p>
-            <p className="font-semibold text-sm">— Davis K., Brooklyn, NY</p>
+            <p className="font-semibold text-xs md:text-sm">— Davis K., Brooklyn, NY</p>
           </div>
         </div>
       </div>
@@ -229,9 +236,9 @@ const FAQ = () => {
   };
 
   return (
-    <section className="py-24 px-8 max-w-3xl mx-auto">
-      <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Common host questions</h2>
-      <div className="space-y-4">
+    <section className="py-16 md:py-24 px-4 md:px-8 max-w-3xl mx-auto">
+      <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-8 md:mb-12">Common host questions</h2>
+      <div className="space-y-3 md:space-y-4">
         {faqs.map((faq, i) => {
           const isOpen = openIndex === i;
 
@@ -239,12 +246,12 @@ const FAQ = () => {
             <div 
               key={i} 
               onClick={() => toggleFAQ(i)}
-              className="bg-gray-50 rounded-xl px-6 py-5 cursor-pointer hover:bg-gray-100 transition-colors duration-300"
+              className="bg-gray-50 rounded-xl px-5 md:px-6 py-4 md:py-5 cursor-pointer hover:bg-gray-100 transition-colors duration-300"
             >
-              <div className="flex justify-between items-center">
-                <span className="font-medium text-gray-800">{faq.question}</span>
+              <div className="flex justify-between items-center gap-4">
+                <span className="font-medium text-gray-800 text-sm md:text-base">{faq.question}</span>
                 <svg 
-                  className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${isOpen ? "rotate-180" : "rotate-0"}`} 
+                  className={`w-5 h-5 text-gray-500 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : "rotate-0"}`} 
                   fill="none" 
                   viewBox="0 0 24 24" 
                   stroke="currentColor"
@@ -255,7 +262,7 @@ const FAQ = () => {
               
               <div 
                 className={`grid transition-all duration-300 ease-in-out ${
-                  isOpen ? "grid-rows-[1fr] opacity-100 mt-4" : "grid-rows-[0fr] opacity-0"
+                  isOpen ? "grid-rows-[1fr] opacity-100 mt-3 md:mt-4" : "grid-rows-[0fr] opacity-0"
                 }`}
               >
                 <div className="overflow-hidden">
@@ -264,7 +271,6 @@ const FAQ = () => {
                   </div>
                 </div>
               </div>
-
             </div>
           );
         })}
@@ -274,16 +280,18 @@ const FAQ = () => {
 };
 
 const CTA = () => (
-  <section className="px-8 pb-24 max-w-6xl mx-auto">
-    <div className="bg-[#ff6660] rounded-[2.5rem] p-16 text-center text-white shadow-lg">
-      <h2 className="text-4xl font-bold mb-4">Ready to share your space?</h2>
-      <p className="text-white max-w-2xl mx-auto mb-10 text-lg">
+  <section className="px-4 md:px-8 pb-16 md:pb-24 max-w-6xl mx-auto">
+    {/* Reduced padding on mobile */}
+    <div className="bg-[#ff6660] rounded-3xl md:rounded-[2.5rem] p-8 md:p-16 text-center text-white shadow-lg">
+      <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to share your space?</h2>
+      <p className="text-white max-w-2xl mx-auto mb-8 md:mb-10 text-base md:text-lg">
         Join thousands of hosts making a difference in their neighborhoods. Your space is exactly what someone is looking for.
       </p>
-      <Link to="/host/dashboard" className="bg-white inline-block text-[#ff6660] cursor-pointer px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors mb-4 shadow-sm" >
+      {/* Button full width on mobile */}
+      <Link to="/host/dashboard" className="bg-white block sm:inline-block w-full sm:w-auto text-[#ff6660] cursor-pointer px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-gray-50 transition-colors mb-4 shadow-sm" >
         Join the Host Community
       </Link>
-      <p className="text-sm text-white/80">Takes less than 5 minutes to get started.</p>
+      <p className="text-xs md:text-sm text-white/80 mt-2">Takes less than 5 minutes to get started.</p>
     </div>
   </section>
 );

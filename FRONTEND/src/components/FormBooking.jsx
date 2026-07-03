@@ -9,7 +9,8 @@ export default function FormBooking ({
     selectedSession, 
     setSelectedSession, 
     selectedTimes, 
-    setSelectedTimes 
+    setSelectedTimes,
+    SetTimeFromString
 }) {
 
     // handles muiltiple time interval selection and removing.
@@ -23,17 +24,7 @@ export default function FormBooking ({
         })
     }
 
-    // converts string time(9am) to (9, 0, 0, 0) format
-    const SetTimeFromString = (dateObject, StringTime) => {
-        const [time, modifier] = StringTime.split(" ");
-        let [hour, minute] = time.split(":").map(Number)
-
-        if(modifier === "PM" && hour < 12) hour += 12
-        if(modifier === "AM" && hour === 12) hour = 0
-
-        dateObject.setHours(hour, minute, 0, 0);
-        return dateObject
-    }
+    
 
     // generate time interval list to display time intervals (9am - 11am)
     const GenerateHourlyTimeIntervals = () => {
@@ -52,12 +43,14 @@ export default function FormBooking ({
             
             const endStr = startTime.toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true})
 
-            intervals.push(`${startStr} - ${endStr}`)      
+            intervals.push(`${startStr} - ${endStr}`)   
         }
         intervals.pop()
         
         return(intervals);
+        
     }
+
     const availTime = GenerateHourlyTimeIntervals();
 
     const isHourly = venue.availability.booking_types == "hourly"

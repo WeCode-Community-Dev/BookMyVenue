@@ -9,6 +9,8 @@ import {
   SpinnerOne,
   X,
   ArrowLeft,
+  AirVent,
+  Wheelchair
 } from '@mynaui/icons-react';
 import { VENUE_DATA } from '../data/VenueCardData';
 import FormBooking from "../components/FormBooking"
@@ -16,7 +18,7 @@ import apiService from '../services/apiService';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
-
+import toast, {Toaster} from 'react-hot-toast';
 
 const ImageGalleryModal = ({ isOpen, onClose, images }) => {
 
@@ -129,33 +131,96 @@ export default function SpaceListing() {
     const venue_capacity = venue.capacity
     const venue_location= venue.location
     const venue_type = venue.availability.booking_types
+    const venue_amenities = venue.amenities
     // const venue_min_hour = venue.availability.minimum_hours
     // console.log(venue_min_hour);
 
+    // converts string time(9am) to (9, 0, 0, 0) or (9:00) format
+    const SetTimeFromString = (dateObject, StringTime, type="timeSlot") => {
+        const [time, modifier] = StringTime.split(" ");
+        let [hour, minute] = time.split(":").map(Number);
+
+        if(modifier === "PM" && hour < 12) hour += 12;
+        if(modifier === "AM" && hour === 12) hour = 0;
+
+        if(type === "razorpay"){
+            return`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;  
+
+        } else if (type === "timeSlot") {
+            dateObject.setHours(hour, minute, 0, 0);
+            return dateObject;
+        };
+    };
+
+    // Get the earliest start time and latest end time from selected time slots
+    const getFormattedStartAndEndTimes = (selectedTimesArray) => {
+        const minStart = "23:59";
+        const maxEnd = "00:00";
+
+        selectedTimesArray.forEach(slot => {
+            const [start, end] = slot.split(" - ")
+            
+            let start24 = SetTimeFromString(undefined, start, "razorpay");
+            let end24 = SetTimeFromString(undefined, end, "razorpay");
+
+            if(start24 < minStart) minStart = start24;
+            if(end24 > maxEnd) maxEnd = end24;
+            console.log(minStart);
+            console.log(maxEnd);
+            
+        })
+
+        return { start_time: minStart, end_time: maxEnd };
+    }    
+
+    // Handle Date Format for Razorpay (Thu Jul 02 2026 00:00:00 GMT+0530 (India Standard Time) => (YYYY-MM-DD)
+    const handleSelectedTimeFormat = (dateObj) => {
+        if(!dateObj) return "";
+
+        const year = dateObj.getFullYear();
+        const date = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth()+1).padStart(2, '0');
+
+        return `${year}-${date}-${month}`;
+    }
+    
+
     const handleReservation = async () => {
+  
         const totalAmount = venue_type === "hourly" ? selectedTimes.length * 2 * venue_price : venue_price ;
 
         if(totalAmount === 0 && venue_type === "hourly" ){
-            alert("Please select at least one time slot before confirming.")
+            toast.error("Please select at least one time slot before confirming.")
             return;
         } else {
             
         }
 
         try {
+            const formattedDate = handleSelectedTimeFormat(selectedDate);
+
+            const startTime = "";
+            const endTime = "";
+
+            if(venue_type === "hourly" && selectedTimes.length === 0){
+                const times = getFormattedStartAndEndTimes(selectedTimes);
+                startTime = times.start_time;
+                endTime = times.end_time;
+            };
+
             const orderPayload = {
                 user_id: Cookies.get('userId'),
                 venue_id: venue.id,
                 amount: totalAmount
-            }
+            };
 
-            const orderResponse = await apiService.createPaymentOrder(orderPayload);
+            const orderResponse = await apiService.createPaymentOrder(orderPayload);            
 
             const options = {
                 key: orderResponse.key,
                 amount: orderResponse.amount,
                 currency: orderResponse.currency,
-                order_id: orderResponse.order_id,
+                order_id: orderResponse.razorpay_order_id,
                 name: "BookMyVenue",
                 description: `Booking for ${venue_name}`,
 
@@ -164,20 +229,23 @@ export default function SpaceListing() {
                         const verifyPayload = {
                             "user_id": parseInt(Cookies.get('userId')),
                             "venue_id": venue.id,
+                            "order_id": orderResponse.order_id,
                             "razorpay_order_id": response.razorpay_order_id,
                             "razorpay_payment_id": response.razorpay_payment_id,
-                            "razorpay_signature": response.razorpay_signature
+                            "razorpay_signature": response.razorpay_signature,
+                            "booking_date": formattedDate,
+                            "start_time": startTime,
+                            "end_time": endTime
                         }
 
                         const verifyResponse = await apiService.verifyPayment(verifyPayload);
 
-                        console.log(verifyResponse);
                         if(verifyResponse.success){
-                            alert("Successfully Verified!")
+                            toast.success("Successfully Booked the Venue! Check your bookings in the dashboard.")
                         }
                         
                     } catch (verifyError) {
-                        alert("Payment done! but Failed to Verify, contact Support.")
+                        toast.error("Payment done! but Failed to Verify, contact Support.")
                         console.error("Verification Failed!",verifyError)
                     }
                 },
@@ -191,12 +259,13 @@ export default function SpaceListing() {
 
         } catch (error) {
             console.error("Failed to Book the Venue:", error)
-            alert("Something went wrong while setting up the payment. Please try again.");
+            toast.error("Something went wrong while setting up the payment. Please try again.");
         }
     }
 
     return (
         <div className=" max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-sans text-gray-900">
+            < Toaster />
 
             {!isGalleryOpen && <div onClick={() => navigate("/")} className='fixed absolute left-8 z-99'>
                 <ArrowLeft size={40} className="p-1 bg-gray-100 hover:bg-gray-200 hover:text-black rounded-full text-gray-600 transition-colors cursor-pointer" />
@@ -257,11 +326,11 @@ export default function SpaceListing() {
                         />
                     </div>
                 </div>
-                <button
+                {imageLinks.length > 5 && <button
                     onClick={() => SetIsGalleryOpen(true)}
                     className='absolute cursor-pointer bottom-3 right-5 p-4 bg-[#ff5c5d] rounded-lg text-white font-semibold text-sm ' >
                         SHOW ALL IMAGES
-                </button>
+                </button>}
             </div>
 
         {/* Main Content Split */}
@@ -314,22 +383,30 @@ export default function SpaceListing() {
             <div>
                 <h2 className="text-xl font-semibold mb-6">What this place offers</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
-                <div className="flex items-center gap-3 text-gray-700">
-                    <Wifi className="w-6 h-6 text-gray-600" />
-                    <span>High-speed Wi-Fi</span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-700">
-                    <Parking className="w-6 h-6 text-gray-600" />
-                    <span>Free street parking</span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-700">
-                    <Monitor className="w-6 h-6 text-gray-600" />
-                    <span>AV Equipment</span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-700">
-                    <Coffee className="w-6 h-6 text-gray-600" />
-                    <span>Kitchen access</span>
-                </div>
+                    {venue_amenities.wifi && <div className="flex items-center gap-3 text-gray-700">
+                        <Wifi className="w-6 h-6 text-gray-600" />
+                        <span>High-speed Wi-Fi</span>
+                    </div>}
+                    {venue_amenities.parking && <div className="flex items-center gap-3 text-gray-700">
+                        <Parking className="w-6 h-6 text-gray-600" />
+                        <span>Free street parking</span>
+                    </div>}
+                    {venue_amenities.av_equipements && <div className="flex items-center gap-3 text-gray-700">
+                        <Monitor className="w-6 h-6 text-gray-600" />
+                        <span>AV Equipment</span>
+                    </div>}
+                    {venue_amenities.kitchen && <div className="flex items-center gap-3 text-gray-700">
+                        <Coffee className="w-6 h-6 text-gray-600" />
+                        <span>Kitchen access</span>
+                    </div>}
+                    {venue_amenities.kitchen && <div className="flex items-center gap-3 text-gray-700">
+                        <AirVent className="w-6 h-6 text-gray-600" />
+                        <span>Air Conditioned</span>
+                    </div>}
+                    {venue_amenities.kitchen && <div className="flex items-center gap-3 text-gray-700">
+                        <Wheelchair className="w-6 h-6 text-gray-600" />
+                        <span>Wheen Chair</span>
+                    </div>}
                 </div>
             </div>
             </div>
@@ -353,6 +430,7 @@ export default function SpaceListing() {
                     setSelectedSession={setSelectedSession}
                     selectedTimes={selectedTimes}
                     setSelectedTimes={setSelectedTimes}
+                    SetTimeFromString={SetTimeFromString}
                 />
 
                 {/* Submit Button */}

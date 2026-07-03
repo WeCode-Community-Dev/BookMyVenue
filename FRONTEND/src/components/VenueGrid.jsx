@@ -37,7 +37,8 @@ function VenueCard({ venue }) {
     const venue_name = venue.venue_name;
     const venue_image = venue.image;
     const venue_details = venue.venue_description;
-    const venue_price = venue.venue_price;
+    const venue_price = venue.price;
+    const venue_location = venue.location;
 
     return (
         <div 
@@ -58,13 +59,18 @@ function VenueCard({ venue }) {
             {/* Content Container */}
             <div className="p-5 flex flex-col flex-grow">
                 <div className="flex justify-between items-start gap-4 mb-3">
-                    <h3 className={`font-bold text-[#1a3d46] leading-tight ${titleSize}`}>
-                        {venue_name}
-                    </h3>
-                    
+                    <div  >
+                        <h3 className={`font-bold text-[#1a3d46] leading-tight ${titleSize}`}>
+                            {venue_name}
+                        </h3>
+                        <p className={` text-[#2a5660] leading-relaxed text-sm`}>
+                            {venue_details}
+                        </p>
+                    </div>
+
                     {/* Price Badge */}
                     <div className={`shrink-0 font-bold text-[#ae3b2f] bg-red-50 px-2.5 py-1 rounded-md ${priceSize}`}>
-                        {venue_price}
+                        {venue_price}₹
                     </div>
                 </div>
                 
@@ -72,7 +78,7 @@ function VenueCard({ venue }) {
                 <div className="flex items-start gap-2 mt-auto text-gray-500 pt-2">
                     <MapPin className="shrink-0 mt-0.5 text-[#2a5660]" size={16} stroke={2.5} />
                     <p className={`leading-relaxed line-clamp-2 ${detailSize}`}>
-                        {venue_details}
+                        {venue_location}
                     </p>
                 </div>
             </div>
