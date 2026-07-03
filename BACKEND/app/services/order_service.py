@@ -3,6 +3,10 @@ from app.core.config import settings
 from typing import List
 from sqlalchemy.orm import Session
 from app.model.orders import Order
+from app.model.bookings import Booking
+from typing import Optional
+from datetime import datetime, timezone
+
 
 async def add_order_details(    
     db: Session,
@@ -65,4 +69,48 @@ async def update_order_payment_status(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error updating order payment status: {e}"
+        )
+
+
+
+def update_order_status_refund(db: Session, order_id: str, status: str, refund_reason: Optional[str] = None):
+    try:
+        order = db.query(Order).filter(Order.id == order_id).first()
+        if not order:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Order with ID {order_id} not found."
+            )
+
+        booking = db.query(Booking).filter(Booking.order_id == order_id).first()
+        
+        venue_booking_date = booking.booking_date
+        current_date = datetime.now().date()
+
+        date_diff = (venue_booking_date - current_date).days
+
+        if date_diff < 1:
+            print("No refund allowed")
+        elif date_diff < 3:
+            order.refunded_amount = int(order.amount * 0.3)
+            order.refund_percentage = 30
+        elif date_diff < 7:
+            order.refunded_amount = int(order.amount * 0.5)
+            order.refund_percentage = 50
+        elif date_diff >= 7:
+            order.refunded_amount = int(order.amount * 0.7)
+            order.refund_percentage = 70
+
+        order.status = status
+        if refund_reason:
+            order.refund_reason = refund_reason
+        db.commit()
+        db.refresh(order)
+
+        return order
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error updating order status: {e}"
         )

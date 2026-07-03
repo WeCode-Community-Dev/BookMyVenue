@@ -3,7 +3,9 @@ from app.core.config import settings
 from typing import List
 from sqlalchemy.orm import Session
 from app.model.bookings import Booking
+from app.model.user import User
 from typing import Optional
+from sqlalchemy.orm import joinedload
 
 def create_booking(
     db: Session,
@@ -47,7 +49,10 @@ def get_booking(
     limit: int = 20
 ) -> List[Booking]:
     try:
-        query = db.query(Booking)
+        query = db.query(Booking).options(
+            joinedload(Booking.user),
+            joinedload(Booking.venue)
+        )
 
         if user_id is not None:
             query = query.filter(Booking.user_id == user_id)
@@ -66,3 +71,25 @@ def get_booking(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error retrieving bookings: {e}"
         )
+
+def cancel_booking(db: Session, booking_id: int):
+    try:
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        if not booking:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Booking with ID {booking_id} not found."
+            )
+
+        booking.status = "cancelled"
+        db.commit()
+        db.refresh(booking)
+
+        return booking
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error cancelling booking: {e}"
+        )
+    

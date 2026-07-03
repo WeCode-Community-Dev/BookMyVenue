@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, Query, Path, HTTPException
 from app.core.dependencies import get_current_user
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.services.booking_service import get_booking
-from app.services.booking_service import create_booking
+from app.services.booking_service import get_booking, create_booking, cancel_booking
 from typing import List, Optional
-from app.schema.booking import OfflineBookingRequest
+from app.schema.booking import OfflineBookingRequest, CancelBookingRequest
+from app.services.order_service import update_order_status_refund
 
 router = APIRouter(
     prefix="/booking",
@@ -101,6 +101,37 @@ async def create_offline_booking(
             end_time=payload.end_time
         )
         return new_booking
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.patch("/cancel-booking")
+async def cancel_booking_api(
+    payload: CancelBookingRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Cancel a booking by its ID.
+    """
+    try:
+        cancelled_booking = cancel_booking(
+            db,
+            booking_id=payload.booking_id,
+        )
+
+
+        update_order = update_order_status_refund(
+            db,
+            order_id=payload.order_id,
+            status="refunded",
+            refund_reason=payload.cancel_reason
+        )
+
+        return {
+            "message": "Booking cancelled successfully", 
+            "order": update_order
+        }
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
