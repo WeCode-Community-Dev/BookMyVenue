@@ -50,6 +50,7 @@ export const createConsumer = (kafka: Kafka, groupId: string): KafkaConsumer => 
                     await topicHandler(parsedMessage);
                 } catch (error: unknown) {
                     console.error(`Failed to process Kafka message from topic: ${topic}`, error);
+                    throw error;
                 }
             },
         });

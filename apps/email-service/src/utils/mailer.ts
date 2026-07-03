@@ -15,8 +15,6 @@ const sendMail = async ({ email, subject, text }: { email: string; subject: stri
         subject,
         text,
     });
-
-    console.log("MESSAGE SENT:", res);
 };
 
 export default sendMail;

@@ -90,3 +90,32 @@ export type UserBooking = {
         };
     }[];
 };
+
+export interface BookingCreatedEvent {
+    bookingId: number;
+    eventDate: string;
+    purpose: string;
+    phone: string;
+
+    venue: {
+        id: number;
+        name: string;
+    };
+
+    user: {
+        id: string;
+        email: string;
+        name: string;
+    };
+
+    owner: {
+        id: string;
+        email: string;
+        name: string;
+    };
+
+    sessions: Array<{
+        sessionId: number;
+        pricePaid: number;
+    }>;
+}

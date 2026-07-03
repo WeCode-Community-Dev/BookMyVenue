@@ -3,6 +3,7 @@
 import { unstable_cache, revalidateTag } from "next/cache";
 import { prisma, VerificationStatus, VenueCategory } from "@bookmyvenue/database";
 import { mapVenue, SELECT_VENUE } from "./utils";
+import { producer } from "../../lib/kafka";
 
 export type VenueSession = {
     id: number;
@@ -33,8 +34,6 @@ export type Venue = {
 };
 
 export type VenuePageResult = { venues: Venue[]; total: number };
-
-
 
 export const fetchAllVenues = unstable_cache(
     async (page: number, pageSize: number): Promise<VenuePageResult> => {
@@ -85,17 +84,45 @@ export const fetchVenueById = unstable_cache(
 );
 
 export async function approveVenue(id: string): Promise<void> {
-    await prisma.venue.update({
+    const venue = await prisma.venue.update({
         where: { id: Number(id) },
         data: { verificationStatus: VerificationStatus.APPROVED, verificationReason: null },
+        select: {
+            id: true,
+            name: true,
+            verificationStatus: true,
+            owner: { select: { email: true, name: true } },
+        },
     });
+
+    await producer.send("venue-verification-updated", {
+        venueId: venue.id,
+        venueName: venue.name,
+        status: venue.verificationStatus,
+        reason: null,
+        owner: venue.owner,
+    });
+
     revalidateTag("venues", "default");
 }
 
 export async function rejectVenue(id: string, reason: string): Promise<void> {
-    await prisma.venue.update({
+    const venue = await prisma.venue.update({
         where: { id: Number(id) },
         data: { verificationStatus: VerificationStatus.REJECTED, verificationReason: reason },
+        select: {
+            id: true,
+            name: true,
+            verificationStatus: true,
+            owner: { select: { email: true, name: true } },
+        },
+    });
+    await producer.send("venue-verification-updated", {
+        venueId: venue.id,
+        venueName: venue.name,
+        status: venue.verificationStatus,
+        reason,
+        owner: venue.owner,
     });
     revalidateTag("venues", "default");
 }

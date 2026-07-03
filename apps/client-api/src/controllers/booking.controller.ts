@@ -2,6 +2,59 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { prisma } from "@bookmyvenue/database";
 import { VerificationStatus } from "@bookmyvenue/database/enums";
 import type { CreateBookingBody, GetOwnerBookingQuery, GetUserBookingQuery } from "@bookmyvenue/types";
+import { producer } from "../utils/kafka";
+
+// export const createBooking = async (
+//     request: FastifyRequest<{ Body: CreateBookingBody }>,
+//     reply: FastifyReply,
+// ) => {
+//     const { venueId, sessionIds, eventDate, phone, purpose } = request.body;
+
+//     const sessions = await prisma.venueSession.findMany({
+//         where: {
+//             id: { in: sessionIds },
+//             venue: {
+//                 id: venueId,
+//                 isActive: true,
+//                 verificationStatus: VerificationStatus.APPROVED,
+//             },
+//             isActive: true,
+//         },
+//         select: { id: true, price: true },
+//     });
+
+//     if (sessions.length !== sessionIds.length) {
+//         return reply.status(400).send({ message: "Venue or session not found" });
+//     }
+
+//     try {
+//         const booking = await prisma.booking.create({
+//             data: {
+//                 userId: request.userId!,
+//                 venueId,
+//                 phone,
+//                 purpose,
+//                 bookingSessions: {
+//                     create: sessions.map((s) => ({
+//                         sessionId: s.id,
+//                         eventDate: new Date(eventDate),
+//                         pricePaid: s.price,
+//                     })),
+//                 },
+//             },
+//             include: { bookingSessions: true },
+//         });
+
+//         await producer.send("booking-created", booking);
+
+//         return reply.status(201).send({ booking });
+//     } catch (err: any) {
+//         if (err.code === "P2002") {
+//             return reply.status(409).send({ message: "One or more slots are already booked" });
+//         }
+//         throw err;
+//     }
+// };
 
 export const createBooking = async (
     request: FastifyRequest<{ Body: CreateBookingBody }>,
@@ -9,41 +62,81 @@ export const createBooking = async (
 ) => {
     const { venueId, sessionIds, eventDate, phone, purpose } = request.body;
 
-    const sessions = await prisma.venueSession.findMany({
+    const venue = await prisma.venue.findFirst({
         where: {
-            id: { in: sessionIds },
-            venue: {
-                id: venueId,
-                isActive: true,
-                verificationStatus: VerificationStatus.APPROVED,
-            },
+            id: venueId,
             isActive: true,
+            verificationStatus: VerificationStatus.APPROVED,
         },
-        select: { id: true, price: true },
+        select: {
+            id: true,
+            name: true,
+            owner: { select: { id: true, email: true, name: true } },
+            sessions: {
+                where: { id: { in: sessionIds }, isActive: true },
+                select: { id: true, price: true },
+            },
+        },
     });
 
-    if (sessions.length !== sessionIds.length) {
+    if (!venue || venue.sessions.length !== sessionIds.length) {
         return reply.status(400).send({ message: "Venue or session not found" });
     }
+
+    const user = await prisma.user.findUnique({
+        where: { id: request.userId! },
+        select: { id: true, email: true, name: true },
+    });
+
+    if (!user) return reply.status(404).send({ message: "User not found" });
 
     try {
         const booking = await prisma.booking.create({
             data: {
-                userId: request.userId!,
-                venueId,
+                userId: user.id,
+                venueId: venue.id,
                 phone,
                 purpose,
                 bookingSessions: {
-                    create: sessions.map((s) => ({
-                        sessionId: s.id,
+                    create: venue.sessions.map((session) => ({
+                        sessionId: session.id,
                         eventDate: new Date(eventDate),
-                        pricePaid: s.price,
+                        pricePaid: session.price,
                     })),
                 },
             },
             include: { bookingSessions: true },
         });
 
+        await producer.send("booking-created", {
+            bookingId: booking.id,
+            eventDate,
+            purpose,
+            phone,
+
+            venue: {
+                id: venue.id,
+                name: venue.name,
+            },
+
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+            },
+
+            owner: {
+                id: venue.owner.id,
+                email: venue.owner.email,
+                name: venue.owner.name,
+            },
+
+            sessions: booking.bookingSessions.map((session) => ({
+                sessionId: session.sessionId,
+                pricePaid: Number(session.pricePaid),
+            })),
+        });
+        
         return reply.status(201).send({ booking });
     } catch (err: any) {
         if (err.code === "P2002") {

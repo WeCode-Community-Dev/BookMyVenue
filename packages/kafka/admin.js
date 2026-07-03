@@ -7,7 +7,7 @@ const kafka = new Kafka({
 
 const admin = kafka.admin();
 
-const topics = ["venue-created", "venue-approved", "booking-successfull"];
+const topics = ["booking-created", "venue-verification-updated"];
 
 const run = async () => {
     await admin.connect();
