@@ -6,7 +6,7 @@ from app.model.orders import Order
 from app.model.bookings import Booking
 from typing import Optional
 from datetime import datetime, timezone
-
+from sqlalchemy import func
 
 async def add_order_details(    
     db: Session,
@@ -113,4 +113,31 @@ def update_order_status_refund(db: Session, order_id: str, status: str, refund_r
         raise HTTPException(
             status_code=500,
             detail=f"Error updating order status: {e}"
+        )
+
+
+def get_earnings(db: Session, user_id: int):
+    try:
+        total_earnings_paise = (
+            db.query(func.sum(Order.amount))
+            .filter(
+                Order.user_id == user_id,
+                Order.status == "paid"
+            )
+            .scalar()
+        )
+
+        total_earnings_paise = total_earnings_paise or 0
+        total_earnings_rupees = total_earnings_paise / 100
+
+        return {
+            "total_earnings": total_earnings_rupees,
+            "total_earnings_paise": total_earnings_paise,
+            "currency": "INR"
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error calculating earnings: {e}"
         )
