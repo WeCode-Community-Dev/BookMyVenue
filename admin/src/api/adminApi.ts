@@ -6,6 +6,7 @@ const VENUE_OWNERS_ENDPOINT = import.meta.env.VITE_VENUE_OWNERS_ENDPOINT?.trim()
 const VENUES_ENDPOINT = import.meta.env.VITE_VENUES_ENDPOINT?.trim() ?? '/api/v1/venue-owner/venue';
 const VENUE_OWNER_STATUS_ENDPOINT =
   import.meta.env.VITE_VENUE_OWNER_STATUS_ENDPOINT?.trim() ?? '/api/v1/auth/venue-owner/update-status';
+const AMENITIES_ENDPOINT = import.meta.env.VITE_AMENITIES_ENDPOINT?.trim() ?? '/api/v1/venue-owner/venue/amenities';
 
 const DEFAULT_VENUE_PHOTO = 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800';
 
@@ -32,7 +33,7 @@ export const hasDirectoryApiConfig = Boolean(
 );
 
 export const hasVenuesApiConfig = Boolean(API_BASE_URL && VENUES_ENDPOINT);
-export const hasAmenitiesApiConfig = Boolean(API_BASE_URL);
+export const hasAmenitiesApiConfig = Boolean(API_BASE_URL && AMENITIES_ENDPOINT);
 
 const buildUrl = (endpoint: string) => {
   const base = API_BASE_URL.replace(/\/+$/, '');
@@ -229,6 +230,15 @@ const normalizeVenue = (entity: ApiEntity, index: number): Venue => {
   };
 };
 
+const checkResponseStatus = (payload: unknown) => {
+  if (payload !== null && typeof payload === 'object') {
+    const record = payload as Record<string, unknown>;
+    if (record.status === false) {
+      throw new Error(typeof record.message === 'string' ? record.message : 'API returned a failure status.');
+    }
+  }
+};
+
 const getJson = async (endpoint: string) => {
   const response = await fetch(buildUrl(endpoint), {
     headers: {
@@ -237,11 +247,23 @@ const getJson = async (endpoint: string) => {
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed with ${response.status}`);
+    let errMsg = `API request failed with status ${response.status}`;
+    try {
+      const errorData = await response.json() as { message?: string; detail?: string };
+      if (errorData && typeof errorData === 'object') {
+        errMsg = errorData.message || errorData.detail || errMsg;
+      }
+    } catch {
+      // JSON parsing failed, use default error message
+    }
+    throw new Error(errMsg);
   }
 
-  return response.json() as Promise<unknown>;
+  const payload = await response.json();
+  checkResponseStatus(payload);
+  return payload;
 };
+
 const postJson = async (endpoint: string, body: unknown) => {
   const response = await fetch(buildUrl(endpoint), {
     method: 'POST',
@@ -253,10 +275,21 @@ const postJson = async (endpoint: string, body: unknown) => {
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed with status ${response.status}`);
+    let errMsg = `API request failed with status ${response.status}`;
+    try {
+      const errorData = await response.json() as { message?: string; detail?: string };
+      if (errorData && typeof errorData === 'object') {
+        errMsg = errorData.message || errorData.detail || errMsg;
+      }
+    } catch {
+      // JSON parsing failed, use default error message
+    }
+    throw new Error(errMsg);
   }
 
-  return response.json() as Promise<unknown>;
+  const payload = await response.json();
+  checkResponseStatus(payload);
+  return payload;
 };
 
 const deleteJson = async (endpoint: string) => {
@@ -268,7 +301,16 @@ const deleteJson = async (endpoint: string) => {
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed with status ${response.status}`);
+    let errMsg = `API request failed with status ${response.status}`;
+    try {
+      const errorData = await response.json() as { message?: string; detail?: string };
+      if (errorData && typeof errorData === 'object') {
+        errMsg = errorData.message || errorData.detail || errMsg;
+      }
+    } catch {
+      // JSON parsing failed, use default error message
+    }
+    throw new Error(errMsg);
   }
 
   if (response.status === 204) {
@@ -276,7 +318,9 @@ const deleteJson = async (endpoint: string) => {
   }
   const contentType = response.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
-    return response.json() as Promise<unknown>;
+    const payload = await response.json();
+    checkResponseStatus(payload);
+    return payload;
   }
   return null;
 };
@@ -292,11 +336,23 @@ const patchJson = async (endpoint: string, body: unknown) => {
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed with ${response.status}`);
+    let errMsg = `API request failed with status ${response.status}`;
+    try {
+      const errorData = await response.json() as { message?: string; detail?: string };
+      if (errorData && typeof errorData === 'object') {
+        errMsg = errorData.message || errorData.detail || errMsg;
+      }
+    } catch {
+      // JSON parsing failed, use default error message
+    }
+    throw new Error(errMsg);
   }
 
-  return response.json() as Promise<unknown>;
+  const payload = await response.json();
+  checkResponseStatus(payload);
+  return payload;
 };
+
 
 export const fetchAdminDirectoryData = async (): Promise<AdminDirectoryData> => {
   const [usersPayload, ownersPayload] = await Promise.all([
@@ -338,7 +394,7 @@ export const updateVenueOwnerApprovalStatus = async (
 };
 
 export const fetchAmenitiesApi = async (): Promise<Amenity[]> => {
-  const payload = await getJson('/api/v1/venue-owner/venue/amenities');
+  const payload = await getJson(AMENITIES_ENDPOINT);
   return readArray(payload).map((entity, index) => {
     const id = readString(entity, ['id', 'uuid', '_id'], `AMEN-${index + 1}`);
     const name = readString(entity, ['name'], 'Unnamed Amenity');
@@ -347,14 +403,21 @@ export const fetchAmenitiesApi = async (): Promise<Amenity[]> => {
 };
 
 export const createAmenityApi = async (name: string): Promise<Amenity> => {
-  const payload = await postJson('/api/v1/venue-owner/venue/amenities', { name });
-  const entity = payload !== null && typeof payload === 'object' ? payload as ApiEntity : {};
+  const payload = await postJson(AMENITIES_ENDPOINT, { name });
+  const record = payload !== null && typeof payload === 'object' ? payload as ApiEntity : {};
+  
+  // Support both wrapped response {"data": {"id": ...}} and unwrapped {"id": ...}
+  const hasData = record.data !== null && typeof record.data === 'object' && !Array.isArray(record.data);
+  const entity = hasData ? (record.data as ApiEntity) : record;
+  
   const id = readString(entity, ['id', 'uuid', '_id'], 'temp-id');
   const responseName = readString(entity, ['name'], name);
   return { id, name: responseName };
 };
 
+
 export const deleteAmenityApi = async (amenity_id: string): Promise<void> => {
-  await deleteJson(`/api/v1/venue-owner/venue/amenities/${amenity_id}`);
+  await deleteJson(`${AMENITIES_ENDPOINT}/${amenity_id}`);
 };
+
 
