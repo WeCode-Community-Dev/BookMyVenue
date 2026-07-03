@@ -1,6 +1,6 @@
 import { BookingRepository } from "../../domain/repositories/IBooking.repository.js";
 import mongoose from "mongoose";
-import BookingModel from "../database/models/BookingModel.js";
+import { BookingModel } from "../database/models/BookingModel.js";
 import { UserModel } from "../database/models/User.model.js";
 import VendorModel from "../database/models/Vendor.model.js";
 import { VenueModel } from "../database/Venue.model.js";
@@ -21,444 +21,344 @@ export class BookingRepositoryImpl extends BookingRepository {
         );
     }
 
-  async findById(id) {
-    const booking =
-        await BookingModel
-            .findById(id)
-            .populate("userId", "fullName email phone")
-            .populate("vendorId", "fullName email phone")
-            .populate("venueId", "name");
-    if (!booking) return null;
-    return BookingMapper.mapToEntity(booking);
-  }
-
-  async findByUserId(userId) {
-    const docs = await BookingModel.find({
-      userId,
-    });
-
-    return docs.map((doc) => BookingMapper.mapToEntity(doc));
-  }
-
-  async findByOwnerId(
-    vendorId,
-    {
-      page,
-
-      limit,
-
-      status,
-
-      search,
-    }
-  ) {
-    const filter = { vendorId };
-
-    if (status) {
-      filter.status = status;
+    async findById(id) {
+        const booking =
+            await BookingModel
+                .findById(id)
+                .populate("userId", "fullName email phone")
+                .populate("vendorId", "fullName email phone")
+                .populate("venueId", "name");
+        if (!booking) return null;
+        return BookingMapper.mapToEntity(booking);
     }
 
-    let docs = await BookingModel.find(filter)
+    async findByUserId(userId) {
+        const docs = await BookingModel.find({
+            userId,
+        });
 
-      .populate("userId", "fullName email")
-
-      .populate("venueId", "name")
-
-      .sort({
-        createdAt: -1,
-      });
-
-    if (search) {
-      const keyword = search.trim().toLowerCase();
-
-      docs = docs.filter(
-        (doc) =>
-          doc.userId?.fullName?.toLowerCase().includes(keyword) ||
-          doc.venueId?.name?.toLowerCase().includes(keyword) ||
-          doc._id.toString().includes(keyword)
-      );
+        return docs.map((doc) => BookingMapper.mapToEntity(doc));
     }
 
-    const total = docs.length;
+    async findByOwnerId(
+        vendorId,
+        {
+            page,
 
-    const skip = (page - 1) * limit;
+            limit,
 
-    docs = docs.slice(skip, skip + Number(limit));
+            status,
 
-    return {
-      bookings: docs.map((doc) => BookingMapper.mapToEntity(doc)),
+            search,
+        }
+    ) {
+        const filter = { vendorId };
 
-      pagination: {
-        total,
+        if (status) {
+            filter.status = status;
+        }
 
-        page: Number(page),
+        let docs = await BookingModel.find(filter)
 
-        limit: Number(limit),
+            .populate("userId", "fullName email")
 
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
+            .populate("venueId", "name")
 
-  async findByVenueAndDate(
-    venueId,
-
-    bookingDate
-  ) {
-    const docs = await BookingModel.find({
-      venueId,
-
-      bookingDate,
-    });
-
-    return docs.map((doc) => BookingMapper.mapToEntity(doc));
-  }
-
-  async update(
-    id,
-
-    entity
-  ) {
-    const doc = await BookingModel.findByIdAndUpdate(
-      id,
-
-      BookingMapper.mapToPersistence(entity),
-
-      {
-        new: true,
-      }
-    );
-
-    return BookingMapper.mapToEntity(doc);
-  }
-
-  async countByOwnerId(vendorId) {
-    return await BookingModel.countDocuments({
-      vendorId,
-    });
-  }
-
-  async countByOwnerIdAndStatus(
-    vendorId,
-
-    status
-  ) {
-    return await BookingModel.countDocuments({
-      vendorId,
-
-      status,
-    });
-  }
-
-  async getTopVenues(vendorId) {
-    const result = await BookingModel.aggregate([
-      {
-        $match: {
-          vendorId: new mongoose.Types.ObjectId(vendorId),
-        },
-      },
-
-      {
-        $group: {
-          _id: "$venueId",
-          bookings: { $sum: 1 },
-        },
-      },
-
-      {
-        $sort: {
-          bookings: -1,
-        },
-      },
-
-      {
-        $limit: 5,
-      },
-
-      {
-        $lookup: {
-          from: "venues",
-          localField: "_id",
-          foreignField: "_id",
-          as: "venue",
-        },
-      },
-
-      {
-        $unwind: "$venue",
-      },
-
-      {
-        $project: {
-          _id: 0,
-          venueId: "$venue._id",
-          name: "$venue.name",
-          bookings: 1,
-        },
-      },
-    ]);
-
-    return result;
-  }
-
-  async getRecentBookings(vendorId) {
-    const docs = await BookingModel.find({
-      vendorId    })
-
-      .populate("userId", "fullName")
-
-      .populate("venueId", "name")
-
-      .sort({
-        createdAt: -1,
-      })
-
-      .limit(5);
-
-    return docs.map((doc) => ({
-      bookingId: doc._id,
-
-      customer: doc.userId?.fullName,
-
-      venue: doc.venueId?.name,
-
-      amount: doc.totalAmount,
-
-      status: doc.status,
-
-      bookingDate: doc.bookingDate,
-    }));
-  }
-
-
-async findAllFiltered(query) {
-
-    const filter = {};
-
-    if (query.status) {
-        filter.status = query.status;
-    }
-
-    if (query.paymentStatus) {
-        filter.paymentStatus = query.paymentStatus;
-    }
-
-    if (query.search) {
-
-        const regex = new RegExp(query.search, "i");
-
-        const userIds = await UserModel.find({
-            fullName: regex
-        }).distinct("_id");
-
-        const vendorIds = await VendorModel.find({
-            $or: [
-                { fullName: regex },
-                { companyName: regex }
-            ]
-        }).distinct("_id");
-
-        const venueIds = await VenueModel.find({
-            name: regex
-        }).distinct("_id");
-
-        const searchFilter = [
-            { userId: { $in: userIds } },
-            { vendorId: { $in: vendorIds } },
-            { venueId: { $in: venueIds } }
-        ];
-
-        if (Types.ObjectId.isValid(query.search)) {
-            searchFilter.push({
-                _id: new Types.ObjectId(query.search)
+            .sort({
+                createdAt: -1,
             });
+
+        if (search) {
+            const keyword = search.trim().toLowerCase();
+
+            docs = docs.filter(
+                (doc) =>
+                    doc.userId?.fullName?.toLowerCase().includes(keyword) ||
+                    doc.venueId?.name?.toLowerCase().includes(keyword) ||
+                    doc._id.toString().includes(keyword)
+            );
         }
 
-        filter.$or = searchFilter;
+        const total = docs.length;
+
+        const skip = (page - 1) * limit;
+
+        docs = docs.slice(skip, skip + Number(limit));
+
+        return {
+            bookings: docs.map((doc) => BookingMapper.mapToEntity(doc)),
+
+            pagination: {
+                total,
+
+                page: Number(page),
+
+                limit: Number(limit),
+
+                totalPages: Math.ceil(total / limit),
+            },
+        };
     }
 
-    const totalCount = await BookingModel.countDocuments(filter);
+    async findByVenueAndDate(
+        venueId,
 
-    const totalPages = Math.ceil(totalCount / query.limit);
+        bookingDate
+    ) {
+        const docs = await BookingModel.find({
+            venueId,
 
-    const data = await BookingModel.aggregate([
+            bookingDate,
+        });
 
-        {
-            $match: filter
-        },
+        return docs.map((doc) => BookingMapper.mapToEntity(doc));
+    }
 
-        {
-            $lookup: {
-                from: "users",
-                localField: "userId",
-                foreignField: "_id",
-                as: "user"
-            }
-        },
+    async update(
+        id,
 
-        {
-            $unwind: {
-                path: "$user",
-                preserveNullAndEmptyArrays: true
-            }
-        },
+        entity
+    ) {
+        const doc = await BookingModel.findByIdAndUpdate(
+            id,
 
-        {
-            $lookup: {
-                from: "vendors",
-                localField: "vendorId",
-                foreignField: "_id",
-                as: "vendor"
-            }
-        },
-
-        {
-            $unwind: {
-                path: "$vendor",
-                preserveNullAndEmptyArrays: true
-            }
-        },
-
-        {
-            $lookup: {
-                from: "venues",
-                localField: "venueId",
-                foreignField: "_id",
-                as: "venue"
-            }
-        },
-
-        {
-            $unwind: {
-                path: "$venue",
-                preserveNullAndEmptyArrays: true
-            }
-        },
-
-        {
-            $sort: {
-                bookingDate: query.sortBy === "asc" ? 1 : -1
-            }
-        },
-  {
-            $skip: (query.page - 1) * query.limit
-        },
-
-        {
-            $limit: query.limit
-        }
-
-    ]);
-
-    return {
-        data,
-        totalCount,
-        totalPages
-    };
-
-}
-async getBookingStatistics() {
-
-    const result =
-        await BookingModel.aggregate([
+            BookingMapper.mapToPersistence(entity),
 
             {
+                new: true,
+            }
+        );
 
+        return BookingMapper.mapToEntity(doc);
+    }
+
+    async countByOwnerId(vendorId) {
+        return await BookingModel.countDocuments({
+            vendorId,
+        });
+    }
+
+    async countByOwnerIdAndStatus(
+        vendorId,
+
+        status
+    ) {
+        return await BookingModel.countDocuments({
+            vendorId,
+
+            status,
+        });
+    }
+
+    async getTopVenues(vendorId) {
+        const result = await BookingModel.aggregate([
+            {
+                $match: {
+                    vendorId: new mongoose.Types.ObjectId(vendorId),
+                },
+            },
+
+            {
                 $group: {
+                    _id: "$venueId",
+                    bookings: { $sum: 1 },
+                },
+            },
 
-                    _id: null,
+            {
+                $sort: {
+                    bookings: -1,
+                },
+            },
 
-                    totalBookings: {
-                        $sum: 1
-                    },
+            {
+                $limit: 5,
+            },
 
-                    pendingBookings: {
+            {
+                $lookup: {
+                    from: "venues",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "venue",
+                },
+            },
 
-                        $sum: {
+            {
+                $unwind: "$venue",
+            },
 
-                            $cond: [
+            {
+                $project: {
+                    _id: 0,
+                    venueId: "$venue._id",
+                    name: "$venue.name",
+                    bookings: 1,
+                },
+            },
+        ]);
 
-                                {
-                                    $eq: [
-                                        "$status",
-                                        BookingStatus.PENDING
-                                    ]
-                                },
+        return result;
+    }
 
-                                1,
+    async getRecentBookings(vendorId) {
+        const docs = await BookingModel.find({
+            vendorId
+        })
 
-                                0
+            .populate("userId", "fullName")
 
-                            ]
+            .populate("venueId", "name")
 
-                        }
+            .sort({
+                createdAt: -1,
+            })
 
-                    },
+            .limit(5);
 
-                    confirmedBookings: {
+        return docs.map((doc) => ({
+            bookingId: doc._id,
 
-                        $sum: {
+            customer: doc.userId?.fullName,
 
-                            $cond: [
+            venue: doc.venueId?.name,
 
-                                {
-                                    $eq: [
-                                        "$status",
-                                        BookingStatus.CONFIRMED
-                                    ]
-                                },
+            amount: doc.totalAmount,
 
-                                1,
+            status: doc.status,
 
-                                0
+            bookingDate: doc.bookingDate,
+        }));
+    }
 
-                            ]
 
-                        }
+    async findAllFiltered(query) {
+        const filter = {};
+        if (query.status) { filter.status = query.status; }
+        if (query.paymentStatus) { filter.paymentStatus = query.paymentStatus; }
+        if (query.search) {
+            const regex = new RegExp(query.search, "i");
+            const userIds = await UserModel.find({ fullName: regex }).distinct("_id");
+            const vendorIds = await VendorModel.find({ $or: [{ fullName: regex }, { companyName: regex }] }).distinct("_id"); const venueIds = await VenueModel.find({ name: regex }).distinct("_id"); const searchFilter = [{ userId: { $in: userIds } }, { vendorId: { $in: vendorIds } }, { venueId: { $in: venueIds } }];
+            if (Types.ObjectId.isValid(query.search)) { searchFilter.push({ _id: new Types.ObjectId(query.search) }); }
+            filter.$or = searchFilter;
+        }
+        const totalCount = await BookingModel.countDocuments(filter);
+        const totalPages = Math.ceil(totalCount / query.limit);
+        const data = await BookingModel.aggregate([
+            { $match: filter }, { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "user" } }, { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+            { $lookup: { from: "vendors", localField: "vendorId", foreignField: "_id", as: "vendor" } },
+            { $unwind: { path: "$vendor", preserveNullAndEmptyArrays: true } },
+            { $lookup: { from: "venues", localField: "venueId", foreignField: "_id", as: "venue" } },
+            { $unwind: { path: "$venue", preserveNullAndEmptyArrays: true } },
+            { $sort: { bookingDate: query.sortBy === "asc" ? 1 : -1 } },
+            { $skip: (query.page - 1) * query.limit }, { $limit: query.limit }]);
+        return { data, totalCount, totalPages };
+    }
+    async getBookingStatistics() {
 
-                    },
+        const result =
+            await BookingModel.aggregate([
 
-                    cancelledBookings: {
+                {
 
-                        $sum: {
+                    $group: {
 
-                            $cond: [
+                        _id: null,
 
-                                {
-                                    $eq: [
-                                        "$status",
-                                        BookingStatus.CANCELLED
-                                    ]
-                                },
+                        totalBookings: {
+                            $sum: 1
+                        },
 
-                                1,
+                        pendingBookings: {
 
-                                0
+                            $sum: {
 
-                            ]
+                                $cond: [
 
-                        }
+                                    {
+                                        $eq: [
+                                            "$status",
+                                            BookingStatus.PENDING
+                                        ]
+                                    },
 
-                    },
+                                    1,
 
-                    completedBookings: {
+                                    0
 
-                        $sum: {
+                                ]
 
-                            $cond: [
+                            }
 
-                                {
-                                    $eq: [
-                                        "$status",
-                                        BookingStatus.COMPLETED
-                                    ]
-                                },
+                        },
 
-                                1,
+                        confirmedBookings: {
 
-                                0
+                            $sum: {
 
-                            ]
+                                $cond: [
+
+                                    {
+                                        $eq: [
+                                            "$status",
+                                            BookingStatus.CONFIRMED
+                                        ]
+                                    },
+
+                                    1,
+
+                                    0
+
+                                ]
+
+                            }
+
+                        },
+
+                        cancelledBookings: {
+
+                            $sum: {
+
+                                $cond: [
+
+                                    {
+                                        $eq: [
+                                            "$status",
+                                            BookingStatus.CANCELLED
+                                        ]
+                                    },
+
+                                    1,
+
+                                    0
+
+                                ]
+
+                            }
+
+                        },
+
+                        completedBookings: {
+
+                            $sum: {
+
+                                $cond: [
+
+                                    {
+                                        $eq: [
+                                            "$status",
+                                            BookingStatus.COMPLETED
+                                        ]
+                                    },
+
+                                    1,
+
+                                    0
+
+                                ]
+
+                            }
 
                         }
 
@@ -466,24 +366,22 @@ async getBookingStatistics() {
 
                 }
 
-            }
+            ]);
 
-        ]);
+        return result[0] || {
 
-    return result[0] || {
+            totalBookings: 0,
 
-        totalBookings: 0,
+            pendingBookings: 0,
 
-        pendingBookings: 0,
+            confirmedBookings: 0,
 
-        confirmedBookings: 0,
+            cancelledBookings: 0,
 
-        cancelledBookings: 0,
+            completedBookings: 0
 
-        completedBookings: 0
+        };
 
-    };
-
-}
+    }
 
 }

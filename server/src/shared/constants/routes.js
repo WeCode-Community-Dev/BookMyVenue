@@ -25,6 +25,11 @@ export const ROUTES = {
             GET_ALL:'/bookings',
             GET_BY_ID:'/bookings/:bookingId',
             GET_STATISTICS:'/bookings/statistics',
+        },
+        PAYMENT:{
+            GET_ALL:'/payments',
+            GET_BY_ID:'/payments/:paymentId',
+            GET_STATISTICS:'/payments/statistics',
         }
 
     },

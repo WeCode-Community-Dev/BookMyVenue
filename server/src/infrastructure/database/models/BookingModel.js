@@ -137,7 +137,7 @@ const bookingSchema = new mongoose.Schema(
 
 )
 
-export default mongoose.model(
+export const BookingModel = mongoose.model(
 
     "Booking",
 
