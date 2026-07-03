@@ -572,12 +572,103 @@ export const rejectVenue = async (
 };
 
 export const getApprovedVenues = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
-  try {
-    const result = await pool.query(
-      `SELECT
+  req : AuthRequest,
+  res : Response
+): Promise<void> =>{
+  try{
+    const{
+      category,
+      city,
+      min_capacity,
+      max_capacity,
+      min_price,
+      max_price,
+      search,
+    }= req.query;
+
+    const conditions: string[] = [
+      "approval_status ='approved'",
+      "is_active =true",
+    ];
+
+    const values : unknown[] = [];
+
+    if(category){
+      values.push(String(category));
+      conditions.push(`category = $${values.length}`);
+    }
+
+    if(city){
+      values.push(String(city));
+      conditions.push(`LOWER(city) = LOWER($${values.length})`);
+    }
+
+    if(min_capacity){
+      
+      const minCapacity = Number(min_capacity);
+
+      if (isNaN(minCapacity) || minCapacity<0 ){
+        res.status(400).json({
+          message :"min_capacity must be a valid positive number",
+        });
+        return;
+      }
+
+      values.push(minCapacity);
+      conditions.push(`capacity >= $${values.length}`);
+    }
+
+    if (max_capacity){
+      const maxCapacity = Number(max_capacity);
+
+            if (isNaN(maxCapacity) || maxCapacity < 0) {
+        res.status(400).json({
+          message: "max_capacity must be a valid positive number",
+        });
+        return;
+    }
+
+      values.push(maxCapacity);
+      conditions.push(`capacity <= $${values.length}`);
+  }
+
+  if (min_price) {
+      const minPrice = Number(min_price);
+
+      if (isNaN(minPrice) || minPrice < 0) {
+        res.status(400).json({
+          message: "min_price must be a valid positive number",
+        });
+        return;
+      }
+
+      values.push(minPrice);
+      conditions.push(`base_price >= $${values.length}`);
+    }
+
+      if (max_price) {
+      const maxPrice = Number(max_price);
+
+      if (isNaN(maxPrice) || maxPrice < 0) {
+        res.status(400).json({
+          message: "max_price must be a valid positive number",
+        });
+        return;
+      }
+
+      values.push(maxPrice);
+      conditions.push(`base_price <= $${values.length}`);
+    }
+
+    if (search) {
+      values.push(`%${String(search)}%`);
+      conditions.push(
+        `(name ILIKE $${values.length} OR description ILIKE $${values.length} OR address ILIKE $${values.length})`
+      );
+    }
+
+        const query = `
+      SELECT
         id,
         owner_id,
         name,
@@ -592,18 +683,30 @@ export const getApprovedVenues = async (
         created_at,
         updated_at
       FROM venues
-      WHERE approval_status = 'approved'
-      AND is_active = true
-      ORDER BY created_at DESC`
-    );
+      WHERE ${conditions.join(" AND ")}
+      ORDER BY created_at DESC
+    `;
 
-    res.status(200).json({
+
+    const result = await pool.query(query, values);
+
+     res.status(200).json({
       message: "Approved venues fetched successfully",
       count: result.rows.length,
+      filters: {
+        category: category || null,
+        city: city || null,
+        min_capacity: min_capacity || null,
+        max_capacity: max_capacity || null,
+        min_price: min_price || null,
+        max_price: max_price || null,
+        search: search || null,
+      },
       venues: result.rows,
     });
-  } catch (error) {
-    console.error("Get approved venues error:", error);
+
+} catch(error){
+  console.error("Get approved venues error:", error);
 
     res.status(500).json({
       message: "Internal server error",
