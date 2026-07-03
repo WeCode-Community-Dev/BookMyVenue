@@ -3,7 +3,9 @@ from app.core.config import settings
 from typing import List
 from sqlalchemy.orm import Session
 from app.model.bookings import Booking
+from app.model.user import User
 from typing import Optional
+from sqlalchemy.orm import joinedload
 
 def create_booking(
     db: Session,
@@ -47,7 +49,9 @@ def get_booking(
     limit: int = 20
 ) -> List[Booking]:
     try:
-        query = db.query(Booking)
+        query = db.query(Booking).options(
+            joinedload(Booking.user)
+        )
 
         if user_id is not None:
             query = query.filter(Booking.user_id == user_id)
