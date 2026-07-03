@@ -10,7 +10,7 @@ const router = Express.Router()
 router.post(ROUTES.USER.AUTH.REGISTER, validate(registerSchema, 'body'), iUserAuthController.register)
 router.post(ROUTES.USER.AUTH.VERIFY_OTP, validate(verifyOtpSchema, 'body'), iUserAuthController.verifyOtp)
 router.post(ROUTES.USER.AUTH.RESEND_OTP, validate(resendOtpSchema, 'body'), iUserAuthController.resendOtp)
-router.post('/login', validate(loginSchema, 'body'), iUserAuthController.login)
+router.post(ROUTES.USER.AUTH.LOGIN, validate(loginSchema, 'body'), iUserAuthController.login)
 
 // router.post('/admin-login', iUserAuthController.adminLogin)
 router.post('/refresh-token', iUserAuthController.refreshToken)

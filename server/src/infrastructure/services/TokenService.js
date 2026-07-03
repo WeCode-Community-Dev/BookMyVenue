@@ -12,9 +12,9 @@ export class TokenService extends ITokenService{
         return jwt.sign({id, email, role}, accessTokenSecret, { expiresIn: jwtConfig.accessToken.expiresIn });
     }
 
-    generateRefreshToken(payload) {
+    generateRefreshToken(id, role) {
         const refreshTokenSecret = jwtConfig.refreshToken.secret
-        return jwt.sign(payload, refreshTokenSecret, { expiresIn: jwtConfig.refreshToken.expiresIn });
+        return jwt.sign({id, role}, refreshTokenSecret, { expiresIn: jwtConfig.refreshToken.expiresIn });
     }
 
     generateResetToken() {
