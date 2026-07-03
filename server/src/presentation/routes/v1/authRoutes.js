@@ -1,7 +1,7 @@
 import Express from 'express'
 // import passport from '../../../infrastructure/config/passport.config.js'  // TODO: Google Auth - temporarily disabled
 import { iAuthController } from '../../controllers/di.js'
-import VendorAuthRoutes from './vendorAuthRoutes.js'
+// import VendorAuthRoutes from './vendorAuthRoutes.js'
 import { validate } from '../../middlewares/validator.js'
 import { otpRateLimiter } from '../../middlewares/otpRateLimiter.js'
 import {
@@ -20,7 +20,7 @@ router.post('/verify-otp', validate(verifyOtpSchema, 'body'), otpRateLimiter, iA
 router.post('/resend-otp', validate(resendOtpSchema, 'body'), otpRateLimiter, iAuthController.resendOtp)
 router.post('/login', validate(loginSchema, 'body'), iAuthController.login)
 
-router.use('/vendor', VendorAuthRoutes)
+// router.use('/vendor', VendorAuthRoutes)
 
 router.post('/admin-login', iAuthController.adminLogin)
 router.post('/refresh-token', iAuthController.refreshToken)

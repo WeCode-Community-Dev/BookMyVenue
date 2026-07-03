@@ -32,12 +32,20 @@ import { VendorUpdateProfileUsecase } from '../../application/vendor/usecases/pr
 import { GetVendorBookingsUsecase } from '../../application/vendor/usecases/booking/getVendorBookingsUsecase.js'
 import { GetBookingByIdUsecase } from '../../application/vendor/usecases/booking/getBookingByIdUsecase.js'
 import { GetDashboardStatsUsecase } from '../../application/vendor/usecases/dashboard/GetDashboardStatsUsecase.js'
-import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
-import { UserVenueController } from '../controllers/user/user.venueController.js'
-import { AuthController } from '../controllers/user/AuthController.js'
+import { AdminGetAllBookingsUsecase } from '../../application/admin/usecases/booking/admin.getAllBookings.usecase.js'
+import { AdminGetBookingByIdUsecase } from '../../application/admin/usecases/booking/admin.getBookingById.usecase.js'
+import { AdminGetBookingStatisticsUsecase } from '../../application/admin/usecases/booking/admin.getBookingStatistics.usecase.js'
+import { AdminGetAllPaymentsUsecase } from "../../application/admin/usecases/payment/admin.getAllPayments.usecase.js";
+import { AdminGetPaymentByIdUsecase } from "../../application/admin/usecases/payment/admin.getPaymentById.usecase.js";
+import { AdminGetPaymentStatisticsUsecase } from "../../application/admin/usecases/payment/admin.getPaymentStatistics.usecase.js";
 import { AdminUserController } from '../controllers/admin/admin.userController.js'
 import { AdminVendorController } from '../controllers/admin/admin.vendorController.js'
 import { AdminVenueController } from './admin/admin.venueController.js'
+import { AdminBookingController } from './admin/admin.bookingController.js'
+import { AdminPaymentController } from "./admin/admin.paymentController.js";
+import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
+import { UserVenueController } from '../controllers/user/user.venueController.js'
+import { AuthController } from '../controllers/user/AuthController.js'
 import { VendorProfileController } from './vendor/vendorProfileController.js'
 import { VendorBookingController } from './vendor/VendorBookingController.js'
 import { VendorDashboardController } from './vendor/VendorDashboardController.js'
@@ -51,13 +59,30 @@ import { MailServiceImpl } from '../../infrastructure/services/MailService.js'
 import { TokenService }from '../../infrastructure/services/TokenService.js'
 import { OtpService } from '../../infrastructure/services/OtpService.js'
 import { OtpStoreService } from '../../infrastructure/services/OtpStoreService.js'
+import { UserGetProfileUsecase } from '../../application/user/usecases/profile/user.getProfile.usecase.js';
+import { UserUpdateProfileUsecase } from '../../application/user/usecases/profile/user.updateProfile.usecase.js'
+import { UserProfileController } from './user/user.profileController.js'
+import { RequestEmailChangeOtpUsecase } from '../../application/user/usecases/profile/requestEmailchangeOtp.js'
+import { VerifyEmailChangeOtpUsecase } from '../../application/user/usecases/profile/verifyEmailChangeOtp.usecase.js'
+import { ResendEmailChangeOtpUsecase } from '../../application/user/usecases/profile/resendEmailChangeOtp.usecase.js'
+import { UserUpdateProfileImageUsecase } from '../../application/user/usecases/profile/user.updateProfileImage.usecase.js'
+import { UserRemoveProfileImageUsecase } from '../../application/user/usecases/profile/user.removeProfileImage.usecase.js'
+import { UserAddToWishlistUsecase } from '../../application/user/usecases/wishlist/user.addToWishlist.usecase.js'
+import { UserWishlistController } from './user/user.wishlistController.js'
+import { UserGetWishlistUsecase } from '../../application/user/usecases/wishlist/user.getWishlist.usecase.js'
+import { UserRemoveWishlistUsecase } from '../../application/user/usecases/wishlist/user.removeWishlist.usecase.js'
+import { UserUpdateAccountStatusUsecase } from '../../application/user/usecases/account/user.updateAccountStatus.usecase.js'
+import { UserAccountController } from './user/user.accountController.js'
+import { PaymentRepository } from "../../infrastructure/repositories/payment.repository.js";
+import { UserGetTopVenuesUsecase } from '../../application/user/usecases/venue/user.getTopVenue.usacase.js'
 
 
-// --- repositories ---
-const iVenueRepository = new VenueRepository()
-const iUserRepository = new UserRepository()
-const iVendorRepository = new VendorRepository()
-const bookingRepository = new BookingRepositoryImpl()
+//repository
+const iVenueRepository = new VenueRepository();
+const iUserRepository = new UserRepository();
+const iVendorRepository = new VendorRepository();
+const iPaymentRepository = new PaymentRepository();
+const bookingRepository = new BookingRepositoryImpl();
 
 // --- services ---
 const iCloudinaryService = new CloudinaryService()
@@ -85,7 +110,17 @@ const iAdminApproveVenueUsecase = new AdminApproveVenueUsecase(iVenueRepository,
 const iAdminRejectVenueUsecase = new AdminRejectVenueUsecase(iVenueRepository, iMailService)
 const iAdminUpdateVenueBlockStatusUsecase = new AdminUpdateVenueBlockStatusUsecase(iVenueRepository)
 
-// --- auth usecases ---
+//adminBookingUsecases
+const iAdminGetAllBookingUsecase = new AdminGetAllBookingsUsecase(bookingRepository)
+const iAdminGetBookingByIdUsecase = new AdminGetBookingByIdUsecase(bookingRepository)
+const iAdminBookingStatisticsUsecase = new AdminGetBookingStatisticsUsecase(bookingRepository)
+
+//adminPaymentUsecases
+const iAdminGetAllPaymentUsecase = new AdminGetAllPaymentsUsecase(iPaymentRepository)
+const iAdminGetPaymentByIdUsecase = new AdminGetPaymentByIdUsecase(iPaymentRepository)
+const iAdminPaymentStatisticsUsecase = new AdminGetPaymentStatisticsUsecase(iPaymentRepository)
+
+//auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(
     iUserRepository,
     iHashService,
@@ -93,39 +128,27 @@ const iRegisterUserUseCase = new RegisterUserUseCase(
     iOtpStoreService,
     iMailService
 )
-
 const iLoginUserUseCase = new LoginUserUseCase(
   iUserRepository,
   HashService,
   TokenService
 )
-
 const iLogoutUseCase = new LogoutUseCase(iUserRepository)
-
 const iRefreshTokenUseCase = new RefreshTokenUseCase(
   iUserRepository,
   TokenService
 )
-
 const iVerifyOtpUseCase = new VerifyOtpUseCase(
   iUserRepository,
   OtpService
 )
-
 const iResendOtpUseCase = new ResendOtpUseCase(
   iUserRepository,
   OtpService
 )
-
 const iForgotPasswordUseCase = new ForgotPasswordUseCase(iUserRepository,TokenService,iMailService)
-
 const iResetPasswordUseCase = new ResetPasswordUseCase(iUserRepository,HashService)
 
-//export const iGoogleAuthUseCase = new GoogleAuthUseCase(iUserRepository)
-
-// const iRegisterVendorUseCase = new RegisterVendorUsecase(iVendorRepository,HashService)
-
-// const iLoginVendorUseCase = new LoginVendorUseCase(iVendorRepository,HashService)
 // --- vendor usecases ---
 const iCreateVenueUsecase = new VendorCreateVenueUsecase(iVenueRepository)
 const iUpdateVenueUsecase = new VendorEditVenueUsecase(iVenueRepository, iCloudinaryService)
@@ -142,6 +165,52 @@ const getDashboardStatsUsecase = new GetDashboardStatsUsecase(iVenueRepository, 
 // --- user usecases ---
 const iUserGetAllVenues = new UserGetAllVenuesUsecase(iVenueRepository)
 const iUserGetVenueById = new UserGetVenueByIdUsecase(iVenueRepository)
+const iUserGetTopeVenues = new UserGetTopVenuesUsecase(iVenueRepository)
+
+const iUserAddToWishlist = new UserAddToWishlistUsecase(
+    iUserRepository,
+    iVenueRepository
+)
+const iUserGetWishlist = new UserGetWishlistUsecase(
+    iUserRepository
+)
+const iUserRemoveWishlist = new UserRemoveWishlistUsecase(
+    iUserRepository,
+    iVenueRepository
+)
+const iUserUpdateAccountStatus = new UserUpdateAccountStatusUsecase(
+    iUserRepository
+)
+
+const iUserGetProfile=new UserGetProfileUsecase(
+    iUserRepository
+)
+const iUserUpdateProfile=new UserUpdateProfileUsecase(
+    iUserRepository
+)
+const iRequestEmailChangeOtp= new RequestEmailChangeOtpUsecase(
+    iUserRepository,
+    iHashService,
+    iOtpService, 
+    iMailService
+)
+
+const iVerifyEmailChangeOtp= new VerifyEmailChangeOtpUsecase(
+    iUserRepository,
+    iHashService
+)
+const iResendEmailChangeOtp = new ResendEmailChangeOtpUsecase(
+    iUserRepository,
+    iHashService,
+    iOtpService, 
+    iMailService
+)
+const iUserUpdateProfileImage = new UserUpdateProfileImageUsecase(
+    iUserRepository
+)
+const iUserRemoveProfileImage = new UserRemoveProfileImageUsecase(
+    iUserRepository
+)
 
 // --- controllers ---
 export const iVendorVenueController = new VendorVenueController(
@@ -152,12 +221,10 @@ export const iVendorVenueController = new VendorVenueController(
     iVendorDeleteVenue,
     iUpdatevenueStatus
 )
-
 export const iAdminUserController = new AdminUserController(
     iAdminGetAllUsersUsecase,
     iAdminUpdateUserStatusUsecase
 )
-
 export const iAdminVendorController = new AdminVendorController(
     iAdminGetAllVendorsUsecase,
     iAdminGetVendorByIdUsecase,
@@ -165,7 +232,6 @@ export const iAdminVendorController = new AdminVendorController(
     iAdminRejectVendorUsecase,
     iAdminUpdateVendorStatusUsecase
 )
-
 export const iAdminVenueController = new AdminVenueController(
     iAdminGetAllVenueUsecase,
     iAdminGetVenueByIdUsecase,
@@ -173,25 +239,51 @@ export const iAdminVenueController = new AdminVenueController(
     iAdminRejectVenueUsecase,
     iAdminUpdateVenueBlockStatusUsecase
 )
-
-export const iUserVenueController = new UserVenueController(
+export const iUserVenueController = new UserVenueController (
     iUserGetAllVenues,
-    iUserGetVenueById
+    iUserGetVenueById,
+    iUserGetTopeVenues
 )
-
 export const iVendorProfileController = new VendorProfileController(
     iGetVendorProfileUsecase,
     iUpdateVendorProfileUsecase
 )
 
+//--
 export const iVendorBookingController = new VendorBookingController(
     getVendorBookingsUsecase,
     getBookingByIdUsecase
 )
-
-export const iVendorDashboardController = new VendorDashboardController(
-    getDashboardStatsUsecase
+export const iUserProfileController = new UserProfileController(
+    iUserGetProfile,
+    iUserUpdateProfile,
+    iRequestEmailChangeOtp,
+    iVerifyEmailChangeOtp,
+    iResendEmailChangeOtp,
+    iUserUpdateProfileImage,
+    iUserRemoveProfileImage
+   
 )
+export const iUserWishlistController = new UserWishlistController(
+    iUserAddToWishlist,
+    iUserGetWishlist,
+    iUserRemoveWishlist
+)
+export const iUserAccountController = new UserAccountController(
+    iUserUpdateAccountStatus
+)
+//--
+export const iAdminBookingController = new AdminBookingController(
+    iAdminGetAllBookingUsecase,
+    iAdminGetBookingByIdUsecase,
+    iAdminBookingStatisticsUsecase
+)
+//--
+export const iAdminPaymentController = new AdminPaymentController(
+    iAdminGetAllPaymentUsecase,
+    iAdminGetPaymentByIdUsecase,
+    iAdminPaymentStatisticsUsecase
+);
 
 export const iAuthController = new AuthController(
     iRegisterUserUseCase,
@@ -203,3 +295,7 @@ export const iAuthController = new AuthController(
     iForgotPasswordUseCase,
     iResetPasswordUseCase,
 )
+
+export const iVendorDashboardController = new VendorDashboardController(
+  getDashboardStatsUsecase
+);
