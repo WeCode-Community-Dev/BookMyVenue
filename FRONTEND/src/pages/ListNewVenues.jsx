@@ -130,8 +130,13 @@ export default function ListNewVenue() {
                     userId: parseInt(freshUserId)
                 }
 
-                const response = await apiService.postBasicVenueDetails(payload)
-                setVenueId(response?.venue_id)
+                if(basicFormData.venue_name && basicFormData.location && basicFormData.venue_description && basicFormData.capacity > 0){
+                    const response = await apiService.postBasicVenueDetails(payload)
+                    setVenueId(response?.venue_id)
+                }else{
+                    toast.error("Please Fill Complete Form!");
+                    return false;
+                }
 
             } else if (currentStep === 2){
                 await apiService.postVenueAmenities(amenitiesFormData, venueId)
@@ -518,7 +523,9 @@ export default function ListNewVenue() {
                             if (isSuccess) {
                                 if (currentStep === 4) {
                                     toast.success("Venue Created Successfully!");
-                                    navigate("/host/dashboard");
+                                    setTimeout(() => {
+                                        navigate("/host/dashboard");
+                                    }, 1000);
                                 } else {
                                     nextStep();
                                 }

@@ -135,8 +135,55 @@ export default function SpaceListing() {
     // const venue_min_hour = venue.availability.minimum_hours
     // console.log(venue_min_hour);
 
+    // converts string time(9am) to (9, 0, 0, 0) or (9:00) format
+    const SetTimeFromString = (dateObject, StringTime, type="timeSlot") => {
+        const [time, modifier] = StringTime.split(" ");
+        let [hour, minute] = time.split(":").map(Number);
+
+        if(modifier === "PM" && hour < 12) hour += 12;
+        if(modifier === "AM" && hour === 12) hour = 0;
+
+        if(type === "razorpay"){
+            return`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;  
+
+        } else if (type === "timeSlot") {
+            dateObject.setHours(hour, minute, 0, 0);
+            return dateObject;
+        };
+    };
+
+    // Get the earliest start time and latest end time from selected time slots
+    const getFormattedStartAndEndTimes = (selectedTimesArray) => {
+        const minStart = "23:59";
+        const maxEnd = "00:00";
+
+        selectedTimesArray.forEach(slot => {
+            const [start, end] = slot.split(" - ")
+            
+            const start24 = SetTimeFromString(undefined, start, "razorpay");
+            const end24 = SetTimeFromString(undefined, end, "razorpay");
+
+            if(start24 < minStart) minStart = start24;
+            if(end24 > maxEnd) maxEnd = end24;
+        })
+
+        return { start_time: minStart, end_time: maxEnd };
+    }    
+
+    // Handle Date Format for Razorpay (Thu Jul 02 2026 00:00:00 GMT+0530 (India Standard Time) => (YYYY-MM-DD)
+    const handleSelectedTimeFormat = (dateObj) => {
+        if(!dateObj) return "";
+
+        const year = dateObj.getFullYear();
+        const date = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth()+1).padStart(2, '0');
+
+        return `${year}-${date}-${month}`;
+    }
+    
 
     const handleReservation = async () => {
+  
         const totalAmount = venue_type === "hourly" ? selectedTimes.length * 2 * venue_price : venue_price ;
 
         if(totalAmount === 0 && venue_type === "hourly" ){
@@ -147,19 +194,30 @@ export default function SpaceListing() {
         }
 
         try {
+            const formattedDate = handleSelectedTimeFormat(selectedDate);
+
+            const startTime = "";
+            const endTime = "";
+
+            if(venue_type === "hourly" && selectedTimes.length === 0){
+                const times = getFormattedStartAndEndTimes(selectedTimes);
+                startTime = times.start_time;
+                endTime = times.end_time;
+            };
+
             const orderPayload = {
                 user_id: Cookies.get('userId'),
                 venue_id: venue.id,
                 amount: totalAmount
-            }
+            };
 
-            const orderResponse = await apiService.createPaymentOrder(orderPayload);
+            const orderResponse = await apiService.createPaymentOrder(orderPayload);            
 
             const options = {
                 key: orderResponse.key,
                 amount: orderResponse.amount,
                 currency: orderResponse.currency,
-                order_id: orderResponse.order_id,
+                order_id: orderResponse.razorpay_order_id,
                 name: "BookMyVenue",
                 description: `Booking for ${venue_name}`,
 
@@ -171,12 +229,14 @@ export default function SpaceListing() {
                             "order_id": orderResponse.order_id,
                             "razorpay_order_id": response.razorpay_order_id,
                             "razorpay_payment_id": response.razorpay_payment_id,
-                            "razorpay_signature": response.razorpay_signature
+                            "razorpay_signature": response.razorpay_signature,
+                            "booking_date": formattedDate,
+                            "start_time": startTime,
+                            "end_time": endTime
                         }
 
                         const verifyResponse = await apiService.verifyPayment(verifyPayload);
 
-                        console.log(verifyResponse);
                         if(verifyResponse.success){
                             toast.success("Successfully Verified!")
                         }
@@ -263,11 +323,11 @@ export default function SpaceListing() {
                         />
                     </div>
                 </div>
-                <button
+                {imageLinks.length > 5 && <button
                     onClick={() => SetIsGalleryOpen(true)}
                     className='absolute cursor-pointer bottom-3 right-5 p-4 bg-[#ff5c5d] rounded-lg text-white font-semibold text-sm ' >
                         SHOW ALL IMAGES
-                </button>
+                </button>}
             </div>
 
         {/* Main Content Split */}
@@ -367,6 +427,7 @@ export default function SpaceListing() {
                     setSelectedSession={setSelectedSession}
                     selectedTimes={selectedTimes}
                     setSelectedTimes={setSelectedTimes}
+                    SetTimeFromString={SetTimeFromString}
                 />
 
                 {/* Submit Button */}

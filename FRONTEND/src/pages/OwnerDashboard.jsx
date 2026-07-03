@@ -269,10 +269,14 @@ export default function OwnerDashboard() {
   useEffect(() => {
     const fetchVenues = async () => {
       try {
-
         const response = await apiService.GetOwnerVenues(Cookies.get('userId'));
-        console.log(response);
-        
+
+        if(Array.isArray(response)){
+          console.log(response);
+          setUserVenues(response)
+        } else {
+          setUserVenues([]);
+        }
         
         // Get user Venue from All venues
         // const UserVenue = response.filter(venue => Cookies.get("userId") == venue.user_id)
@@ -280,6 +284,7 @@ export default function OwnerDashboard() {
         
       } catch (error) {
         console.log(error);
+        setUserVenues([])
       }
     }
     fetchVenues()
