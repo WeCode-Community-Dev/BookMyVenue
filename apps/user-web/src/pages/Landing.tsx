@@ -23,7 +23,7 @@ export default function Landing() {
 
   const { data: trendingData, isLoading: trendingLoading } = useQuery({
     queryKey: ['venues', 'trending'],
-    queryFn: () => venueEndpoints(createClient()).search({ page: 1, page_size: 8 }),
+    queryFn: () => venueEndpoints(createClient()).hybrid_search({ page: 1, page_size: 8 }),
     staleTime: 5 * 60 * 1000,
   })
   const trendingVenues = trendingData?.items ?? []

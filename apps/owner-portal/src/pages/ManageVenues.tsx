@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, SectionHeader, Skeleton, EmptyState } from '@venue404/ui'
+import { Button, Skeleton, EmptyState } from '@venue404/ui'
 import {
-  Plus,
   MapPin,
   Users,
   Calendar,
@@ -13,7 +12,7 @@ import {
   Building2,
 } from 'lucide-react'
 import { createClient, venueEndpoints } from '@venue404/api-client'
-import type { Venue } from '@venue404/api-client'
+import { useQuery } from '@tanstack/react-query'
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -42,23 +41,14 @@ const TABS = [
 
 export default function ManageVenues() {
   const [filter, setFilter] = useState('all')
-  const [venues, setVenues]   = useState<Venue[]>([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchVenues = async () => {
-      try {
-        const client = createClient()
-        const data = await venueEndpoints(client).getMyVenues()
-        setVenues(data || [])
-      } catch (err) {
-        console.error('Failed to fetch venues', err)
-      } finally {
-        setLoading(false)
-      }
+  const { data: venues = [], isLoading: loading } = useQuery({
+    queryKey: ['my-venues'],
+    queryFn: async () => {
+      const data = await venueEndpoints(createClient()).getMyVenues()
+      return data || []
     }
-    fetchVenues()
-  }, [])
+  })
 
   const filteredVenues =
     filter === 'all' ? venues : venues.filter(v => v.status === filter)
@@ -74,20 +64,6 @@ export default function ManageVenues() {
 
   return (
     <div className="space-y-6 pb-10">
-
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <SectionHeader
-          title="My Venues"
-          description="Manage your listed properties and their settings."
-        />
-        <Link to="/venues/new" className="shrink-0">
-          <Button variant="primary" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Add New Venue
-          </Button>
-        </Link>
-      </div>
 
       {/* ── Tabs ── */}
       <div className="border-b border-zinc-200">
@@ -147,9 +123,7 @@ export default function ManageVenues() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filteredVenues.map(venue => {
             const s = STATUS[venue.status as StatusKey] ?? STATUS.draft
-            const coverPhoto =
-              venue.photos?.find(p => p.is_cover)?.image_url ||
-              venue.photos?.[0]?.image_url
+            const coverPhoto = venue.cover_photo_url
             const step             = venue.last_completed_step || 0
             const isDraftIncomplete = venue.status === 'draft' && step < TOTAL_STEPS
             const continueUrl      = `/venues/new?id=${venue.id}&step=${step + 1}`
@@ -189,10 +163,10 @@ export default function ManageVenues() {
                   </div>
 
                   {/* Category — top-left */}
-                  {venue.category?.label && (
+                  {venue.category_name && (
                     <div className="absolute top-3 left-3">
                       <span className="inline-flex items-center rounded-full bg-black/40 backdrop-blur-sm px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white">
-                        {venue.category.label}
+                        {venue.category_name}
                       </span>
                     </div>
                   )}

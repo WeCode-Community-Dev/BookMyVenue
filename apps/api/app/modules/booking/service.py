@@ -158,6 +158,11 @@ def get_booking(db: Session, booking_id: UUID, user_id: UUID | None = None) -> B
 def list_user_bookings(db: Session, user_id: UUID) -> list[BookingOut]:
     bookings = (
         db.query(Booking)
+        .options(
+            joinedload(Booking.slot),
+            joinedload(Booking.user),
+            joinedload(Booking.venue).selectinload(Venue.photos)
+        )
         .filter(Booking.user_id == user_id, Booking.deleted_at.is_(None))
         .order_by(Booking.created_at.desc())
         .all()
@@ -237,9 +242,17 @@ def list_venue_bookings(
     if venue.owner_id != owner_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Venue owner access denied")
 
-    query = db.query(Booking).filter(
-        Booking.venue_id == venue_id,
-        Booking.deleted_at.is_(None),
+    query = (
+        db.query(Booking)
+        .options(
+            joinedload(Booking.slot),
+            joinedload(Booking.user),
+            joinedload(Booking.venue).selectinload(Venue.photos)
+        )
+        .filter(
+            Booking.venue_id == venue_id,
+            Booking.deleted_at.is_(None),
+        )
     )
     if pending_only:
         query = query.filter(Booking.status == BookingStatus.requested)
@@ -343,13 +356,8 @@ def owner_extend_deadline(
     booking.deadline_extension_count += 1
     booking.balance_overdue_at = None
     booking.owner_action_deadline = None
-    db.add(_history(
-        booking,
-        booking.status,
-        booking.status,
-        changed_by=owner_id,
-        metadata={"new_due_date": body.new_due_date.isoformat()},
-    ))
+    # No status change — skip history insert (DB constraint disallows same-status transitions)
+
     db.flush()
     db.refresh(booking)
     notifications.notify(

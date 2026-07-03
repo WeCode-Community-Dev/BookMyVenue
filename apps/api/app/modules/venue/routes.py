@@ -7,6 +7,8 @@ from app.core.database import get_db
 from app.modules.auth.dependencies import require_owner, AuthContext
 from app.modules.venue.schemas import (
     VenueResponse,
+    VenueListResponse,
+    VenueStatsResponse,
     VenueCategoryResponse,
     CreateVenueRequest,
     UpdateVenueRequest,
@@ -39,7 +41,10 @@ router = APIRouter()
 
 #  Owner routes 
 
-@router.get("/my/venues", response_model=list[VenueResponse])
+@router.get(
+    "/my/venues",
+    response_model=list[VenueListResponse]
+)
 def list_my_venues(
     auth: AuthContext = Depends(require_owner),
     db: Session = Depends(get_db),
@@ -55,6 +60,15 @@ def get_my_venue(
     db: Session = Depends(get_db),
 ):
     return service.get_owner_venue(db, venue_id=venue_id, owner_id=auth.user_id)
+
+
+@router.get("/my/venues/{venue_id}/stats", response_model=VenueStatsResponse)
+def get_my_venue_stats(
+    venue_id: UUID,
+    auth: AuthContext = Depends(require_owner),
+    db: Session = Depends(get_db),
+):
+    return service.get_venue_stats_this_month(db, venue_id=venue_id, owner_id=auth.user_id)
 
 
 @router.post("/", response_model=VenueResponse, status_code=201)

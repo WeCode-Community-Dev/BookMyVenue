@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timezone, date
 from uuid import UUID
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.modules.booking.models import (
     Booking,
@@ -13,7 +13,7 @@ from app.modules.booking.models import (
     PaymentStatus,
 )
 from app.modules.booking.schemas import BookingOut, BookingDisplay
-from app.modules.venue.models import VenueCancellationPolicy
+from app.modules.venue.models import Venue, VenueCancellationPolicy
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,11 @@ def _booking_or_404(
     booking_id: UUID,
     for_update: bool = False,
 ) -> Booking:
-    query = db.query(Booking).filter(
+    query = db.query(Booking).options(
+        selectinload(Booking.slot),
+        selectinload(Booking.venue).selectinload(Venue.photos),
+        selectinload(Booking.user),
+    ).filter(
         Booking.id == booking_id,
         Booking.deleted_at.is_(None),
     )

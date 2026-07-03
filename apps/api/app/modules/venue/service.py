@@ -26,7 +26,9 @@ from app.modules.venue.schemas import (
     MAX_ACTIVE_PRICING_RULES_PER_VENUE,
 )
 from app.modules.venue import pricing_engine
-from app.modules.booking.models import BookingType
+from app.modules.booking.models import BookingType, Booking, BookingStatus
+from app.modules.payment.models import LedgerEntry
+from sqlalchemy import func
 from app.core.storage import upload_image_to_cloudinary, delete_image_from_cloudinary
 
 
@@ -326,8 +328,23 @@ def list_owner_venues(db: Session, owner_id: UUID) -> list[Venue]:
 
 
 def get_owner_venue(db: Session, venue_id: UUID, owner_id: UUID) -> Venue:
-    venue = _get_venue_or_404(db, venue_id)
-    _assert_owner(venue, owner_id)
+    venue = (
+        db.query(Venue)
+        .options(
+            joinedload(Venue.category),
+            selectinload(Venue.photos),
+            selectinload(Venue.amenities),
+            joinedload(Venue.cancellation_policy)
+        )
+        .filter(
+            Venue.id == venue_id,
+            Venue.owner_id == owner_id,
+            Venue.deleted_at.is_(None),
+        )
+        .first()
+    )
+    if not venue:
+        raise NotFoundError("Venue not found")
     return venue
 
 
@@ -1065,3 +1082,58 @@ def get_pricing_quote_for_slot(
         ends_at=ends_at,
         booking_type=BookingType(booking_type),
     )
+
+def get_venue_stats_this_month(db: Session, venue_id: UUID, owner_id: UUID) -> dict:
+    venue = _get_venue_or_404(db, venue_id)
+    if venue.owner_id != owner_id:
+        raise ForbiddenError("Not your venue")
+
+    now = datetime.now(timezone.utc)
+    start_of_month = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+
+    from app.modules.booking.models import BookingSlot
+
+    active_bookings = (
+        db.query(func.count(Booking.id))
+        .join(Booking.slot)
+        .filter(
+            Booking.venue_id == venue_id,
+            BookingSlot.ends_at >= now,
+            Booking.status == BookingStatus.confirmed
+        )
+        .scalar() or 0
+    )
+
+    ledger_rows = (
+        db.query(
+            LedgerEntry.entry_type,
+            LedgerEntry.direction,
+            func.sum(LedgerEntry.amount_paise).label("total"),
+        )
+        .filter(
+            LedgerEntry.venue_id == venue_id,
+            LedgerEntry.created_at >= start_of_month,
+        )
+        .group_by(LedgerEntry.entry_type, LedgerEntry.direction)
+        .all()
+    )
+
+    gross_volume = 0
+    platform_fees = 0
+    refunds_issued = 0
+
+    for entry_type, direction, total in ledger_rows:
+        val = int(total or 0)
+        if entry_type == "charge" and direction == "credit":
+            gross_volume += val
+        elif entry_type == "platform_fee" and direction == "debit":
+            platform_fees += val
+        elif entry_type == "refund" and direction == "debit":
+            refunds_issued += val
+
+    net_revenue = gross_volume - platform_fees - refunds_issued
+
+    return {
+        "active_bookings": active_bookings,
+        "revenue_this_month_paise": net_revenue
+    }

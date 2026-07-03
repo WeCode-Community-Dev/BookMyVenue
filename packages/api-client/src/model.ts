@@ -85,3 +85,22 @@ export interface PricingPreview {
   breakdown: PricingBreakdownItem[]
   clamped: boolean
 }
+
+export type VenueListResponse = {
+  id: string
+  name: string
+  slug: string | null
+  city: string
+  max_capacity: number
+  status: string
+  is_active: boolean
+  category_name: string
+  cover_photo_url: string | null
+  last_completed_step: number | null
+  rejection_reason?: string | null
+}
+
+export type VenueStatsResponse = {
+  active_bookings: number
+  revenue_this_month_paise: number
+}

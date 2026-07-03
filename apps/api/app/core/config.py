@@ -59,6 +59,17 @@ class Settings(BaseSettings):
     jina_embedding_model: str = "jina-embeddings-v3"
     embedding_dimensions: int = 1024
 
+    search_min_vector_similarity: float = 0.15
+    search_wedding_boost: float = 1.85
+    search_event_boost: float = 1.40
+    search_fts_weight: float = 0.3
+    search_corporate_boost: float = 1.40
+    search_vector_weight: float = 0.7
+    search_diagnostics_enabled: bool = False
+
+    search_normalizer_match_threshold: int = 85
+    search_normalizer_min_token_len: int = 3
+
     log_level: str = "INFO"  # DEBUG / INFO / WARNING / ERROR
 
     class Config:

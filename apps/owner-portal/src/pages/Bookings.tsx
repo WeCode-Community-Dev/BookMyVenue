@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useSearchParams } from 'react-router-dom'
-import { StatusBadge, SectionHeader, PaymentStatusBadge, EmptyState, Skeleton } from '@venue404/ui'
+import { StatusBadge, PaymentStatusBadge, EmptyState, Skeleton } from '@venue404/ui'
 import { Search, Calendar, Users, ChevronDown } from 'lucide-react'
 import { createClient, venueEndpoints, bookingEndpoints } from '@venue404/api-client'
-import type { Booking, Venue } from '@venue404/api-client'
+import type { Booking } from '@venue404/api-client'
+import { useQuery } from '@tanstack/react-query'
 
 function timeAgo(dateStr: string): string {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
@@ -48,14 +50,23 @@ const CELL = 'px-4 py-4 text-sm text-zinc-700 align-middle'
 
 export default function Bookings() {
   const [searchParams] = useSearchParams()
-  const [tab, setTab] = useState('all')
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [venues, setVenues] = useState<Venue[]>([])
-  const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState(searchParams.get('tab') || 'all')
   const [search, setSearch] = useState('')
   const [selectedVenue, setSelectedVenue] = useState(searchParams.get('venue_id') || 'all')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
+
+  useEffect(() => {
+    const qTab = searchParams.get('tab')
+    if (qTab && qTab !== tab) {
+      setTab(qTab)
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    setPortalTarget(document.getElementById('topbar-portal-target'))
+  }, [])
 
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
@@ -63,33 +74,25 @@ export default function Bookings() {
     return () => { if (searchTimeout.current) clearTimeout(searchTimeout.current) }
   }, [search])
 
-  useEffect(() => {
-    let isCurrent = true
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const client = createClient()
-        const [venuesData, allBookings] = await Promise.all([
-          venueEndpoints(client).getMyVenues(),
-          bookingEndpoints(client).getOwnerBookings({
-            tab: tab !== 'all' ? tab : undefined,
-            venue_id: selectedVenue !== 'all' ? selectedVenue : undefined,
-            search: debouncedSearch || undefined
-          })
-        ])
-        if (!isCurrent) return
-        setBookings(allBookings || [])
-        setVenues((venuesData || []).filter(v => v.is_active && v.status === 'approved'))
-      } catch (err) {
-        if (!isCurrent) return
-        console.error('Failed to fetch bookings', err)
-      } finally {
-        if (isCurrent) setLoading(false)
-      }
+  const { data: venues = [] } = useQuery({
+    queryKey: ['approved-venues'],
+    queryFn: async () => {
+      const data = await venueEndpoints(createClient()).getMyVenues()
+      return (data || []).filter(v => v.is_active && v.status === 'approved')
     }
-    fetchData()
-    return () => { isCurrent = false }
-  }, [tab, selectedVenue, debouncedSearch])
+  })
+
+  const { data: bookings = [], isLoading: loading } = useQuery({
+    queryKey: ['owner-bookings', tab, selectedVenue, debouncedSearch],
+    queryFn: async () => {
+      const data = await bookingEndpoints(createClient()).getOwnerBookings({
+        tab: tab !== 'all' ? tab : undefined,
+        venue_id: selectedVenue !== 'all' ? selectedVenue : undefined,
+        search: debouncedSearch || undefined
+      })
+      return data || []
+    }
+  })
 
   const TABS = [
     { id: 'all', label: 'All Bookings' },
@@ -101,68 +104,70 @@ export default function Bookings() {
     { id: 'cancelled', label: 'Cancelled' },
   ]
 
+  const filtersNode = (
+    <div className="flex flex-col sm:flex-row items-center gap-3 w-full shrink-0 justify-end">
+      <div className="relative w-full sm:w-64">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+        <input
+          type="text"
+          placeholder="Search by venue or user..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-9 pr-4 py-2 bg-white border border-zinc-200 hover:border-zinc-300 rounded-lg text-sm shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 placeholder:text-zinc-400"
+        />
+      </div>
+      <div className="relative w-full sm:w-48">
+        <button
+          onClick={() => {
+            const el = document.getElementById('venue-dropdown')
+            if (el) el.classList.toggle('hidden')
+          }}
+          onBlur={() => {
+            // Delay hiding slightly so clicks register
+            setTimeout(() => {
+              const el = document.getElementById('venue-dropdown')
+              if (el) el.classList.add('hidden')
+            }, 150)
+          }}
+          className="w-full flex items-center justify-between px-3 py-2 bg-white border border-zinc-200 hover:border-zinc-300 rounded-lg text-sm shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-zinc-700"
+        >
+          <span className="truncate">
+            {selectedVenue === 'all' ? 'All Venues' : venues.find(v => v.id === selectedVenue)?.name || 'All Venues'}
+          </span>
+          <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0 ml-2" />
+        </button>
+        <div
+          id="venue-dropdown"
+          className="hidden absolute top-full left-0 mt-1 w-full bg-white border border-zinc-200 rounded-lg shadow-lg overflow-hidden z-50 py-1"
+        >
+          <button
+            className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 transition-colors ${selectedVenue === 'all' ? 'bg-brand-50 text-brand-700 font-medium' : 'text-zinc-700'}`}
+            onClick={() => setSelectedVenue('all')}
+          >
+            All Venues
+          </button>
+          {venues.map(v => (
+            <button
+              key={v.id}
+              className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 transition-colors ${selectedVenue === v.id ? 'bg-brand-50 text-brand-700 font-medium' : 'text-zinc-700'}`}
+              onClick={() => setSelectedVenue(v.id)}
+            >
+              {v.name}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <div className="space-y-6 pb-8">
       {/* Header & Filters */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-4 mb-2">
-        <SectionHeader
-          title="All Bookings"
-          description="View and manage all booking requests across your venues."
-        />
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Search by venue or user..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white border border-zinc-200 hover:border-zinc-300 rounded-lg text-sm shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 placeholder:text-zinc-400"
-            />
-          </div>
-          <div className="relative w-full sm:w-48">
-            <button
-              onClick={() => {
-                const el = document.getElementById('venue-dropdown')
-                if (el) el.classList.toggle('hidden')
-              }}
-              onBlur={() => {
-                // Delay hiding slightly so clicks register
-                setTimeout(() => {
-                  const el = document.getElementById('venue-dropdown')
-                  if (el) el.classList.add('hidden')
-                }, 150)
-              }}
-              className="w-full flex items-center justify-between px-3 py-2 bg-white border border-zinc-200 hover:border-zinc-300 rounded-lg text-sm shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-zinc-700"
-            >
-              <span className="truncate">
-                {selectedVenue === 'all' ? 'All Venues' : venues.find(v => v.id === selectedVenue)?.name || 'All Venues'}
-              </span>
-              <ChevronDown className="h-4 w-4 text-zinc-400 shrink-0 ml-2" />
-            </button>
-            <div
-              id="venue-dropdown"
-              className="hidden absolute top-full left-0 mt-1 w-full bg-white border border-zinc-200 rounded-lg shadow-lg overflow-hidden z-50 py-1"
-            >
-              <button
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 transition-colors ${selectedVenue === 'all' ? 'bg-brand-50 text-brand-700 font-medium' : 'text-zinc-700'}`}
-                onClick={() => setSelectedVenue('all')}
-              >
-                All Venues
-              </button>
-              {venues.map(v => (
-                <button
-                  key={v.id}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 transition-colors ${selectedVenue === v.id ? 'bg-brand-50 text-brand-700 font-medium' : 'text-zinc-700'}`}
-                  onClick={() => setSelectedVenue(v.id)}
-                >
-                  {v.name}
-                </button>
-              ))}
-            </div>
-          </div>
+      {portalTarget ? createPortal(filtersNode, portalTarget) : (
+        <div className="flex flex-col md:flex-row md:items-start justify-end gap-6 md:gap-4 mb-2">
+          {filtersNode}
         </div>
-      </div>
+      )}
 
       {/* Tabs */}
       <div className="border-b border-zinc-200">
