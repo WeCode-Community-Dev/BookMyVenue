@@ -338,7 +338,7 @@ export const updateVenueOwnerApprovalStatus = async (
 };
 
 export const fetchAmenitiesApi = async (): Promise<Amenity[]> => {
-  const payload = await getJson('/api/v1/admin/venue/amenities');
+  const payload = await getJson('/api/v1/venue-owner/venue/amenities');
   return readArray(payload).map((entity, index) => {
     const id = readString(entity, ['id', 'uuid', '_id'], `AMEN-${index + 1}`);
     const name = readString(entity, ['name'], 'Unnamed Amenity');
@@ -347,14 +347,14 @@ export const fetchAmenitiesApi = async (): Promise<Amenity[]> => {
 };
 
 export const createAmenityApi = async (name: string): Promise<Amenity> => {
-  const payload = await postJson('/api/v1/admin/venue/amenities', { name });
+  const payload = await postJson('/api/v1/venue-owner/venue/amenities', { name });
   const entity = payload !== null && typeof payload === 'object' ? payload as ApiEntity : {};
   const id = readString(entity, ['id', 'uuid', '_id'], 'temp-id');
   const responseName = readString(entity, ['name'], name);
   return { id, name: responseName };
 };
 
-export const deleteAmenityApi = async (id: string): Promise<void> => {
-  await deleteJson(`/api/v1/admin/venue/amenities/${id}`);
+export const deleteAmenityApi = async (amenity_id: string): Promise<void> => {
+  await deleteJson(`/api/v1/venue-owner/venue/amenities/${amenity_id}`);
 };
 
