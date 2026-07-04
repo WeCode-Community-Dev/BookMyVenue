@@ -77,3 +77,43 @@ ADD COLUMN IF NOT EXISTS reviewed_by INTEGER REFERENCES users(id);
 ALTER TABLE venues
 ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP;
 
+CREATE TABLE IF NOT EXISTS bookings (
+  id SERIAL PRIMARY KEY,
+  customer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  venue_id INTEGER NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
+
+  booking_date DATE NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+
+  total_amount NUMERIC(10,2) NOT NULL CHECK(total_amount>=0),
+
+  booking_status VARCHAR(30) NOT NULL DEFAULT 'pending_payment' CHECK (
+  booking_status IN ('pending_payment', 'confirmed', 'cancelled', 'failed')
+  ),
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  
+  CHECK (end_time > start_time)
+
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+  id SERIAL PRIMARY KEY,
+
+  booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+
+  payment_provider VARCHAR(50) NOT NULL DEFAULT 'razorpay_dummy',
+
+  amount NUMERIC(10, 2) NOT NULL CHECK (amount >= 0),
+
+  payment_status VARCHAR(30) NOT NULL DEFAULT 'pending' CHECK (
+    payment_status IN ('pending', 'success', 'failed', 'refunded')
+  ),
+
+  dummy_payment_id VARCHAR(100),
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
