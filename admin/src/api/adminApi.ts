@@ -208,6 +208,22 @@ const normalizeVenue = (entity: ApiEntity, index: number): Venue => {
   const venueName = readString(entity, ['venue_name', 'venueName', 'name'], `Venue ${index + 1}`);
   const ownerId = readString(entity, ['owner_id', 'ownerId']);
 
+  // Extract slots details
+  const slotsArray = slots.map(slot => ({
+    id: readString(slot, ['id']),
+    slot_name: readString(slot, ['slot_name', 'slotName']),
+    start_time: readString(slot, ['start_time', 'startTime']),
+    end_time: readString(slot, ['end_time', 'endTime']),
+    price: readNumber(slot, ['price'])
+  }));
+
+  // Extract add-on services details
+  const servicesArray = readEntityArray(entity, 'services').map(service => ({
+    id: readString(service, ['id']),
+    service_name: readString(service, ['service_name', 'serviceName']),
+    price: readNumber(service, ['price'])
+  }));
+
   return {
     id: readString(entity, ['id', '_id', 'venueId'], `VEN-${String(index + 1).padStart(3, '0')}`),
     name: venueName,
@@ -226,7 +242,19 @@ const normalizeVenue = (entity: ApiEntity, index: number): Venue => {
     },
     reviews: [],
     bookingCount: readNumber(entity, ['booking_count', 'bookingCount']),
-    revenue: 0
+    revenue: 0,
+    
+    // New backend details fields mapping
+    category: readString(entity, ['category']),
+    description: readString(entity, ['description']),
+    venue_size: readNumber(entity, ['venue_size', 'venueSize']),
+    instant_booking: Boolean(entity.instant_booking ?? entity.instantBooking),
+    slots: slotsArray,
+    services: servicesArray,
+    virtual_tour_url: readString(entity, ['virtual_tour_url', 'virtualTourUrl']),
+    verification_status: readString(entity, ['verification_status', 'verificationStatus']),
+    created_at: readString(entity, ['created_at', 'createdAt']),
+    updated_at: readString(entity, ['updated_at', 'updatedAt'])
   };
 };
 

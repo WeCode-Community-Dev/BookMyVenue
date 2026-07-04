@@ -40,6 +40,26 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
     }).format(val);
   };
 
+  // Format 24h time string (e.g. "15:00:00") to 12h dot AM/PM (e.g. "3.00 PM")
+  const formatTimeToAMPM = (timeStr: string) => {
+    if (!timeStr) return '';
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return timeStr;
+    
+    let hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    
+    if (isNaN(hours) || isNaN(minutes)) return timeStr;
+    
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+    return `${hours}.${minutesStr} ${ampm}`;
+  };
+
+
   // Filter Venues based on search, capacity, and activeTab status
   const getFilteredVenues = () => {
     let list = venues;
@@ -508,13 +528,21 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
                   {/* Header Metrics */}
                   <div className="space-y-4">
                     <div>
-                      <span className="font-mono text-xs font-bold text-slate-500">{selectedVenue.id}</span>
+                      <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 font-mono">
+                        <span>ID: {selectedVenue.id}</span>
+                        {selectedVenue.created_at && (
+                          <span className="text-slate-550 font-sans font-semibold">
+                            Registered: {new Date(selectedVenue.created_at).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
                       <h2 className="text-2xl font-bold text-white mt-0.5">{selectedVenue.name}</h2>
                       <p className="text-slate-400 text-sm mt-0.5 flex items-center gap-1">
                         <MapPin className="w-4 h-4 text-slate-500" />
                         {selectedVenue.location}
                       </p>
                     </div>
+
 
                     <div className="grid grid-cols-2 gap-3 text-xs bg-slate-950/60 p-4 rounded-xl border border-slate-900">
                       <div>
@@ -570,6 +598,54 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
                   </div>
                 </div>
 
+                {/* Description, Category and Badges */}
+                <div className="space-y-3 bg-slate-950/40 p-4.5 rounded-xl border border-slate-900">
+                  <div className="flex justify-between items-center gap-2 flex-wrap">
+                    <div className="flex gap-2">
+                      {selectedVenue.category && (
+                        <span className="bg-primary/20 text-primary border border-primary/25 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider">
+                          {selectedVenue.category.replace('_', ' ')}
+                        </span>
+                      )}
+                      {selectedVenue.venue_size && (
+                        <span className="bg-slate-900 text-slate-350 border border-slate-850/60 px-2.5 py-1 rounded-md text-[10px] font-bold">
+                          {selectedVenue.venue_size.toLocaleString()} Sq. Ft.
+                        </span>
+                      )}
+                    </div>
+                    
+                    <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold border ${
+                      selectedVenue.instant_booking 
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                    }`}>
+                      {selectedVenue.instant_booking ? '⚡ Instant Booking Enabled' : '⌛ Standard Approval Flow'}
+                    </span>
+                  </div>
+
+                  {selectedVenue.description && (
+                    <div className="space-y-1">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase block tracking-wider">About the Venue</span>
+                      <p className="text-slate-300 text-xs leading-relaxed font-sans">{selectedVenue.description}</p>
+                    </div>
+                  )}
+
+                  {selectedVenue.virtual_tour_url && (
+                    <div className="pt-2 border-t border-slate-900/60 flex items-center gap-1.5 text-xs text-slate-400">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Virtual Tour:</span>
+                      <a 
+                        href={selectedVenue.virtual_tour_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-cyan-400 hover:text-cyan-300 hover:underline truncate font-mono text-[11px]"
+                      >
+                        {selectedVenue.virtual_tour_url}
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+
                 {/* Amenities Section */}
                 <div className="space-y-2">
                   <h3 className="font-bold text-white text-sm uppercase tracking-wider">Features & Amenities</h3>
@@ -580,6 +656,51 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
                       </span>
                     ))}
                   </div>
+                </div>
+
+                {/* Slots & Services Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-slate-900 pt-6">
+                  
+                  {/* Slots Available */}
+                  <div className="space-y-3">
+                    <h3 className="font-bold text-white text-xs uppercase tracking-wider">Booking Slots & Pricing</h3>
+                    {selectedVenue.slots && selectedVenue.slots.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-2.5">
+                        {selectedVenue.slots.map((slot, index) => (
+                          <div key={slot.id || index} className="bg-slate-950/60 p-3 rounded-xl border border-slate-900 flex justify-between items-center text-xs">
+                            <div className="space-y-0.5">
+                              <span className="font-bold text-slate-200 block">{slot.slot_name}</span>
+                              <span className="text-[10px] text-slate-500 font-mono">
+                                {formatTimeToAMPM(slot.start_time)} - {formatTimeToAMPM(slot.end_time)}
+                              </span>
+
+                            </div>
+                            <span className="text-primary font-bold text-sm">{formatCurrency(slot.price)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-500 py-6 text-center bg-slate-950/20 rounded-lg border border-slate-900 border-dashed">No custom slots configured.</p>
+                    )}
+                  </div>
+
+                  {/* Services Available */}
+                  <div className="space-y-3">
+                    <h3 className="font-bold text-white text-xs uppercase tracking-wider">Registered Add-on Services</h3>
+                    {selectedVenue.services && selectedVenue.services.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-2.5">
+                        {selectedVenue.services.map((service, index) => (
+                          <div key={service.id || index} className="bg-slate-950/60 p-3 rounded-xl border border-slate-900 flex justify-between items-center text-xs">
+                            <span className="font-bold text-slate-200 capitalize">{service.service_name}</span>
+                            <span className="text-emerald-400 font-bold">{formatCurrency(service.price)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-500 py-6 text-center bg-slate-950/20 rounded-lg border border-slate-900 border-dashed">No extra services offered.</p>
+                    )}
+                  </div>
+
                 </div>
 
                 {/* Booking History & Schedule Calendar */}

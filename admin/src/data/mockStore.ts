@@ -33,6 +33,20 @@ export interface Review {
   date: string;
 }
 
+export interface Slot {
+  id: string;
+  slot_name: string;
+  start_time: string;
+  end_time: string;
+  price: number;
+}
+
+export interface Service {
+  id: string;
+  service_name: string;
+  price: number;
+}
+
 export interface Venue {
   id: string;
   name: string;
@@ -52,7 +66,20 @@ export interface Venue {
   reviews: Review[];
   bookingCount: number;
   revenue: number;
+  
+  // New backend details fields
+  category?: string;
+  description?: string;
+  venue_size?: number;
+  instant_booking?: boolean;
+  slots?: Slot[];
+  services?: Service[];
+  virtual_tour_url?: string | null;
+  verification_status?: string;
+  created_at?: string;
+  updated_at?: string;
 }
+
 
 export interface Booking {
   id: string;
