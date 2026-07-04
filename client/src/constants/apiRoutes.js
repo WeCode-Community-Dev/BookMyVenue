@@ -4,5 +4,11 @@ export const API_ROUTES = {
           VENUES: '/user/venues',
           TOP_VENUES: '/user/top-venues'
         }
+    },
+    ADMIN: {
+        USER:{
+            USERS:'/admin/users',
+        }
     }
+
 }

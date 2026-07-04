@@ -1,8 +1,8 @@
 import Header from "../components/common/Header";
 import Footer from "../components/common/Footer";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constatnts/routes";
-import { VenueCategory } from "@/constatnts/Venue";
+import { ROUTES } from "@/constants/routes";
+import { VenueCategory } from "@/constants/Venue";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getTopVenues } from "@/redux/slices/UserVenueSlice";
