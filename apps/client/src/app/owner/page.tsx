@@ -11,7 +11,6 @@ import NavTabs from "@/components/owner/NavTabs";
 import OverviewTab from "@/components/owner/OverviewTab";
 import BookingsTab from "@/components/owner/BookingsTab";
 import VenuesTab from "@/components/owner/VenuesTab";
-import AddVenueModal from "@/components/owner/VenueModal";
 import VenueModal from "@/components/owner/VenueModal";
 
 type Tab = "overview" | "bookings" | "venues";

@@ -4,13 +4,7 @@ import { fmt12h } from "@/lib/utils";
 import { Clock, Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { SessionInput } from "@bookmyvenue/types";
 
-// export interface Session {
-//     id?: number;
-//     label: string;
-//     startTime: string;
-//     endTime: string;
-//     price: string;
-// }
+
 
 const newSessionSchema = z
     .object({
