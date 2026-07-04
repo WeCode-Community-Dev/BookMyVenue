@@ -16,14 +16,13 @@ import("@/presentation/pages/vendor/VenueList"))
 const Bookings=lazy(()=>
 import("@/presentation/pages/vendor/Bookings"))
 
-const Profile=lazy(()=>
-import("@/presentation/pages/vendor/Profile"))
+const Profile = lazy(() => import("@/presentation/pages/vendor/Profile"));
 
-const AddVenue=lazy(()=>
-import("@/presentation/pages/vendor/AddVenue"))
+const AddVenue = lazy(() => import("@/presentation/pages/vendor/AddVenue"));
 
-const Settings=lazy(()=>
-import("@/presentation/pages/vendor/Settings"))
+const EditVenue = lazy(() => import("@/presentation/pages/vendor/EditVenue"));
+
+const Settings = lazy(() => import("@/presentation/pages/vendor/Settings"));
 
 
 
@@ -39,6 +38,7 @@ function App() {
           <Route path={ROUTES.VENDOR.VENUES} element={<VenueList/>}/>
           <Route path={ROUTES.VENDOR.BOOKINGS} element={<Bookings/>}/>
           <Route path={ROUTES.VENDOR.ADD_VENUE} element={<AddVenue/>}/>
+          <Route path={ROUTES.VENDOR.EDIT_VENUE} element={<EditVenue/>}/>
           <Route path={ROUTES.VENDOR.PROFILE} element={<Profile/>}/>
           <Route path={ROUTES.VENDOR.SETTINGS} element={<Settings />} />
       </Routes>

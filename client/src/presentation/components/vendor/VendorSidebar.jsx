@@ -1,6 +1,8 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import SidebarProfileCard from "./SidebarProfileCard";
+import { ROUTES } from "@/constatnts/routes";
+
 
 import {
   LayoutDashboard,
@@ -17,32 +19,32 @@ const VendorSidebar = () => {
   const menuItems = [
     {
       name: "Dashboard",
-      path: "/",
+      path: ROUTES.VENDOR.DASHBOARD,
       icon: LayoutDashboard,
     },
     {
       name: "My Venues",
-      path: "/venues",
+      path: ROUTES.VENDOR.VENUES,
       icon: Building2,
     },
     {
       name: "Add Venue",
-      path: "/addvenue",
+      path: ROUTES.VENDOR.ADD_VENUE,
       icon: PlusSquare,
     },
     {
       name: "Bookings",
-      path: "/bookings",
+      path: ROUTES.VENDOR.BOOKINGS,
       icon: CalendarDays,
     },
     {
       name: "Profile",
-      path: "/profile",
+      path: ROUTES.VENDOR.PROFILE,
       icon: User,
     },
     {
       name: "Settings",
-      path: "/settings",
+      path: ROUTES.VENDOR.SETTINGS,
       icon: Settings,
     },
   ];

@@ -14,6 +14,7 @@ export const ROUTES = {
         VENUES: '/vendor/venues',
         BOOKINGS: '/vendor/bookings',
         ADD_VENUE: '/vendor/add-venue',
+        EDIT_VENUE: '/vendor/edit-venue/:venueId',
         PROFILE: '/vendor/profile',
         SETTINGS: '/vendor/settings',
     },

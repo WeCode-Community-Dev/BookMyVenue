@@ -18,6 +18,10 @@ const VenueCard = ({
   price,
   bookings,
   rating,
+  category,
+  status,
+  onEdit,
+  onDelete,
 }) => {
   return (
     <Card className="overflow-hidden rounded-2xl border shadow-sm hover:shadow-lg transition-all duration-300">
@@ -32,12 +36,12 @@ const VenueCard = ({
 
         {/* Category */}
         <span className="absolute top-3 left-3 bg-white px-2.5 py-1 rounded-lg text-xs font-medium shadow-sm">
-          Banquet Hall
+          {category || "Venue"}
         </span>
 
         {/* Status */}
         <span className="absolute top-3 right-3 bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-medium">
-          ● Active
+          ● {status || "Active"}
         </span>
 
         {/* Rating */}
@@ -85,6 +89,7 @@ const VenueCard = ({
           <Button
             variant="outline"
             className="flex-1 rounded-xl"
+            onClick={onEdit}
           >
             <Pencil className="w-4 h-4 mr-2" />
             Edit
@@ -94,6 +99,7 @@ const VenueCard = ({
             variant="destructive"
             size="icon"
             className="rounded-xl"
+            onClick={onDelete}
           >
             <Trash2 className="w-4 h-4" />
           </Button>
