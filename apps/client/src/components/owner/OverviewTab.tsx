@@ -13,10 +13,11 @@ interface OverviewTabProps {
     onShowModal: () => void;
 }
 
+const PAGE_SIZE = 10;
 
 export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: OverviewTabProps) {
-    const { data, isLoading } = useOwnerBookings({ limit: 6 });
-    const recent = data?.bookings ?? [];
+    const { data, isLoading } = useOwnerBookings({ limit: PAGE_SIZE });
+    const recentBookings = data?.bookings ?? [];
 
     return (
         <div className="grid lg:grid-cols-3 gap-6">
@@ -36,12 +37,12 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                         <div className="px-5 py-10 text-center text-sm text-muted-foreground">
                             Loading bookings…
                         </div>
-                    ) : recent.length === 0 ? (
+                    ) : recentBookings.length === 0 ? (
                         <div className="px-5 py-10 text-center text-sm text-muted-foreground">
                             No bookings yet.
                         </div>
                     ) : (
-                        recent.slice(0, 6).map((b) => {
+                        recentBookings.slice(0, 6).map((b) => {
                             const status = b.status;
                             return (
                                 <div
@@ -91,7 +92,7 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                         </button>
                     </div>
                     <div className="divide-y divide-border">
-                        {venues.slice(0, 3).map((v) => (
+                        {venues.slice(0, 5).map((v) => (
                             <div
                                 key={v.id}
                                 className="flex items-center gap-3 px-5 py-3 hover:bg-muted/40 transition-colors"

@@ -16,6 +16,8 @@ import VenueModal from "@/components/owner/VenueModal";
 
 type Tab = "overview" | "bookings" | "venues";
 
+const PAGE_SIZE = 20;
+
 export default function OwnerDashboard() {
     const { getToken } = useAuth();
     const { isLoaded, user } = useUser();
@@ -25,7 +27,7 @@ export default function OwnerDashboard() {
     const [successToast] = useState(false);
     const [token, setToken] = useState("");
 
-    const { data } = useOwnerVenues({ page: 1, limit: 5 }, token);
+    const { data } = useOwnerVenues({ page: 1, limit: PAGE_SIZE }, token);
     const venues = data?.venues ?? [];
 
     const { data: dashboardData } = useOwnerDashboard();

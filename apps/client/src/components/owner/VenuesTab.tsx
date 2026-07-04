@@ -14,6 +14,8 @@ const STATUS_STYLE = {
     REJECTED: "bg-red-200 text-red-600 border-red-700",
 } as const;
 
+const PAGE_SIZE = 20
+
 export default function VenuesTab() {
     const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
     const [token, setToken] = useState("");
@@ -27,7 +29,7 @@ export default function VenuesTab() {
         fetchToken();
     }, [getToken]);
 
-    const { data, isLoading, error } = useOwnerVenues({ page: 1, limit: 20 }, token);
+    const { data, isLoading, error } = useOwnerVenues({ page: 1, limit: PAGE_SIZE }, token);
 
     const venues = data?.venues ?? [];
 
