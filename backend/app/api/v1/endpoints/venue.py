@@ -69,6 +69,7 @@ def get_all_venues(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     approved: bool = Query(False),
+    owner_id: UUID | None = Query(default=None),
     db: Session = Depends(get_db),
 ):
     result = venue_service.get_all_venues(
@@ -76,6 +77,7 @@ def get_all_venues(
         skip=skip,
         limit=limit,
         approved=approved,
+        owner_id=owner_id,
     )
 
     return SuccessResponse(

@@ -215,29 +215,50 @@ class VenueService:
         self,
         db: Session,
         approved: bool,
+        owner_id: UUID | None,
         skip: int = 0,
         limit: int = 20,
     ) -> List[VenueResponse]:
 
         try:
 
-            venues = (
-                db.query(Venue)
-                .options(
-                    joinedload(Venue.images),
-                    joinedload(Venue.slots),
-                    joinedload(Venue.services),
-                    joinedload(Venue.amenities).joinedload(VenueAmenity.amenity),
-                )
-                .filter(
+            # venues = (
+            #     db.query(Venue)
+            #     .options(
+            #         joinedload(Venue.images),
+            #         joinedload(Venue.slots),
+            #         joinedload(Venue.services),
+            #         joinedload(Venue.amenities).joinedload(VenueAmenity.amenity),
+            #     )
+            #     .filter(
+            #         Venue.verification_status == VerificationStatus.APPROVED
+            #         if approved
+            #         else True
+            #     )
+            #     .filter(Venue.owner_id == owner_id if owner_id is not None else True)
+            #     .order_by(Venue.created_at.desc())
+            #     .offset(skip)
+            #     .limit(limit)
+            #     .all()
+            # )
+
+            query = db.query(Venue).options(
+                joinedload(Venue.images),
+                joinedload(Venue.slots),
+                joinedload(Venue.services),
+                joinedload(Venue.amenities).joinedload(VenueAmenity.amenity),
+            )
+
+            if approved:
+                query = query.filter(
                     Venue.verification_status == VerificationStatus.APPROVED
-                    if approved
-                    else True
                 )
-                .order_by(Venue.created_at.desc())
-                .offset(skip)
-                .limit(limit)
-                .all()
+
+            if owner_id is not None:
+                query = query.filter(Venue.owner_id == owner_id)
+
+            venues = (
+                query.order_by(Venue.created_at.desc()).offset(skip).limit(limit).all()
             )
 
             for venue in venues:
