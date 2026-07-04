@@ -332,8 +332,6 @@ class VenueSlot(Base):
 
     end_time: Mapped[time]
 
-    capacity: Mapped[int | None]
-
     price: Mapped[float] = mapped_column(
         Numeric(12, 2),
         nullable=False,

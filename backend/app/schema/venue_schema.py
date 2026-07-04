@@ -133,12 +133,6 @@ class VenueSlotCreate(BaseModel):
 
     end_time: time
 
-    capacity: Optional[int] = Field(
-        default=None,
-        ge=1,
-        le=100000,
-    )
-
     price: Decimal = Field(
         ...,
         gt=0,
@@ -297,7 +291,6 @@ class VenueSlotResponse(BaseModel):
     slot_name: str
     start_time: time
     end_time: time
-    capacity: Optional[int]
     price: float
 
     model_config = ConfigDict(from_attributes=True)

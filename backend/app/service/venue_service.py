@@ -205,7 +205,6 @@ class VenueService:
                         slot_name=slot.slot_name,
                         start_time=slot.start_time,
                         end_time=slot.end_time,
-                        capacity=slot.capacity,
                         price=slot.price,
                     )
                 )
