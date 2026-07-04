@@ -10,3 +10,4 @@ pytest
 httpx
 python-multipart
 psycopg2-binary
+cloudinary

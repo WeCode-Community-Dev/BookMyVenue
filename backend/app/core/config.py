@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     ]
     """
 
+    CLOUDINARY_CLOUD_NAME: str
+    CLOUDINARY_API_KEY: str
+    CLOUDINARY_API_SECRET: str
+
     # Use SettingsConfigDict for Pydantic v2 settings loading configuration
     model_config = SettingsConfigDict(
         env_file=os.path.join(BASE_DIR, ".env"),
