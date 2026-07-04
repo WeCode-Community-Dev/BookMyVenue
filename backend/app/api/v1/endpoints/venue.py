@@ -68,12 +68,14 @@ def create_new_venue(
 def get_all_venues(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
+    approved: bool = Query(False),
     db: Session = Depends(get_db),
 ):
     result = venue_service.get_all_venues(
         db=db,
         skip=skip,
         limit=limit,
+        approved=approved,
     )
 
     return SuccessResponse(

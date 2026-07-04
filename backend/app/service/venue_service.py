@@ -55,42 +55,6 @@ class VenueService:
             max_capacity=venue.max_capacity,
             cover_image_url=venue.cover_image_url,
             virtual_tour_url=venue.virtual_tour_url,
-            # amenities=[
-            #     AmenityResponse(
-            #         id=a.id,
-            #         name=a.name,
-            #     )
-            #     for a in venue.amenities
-            # ],
-            # gallery_images=[
-            #     VenueImageResponse(
-            #         id=image.id,
-            #         image_url=image.image_url,
-            #         sort_order=image.sort_order,
-            #         created_at=image.created_at,
-            #     )
-            #     for image in venue.images
-            # ],
-            # slots=[
-            #     VenueSlotResponse(
-            #         id=slot.id,
-            #         slot_name=slot.slot_name,
-            #         start_time=slot.start_time,
-            #         end_time=slot.end_time,
-            #         capacity=slot.capacity,
-            #         price=slot.price,
-            #     )
-            #     for slot in venue.slots
-            # ],
-            # services=[
-            #     VenueServiceResponse(
-            #         id=service.id,
-            #         service_name=service.service_name,
-            #         price=service.price,
-            #     )
-            #     for service in venue.services
-            # ],
-            # amenities=[AmenityResponse.model_validate(a.ame) for a in venue.amenities],
             amenities=[
                 AmenityResponse.model_validate(a.amenity)
                 for a in venue.amenities
@@ -250,6 +214,7 @@ class VenueService:
     def get_all_venues(
         self,
         db: Session,
+        approved: bool,
         skip: int = 0,
         limit: int = 20,
     ) -> List[VenueResponse]:
@@ -263,6 +228,11 @@ class VenueService:
                     joinedload(Venue.slots),
                     joinedload(Venue.services),
                     joinedload(Venue.amenities).joinedload(VenueAmenity.amenity),
+                )
+                .filter(
+                    Venue.verification_status == VerificationStatus.APPROVED
+                    if approved
+                    else True
                 )
                 .order_by(Venue.created_at.desc())
                 .offset(skip)

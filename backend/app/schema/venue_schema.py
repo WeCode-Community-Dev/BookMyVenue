@@ -357,7 +357,7 @@ class VenueResponse(BaseModel):
     booking_count: int
     is_featured: bool
     verification_status: str
-    approved_by: Optional[UUID]
+    approved_by: Optional[str]
     approved_at: Optional[datetime]
     rejection_reason: Optional[str]
     published_at: Optional[datetime]
@@ -446,10 +446,10 @@ class UpdateVenueStatusResponse(BaseModel):
         examples=["approved"],
     )
 
-    approved_by: Optional[UUID] = Field(
+    approved_by: Optional[str] = Field(
         default=None,
         description="Admin ID who approved the venue. Null if not approved.",
-        examples=["6a4c4f4d-4f5b-47f0-8b17-18d7d6d9f7c1"],
+        examples=["Admin"],
     )
 
     approved_at: Optional[datetime] = Field(
