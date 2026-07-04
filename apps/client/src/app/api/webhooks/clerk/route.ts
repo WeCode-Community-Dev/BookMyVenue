@@ -1,3 +1,4 @@
+import { producer } from "@/lib/kafka";
 import { prisma } from "@bookmyvenue/database";
 import { clerkClient } from "@clerk/nextjs/server";
 import { WebhookEvent } from "@clerk/nextjs/server";
@@ -56,6 +57,13 @@ export async function POST(req: Request) {
 
         await prisma.user.create({
             data: { id, email, name, role },
+        });
+
+        await producer.send("user-created", {
+            userId: id,
+            email,
+            name,
+            role,
         });
     }
 

@@ -114,6 +114,9 @@ importers:
       '@bookmyvenue/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@bookmyvenue/kafka':
+        specifier: workspace:*
+        version: link:../../packages/kafka
       '@bookmyvenue/types':
         specifier: workspace:*
         version: link:../../packages/types
