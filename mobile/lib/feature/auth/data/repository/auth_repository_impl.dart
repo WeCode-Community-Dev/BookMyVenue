@@ -66,11 +66,13 @@ class AuthRepositoryImpl extends BaseRepository implements IAuthRepository {
           accessToken: response.data!.accessToken,
           refreshToken: response.data!.refreshToken,
           role: response.data!.user.role,
+          userId: response.data!.user.id,
         );
         await localDatasource.saveToken(sessionModel);
         await AuthSession.init();
       }
-      final String successMsg = (response.message != null &&
+      final String successMsg =
+          (response.message != null &&
               response.message!.isNotEmpty &&
               response.message != 'OTP sent successfully')
           ? response.message!
@@ -139,12 +141,14 @@ class OwnerAuthRepositoryImpl extends BaseRepository
           status:
               response.data!.user.ownerProfile?.approvalStatus ??
               ApprovalStatus.pending,
+          userId: response.data!.user.id,
         );
         await localDatasource.saveToken(sessionModel);
         await AuthSession.init();
       }
 
-      final String successMsg = (response.message != null &&
+      final String successMsg =
+          (response.message != null &&
               response.message!.isNotEmpty &&
               response.message != 'OTP sent successfully')
           ? response.message!
@@ -160,8 +164,8 @@ class OwnerAuthRepositoryImpl extends BaseRepository
   @override
   ResultFuture<OwnerProfileStatusResult> getOwnerProfileStatus() {
     return handleRequest(() async {
-      final ApiResponse<OwnerProfileStatusModel> response = await remoteDataSource
-          .getOwnerProfileStatus();
+      final ApiResponse<OwnerProfileStatusModel> response =
+          await remoteDataSource.getOwnerProfileStatus();
 
       if (response.data != null) {
         AuthSessionModel? authSession = await sl<SecureStorageService>()

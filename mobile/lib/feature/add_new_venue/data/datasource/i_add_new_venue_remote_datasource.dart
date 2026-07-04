@@ -11,10 +11,11 @@ abstract interface class IAddNewVenueRemoteDatasource {
   Future<ApiResponse<List<VenueResponseModel>>> getAllVenues({
     required int skip,
     required int limit,
+    String? ownerId,
   });
-  Future<ApiResponse<VenueResponseModel>> getVenuesById({
-    required String venueId,
-  });
+  // Future<ApiResponse<VenueResponseModel>> getVenuesById({
+  //   required String venueId,
+  // });
   Future<ApiResponse<List<VenueAmenity>>> getAmenities();
   Future<ApiResponse<List<ImageUploadResponseModel>>> uploadImages({
     required List<String> imagePaths,

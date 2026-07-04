@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/auth/auth_session.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
@@ -24,9 +25,10 @@ class OwnerAllVenues extends StatefulWidget {
 
 class _OwnerAllVenuesState extends State<OwnerAllVenues> {
   Future<void> _fetchVenues() async {
+    final String userId = AuthSession.userId ?? '';
     context.read<VenueBloc>().add(
-      const VenueEvent.getAllVenues(
-        params: GetVenuesParams(skip: 0, limit: 100),
+      VenueEvent.getAllVenues(
+        params: GetVenuesParams(skip: 0, limit: 20, ownerId: userId),
       ),
     );
   }

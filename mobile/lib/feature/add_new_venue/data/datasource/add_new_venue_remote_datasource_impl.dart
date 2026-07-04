@@ -43,11 +43,20 @@ class AddNewVenueRemoteDatasourceImpl extends BaseRemoteDataSourceImpl
   Future<ApiResponse<List<VenueResponseModel>>> getAllVenues({
     required int skip,
     required int limit,
+    String? ownerId,
   }) {
     return safeApiCall(() async {
+      final Map<String, dynamic> queryParameters = <String, dynamic>{
+        'skip': skip,
+        'limit': limit,
+      };
+      if (ownerId != null) {
+        queryParameters['owner_id'] = ownerId;
+      }
       final Response<dynamic> res = await dio.get(
         VenueManagementEndpoint.getVenue,
-        queryParameters: <String, dynamic>{'skip': skip, 'limit': limit},
+        // TODO(Jiyad): Retrive only current owner Venue update api with owner_id
+        queryParameters: queryParameters,
       );
 
       return ApiResponseMapper.fromJson(
@@ -57,22 +66,22 @@ class AddNewVenueRemoteDatasourceImpl extends BaseRemoteDataSourceImpl
     });
   }
 
-  @override
-  Future<ApiResponse<VenueResponseModel>> getVenuesById({
-    required String venueId,
-  }) {
-    return safeApiCall(() async {
-      final Response<dynamic> res = await dio.get(
-        '${VenueManagementEndpoint.getVenue}/$venueId',
-      );
+  // @override
+  // Future<ApiResponse<VenueResponseModel>> getVenuesById({
+  //   required String venueId,
+  // }) {
+  //   return safeApiCall(() async {
+  //     final Response<dynamic> res = await dio.get(
+  //       '${VenueManagementEndpoint.getVenue}/$venueId',
+  //     );
 
-      return ApiResponseMapper.fromJson(
-        res.data as Map<String, dynamic>,
-        (Object? data) =>
-            VenueResponseModel.fromJson(data! as Map<String, dynamic>),
-      );
-    });
-  }
+  //     return ApiResponseMapper.fromJson(
+  //       res.data as Map<String, dynamic>,
+  //       (Object? data) =>
+  //           VenueResponseModel.fromJson(data! as Map<String, dynamic>),
+  //     );
+  //   });
+  // }
 
   @override
   Future<ApiResponse<List<VenueAmenity>>> getAmenities() {

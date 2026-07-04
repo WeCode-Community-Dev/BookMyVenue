@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AuthSessionModel {
 
- String get accessToken; String get refreshToken; UserRole get role; ApprovalStatus? get status; String? get fullName;
+ String get accessToken; String get refreshToken; UserRole get role; String? get userId; ApprovalStatus? get status; String? get fullName;
 /// Create a copy of AuthSessionModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $AuthSessionModelCopyWith<AuthSessionModel> get copyWith => _$AuthSessionModelCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthSessionModel&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.fullName, fullName) || other.fullName == fullName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthSessionModel&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.role, role) || other.role == role)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.status, status) || other.status == status)&&(identical(other.fullName, fullName) || other.fullName == fullName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,accessToken,refreshToken,role,status,fullName);
+int get hashCode => Object.hash(runtimeType,accessToken,refreshToken,role,userId,status,fullName);
 
 @override
 String toString() {
-  return 'AuthSessionModel(accessToken: $accessToken, refreshToken: $refreshToken, role: $role, status: $status, fullName: $fullName)';
+  return 'AuthSessionModel(accessToken: $accessToken, refreshToken: $refreshToken, role: $role, userId: $userId, status: $status, fullName: $fullName)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $AuthSessionModelCopyWith<$Res>  {
   factory $AuthSessionModelCopyWith(AuthSessionModel value, $Res Function(AuthSessionModel) _then) = _$AuthSessionModelCopyWithImpl;
 @useResult
 $Res call({
- String accessToken, String refreshToken, UserRole role, ApprovalStatus? status, String? fullName
+ String accessToken, String refreshToken, UserRole role, String? userId, ApprovalStatus? status, String? fullName
 });
 
 
@@ -65,12 +65,13 @@ class _$AuthSessionModelCopyWithImpl<$Res>
 
 /// Create a copy of AuthSessionModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? accessToken = null,Object? refreshToken = null,Object? role = null,Object? status = freezed,Object? fullName = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? accessToken = null,Object? refreshToken = null,Object? role = null,Object? userId = freezed,Object? status = freezed,Object? fullName = freezed,}) {
   return _then(_self.copyWith(
 accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
 as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
-as UserRole,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as UserRole,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as ApprovalStatus?,fullName: freezed == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
@@ -157,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  UserRole role,  ApprovalStatus? status,  String? fullName)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  UserRole role,  String? userId,  ApprovalStatus? status,  String? fullName)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuthSessionModel() when $default != null:
-return $default(_that.accessToken,_that.refreshToken,_that.role,_that.status,_that.fullName);case _:
+return $default(_that.accessToken,_that.refreshToken,_that.role,_that.userId,_that.status,_that.fullName);case _:
   return orElse();
 
 }
@@ -178,10 +179,10 @@ return $default(_that.accessToken,_that.refreshToken,_that.role,_that.status,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  UserRole role,  ApprovalStatus? status,  String? fullName)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String accessToken,  String refreshToken,  UserRole role,  String? userId,  ApprovalStatus? status,  String? fullName)  $default,) {final _that = this;
 switch (_that) {
 case _AuthSessionModel():
-return $default(_that.accessToken,_that.refreshToken,_that.role,_that.status,_that.fullName);case _:
+return $default(_that.accessToken,_that.refreshToken,_that.role,_that.userId,_that.status,_that.fullName);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -198,10 +199,10 @@ return $default(_that.accessToken,_that.refreshToken,_that.role,_that.status,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String accessToken,  String refreshToken,  UserRole role,  ApprovalStatus? status,  String? fullName)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String accessToken,  String refreshToken,  UserRole role,  String? userId,  ApprovalStatus? status,  String? fullName)?  $default,) {final _that = this;
 switch (_that) {
 case _AuthSessionModel() when $default != null:
-return $default(_that.accessToken,_that.refreshToken,_that.role,_that.status,_that.fullName);case _:
+return $default(_that.accessToken,_that.refreshToken,_that.role,_that.userId,_that.status,_that.fullName);case _:
   return null;
 
 }
@@ -213,12 +214,13 @@ return $default(_that.accessToken,_that.refreshToken,_that.role,_that.status,_th
 @JsonSerializable()
 
 class _AuthSessionModel implements AuthSessionModel {
-  const _AuthSessionModel({required this.accessToken, required this.refreshToken, required this.role, this.status, this.fullName});
+  const _AuthSessionModel({required this.accessToken, required this.refreshToken, required this.role, required this.userId, this.status, this.fullName});
   factory _AuthSessionModel.fromJson(Map<String, dynamic> json) => _$AuthSessionModelFromJson(json);
 
 @override final  String accessToken;
 @override final  String refreshToken;
 @override final  UserRole role;
+@override final  String? userId;
 @override final  ApprovalStatus? status;
 @override final  String? fullName;
 
@@ -235,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthSessionModel&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.fullName, fullName) || other.fullName == fullName));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthSessionModel&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.role, role) || other.role == role)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.status, status) || other.status == status)&&(identical(other.fullName, fullName) || other.fullName == fullName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,accessToken,refreshToken,role,status,fullName);
+int get hashCode => Object.hash(runtimeType,accessToken,refreshToken,role,userId,status,fullName);
 
 @override
 String toString() {
-  return 'AuthSessionModel(accessToken: $accessToken, refreshToken: $refreshToken, role: $role, status: $status, fullName: $fullName)';
+  return 'AuthSessionModel(accessToken: $accessToken, refreshToken: $refreshToken, role: $role, userId: $userId, status: $status, fullName: $fullName)';
 }
 
 
@@ -255,7 +257,7 @@ abstract mixin class _$AuthSessionModelCopyWith<$Res> implements $AuthSessionMod
   factory _$AuthSessionModelCopyWith(_AuthSessionModel value, $Res Function(_AuthSessionModel) _then) = __$AuthSessionModelCopyWithImpl;
 @override @useResult
 $Res call({
- String accessToken, String refreshToken, UserRole role, ApprovalStatus? status, String? fullName
+ String accessToken, String refreshToken, UserRole role, String? userId, ApprovalStatus? status, String? fullName
 });
 
 
@@ -272,12 +274,13 @@ class __$AuthSessionModelCopyWithImpl<$Res>
 
 /// Create a copy of AuthSessionModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? accessToken = null,Object? refreshToken = null,Object? role = null,Object? status = freezed,Object? fullName = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? accessToken = null,Object? refreshToken = null,Object? role = null,Object? userId = freezed,Object? status = freezed,Object? fullName = freezed,}) {
   return _then(_AuthSessionModel(
 accessToken: null == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
 as String,refreshToken: null == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
 as String,role: null == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
-as UserRole,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as UserRole,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as ApprovalStatus?,fullName: freezed == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

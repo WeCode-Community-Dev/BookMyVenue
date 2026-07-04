@@ -31,13 +31,12 @@ class _OwnerVenueDetailsScreenState extends State<OwnerVenueDetailsScreen> {
     _venue = widget.venue;
     _pageController = PageController();
 
-    // Combine coverImageUrl and galleryImages URLs, filtering out duplicates/empty values
-    _imageUrls = <String>[
+    _imageUrls = <String>{
       if (_venue.coverImageUrl.isNotEmpty) _venue.coverImageUrl,
       ..._venue.galleryImages
-          .map((e) => e.imageUrl)
-          .where((url) => url.isNotEmpty),
-    ].toSet().toList();
+          .map((VenueGalleryImageEntity e) => e.imageUrl)
+          .where((String url) => url.isNotEmpty),
+    }.toList();
 
     if (_imageUrls.isEmpty) {
       _imageUrls.add(

@@ -12,6 +12,7 @@ abstract class AuthSessionModel with _$AuthSessionModel {
     required String accessToken,
     required String refreshToken,
     required UserRole role,
+    required String? userId,
     ApprovalStatus? status,
     String? fullName,
   }) = _AuthSessionModel;

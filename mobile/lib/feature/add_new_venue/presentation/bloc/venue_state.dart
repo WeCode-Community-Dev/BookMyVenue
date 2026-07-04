@@ -12,7 +12,7 @@ sealed class VenueState with _$VenueState {
 
     AddNewVenueEntity? addedVenue,
     @Default(<VenueEntity>[]) List<VenueEntity> venues,
-    VenueEntity? selectedVenue,
+    // VenueEntity? selectedVenue,
     @Default(<VenueAmenityEntity>[]) List<VenueAmenityEntity> amenities,
 
     String? successMessage,

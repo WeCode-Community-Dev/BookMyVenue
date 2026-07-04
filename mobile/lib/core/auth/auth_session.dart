@@ -11,6 +11,7 @@ class AuthSession {
   static UserRole? role;
   static ApprovalStatus ownerVerified = ApprovalStatus.pending;
   static String? ownerName;
+  static String? userId;
 
   static Future<void> init() async {
     // await sl<SecureStorageService>().clearAll();
@@ -23,5 +24,6 @@ class AuthSession {
     role = user?.role;
     ownerVerified = user?.status ?? ApprovalStatus.pending;
     ownerName = user?.fullName;
+    userId = user?.userId;
   }
 }

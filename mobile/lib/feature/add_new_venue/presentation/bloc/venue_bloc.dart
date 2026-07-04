@@ -13,7 +13,6 @@ import '../../domain/params/add_venue_params.dart';
 import '../../domain/params/get_venue_params.dart';
 import '../../domain/usecase/add_new_venue_usecase.dart';
 import '../../domain/usecase/get_all_venues_usecase.dart';
-import '../../domain/usecase/get_venue_by_id_usecase.dart';
 import '../../domain/usecase/get_venue_amenities_usecase.dart';
 import '../../domain/usecase/upload_images_usecase.dart';
 import '../../../../core/usecase/usecase.dart';
@@ -26,24 +25,24 @@ class VenueBloc extends Bloc<VenueEvent, VenueState> {
   VenueBloc({
     required AddNewVenueUseCase addNewVenueUseCase,
     required GetAllVenuesUseCase getAllVenuesUseCase,
-    required GetVenueByIdUseCase getVenueByIdUseCase,
+    // required GetVenueByIdUseCase getVenueByIdUseCase,
     required GetVenueAmenitiesUseCase getVenueAmenitiesUseCase,
     required UploadImagesUseCase uploadImagesUseCase,
   }) : _addNewVenueUseCase = addNewVenueUseCase,
        _getAllVenuesUseCase = getAllVenuesUseCase,
-       _getVenueByIdUseCase = getVenueByIdUseCase,
+       //  _getVenueByIdUseCase = getVenueByIdUseCase,
        _getVenueAmenitiesUseCase = getVenueAmenitiesUseCase,
        _uploadImagesUseCase = uploadImagesUseCase,
        super(VenueState.initial()) {
     on<_AddNewVenue>(_onAddNewVenue);
     on<_GetAllVenues>(_onGetAllVenues);
-    on<_GetVenueById>(_onGetVenueById);
+    // on<_GetVenueById>(_onGetVenueById);
     on<_GetAmenities>(_onGetAmenities);
   }
 
   final AddNewVenueUseCase _addNewVenueUseCase;
   final GetAllVenuesUseCase _getAllVenuesUseCase;
-  final GetVenueByIdUseCase _getVenueByIdUseCase;
+  // final GetVenueByIdUseCase _getVenueByIdUseCase;
   final GetVenueAmenitiesUseCase _getVenueAmenitiesUseCase;
   final UploadImagesUseCase _uploadImagesUseCase;
 
@@ -106,7 +105,8 @@ class VenueBloc extends Bloc<VenueEvent, VenueState> {
 
           if (coverUrl.isEmpty || galleryUrls.any((String u) => u.isEmpty)) {
             uploadFailed = true;
-            uploadErrorMessage = 'Failed to retrieve uploaded URLs for all images.';
+            uploadErrorMessage =
+                'Failed to retrieve uploaded URLs for all images.';
           } else {
             currentParams = currentParams.copyWith(
               coverImageUrl: coverUrl,
@@ -178,31 +178,31 @@ class VenueBloc extends Bloc<VenueEvent, VenueState> {
     );
   }
 
-  FutureOr<void> _onGetVenueById(
-    _GetVenueById event,
-    Emitter<VenueState> emit,
-  ) async {
-    emit(state.copyWith(getVenueStatus: VenueStatus.loading));
+  // FutureOr<void> _onGetVenueById(
+  //   _GetVenueById event,
+  //   Emitter<VenueState> emit,
+  // ) async {
+  //   emit(state.copyWith(getVenueStatus: VenueStatus.loading));
 
-    final Either<Failure, VenueResponseByIdResult> result =
-        await _getVenueByIdUseCase(event.venueId);
+  //   final Either<Failure, VenueResponseByIdResult> result =
+  //       await _getVenueByIdUseCase(event.venueId);
 
-    result.fold(
-      (Failure failure) => emit(
-        state.copyWith(
-          getVenueStatus: VenueStatus.failure,
-          errorMessage: failure.message,
-        ),
-      ),
-      (VenueResponseByIdResult venueResult) => emit(
-        state.copyWith(
-          getVenueStatus: VenueStatus.success,
-          successMessage: venueResult.message,
-          selectedVenue: venueResult.venue,
-        ),
-      ),
-    );
-  }
+  //   result.fold(
+  //     (Failure failure) => emit(
+  //       state.copyWith(
+  //         getVenueStatus: VenueStatus.failure,
+  //         errorMessage: failure.message,
+  //       ),
+  //     ),
+  //     (VenueResponseByIdResult venueResult) => emit(
+  //       state.copyWith(
+  //         getVenueStatus: VenueStatus.success,
+  //         successMessage: venueResult.message,
+  //         selectedVenue: venueResult.venue,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   FutureOr<void> _onGetAmenities(
     _GetAmenities event,

@@ -12,9 +12,9 @@ abstract interface class IVenueRepository {
   ResultFuture<VenueResponseResult> getAllVenues({
     required GetVenuesParams requestParams,
   });
-  ResultFuture<VenueResponseByIdResult> getVenuesById({
-    required String venueId,
-  });
+  // ResultFuture<VenueResponseByIdResult> getVenuesById({
+  //   required String venueId,
+  // });
   ResultFuture<VenueAmenityResult> getAmenities();
   ResultFuture<List<UploadedImageEntity>> uploadImages({
     required List<String> imagePaths,

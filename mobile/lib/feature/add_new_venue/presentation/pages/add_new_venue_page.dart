@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/auth/auth_session.dart';
 import '../../../../core/router/route_name.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
@@ -28,12 +29,13 @@ class _AddNewVenuePageState extends State<AddNewVenuePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((Duration timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final String userId = AuthSession.userId ?? '';
       context.read<VenueBloc>()
         ..add(const VenueEvent.getAmenities())
         ..add(
-          const VenueEvent.getAllVenues(
-            params: GetVenuesParams(skip: 0, limit: 20),
+          VenueEvent.getAllVenues(
+            params: GetVenuesParams(skip: 0, limit: 20, ownerId: userId),
           ),
         );
     });

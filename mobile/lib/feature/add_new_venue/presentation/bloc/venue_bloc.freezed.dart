@@ -55,13 +55,12 @@ extension VenueEventPatterns on VenueEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _AddNewVenue value)?  addNewVenue,TResult Function( _GetAllVenues value)?  getAllVenues,TResult Function( _GetVenueById value)?  getVenueById,TResult Function( _GetAmenities value)?  getAmenities,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _AddNewVenue value)?  addNewVenue,TResult Function( _GetAllVenues value)?  getAllVenues,TResult Function( _GetAmenities value)?  getAmenities,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _AddNewVenue() when addNewVenue != null:
 return addNewVenue(_that);case _GetAllVenues() when getAllVenues != null:
-return getAllVenues(_that);case _GetVenueById() when getVenueById != null:
-return getVenueById(_that);case _GetAmenities() when getAmenities != null:
+return getAllVenues(_that);case _GetAmenities() when getAmenities != null:
 return getAmenities(_that);case _:
   return orElse();
 
@@ -80,13 +79,12 @@ return getAmenities(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _AddNewVenue value)  addNewVenue,required TResult Function( _GetAllVenues value)  getAllVenues,required TResult Function( _GetVenueById value)  getVenueById,required TResult Function( _GetAmenities value)  getAmenities,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _AddNewVenue value)  addNewVenue,required TResult Function( _GetAllVenues value)  getAllVenues,required TResult Function( _GetAmenities value)  getAmenities,}){
 final _that = this;
 switch (_that) {
 case _AddNewVenue():
 return addNewVenue(_that);case _GetAllVenues():
-return getAllVenues(_that);case _GetVenueById():
-return getVenueById(_that);case _GetAmenities():
+return getAllVenues(_that);case _GetAmenities():
 return getAmenities(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -101,13 +99,12 @@ return getAmenities(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _AddNewVenue value)?  addNewVenue,TResult? Function( _GetAllVenues value)?  getAllVenues,TResult? Function( _GetVenueById value)?  getVenueById,TResult? Function( _GetAmenities value)?  getAmenities,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _AddNewVenue value)?  addNewVenue,TResult? Function( _GetAllVenues value)?  getAllVenues,TResult? Function( _GetAmenities value)?  getAmenities,}){
 final _that = this;
 switch (_that) {
 case _AddNewVenue() when addNewVenue != null:
 return addNewVenue(_that);case _GetAllVenues() when getAllVenues != null:
-return getAllVenues(_that);case _GetVenueById() when getVenueById != null:
-return getVenueById(_that);case _GetAmenities() when getAmenities != null:
+return getAllVenues(_that);case _GetAmenities() when getAmenities != null:
 return getAmenities(_that);case _:
   return null;
 
@@ -125,12 +122,11 @@ return getAmenities(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( AddNewVenueRequestParams params)?  addNewVenue,TResult Function( GetVenuesParams params)?  getAllVenues,TResult Function( String venueId)?  getVenueById,TResult Function()?  getAmenities,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( AddNewVenueRequestParams params)?  addNewVenue,TResult Function( GetVenuesParams params)?  getAllVenues,TResult Function()?  getAmenities,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AddNewVenue() when addNewVenue != null:
 return addNewVenue(_that.params);case _GetAllVenues() when getAllVenues != null:
-return getAllVenues(_that.params);case _GetVenueById() when getVenueById != null:
-return getVenueById(_that.venueId);case _GetAmenities() when getAmenities != null:
+return getAllVenues(_that.params);case _GetAmenities() when getAmenities != null:
 return getAmenities();case _:
   return orElse();
 
@@ -149,12 +145,11 @@ return getAmenities();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( AddNewVenueRequestParams params)  addNewVenue,required TResult Function( GetVenuesParams params)  getAllVenues,required TResult Function( String venueId)  getVenueById,required TResult Function()  getAmenities,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( AddNewVenueRequestParams params)  addNewVenue,required TResult Function( GetVenuesParams params)  getAllVenues,required TResult Function()  getAmenities,}) {final _that = this;
 switch (_that) {
 case _AddNewVenue():
 return addNewVenue(_that.params);case _GetAllVenues():
-return getAllVenues(_that.params);case _GetVenueById():
-return getVenueById(_that.venueId);case _GetAmenities():
+return getAllVenues(_that.params);case _GetAmenities():
 return getAmenities();}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -169,12 +164,11 @@ return getAmenities();}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( AddNewVenueRequestParams params)?  addNewVenue,TResult? Function( GetVenuesParams params)?  getAllVenues,TResult? Function( String venueId)?  getVenueById,TResult? Function()?  getAmenities,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( AddNewVenueRequestParams params)?  addNewVenue,TResult? Function( GetVenuesParams params)?  getAllVenues,TResult? Function()?  getAmenities,}) {final _that = this;
 switch (_that) {
 case _AddNewVenue() when addNewVenue != null:
 return addNewVenue(_that.params);case _GetAllVenues() when getAllVenues != null:
-return getAllVenues(_that.params);case _GetVenueById() when getVenueById != null:
-return getVenueById(_that.venueId);case _GetAmenities() when getAmenities != null:
+return getAllVenues(_that.params);case _GetAmenities() when getAmenities != null:
 return getAmenities();case _:
   return null;
 
@@ -318,72 +312,6 @@ as GetVenuesParams,
 /// @nodoc
 
 
-class _GetVenueById implements VenueEvent {
-  const _GetVenueById({required this.venueId});
-  
-
- final  String venueId;
-
-/// Create a copy of VenueEvent
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$GetVenueByIdCopyWith<_GetVenueById> get copyWith => __$GetVenueByIdCopyWithImpl<_GetVenueById>(this, _$identity);
-
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GetVenueById&&(identical(other.venueId, venueId) || other.venueId == venueId));
-}
-
-
-@override
-int get hashCode => Object.hash(runtimeType,venueId);
-
-@override
-String toString() {
-  return 'VenueEvent.getVenueById(venueId: $venueId)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$GetVenueByIdCopyWith<$Res> implements $VenueEventCopyWith<$Res> {
-  factory _$GetVenueByIdCopyWith(_GetVenueById value, $Res Function(_GetVenueById) _then) = __$GetVenueByIdCopyWithImpl;
-@useResult
-$Res call({
- String venueId
-});
-
-
-
-
-}
-/// @nodoc
-class __$GetVenueByIdCopyWithImpl<$Res>
-    implements _$GetVenueByIdCopyWith<$Res> {
-  __$GetVenueByIdCopyWithImpl(this._self, this._then);
-
-  final _GetVenueById _self;
-  final $Res Function(_GetVenueById) _then;
-
-/// Create a copy of VenueEvent
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? venueId = null,}) {
-  return _then(_GetVenueById(
-venueId: null == venueId ? _self.venueId : venueId // ignore: cast_nullable_to_non_nullable
-as String,
-  ));
-}
-
-
-}
-
-/// @nodoc
-
-
 class _GetAmenities implements VenueEvent {
   const _GetAmenities();
   
@@ -416,7 +344,8 @@ String toString() {
 /// @nodoc
 mixin _$VenueState {
 
- VenueStatus get addVenueStatus; VenueStatus get getAllVenuesStatus; VenueStatus get getVenueStatus; VenueStatus get getAmenitiesStatus; AddNewVenueEntity? get addedVenue; List<VenueEntity> get venues; VenueEntity? get selectedVenue; List<VenueAmenityEntity> get amenities; String? get successMessage; String? get errorMessage;
+ VenueStatus get addVenueStatus; VenueStatus get getAllVenuesStatus; VenueStatus get getVenueStatus; VenueStatus get getAmenitiesStatus; AddNewVenueEntity? get addedVenue; List<VenueEntity> get venues;// VenueEntity? selectedVenue,
+ List<VenueAmenityEntity> get amenities; String? get successMessage; String? get errorMessage;
 /// Create a copy of VenueState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -427,16 +356,16 @@ $VenueStateCopyWith<VenueState> get copyWith => _$VenueStateCopyWithImpl<VenueSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueState&&(identical(other.addVenueStatus, addVenueStatus) || other.addVenueStatus == addVenueStatus)&&(identical(other.getAllVenuesStatus, getAllVenuesStatus) || other.getAllVenuesStatus == getAllVenuesStatus)&&(identical(other.getVenueStatus, getVenueStatus) || other.getVenueStatus == getVenueStatus)&&(identical(other.getAmenitiesStatus, getAmenitiesStatus) || other.getAmenitiesStatus == getAmenitiesStatus)&&(identical(other.addedVenue, addedVenue) || other.addedVenue == addedVenue)&&const DeepCollectionEquality().equals(other.venues, venues)&&(identical(other.selectedVenue, selectedVenue) || other.selectedVenue == selectedVenue)&&const DeepCollectionEquality().equals(other.amenities, amenities)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueState&&(identical(other.addVenueStatus, addVenueStatus) || other.addVenueStatus == addVenueStatus)&&(identical(other.getAllVenuesStatus, getAllVenuesStatus) || other.getAllVenuesStatus == getAllVenuesStatus)&&(identical(other.getVenueStatus, getVenueStatus) || other.getVenueStatus == getVenueStatus)&&(identical(other.getAmenitiesStatus, getAmenitiesStatus) || other.getAmenitiesStatus == getAmenitiesStatus)&&(identical(other.addedVenue, addedVenue) || other.addedVenue == addedVenue)&&const DeepCollectionEquality().equals(other.venues, venues)&&const DeepCollectionEquality().equals(other.amenities, amenities)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,addVenueStatus,getAllVenuesStatus,getVenueStatus,getAmenitiesStatus,addedVenue,const DeepCollectionEquality().hash(venues),selectedVenue,const DeepCollectionEquality().hash(amenities),successMessage,errorMessage);
+int get hashCode => Object.hash(runtimeType,addVenueStatus,getAllVenuesStatus,getVenueStatus,getAmenitiesStatus,addedVenue,const DeepCollectionEquality().hash(venues),const DeepCollectionEquality().hash(amenities),successMessage,errorMessage);
 
 @override
 String toString() {
-  return 'VenueState(addVenueStatus: $addVenueStatus, getAllVenuesStatus: $getAllVenuesStatus, getVenueStatus: $getVenueStatus, getAmenitiesStatus: $getAmenitiesStatus, addedVenue: $addedVenue, venues: $venues, selectedVenue: $selectedVenue, amenities: $amenities, successMessage: $successMessage, errorMessage: $errorMessage)';
+  return 'VenueState(addVenueStatus: $addVenueStatus, getAllVenuesStatus: $getAllVenuesStatus, getVenueStatus: $getVenueStatus, getAmenitiesStatus: $getAmenitiesStatus, addedVenue: $addedVenue, venues: $venues, amenities: $amenities, successMessage: $successMessage, errorMessage: $errorMessage)';
 }
 
 
@@ -447,7 +376,7 @@ abstract mixin class $VenueStateCopyWith<$Res>  {
   factory $VenueStateCopyWith(VenueState value, $Res Function(VenueState) _then) = _$VenueStateCopyWithImpl;
 @useResult
 $Res call({
- VenueStatus addVenueStatus, VenueStatus getAllVenuesStatus, VenueStatus getVenueStatus, VenueStatus getAmenitiesStatus, AddNewVenueEntity? addedVenue, List<VenueEntity> venues, VenueEntity? selectedVenue, List<VenueAmenityEntity> amenities, String? successMessage, String? errorMessage
+ VenueStatus addVenueStatus, VenueStatus getAllVenuesStatus, VenueStatus getVenueStatus, VenueStatus getAmenitiesStatus, AddNewVenueEntity? addedVenue, List<VenueEntity> venues, List<VenueAmenityEntity> amenities, String? successMessage, String? errorMessage
 });
 
 
@@ -464,7 +393,7 @@ class _$VenueStateCopyWithImpl<$Res>
 
 /// Create a copy of VenueState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? addVenueStatus = null,Object? getAllVenuesStatus = null,Object? getVenueStatus = null,Object? getAmenitiesStatus = null,Object? addedVenue = freezed,Object? venues = null,Object? selectedVenue = freezed,Object? amenities = null,Object? successMessage = freezed,Object? errorMessage = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? addVenueStatus = null,Object? getAllVenuesStatus = null,Object? getVenueStatus = null,Object? getAmenitiesStatus = null,Object? addedVenue = freezed,Object? venues = null,Object? amenities = null,Object? successMessage = freezed,Object? errorMessage = freezed,}) {
   return _then(_self.copyWith(
 addVenueStatus: null == addVenueStatus ? _self.addVenueStatus : addVenueStatus // ignore: cast_nullable_to_non_nullable
 as VenueStatus,getAllVenuesStatus: null == getAllVenuesStatus ? _self.getAllVenuesStatus : getAllVenuesStatus // ignore: cast_nullable_to_non_nullable
@@ -472,8 +401,7 @@ as VenueStatus,getVenueStatus: null == getVenueStatus ? _self.getVenueStatus : g
 as VenueStatus,getAmenitiesStatus: null == getAmenitiesStatus ? _self.getAmenitiesStatus : getAmenitiesStatus // ignore: cast_nullable_to_non_nullable
 as VenueStatus,addedVenue: freezed == addedVenue ? _self.addedVenue : addedVenue // ignore: cast_nullable_to_non_nullable
 as AddNewVenueEntity?,venues: null == venues ? _self.venues : venues // ignore: cast_nullable_to_non_nullable
-as List<VenueEntity>,selectedVenue: freezed == selectedVenue ? _self.selectedVenue : selectedVenue // ignore: cast_nullable_to_non_nullable
-as VenueEntity?,amenities: null == amenities ? _self.amenities : amenities // ignore: cast_nullable_to_non_nullable
+as List<VenueEntity>,amenities: null == amenities ? _self.amenities : amenities // ignore: cast_nullable_to_non_nullable
 as List<VenueAmenityEntity>,successMessage: freezed == successMessage ? _self.successMessage : successMessage // ignore: cast_nullable_to_non_nullable
 as String?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -558,10 +486,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( VenueStatus addVenueStatus,  VenueStatus getAllVenuesStatus,  VenueStatus getVenueStatus,  VenueStatus getAmenitiesStatus,  AddNewVenueEntity? addedVenue,  List<VenueEntity> venues,  VenueEntity? selectedVenue,  List<VenueAmenityEntity> amenities,  String? successMessage,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( VenueStatus addVenueStatus,  VenueStatus getAllVenuesStatus,  VenueStatus getVenueStatus,  VenueStatus getAmenitiesStatus,  AddNewVenueEntity? addedVenue,  List<VenueEntity> venues,  List<VenueAmenityEntity> amenities,  String? successMessage,  String? errorMessage)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _VenueState() when $default != null:
-return $default(_that.addVenueStatus,_that.getAllVenuesStatus,_that.getVenueStatus,_that.getAmenitiesStatus,_that.addedVenue,_that.venues,_that.selectedVenue,_that.amenities,_that.successMessage,_that.errorMessage);case _:
+return $default(_that.addVenueStatus,_that.getAllVenuesStatus,_that.getVenueStatus,_that.getAmenitiesStatus,_that.addedVenue,_that.venues,_that.amenities,_that.successMessage,_that.errorMessage);case _:
   return orElse();
 
 }
@@ -579,10 +507,10 @@ return $default(_that.addVenueStatus,_that.getAllVenuesStatus,_that.getVenueStat
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( VenueStatus addVenueStatus,  VenueStatus getAllVenuesStatus,  VenueStatus getVenueStatus,  VenueStatus getAmenitiesStatus,  AddNewVenueEntity? addedVenue,  List<VenueEntity> venues,  VenueEntity? selectedVenue,  List<VenueAmenityEntity> amenities,  String? successMessage,  String? errorMessage)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( VenueStatus addVenueStatus,  VenueStatus getAllVenuesStatus,  VenueStatus getVenueStatus,  VenueStatus getAmenitiesStatus,  AddNewVenueEntity? addedVenue,  List<VenueEntity> venues,  List<VenueAmenityEntity> amenities,  String? successMessage,  String? errorMessage)  $default,) {final _that = this;
 switch (_that) {
 case _VenueState():
-return $default(_that.addVenueStatus,_that.getAllVenuesStatus,_that.getVenueStatus,_that.getAmenitiesStatus,_that.addedVenue,_that.venues,_that.selectedVenue,_that.amenities,_that.successMessage,_that.errorMessage);}
+return $default(_that.addVenueStatus,_that.getAllVenuesStatus,_that.getVenueStatus,_that.getAmenitiesStatus,_that.addedVenue,_that.venues,_that.amenities,_that.successMessage,_that.errorMessage);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -596,10 +524,10 @@ return $default(_that.addVenueStatus,_that.getAllVenuesStatus,_that.getVenueStat
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( VenueStatus addVenueStatus,  VenueStatus getAllVenuesStatus,  VenueStatus getVenueStatus,  VenueStatus getAmenitiesStatus,  AddNewVenueEntity? addedVenue,  List<VenueEntity> venues,  VenueEntity? selectedVenue,  List<VenueAmenityEntity> amenities,  String? successMessage,  String? errorMessage)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( VenueStatus addVenueStatus,  VenueStatus getAllVenuesStatus,  VenueStatus getVenueStatus,  VenueStatus getAmenitiesStatus,  AddNewVenueEntity? addedVenue,  List<VenueEntity> venues,  List<VenueAmenityEntity> amenities,  String? successMessage,  String? errorMessage)?  $default,) {final _that = this;
 switch (_that) {
 case _VenueState() when $default != null:
-return $default(_that.addVenueStatus,_that.getAllVenuesStatus,_that.getVenueStatus,_that.getAmenitiesStatus,_that.addedVenue,_that.venues,_that.selectedVenue,_that.amenities,_that.successMessage,_that.errorMessage);case _:
+return $default(_that.addVenueStatus,_that.getAllVenuesStatus,_that.getVenueStatus,_that.getAmenitiesStatus,_that.addedVenue,_that.venues,_that.amenities,_that.successMessage,_that.errorMessage);case _:
   return null;
 
 }
@@ -611,7 +539,7 @@ return $default(_that.addVenueStatus,_that.getAllVenuesStatus,_that.getVenueStat
 
 
 class _VenueState implements VenueState {
-  const _VenueState({this.addVenueStatus = VenueStatus.initial, this.getAllVenuesStatus = VenueStatus.initial, this.getVenueStatus = VenueStatus.initial, this.getAmenitiesStatus = VenueStatus.initial, this.addedVenue, final  List<VenueEntity> venues = const <VenueEntity>[], this.selectedVenue, final  List<VenueAmenityEntity> amenities = const <VenueAmenityEntity>[], this.successMessage, this.errorMessage}): _venues = venues,_amenities = amenities;
+  const _VenueState({this.addVenueStatus = VenueStatus.initial, this.getAllVenuesStatus = VenueStatus.initial, this.getVenueStatus = VenueStatus.initial, this.getAmenitiesStatus = VenueStatus.initial, this.addedVenue, final  List<VenueEntity> venues = const <VenueEntity>[], final  List<VenueAmenityEntity> amenities = const <VenueAmenityEntity>[], this.successMessage, this.errorMessage}): _venues = venues,_amenities = amenities;
   
 
 @override@JsonKey() final  VenueStatus addVenueStatus;
@@ -626,8 +554,9 @@ class _VenueState implements VenueState {
   return EqualUnmodifiableListView(_venues);
 }
 
-@override final  VenueEntity? selectedVenue;
+// VenueEntity? selectedVenue,
  final  List<VenueAmenityEntity> _amenities;
+// VenueEntity? selectedVenue,
 @override@JsonKey() List<VenueAmenityEntity> get amenities {
   if (_amenities is EqualUnmodifiableListView) return _amenities;
   // ignore: implicit_dynamic_type
@@ -647,16 +576,16 @@ _$VenueStateCopyWith<_VenueState> get copyWith => __$VenueStateCopyWithImpl<_Ven
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VenueState&&(identical(other.addVenueStatus, addVenueStatus) || other.addVenueStatus == addVenueStatus)&&(identical(other.getAllVenuesStatus, getAllVenuesStatus) || other.getAllVenuesStatus == getAllVenuesStatus)&&(identical(other.getVenueStatus, getVenueStatus) || other.getVenueStatus == getVenueStatus)&&(identical(other.getAmenitiesStatus, getAmenitiesStatus) || other.getAmenitiesStatus == getAmenitiesStatus)&&(identical(other.addedVenue, addedVenue) || other.addedVenue == addedVenue)&&const DeepCollectionEquality().equals(other._venues, _venues)&&(identical(other.selectedVenue, selectedVenue) || other.selectedVenue == selectedVenue)&&const DeepCollectionEquality().equals(other._amenities, _amenities)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VenueState&&(identical(other.addVenueStatus, addVenueStatus) || other.addVenueStatus == addVenueStatus)&&(identical(other.getAllVenuesStatus, getAllVenuesStatus) || other.getAllVenuesStatus == getAllVenuesStatus)&&(identical(other.getVenueStatus, getVenueStatus) || other.getVenueStatus == getVenueStatus)&&(identical(other.getAmenitiesStatus, getAmenitiesStatus) || other.getAmenitiesStatus == getAmenitiesStatus)&&(identical(other.addedVenue, addedVenue) || other.addedVenue == addedVenue)&&const DeepCollectionEquality().equals(other._venues, _venues)&&const DeepCollectionEquality().equals(other._amenities, _amenities)&&(identical(other.successMessage, successMessage) || other.successMessage == successMessage)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,addVenueStatus,getAllVenuesStatus,getVenueStatus,getAmenitiesStatus,addedVenue,const DeepCollectionEquality().hash(_venues),selectedVenue,const DeepCollectionEquality().hash(_amenities),successMessage,errorMessage);
+int get hashCode => Object.hash(runtimeType,addVenueStatus,getAllVenuesStatus,getVenueStatus,getAmenitiesStatus,addedVenue,const DeepCollectionEquality().hash(_venues),const DeepCollectionEquality().hash(_amenities),successMessage,errorMessage);
 
 @override
 String toString() {
-  return 'VenueState(addVenueStatus: $addVenueStatus, getAllVenuesStatus: $getAllVenuesStatus, getVenueStatus: $getVenueStatus, getAmenitiesStatus: $getAmenitiesStatus, addedVenue: $addedVenue, venues: $venues, selectedVenue: $selectedVenue, amenities: $amenities, successMessage: $successMessage, errorMessage: $errorMessage)';
+  return 'VenueState(addVenueStatus: $addVenueStatus, getAllVenuesStatus: $getAllVenuesStatus, getVenueStatus: $getVenueStatus, getAmenitiesStatus: $getAmenitiesStatus, addedVenue: $addedVenue, venues: $venues, amenities: $amenities, successMessage: $successMessage, errorMessage: $errorMessage)';
 }
 
 
@@ -667,7 +596,7 @@ abstract mixin class _$VenueStateCopyWith<$Res> implements $VenueStateCopyWith<$
   factory _$VenueStateCopyWith(_VenueState value, $Res Function(_VenueState) _then) = __$VenueStateCopyWithImpl;
 @override @useResult
 $Res call({
- VenueStatus addVenueStatus, VenueStatus getAllVenuesStatus, VenueStatus getVenueStatus, VenueStatus getAmenitiesStatus, AddNewVenueEntity? addedVenue, List<VenueEntity> venues, VenueEntity? selectedVenue, List<VenueAmenityEntity> amenities, String? successMessage, String? errorMessage
+ VenueStatus addVenueStatus, VenueStatus getAllVenuesStatus, VenueStatus getVenueStatus, VenueStatus getAmenitiesStatus, AddNewVenueEntity? addedVenue, List<VenueEntity> venues, List<VenueAmenityEntity> amenities, String? successMessage, String? errorMessage
 });
 
 
@@ -684,7 +613,7 @@ class __$VenueStateCopyWithImpl<$Res>
 
 /// Create a copy of VenueState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? addVenueStatus = null,Object? getAllVenuesStatus = null,Object? getVenueStatus = null,Object? getAmenitiesStatus = null,Object? addedVenue = freezed,Object? venues = null,Object? selectedVenue = freezed,Object? amenities = null,Object? successMessage = freezed,Object? errorMessage = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? addVenueStatus = null,Object? getAllVenuesStatus = null,Object? getVenueStatus = null,Object? getAmenitiesStatus = null,Object? addedVenue = freezed,Object? venues = null,Object? amenities = null,Object? successMessage = freezed,Object? errorMessage = freezed,}) {
   return _then(_VenueState(
 addVenueStatus: null == addVenueStatus ? _self.addVenueStatus : addVenueStatus // ignore: cast_nullable_to_non_nullable
 as VenueStatus,getAllVenuesStatus: null == getAllVenuesStatus ? _self.getAllVenuesStatus : getAllVenuesStatus // ignore: cast_nullable_to_non_nullable
@@ -692,8 +621,7 @@ as VenueStatus,getVenueStatus: null == getVenueStatus ? _self.getVenueStatus : g
 as VenueStatus,getAmenitiesStatus: null == getAmenitiesStatus ? _self.getAmenitiesStatus : getAmenitiesStatus // ignore: cast_nullable_to_non_nullable
 as VenueStatus,addedVenue: freezed == addedVenue ? _self.addedVenue : addedVenue // ignore: cast_nullable_to_non_nullable
 as AddNewVenueEntity?,venues: null == venues ? _self._venues : venues // ignore: cast_nullable_to_non_nullable
-as List<VenueEntity>,selectedVenue: freezed == selectedVenue ? _self.selectedVenue : selectedVenue // ignore: cast_nullable_to_non_nullable
-as VenueEntity?,amenities: null == amenities ? _self._amenities : amenities // ignore: cast_nullable_to_non_nullable
+as List<VenueEntity>,amenities: null == amenities ? _self._amenities : amenities // ignore: cast_nullable_to_non_nullable
 as List<VenueAmenityEntity>,successMessage: freezed == successMessage ? _self.successMessage : successMessage // ignore: cast_nullable_to_non_nullable
 as String?,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,

@@ -45,6 +45,7 @@ class VenueRepositoryImpl extends BaseRepository implements IVenueRepository {
           await remoteDatasource.getAllVenues(
             skip: requestParams.skip,
             limit: requestParams.limit,
+            ownerId: requestParams.ownerId,
           );
 
       return VenueResponseResult(
@@ -56,20 +57,20 @@ class VenueRepositoryImpl extends BaseRepository implements IVenueRepository {
     });
   }
 
-  @override
-  ResultFuture<VenueResponseByIdResult> getVenuesById({
-    required String venueId,
-  }) {
-    return handleRequest(() async {
-      final ApiResponse<VenueResponseModel> response = await remoteDatasource
-          .getVenuesById(venueId: venueId);
+  // @override
+  // ResultFuture<VenueResponseByIdResult> getVenuesById({
+  //   required String venueId,
+  // }) {
+  //   return handleRequest(() async {
+  //     final ApiResponse<VenueResponseModel> response = await remoteDatasource
+  //         .getVenuesById(venueId: venueId);
 
-      return VenueResponseByIdResult(
-        venue: response.data!.toEntity(),
-        message: response.message ?? '',
-      );
-    });
-  }
+  //     return VenueResponseByIdResult(
+  //       venue: response.data!.toEntity(),
+  //       message: response.message ?? '',
+  //     );
+  //   });
+  // }
 
   @override
   ResultFuture<VenueAmenityResult> getAmenities() {
