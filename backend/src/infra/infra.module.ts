@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { ConsoleLogger, Module } from '@nestjs/common';
 import { DatabaseModule } from './database/database.module';
 import { PrismaUserRepository } from './repositories/prisma-user.repository';
 import { PrismaVenueRepository } from './repositories/prisma-venue.repository';
@@ -59,6 +59,10 @@ import { Argon2PasswordHasher } from './services/argon-password-hasher';
     {
       provide: 'IPaymentProvider',
       useClass: RazorpayPaymentProvider
+    },
+    {
+      provide: 'ILogger',
+      useClass: ConsoleLogger
     }
   ],
   exports: [
@@ -72,7 +76,8 @@ import { Argon2PasswordHasher } from './services/argon-password-hasher';
     'IRefreshTokenRepository',
     'IDashboardRepository',
     'IPaymentRepository',
-    'IPaymentProvider'
+    'IPaymentProvider',
+    'ILogger'
   ],
 })
 export class InfraModule { } 

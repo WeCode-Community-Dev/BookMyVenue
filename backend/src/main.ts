@@ -31,7 +31,9 @@ async function bootstrap() {
     },
   );
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: ['health/*', '/']
+  });
 
   const config = new DocumentBuilder()
     .setTitle('BMV API Documentation')
