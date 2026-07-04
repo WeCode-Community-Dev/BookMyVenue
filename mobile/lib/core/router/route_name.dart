@@ -8,6 +8,7 @@ class AppRouteNames {
   /// Venue owner routes
   static const String ownerDashboard = 'owner_dashboard';
   static const String addNewVenue = 'add_new_venue';
+  static const String allVenues = 'all_venues';
   static const String payout = 'payout';
   static const String payoutDetails = 'payout_details';
   static const String payoutHistory = 'payout_history';

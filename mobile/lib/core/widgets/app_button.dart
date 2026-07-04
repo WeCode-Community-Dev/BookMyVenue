@@ -18,11 +18,13 @@ class AppButton extends StatelessWidget {
     super.key,
     this.isLoading = false,
     this.borderRadius,
+    this.minWidth,
   });
   final String label;
   final VoidCallback? onPressed;
   final ButtonType type;
   final ButtonSize size;
+  final double? minWidth;
   final bool isLoading;
   final BorderRadiusGeometry? borderRadius;
 
@@ -80,7 +82,11 @@ class AppButton extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        final double width = isLoading ? 50 : constraints.maxWidth;
+        final double width = isLoading
+            ? 50
+            : minWidth != null
+            ? minWidth!
+            : constraints.maxWidth;
         return Center(
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),

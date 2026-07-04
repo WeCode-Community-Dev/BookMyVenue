@@ -164,7 +164,6 @@ class _BuildStep4PricingState extends State<BuildStep4Pricing> {
               slotName: p.slotName,
               startTime: p.startTime,
               endTime: p.endTime,
-              capacity: p.capacity,
               price: p.price,
             ),
           )

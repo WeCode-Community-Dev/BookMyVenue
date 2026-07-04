@@ -24,6 +24,7 @@ class UserVenueRemoteDatasourceImpl extends BaseRemoteDataSourceImpl
         queryParameters: <String, dynamic>{
           'skip': params.skip,
           'limit': params.limit,
+          'approved': true,
         },
       );
 

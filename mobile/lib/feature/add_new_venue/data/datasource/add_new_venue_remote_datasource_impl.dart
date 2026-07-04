@@ -47,11 +47,7 @@ class AddNewVenueRemoteDatasourceImpl extends BaseRemoteDataSourceImpl
     return safeApiCall(() async {
       final Response<dynamic> res = await dio.get(
         VenueManagementEndpoint.getVenue,
-        queryParameters: <String, dynamic>{
-          'skip': skip,
-          'limit': limit,
-          'is_verified': true,
-        },
+        queryParameters: <String, dynamic>{'skip': skip, 'limit': limit},
       );
 
       return ApiResponseMapper.fromJson(

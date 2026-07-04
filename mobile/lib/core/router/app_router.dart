@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nested/nested.dart';
 
 import '../../feature/add_new_venue/presentation/bloc/cubit/venue_details_cubit.dart';
 import '../../feature/add_new_venue/presentation/bloc/venue_bloc.dart';
 import '../../feature/add_new_venue/presentation/pages/add_new_venue_page.dart';
+import '../../feature/add_new_venue/presentation/pages/all_venues.dart';
 import '../../feature/auth/domain/enums/approval_status.dart';
 import '../../feature/auth/domain/enums/role_base.dart';
 import '../../feature/auth/presentation/bloc/owner/owner_auth_bloc.dart';
@@ -137,23 +139,41 @@ class AppRouter {
               ),
             ],
           ),
+
           StatefulShellBranch(
             routes: <RouteBase>[
-              GoRoute(
-                path: '/${AppRouteNames.addNewVenue}',
-                name: AppRouteNames.addNewVenue,
-                builder: (BuildContext context, GoRouterState state) =>
-                    MultiBlocProvider(
-                      providers: [
-                        BlocProvider<VenueDetailsCubit>(
-                          create: (BuildContext context) => VenueDetailsCubit(),
-                        ),
-                        BlocProvider<VenueBloc>(
-                          create: (BuildContext context) => sl<VenueBloc>(),
-                        ),
-                      ],
-                      child: const OwnerVenuesListPage(),
-                    ),
+              ShellRoute(
+                builder:
+                    (BuildContext context, GoRouterState state, Widget child) {
+                      return MultiBlocProvider(
+                        providers: <SingleChildWidget>[
+                          BlocProvider<VenueDetailsCubit>(
+                            create: (BuildContext context) =>
+                                VenueDetailsCubit(),
+                          ),
+                          BlocProvider<VenueBloc>(
+                            create: (BuildContext context) => sl<VenueBloc>(),
+                          ),
+                        ],
+                        child: child,
+                      );
+                    },
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: '/${AppRouteNames.addNewVenue}',
+                    name: AppRouteNames.addNewVenue,
+                    builder: (BuildContext context, GoRouterState state) {
+                      return const AddNewVenuePage();
+                    },
+                  ),
+                  GoRoute(
+                    path: '/${AppRouteNames.allVenues}',
+                    name: AppRouteNames.allVenues,
+                    builder: (BuildContext context, GoRouterState state) {
+                      return const OwnerAllVenues();
+                    },
+                  ),
+                ],
               ),
             ],
           ),
@@ -174,8 +194,7 @@ class AppRouter {
                 name: AppRouteNames.ownerProfile,
                 builder: (BuildContext context, GoRouterState state) =>
                     BlocProvider<OwnerProfileBloc>(
-                      create: (BuildContext context) =>
-                          sl<OwnerProfileBloc>(),
+                      create: (BuildContext context) => sl<OwnerProfileBloc>(),
                       child: const OwnerProfileSettingsScreen(),
                     ),
               ),
