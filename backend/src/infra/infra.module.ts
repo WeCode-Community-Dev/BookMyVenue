@@ -4,13 +4,13 @@ import { PrismaUserRepository } from './repositories/prisma-user.repository';
 import { PrismaVenueRepository } from './repositories/prisma-venue.repository';
 import { PrismaBookingRepository } from './repositories/prisma-booking.repository';
 import { PrismaRefreshTokenRepository } from './repositories/prisma-refresh-token.repository';
-import { CryptoPasswordHasher } from './services/crypto-password-hasher';
 import { JwtTokenService } from './services/jwt-token.service';
 import { PrismaVenueImageRepository } from './repositories/prisma-venue-image.repository';
 import { LocalFileStorageService } from './storage/local-file.storage';
 import { PrismaDashboardRepository } from './repositories/prisma-dashboard.repository';
 import { PrismaPaymentRepository } from './repositories/prisma-payment.repository';
 import { RazorpayPaymentProvider } from './payment/razorpay-provider';
+import { Argon2PasswordHasher } from './services/argon-password-hasher';
 
 @Module({
   imports: [DatabaseModule],
@@ -21,7 +21,7 @@ import { RazorpayPaymentProvider } from './payment/razorpay-provider';
     },
     {
       provide: 'IPasswordHasher',
-      useClass: CryptoPasswordHasher,
+      useClass: Argon2PasswordHasher,
     },
     {
       provide: 'IFileStorage',

@@ -1,20 +1,14 @@
 import 'dotenv/config';
-import * as crypto from 'crypto';
 import { PrismaClient } from '../src/infra/database/prisma/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import * as argon from 'argon2'
 import { AMENITIES } from '../src/constants/amenities';
 
 // ──────────────────────────────────────────────────────────
 // Password hashing (mirrors CryptoPasswordHasher in the app)
 // ──────────────────────────────────────────────────────────
 function hashPassword(password: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const salt = crypto.randomBytes(16).toString('hex');
-    crypto.scrypt(password, salt, 64, (err, derivedKey) => {
-      if (err) reject(err);
-      else resolve(`${salt}:${derivedKey.toString('hex')}`);
-    });
-  });
+  return argon.hash(password)
 }
 
 // ──────────────────────────────────────────────────────────
