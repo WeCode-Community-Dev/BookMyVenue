@@ -690,7 +690,7 @@ export default function CreateVenueWizard() {
 
             <div className="space-y-4 pt-6 border-t border-zinc-100">
               <h4 className="font-medium text-zinc-900">Approval Settings</h4>
-              <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} required value={formData.owner_action_window_hours} onChange={handleChange} helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled and fully refunded." />
+              <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} required value={formData.owner_action_window_hours} onChange={handleChange} helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
             </div>
           </div>
         )}
@@ -704,10 +704,6 @@ export default function CreateVenueWizard() {
             <div className="grid grid-cols-2 gap-4">
               <Input label="Token Advance (%)" name="advance_pct" type="number" min={0.01} max={100} step="0.01" required value={formData.advance_pct} onChange={handleChange} info="The percentage of the total booking cost required upfront to secure the reservation." />
               <Input label="Balance Due (Days before event)" name="balance_due" type="number" min={1} required value={formData.balance_due} onChange={handleChange} info="The number of days prior to the event date when the remaining balance must be paid in full." />
-            </div>
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
-              <Input label="Min Price Bound (%)" name="min_price_pct" type="number" min={0.01} max={100} step="0.01" required value={formData.min_price_pct} onChange={handleChange} info="The minimum allowed price percentage relative to the base price for pricing rules." />
-              <Input label="Max Price Bound (%)" name="max_price_pct" type="number" min={100} max={500} step="0.01" required value={formData.max_price_pct} onChange={handleChange} info="The maximum allowed price percentage relative to the base price for pricing rules." />
             </div>
           </div>
         )}

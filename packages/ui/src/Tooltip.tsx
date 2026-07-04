@@ -8,23 +8,26 @@ export interface TooltipProps {
 
 export function Tooltip({ content, children }: TooltipProps) {
   return (
-    <div className="relative group inline-flex items-center">
+    <span 
+      className="group relative inline-flex items-center justify-center cursor-help pointer-events-auto"
+      tabIndex={0}
+    >
       {children}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[320px] px-3 py-1.5 bg-zinc-700 border border-zinc-600 text-zinc-100 text-xs font-normal leading-relaxed text-justify rounded-md shadow-xl opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 z-50 whitespace-normal">
+      <div className="invisible absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[320px] rounded-md bg-zinc-800 px-3 py-2 text-xs font-normal text-zinc-100 text-center opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:opacity-100 group-hover:-translate-y-1 focus-within:visible focus-within:opacity-100 focus-within:-translate-y-1 z-[99999] pointer-events-none">
         {content}
-        {/* Sleek rotated square for the arrow pointer */}
-        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-zinc-700 border-b border-r border-zinc-600 rotate-45"></div>
+        {/* Arrow */}
+        <div className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-zinc-800"></div>
       </div>
-    </div>
+    </span>
   )
 }
 
 export function InfoTooltip({ content }: { content: React.ReactNode }) {
   return (
     <Tooltip content={content}>
-      <div className="cursor-help ml-1 inline-flex">
-        <Info className="w-3.5 h-3.5 text-zinc-400 hover:text-zinc-600 transition-colors" />
-      </div>
+      <span className="ml-1 inline-flex p-1 -m-1 focus:outline-none">
+        <Info className="w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-600 transition-colors" />
+      </span>
     </Tooltip>
   )
 }

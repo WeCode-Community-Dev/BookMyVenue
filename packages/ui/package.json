@@ -24,8 +24,10 @@
     "@fontsource-variable/geist": "^5.2.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
     "leaflet": "^1.9.4",
     "leaflet-geosearch": "^4.4.0",
+    "react-day-picker": "^10.0.1",
     "react-leaflet": "^4.2.1",
     "tailwind-merge": "^3.6.0"
   }

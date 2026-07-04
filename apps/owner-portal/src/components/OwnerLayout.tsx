@@ -69,6 +69,9 @@ export function OwnerLayout({ pageTitle, pageSubtitle, children }: OwnerLayoutPr
   } else if (location.pathname.endsWith('/calendar')) {
     displayTitle = 'Calendar & Availability'
     displaySubtitle = 'Manage your regular weekly hours and set specific dates when your venue is unavailable.'
+  } else if (location.pathname.endsWith('/pricing-rules')) {
+    displayTitle = 'Dynamic Pricing'
+    displaySubtitle = 'Set percentage rules for weekends, peak hours, and special dates. The highest-priority matching rule wins.'
   }
 
   return (

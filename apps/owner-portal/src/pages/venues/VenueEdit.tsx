@@ -558,7 +558,7 @@ export default function VenueEdit() {
               <div className="space-y-4 pt-6 border-t border-zinc-100">
                 <h4 className="font-medium text-zinc-900">Approval Window</h4>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} defaultValue={venue.owner_action_window_hours} required helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled and fully refunded." />
+                  <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} defaultValue={venue.owner_action_window_hours} required helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
                 </div>
               </div>
             </div>
