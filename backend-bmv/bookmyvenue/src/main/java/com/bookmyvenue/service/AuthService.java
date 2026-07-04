@@ -22,7 +22,7 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;//The issue is only that Spring cannot find a PasswordEncoder bean for this line:But it does NOT know how to create:PasswordEncoderSo you must manually register it as a Bean.
+    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
 

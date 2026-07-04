@@ -203,7 +203,7 @@ import { useState, useEffect } from 'react';import { toast } from "react-toastif
           </div>
           <div className="user-text-info">
             <h3>{user?.name || 'Guest'}</h3>
-            <span className="role-badge owner-badge">Host</span>
+            <span className="role-badge owner-badge">Owner</span>
           </div>
         </div>
         <div className="dashboard-tabs">

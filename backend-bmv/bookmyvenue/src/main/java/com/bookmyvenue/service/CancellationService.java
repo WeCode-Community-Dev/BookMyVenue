@@ -1,8 +1,6 @@
 package com.bookmyvenue.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -97,7 +95,7 @@ public CancellationResponse reviewCancellation(
     BookingCancellation cancellation = cancellationRepository.findById(cancellationId)
             .orElseThrow(() -> new RuntimeException("Cancellation request not found"));
 
-    // Make sure this cancel request belongs to this owner's venue
+    // Make sure this cancel request belongs to this owners venue
     if (!cancellation.getBooking().getVenue().getUser().getId().equals(owner.getId())) {
         throw new AccessDeniedException("You cannot review this cancellation request");
     }

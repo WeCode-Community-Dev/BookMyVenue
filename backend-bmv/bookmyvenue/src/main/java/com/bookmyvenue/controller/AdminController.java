@@ -22,7 +22,6 @@ import com.bookmyvenue.dto.VenueResponse;
 import com.bookmyvenue.dto.VenueReviewRequest;
 import com.bookmyvenue.repository.VenueRepository;
 import com.bookmyvenue.service.AdminService;
-import com.bookmyvenue.service.MeilisearchService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminController {
     private final AdminService adminService;
-    private final MeilisearchService meilisearchService;
+    // private final MeilisearchService meilisearchService;
     public final VenueRepository venueRepository;
 
     @GetMapping("/users")

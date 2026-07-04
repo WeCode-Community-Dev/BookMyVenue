@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.Query;
 import com.bookmyvenue.model.BookingCancellation;
 
 public interface  BookingCancellationRepository extends JpaRepository<BookingCancellation, Integer> {
-    // Find cancel request by booking id
     Optional<BookingCancellation> findByBookingId(Integer bookingId);
 
     // All cancel requests for venues owned by a specific owner
