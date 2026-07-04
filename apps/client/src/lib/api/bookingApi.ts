@@ -54,7 +54,7 @@ export const fetchBookingsByOwnerId = async (
 };
 
 export const fetchOwnerDashboard = async (token: string): Promise<OwnerDashboardResponse> => {
-    const res = await fetch(`${API_BASE}/booking/owner/dashboard`, {
+    const res = await fetch(`${API_BASE}/owner/dashboard`, {
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

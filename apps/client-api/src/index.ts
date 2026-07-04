@@ -5,6 +5,7 @@ import { venueRoute } from "./routes/venue.route";
 import { bookingRoute } from "./routes/booking.route";
 import { reviewRoute } from "./routes/review.route";
 import { consumer, producer } from "./utils/kafka";
+import { dashboardRoute } from "./routes/dashboard.route";
 
 const app = Fastify({ logger: true });
 // app.register(cors, { origin: true });
@@ -18,6 +19,7 @@ app.register(clerkPlugin);
 app.register(venueRoute, { prefix: "/venue" });
 app.register(bookingRoute, { prefix: "/booking" });
 app.register(reviewRoute, { prefix: "/review" });
+app.register(dashboardRoute, { prefix: "/owner" });
 
 app.get("/health", async () => ({ status: "ok", uptime: process.uptime() }));
 

@@ -21,7 +21,6 @@ export default function OverviewTab({
     onShowModal,
     isLoading,
 }: OverviewTabProps) {
-    console.log({venues});
     
     return (
         <div className="grid lg:grid-cols-3 gap-6">

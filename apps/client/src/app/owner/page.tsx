@@ -4,13 +4,13 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { Building2, CalendarCheck, CheckCircle2, IndianRupee, Plus } from "lucide-react";
 import { ensureOwnerRole } from "./actions";
-import { useOwnerDashboard } from "@/hooks/useBooking";
 import StatCards from "@/components/owner/StatCards";
 import NavTabs from "@/components/owner/NavTabs";
 import OverviewTab from "@/components/owner/OverviewTab";
 import BookingsTab from "@/components/owner/BookingsTab";
 import VenuesTab from "@/components/owner/VenuesTab";
 import VenueModal from "@/components/owner/VenueModal";
+import { useOwnerDashboard } from "@/hooks/useDashboard";
 
 type Tab = "overview" | "bookings" | "venues";
 

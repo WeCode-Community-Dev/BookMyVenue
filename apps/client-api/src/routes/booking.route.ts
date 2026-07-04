@@ -4,7 +4,6 @@ import {
     createBooking,
     getBookingByUserId,
     getBookingsByOwnerId,
-    getOwnerDashboard,
 } from "../controllers/booking.controller.js";
 import type { CreateBookingBody, GetOwnerBookingQuery, GetUserBookingQuery } from "@bookmyvenue/types";
 import { createBookingSchema, getBookingsByIdSchema } from "../schemas/booking.schema.js";
@@ -20,7 +19,6 @@ export const bookingRoute = async (fastify: FastifyInstance) => {
         { preHandler: ownerAuthMiddleware, schema: getBookingsByIdSchema },
         getBookingsByOwnerId,
     );
-    fastify.get("/owner/dashboard", { preHandler: ownerAuthMiddleware }, getOwnerDashboard);
     fastify.get<{ Querystring: GetUserBookingQuery & { today: string } }>(
         "/user/bookings",
         { preHandler: userAuthMiddleware, schema: getBookingsByIdSchema },

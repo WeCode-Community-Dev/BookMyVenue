@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchBookingsByOwnerId, fetchBookingsByUserId, fetchOwnerDashboard } from "@/lib/api/bookingApi";
+import { fetchBookingsByOwnerId, fetchBookingsByUserId } from "@/lib/api/bookingApi";
 import type { GetOwnerBookingQuery, GetUserBookingQuery } from "@bookmyvenue/types";
 import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
@@ -27,19 +27,6 @@ export const useUserBookings = (params: GetUserBookingQuery) => {
             const token = await getToken();
             if (!token) throw new Error("Unauthorized");
             return fetchBookingsByUserId(params, token);
-        },
-    });
-};
-
-export const useOwnerDashboard = () => {
-    const { getToken } = useAuth();
-
-    return useQuery({
-        queryKey: ["owner-dashboard"],
-        queryFn: async () => {
-            const token = await getToken();
-            if (!token) throw new Error("Unauthorized");
-            return fetchOwnerDashboard(token);
         },
     });
 };
