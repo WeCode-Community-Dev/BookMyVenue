@@ -4,8 +4,6 @@ import { fmt12h } from "@/lib/utils";
 import { Clock, Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { SessionInput } from "@bookmyvenue/types";
 
-
-
 const newSessionSchema = z
     .object({
         label: z.string().min(1, "Session name is required"),
@@ -31,6 +29,11 @@ interface Step3Props {
     stepError?: string;
 }
 
+const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours! * 60 + minutes!;
+};
+
 export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
     const [newSession, setNewSession] = useState<SessionInput>({
         label: "",
@@ -46,12 +49,37 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
             setSessionError(result.error.issues[0]!.message);
             return;
         }
+        const label = newSession.label.trim().toLowerCase();
+
+        const isDuplicateLabel = form.sessions.some(
+            (session) => session.label.trim().toLowerCase() === label,
+        );
+
+        if (isDuplicateLabel) {
+            setSessionError("A session with this name already exists");
+            return;
+        }
+
+        const newStartTime = timeToMinutes(newSession.startTime);
+        const newEndTime = timeToMinutes(newSession.endTime);
+
+        const overlappingSession = form.sessions.find((session) => {
+            const existingStartTime = timeToMinutes(session.startTime);
+            const existingEndTime = timeToMinutes(session.endTime);
+
+            return newStartTime < existingEndTime && newEndTime > existingStartTime;
+        });
+
+        if (overlappingSession) {
+            setSessionError(`Session time overlaps with "${overlappingSession.label}" session.`);
+            return;
+        }
+
         setSessionError("");
         setSessions([...form.sessions, { ...newSession }]);
         setNewSession({ label: "", startTime: "", endTime: "", price: 0 });
     };
 
-    // const removeSession = (id: number) => setSessions(form.sessions.filter((s) => s.id !== id));
     const removeSession = (index: number) => {
         setSessions(form.sessions.filter((_, i) => i !== index));
     };
@@ -63,7 +91,6 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
             ),
         );
     };
-
 
     return (
         <div className="space-y-5">
