@@ -117,8 +117,25 @@ export default function BookingsTab() {
                                     <TableCell className="px-5 py-3.5 text-foreground/80 whitespace-nowrap">
                                         {b.venue.name}
                                     </TableCell>
-                                    <TableCell className="px-5 py-3.5 text-foreground/70 whitespace-nowrap">
+                                    {/* <TableCell className="px-5 py-3.5 text-foreground/70 whitespace-nowrap">
                                         {b.sessions[0] ? fmtDate(b.sessions[0].eventDate) : "—"}
+                                    </TableCell> */}
+                                    <TableCell className="px-5 py-3.5 whitespace-nowrap">
+                                        {b.sessions.length > 0 ? (
+                                            <div className="space-y-1">
+                                                <p className="text-foreground">
+                                                    {b?.sessions[0] && fmtDate(b?.sessions[0].eventDate)}
+                                                </p>
+
+                                                <p className="text-xs text-muted-foreground">
+                                                    {b.sessions
+                                                        .map(({ session }) => session.label)
+                                                        .join(", ")}
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <span className="text-muted-foreground">—</span>
+                                        )}
                                     </TableCell>
                                     <TableCell className="px-5 py-3.5 text-foreground/70">
                                         {b.purpose ?? "—"}

@@ -1,3 +1,4 @@
+import { BookingCreatedEvent } from "@bookmyvenue/types";
 import sendMail from "../mailer";
 
 const toSmallUnit = (amount: number) => Math.round(amount * 100);

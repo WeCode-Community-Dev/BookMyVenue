@@ -3,58 +3,7 @@ import { prisma } from "@bookmyvenue/database";
 import { VerificationStatus } from "@bookmyvenue/database/enums";
 import type { CreateBookingBody, GetOwnerBookingQuery, GetUserBookingQuery } from "@bookmyvenue/types";
 import { producer } from "../utils/kafka";
-
-// export const createBooking = async (
-//     request: FastifyRequest<{ Body: CreateBookingBody }>,
-//     reply: FastifyReply,
-// ) => {
-//     const { venueId, sessionIds, eventDate, phone, purpose } = request.body;
-
-//     const sessions = await prisma.venueSession.findMany({
-//         where: {
-//             id: { in: sessionIds },
-//             venue: {
-//                 id: venueId,
-//                 isActive: true,
-//                 verificationStatus: VerificationStatus.APPROVED,
-//             },
-//             isActive: true,
-//         },
-//         select: { id: true, price: true },
-//     });
-
-//     if (sessions.length !== sessionIds.length) {
-//         return reply.status(400).send({ message: "Venue or session not found" });
-//     }
-
-//     try {
-//         const booking = await prisma.booking.create({
-//             data: {
-//                 userId: request.userId!,
-//                 venueId,
-//                 phone,
-//                 purpose,
-//                 bookingSessions: {
-//                     create: sessions.map((s) => ({
-//                         sessionId: s.id,
-//                         eventDate: new Date(eventDate),
-//                         pricePaid: s.price,
-//                     })),
-//                 },
-//             },
-//             include: { bookingSessions: true },
-//         });
-
-//         await producer.send("booking-created", booking);
-
-//         return reply.status(201).send({ booking });
-//     } catch (err: any) {
-//         if (err.code === "P2002") {
-//             return reply.status(409).send({ message: "One or more slots are already booked" });
-//         }
-//         throw err;
-//     }
-// };
+import { fromSmallUnit } from "../services/venue.service";
 
 export const createBooking = async (
     request: FastifyRequest<{ Body: CreateBookingBody }>,
@@ -136,7 +85,7 @@ export const createBooking = async (
                 pricePaid: Number(session.pricePaid),
             })),
         });
-        
+
         return reply.status(201).send({ booking });
     } catch (err: any) {
         if (err.code === "P2002") {
@@ -181,10 +130,12 @@ export const getBookingsByOwnerId = async (
         createdAt: booking.createdAt,
         customer: booking.user,
         venue: booking.venue,
-        totalAmount: booking.bookingSessions.reduce((sum, session) => sum + session.pricePaid, 0),
+        totalAmount: fromSmallUnit(
+            booking.bookingSessions.reduce((sum, session) => sum + session.pricePaid, 0),
+        ),
         sessions: booking.bookingSessions.map((session) => ({
             eventDate: session.eventDate,
-            pricePaid: session.pricePaid,
+            pricePaid: fromSmallUnit(session.pricePaid),
             session: session.session,
         })),
     }));
@@ -245,10 +196,12 @@ export const getBookingByUserId = async (
         purpose: booking.purpose,
         createdAt: booking.createdAt,
         venue: booking.venue,
-        totalAmount: booking.bookingSessions.reduce((sum, session) => sum + session.pricePaid, 0),
+        totalAmount: fromSmallUnit(
+            booking.bookingSessions.reduce((sum, session) => sum + session.pricePaid, 0),
+        ),
         sessions: booking.bookingSessions.map((session) => ({
             eventDate: session.eventDate,
-            pricePaid: session.pricePaid,
+            pricePaid: fromSmallUnit(session.pricePaid),
             session: session.session,
         })),
     }));
