@@ -23,14 +23,21 @@ export function VenueCard({ venue, onClick }: Props) {
 
   // FIX #4: match TrendingCard's pricing-mode-aware label instead of
   // a flat "min spend" string for everything
-  const priceLabel =
-    venue.starting_price_paise != null && venue.pricing_mode === 'flat'
-      ? `From ${formatPrice(venue.starting_price_paise)} / day`
-      : venue.starting_price_paise != null && venue.pricing_mode === 'hourly'
-        ? `From ${formatPrice(venue.starting_price_paise)} / hr`
-        : venue.starting_price_paise != null
-          ? `From ${formatPrice(venue.starting_price_paise)}`
-          : null
+  const unitSuffix =
+    venue.pricing_mode === 'flat' ? ' / day' : venue.pricing_mode === 'hourly' ? ' / hr' : ''
+
+  // When the venue has active dynamic-pricing rules, show the actual achievable
+  // range instead of the flat base price (PRD §6.6).
+  const hasDisplayRange =
+    venue.display_price_min_paise != null &&
+    venue.display_price_max_paise != null &&
+    venue.display_price_min_paise !== venue.display_price_max_paise
+
+  const priceLabel = hasDisplayRange
+    ? `${formatPrice(venue.display_price_min_paise!)} – ${formatPrice(venue.display_price_max_paise!)}${unitSuffix}`
+    : venue.starting_price_paise != null
+      ? `From ${formatPrice(venue.starting_price_paise)}${unitSuffix}`
+      : null
 
   return (
     <article

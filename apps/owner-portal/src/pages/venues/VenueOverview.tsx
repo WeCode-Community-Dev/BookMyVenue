@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
 import { Card, Button, Skeleton } from '@venue404/ui'
-import { 
-  Users, IndianRupee, CalendarDays, ArrowLeft, Info, Loader2,
+import {
+  Users, IndianRupee, CalendarDays, ArrowLeft, Info, Loader2, Tag,
   FileText, Image as ImageIcon, MapPin, Clock, ShieldCheck, Banknote, ShieldAlert,
   ChevronRight, TrendingUp
 } from 'lucide-react'
@@ -58,12 +58,12 @@ export default function VenueOverview() {
           <Skeleton className="h-28 w-full rounded-2xl" />
         </div>
         <Card className="p-6 mt-8 rounded-2xl">
-           <Skeleton className="h-6 w-48 mb-6" />
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-             <Skeleton className="h-24 w-full rounded-xl" />
-             <Skeleton className="h-24 w-full rounded-xl" />
-             <Skeleton className="h-24 w-full rounded-xl" />
-           </div>
+          <Skeleton className="h-6 w-48 mb-6" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full rounded-xl" />
+          </div>
         </Card>
       </div>
     )
@@ -114,8 +114,8 @@ export default function VenueOverview() {
               <p className="text-sm mt-1 text-blue-800/80 leading-relaxed max-w-2xl">Take your time to add photos, configure pricing, and review your policies. When you are fully satisfied and ready to accept bookings, submit it for review to make it live.</p>
             </div>
           </div>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={async () => {
               if (!venueId || !(await confirmAction("Our team will review your venue within 24-48 hours. Are you sure you're ready?"))) return
               setSubmitting(true)
@@ -242,6 +242,24 @@ export default function VenueOverview() {
         </div>
       )}
 
+      {/* Dynamic Pricing */}
+      {venue.status === 'approved' && (
+        <Card className="p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-medium text-zinc-900">Dynamic Pricing</h3>
+              <p className="text-sm text-zinc-500 mt-1">Set weekend, peak-hour, and special-date percentage rules on top of your base price.</p>
+            </div>
+            <Link to={`/venues/${venueId}/pricing-rules`}>
+              <Button variant="primary">
+                <Tag className="h-4 w-4 mr-2" />
+                Manage Pricing Rules
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
       {/* Management Modules Grid */}
       <div className="bg-white rounded-2xl border border-zinc-200/80 p-6 lg:p-8 shadow-sm">
         <div className="mb-6">
@@ -251,61 +269,61 @@ export default function VenueOverview() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {[
-            { 
-              id: 'details', 
-              label: 'Basic Details', 
+            {
+              id: 'details',
+              label: 'Basic Details',
               desc: 'Name, location, capacity, and core info.',
-              icon: FileText, 
-              color: 'text-blue-600', 
-              bg: 'bg-blue-50 group-hover:bg-blue-100' 
+              icon: FileText,
+              color: 'text-blue-600',
+              bg: 'bg-blue-50 group-hover:bg-blue-100'
             },
-            { 
-              id: 'photos', 
-              label: 'Photo Gallery', 
+            {
+              id: 'photos',
+              label: 'Photo Gallery',
               desc: 'Manage your cover photo and gallery.',
-              icon: ImageIcon, 
-              color: 'text-pink-600', 
-              bg: 'bg-pink-50 group-hover:bg-pink-100' 
+              icon: ImageIcon,
+              color: 'text-pink-600',
+              bg: 'bg-pink-50 group-hover:bg-pink-100'
             },
-            { 
-              id: 'amenities', 
-              label: 'Amenities', 
+            {
+              id: 'amenities',
+              label: 'Amenities',
               desc: 'List the features your venue offers.',
-              icon: MapPin, 
-              color: 'text-amber-600', 
-              bg: 'bg-amber-50 group-hover:bg-amber-100' 
+              icon: MapPin,
+              color: 'text-amber-600',
+              bg: 'bg-amber-50 group-hover:bg-amber-100'
             },
-            { 
-              id: 'operating-hours', 
-              label: 'Operating Hours', 
+            {
+              id: 'operating-hours',
+              label: 'Operating Hours',
               desc: 'Set standard weekly availability.',
-              icon: Clock, 
-              color: 'text-emerald-600', 
-              bg: 'bg-emerald-50 group-hover:bg-emerald-100' 
+              icon: Clock,
+              color: 'text-emerald-600',
+              bg: 'bg-emerald-50 group-hover:bg-emerald-100'
             },
-            { 
-              id: 'booking-settings', 
-              label: 'Booking Settings', 
+            {
+              id: 'booking-settings',
+              label: 'Booking Settings',
               desc: 'Notice periods, limits, and approvals.',
-              icon: ShieldCheck, 
-              color: 'text-indigo-600', 
-              bg: 'bg-indigo-50 group-hover:bg-indigo-100' 
+              icon: ShieldCheck,
+              color: 'text-indigo-600',
+              bg: 'bg-indigo-50 group-hover:bg-indigo-100'
             },
-            { 
-              id: 'pricing', 
-              label: 'Pricing & Rates', 
+            {
+              id: 'pricing',
+              label: 'Pricing & Rates',
               desc: 'Set hourly rates, daily rates, deposits.',
-              icon: Banknote, 
-              color: 'text-teal-600', 
-              bg: 'bg-teal-50 group-hover:bg-teal-100' 
+              icon: Banknote,
+              color: 'text-teal-600',
+              bg: 'bg-teal-50 group-hover:bg-teal-100'
             },
-            { 
-              id: 'policies', 
-              label: 'Policies', 
+            {
+              id: 'policies',
+              label: 'Policies',
               desc: 'Define your cancellation terms.',
-              icon: ShieldAlert, 
-              color: 'text-rose-600', 
-              bg: 'bg-rose-50 group-hover:bg-rose-100' 
+              icon: ShieldAlert,
+              color: 'text-rose-600',
+              bg: 'bg-rose-50 group-hover:bg-rose-100'
             }
           ].map(module => (
             <Link key={module.id} to={`/venues/${venueId}/edit/${module.id}`}>

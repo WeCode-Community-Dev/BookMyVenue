@@ -33,11 +33,18 @@ function TrendingSkeleton() {
 function TrendingCard({ venue, onClick }: { venue: SearchResult; onClick: () => void }) {
   const typeLabel = venue.category?.label ?? venue.category?.slug ?? ''
 
-  const priceLabel =
-    venue.starting_price_paise != null && venue.pricing_mode === 'flat'
-      ? `From ${formatPrice(venue.starting_price_paise)} / day`
-      : venue.starting_price_paise != null && venue.pricing_mode === 'hourly'
-      ? `From ${formatPrice(venue.starting_price_paise)} / hr`
+  const unitSuffix =
+    venue.pricing_mode === 'flat' ? ' / day' : venue.pricing_mode === 'hourly' ? ' / hr' : ''
+
+  const hasDisplayRange =
+    venue.display_price_min_paise != null &&
+    venue.display_price_max_paise != null &&
+    venue.display_price_min_paise !== venue.display_price_max_paise
+
+  const priceLabel = hasDisplayRange
+    ? `${formatPrice(venue.display_price_min_paise!)} – ${formatPrice(venue.display_price_max_paise!)}${unitSuffix}`
+    : venue.starting_price_paise != null
+      ? `From ${formatPrice(venue.starting_price_paise)}${unitSuffix}`
       : 'Price on request'
 
   return (

@@ -61,23 +61,19 @@ def _cover_photos(db: Session, venue_ids: list) -> dict:
 def _to_results(venues: list[Venue], cover_photos: dict) -> list[SearchResult]:
     results = []
     for v in venues:
-        starting_price = (
-            v.starting_price_paise
-            if v.pricing_mode in ("flat", "mixed")
-            else v.hourly_rate_paise
-        )
-        results.append(
-            SearchResult(
-                id=v.id,
-                name=v.name,
-                city=v.city,
-                category=v.category,
-                capacity=v.max_capacity,
-                pricing_mode=v.pricing_mode,
-                starting_price_paise=starting_price,
-                cover_photo_url=cover_photos.get(v.id),
-            )
-        )
+        starting_price = v.starting_price_paise if v.pricing_mode in ('flat', 'mixed') else v.hourly_rate_paise
+        results.append(SearchResult(
+            id=v.id,
+            name=v.name,
+            city=v.city,
+            category=v.category,
+            capacity=v.max_capacity,
+            pricing_mode=v.pricing_mode,
+            starting_price_paise=starting_price,
+            display_price_min_paise=v.display_price_min_paise,
+            display_price_max_paise=v.display_price_max_paise,
+            cover_photo_url=cover_photos.get(v.id),
+        ))
     return results
 
 
@@ -125,7 +121,30 @@ def search(db: Session, params: SearchParams) -> Page[SearchResult]:
     )
 
     venue_ids = [v.id for v in venues]
-    covers = _cover_photos(db, venue_ids)
+    cover_photos = {}
+    if venue_ids:
+        photos = db.query(VenuePhoto).filter(
+            VenuePhoto.venue_id.in_(venue_ids),
+            VenuePhoto.is_cover == True,
+            VenuePhoto.deleted_at.is_(None),
+        ).all()
+        cover_photos = {p.venue_id: p.image_url for p in photos}
+
+    results = []
+    for v in venues:
+        starting_price = v.starting_price_paise if v.pricing_mode in ('flat', 'mixed') else v.hourly_rate_paise
+        results.append(SearchResult(
+            id=v.id,
+            name=v.name,
+            city=v.city,
+            category=v.category,
+            capacity=v.max_capacity,
+            pricing_mode=v.pricing_mode,
+            starting_price_paise=starting_price,
+            display_price_min_paise=v.display_price_min_paise,
+            display_price_max_paise=v.display_price_max_paise,
+            cover_photo_url=cover_photos.get(v.id),
+        ))
 
     return Page(
         items=_to_results(venues, covers),

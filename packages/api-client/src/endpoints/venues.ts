@@ -1,5 +1,5 @@
 import { createClient } from '../client'
-import type { Venue, VenuePhoto, Amenity, VenueAvailability, BlockedDate, VenueCategory, CalendarResponse, AvailabilityResponse, PricingQuote, ValidationResponse, SearchPage, VenueListResponse, VenueStatsResponse } from '../model'
+import type { Venue, VenuePhoto, Amenity, VenueAvailability, BlockedDate, VenueCategory, CalendarResponse, AvailabilityResponse, PricingQuote, ValidationResponse, SearchPage, PricingRule, PricingPreview, VenueListResponse, VenueStatsResponse } from '../model'
 
 export const venueEndpoints = (client: ReturnType<typeof createClient>) => ({
   getVenueCategories: () => client.get<VenueCategory[]>('/api/venues/categories'),
@@ -47,6 +47,20 @@ export const venueEndpoints = (client: ReturnType<typeof createClient>) => ({
   },
   getCancellationPolicy: (id: string) =>
     client.get<unknown>(`/api/venues/${id}/cancellation-policy`),
+  getPricingPreview: (id: string, params: { starts_at: string; ends_at: string; booking_type: string }) => {
+    const qs = new URLSearchParams(params).toString()
+    return client.get<PricingPreview>(`/api/venues/${id}/pricing?${qs}`)
+  },
+  getPricingRules: (id: string) => client.get<PricingRule[]>(`/api/venues/${id}/pricing-rules`),
+  createPricingRule: (id: string, body: unknown) => client.post<PricingRule>(`/api/venues/${id}/pricing-rules`, body),
+  updatePricingRule: (venueId: string, ruleId: string, body: unknown) =>
+    client.patch<PricingRule>(`/api/venues/${venueId}/pricing-rules/${ruleId}`, body),
+  deletePricingRule: (venueId: string, ruleId: string) =>
+    client.delete<void>(`/api/venues/${venueId}/pricing-rules/${ruleId}`),
+  getOwnerPricingPreview: (id: string, params: { starts_at: string; ends_at: string; booking_type: string }) => {
+    const qs = new URLSearchParams(params).toString()
+    return client.get<PricingPreview>(`/api/venues/${id}/pricing-preview?${qs}`)
+  },
   getCalendar: (id: string, params: { start_date: string; end_date: string }) => {
     const qs = new URLSearchParams(params).toString()
     return client.get<CalendarResponse>(`/api/availability/venues/${id}/calendar?${qs}`)

@@ -21,4 +21,6 @@ class SearchResult(BaseModel):
     capacity: int
     pricing_mode: str
     starting_price_paise: Optional[int] = None
+    display_price_min_paise: Optional[int] = None
+    display_price_max_paise: Optional[int] = None
     cover_photo_url: Optional[str] = None

@@ -16,6 +16,8 @@ export type SearchResult = {
   capacity: number
   pricing_mode: string
   starting_price_paise?: number | null
+  display_price_min_paise?: number | null
+  display_price_max_paise?: number | null
   cover_photo_url?: string | null
 }
 
@@ -78,6 +80,10 @@ export type VenueResponse = {
   pricing_mode: 'flat' | 'hourly' | 'mixed'
   starting_price_paise?: number | null
   hourly_rate_paise?: number | null
+  min_price_pct?: string
+  max_price_pct?: string
+  display_price_min_paise?: number | null
+  display_price_max_paise?: number | null
   platform_commission_pct: string
   advance_pct: string
   balance_due_days_before_event: number
@@ -129,6 +135,17 @@ export type AvailabilityResponse = {
   blocked_slots?: { starts_at: string; ends_at: string }[]
 }
 
+export type PricingBreakdownItem = {
+  period_date: string
+  start_time?: string | null
+  end_time?: string | null
+  base_paise: number
+  applied_rule_id?: string | null
+  applied_rule_name?: string | null
+  clamped: boolean
+  final_paise: number
+}
+
 export type PricingQuote = {
   quoted_price_paise: number
   platform_commission_pct: number
@@ -138,6 +155,8 @@ export type PricingQuote = {
   advance_due_paise: number
   balance_due_paise: number
   pricing_mode: string
+  breakdown?: PricingBreakdownItem[]
+  clamped?: boolean
 }
 
 export type ValidationResponse = {

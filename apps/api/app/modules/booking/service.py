@@ -80,7 +80,22 @@ def create_booking_request(
         starts_at=starts_at,
         ends_at=ends_at,
         booking_type=payload.booking_type,
-    ) 
+    )
+
+    if (
+        payload.expected_total_paise is not None
+        and payload.expected_total_paise != quote.quoted_price_paise
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "error": "PRICE_CHANGED",
+                "message": "Pricing has changed since you last viewed this booking.",
+                "quoted_price_paise": quote.quoted_price_paise,
+                "breakdown": [item.model_dump(mode="json") for item in quote.breakdown],
+            },
+        )
+
     booking = Booking(
         id=uuid.uuid4(),
         venue_id=venue.id,
@@ -93,6 +108,7 @@ def create_booking_request(
         balance_due_date=starts_at.date() - timedelta(days=venue.balance_due_days_before_event),
         pricing_mode=quote.pricing_mode,
         quoted_price_paise=quote.quoted_price_paise,
+        pricing_breakdown=[item.model_dump(mode="json") for item in quote.breakdown] or None,
         platform_commission_pct=quote.platform_commission_pct,
         platform_fee_paise=quote.platform_fee_paise,
         owner_payout_paise=quote.owner_payout_paise,

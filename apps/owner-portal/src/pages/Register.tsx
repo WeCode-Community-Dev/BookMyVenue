@@ -5,8 +5,15 @@ import { createClient, authEndpoints } from '@venue404/api-client'
 import { AuthLayout, AuthCard, Logo } from '@venue404/ui'
 import { OwnerFlowPanel } from '../components/OwnerFlowPanel'
 
+function isAlreadyRegisteredError(err: unknown): boolean {
+  const code = (err as { code?: string })?.code
+  if (code === 'user_already_exists') return true
+  const message = err instanceof Error ? err.message : ''
+  return /already registered|already exists/i.test(message)
+}
+
 export default function Register() {
-  const { user, loading, signUp } = useAuth()
+  const { user, loading, signUp, signIn } = useAuth()
   const navigate = useNavigate()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -25,7 +32,16 @@ export default function Register() {
     setSubmitting(true)
     const trimmedEmail = email.trim()
     try {
-      await signUp({ email: trimmedEmail, password, fullName: fullName.trim(), phone: phone.trim() || undefined })
+      try {
+        await signUp({ email: trimmedEmail, password, fullName: fullName.trim(), phone: phone.trim() || undefined })
+      } catch (signUpErr: unknown) {
+        if (!isAlreadyRegisteredError(signUpErr)) throw signUpErr
+        try {
+          await signIn({ email: trimmedEmail, password })
+        } catch {
+          throw new Error('An account with this email already exists. Sign in to continue, or check your password.')
+        }
+      }
       await authEndpoints(createClient()).registerOwner()
       navigate('/register/success', { replace: true })
     } catch (err: unknown) {

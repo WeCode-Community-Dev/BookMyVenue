@@ -3,6 +3,7 @@ import { AvailabilityCalendarDouble } from './AvailabilityCalendar'
 import { TimeSlotPicker } from './TimeSlotPicker'
 import type { VenueResponse, AvailabilityResponse, BookingType } from '../../types'
 import { formatDate } from '../../utils'
+import { createClient, venueEndpoints } from '@venue404/api-client'
 
 type Props = {
   venue: VenueResponse
@@ -46,6 +47,41 @@ export function VenueAvailabilitySection({
   const endLabel = endDate ? formatDate(endDate + 'T00:00:00') : null
   const days = startDate && endDate ? daysBetween(startDate, endDate) + 1 : null
   const [justArrived, setJustArrived] = useState(false)
+  const [peakMinutes, setPeakMinutes] = useState<Set<number>>(new Set())
+
+  // Best-effort: preview the full open-close window for the selected date so
+  // slots priced above the base rate by an active rule can be flagged "peak".
+  useEffect(() => {
+    if (bookingType !== 'time_slot' || !startDate || !venue.open_time || !venue.close_time) {
+      setPeakMinutes(new Set())
+      return
+    }
+    let cancelled = false
+    async function loadPeakSlots() {
+      try {
+        const client = createClient()
+        const quote = await venueEndpoints(client).getQuote(venue.id, {
+          starts_at: `${startDate}T${venue.open_time}`,
+          ends_at: `${startDate}T${venue.close_time}`,
+          booking_type: 'time_slot',
+        })
+        if (cancelled) return
+        const peaks = new Set<number>()
+        for (const item of quote.breakdown ?? []) {
+          if (!item.start_time || item.final_paise <= item.base_paise) continue
+          const [h, m] = item.start_time.slice(0, 5).split(':').map(Number)
+          peaks.add(h * 60 + m)
+        }
+        setPeakMinutes(peaks)
+      } catch {
+        if (!cancelled) setPeakMinutes(new Set())
+      }
+    }
+    loadPeakSlots()
+    return () => {
+      cancelled = true
+    }
+  }, [venue.id, venue.open_time, venue.close_time, startDate, bookingType])
 
   const headerText =
     startDate && endDate && bookingType === 'full_day'
@@ -131,6 +167,7 @@ export function VenueAvailabilitySection({
               selectedEnd={selectedEnd}
               onSelect={onSlotSelect}
               onClear={onClearSlot}
+              peakMinutes={peakMinutes}
             />
           )}
         </div>
