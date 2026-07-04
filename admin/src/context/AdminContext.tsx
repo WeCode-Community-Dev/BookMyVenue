@@ -33,7 +33,8 @@ import {
   fetchAmenitiesApi,
   createAmenityApi,
   deleteAmenityApi,
-  hasAmenitiesApiConfig
+  hasAmenitiesApiConfig,
+  updateVenueStatusApi
 } from '../api/adminApi';
 
 interface ApiResourceState {
@@ -76,13 +77,17 @@ interface AdminContextProps {
   unblockOwner: (id: string) => void;
   
   // Handlers for Venues
-  approveVenue: (id: string) => void;
-  rejectVenue: (id: string) => void;
-  blockVenue: (id: string) => void;
-  unblockVenue: (id: string) => void;
+  approveVenue: (id: string) => Promise<void>;
+  rejectVenue: (id: string, reason?: string) => Promise<void>;
+  blockVenue: (id: string, reason?: string) => Promise<void>;
+  unblockVenue: (id: string) => Promise<void>;
   toggleFeaturedVenue: (id: string) => void;
   editVenueDetails: (id: string, updated: Partial<Venue>) => void;
   deleteVenue: (id: string) => void;
+  loadMoreVenues: (limit?: number) => Promise<boolean>;
+  hasMoreVenues: boolean;
+  venuesLimit: number;
+  setVenuesLimit: (limit: number) => void;
   
   // Handlers for Bookings
   cancelBooking: (id: string) => void;
@@ -137,7 +142,7 @@ const applyCommissionRate = (bookings: Booking[], commissionPercentage: number) 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const [owners, setOwners] = useState<VenueOwner[]>(initialOwners);
-  const [venues, setVenues] = useState<Venue[]>(initialVenues);
+  const [venues, setVenues] = useState<Venue[]>(hasVenuesApiConfig ? [] : initialVenues);
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [reports, setReports] = useState<ComplaintReport[]>(initialReports);
   const [settings, setSettings] = useState<PlatformSettings>(defaultSettings);
@@ -201,6 +206,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
+  const [venuesLimit, setVenuesLimit] = useState(20);
+  const [hasMoreVenues, setHasMoreVenues] = useState(true);
+
   const refreshVenues = useCallback(async () => {
     if (!hasVenuesApiConfig) {
       setVenuesApiState({
@@ -208,6 +216,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         error: null,
         usingMockData: true
       });
+      setHasMoreVenues(false);
       return;
     }
 
@@ -218,8 +227,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }));
 
     try {
-      const venuesData = await fetchAdminVenuesData();
+      const venuesData = await fetchAdminVenuesData(0, venuesLimit);
       setVenues(venuesData.venues);
+      setHasMoreVenues(venuesData.venues.length === venuesLimit);
       setVenuesApiState({
         loading: false,
         error: null,
@@ -231,8 +241,55 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         error: error instanceof Error ? error.message : 'Unable to load venues from API.',
         usingMockData: true
       });
+      setHasMoreVenues(false);
     }
-  }, []);
+  }, [venuesLimit]);
+
+  const loadMoreVenues = async (customLimit?: number) => {
+    if (!hasVenuesApiConfig || venuesApiState.loading || !hasMoreVenues) {
+      return false;
+    }
+
+    setVenuesApiState(prev => ({
+      ...prev,
+      loading: true,
+      error: null
+    }));
+
+    const currentLimit = customLimit ?? venuesLimit;
+    const currentSkip = venues.length;
+
+    try {
+      const venuesData = await fetchAdminVenuesData(currentSkip, currentLimit);
+      const fetchedCount = venuesData.venues.length;
+      
+      if (fetchedCount > 0) {
+        setVenues(prev => {
+          const existingIds = new Set(prev.map(v => v.id));
+          const uniqueNew = venuesData.venues.filter(v => !existingIds.has(v.id));
+          return [...prev, ...uniqueNew];
+        });
+      }
+
+      const moreAvailable = fetchedCount === currentLimit;
+      setHasMoreVenues(moreAvailable);
+      
+      setVenuesApiState({
+        loading: false,
+        error: null,
+        usingMockData: false
+      });
+
+      return moreAvailable;
+    } catch (error) {
+      setVenuesApiState({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unable to load more venues from API.',
+        usingMockData: false
+      });
+      return false;
+    }
+  };
 
   const refreshAmenities = useCallback(async () => {
     if (!hasAmenitiesApiConfig) {
@@ -392,29 +449,82 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   // VENUES HANDLERS
-  const approveVenue = (id: string) => {
-    setVenues(prev => prev.map(v => {
-      if (v.id === id) {
-        // Increment owners venuesCount
-        setOwners(prevOwners => prevOwners.map(o => o.id === v.ownerId ? { ...o, venuesCount: o.venuesCount + 1 } : o));
-        return { ...v, status: 'approved' };
-      }
-      return v;
-    }));
-    sendNotification('Venue Listing Approved', `Venue listing ${id} has been successfully verified and published.`, 'all', 'approval');
+  const approveVenue = async (id: string) => {
+    if (!hasVenuesApiConfig) {
+      setVenues(prev => prev.map(v => {
+        if (v.id === id) {
+          setOwners(prevOwners => prevOwners.map(o => o.id === v.ownerId ? { ...o, venuesCount: o.venuesCount + 1 } : o));
+          return { ...v, status: 'approved', verification_status: 'approved' };
+        }
+        return v;
+      }));
+      sendNotification('Venue Listing Approved (Mock)', `Venue listing ${id} has been approved in mock mode.`, 'all', 'approval');
+      return;
+    }
+
+    try {
+      await updateVenueStatusApi(id, 'approved');
+      setVenues(prev => prev.map(v => {
+        if (v.id === id) {
+          setOwners(prevOwners => prevOwners.map(o => o.id === v.ownerId ? { ...o, venuesCount: o.venuesCount + 1 } : o));
+          return { ...v, status: 'approved', verification_status: 'approved' };
+        }
+        return v;
+      }));
+      sendNotification('Venue Listing Approved', `Venue listing ${id} has been successfully verified and published.`, 'all', 'approval');
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to approve venue.');
+    }
   };
 
-  const rejectVenue = (id: string) => {
-    setVenues(prev => prev.map(v => v.id === id ? { ...v, status: 'blocked' } : v)); // reject puts in blocked or delete
-    sendNotification('Venue Listing Rejected', `Venue application ${id} was rejected during compliance audit.`, 'owners', 'approval');
+  const rejectVenue = async (id: string, reason?: string) => {
+    const finalReason = reason || 'Venue details or documentation do not meet requirements.';
+    if (!hasVenuesApiConfig) {
+      setVenues(prev => prev.map(v => v.id === id ? { ...v, status: 'blocked', verification_status: 'rejected', rejection_reason: finalReason } : v));
+      sendNotification('Venue Listing Rejected (Mock)', `Venue application ${id} was rejected in mock mode.`, 'owners', 'approval');
+      return;
+    }
+
+    try {
+      await updateVenueStatusApi(id, 'rejected', finalReason);
+      setVenues(prev => prev.map(v => v.id === id ? { ...v, status: 'blocked', verification_status: 'rejected', rejection_reason: finalReason } : v));
+      sendNotification('Venue Listing Rejected', `Venue application ${id} was rejected during compliance audit.`, 'owners', 'approval');
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to reject venue.');
+    }
   };
 
-  const blockVenue = (id: string) => {
-    setVenues(prev => prev.map(v => v.id === id ? { ...v, status: 'blocked' } : v));
+  const blockVenue = async (id: string, reason?: string) => {
+    const finalReason = reason || 'Suspended by administrative decision.';
+    if (!hasVenuesApiConfig) {
+      setVenues(prev => prev.map(v => v.id === id ? { ...v, status: 'blocked', verification_status: 'suspended', rejection_reason: finalReason } : v));
+      sendNotification('Venue Listing Suspended (Mock)', `Venue listing ${id} was suspended in mock mode.`, 'all', 'report');
+      return;
+    }
+
+    try {
+      await updateVenueStatusApi(id, 'suspended', finalReason);
+      setVenues(prev => prev.map(v => v.id === id ? { ...v, status: 'blocked', verification_status: 'suspended', rejection_reason: finalReason } : v));
+      sendNotification('Venue Listing Suspended', `Venue listing ${id} has been suspended/blocked.`, 'all', 'report');
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to suspend venue.');
+    }
   };
 
-  const unblockVenue = (id: string) => {
-    setVenues(prev => prev.map(v => v.id === id ? { ...v, status: 'approved' } : v));
+  const unblockVenue = async (id: string) => {
+    if (!hasVenuesApiConfig) {
+      setVenues(prev => prev.map(v => v.id === id ? { ...v, status: 'approved', verification_status: 'approved', rejection_reason: undefined } : v));
+      sendNotification('Venue Listing Restored (Mock)', `Venue listing ${id} restored in mock mode.`, 'all', 'approval');
+      return;
+    }
+
+    try {
+      await updateVenueStatusApi(id, 'approved');
+      setVenues(prev => prev.map(v => v.id === id ? { ...v, status: 'approved', verification_status: 'approved', rejection_reason: undefined } : v));
+      sendNotification('Venue Listing Restored', `Venue listing ${id} has been restored/approved.`, 'all', 'approval');
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to restore venue.');
+    }
   };
 
   const toggleFeaturedVenue = (id: string) => {
@@ -646,6 +756,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         toggleFeaturedVenue,
         editVenueDetails,
         deleteVenue,
+        loadMoreVenues,
+        hasMoreVenues,
+        venuesLimit,
+        setVenuesLimit,
         cancelBooking,
         updateBookingStatus,
         resolveReport,

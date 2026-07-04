@@ -3,10 +3,12 @@ import type { Customer, Venue, VenueOwner, Amenity } from '../data/mockStore';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() ?? '';
 const USERS_ENDPOINT = import.meta.env.VITE_USERS_ENDPOINT?.trim() ?? '';
 const VENUE_OWNERS_ENDPOINT = import.meta.env.VITE_VENUE_OWNERS_ENDPOINT?.trim() ?? '';
-const VENUES_ENDPOINT = import.meta.env.VITE_VENUES_ENDPOINT?.trim() ?? '/api/v1/venue-owner/venue';
+const VENUES_ENDPOINT = import.meta.env.VITE_VENUES_ENDPOINT?.trim() ?? '/api/v1/venue-owner/venue?skip=0&limit=20&approved=false';
 const VENUE_OWNER_STATUS_ENDPOINT =
   import.meta.env.VITE_VENUE_OWNER_STATUS_ENDPOINT?.trim() ?? '/api/v1/auth/venue-owner/update-status';
 const AMENITIES_ENDPOINT = import.meta.env.VITE_AMENITIES_ENDPOINT?.trim() ?? '/api/v1/venue-owner/venue/amenities';
+const VENUE_STATUS_UPDATE_ENDPOINT = import.meta.env.VITE_VENUE_STATUS_UPDATE_ENDPOINT?.trim() ?? '/api/v1/venue-owner/venue/update-status';
+
 
 const DEFAULT_VENUE_PHOTO = 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800';
 
@@ -234,7 +236,7 @@ const normalizeVenue = (entity: ApiEntity, index: number): Venue => {
     pricePerDay: lowestSlotPrice,
     amenities: amenities.length > 0 ? amenities : ['Amenities not listed'],
     photos: photos.length > 0 ? photos : [DEFAULT_VENUE_PHOTO],
-    status: normalizeVenueStatus(readString(entity, ['status', 'verification_status'], 'draft')),
+    status: normalizeVenueStatus(readString(entity, ['verification_status', 'status'], 'draft')),
     featured: Boolean(entity.is_featured ?? entity.featured),
     availability: {
       days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
@@ -393,9 +395,10 @@ export const fetchAdminDirectoryData = async (): Promise<AdminDirectoryData> => 
     owners: ownersPayload ? readArray(ownersPayload).map(normalizeOwner) : undefined
   };
 };
-
-export const fetchAdminVenuesData = async (): Promise<AdminVenuesData> => {
-  const venuesPayload = await getJson(VENUES_ENDPOINT);
+export const fetchAdminVenuesData = async (skip = 0, limit = 20): Promise<AdminVenuesData> => {
+  const baseUrl = VENUES_ENDPOINT.split('?')[0];
+  const url = `${baseUrl}?skip=${skip}&limit=${limit}&approved=false`;
+  const venuesPayload = await getJson(url);
 
   return {
     venues: readArray(venuesPayload).map(normalizeVenue)
@@ -447,5 +450,27 @@ export const createAmenityApi = async (name: string): Promise<Amenity> => {
 export const deleteAmenityApi = async (amenity_id: string): Promise<void> => {
   await deleteJson(`${AMENITIES_ENDPOINT}/${amenity_id}`);
 };
+
+export interface VenueStatusUpdateResponse {
+  status: boolean;
+  message?: string;
+  data?: unknown;
+}
+
+export type VenueStatusCode = 'pending' | 'approved' | 'rejected' | 'suspended';
+
+export const updateVenueStatusApi = async (
+  venueId: string,
+  status: VenueStatusCode,
+  rejectionReason?: string
+): Promise<VenueStatusUpdateResponse> => {
+  const payload = await patchJson(VENUE_STATUS_UPDATE_ENDPOINT, {
+    venue_id: venueId,
+    status,
+    rejection_reason: rejectionReason || null
+  });
+  return payload as VenueStatusUpdateResponse;
+};
+
 
 

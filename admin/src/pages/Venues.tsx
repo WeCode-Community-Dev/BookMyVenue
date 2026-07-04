@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import { 
   Search, ShieldAlert, CheckCircle, Eye, Trash2, Edit, Star, X, 
@@ -15,7 +15,8 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
   const { 
     venues, bookings, apiState,
     approveVenue, rejectVenue, blockVenue, unblockVenue, 
-    toggleFeaturedVenue, editVenueDetails, deleteVenue 
+    toggleFeaturedVenue, editVenueDetails, deleteVenue,
+    loadMoreVenues, hasMoreVenues 
   } = useAdmin();
 
   const activeTab = initialTab;
@@ -59,6 +60,85 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
     return `${hours}.${minutesStr} ${ampm}`;
   };
 
+  const handleApprove = async (venueId: string) => {
+    try {
+      await approveVenue(venueId);
+      if (selectedVenue && selectedVenue.id === venueId) {
+        setSelectedVenue(null);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to approve venue.");
+    }
+  };
+
+  const handleReject = async (venueId: string) => {
+    const reason = prompt("Please enter the reason for rejecting this venue listing:");
+    if (reason === null) return;
+    const trimmed = reason.trim();
+    if (!trimmed) {
+      alert("A rejection reason is required.");
+      return;
+    }
+    try {
+      await rejectVenue(venueId, trimmed);
+      if (selectedVenue && selectedVenue.id === venueId) {
+        setSelectedVenue(null);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to reject venue.");
+    }
+  };
+
+  const handleBlock = async (venueId: string) => {
+    const reason = prompt("Please enter the reason for suspending/blocking this venue listing:");
+    if (reason === null) return;
+    const trimmed = reason.trim();
+    if (!trimmed) {
+      alert("A blocking reason is required.");
+      return;
+    }
+    try {
+      await blockVenue(venueId, trimmed);
+      if (selectedVenue && selectedVenue.id === venueId) {
+        setSelectedVenue(null);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to block venue.");
+    }
+  };
+
+  const handleRestore = async (venueId: string) => {
+    try {
+      await unblockVenue(venueId);
+      if (selectedVenue && selectedVenue.id === venueId) {
+        setSelectedVenue(null);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to restore venue.");
+    }
+  };
+
+
+  // Scroll Listener for Infinite Pagination
+  useEffect(() => {
+    const handleScroll = () => {
+      if (apiState.venues.loading || !hasMoreVenues) {
+        return;
+      }
+      
+      const threshold = 150; // pixels from the bottom
+      const totalHeight = document.documentElement.offsetHeight;
+      const scrollPosition = window.innerHeight + window.scrollY;
+      
+      if (totalHeight - scrollPosition < threshold) {
+        loadMoreVenues();
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [apiState.venues.loading, hasMoreVenues, loadMoreVenues]);
+
 
   // Filter Venues based on search, capacity, and activeTab status
   const getFilteredVenues = () => {
@@ -67,9 +147,9 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
     if (activeTab === 'all') {
       list = venues;
     } else if (activeTab === 'pending') {
-      list = venues.filter(v => v.status === 'pending');
+      list = venues.filter(v => v.verification_status === 'pending');
     } else if (activeTab === 'blocked') {
-      list = venues.filter(v => v.status === 'blocked');
+      list = venues.filter(v => v.verification_status === 'rejected' || v.verification_status === 'suspended');
     }
 
     return list.filter(v => {
@@ -228,14 +308,15 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
 
       {/* Grid of venue cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {apiState.venues.loading ? (
+        {apiState.venues.loading && venues.length === 0 ? (
           renderVenueSkeletonCards()
         ) : filteredVenues.length === 0 ? (
           <div className="col-span-full py-16 text-center text-slate-500 bg-slate-950/20 rounded-xl border border-slate-900 border-dashed">
-            {apiState.venues.error ? `API sync failed: ${apiState.venues.error}` : 'No venue listings found matching filter selections.'}
+            {apiState.venues.error ? `API sync failed: ${apiState.venues.error}` : 'No venues listed yet.'}
           </div>
         ) : (
-          filteredVenues.map(venue => (
+          <>
+            {filteredVenues.map(venue => (
             <div 
               key={venue.id} 
               className={`glass-panel border rounded-xl overflow-hidden flex flex-col hover:scale-[1.01] transition duration-300 relative group ${
@@ -252,11 +333,11 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
 
               {/* Status Badge */}
               <span className={`absolute top-3 right-3 text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider z-10 ${
-                venue.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                venue.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                venue.verification_status === 'approved' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                venue.verification_status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
                 'bg-red-500/10 text-red-400 border border-red-500/20'
               }`}>
-                {venue.status}
+                {venue.verification_status}
               </span>
 
               {/* Thumbnail */}
@@ -313,16 +394,16 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
                     Details
                   </button>
 
-                  {venue.status === 'pending' ? (
+                  {(venue.verification_status === 'pending') ? (
                     <div className="flex gap-1.5 w-2/3">
                       <button
-                        onClick={() => rejectVenue(venue.id)}
+                        onClick={() => handleReject(venue.id)}
                         className="flex-1 font-bold text-xs bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 py-2 rounded-lg transition"
                       >
                         Reject
                       </button>
                       <button
-                        onClick={() => approveVenue(venue.id)}
+                        onClick={() => handleApprove(venue.id)}
                         className="flex-1 font-bold text-xs bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 py-2 rounded-lg transition"
                       >
                         Approve
@@ -338,9 +419,9 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
                         <Edit className="w-3.5 h-3.5" />
                       </button>
 
-                      {venue.status === 'approved' ? (
+                      {(venue.verification_status === 'approved') ? (
                         <button
-                          onClick={() => blockVenue(venue.id)}
+                          onClick={() => handleBlock(venue.id)}
                           className="p-2 rounded bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 transition"
                           title="Block Venue"
                         >
@@ -348,7 +429,7 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
                         </button>
                       ) : (
                         <button
-                          onClick={() => unblockVenue(venue.id)}
+                          onClick={() => handleRestore(venue.id)}
                           className="p-2 rounded bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 transition"
                           title="Restore Venue"
                         >
@@ -368,7 +449,16 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
                 </div>
               </div>
             </div>
-          ))
+          ))}
+          
+          {/* Loading Indicator at Bottom of Grid */}
+          {apiState.venues.loading && (
+            <div className="col-span-full py-10 flex flex-col justify-center items-center gap-3 text-slate-500">
+              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-primary animate-pulse">Loading more spaces</span>
+            </div>
+          )}
+          </>
         )}
       </div>
 
@@ -578,16 +668,16 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
                         {selectedVenue.featured ? 'Featured Space' : 'Mark Featured'}
                       </button>
 
-                      {selectedVenue.status === 'pending' && (
+                      {(selectedVenue.verification_status === 'pending') && (
                         <div className="flex gap-2">
                           <button
-                            onClick={() => { rejectVenue(selectedVenue.id); setSelectedVenue(null); }}
+                            onClick={() => handleReject(selectedVenue.id)}
                             className="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 text-xs px-4 py-2 font-bold rounded-lg transition"
                           >
                             Reject Space
                           </button>
                           <button
-                            onClick={() => { approveVenue(selectedVenue.id); setSelectedVenue(null); }}
+                            onClick={() => handleApprove(selectedVenue.id)}
                             className="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 text-xs px-4 py-2 font-bold rounded-lg transition"
                           >
                             Approve Listing
@@ -837,16 +927,16 @@ export const VenuesView: React.FC<VenuesViewProps> = ({ initialTab = 'all', onSe
                       <Edit className="w-3.5 h-3.5" />
                       Edit Details
                     </button>
-                    {selectedVenue.status === 'approved' ? (
+                    {(selectedVenue.verification_status === 'approved') ? (
                       <button
-                        onClick={() => { blockVenue(selectedVenue.id); setSelectedVenue(null); }}
+                        onClick={() => handleBlock(selectedVenue.id)}
                         className="px-4 py-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 text-xs font-bold rounded-lg transition"
                       >
                         Block Venue Listing
                       </button>
                     ) : (
                       <button
-                        onClick={() => { unblockVenue(selectedVenue.id); setSelectedVenue(null); }}
+                        onClick={() => handleRestore(selectedVenue.id)}
                         className="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 text-xs font-bold rounded-lg transition"
                       >
                         Restore Venue Listing
