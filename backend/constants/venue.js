@@ -37,10 +37,29 @@ const IN_PLACE_EDIT_STATUSES = Object.freeze([
    VENUE_STATUSES.EDIT_DRAFT,
 ]);
 
+// Statuses awaiting an admin decision — the admin review queue.
+//   PENDING          → a brand-new venue submitted for first approval
+//   CHANGES_PENDING  → a submitted edit copy awaiting re-approval
+const REVIEW_STATUSES = Object.freeze([
+   VENUE_STATUSES.PENDING,
+   VENUE_STATUSES.CHANGES_PENDING,
+]);
+
+// Admin decisions recorded in a venue's editHistory. Deliberately distinct from
+// the APPROVED/REJECTED status strings so a history entry (the noun for the
+// decision) isn't confused with the venue's lifecycle state.
+const HISTORY_ACTIONS = Object.freeze({
+   APPROVAL: "APPROVAL",
+   REJECTION: "REJECTION",
+});
+
 module.exports = {
    VENUE_STATUSES,
    VENUE_STATUS_VALUES: Object.values(VENUE_STATUSES),
    SUBMITTABLE_STATUSES,
    DELETABLE_STATUSES,
    IN_PLACE_EDIT_STATUSES,
+   REVIEW_STATUSES,
+   HISTORY_ACTIONS,
+   HISTORY_ACTION_VALUES: Object.values(HISTORY_ACTIONS),
 };
