@@ -1,5 +1,4 @@
-import {  Prisma, prisma } from "@bookmyvenue/database";
-
+import { Prisma, prisma } from "@bookmyvenue/database";
 
 export const VENUE_LIST_SELECT = {
     id: true,
@@ -109,4 +108,10 @@ export const fetchVenues = async (
             totalPages: Math.ceil(total / take),
         },
     };
+};
+
+export const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(":").map(Number);
+
+    return hours! * 60 + minutes!;
 };

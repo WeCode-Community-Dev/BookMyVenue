@@ -79,11 +79,7 @@ export async function createVenueApi(payload: CreateVenuePayload, token: string)
     return res.json();
 }
 
-export async function editVenueAPI(
-    id: number,
-    body: EditVenueBody,
-    token: string
-) {
+export async function editVenueAPI(id: number, body: EditVenueBody, token: string) {
     const res = await fetch(`${API_BASE}/venue/${id}`, {
         method: "PUT",
         headers: {
@@ -94,7 +90,8 @@ export async function editVenueAPI(
     });
 
     if (!res.ok) {
-        throw new Error("Failed to update venue");
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { message?: string }).message ?? "Failed to create venue");
     }
 
     return res.json();

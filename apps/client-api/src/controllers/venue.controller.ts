@@ -1,7 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { BookingStatus, prisma, VerificationStatus } from "@bookmyvenue/database";
 import { CreateVenueBody, EditVenueBody, GetVenuesQuery, SessionInput } from "@bookmyvenue/types";
-import { fetchVenues, formatVenue, OWNER_VENUE_LIST_SELECT, toSmallUnit } from "../services/venue.service";
+import {
+    fetchVenues,
+    formatVenue,
+    OWNER_VENUE_LIST_SELECT,
+    timeToMinutes,
+    toSmallUnit,
+} from "../services/venue.service";
 // import { producer } from "../utils/kafka";
 
 // Get all approved venues
@@ -147,6 +153,44 @@ export const createVenue = async (
         return reply.status(404).send({ message: "Owner account not found" });
     }
 
+    const sessionLabels = sessions.map((session) => session.label.trim().toLowerCase());
+
+    const hasDuplicateSessionLabels = new Set(sessionLabels).size !== sessionLabels.length;
+
+    if (hasDuplicateSessionLabels) {
+        return reply.status(400).send({
+            message: "Duplicate session labels are not allowed",
+        });
+    }
+
+    const invalidSession = sessions.find(
+        (session) => timeToMinutes(session.endTime) <= timeToMinutes(session.startTime),
+    );
+
+    if (invalidSession) {
+        return reply.status(400).send({
+            message: `"${invalidSession.label}" end time must be after start time`,
+        });
+    }
+
+    const sortedSessions = [...sessions].sort(
+        (a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime),
+    );
+
+    for (let index = 1; index < sortedSessions.length; index++) {
+        const previousSession = sortedSessions[index - 1]!;
+        const currentSession = sortedSessions[index]!;
+
+        const previousEndTime = timeToMinutes(previousSession.endTime);
+        const currentStartTime = timeToMinutes(currentSession.startTime);
+
+        if (currentStartTime < previousEndTime) {
+            return reply.status(400).send({
+                message: `"${currentSession.label}'s" time overlaps with "${previousSession.label}'s time"`,
+            });
+        }
+    }
+
     const venue = await prisma.venue.create({
         data: {
             name,
@@ -194,15 +238,79 @@ export const editVenue = async (
     });
 
     if (!venue) {
-        return reply.status(404).send({
-            message: "Venue not found",
-        });
+        return reply.status(404).send({ message: "Venue not found" });
     }
 
     if (venue.ownerId !== userId) {
-        return reply.status(403).send({
-            message: "Forbidden",
-        });
+        return reply.status(403).send({ message: "Forbidden" });
+    }
+
+    const existingSessions = body.sessions.filter(
+        (session): session is SessionInput & { id: number } => session.id !== undefined,
+    );
+
+    const newSessions = body.sessions.filter((session) => session.id === undefined);
+
+    const existingSessionIds = new Set(venue.sessions.map((session) => session.id));
+
+    const hasInvalidSessionId = existingSessions.some((session) => !existingSessionIds.has(session.id));
+
+    if (hasInvalidSessionId) {
+        return reply.status(400).send({ message: "Invalid venue session" });
+    }
+
+    const sessionActiveState = new Map(existingSessions.map((session) => [session.id, session.isActive]));
+
+    const sessionsToValidate = [
+        ...venue.sessions
+            .filter((session) => sessionActiveState.get(session.id) ?? session.isActive)
+            .map((session) => ({
+                label: session.label,
+                startTime: session.startTime,
+                endTime: session.endTime,
+            })),
+        ...newSessions.map((session) => ({
+            label: session.label,
+            startTime: session.startTime,
+            endTime: session.endTime,
+        })),
+    ];
+
+    const sessionLabels = sessionsToValidate.map((session) => session.label.trim().toLowerCase());
+
+    const hasDuplicateSessionLabels = new Set(sessionLabels).size !== sessionLabels.length;
+
+    if (hasDuplicateSessionLabels) {
+        return reply.status(400).send({ message: "Duplicate session labels are not allowed" });
+    }
+
+    const invalidSession = sessionsToValidate.find(
+        (session) => timeToMinutes(session.endTime) <= timeToMinutes(session.startTime),
+    );
+
+    if (invalidSession) {
+        return reply
+            .status(400)
+            .send({ message: `"${invalidSession.label}" end time must be after start time` });
+    }
+
+    const sortedSessions = [...sessionsToValidate].sort(
+        (a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime),
+    );
+
+    for (let index = 1; index < sortedSessions.length; index++) {
+        const previousSession = sortedSessions[index - 1]!;
+        const currentSession = sortedSessions[index]!;
+
+        const previousEndTime = timeToMinutes(previousSession.endTime);
+
+        const currentStartTime = timeToMinutes(currentSession.startTime);
+
+        if (currentStartTime < previousEndTime) {
+            return reply.status(400).send({
+                message: `"${currentSession.label}'s" time overlaps with "${previousSession.label}'s" time`,
+            });
+        }
     }
 
     await prisma.$transaction(async (tx) => {
@@ -225,10 +333,6 @@ export const editVenue = async (
             },
         });
 
-        const existingSessions = body.sessions.filter(
-            (session): session is SessionInput & { id: number } => session.id !== undefined,
-        );
-
         await Promise.all(
             existingSessions.map((session) =>
                 tx.venueSession.update({
@@ -242,13 +346,11 @@ export const editVenue = async (
             ),
         );
 
-        const newSessions = body.sessions.filter((session) => !session.id);
-
         if (newSessions.length > 0) {
             await tx.venueSession.createMany({
                 data: newSessions.map((session) => ({
                     venueId,
-                    label: session.label,
+                    label: session.label.trim(),
                     startTime: session.startTime,
                     endTime: session.endTime,
                     price: toSmallUnit(session.price),
@@ -258,9 +360,7 @@ export const editVenue = async (
         }
     });
 
-    // await producer.send("venue-created", venue);
-
-    return reply.send({
+    return reply.status(201).send({
         message: "Venue updated successfully",
     });
 };

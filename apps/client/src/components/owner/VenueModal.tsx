@@ -251,7 +251,7 @@ const VenueModal = ({ mode, venue, onClose }: VenueModalProps) => {
                 <div className="px-6 py-4 border-t border-border bg-muted/30 flex flex-col gap-2 shrink-0">
                     {(error || errors.submit || editError) && (
                         <p className="text-xs text-destructive text-center">
-                            {error?.message ?? errors.submit}
+                            {error?.message ?? errors.submit ?? editError?.message}
                         </p>
                     )}
                     <div className="flex justify-between">
