@@ -37,8 +37,6 @@ sortBy: z
 
 export const adminGetBookingByIdSchema = z.object({
 
-    bookingId: z
-        .string()
-        .length(24)
+    bookingId:z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid booking ID'),
 
 });
