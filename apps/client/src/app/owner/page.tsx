@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { Building2, CalendarCheck, CheckCircle2, IndianRupee, Plus } from "lucide-react";
 import { ensureOwnerRole } from "./actions";
 
-import { BOOKINGS, VENUES, type Venue } from "./types";
+import { useOwnerVenues } from "@/hooks/useVenues";
+import { useOwnerDashboard } from "@/hooks/useBooking";
 import StatCards from "@/components/owner/StatCards";
 import NavTabs from "@/components/owner/NavTabs";
 import OverviewTab from "@/components/owner/OverviewTab";
@@ -21,32 +22,34 @@ export default function OwnerDashboard() {
 
     const [activeTab, setActiveTab] = useState<Tab>("overview");
     const [showModal, setShowModal] = useState(false);
-    const [venues] = useState<Venue[]>(VENUES);
     const [successToast] = useState(false);
+    const [token, setToken] = useState("");
 
-    const totalRevenue = BOOKINGS.filter((b) => b.status === "Confirmed").reduce((s, b) => s + b.amount, 0);
-    const confirmed = BOOKINGS.filter((b) => b.status === "Confirmed").length;
-    const pending = BOOKINGS.filter((b) => b.status === "Pending").length;
+    const { data } = useOwnerVenues({ page: 1, limit: 5 }, token);
+    const venues = data?.venues ?? [];
+
+    const { data: dashboardData } = useOwnerDashboard();
+    const statsData = dashboardData?.stats;
 
     const stats = [
         {
             label: "Total Revenue",
-            value: "₹" + totalRevenue,
-            sub: "+18% this month",
+            value: `₹${statsData?.totalRevenue ?? 0}`,
+            sub: "From confirmed bookings",
             icon: IndianRupee,
             color: "bg-emerald-50 text-emerald-600",
         },
         {
             label: "Total Bookings",
-            value: BOOKINGS.length,
-            sub: `${confirmed} confirmed`,
+            value: statsData?.totalBookings ?? 0,
+            sub: `${statsData?.confirmedBookings ?? 0} confirmed`,
             icon: CalendarCheck,
             color: "bg-blue-50 text-blue-600",
         },
         {
             label: "Active Venues",
-            value: venues.filter((v) => v.status === "Active").length,
-            sub: `${venues.length} total venues`,
+            value: statsData?.activeVenues ?? 0,
+            sub: `${statsData?.totalVenues ?? 0} total venues`,
             icon: Building2,
             color: "bg-primary/10 text-primary",
         },
@@ -54,10 +57,16 @@ export default function OwnerDashboard() {
 
     useEffect(() => {
         if (!isLoaded || !user) return;
+        console.log({ user });
+
         if (user.publicMetadata?.role === "OWNER") return;
 
         ensureOwnerRole().then(() => getToken({ skipCache: true }));
     }, [isLoaded, user, getToken]);
+
+    useEffect(() => {
+        getToken().then((jwt) => setToken(jwt ?? ""));
+    }, [getToken]);
 
     return (
         <div className="min-h-screen bg-background">
@@ -93,7 +102,6 @@ export default function OwnerDashboard() {
                 {activeTab === "overview" && (
                     <OverviewTab
                         venues={venues}
-                        pending={pending}
                         onSetActiveTab={setActiveTab}
                         onShowModal={() => setShowModal(true)}
                     />

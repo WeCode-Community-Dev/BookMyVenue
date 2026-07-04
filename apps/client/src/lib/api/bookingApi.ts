@@ -4,6 +4,7 @@ import type {
     OwnerBookingResponse,
     UserBookingsResponse,
     GetUserBookingQuery,
+    OwnerDashboardResponse,
 } from "@bookmyvenue/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
@@ -47,6 +48,22 @@ export const fetchBookingsByOwnerId = async (
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error((err as { message?: string }).message ?? "Failed to fetch bookings");
+    }
+
+    return res.json();
+};
+
+export const fetchOwnerDashboard = async (token: string): Promise<OwnerDashboardResponse> => {
+    const res = await fetch(`${API_BASE}/booking/owner/dashboard`, {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { message?: string }).message ?? "Failed to fetch bookings overview");
     }
 
     return res.json();

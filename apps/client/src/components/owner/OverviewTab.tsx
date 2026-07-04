@@ -1,22 +1,21 @@
 import { Plus, Users } from "lucide-react";
 import Image from "next/image";
-import { STATUS_STYLE, type BookingStatus, type Venue } from "@/app/owner/types";
+import type { Venue } from "@bookmyvenue/types";
 import { useOwnerBookings } from "@/hooks/useBooking";
 import { fmtDate } from "@/lib/utils";
+import { STATUS_STYLE } from "@/app/owner/types";
 
 type Tab = "overview" | "bookings" | "venues";
 
 interface OverviewTabProps {
     venues: Venue[];
-    pending: number;
     onSetActiveTab: (tab: Tab) => void;
     onShowModal: () => void;
 }
 
-const toTitleStatus = (s: string): BookingStatus => (s.charAt(0) + s.slice(1).toLowerCase()) as BookingStatus;
 
 export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: OverviewTabProps) {
-    const { data, isLoading } = useOwnerBookings({ limit: 10 });
+    const { data, isLoading } = useOwnerBookings({ limit: 6 });
     const recent = data?.bookings ?? [];
 
     return (
@@ -43,7 +42,7 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                         </div>
                     ) : (
                         recent.slice(0, 6).map((b) => {
-                            const status = toTitleStatus(b.status);
+                            const status = b.status;
                             return (
                                 <div
                                     key={b.id}
@@ -98,7 +97,7 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                                 className="flex items-center gap-3 px-5 py-3 hover:bg-muted/40 transition-colors"
                             >
                                 <Image
-                                    src={v.image}
+                                    src={v.images[0]!}
                                     alt={v.name}
                                     width={40}
                                     height={40}
@@ -107,11 +106,11 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold text-foreground truncate">{v.name}</p>
                                     <p className="text-xs text-muted-foreground">
-                                        {v.location} · {v.bookings} bookings
+                                        {v.location} · {v.bookingCount} bookings
                                     </p>
                                 </div>
                                 <span
-                                    className={`w-2 h-2 rounded-full shrink-0 ${v.status === "Active" ? "bg-emerald-500" : "bg-gray-300"}`}
+                                    className={`w-2 h-2 rounded-full shrink-0 ${v.isActive ? "bg-emerald-500" : "bg-gray-300"}`}
                                 />
                             </div>
                         ))}
@@ -124,54 +123,6 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                             <Plus className="w-4 h-4" /> Add New Venue
                         </button>
                     </div>
-                </div>
-
-                {/* Pending alert */}
-                {/* {pending > 0 && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex gap-3">
-                        <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                        <div>
-                            <p className="text-sm font-bold text-amber-800">
-                                {pending} pending {pending === 1 ? "request" : "requests"}
-                            </p>
-                            <p className="text-xs text-amber-700 mt-0.5 mb-3">
-                                Respond within 24 hours to keep your response rate high.
-                            </p>
-                            <button
-                                onClick={() => onSetActiveTab("bookings")}
-                                className="text-xs font-bold text-amber-800 underline"
-                            >
-                                Review now →
-                            </button>
-                        </div>
-                    </div>
-                )} */}
-
-                {/* Revenue breakdown */}
-                <div className="bg-card border border-border rounded-2xl p-5">
-                    <h3 className="font-bold text-foreground mb-4">Revenue Breakdown</h3>
-                    {[
-                        { label: "The Grand Pavilion", amount: 75000, pct: 52 },
-                        { label: "Emerald Garden", amount: 65000, pct: 38 },
-                        { label: "Lakeview Conference", amount: 27000, pct: 18 },
-                    ].map(({ label, amount, pct }) => (
-                        <div key={label} className="mb-3 last:mb-0">
-                            <div className="flex justify-between text-xs mb-1">
-                                <span className="text-foreground font-medium truncate max-w-[60%]">
-                                    {label}
-                                </span>
-                                <span className="text-muted-foreground">
-                                    {"₹" + amount.toLocaleString()}
-                                </span>
-                            </div>
-                            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-primary rounded-full transition-all"
-                                    style={{ width: `${pct}%` }}
-                                />
-                            </div>
-                        </div>
-                    ))}
                 </div>
             </div>
         </div>

@@ -216,3 +216,63 @@ export const getBookingByUserId = async (
         },
     });
 };
+
+export const getOwnerDashboard = async (request: FastifyRequest, reply: FastifyReply) => {
+    const ownerId = request.userId;
+
+    const [totalBookings, confirmedBookings, totalVenues, activeVenues, revenueResult] = await Promise.all([
+        prisma.booking.count({
+            where: {
+                venue: {
+                    ownerId,
+                },
+            },
+        }),
+
+        prisma.booking.count({
+            where: {
+                venue: {
+                    ownerId,
+                },
+                status: "CONFIRMED",
+            },
+        }),
+
+        prisma.venue.count({
+            where: {
+                ownerId,
+            },
+        }),
+
+        prisma.venue.count({
+            where: {
+                ownerId,
+                isActive: true,
+            },
+        }),
+
+        prisma.bookingSession.aggregate({
+            where: {
+                booking: {
+                    venue: {
+                        ownerId,
+                    },
+                    status: "CONFIRMED",
+                },
+            },
+            _sum: {
+                pricePaid: true,
+            },
+        }),
+    ]);
+
+    return reply.send({
+        stats: {
+            totalRevenue: fromSmallUnit(revenueResult._sum.pricePaid ?? 0),
+            totalBookings,
+            confirmedBookings,
+            activeVenues,
+            totalVenues,
+        },
+    });
+};

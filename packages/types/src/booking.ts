@@ -29,6 +29,33 @@ export type OwnerBookingResponse = {
     };
 };
 
+// export type OwnerDashboardResponse = {
+//     stats: {
+//         totalRevenue: number;
+//         totalBookings: number;
+//         confirmedBookings: number;
+//         activeVenues: number;
+//         totalVenues: number;
+//     };
+// };
+
+export type OwnerDashboardResponse = {
+    stats: {
+        totalRevenue: number;
+        totalBookings: number;
+        confirmedBookings: number;
+        pendingBookings: number;
+        activeVenues: number;
+        totalVenues: number;
+    };
+    revenueBreakdown: {
+        venueId: number;
+        venueName: string;
+        amount: number;
+        percentage: number;
+    }[];
+};
+
 export type OwnerBooking = {
     id: string;
     status: BookingStatus;

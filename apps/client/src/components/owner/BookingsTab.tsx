@@ -1,6 +1,6 @@
 import { CalendarCheck, Search } from "lucide-react";
 import { useState } from "react";
-import { STATUS_DOT, STATUS_STYLE, type BookingStatus } from "@/app/owner/types";
+import { STATUS_DOT, STATUS_STYLE } from "@/app/owner/types";
 import { useOwnerBookings } from "@/hooks/useBooking";
 import type { GetOwnerBookingQuery } from "@bookmyvenue/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,6 +14,7 @@ import {
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { fmtDate, pageRange } from "@/lib/utils";
+import { BookingStatus } from "@bookmyvenue/database";
 
 const toTitleStatus = (s: string): BookingStatus => (s.charAt(0) + s.slice(1).toLowerCase()) as BookingStatus;
 
@@ -65,17 +66,17 @@ export default function BookingsTab() {
                     />
                 </div>
                 <div className="flex gap-2 shrink-0">
-                    {(["All", "Confirmed", "Cancelled"] as const).map((s) => (
+                    {(["All", "CONFIRMED", "CANCELLED"] as const).map((s) => (
                         <button
                             key={s}
                             onClick={() => handleFilterChange(s)}
-                            className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                            className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all capitalize ${
                                 bookingFilter === s
                                     ? "bg-primary text-primary-foreground"
                                     : "bg-muted text-muted-foreground hover:bg-secondary"
                             }`}
                         >
-                            {s}
+                            {s.toLocaleLowerCase()}
                         </button>
                     ))}
                 </div>
