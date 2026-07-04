@@ -17,28 +17,28 @@ import {
       {
         icon: User,
         label: "Full Name",
-        value: user.name,
+        value: user?.fullName || "-",
       },
       {
         icon: Mail,
         label: "Email",
-        value: user.email,
+        value: user?.email || "-",
       },
       {
         icon: Phone,
         label: "Phone",
-        value: user.phone,
+        value: user?.phone || "-",
       },
-      {
-        icon: CalendarDays,
-        label: "Date of Birth",
-        value: user.dob,
-      },
-      {
-        icon: MapPin,
-        label: "Location",
-        value: user.location,
-      },
+      // {
+      //   icon: CalendarDays,
+      //   label: "Date of Birth",
+      //   value: user.dob,
+      // },
+      // {
+      //   icon: MapPin,
+      //   label: "Location",
+      //   value: user.location,
+      // },
     ];
   
     return (

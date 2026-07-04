@@ -1,53 +1,106 @@
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import Header from "@/presentation/components/common/Header";
-import UserEditProfileForm from "@/presentation/components/user/UserEditProfileForm";
+import UserSidebar from "@/presentation/components/user/UserSidebar";
 import UserProfileImage from "@/presentation/components/user/UserProfileImage";
 import UserProfileInformation from "@/presentation/components/user/UserProfileInformation";
-import UserSidebar from "@/presentation/components/user/UserSidebar";
-import { useState } from "react";
+import UserEditProfileForm from "@/presentation/components/user/UserEditProfileForm";
+
+import {
+  getProfile,
+  requestEmailChangeOtp,
+  resendEmailOtp,
+  updateProfile,
+  updateProfileImage,
+  verifyEmailOtp,
+} from "@/redux/slices/UserProfileSlice";
 
 const UserProfile = () => {
-    const [user, setUser] = useState({
-        name: "Navya N",
-        email: "navya@example.com",
-        phone: "9876543210",
-        gender: "Female",
-        dob: "2000-05-12",
-        address: "Kozhikode",
-        city: "Kozhikode",
-        state: "Kerala",
-        pincode: "673001",
-        memberSince: "May 2024",
-        image: "https://i.pravatar.cc/300",
-      });
-    
-      // Controls whether we show the profile or the edit form
-      const [isEditing, setIsEditing] = useState(false);
-    
-      // Called when Save Changes is clicked
-      const handleSave = async (updatedData) => {
-        console.log(updatedData);
-    
-        /**
-         * Later:
-         *
-         * await updateProfileUseCase(updatedData)
-         * const latestUser = await getProfileUseCase()
-         * setUser(latestUser)
-         */
-    
-        setUser((prev) => ({
-          ...prev,
-          ...updatedData,
-        }));
-    
-        setIsEditing(false);
-      };
-    
-      // Called when Cancel is clicked
-      const handleCancel = () => {
-        setIsEditing(false);
-      };
-    
+  const dispatch = useDispatch();
+
+  const { user, loading, error } = useSelector((state) => state.userProfile);
+
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    dispatch(getProfile());
+  }, [dispatch]);
+
+  const handleSave = async (formData) => {
+    const payload = {
+      fullName: formData.name,
+      phone: formData.phone,
+    };
+
+    const resultAction = await dispatch(updateProfile(payload));
+
+    if (updateProfile.fulfilled.match(resultAction)) {
+      setIsEditing(false);
+    }
+  };
+
+  const handleImageChange = async (file) => {
+    const resultAction = await dispatch(updateProfileImage(file));
+
+    if (updateProfileImage.fulfilled.match(resultAction)) {
+      console.log("Profile image updated");
+    }
+  };
+
+  const { otpLoading, otpSent } = useSelector((state) => state.userProfile);
+
+  const handleRequestEmailOtp = async (newEmail) => {
+    const resultAction = await dispatch(requestEmailChangeOtp(newEmail));
+
+    if (requestEmailChangeOtp.fulfilled.match(resultAction)) {
+      console.log("OTP Sent");
+    }
+  };
+
+  const handleVerifyOtp = async (otp) => {
+    const result = await dispatch(verifyEmailOtp(otp));
+
+    if (verifyEmailOtp.fulfilled.match(result)) {
+      console.log("Email Updated");
+    }
+  };
+
+  const handleResendOtp = async () => {
+    await dispatch(resendEmailOtp());
+  };
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="flex">
+          <UserSidebar />
+
+          <main className="flex-1 flex items-center justify-center">
+            <h2 className="text-lg font-medium text-gray-600">
+              Loading Profile...
+            </h2>
+          </main>
+        </div>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Header />
+        <div className="flex">
+          <UserSidebar />
+
+          <main className="flex-1 flex items-center justify-center">
+            <h2 className="text-lg font-medium text-red-500">{error}</h2>
+          </main>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -58,32 +111,41 @@ const UserProfile = () => {
 
         <main className="flex-1 bg-gray-50 p-10">
           <div className="flex gap-10 items-start">
-            {/* Left */}
+            {/* Left Section */}
             <div className="w-80">
               <UserProfileImage
-                image={user.image}
-                name={user.name}
-                email={user.email}
-                memberSince={user.memberSince}
-                onImageChange={() => console.log("Change Image")}
+                image={user?.profileImage?.url}
+                name={user?.fullName}
+                email={user?.email}
+                memberSince={new Date(user?.createdAt).toLocaleDateString(
+                  "en-US",
+                  {
+                    month: "long",
+                    year: "numeric",
+                  }
+                )}
+                onImageChange={handleImageChange}
               />
             </div>
 
-            {/* Right */}
+            {/* Right Section */}
             <div className="flex-1">
               {isEditing ? (
                 <UserEditProfileForm
                   user={user}
                   onSave={handleSave}
-                  onCancel={handleCancel}
+                  onCancel={() => setIsEditing(false)}
+                  onRequestEmailOtp={handleRequestEmailOtp}
+                  otpLoading={otpLoading}
+                  otpSent={otpSent}
+                  onVerifyOtp={handleVerifyOtp}
+                  onResendOtp={handleResendOtp}
                 />
               ) : (
                 <UserProfileInformation
                   user={user}
                   onEditProfile={() => setIsEditing(true)}
-                  onAccountSettings={() =>
-                    console.log("Account Settings")
-                  }
+                  onAccountSettings={() => console.log("Account Settings")}
                 />
               )}
             </div>

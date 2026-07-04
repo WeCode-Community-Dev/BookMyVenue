@@ -1,16 +1,19 @@
 import { useState } from "react";
 
-const UserEditProfileForm = ({ user, onSave, onCancel }) => {
+const UserEditProfileForm = ({
+    user,
+    onSave,
+    onCancel,
+    onRequestEmailOtp,
+    onVerifyOtp,
+    onResendOtp,
+    otpLoading,
+    otpSent,
+}) => {
   const [formData, setFormData] = useState({
-    name: user.name || "",
+    name: user.fullName || "",
     email: user.email || "",
     phone: user.phone || "",
-    gender: user.gender || "",
-    dob: user.dob || "",
-    address: user.address || "",
-    city: user.city || "",
-    state: user.state || "",
-    pincode: user.pincode || "",
   });
 
   const handleChange = (e) => {
@@ -27,14 +30,30 @@ const UserEditProfileForm = ({ user, onSave, onCancel }) => {
     onSave(formData);
   };
 
+  const [showEmailSection, setShowEmailSection] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+
+  const handleSendOtp = () => {
+    if (!newEmail.trim()) return;
+
+    onRequestEmailOtp(newEmail);
+  };
+
+  const [otp, setOtp] = useState("");
+  const handleVerifyOtp = () => {
+    if (!otp.trim()) return;
+
+    onVerifyOtp(otp);
+  };
+  const handleResendOtp = () => {
+    onResendOtp();
+  };
+
   return (
     <div className="bg-white rounded-3xl shadow-md p-8">
-      <h2 className="text-2xl font-bold text-slate-900 mb-8">
-        Edit Profile
-      </h2>
+      <h2 className="text-2xl font-bold text-slate-900 mb-8">Edit Profile</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-
         {/* Full Name */}
         <div>
           <label className="block mb-2 text-sm font-medium text-gray-700">
@@ -43,7 +62,7 @@ const UserEditProfileForm = ({ user, onSave, onCancel }) => {
 
           <input
             type="text"
-            name="name"
+            name="fullName"
             value={formData.name}
             onChange={handleChange}
             className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:border-amber-500"
@@ -51,17 +70,94 @@ const UserEditProfileForm = ({ user, onSave, onCancel }) => {
         </div>
 
         {/* Email */}
-        <div>
-          <label className="block mb-2 text-sm font-medium text-gray-700">
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-gray-700">
             Email
           </label>
 
-          <input
-            type="email"
-            value={formData.email}
-            readOnly
-            className="w-full rounded-xl border border-gray-300 bg-gray-100 px-4 py-3 cursor-not-allowed"
-          />
+          <div className="flex gap-3">
+            <input
+              type="email"
+              value={formData.email}
+              readOnly
+              className="flex-1 rounded-xl border border-gray-300 bg-gray-100 px-4 py-3"
+            />
+
+            <button
+              type="button"
+              onClick={() => setShowEmailSection(!showEmailSection)}
+              className="rounded-xl border border-amber-500 px-5 py-3 text-amber-600 hover:bg-amber-50"
+            >
+              Change Email
+            </button>
+          </div>
+
+          {showEmailSection && (
+            <div className="space-y-4 rounded-xl border border-gray-200 bg-slate-50 p-5">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  New Email
+                </label>
+
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="Enter new email"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-3"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                disabled={otpLoading}
+                className="rounded-xl bg-amber-500 px-6 py-3 text-white hover:bg-amber-600 disabled:opacity-50"
+              >
+                {otpLoading ? "Sending..." : "Send OTP"}
+              </button>
+              {otpSent && (
+    <div className="mt-6 space-y-4 border-t pt-5">
+
+        <div>
+            <label className="mb-2 block text-sm font-medium">
+                Enter OTP
+            </label>
+
+            <input
+                type="text"
+                value={otp}
+                maxLength={6}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="Enter 6 digit OTP"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3"
+            />
+        </div>
+
+        <div className="flex gap-3">
+
+            <button
+                type="button"
+                onClick={handleVerifyOtp}
+                className="rounded-xl bg-green-600 px-6 py-3 text-white hover:bg-green-700"
+            >
+                Verify OTP
+            </button>
+
+            <button
+                type="button"
+                onClick={handleResendOtp}
+                className="rounded-xl border border-gray-300 px-6 py-3 hover:bg-gray-100"
+            >
+                Resend OTP
+            </button>
+
+        </div>
+
+    </div>
+)}
+            </div>
+          )}
         </div>
 
         {/* Phone */}
@@ -79,109 +175,8 @@ const UserEditProfileForm = ({ user, onSave, onCancel }) => {
           />
         </div>
 
-        {/* Gender & DOB */}
-        <div className="grid grid-cols-2 gap-6">
-
-          <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">
-              Gender
-            </label>
-
-            <select
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:border-amber-500"
-            >
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">
-              Date of Birth
-            </label>
-
-            <input
-              type="date"
-              name="dob"
-              value={formData.dob}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-        </div>
-
-        {/* Address */}
-        <div>
-          <label className="block mb-2 text-sm font-medium text-gray-700">
-            Address
-          </label>
-
-          <textarea
-            rows={3}
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 resize-none focus:outline-none focus:border-amber-500"
-          />
-        </div>
-
-        {/* City & State */}
-        <div className="grid grid-cols-2 gap-6">
-
-          <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">
-              City
-            </label>
-
-            <input
-              type="text"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">
-              State
-            </label>
-
-            <input
-              type="text"
-              name="state"
-              value={formData.state}
-              onChange={handleChange}
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-        </div>
-
-        {/* Pincode */}
-        <div>
-          <label className="block mb-2 text-sm font-medium text-gray-700">
-            Pincode
-          </label>
-
-          <input
-            type="text"
-            name="pincode"
-            value={formData.pincode}
-            onChange={handleChange}
-            className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:border-amber-500"
-          />
-        </div>
-
         {/* Buttons */}
         <div className="flex justify-end gap-4 pt-6">
-
           <button
             type="button"
             onClick={onCancel}
@@ -196,9 +191,7 @@ const UserEditProfileForm = ({ user, onSave, onCancel }) => {
           >
             Save Changes
           </button>
-
         </div>
-
       </form>
     </div>
   );
