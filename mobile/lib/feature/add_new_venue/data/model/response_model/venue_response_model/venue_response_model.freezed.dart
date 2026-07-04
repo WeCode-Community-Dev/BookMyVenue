@@ -1199,7 +1199,7 @@ as DateTime,
 /// @nodoc
 mixin _$VenueSlot {
 
- String get id;@JsonKey(name: 'slot_name') String get slotName;@JsonKey(name: 'start_time') String get startTime;@JsonKey(name: 'end_time') String get endTime; int get capacity; double get price;
+ String get id;@JsonKey(name: 'slot_name') String get slotName;@JsonKey(name: 'start_time') String get startTime;@JsonKey(name: 'end_time') String get endTime; double get price;
 /// Create a copy of VenueSlot
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1212,16 +1212,16 @@ $VenueSlotCopyWith<VenueSlot> get copyWith => _$VenueSlotCopyWithImpl<VenueSlot>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueSlot&&(identical(other.id, id) || other.id == id)&&(identical(other.slotName, slotName) || other.slotName == slotName)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.capacity, capacity) || other.capacity == capacity)&&(identical(other.price, price) || other.price == price));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueSlot&&(identical(other.id, id) || other.id == id)&&(identical(other.slotName, slotName) || other.slotName == slotName)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.price, price) || other.price == price));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,slotName,startTime,endTime,capacity,price);
+int get hashCode => Object.hash(runtimeType,id,slotName,startTime,endTime,price);
 
 @override
 String toString() {
-  return 'VenueSlot(id: $id, slotName: $slotName, startTime: $startTime, endTime: $endTime, capacity: $capacity, price: $price)';
+  return 'VenueSlot(id: $id, slotName: $slotName, startTime: $startTime, endTime: $endTime, price: $price)';
 }
 
 
@@ -1232,7 +1232,7 @@ abstract mixin class $VenueSlotCopyWith<$Res>  {
   factory $VenueSlotCopyWith(VenueSlot value, $Res Function(VenueSlot) _then) = _$VenueSlotCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'slot_name') String slotName,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime, int capacity, double price
+ String id,@JsonKey(name: 'slot_name') String slotName,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime, double price
 });
 
 
@@ -1249,14 +1249,13 @@ class _$VenueSlotCopyWithImpl<$Res>
 
 /// Create a copy of VenueSlot
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? slotName = null,Object? startTime = null,Object? endTime = null,Object? capacity = null,Object? price = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? slotName = null,Object? startTime = null,Object? endTime = null,Object? price = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,slotName: null == slotName ? _self.slotName : slotName // ignore: cast_nullable_to_non_nullable
 as String,startTime: null == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
 as String,endTime: null == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
-as String,capacity: null == capacity ? _self.capacity : capacity // ignore: cast_nullable_to_non_nullable
-as int,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
+as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,
   ));
 }
@@ -1339,10 +1338,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  int capacity,  double price)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  double price)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _VenueSlot() when $default != null:
-return $default(_that.id,_that.slotName,_that.startTime,_that.endTime,_that.capacity,_that.price);case _:
+return $default(_that.id,_that.slotName,_that.startTime,_that.endTime,_that.price);case _:
   return orElse();
 
 }
@@ -1360,10 +1359,10 @@ return $default(_that.id,_that.slotName,_that.startTime,_that.endTime,_that.capa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  int capacity,  double price)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  double price)  $default,) {final _that = this;
 switch (_that) {
 case _VenueSlot():
-return $default(_that.id,_that.slotName,_that.startTime,_that.endTime,_that.capacity,_that.price);}
+return $default(_that.id,_that.slotName,_that.startTime,_that.endTime,_that.price);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -1377,10 +1376,10 @@ return $default(_that.id,_that.slotName,_that.startTime,_that.endTime,_that.capa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  int capacity,  double price)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  double price)?  $default,) {final _that = this;
 switch (_that) {
 case _VenueSlot() when $default != null:
-return $default(_that.id,_that.slotName,_that.startTime,_that.endTime,_that.capacity,_that.price);case _:
+return $default(_that.id,_that.slotName,_that.startTime,_that.endTime,_that.price);case _:
   return null;
 
 }
@@ -1392,14 +1391,13 @@ return $default(_that.id,_that.slotName,_that.startTime,_that.endTime,_that.capa
 @JsonSerializable()
 
 class _VenueSlot implements VenueSlot {
-  const _VenueSlot({required this.id, @JsonKey(name: 'slot_name') required this.slotName, @JsonKey(name: 'start_time') required this.startTime, @JsonKey(name: 'end_time') required this.endTime, required this.capacity, required this.price});
+  const _VenueSlot({required this.id, @JsonKey(name: 'slot_name') required this.slotName, @JsonKey(name: 'start_time') required this.startTime, @JsonKey(name: 'end_time') required this.endTime, required this.price});
   factory _VenueSlot.fromJson(Map<String, dynamic> json) => _$VenueSlotFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'slot_name') final  String slotName;
 @override@JsonKey(name: 'start_time') final  String startTime;
 @override@JsonKey(name: 'end_time') final  String endTime;
-@override final  int capacity;
 @override final  double price;
 
 /// Create a copy of VenueSlot
@@ -1415,16 +1413,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VenueSlot&&(identical(other.id, id) || other.id == id)&&(identical(other.slotName, slotName) || other.slotName == slotName)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.capacity, capacity) || other.capacity == capacity)&&(identical(other.price, price) || other.price == price));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VenueSlot&&(identical(other.id, id) || other.id == id)&&(identical(other.slotName, slotName) || other.slotName == slotName)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.price, price) || other.price == price));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,slotName,startTime,endTime,capacity,price);
+int get hashCode => Object.hash(runtimeType,id,slotName,startTime,endTime,price);
 
 @override
 String toString() {
-  return 'VenueSlot(id: $id, slotName: $slotName, startTime: $startTime, endTime: $endTime, capacity: $capacity, price: $price)';
+  return 'VenueSlot(id: $id, slotName: $slotName, startTime: $startTime, endTime: $endTime, price: $price)';
 }
 
 
@@ -1435,7 +1433,7 @@ abstract mixin class _$VenueSlotCopyWith<$Res> implements $VenueSlotCopyWith<$Re
   factory _$VenueSlotCopyWith(_VenueSlot value, $Res Function(_VenueSlot) _then) = __$VenueSlotCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'slot_name') String slotName,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime, int capacity, double price
+ String id,@JsonKey(name: 'slot_name') String slotName,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime, double price
 });
 
 
@@ -1452,14 +1450,13 @@ class __$VenueSlotCopyWithImpl<$Res>
 
 /// Create a copy of VenueSlot
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? slotName = null,Object? startTime = null,Object? endTime = null,Object? capacity = null,Object? price = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? slotName = null,Object? startTime = null,Object? endTime = null,Object? price = null,}) {
   return _then(_VenueSlot(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,slotName: null == slotName ? _self.slotName : slotName // ignore: cast_nullable_to_non_nullable
 as String,startTime: null == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
 as String,endTime: null == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
-as String,capacity: null == capacity ? _self.capacity : capacity // ignore: cast_nullable_to_non_nullable
-as int,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
+as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,
   ));
 }

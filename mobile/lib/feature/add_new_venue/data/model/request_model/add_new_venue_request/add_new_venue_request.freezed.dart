@@ -136,7 +136,10 @@ return $default(_that);case _:
 final _that = this;
 switch (_that) {
 case _AddNewVenueRequest():
-return $default(_that);}
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -195,7 +198,10 @@ return $default(_that.venueName,_that.category,_that.description,_that.location,
 @optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'venue_name')  String venueName,  String category,  String description,  VenueLocationRequest location, @JsonKey(name: 'venue_size')  int venueSize, @JsonKey(name: 'max_capacity')  int maxCapacity, @JsonKey(name: 'amenity_ids')  List<String> amenityIds, @JsonKey(name: 'cover_image_url')  String coverImageUrl, @JsonKey(name: 'gallery_images')  List<String> galleryImages, @JsonKey(name: 'virtual_tour_url')  String? virtualTourUrl,  List<VenueSlotRequest> slots,  List<VenueServiceRequest> services, @JsonKey(name: 'instant_booking')  bool instantBooking)  $default,) {final _that = this;
 switch (_that) {
 case _AddNewVenueRequest():
-return $default(_that.venueName,_that.category,_that.description,_that.location,_that.venueSize,_that.maxCapacity,_that.amenityIds,_that.coverImageUrl,_that.galleryImages,_that.virtualTourUrl,_that.slots,_that.services,_that.instantBooking);}
+return $default(_that.venueName,_that.category,_that.description,_that.location,_that.venueSize,_that.maxCapacity,_that.amenityIds,_that.coverImageUrl,_that.galleryImages,_that.virtualTourUrl,_that.slots,_that.services,_that.instantBooking);case _:
+  throw StateError('Unexpected subclass');
+
+}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -221,8 +227,8 @@ return $default(_that.venueName,_that.category,_that.description,_that.location,
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(explicitToJson: true)
 class _AddNewVenueRequest implements AddNewVenueRequest {
   const _AddNewVenueRequest({@JsonKey(name: 'venue_name') required this.venueName, required this.category, required this.description, required this.location, @JsonKey(name: 'venue_size') required this.venueSize, @JsonKey(name: 'max_capacity') required this.maxCapacity, @JsonKey(name: 'amenity_ids') required final  List<String> amenityIds, @JsonKey(name: 'cover_image_url') required this.coverImageUrl, @JsonKey(name: 'gallery_images') required final  List<String> galleryImages, @JsonKey(name: 'virtual_tour_url') this.virtualTourUrl, required final  List<VenueSlotRequest> slots, required final  List<VenueServiceRequest> services, @JsonKey(name: 'instant_booking') required this.instantBooking}): _amenityIds = amenityIds,_galleryImages = galleryImages,_slots = slots,_services = services;
   factory _AddNewVenueRequest.fromJson(Map<String, dynamic> json) => _$AddNewVenueRequestFromJson(json);
@@ -456,7 +462,10 @@ return $default(_that);case _:
 final _that = this;
 switch (_that) {
 case _VenueLocationRequest():
-return $default(_that);}
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -515,7 +524,10 @@ return $default(_that.address,_that.city,_that.state,_that.country,_that.pincode
 @optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String address,  String city,  String state,  String country,  String pincode,  double latitude,  double longitude)  $default,) {final _that = this;
 switch (_that) {
 case _VenueLocationRequest():
-return $default(_that.address,_that.city,_that.state,_that.country,_that.pincode,_that.latitude,_that.longitude);}
+return $default(_that.address,_that.city,_that.state,_that.country,_that.pincode,_that.latitude,_that.longitude);case _:
+  throw StateError('Unexpected subclass');
+
+}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -541,8 +553,8 @@ return $default(_that.address,_that.city,_that.state,_that.country,_that.pincode
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(explicitToJson: true)
 class _VenueLocationRequest implements VenueLocationRequest {
   const _VenueLocationRequest({required this.address, required this.city, required this.state, required this.country, required this.pincode, required this.latitude, required this.longitude});
   factory _VenueLocationRequest.fromJson(Map<String, dynamic> json) => _$VenueLocationRequestFromJson(json);
@@ -625,7 +637,7 @@ as double,
 /// @nodoc
 mixin _$VenueSlotRequest {
 
-@JsonKey(name: 'slot_name') String get slotName;@JsonKey(name: 'start_time') String get startTime;@JsonKey(name: 'end_time') String get endTime; int get capacity; double get price;
+@JsonKey(name: 'slot_name') String get slotName;@JsonKey(name: 'start_time') String get startTime;@JsonKey(name: 'end_time') String get endTime; double get price;
 /// Create a copy of VenueSlotRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -638,16 +650,16 @@ $VenueSlotRequestCopyWith<VenueSlotRequest> get copyWith => _$VenueSlotRequestCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueSlotRequest&&(identical(other.slotName, slotName) || other.slotName == slotName)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.capacity, capacity) || other.capacity == capacity)&&(identical(other.price, price) || other.price == price));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VenueSlotRequest&&(identical(other.slotName, slotName) || other.slotName == slotName)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.price, price) || other.price == price));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,slotName,startTime,endTime,capacity,price);
+int get hashCode => Object.hash(runtimeType,slotName,startTime,endTime,price);
 
 @override
 String toString() {
-  return 'VenueSlotRequest(slotName: $slotName, startTime: $startTime, endTime: $endTime, capacity: $capacity, price: $price)';
+  return 'VenueSlotRequest(slotName: $slotName, startTime: $startTime, endTime: $endTime, price: $price)';
 }
 
 
@@ -658,7 +670,7 @@ abstract mixin class $VenueSlotRequestCopyWith<$Res>  {
   factory $VenueSlotRequestCopyWith(VenueSlotRequest value, $Res Function(VenueSlotRequest) _then) = _$VenueSlotRequestCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'slot_name') String slotName,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime, int capacity, double price
+@JsonKey(name: 'slot_name') String slotName,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime, double price
 });
 
 
@@ -675,13 +687,12 @@ class _$VenueSlotRequestCopyWithImpl<$Res>
 
 /// Create a copy of VenueSlotRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? slotName = null,Object? startTime = null,Object? endTime = null,Object? capacity = null,Object? price = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? slotName = null,Object? startTime = null,Object? endTime = null,Object? price = null,}) {
   return _then(_self.copyWith(
 slotName: null == slotName ? _self.slotName : slotName // ignore: cast_nullable_to_non_nullable
 as String,startTime: null == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
 as String,endTime: null == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
-as String,capacity: null == capacity ? _self.capacity : capacity // ignore: cast_nullable_to_non_nullable
-as int,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
+as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,
   ));
 }
@@ -729,7 +740,10 @@ return $default(_that);case _:
 final _that = this;
 switch (_that) {
 case _VenueSlotRequest():
-return $default(_that);}
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -764,10 +778,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  int capacity,  double price)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  double price)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _VenueSlotRequest() when $default != null:
-return $default(_that.slotName,_that.startTime,_that.endTime,_that.capacity,_that.price);case _:
+return $default(_that.slotName,_that.startTime,_that.endTime,_that.price);case _:
   return orElse();
 
 }
@@ -785,10 +799,13 @@ return $default(_that.slotName,_that.startTime,_that.endTime,_that.capacity,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  int capacity,  double price)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  double price)  $default,) {final _that = this;
 switch (_that) {
 case _VenueSlotRequest():
-return $default(_that.slotName,_that.startTime,_that.endTime,_that.capacity,_that.price);}
+return $default(_that.slotName,_that.startTime,_that.endTime,_that.price);case _:
+  throw StateError('Unexpected subclass');
+
+}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -802,10 +819,10 @@ return $default(_that.slotName,_that.startTime,_that.endTime,_that.capacity,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  int capacity,  double price)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'slot_name')  String slotName, @JsonKey(name: 'start_time')  String startTime, @JsonKey(name: 'end_time')  String endTime,  double price)?  $default,) {final _that = this;
 switch (_that) {
 case _VenueSlotRequest() when $default != null:
-return $default(_that.slotName,_that.startTime,_that.endTime,_that.capacity,_that.price);case _:
+return $default(_that.slotName,_that.startTime,_that.endTime,_that.price);case _:
   return null;
 
 }
@@ -814,16 +831,15 @@ return $default(_that.slotName,_that.startTime,_that.endTime,_that.capacity,_tha
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(explicitToJson: true)
 class _VenueSlotRequest implements VenueSlotRequest {
-  const _VenueSlotRequest({@JsonKey(name: 'slot_name') required this.slotName, @JsonKey(name: 'start_time') required this.startTime, @JsonKey(name: 'end_time') required this.endTime, required this.capacity, required this.price});
+  const _VenueSlotRequest({@JsonKey(name: 'slot_name') required this.slotName, @JsonKey(name: 'start_time') required this.startTime, @JsonKey(name: 'end_time') required this.endTime, required this.price});
   factory _VenueSlotRequest.fromJson(Map<String, dynamic> json) => _$VenueSlotRequestFromJson(json);
 
 @override@JsonKey(name: 'slot_name') final  String slotName;
 @override@JsonKey(name: 'start_time') final  String startTime;
 @override@JsonKey(name: 'end_time') final  String endTime;
-@override final  int capacity;
 @override final  double price;
 
 /// Create a copy of VenueSlotRequest
@@ -839,16 +855,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VenueSlotRequest&&(identical(other.slotName, slotName) || other.slotName == slotName)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.capacity, capacity) || other.capacity == capacity)&&(identical(other.price, price) || other.price == price));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VenueSlotRequest&&(identical(other.slotName, slotName) || other.slotName == slotName)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.price, price) || other.price == price));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,slotName,startTime,endTime,capacity,price);
+int get hashCode => Object.hash(runtimeType,slotName,startTime,endTime,price);
 
 @override
 String toString() {
-  return 'VenueSlotRequest(slotName: $slotName, startTime: $startTime, endTime: $endTime, capacity: $capacity, price: $price)';
+  return 'VenueSlotRequest(slotName: $slotName, startTime: $startTime, endTime: $endTime, price: $price)';
 }
 
 
@@ -859,7 +875,7 @@ abstract mixin class _$VenueSlotRequestCopyWith<$Res> implements $VenueSlotReque
   factory _$VenueSlotRequestCopyWith(_VenueSlotRequest value, $Res Function(_VenueSlotRequest) _then) = __$VenueSlotRequestCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'slot_name') String slotName,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime, int capacity, double price
+@JsonKey(name: 'slot_name') String slotName,@JsonKey(name: 'start_time') String startTime,@JsonKey(name: 'end_time') String endTime, double price
 });
 
 
@@ -876,13 +892,12 @@ class __$VenueSlotRequestCopyWithImpl<$Res>
 
 /// Create a copy of VenueSlotRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? slotName = null,Object? startTime = null,Object? endTime = null,Object? capacity = null,Object? price = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? slotName = null,Object? startTime = null,Object? endTime = null,Object? price = null,}) {
   return _then(_VenueSlotRequest(
 slotName: null == slotName ? _self.slotName : slotName // ignore: cast_nullable_to_non_nullable
 as String,startTime: null == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
 as String,endTime: null == endTime ? _self.endTime : endTime // ignore: cast_nullable_to_non_nullable
-as String,capacity: null == capacity ? _self.capacity : capacity // ignore: cast_nullable_to_non_nullable
-as int,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
+as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,
   ));
 }
@@ -995,7 +1010,10 @@ return $default(_that);case _:
 final _that = this;
 switch (_that) {
 case _VenueServiceRequest():
-return $default(_that);}
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
 }
 /// A variant of `map` that fallback to returning `null`.
 ///
@@ -1054,7 +1072,10 @@ return $default(_that.serviceName,_that.price);case _:
 @optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'service_name')  String serviceName,  double price)  $default,) {final _that = this;
 switch (_that) {
 case _VenueServiceRequest():
-return $default(_that.serviceName,_that.price);}
+return $default(_that.serviceName,_that.price);case _:
+  throw StateError('Unexpected subclass');
+
+}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -1080,8 +1101,8 @@ return $default(_that.serviceName,_that.price);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(explicitToJson: true)
 class _VenueServiceRequest implements VenueServiceRequest {
   const _VenueServiceRequest({@JsonKey(name: 'service_name') required this.serviceName, required this.price});
   factory _VenueServiceRequest.fromJson(Map<String, dynamic> json) => _$VenueServiceRequestFromJson(json);

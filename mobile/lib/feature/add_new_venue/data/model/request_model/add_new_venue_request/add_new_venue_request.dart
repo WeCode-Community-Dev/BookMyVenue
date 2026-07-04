@@ -4,7 +4,8 @@ part 'add_new_venue_request.freezed.dart';
 part 'add_new_venue_request.g.dart';
 
 @freezed
-sealed class AddNewVenueRequest with _$AddNewVenueRequest {
+abstract class AddNewVenueRequest with _$AddNewVenueRequest {
+  @JsonSerializable(explicitToJson: true)
   const factory AddNewVenueRequest({
     @JsonKey(name: 'venue_name') required String venueName,
     required String category,
@@ -26,7 +27,8 @@ sealed class AddNewVenueRequest with _$AddNewVenueRequest {
 }
 
 @freezed
-sealed class VenueLocationRequest with _$VenueLocationRequest {
+abstract class VenueLocationRequest with _$VenueLocationRequest {
+  @JsonSerializable(explicitToJson: true)
   const factory VenueLocationRequest({
     required String address,
     required String city,
@@ -42,12 +44,12 @@ sealed class VenueLocationRequest with _$VenueLocationRequest {
 }
 
 @freezed
-sealed class VenueSlotRequest with _$VenueSlotRequest {
+abstract class VenueSlotRequest with _$VenueSlotRequest {
+  @JsonSerializable(explicitToJson: true)
   const factory VenueSlotRequest({
     @JsonKey(name: 'slot_name') required String slotName,
     @JsonKey(name: 'start_time') required String startTime,
     @JsonKey(name: 'end_time') required String endTime,
-    required int capacity,
     required double price,
   }) = _VenueSlotRequest;
 
@@ -56,7 +58,8 @@ sealed class VenueSlotRequest with _$VenueSlotRequest {
 }
 
 @freezed
-sealed class VenueServiceRequest with _$VenueServiceRequest {
+abstract class VenueServiceRequest with _$VenueServiceRequest {
+  @JsonSerializable(explicitToJson: true)
   const factory VenueServiceRequest({
     @JsonKey(name: 'service_name') required String serviceName,
     required double price,

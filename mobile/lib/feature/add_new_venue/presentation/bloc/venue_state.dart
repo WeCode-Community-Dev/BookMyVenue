@@ -1,6 +1,6 @@
 part of 'venue_bloc.dart';
 
-enum VenueStatus { initial, loading, success, failure }
+enum VenueStatus { initial, loading, uploading, success, failure }
 
 @freezed
 sealed class VenueState with _$VenueState {

@@ -77,7 +77,6 @@ extension VenueSlotMapper on VenueSlot {
       slotName: slotName,
       startTime: startTime,
       endTime: endTime,
-      capacity: capacity,
       price: price,
     );
   }

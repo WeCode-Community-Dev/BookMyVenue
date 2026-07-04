@@ -54,6 +54,38 @@ class AddNewVenueRequestParams extends Equatable {
     services,
     instantBooking,
   ];
+
+  AddNewVenueRequestParams copyWith({
+    String? venueName,
+    String? category,
+    String? description,
+    VenueLocationRequestParams? location,
+    int? venueSize,
+    int? maxCapacity,
+    List<String>? amenityIds,
+    String? coverImageUrl,
+    List<String>? galleryImages,
+    String? virtualTourUrl,
+    List<VenueSlotRequestParams>? slots,
+    List<VenueServiceRequestParams>? services,
+    bool? instantBooking,
+  }) {
+    return AddNewVenueRequestParams(
+      venueName: venueName ?? this.venueName,
+      category: category ?? this.category,
+      description: description ?? this.description,
+      location: location ?? this.location,
+      venueSize: venueSize ?? this.venueSize,
+      maxCapacity: maxCapacity ?? this.maxCapacity,
+      amenityIds: amenityIds ?? this.amenityIds,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      galleryImages: galleryImages ?? this.galleryImages,
+      virtualTourUrl: virtualTourUrl ?? this.virtualTourUrl,
+      slots: slots ?? this.slots,
+      services: services ?? this.services,
+      instantBooking: instantBooking ?? this.instantBooking,
+    );
+  }
 }
 
 class VenueLocationRequestParams extends Equatable {
@@ -92,24 +124,16 @@ class VenueSlotRequestParams extends Equatable {
     required this.slotName,
     required this.startTime,
     required this.endTime,
-    required this.capacity,
     required this.price,
   });
 
   final String slotName;
   final String startTime;
   final String endTime;
-  final int capacity;
   final double price;
 
   @override
-  List<Object?> get props => <Object?>[
-    slotName,
-    startTime,
-    endTime,
-    capacity,
-    price,
-  ];
+  List<Object?> get props => <Object?>[slotName, startTime, endTime, price];
 }
 
 class VenueServiceRequestParams extends Equatable {

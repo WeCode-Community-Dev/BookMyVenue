@@ -16,8 +16,10 @@ class BuildActionButton extends StatelessWidget {
     final VenueDetailsState venueCubit = context
         .watch<VenueDetailsCubit>()
         .state;
-    final bool isPublishing =
-        context.watch<VenueBloc>().state.addVenueStatus == VenueStatus.loading;
+    final VenueState venueState = context.watch<VenueBloc>().state;
+    final bool isPublishing = venueState.addVenueStatus == VenueStatus.loading;
+    final bool isUploading = venueState.addVenueStatus == VenueStatus.uploading;
+    final bool isLoading = isPublishing || isUploading;
 
     return Row(
       spacing: AppSpacing.spaceSm,
@@ -27,7 +29,7 @@ class BuildActionButton extends StatelessWidget {
           child: AppButton(
             label: 'Back',
             type: ButtonType.secondary,
-            onPressed: isPublishing
+            onPressed: isLoading
                 ? null
                 : () {
                     if (venueCubit.step == 1) {
@@ -40,11 +42,15 @@ class BuildActionButton extends StatelessWidget {
         ),
         Expanded(
           child: AppButton(
-            label: venueCubit.step == 4 ? 'Publish Venue' : 'Next',
-            isLoading: venueCubit.step == 4 && isPublishing,
-            onPressed: () {
-              onTap(venueCubit.step + 1);
-            },
+            label: isUploading
+                ? 'Uploading Images...'
+                : (venueCubit.step == 4 ? 'Publish Venue' : 'Next'),
+            isLoading: isLoading,
+            onPressed: isLoading
+                ? null
+                : () {
+                    onTap(venueCubit.step + 1);
+                  },
           ),
         ),
       ],

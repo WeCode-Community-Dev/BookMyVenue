@@ -38,15 +38,15 @@ Map<String, dynamic> _$AddNewVenueRequestToJson(_AddNewVenueRequest instance) =>
       'venue_name': instance.venueName,
       'category': instance.category,
       'description': instance.description,
-      'location': instance.location,
+      'location': instance.location.toJson(),
       'venue_size': instance.venueSize,
       'max_capacity': instance.maxCapacity,
       'amenity_ids': instance.amenityIds,
       'cover_image_url': instance.coverImageUrl,
       'gallery_images': instance.galleryImages,
       'virtual_tour_url': instance.virtualTourUrl,
-      'slots': instance.slots,
-      'services': instance.services,
+      'slots': instance.slots.map((e) => e.toJson()).toList(),
+      'services': instance.services.map((e) => e.toJson()).toList(),
       'instant_booking': instance.instantBooking,
     };
 
@@ -79,7 +79,6 @@ _VenueSlotRequest _$VenueSlotRequestFromJson(Map<String, dynamic> json) =>
       slotName: json['slot_name'] as String,
       startTime: json['start_time'] as String,
       endTime: json['end_time'] as String,
-      capacity: (json['capacity'] as num).toInt(),
       price: (json['price'] as num).toDouble(),
     );
 
@@ -88,7 +87,6 @@ Map<String, dynamic> _$VenueSlotRequestToJson(_VenueSlotRequest instance) =>
       'slot_name': instance.slotName,
       'start_time': instance.startTime,
       'end_time': instance.endTime,
-      'capacity': instance.capacity,
       'price': instance.price,
     };
 

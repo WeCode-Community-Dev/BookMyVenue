@@ -243,7 +243,9 @@ class _BuildStep2MediaState extends State<BuildStep2Media> {
               media: VenueMediaState(
                 coverImageUrl: _photos[0],
                 galleryImages: _photos.skip(1).toList(),
-                virtualTourUrl: _virtualTourUrl.text.trim(),
+                virtualTourUrl: _virtualTourUrl.text.trim().isEmpty
+                    ? null
+                    : _virtualTourUrl.text.trim(),
               ),
             );
           },

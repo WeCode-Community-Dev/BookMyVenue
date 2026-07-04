@@ -101,9 +101,45 @@ ${_prettyBody(err.response?.data)}
   ///
   /// PRETTY BODY
   ///
+  ///
+  /// PRETTY BODY
+  ///
   String _prettyBody(dynamic data) {
     if (data == null) {
       return 'No Data';
+    }
+
+    // Pretty print FormData
+    if (data is FormData) {
+      final StringBuffer buffer = StringBuffer();
+
+      buffer.writeln('📄 Fields:');
+
+      if (data.fields.isEmpty) {
+        buffer.writeln('  No Fields');
+      } else {
+        for (final MapEntry<String, String> field in data.fields) {
+          buffer.writeln('  • ${field.key} : ${field.value}');
+        }
+      }
+
+      buffer.writeln('\n📁 Files:');
+
+      if (data.files.isEmpty) {
+        buffer.writeln('  No Files');
+      } else {
+        for (final MapEntry<String, MultipartFile> file in data.files) {
+          final MultipartFile multipart = file.value;
+
+          buffer.writeln('  • Key      : ${file.key}');
+          buffer.writeln('    Filename : ${multipart.filename}');
+          buffer.writeln('    Length   : ${multipart.length}');
+          buffer.writeln('    Type     : ${multipart.contentType}');
+          buffer.writeln('-');
+        }
+      }
+
+      return buffer.toString();
     }
 
     if (data is Map || data is List) {
