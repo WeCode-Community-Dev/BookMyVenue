@@ -7,6 +7,7 @@ const venueRoutes = require("./routes/venue");
 const venueOwnerRoutes = require("./routes/venueOwner");
 const categoryRoutes = require("./routes/category");
 const authRoutes = require("./routes/auth");
+const adminRoutes = require("./routes/admin");
 
 const PORT = process.env.PORT || 8000;
 
@@ -20,6 +21,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/venues", venueRoutes);
 app.use("/api/venueOwner", venueOwnerRoutes);
 app.use("/api/venueCategories", categoryRoutes);
+app.use("/api/admin", adminRoutes);
 
 connectDB()
    .then(() => {
