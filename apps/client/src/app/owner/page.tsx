@@ -4,8 +4,6 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { Building2, CalendarCheck, CheckCircle2, IndianRupee, Plus } from "lucide-react";
 import { ensureOwnerRole } from "./actions";
-
-import { useOwnerVenues } from "@/hooks/useVenues";
 import { useOwnerDashboard } from "@/hooks/useBooking";
 import StatCards from "@/components/owner/StatCards";
 import NavTabs from "@/components/owner/NavTabs";
@@ -16,8 +14,6 @@ import VenueModal from "@/components/owner/VenueModal";
 
 type Tab = "overview" | "bookings" | "venues";
 
-const PAGE_SIZE = 20;
-
 export default function OwnerDashboard() {
     const { getToken } = useAuth();
     const { isLoaded, user } = useUser();
@@ -25,13 +21,12 @@ export default function OwnerDashboard() {
     const [activeTab, setActiveTab] = useState<Tab>("overview");
     const [showModal, setShowModal] = useState(false);
     const [successToast] = useState(false);
-    const [token, setToken] = useState("");
 
-    const { data } = useOwnerVenues({ page: 1, limit: PAGE_SIZE }, token);
-    const venues = data?.venues ?? [];
+    const { data: dashboardData, isLoading } = useOwnerDashboard();
 
-    const { data: dashboardData } = useOwnerDashboard();
     const statsData = dashboardData?.stats;
+    const venues = dashboardData?.venues ?? [];
+    const recentBookings = dashboardData?.recentBookings ?? [];
 
     const stats = [
         {
@@ -59,16 +54,10 @@ export default function OwnerDashboard() {
 
     useEffect(() => {
         if (!isLoaded || !user) return;
-        console.log({ user });
-
         if (user.publicMetadata?.role === "OWNER") return;
 
         ensureOwnerRole().then(() => getToken({ skipCache: true }));
     }, [isLoaded, user, getToken]);
-
-    useEffect(() => {
-        getToken().then((jwt) => setToken(jwt ?? ""));
-    }, [getToken]);
 
     return (
         <div className="min-h-screen bg-background">
@@ -104,8 +93,10 @@ export default function OwnerDashboard() {
                 {activeTab === "overview" && (
                     <OverviewTab
                         venues={venues}
+                        recentBookings={recentBookings}
                         onSetActiveTab={setActiveTab}
                         onShowModal={() => setShowModal(true)}
+                        isLoading={isLoading}
                     />
                 )}
 

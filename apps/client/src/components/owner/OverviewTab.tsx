@@ -1,24 +1,28 @@
 import { Plus, Users } from "lucide-react";
 import Image from "next/image";
-import type { Venue } from "@bookmyvenue/types";
-import { useOwnerBookings } from "@/hooks/useBooking";
+import type { OwnerDashboardBooking, OwnerDashboardVenue } from "@bookmyvenue/types";
 import { fmtDate } from "@/lib/utils";
 import { STATUS_STYLE } from "@/app/owner/types";
 
 type Tab = "overview" | "bookings" | "venues";
 
 interface OverviewTabProps {
-    venues: Venue[];
+    venues: OwnerDashboardVenue[];
+    recentBookings: OwnerDashboardBooking[];
     onSetActiveTab: (tab: Tab) => void;
     onShowModal: () => void;
+    isLoading: boolean;
 }
 
-const PAGE_SIZE = 10;
-
-export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: OverviewTabProps) {
-    const { data, isLoading } = useOwnerBookings({ limit: PAGE_SIZE });
-    const recentBookings = data?.bookings ?? [];
-
+export default function OverviewTab({
+    venues,
+    recentBookings,
+    onSetActiveTab,
+    onShowModal,
+    isLoading,
+}: OverviewTabProps) {
+    console.log({venues});
+    
     return (
         <div className="grid lg:grid-cols-3 gap-6">
             {/* Recent bookings */}
@@ -54,11 +58,11 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-semibold text-foreground truncate">
-                                            {b.customer.name ?? "—"}
+                                            {b.user.name ?? "—"}
                                         </p>
                                         <p className="text-xs text-muted-foreground truncate">
                                             {b.venue.name} ·{" "}
-                                            {b.sessions[0] ? fmtDate(b.sessions[0].eventDate) : "—"}
+                                            {b.eventDate ? fmtDate(b.eventDate) : "—"}
                                         </p>
                                     </div>
                                     <div className="text-right shrink-0">
@@ -107,7 +111,7 @@ export default function OverviewTab({ venues, onSetActiveTab, onShowModal }: Ove
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold text-foreground truncate">{v.name}</p>
                                     <p className="text-xs text-muted-foreground">
-                                        {v.location} · {v.bookingCount} bookings
+                                        {v.location}, {v.bookingCount} bookings
                                     </p>
                                 </div>
                                 <span

@@ -1,4 +1,4 @@
-import { BookingStatus, District } from "@bookmyvenue/database";
+import { BookingStatus, District, VerificationStatus } from "@bookmyvenue/database";
 
 export type CreateBookingBody = {
     venueId: number;
@@ -29,31 +29,37 @@ export type OwnerBookingResponse = {
     };
 };
 
-// export type OwnerDashboardResponse = {
-//     stats: {
-//         totalRevenue: number;
-//         totalBookings: number;
-//         confirmedBookings: number;
-//         activeVenues: number;
-//         totalVenues: number;
-//     };
-// };
+export type OwnerDashboardVenue = {
+    id: number;
+    name: string;
+    images: string;
+    location: string;
+    isActive: boolean;
+    verificationStatus: VerificationStatus;
+    bookingCount: number;
+};
+
+export type OwnerDashboardBooking = {
+    id: string;
+    status: BookingStatus;
+    user: { name: string };
+    venue: { name: string };
+    eventDate: Date;
+    totalAmount: number;
+};
+
+export type OwnerDashboardStats = {
+    totalRevenue: number;
+    totalBookings: number;
+    confirmedBookings: number;
+    activeVenues: number;
+    totalVenues: number;
+};
 
 export type OwnerDashboardResponse = {
-    stats: {
-        totalRevenue: number;
-        totalBookings: number;
-        confirmedBookings: number;
-        pendingBookings: number;
-        activeVenues: number;
-        totalVenues: number;
-    };
-    revenueBreakdown: {
-        venueId: number;
-        venueName: string;
-        amount: number;
-        percentage: number;
-    }[];
+    stats: OwnerDashboardStats;
+    venues: OwnerDashboardVenue[];
+    recentBookings: OwnerDashboardBooking[];
 };
 
 export type OwnerBooking = {

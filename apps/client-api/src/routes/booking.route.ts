@@ -20,11 +20,7 @@ export const bookingRoute = async (fastify: FastifyInstance) => {
         { preHandler: ownerAuthMiddleware, schema: getBookingsByIdSchema },
         getBookingsByOwnerId,
     );
-    fastify.get<{ Querystring: GetOwnerBookingQuery }>(
-        "/owner/dashboard",
-        { preHandler: ownerAuthMiddleware },
-        getOwnerDashboard,
-    );
+    fastify.get("/owner/dashboard", { preHandler: ownerAuthMiddleware }, getOwnerDashboard);
     fastify.get<{ Querystring: GetUserBookingQuery & { today: string } }>(
         "/user/bookings",
         { preHandler: userAuthMiddleware, schema: getBookingsByIdSchema },
