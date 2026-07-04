@@ -31,11 +31,10 @@ export default function VenueDetailsPage() {
 
   if (loading) return <VenueDetailsLoading />;
   if (!venue) return <VenueNotFound />;
-
   const categoryName =
-    venue.categoryId && typeof venue.categoryId === 'object'
-      ? venue.categoryId.name
-      : venue.categoryId || 'Uncategorized';
+    typeof venue.categoryId === 'string'
+      ? venue.categoryId
+      : venue.categoryId?.name || 'Uncategorized';
 
   const formattedDate = venue.createdAt
     ? new Date(venue.createdAt).toLocaleString('en-IN', {

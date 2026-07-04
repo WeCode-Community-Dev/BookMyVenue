@@ -33,9 +33,8 @@ export const startRefundRecoveryJob = () => {
         const bookingId = String(booking._id);
         try {
 
-          if (booking.refundStatus !== RefundStatus.FAILED) return
 
-          await processRefund(bookingId, RefundStatus.FAILED);
+          await processRefund(bookingId, booking.refundStatus as RefundStatus);
           logger.info(`Refund Recovery: Successfully retried refund for booking ${bookingId}`);
         } catch (err) {
 
