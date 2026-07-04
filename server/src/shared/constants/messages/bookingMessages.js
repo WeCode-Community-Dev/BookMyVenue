@@ -2,8 +2,6 @@ export const BookingMessages = {
 
     success: {
 
-        BOOKINGS_FETCHED:
-        'Bookings fetched successfully',
         BOOKING_FETCHED:
             'Booking fetched successfully',
         BOOKING_ACCEPTED:

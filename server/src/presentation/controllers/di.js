@@ -37,6 +37,10 @@ import { AdminGetAllBookingsUsecase } from '../../application/admin/usecases/boo
 import { AdminGetBookingByIdUsecase } from '../../application/admin/usecases/booking/admin.getBookingById.usecase.js'
 import { AdminGetBookingStatisticsUsecase } from '../../application/admin/usecases/booking/admin.getBookingStatistics.usecase.js'
 
+//AdminpaymentUsecases
+import { AdminGetAllPaymentsUsecase } from "../../application/admin/usecases/payment/admin.getAllPayments.usecase.js";
+import { AdminGetPaymentByIdUsecase } from "../../application/admin/usecases/payment/admin.getPaymentById.usecase.js";
+import { AdminGetPaymentStatisticsUsecase } from "../../application/admin/usecases/payment/admin.getPaymentStatistics.usecase.js";
 // AdminUserController
 import { AdminUserController } from '../controllers/admin/admin.userController.js'
 
@@ -48,6 +52,9 @@ import { AdminVenueController } from './admin/admin.venueController.js'
 
 //AdminBookingController
 import { AdminBookingController } from './admin/admin.bookingController.js'
+
+//AdminPaymentController
+import { AdminPaymentController } from "./admin/admin.paymentController.js";
 
 import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
 
@@ -100,6 +107,7 @@ import { UserRemoveWishlistUsecase } from '../../application/user/usecases/wishl
 import { UserUpdateAccountStatusUsecase } from '../../application/user/usecases/account/user.updateAccountStatus.usecase.js'
 import { UserAccountController } from './user/user.accountController.js'
 
+import { PaymentRepository } from "../../infrastructure/repositories/payment.repository.js";
 //repository
 
 // const iOwnerRepository = new OwnerRepository()
@@ -114,6 +122,7 @@ import { VendorDashboardController } from "./vendor/VendorDashboardController.js
 const iVenueRepository = new VenueRepository();
 const iUserRepository = new UserRepository();
 const iVendorRepository = new VendorRepository();
+const iPaymentRepository = new PaymentRepository();
 const bookingRepository = new BookingRepositoryImpl();
 
 
@@ -150,6 +159,10 @@ const iAdminGetAllBookingUsecase = new AdminGetAllBookingsUsecase(bookingReposit
 const iAdminGetBookingByIdUsecase = new AdminGetBookingByIdUsecase(bookingRepository)
 const iAdminBookingStatisticsUsecase = new AdminGetBookingStatisticsUsecase(bookingRepository)
 
+//adminPaymentUsecases
+const iAdminGetAllPaymentUsecase = new AdminGetAllPaymentsUsecase(iPaymentRepository)
+const iAdminGetPaymentByIdUsecase = new AdminGetPaymentByIdUsecase(iPaymentRepository)
+const iAdminPaymentStatisticsUsecase = new AdminGetPaymentStatisticsUsecase(iPaymentRepository)
 
 //auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(
@@ -270,6 +283,8 @@ export const iUserProfileController=new UserProfileController(
      iUserRemoveProfileImage
    
 )
+
+
 export const iUserWishlistController = new UserWishlistController(
     iUserAddToWishlist,
     iUserGetWishlist,
@@ -312,6 +327,13 @@ export const iAdminBookingController =
         iAdminBookingStatisticsUsecase
 
     )
+//adminPaymentController
+export const iAdminPaymentController =
+    new AdminPaymentController(
+      iAdminGetAllPaymentUsecase,
+      iAdminGetPaymentByIdUsecase,
+      iAdminPaymentStatisticsUsecase
+    );
 
 export const iUserVenueController = new UserVenueController (
     iUserGetAllVenues,

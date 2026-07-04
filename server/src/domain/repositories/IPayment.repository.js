@@ -1,9 +1,9 @@
-export class PaymentRepository {
+export class IPaymentRepository {
     async create(payment) {
       throw new Error("Method not implemented");
     }
   
-    async findById(id) {
+    async findById(paymentId) {
       throw new Error("Method not implemented");
     }
   
@@ -15,7 +15,15 @@ export class PaymentRepository {
       throw new Error("Method not implemented");
     }
   
-    async update(payment) {
+    async update(paymentId, data) {
+      throw new Error("Method not implemented");
+    }
+    
+    async findAllFiltered(query = {}) {
+      throw new Error("Method not implemented");
+    }
+
+    async getPaymentStatistics() {
       throw new Error("Method not implemented");
     }
   }

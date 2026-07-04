@@ -3,5 +3,6 @@ export const PaymentStatus = Object.freeze({
     PARTIAL: "partial",
     PAID: "paid",
     FAILED: "failed",
+    SUCCESS:"success",
     REFUNDED: "refunded",
   });
