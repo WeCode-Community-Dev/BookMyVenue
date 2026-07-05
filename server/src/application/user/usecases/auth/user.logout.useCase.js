@@ -1,7 +1,7 @@
 import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.js";
 import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
 
-export default class LogoutUseCase {
+export default class UserLogoutUseCase {
     constructor(
         userRepository,
         hashService,

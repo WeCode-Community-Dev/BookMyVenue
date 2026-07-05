@@ -14,7 +14,7 @@ router.post(ROUTES.USER.AUTH.LOGIN, validate(loginSchema, 'body'), iUserAuthCont
 router.post(ROUTES.USER.AUTH.REFRESH, iUserAuthController.refreshToken)
 router.post(ROUTES.USER.AUTH.LOGOUT, iUserAuthController.logout)
 router.post(ROUTES.USER.AUTH.FORGOT_PASSWORD, validate(forgotPasswordSchema, 'body'), iUserAuthController.forgotPassword)
-router.post('/reset-password', validate(resetPasswordSchema, 'body'), iUserAuthController.resetPassword)
+router.post(ROUTES.USER.AUTH.RESET_PASSWORD, validate(resetPasswordSchema, 'body'), iUserAuthController.resetPassword)
 
 
 

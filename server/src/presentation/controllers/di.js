@@ -7,14 +7,14 @@ import { VendorUpdateVenueStatusUsecase } from '../../application/vendor/usecase
 import { VendorGetAllVenuesUsecase } from '../../application/vendor/usecases/venue/vendor.getAllVenues.usecase.js'
 import { UserGetAllVenuesUsecase } from '../../application/user/usecases/venue/user.getAllVenue.usecase.js'
 import { UserGetVenueByIdUsecase } from '../../application/user/usecases/venue/user.getVenueById.usecase.js'
-import { RegisterUserUseCase } from '../../application/user/usecases/auth/RegisterUserUseCase.js'
-import LoginUserUseCase from '../../application/user/usecases/auth/LoginUserUserCase.js'
-import LogoutUseCase from '../../application/user/usecases/auth/LogoutUseCase.js'
-import RefreshTokenUseCase from '../../application/user/usecases/auth/RefreshTokenUseCase.js'
-import VerifyOtpUseCase from '../../application/user/usecases/auth/VerifyOtpUseCase.js'
-import ResendOtpUseCase from '../../application/user/usecases/auth/ResendOtpUseCase.js'
-import UserForgotPasswordUseCase from '../../application/user/usecases/auth/ForgotPasswordUseCase.js'
-import ResetPasswordUseCase from '../../application/user/usecases/auth/ResetPasswordUseCase.js'
+import { RegisterUserUseCase } from '../../application/user/usecases/auth/user.registerUser.useCase.js'
+import LoginUserUseCase from '../../application/user/usecases/auth/user.loginUser.userCase.js'
+import UserLogoutUseCase from '../../application/user/usecases/auth/user.logout.useCase.js'
+import UserRefreshTokenUseCase from '../../application/user/usecases/auth/user.refreshToken.useCase.js'
+import UserVerifyOtpUseCase from '../../application/user/usecases/auth/user.verifyOtp.useCase.js'
+import UserResendOtpUseCase from '../../application/user/usecases/auth/user.resendOtp.useCase.js'
+import UserForgotPasswordUseCase from '../../application/user/usecases/auth/uer.forgotPassword.useCase.js'
+import UserResetPasswordUseCase from '../../application/user/usecases/auth/user.resetPassword.useCase.js'
 import { AdminGetAllUsersUsecase } from '../../application/admin/usecases/user/admin.getAllUsers.usecase.js'
 import { AdminUpdateUserStatusUsecase } from '../../application/admin/usecases/user/admin.updateUserStatus.usecase.js'
 import { AdminGetAllVendorsUsecase } from '../../application/admin/usecases/vendor/admin.getAllVendors.usecase.js'
@@ -133,22 +133,22 @@ const iLoginUserUseCase = new LoginUserUseCase(
   iHashService,
   iTokenService
 )
-const iLogoutUseCase = new LogoutUseCase(
+const iUserLogoutUseCase = new UserLogoutUseCase(
     iUserRepository,
     iHashService,
     iTokenService
 )
-const iRefreshTokenUseCase = new RefreshTokenUseCase(
+const iUserRefreshTokenUseCase = new UserRefreshTokenUseCase(
   iUserRepository,
   iTokenService,
   iHashService
 )
-const iVerifyOtpUseCase = new VerifyOtpUseCase(
+const iUserVerifyOtpUseCase = new UserVerifyOtpUseCase(
   iUserRepository,
   iOtpService,
   iOtpStoreService
 )
-const iResendOtpUseCase = new ResendOtpUseCase(
+const iUserResendOtpUseCase = new UserResendOtpUseCase(
   iUserRepository,
   iOtpService,
   iOtpStoreService,
@@ -160,7 +160,10 @@ const iUserForgotPasswordUseCase = new UserForgotPasswordUseCase(
     iMailService,
     iHashService
 )
-const iResetPasswordUseCase = new ResetPasswordUseCase(iUserRepository,HashService)
+const iUserResetPasswordUseCase = new UserResetPasswordUseCase(
+    iUserRepository,
+    iHashService
+)
 
 // --- vendor usecases ---
 const iCreateVenueUsecase = new VendorCreateVenueUsecase(iVenueRepository)
@@ -301,12 +304,12 @@ export const iAdminPaymentController = new AdminPaymentController(
 export const iUserAuthController = new UserAuthController(
     iRegisterUserUseCase,
     iLoginUserUseCase,
-    iLogoutUseCase,
-    iRefreshTokenUseCase,
-    iVerifyOtpUseCase,
-    iResendOtpUseCase,
+    iUserLogoutUseCase,
+    iUserRefreshTokenUseCase,
+    iUserVerifyOtpUseCase,
+    iUserResendOtpUseCase,
     iUserForgotPasswordUseCase,
-    iResetPasswordUseCase,
+    iUserResetPasswordUseCase,
 )
 
 export const iVendorDashboardController = new VendorDashboardController(

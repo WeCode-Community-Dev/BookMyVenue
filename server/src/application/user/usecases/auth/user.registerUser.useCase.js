@@ -46,7 +46,6 @@ export class RegisterUserUseCase {
         const otp = this._otpService.generate();
         console.log('otp is:', otp)
         const hashedOtp = await this._otpService.hash(otp);
-        // const otpExpiresAt = this._otpService.getExpiry(10);
         await this._otpStoreService.saveOtp(savedUser.id, hashedOtp, 120)
 
         await this._mailService.sendVerifiyRegisterOtp(savedUser.email, savedUser.fullName, otp)

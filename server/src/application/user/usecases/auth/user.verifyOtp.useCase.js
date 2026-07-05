@@ -2,7 +2,7 @@ import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
 import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.js";
 import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
 
-export default class VerifyOtpUseCase {
+export default class UserVerifyOtpUseCase {
     constructor(
         userRepository, 
         otpService,

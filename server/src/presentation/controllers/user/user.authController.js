@@ -59,8 +59,8 @@ export class UserAuthController {
 
     resetPassword = asyncHandler(async (req, res) => {
         const { email, resetToken, newPassword } = req.body;
-        const result = await this._resetPasswordUseCase.execute(email, resetToken, newPassword);
-        return sendSuccess(res, statusCode.OK, authMessages.success.RESET_PASSWORD, { email: result.email });
+        await this._resetPasswordUseCase.execute(email, resetToken, newPassword);
+        return sendSuccess(res, statusCode.OK, authMessages.success.RESET_PASSWORD);
     });
 
     logout = asyncHandler(async (req, res) => {
@@ -80,40 +80,4 @@ export class UserAuthController {
         await this._resendOtpUseCase.execute({email: req.body.email});
         return sendSuccess(res, statusCode.OK, authMessages.success.OTP_RESENT);
     });
-
-    // Called after passport verifies the Google token — req.user is set by passport
-    // googleAuthCallback = asyncHandler(async (req, res) => {
-    //     const user = req.user;
-
-    //     const payload = { id: user.id, role: user.role };
-    //     const accessToken = TokenService.generateAccessToken(payload);
-    //     const refreshToken = TokenService.generateRefreshToken(payload);
-
-    //     await req.userRepository?.updateRefreshToken(user.id, refreshToken);
-
-    //     res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
-
-    //     // Redirect to frontend with token in query param
-    //     const redirectUrl = `${process.env.FRONTEND_URL}/auth/google/success?accessToken=${accessToken}`;
-    //     return res.redirect(redirectUrl);
-    // });
-
-
-    // adminLogin = asyncHandler(async (req, res) => {
-    //     const { email, password } = req.body;
-    //     if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
-    //         throw new UnauthorizedError(authMessages.error.INVALID_ADMIN_CREDENTIALS);
-    //     }
-    //     const payload = { userId: "admin", role: "ADMIN" };
-    //     const accessToken = this._tokenService.generateAccessToken(payload);
-    //     const refreshToken = this._tokenService.generateRefreshToken(payload);
-    //     res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
-    //     return sendSuccess(res, statusCode.OK, authMessages.success.ADMIN_LOGIN, {
-    //         accessToken,
-    //         user: { id: "admin", email: ADMIN_EMAIL, role: "ADMIN" }
-    //     });
-    // });
-
-    // TODO: Google Auth - temporarily disabled
-    // googleAuthCallback = asyncHandler(async (req, res) => { ... });
 }

@@ -100,7 +100,7 @@ export class UserRepository extends IUserRepository {
 
         if (!document) return null;
 
-        console.log('from repo: ', document)
+        // console.log('from repo: ', document)
         return UserMapper.mapToEntity(document);
     }
 

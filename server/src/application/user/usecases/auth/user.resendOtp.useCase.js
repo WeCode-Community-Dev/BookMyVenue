@@ -1,7 +1,7 @@
 import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
 import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
 
-export default class ResendOtpUseCase {
+export default class UserResendOtpUseCase {
     constructor(
         userRepository, 
         otpService,

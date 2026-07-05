@@ -1,7 +1,7 @@
 import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.js";
 import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
 
-export default class RefreshTokenUseCase {
+export default class UserRefreshTokenUseCase {
     constructor(userRepository, tokenService, hashService) {
         this._userRepository = userRepository;
         this._tokenService = tokenService;

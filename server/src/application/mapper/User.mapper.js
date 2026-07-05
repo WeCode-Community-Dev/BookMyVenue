@@ -46,25 +46,13 @@ export class UserMapper {
             createdAt: entity.createdAt,
             updatedAt: entity.updatedAt,
             refreshToken: entity.refreshToken,
+            resetToken: entity.resetToken,
+            resetTokenExpiry: entity.resetTokenExpiry,
             isVerified: entity.isVerified,
             profileImage: entity.profileImage,
             wishlist: entity.wishlist?.map(item =>
                     item.id ? item.id : item
                 ) || [],
-        };
-    }
-
-    static toDTO(entity) {
-        return {
-            id: entity.id,
-            fullName: entity.fullName,
-            email: entity.email,
-            phone: entity.phone,
-            role: entity.role,
-            isOtpVerified: entity.isOtpVerified,
-            isBlocked: entity.isBlocked,
-            createdAt: entity.createdAt,
-            updatedAt: entity.updatedAt
         };
     }
 }
