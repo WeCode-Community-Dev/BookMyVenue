@@ -1,6 +1,7 @@
 import { LogOut } from "lucide-react";
 import { ADMIN_MENU } from "@/constants/adminMenu";
 import SidebarItem from "./SidebarItem";
+import logo from "@/assets/images/logo.jpeg"
 
 const AdminSidebar = () => {
 
@@ -11,10 +12,18 @@ const AdminSidebar = () => {
             {/* Logo */}
 
             <div className="p-6 border-b border-slate-700">
+<img
 
+    src={logo}
+
+    alt="Book My Venue"
+
+    className="h-18 w-20 object-contain"
+
+  />
                 <h1 className="text-2xl font-bold text-amber-500">
 
-                    Book My Venue
+                    
 
                 </h1>
 
