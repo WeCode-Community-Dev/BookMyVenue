@@ -277,6 +277,30 @@ class VenueService:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
+    def get_venue_by_id(self, db: Session, venue_id: UUID) -> VenueResponse:
+        try:
+            venue = (
+                db.query(Venue)
+                .options(
+                    joinedload(Venue.images),
+                    joinedload(Venue.slots),
+                    joinedload(Venue.services),
+                    joinedload(Venue.amenities).joinedload(VenueAmenity.amenity),
+                )
+                .filter(Venue.id == venue_id, Venue.deleted_at.is_(None))
+                .first()
+            )
+            if not venue:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Venue not found."
+                )
+            return self.map_venue_to_response(venue)
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
     def update_verification_status(
         self,
         db: Session,
