@@ -1,19 +1,26 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import type { ChangeEvent } from 'react'
 import { ChevronDown, Clock } from 'lucide-react'
 
+import { InfoTooltip } from '@venue404/ui'
+
 interface TimeSelectProps {
-  label: string
-  name: string
+  label?: string
+  name?: string
   value: string
   onChange: (e: ChangeEvent<HTMLInputElement>) => void
   required?: boolean
   helperText?: string
+  disabled?: boolean
+  info?: string
 }
 
-export function TimeSelect({ label, name, value, onChange, required, helperText }: TimeSelectProps) {
+export function TimeSelect({ label, name, value, onChange, required, helperText, disabled, info }: TimeSelectProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 })
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
 
   // Generate 30-min intervals
   const timeOptions = useMemo(() => {
@@ -47,7 +54,11 @@ export function TimeSelect({ label, name, value, onChange, required, helperText 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(target) &&
+        popoverRef.current && !popoverRef.current.contains(target)
+      ) {
         setIsOpen(false)
       }
     }
@@ -59,29 +70,44 @@ export function TimeSelect({ label, name, value, onChange, required, helperText 
 
   // Auto scroll to selected option on open
   useEffect(() => {
-    if (isOpen && selectedOption && dropdownRef.current) {
-      const dropdown = dropdownRef.current.querySelector('.dropdown-scroll-container')
+    if (isOpen && selectedOption && popoverRef.current) {
+      const dropdown = popoverRef.current
       const selectedEl = dropdown?.querySelector('.selected-time') as HTMLElement
       if (dropdown && selectedEl) {
-        // Scroll so selected is in middle
         dropdown.scrollTop = selectedEl.offsetTop - (dropdown.clientHeight / 2) + (selectedEl.clientHeight / 2)
       }
     }
   }, [isOpen, selectedOption])
 
+  const toggleOpen = () => {
+    if (!isOpen && dropdownRef.current) {
+      const rect = dropdownRef.current.getBoundingClientRect()
+      setCoords({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      })
+    }
+    setIsOpen(!isOpen)
+  }
+
   return (
     <div className="space-y-1 relative" ref={dropdownRef}>
-      <label className="text-sm font-medium text-zinc-700 block mb-1">
-        {label}{required && <span className="text-red-500 ml-1">*</span>}
-      </label>
+      {label && (
+        <label className="flex items-center gap-1.5 text-sm font-medium text-zinc-700 mb-1">
+          <span>{label}{required && <span className="text-red-500 ml-1">*</span>}</span>
+          {info && <InfoTooltip content={info} />}
+        </label>
+      )}
       
       {/* Hidden input for FormData compatibility */}
-      <input type="hidden" name={name} value={value || ''} required={required} />
+      {name && <input type="hidden" name={name} value={value || ''} required={required} />}
 
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-10 px-3 py-2 bg-white rounded-md border border-zinc-200 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand text-left transition-shadow"
+        disabled={disabled}
+        onClick={toggleOpen}
+        className={`w-full h-10 px-3 py-2 bg-white rounded-md border border-zinc-200 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-brand/20 text-left transition-shadow ${disabled ? 'opacity-50 cursor-not-allowed bg-zinc-50' : 'focus:border-brand hover:border-zinc-300'}`}
       >
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-zinc-400" />
@@ -92,8 +118,12 @@ export function TimeSelect({ label, name, value, onChange, required, helperText 
         <ChevronDown className={`h-4 w-4 text-zinc-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {isOpen && (
-        <div className="dropdown-scroll-container absolute z-50 w-full mt-1 bg-white border border-zinc-200 rounded-md shadow-lg max-h-[260px] overflow-y-auto">
+      {isOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          ref={popoverRef}
+          className="absolute z-[9999] bg-white border border-zinc-200 rounded-md shadow-lg max-h-[260px] overflow-y-auto"
+          style={{ top: coords.top, left: coords.left, width: coords.width }}
+        >
           {timeOptions.map((opt) => (
             <div
               key={opt.value}
@@ -108,7 +138,8 @@ export function TimeSelect({ label, name, value, onChange, required, helperText 
               {opt.label}
             </div>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
       
       {helperText && <p className="text-xs text-zinc-500 mt-1">{helperText}</p>}

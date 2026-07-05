@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
-import { Button, Input, Skeleton } from '@venue404/ui'
+import { Button, Input, Skeleton, DatePicker } from '@venue404/ui'
 import { ArrowLeft, ArrowRight, Loader2, Save, Trash2, Clock, Ban } from 'lucide-react'
 import { createClient, venueEndpoints } from '@venue404/api-client'
 import type { VenueAvailability as Availability, BlockedDate } from '@venue404/api-client'
@@ -30,6 +30,8 @@ export default function VenueCalendarManagement() {
   
   const [startsTime, setStartsTime] = useState('09:00:00')
   const [endsTime, setEndsTime] = useState('17:00:00')
+  const [startsDate, setStartsDate] = useState('')
+  const [endsDate, setEndsDate] = useState('')
 
   const { data, isLoading: loading } = useQuery({
     queryKey: ['calendar-data', venueId],
@@ -164,6 +166,8 @@ export default function VenueCalendarManagement() {
       })
       setBlockedDates(prev => [...prev, newBlock].sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()))
       ;(e.target as HTMLFormElement).reset()
+      setStartsDate('')
+      setEndsDate('')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to block date")
     } finally {
@@ -272,6 +276,12 @@ export default function VenueCalendarManagement() {
       {/* Weekly Availability */}
       {activeTab === 'weekly' && (
         <div className="space-y-6">
+          <div>
+            <h4 className="text-lg font-semibold text-zinc-900">Manage Weekly Schedule</h4>
+            <p className="text-sm text-zinc-500 mt-1">
+              Set your standard operating hours for each day of the week. Uncheck the "Available" box if your venue is closed on a specific day.
+            </p>
+          </div>
           <div className="bg-zinc-50 rounded-xl border border-zinc-200 overflow-hidden">
             <div className="grid grid-cols-12 gap-4 p-4 border-b border-zinc-200 bg-zinc-100/50 font-medium text-sm text-zinc-700">
               <div className="col-span-3">Day</div>
@@ -295,21 +305,17 @@ export default function VenueCalendarManagement() {
                     />
                   </div>
                   <div className="col-span-3">
-                    <input 
-                      type="time" 
-                      value={avail.opens_at ? avail.opens_at.slice(0, 5) : ''} 
-                      onChange={(e) => handleWeeklyChange(index, 'opens_at', e.target.value ? `${e.target.value}:00` : null)}
+                    <TimeSelect 
+                      value={avail.opens_at || ''} 
+                      onChange={(e) => handleWeeklyChange(index, 'opens_at', e.target.value ? e.target.value : null)}
                       disabled={!avail.is_available}
-                      className="w-full px-3 py-1.5 rounded-md border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:bg-zinc-100 text-sm"
                     />
                   </div>
                   <div className="col-span-3">
-                    <input 
-                      type="time" 
-                      value={avail.closes_at ? avail.closes_at.slice(0, 5) : ''} 
-                      onChange={(e) => handleWeeklyChange(index, 'closes_at', e.target.value ? `${e.target.value}:00` : null)}
+                    <TimeSelect 
+                      value={avail.closes_at || ''} 
+                      onChange={(e) => handleWeeklyChange(index, 'closes_at', e.target.value ? e.target.value : null)}
                       disabled={!avail.is_available}
-                      className="w-full px-3 py-1.5 rounded-md border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:bg-zinc-100 text-sm"
                     />
                   </div>
                   <div className="col-span-1 flex justify-center">
@@ -339,17 +345,23 @@ export default function VenueCalendarManagement() {
       {/* Blocked Dates */}
       {activeTab === 'blocked' && (
         <div className="space-y-10">
+          <div className="mb-2">
+            <h4 className="text-lg font-semibold text-zinc-900">Manage Blocked Dates</h4>
+            <p className="text-sm text-zinc-500 mt-1">
+              Block out specific dates and times when your venue will be unavailable for booking (e.g., for maintenance, private events, or holidays). Blocked dates will override your standard weekly schedule.
+            </p>
+          </div>
           <section>
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h4 className="text-lg font-semibold text-zinc-900">Add Blocked Date</h4>
-                <p className="text-sm text-zinc-500">Prevent bookings for specific time periods</p>
-              </div>
-            </div>
-            
-            <form onSubmit={handleAddBlockedDate} className="bg-white p-6 md:p-8 rounded-2xl border border-zinc-200 shadow-sm space-y-8 relative overflow-hidden">
+            <form onSubmit={handleAddBlockedDate} className="bg-white p-6 md:p-8 rounded-2xl border border-zinc-200 shadow-sm space-y-8 relative">
               {/* Subtle background gradient blob */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
+              <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
+              </div>
+
+              <div className="relative">
+                <h4 className="text-xl font-bold text-zinc-900">Add Blocked Date</h4>
+                <p className="text-sm text-zinc-500 mt-1">Prevent bookings for specific time periods</p>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
                 {/* Start Range */}
@@ -359,7 +371,7 @@ export default function VenueCalendarManagement() {
                     <h5 className="font-semibold text-zinc-900">Start Range</h5>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <Input label="Date" name="starts_date" type="date" required />
+                    <DatePicker label="Date" name="starts_date" value={startsDate} onChange={setStartsDate} required />
                     <TimeSelect label="Time" name="starts_time" value={startsTime} onChange={(e) => setStartsTime(e.target.value)} required />
                   </div>
                 </div>
@@ -371,7 +383,7 @@ export default function VenueCalendarManagement() {
                     <h5 className="font-semibold text-zinc-900">End Range</h5>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <Input label="Date" name="ends_date" type="date" required />
+                    <DatePicker label="Date" name="ends_date" value={endsDate} onChange={setEndsDate} required />
                     <TimeSelect label="Time" name="ends_time" value={endsTime} onChange={(e) => setEndsTime(e.target.value)} required />
                   </div>
                 </div>

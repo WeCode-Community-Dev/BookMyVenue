@@ -71,6 +71,8 @@ export default function CreateVenueWizard() {
     allowed_booking_types: ['full_day', 'time_slot'],
     owner_action_window_hours: 48,
     overdue_advance_refund_pct: 0,
+    min_price_pct: 50,
+    max_price_pct: 200,
     tier_1_hours: '168', // 7 days
     tier_1_refund_pct: '100',
     tier_2_hours: '72', // 3 days
@@ -137,6 +139,8 @@ export default function CreateVenueWizard() {
         allowed_booking_types: data.allowed_booking_types || ['full_day', 'time_slot'],
         owner_action_window_hours: data.owner_action_window_hours || 48,
         overdue_advance_refund_pct: data.overdue_advance_refund_pct ? parseFloat(data.overdue_advance_refund_pct) : 0,
+        min_price_pct: data.min_price_pct ? parseFloat(String(data.min_price_pct)) : 50,
+        max_price_pct: data.max_price_pct ? parseFloat(String(data.max_price_pct)) : 200,
         
         tier_1_hours: data.cancellation_policy?.tier_1_hours?.toString() || '',
         tier_1_refund_pct: data.cancellation_policy?.tier_1_refund_pct?.toString() || '',
@@ -198,6 +202,10 @@ export default function CreateVenueWizard() {
     
     // Step 0: Basic Details Validation
     if (currentStep === 0) {
+      if (!formData.category_id) {
+        showError("Please select a Venue Category.")
+        return
+      }
       if (formData.min_capacity && formData.max_capacity) {
         if (parseInt(formData.min_capacity.toString(), 10) > parseInt(formData.max_capacity.toString(), 10)) {
           showError("Min Capacity cannot exceed Max Capacity.")
@@ -221,6 +229,24 @@ export default function CreateVenueWizard() {
       if (formData.min_booking_duration_minutes && formData.max_booking_duration_minutes) {
         if (parseInt(formData.min_booking_duration_minutes.toString(), 10) > parseInt(formData.max_booking_duration_minutes.toString(), 10)) {
           showError("Min Booking Duration cannot exceed Max Booking Duration.")
+          return
+        }
+      }
+    }
+
+    // Step 4: Pricing Validation
+    if (currentStep === 4) {
+      if ((formData.pricing_mode === 'flat' || formData.pricing_mode === 'mixed') && !formData.base_price) {
+        showError("Please enter a Base Price.")
+        return
+      }
+      if ((formData.pricing_mode === 'hourly' || formData.pricing_mode === 'mixed') && !formData.hourly_rate) {
+        showError("Please enter an Hourly Rate.")
+        return
+      }
+      if (formData.min_price_pct && formData.max_price_pct) {
+        if (parseFloat(formData.min_price_pct.toString()) > parseFloat(formData.max_price_pct.toString())) {
+          showError("Min Price % cannot exceed Max Price %.")
           return
         }
       }
@@ -279,6 +305,14 @@ export default function CreateVenueWizard() {
           activeVenueId = newVenue.id
         } else if (venueId) {
           await venueEndpoints(client).updateVenue(venueId, payload)
+          if (payload.cancellation_policy) {
+            await venueEndpoints(client).updateCancellationPolicy(venueId, payload.cancellation_policy as any)
+          }
+          if (payload.amenity_ids) {
+            await venueEndpoints(client).updateVenueAmenities(venueId, { amenity_ids: payload.amenity_ids as string[] })
+          } else {
+            await venueEndpoints(client).updateVenueAmenities(venueId, { amenity_ids: [] })
+          }
         }
 
         if (activeVenueId) {
@@ -352,7 +386,9 @@ export default function CreateVenueWizard() {
       advance_pct: parseFloat(formData.advance_pct.toString()),
       balance_due_days_before_event: parseInt(formData.balance_due.toString(), 10),
       owner_action_window_hours: parseInt(formData.owner_action_window_hours.toString(), 10),
-      overdue_advance_refund_pct: parseFloat(formData.overdue_advance_refund_pct.toString())
+      overdue_advance_refund_pct: parseFloat(formData.overdue_advance_refund_pct.toString()),
+      min_price_pct: parseFloat(formData.min_price_pct.toString()),
+      max_price_pct: parseFloat(formData.max_price_pct.toString())
     }
 
     if (selectedAmenities.length > 0) {
@@ -393,6 +429,14 @@ export default function CreateVenueWizard() {
 
       if (venueId) {
         await venueEndpoints(client).updateVenue(venueId, payload)
+        if (payload.cancellation_policy) {
+          await venueEndpoints(client).updateCancellationPolicy(venueId, payload.cancellation_policy as any)
+        }
+        if (payload.amenity_ids) {
+          await venueEndpoints(client).updateVenueAmenities(venueId, { amenity_ids: payload.amenity_ids as string[] })
+        } else {
+          await venueEndpoints(client).updateVenueAmenities(venueId, { amenity_ids: [] })
+        }
         navigate(`/venues/${venueId}/overview`)
       } else {
         const newVenue = await venueEndpoints(client).createVenue(payload)
@@ -646,7 +690,7 @@ export default function CreateVenueWizard() {
 
             <div className="space-y-4 pt-6 border-t border-zinc-100">
               <h4 className="font-medium text-zinc-900">Approval Settings</h4>
-              <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} required value={formData.owner_action_window_hours} onChange={handleChange} helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled and fully refunded." />
+              <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} required value={formData.owner_action_window_hours} onChange={handleChange} helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
             </div>
           </div>
         )}

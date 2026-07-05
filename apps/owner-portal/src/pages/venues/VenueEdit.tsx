@@ -225,10 +225,35 @@ export default function VenueEdit() {
       updates.post_buffer_minutes = parseInt(formData.get('post_buffer_minutes') as string, 10)
       updates.owner_action_window_hours = parseInt(formData.get('owner_action_window_hours') as string, 10)
     } else if (editSection === 'pricing') {
-      updates.starting_price_paise = parseInt(formData.get('base_price') as string || '0', 10) * 100
-      updates.hourly_rate_paise = parseInt(formData.get('hourly_rate') as string || '0', 10) * 100
+      const basePrice = formData.get('base_price') as string
+      const hourlyRate = formData.get('hourly_rate') as string
+
+      if (allowFullDay && !basePrice) {
+        toast.error("Please enter a Base Price.")
+        setSaving(false)
+        return
+      }
+      if (allowTimeSlot && !hourlyRate) {
+        toast.error("Please enter an Hourly Rate.")
+        setSaving(false)
+        return
+      }
+
+      const minPricePct = parseFloat(formData.get('min_price_pct') as string)
+      const maxPricePct = parseFloat(formData.get('max_price_pct') as string)
+
+      if (minPricePct > maxPricePct) {
+        toast.error("Min Price % cannot exceed Max Price %.")
+        setSaving(false)
+        return
+      }
+
+      updates.starting_price_paise = parseInt(basePrice || '0', 10) * 100
+      updates.hourly_rate_paise = parseInt(hourlyRate || '0', 10) * 100
       updates.advance_pct = parseFloat(formData.get('advance_pct') as string)
       updates.balance_due_days_before_event = parseInt(formData.get('balance_due') as string, 10)
+      updates.min_price_pct = minPricePct
+      updates.max_price_pct = maxPricePct
     }
 
     try {
@@ -533,7 +558,7 @@ export default function VenueEdit() {
               <div className="space-y-4 pt-6 border-t border-zinc-100">
                 <h4 className="font-medium text-zinc-900">Approval Window</h4>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} defaultValue={venue.owner_action_window_hours} required helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled and fully refunded." />
+                  <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} defaultValue={venue.owner_action_window_hours} required helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
                 </div>
               </div>
             </div>
@@ -556,8 +581,14 @@ export default function VenueEdit() {
 
               <div className="space-y-4 pt-6 border-t border-zinc-100">
                 <h4 className="font-medium text-zinc-900">Payment Terms</h4>
-                <Input label="Token Advance (%)" name="advance_pct" type="number" step="0.01" min={0.01} max={100} defaultValue={venue.advance_pct} required info="The percentage of the total booking cost required upfront to secure the reservation." />
-                <Input label="Balance Due (Days before event)" name="balance_due" type="number" min={1} defaultValue={venue.balance_due_days_before_event} required info="The number of days prior to the event date when the remaining balance must be paid in full." />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input label="Token Advance (%)" name="advance_pct" type="number" step="0.01" min={0.01} max={100} defaultValue={venue.advance_pct} required info="The percentage of the total booking cost required upfront to secure the reservation." />
+                  <Input label="Balance Due (Days before event)" name="balance_due" type="number" min={1} defaultValue={venue.balance_due_days_before_event} required info="The number of days prior to the event date when the remaining balance must be paid in full." />
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
+                  <Input label="Min Price Bound (%)" name="min_price_pct" type="number" min={0.01} max={100} step="0.01" required defaultValue={venue.min_price_pct || 50} info="The minimum allowed price percentage relative to the base price for pricing rules." />
+                  <Input label="Max Price Bound (%)" name="max_price_pct" type="number" min={100} max={500} step="0.01" required defaultValue={venue.max_price_pct || 200} info="The maximum allowed price percentage relative to the base price for pricing rules." />
+                </div>
               </div>
             </div>
           )}
