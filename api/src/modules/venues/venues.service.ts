@@ -1,5 +1,5 @@
 import {
-  ConflictException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -245,6 +245,9 @@ export class VenuesService {
         }
       });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new InternalServerErrorException('Failed to get owned venues');
     }
   }

@@ -1,12 +1,11 @@
 "use client";
-import { CalendarCheck, ChevronDown } from "lucide-react";
+import { CalendarCheck } from "lucide-react";
 import Link from "next/link";
 
+import { UserMenu } from "@/components/auth/user-menu";
 import { Button } from "@/components/ui/button";
 import { landingNavLinks } from "@/lib/data/landing";
 import { getDashboardUser } from "@/lib/data/dashboard";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "../ui/avatar";
 
 export function PublicSiteHeader() {
   const user = getDashboardUser();
@@ -35,33 +34,8 @@ export function PublicSiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {user.role === 'CUSTOMER' ?
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="h-10 gap-2 px-2 hover:bg-surface-container-low"
-                >
-                  <Avatar className="size-8">
-                    <AvatarFallback className="bg-surface-tint text-xs font-medium text-on-primary">
-                      {user.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden text-sm font-medium text-on-surface sm:inline">
-                    {user.name}
-                  </span>
-                  <ChevronDown className="size-4 text-muted-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Log out</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {user.name ?
+            <UserMenu name={user.name} initials={user.initials} />
             :
             <>
               <Button asChild variant="outline">
@@ -72,12 +46,13 @@ export function PublicSiteHeader() {
                 <Link href="/signup">Signup</Link>
               </Button>
 
-              <Button asChild className="hidden sm:inline-flex">
-                <Link href="/signup">List Your Venue</Link>
-              </Button>
 
             </>
           }
+              {user.role === 'VENUE_OWNER' && 
+              <Button asChild className="hidden sm:inline-flex">
+                <Link href="/dashboard">List Your Venue</Link>
+              </Button>}
 
 
         </div>

@@ -47,3 +47,16 @@ export const signup = async (data: { role: UserRole, firstName: string, lastName
     }
 }
 
+export const logout = async () => {
+ try{
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('role');
+    localStorage.removeItem('firstName');
+    localStorage.removeItem('lastName');
+    return true;
+ } catch (error) {
+    console.error(error);
+    throw error;
+ }
+}
+
