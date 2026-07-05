@@ -50,6 +50,13 @@ def _is_retryable(exc: httpx.HTTPStatusError) -> bool:
 
 
 def _post_with_retries(payload: dict) -> dict:
+    if not settings.jina_api_key:
+        # An empty key produces a malformed `Authorization: Bearer ` header,
+        # which httpx rejects locally (never reaches the network) — retrying
+        # that a further 3 times with backoff just delays every caller for no
+        # chance of success. Fail immediately instead.
+        raise RuntimeError("JINA_API_KEY is not configured — cannot call Jina embeddings API")
+
     last_exc: Exception | None = None
     for attempt in range(_MAX_RETRIES + 1):
         try:

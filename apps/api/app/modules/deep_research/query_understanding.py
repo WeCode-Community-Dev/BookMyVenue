@@ -8,8 +8,9 @@ app.modules.search.query_normalizer, which is a cheap fuzzy-typo corrector
 with no LLM call — this stage is the new, LLM-backed layer that sits in
 front of it.
 
-For this first slice the breakdown is only logged and returned to the
-caller — it does not yet feed into /search/hybrid or get persisted.
+The breakdown returned here is logged, then consumed by
+app.modules.deep_research.service.run_search, which persists the query and
+builds the internal /search/hybrid request from it (see query_enrichment.py).
 """
 
 import json
@@ -24,21 +25,33 @@ logger = logging.getLogger(__name__)
 
 def understand_query(query: str) -> QueryUnderstanding:
     """Call Groq to break the raw query into structured signals, log the
-    breakdown, and return it."""
-    raw_content = groq.chat_completion(
-        messages=[
-            {"role": "system", "content": QUERY_UNDERSTANDING_SYSTEM_PROMPT},
-            {"role": "user", "content": query},
-        ]
-    )
+    breakdown, and return it.
 
+    Degrades to a raw-query-only breakdown (rather than raising) on any
+    failure — missing/invalid GROQ_API_KEY, Groq outage, timeout, or an
+    unparseable response — so a Groq problem takes down query understanding
+    only, not the whole /deep-research/search request. Internal retrieval
+    still runs on the raw query in that case; it just misses the structured
+    city/capacity/amenity signals for this one search.
+    """
     try:
+        raw_content = groq.chat_completion(
+            messages=[
+                {"role": "system", "content": QUERY_UNDERSTANDING_SYSTEM_PROMPT},
+                {"role": "user", "content": query},
+            ]
+        )
         parsed = json.loads(raw_content)
         breakdown = QueryUnderstanding(**parsed)
     except (json.JSONDecodeError, TypeError, ValueError):
         logger.warning(
             "deep_research.query_understanding: could not parse Groq response as JSON: %r",
             raw_content,
+        )
+        breakdown = QueryUnderstanding(intent=query)
+    except Exception:
+        logger.exception(
+            "deep_research.query_understanding: Groq call failed for query=%r", query
         )
         breakdown = QueryUnderstanding(intent=query)
 

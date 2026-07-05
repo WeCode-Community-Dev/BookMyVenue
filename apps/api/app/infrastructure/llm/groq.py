@@ -32,6 +32,12 @@ def chat_completion(
     """Send a chat-completions request to Groq, returning the assistant
     message content. Raises on non-retryable errors (bad key, bad request)
     and after exhausting retries on transient failures."""
+    if not settings.groq_api_key:
+        # An empty key produces a malformed `Authorization: Bearer ` header,
+        # which httpx rejects locally before ever reaching the network —
+        # retrying that is guaranteed to fail again. Fail fast instead.
+        raise RuntimeError("GROQ_API_KEY is not configured — cannot call Groq")
+
     payload = {
         "model": settings.groq_model,
         "messages": messages,
