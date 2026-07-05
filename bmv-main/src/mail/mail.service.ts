@@ -86,4 +86,70 @@ export class MailService {
     `,
   });
 }
+async sendVenueApprovedEmail(
+  email: string,
+  venueName: string,
+): Promise<void> {
+  await this.transporter.sendMail({
+    from: this.configService.get<string>('MAIL_FROM'),
+    to: email,
+    subject: 'Your Venue Has Been Approved',
+
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto;">
+        <h2>Congratulations! 🎉</h2>
+
+        <p>Your venue <strong>${venueName}</strong> has been approved by our admin team.</p>
+
+        <p>Your venue is now visible to users and can start receiving bookings.</p>
+
+        <br>
+
+        <p>Thank you for choosing BookMyVenue.</p>
+
+        <br>
+
+        <p>Regards,</p>
+        <p><strong>BookMyVenue Team</strong></p>
+      </div>
+    `,
+  });
+}
+
+
+async sendVenueRejectedEmail(
+  email: string,
+  venueName: string,
+  reason: string,
+): Promise<void> {
+  await this.transporter.sendMail({
+    from: this.configService.get<string>('MAIL_FROM'),
+    to: email,
+    subject: 'Your Venue Application Was Reviewed',
+
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto;">
+
+        <h2>Venue Application Rejected</h2>
+
+        <p>Your venue <strong>${venueName}</strong> could not be approved at this time.</p>
+
+        <p><strong>Reason:</strong></p>
+
+        <p style="background:#f5f5f5;padding:12px;border-radius:6px;">
+          ${reason}
+        </p>
+
+        <p>Please update your venue information and submit it again for review.</p>
+
+        <br>
+
+        <p>Regards,</p>
+
+        <p><strong>BookMyVenue Team</strong></p>
+
+      </div>
+    `,
+  });
+}
 }  

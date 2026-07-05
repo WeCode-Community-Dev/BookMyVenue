@@ -12,9 +12,7 @@ export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
   @Get('recommended')
-  @ApiOperation({
-    summary: 'Get recommended venues',
-  })
+  @ApiOperation({ summary: 'Get recommended venues' })
   @ApiResponse({
     status: 200,
     description: 'Recommended venues retrieved successfully.',
@@ -24,26 +22,30 @@ export class SearchController {
   }
 
   @Get()
-  @ApiOperation({
-    summary: 'View all approved venues',
-  })
+  @ApiOperation({ summary: 'View all approved venues' })
   @ApiResponse({
     status: 200,
     description: 'Venues retrieved successfully.',
     type: SearchAllVenuesResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request due to invalid query parameters.',
   })
   getAllVenues(@Query() query: SearchVenueDto) {
     return this.searchService.getAllVenues(query);
   }
 
   @Get('navbar')
-  @ApiOperation({
-    summary: 'Search venues by name or city',
-  })
+  @ApiOperation({ summary: 'Search venues by name or city' })
   @ApiResponse({
     status: 200,
     description: 'Search results retrieved successfully.',
     type: SearchNavbarResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request due to invalid query parameters.',
   })
   searchNavbar(@Query() query: SearchNavbarDto) {
     return this.searchService.searchNavbar(query);
