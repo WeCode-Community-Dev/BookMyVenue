@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react";
 import { CalendarCheck, ChevronLeft, ChevronRight, Clock, MapPin } from "lucide-react";
 
-import { STATUS_DOT, STATUS_STYLE, type BookingStatus } from "@/app/owner/types";
 import { useUserBookings } from "@/hooks/useBooking";
 import { fmt12h, fmtDate, formatEnum } from "@/lib/utils";
 import type { TypeOfBooking } from "@bookmyvenue/types";
 import { Button } from "@/components/ui/button";
+import { BookingStatus } from "@bookmyvenue/database";
+import { STATUS_DOT, STATUS_STYLE } from "@/lib/data";
 
 const TYPES: TypeOfBooking[] = ["UPCOMING", "HISTORY"];
 const PAGE_SIZE = 10;
@@ -19,7 +20,6 @@ export default function MyBookingsPage() {
     const [page, setPage] = useState(1);
     const today = useMemo(() => new Date().toISOString(), []);
 
-    console.log({ type });
 
     const { data, isLoading, isError, error } = useUserBookings({
         type,
@@ -84,7 +84,6 @@ export default function MyBookingsPage() {
             <div className="flex flex-col gap-4">
                 {bookings.map((b) => {
                     const status = toTitleStatus(b.status);
-                    console.log({status, "bstatus":b.status});
                     
                     return (
                         <div

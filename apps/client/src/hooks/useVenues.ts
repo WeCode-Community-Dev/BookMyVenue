@@ -15,7 +15,6 @@ export function useVenue(id: number | string) {
     return useQuery({
         queryKey: ["venue", id],
         queryFn: async () => {
-            console.log("Fetching venues ...");
             return getVenueByIdApi(id);
         },
 

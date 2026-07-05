@@ -26,7 +26,6 @@ export default function VenuesTab() {
 
     const venues = data?.venues ?? [];
 
-    console.log({ deletingVenue });
 
     const handleDeleteVenue = () => {
         if (!deletingVenue) return;
