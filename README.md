@@ -10,7 +10,7 @@ A premium, luxury-themed venue discovery, booking, and marketplace management sy
 [![TailwindCSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com)
 [![Framer Motion](https://img.shields.io/badge/Animations-Framer%20Motion-F01F7A?style=for-the-badge&logo=framer)](https://www.framer.com/motion/)
 [![MapLibre GL](https://img.shields.io/badge/Maps-MapLibre%20GL-lightgrey?style=for-the-badge&logo=mapbox)](https://maplibre.org/)
-[![License](https://img.shields.io/badge/License-Proprietary-gold?style=for-the-badge)](<!-- VERIFY -->)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
 ---
 
@@ -56,7 +56,8 @@ A premium, luxury-themed venue discovery, booking, and marketplace management sy
 * **Interactive Geolocation Map**: Powered by MapLibre GL and OpenStreetMap, showing listings on dynamic maps.
 * **Flexible Bookings**: Lock in reservations on an **hourly** basis (with operating hour buffers) or a **daily** (overnight) basis.
 * **Renter Calendar**: View availability in real-time, compute totals instantly, and confirm upcoming blocks.
-* **My Bookings Gateway**: Check check-in instructions, dynamic secure access door codes, active payment statuses, or cancel future visits.
+* **Sleek Checkout Flow**: Scannable mock UPI QR payment gateway for booking guarantees, using Rupees (₹) currency.
+* **My Bookings Gateway**: Check check-in instructions, dynamic secure access door codes, active payment statuses, or cancel future visits (enforces a sliding cancellation refund scale: 100%, 50%, or 10% based on how far in advance cancellation occurs).
 
 ### 🏡 For Venue Owners (Hosts)
 * **Owner Dashboard**: Real-time stats on listing counts, rental reservation listings, active customer contact lines, and earnings.
@@ -188,6 +189,8 @@ CREATE TABLE bookings (
     renter_phone VARCHAR(50),
     renter_email VARCHAR(255),
     booking_type VARCHAR(50) DEFAULT 'days' CHECK (booking_type IN ('days', 'hours')),
+    refund_amount NUMERIC(10, 2) DEFAULT 0.00 CHECK (refund_amount >= 0),
+    refund_percentage INTEGER DEFAULT 0 CHECK (refund_percentage >= 0 AND refund_percentage <= 100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_booking_dates CHECK (end_date >= start_date),
     CONSTRAINT chk_blocked_end CHECK (blocked_end_date >= end_date),
@@ -452,6 +455,8 @@ curl -X POST http://localhost:5000/api/bookings \
 - [x] Cleaning buffers and customizable operating hours
 - [x] MapLibre GL interactive maps and location selectors
 - [x] Database-level double-booking protection using PostgreSQL GIST constraints
+- [x] Interactive booking checkout with scannable UPI payments (guarantee mockup) and Indian Rupee (₹) currency support
+- [x] Flexible cancellation policy and automatic sliding-scale refund tracking
 - [ ] Real-time Socket.io chat messaging between renters and venue owners
 - [ ] Direct checkout payments via Stripe integration
 - [ ] Venue rating feedback loops and user reviews
@@ -470,11 +475,11 @@ curl -X POST http://localhost:5000/api/bookings \
 
 ## 📄 License
 
-This repository is proprietary. No formal license is included. All rights reserved.
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
 ## ✉️ Contact
 
-* **Project Repository**: [BookMyVenue](https://github.com/karthikajay04/BookMyVenue) (<!-- VERIFY -->)
+* **Project Repository**: [BookMyVenue](https://github.com/karthikajay04/BookMyVenue)
 * **Demo Enquiries**: admin@gmail.com
