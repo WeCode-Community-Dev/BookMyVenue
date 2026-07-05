@@ -5,7 +5,7 @@ import {Search} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getVenues } from "@/redux/slices/UserVenueSlice";
-import { Amenities, Ratings, VenueCategory } from "@/constatnts/Venue";
+import { Amenities, Ratings, VenueCategory } from "@/constants/Venue";
 
 
 export default function BrowseVenues(){
