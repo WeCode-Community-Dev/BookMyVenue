@@ -437,3 +437,151 @@ export const cancelMyBooking = async (
         client.release();
     }
 }
+
+export const getAllBookingsForAdmin = async (
+    req : AuthRequest,
+    res : Response
+) : Promise<void> => {
+
+    try{
+        const result = await pool.query(
+            `
+            SELECT 
+                b.id AS booking_id,
+                b.booking_date,
+                b.start_time,
+                b.end_time,
+                b.total_amount,
+                b.booking_status,
+                b.created_at,
+                b.updated_at,
+
+                customer.id AS customer_id,
+                customer.name AS customer_name,
+                customer.email As customer_email,
+
+                v.id AS venue_id,
+                v.name AS venue_name,
+                v.category AS venue_category,
+                v.address AS venue_address,
+                v.city AS venue_city,
+
+                owner.id AS owner_city,
+                owner.name AS owner_name,
+                owner.email AS owner_email,
+
+                p.id AS payment_id,
+                p.payment_provider,
+                p.amount AS payment_amount,
+                p.payment_status,
+                p.dummy_payment_id
+
+                FROM bookings b
+                JOIN users customer ON customer.id = b.customer_id
+                JOIN venues v on v.id = b.venue_id
+                JOIN users owner ON owner.id = v.owner_id
+                LEFT JOIN payments p ON p.booking_id = b.id
+                ORDER BY b.created_at DESC
+            `,
+        );
+
+        res.status(200).json({
+            message: "All bookings fetched success",
+            count : result.rows.length,
+            bookings : result.rows,
+        });
+    }catch(error){
+        console.error("Get all bookings for admin error");
+
+        res.status(500).json({
+            message : "something went wrong while fetching all bookings",
+        });
+    }
+};
+
+export const getBookingDetailsForAdmin = async (
+    req : AuthRequest,
+    res : Response
+): Promise<void> => {
+
+    const bookingId = Number(req.params.id);
+
+    if(!bookingId || Number.isNaN(bookingId)){
+        res.status(400).json({
+            message : "Valid booking id is required",
+        });
+        return;
+    }
+
+    try{
+        const result = await pool.query(
+        `
+        SELECT
+        b.id AS booking_id,
+        b.booking_date,
+        b.start_time,
+        b.end_time,
+        b.total_amount,
+        b.booking_status,
+        b.created_at,
+        b.updated_at,
+
+        customer.id AS customer_id,
+        customer.name AS customer_name,
+        customer.email AS customer_email,
+        customer.status AS customer_status,
+
+        v.id AS venue_id,
+        v.name AS venue_name,
+        v.category AS venue_category,
+        v.description AS venue_description,
+        v.address AS venue_address,
+        v.city AS venue_city,
+        v.capacity AS venue_capacity,
+        v.base_price AS venue_base_price,
+        v.approval_status AS venue_approval_status,
+        v.is_active AS venue_is_active,
+
+        owner.id AS owner_id,
+        owner.name AS owner_name,
+        owner.email AS owner_email,
+        owner.status AS owner_status,
+
+        p.id AS payment_id,
+        p.payment_provider,
+        p.amount AS payment_amount,
+        p.payment_status,
+        p.dummy_payment_id,
+        p.created_at AS payment_created_at,
+        p.updated_at AS payment_updated_at
+        FROM bookings b
+        JOIN users customer ON customer.id = b.customer_id
+        JOIN venues v ON v.id = b.venue_id
+        JOIN users owner ON owner.id = v.owner_id
+        LEFT JOIN payments p ON p.booking_id = b.id
+        WHERE b.id = $1
+        `,
+        [bookingId]
+        );
+
+        if (result.rows.length === 0){
+            res.status(404).json({
+                message : "booking not found",
+            });
+            return;
+        }
+
+        res.status(200).json({
+            message : "Booking details fetched successfully",
+            booking : result.rows[0],
+        }); 
+
+    }catch (error){
+        console.error("Get booking for admin error", error);
+
+        res.status(500).json({
+            message : "Something went wrong while fetching booking succesfully",
+        });
+    }
+};
+

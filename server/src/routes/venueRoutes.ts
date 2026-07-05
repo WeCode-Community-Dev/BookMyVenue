@@ -8,6 +8,7 @@ import {
   approveVenue,
   rejectVenue,
   getApprovedVenues,
+  getPublicVenueDetails,
 } from "../controllers/venueController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { allowRoles } from "../middleware/roleMiddleware.js";
@@ -31,5 +32,6 @@ router.patch("/admin/:id/reject", authMiddleware,  allowRoles("root_admin"), rej
 
 router.get( "/admin/:id", authMiddleware, allowRoles("root_admin"), getVenueDetailsForAdmin);
 
+router.get("/:id", getPublicVenueDetails);
 
 export default router;

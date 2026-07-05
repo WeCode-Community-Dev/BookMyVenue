@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Request,Response } from "express";
 import {pool} from "../config/db.js";
 import { AuthRequest } from "../middleware/authMiddleware.js";
 import path from "path";
@@ -713,3 +713,66 @@ export const getApprovedVenues = async (
     });
   }
 };
+
+export const getPublicVenueDetails = async (
+  req : Request,
+  res : Response
+): Promise<void> => {
+
+  const venueId = Number(req.params.id);
+
+  if(!venueId || Number.isNaN(venueId)){
+    res.status(400).json({
+      message : "valid venue id required",
+    });
+    return;
+  }
+
+  try{
+    const result = await pool.query(
+    `
+       SELECT
+        v.id,
+        v.name,
+        v.category,
+        v.description,
+        v.address,
+        v.city,
+        v.capacity,
+        v.base_price,
+        v.approval_status,
+        v.is_active,
+        v.created_at,
+        v.updated_at,
+
+        u.id AS owner_id,
+        u.name AS owner_name
+      FROM venues v
+      JOIN users u ON u.id = v.owner_id
+      WHERE v.id = $1
+        AND v.approval_status = 'approved'
+        AND v.is_active = true
+    `,
+    [venueId]  
+    );
+
+    if(result.rows.length ===0 ){
+      res.status(404).json({
+        message : "Venue not found or not available",
+      });
+    }
+
+    res.status(200).json({
+      message : "venues fetched successfully",
+      venue : result.rows[0],     
+    });
+  }catch(error){
+
+    console.error("Get public venues details error", error);
+
+    res.status(500).json({
+      message : "Something went wrong while fetching venue details",
+    });
+  }
+};
+
