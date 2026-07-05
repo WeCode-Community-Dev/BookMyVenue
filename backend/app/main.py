@@ -1,13 +1,22 @@
 import logging
 from contextlib import asynccontextmanager
 
+from sqlalchemy import text
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from sqlalchemy import text
 from app.db.database import Base, engine, SessionLocal
 from app.seeds.venue_type_seed import seed_venue_types
+from app.seeds.amenity_seed import seed_amenities
 from app.models import user, venue, booking, payment, venue_owner, review, notification, amenity, venue_amenity, venue_type
-from app.routers import auth,bookings,payments, venue_owner as venue_owner_router, venue as venue_router, venue_owner_dashboard, venue_type as venue_type_router
+from app.routers import auth,bookings,payments, venue_owner as venue_owner_router, venue as venue_router, venue_owner_dashboard, venue_type as venue_type_router, amenity as amenity_router, venue_amenity as venue_amenity_router
+
+from app.db.database import Base, engine, SessionLocal
+
+
+
+from app.seeds.amenity_seed import seed_amenities
 
 
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +37,7 @@ async def lifespan(app: FastAPI):
     seed_db = SessionLocal()
     try:
         seed_venue_types(seed_db)
+        seed_amenities(seed_db)
     finally:
         seed_db.close()
     
@@ -61,6 +71,8 @@ app.add_middleware(
 
 
 app.include_router(auth.router)
+app.include_router(amenity_router.router)
+app.include_router(venue_amenity_router.router)
 app.include_router(bookings.router)
 app.include_router(payments.router)
 app.include_router(venue_owner_router.router)

@@ -13,29 +13,33 @@ export const venueOwnerService = {
     return res.data;
   },
 
+  // GET /venue-owners/dashboard/bookings/all?tab=all&page=1&limit=10
+  async getOwnerBookings({ tab = "all", page = 1, limit = 10 } = {}) {
+    const res = await client.get("/venue-owners/dashboard/bookings/all", {
+      params: { tab, page, limit },
+    });
+    return res.data;
+  },
+
   // PATCH /venue-owners/dashboard/bookings/{id}/accept
   async acceptBookingRequest(id) {
-    const res = await client.patch(
-      `/venue-owners/dashboard/bookings/${id}/accept`,
-    );
+    const res = await client.patch(`/venue-owners/dashboard/bookings/${id}/accept`);
     return res.data;
   },
 
   // PATCH /venue-owners/dashboard/bookings/{id}/reject
   async rejectBookingRequest(id) {
-    const res = await client.patch(
-      `/venue-owners/dashboard/bookings/${id}/reject`,
-    );
+    const res = await client.patch(`/venue-owners/dashboard/bookings/${id}/reject`);
     return res.data;
   },
 
   // GET /venue-owners/dashboard/availability?month=YYYY-MM
-  async getAvailabilityCalendar(month) {
-    const res = await client.get("/venue-owners/dashboard/availability", {
-      params: { month },
-    });
-    return res.data;
-  },
+  async getAvailabilityCalendar({ month, venue_id } = {}) {
+     const params = { month };
+     if (venue_id && venue_id !== "all") params.venue_id = venue_id;
+     const res = await client.get("/venue-owners/dashboard/availability", { params });
+     return res.data;
+   },
 
   // GET /venue-owners/dashboard/venues
   async getMyVenues() {
@@ -43,11 +47,21 @@ export const venueOwnerService = {
     return res.data;
   },
 
+  // GET /venues/:id  — single venue with venue_type + amenities eager-loaded
+  async getVenueById(id) {
+    const res = await client.get(`/venues/${id}`);
+    return res.data;
+  },
+
+  // PUT /venues/:id
+  async updateVenue(id, payload) {
+    const res = await client.put(`/venues/${id}`, payload);
+    return res.data;
+  },
+
   // GET /venue-owners/dashboard/revenue?range=this_month
   async getRevenueOverview(range = "this_month") {
-    const res = await client.get("/venue-owners/dashboard/revenue", {
-      params: { range },
-    });
+    const res = await client.get("/venue-owners/dashboard/revenue", { params: { range } });
     return res.data;
   },
 
@@ -63,11 +77,12 @@ export const venueOwnerService = {
     return res.data;
   },
 
+  // POST /venues/
   async createVenue(payload) {
     const res = await client.post("/venues/", payload);
     return res.data;
   },
- 
+
   // GET /venue-types/
   async getVenueTypes() {
     const res = await client.get("/venue-types/");
@@ -79,22 +94,16 @@ export const venueOwnerService = {
     const res = await client.get("/amenities/");
     return res.data;
   },
- 
+
   // POST /venue-amenities/{venueId}/{amenityId}
-  // Backend returns the venue's updated amenity list (list[AmenityOut]).
   async linkAmenity(venueId, amenityId) {
     const res = await client.post(`/venue-amenities/${venueId}/${amenityId}`);
     return res.data;
   },
- 
+
   // DELETE /venue-amenities/{venueId}/{amenityId}
-  // Backend returns the venue's updated amenity list (list[AmenityOut]).
   async unlinkAmenity(venueId, amenityId) {
     const res = await client.delete(`/venue-amenities/${venueId}/${amenityId}`);
     return res.data;
   },
-
-
 };
-
-

@@ -23,6 +23,28 @@ export const fetchBookingRequestsAsync = createAsyncThunk(
   },
 );
 
+export const fetchOwnerBookingsAsync = createAsyncThunk(
+  "venueOwner/fetchOwnerBookings",
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      return await venueOwnerService.getOwnerBookings(params);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
+export const fetchVenueBookingsAsync = createAsyncThunk(
+  "venueOwner/fetchVenueBookings",
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      return await venueOwnerService.getOwnerBookings(params);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
 export const acceptBookingRequestAsync = createAsyncThunk(
   "venueOwner/acceptBookingRequest",
   async (id, { rejectWithValue }) => {
@@ -47,9 +69,9 @@ export const rejectBookingRequestAsync = createAsyncThunk(
 
 export const fetchAvailabilityCalendarAsync = createAsyncThunk(
   "venueOwner/fetchAvailabilityCalendar",
-  async (month, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      return await venueOwnerService.getAvailabilityCalendar(month);
+      return await venueOwnerService.getAvailabilityCalendar(params);
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -61,6 +83,28 @@ export const fetchMyVenuesAsync = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       return await venueOwnerService.getMyVenues();
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
+export const fetchVenueByIdAsync = createAsyncThunk(
+  "venueOwner/fetchVenueById",
+  async (id, { rejectWithValue }) => {
+    try {
+      return await venueOwnerService.getVenueById(id);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
+export const updateVenueAsync = createAsyncThunk(
+  "venueOwner/updateVenue",
+  async ({ id, payload }, { rejectWithValue }) => {
+    try {
+      return await venueOwnerService.updateVenue(id, payload);
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -110,7 +154,6 @@ export const createVenueAsync = createAsyncThunk(
     }
   },
 );
- 
 
 export const fetchVenueTypesAsync = createAsyncThunk(
   "venueOwner/fetchVenueTypes",
@@ -133,10 +176,7 @@ export const fetchAmenitiesAsync = createAsyncThunk(
     }
   },
 );
- 
-// NEW — links an amenity to a venue. Thunk arg: { venueId, amenityId }.
-// Backend returns the venue's full updated amenity list, so we pair it
-// with venueId here to know which venue in state to update.
+
 export const linkVenueAmenityAsync = createAsyncThunk(
   "venueOwner/linkVenueAmenity",
   async ({ venueId, amenityId }, { rejectWithValue }) => {
@@ -148,13 +188,15 @@ export const linkVenueAmenityAsync = createAsyncThunk(
     }
   },
 );
- 
-// NEW — unlinks an amenity from a venue. Thunk arg: { venueId, amenityId }.
+
 export const unlinkVenueAmenityAsync = createAsyncThunk(
   "venueOwner/unlinkVenueAmenity",
   async ({ venueId, amenityId }, { rejectWithValue }) => {
     try {
-      const amenities = await venueOwnerService.unlinkAmenity(venueId, amenityId);
+      const amenities = await venueOwnerService.unlinkAmenity(
+        venueId,
+        amenityId,
+      );
       return { venueId, amenities };
     } catch (err) {
       return rejectWithValue(err.message);
@@ -162,13 +204,22 @@ export const unlinkVenueAmenityAsync = createAsyncThunk(
   },
 );
 
-
-
 const initialState = {
   summary: null,
   bookingRequests: [],
+
+  ownerBookings: {
+    items: [],
+    total: 0,
+    page: 1,
+    limit: 10,
+  },
+
+  venueBookings: { items: [], total: 0, page: 1, limit: 10 },
+
   calendar: { month: null, days: {} },
   venues: [],
+  activeVenue: null,
   venueTypes: [],
   amenities: [],
   revenue: null,
@@ -178,9 +229,14 @@ const initialState = {
   loading: {
     summary: false,
     bookingRequests: false,
+    ownerBookings: false,
+    venueBookings: false,
+    actionBooking: null,
     calendar: false,
     venues: false,
+    activeVenue: false,
     creatingVenue: false,
+    updatingVenue: false,
     venueTypes: false,
     amenities: false,
     revenue: false,
@@ -193,6 +249,18 @@ const initialState = {
 const asListPayload = (payload) =>
   Array.isArray(payload) ? payload : payload?.data || payload?.items || [];
 
+function patchOwnerBooking(state, updatedBooking) {
+  const idx = state.ownerBookings.items.findIndex(
+    (b) => b.id === updatedBooking.id,
+  );
+  if (idx !== -1) state.ownerBookings.items[idx] = updatedBooking;
+
+  const rIdx = state.bookingRequests.findIndex(
+    (b) => b.id === updatedBooking.id,
+  );
+  if (rIdx !== -1) state.bookingRequests.splice(rIdx, 1);
+}
+
 const venueOwnerSlice = createSlice({
   name: "venueOwner",
   initialState,
@@ -200,9 +268,16 @@ const venueOwnerSlice = createSlice({
     clearVenueOwnerError: (state) => {
       state.error = null;
     },
+    clearActiveVenue: (state) => {
+      state.activeVenue = null;
+    },
+    clearVenueBookings: (state) => {
+      state.venueBookings = { items: [], total: 0, page: 1, limit: 10 };
+    },
   },
   extraReducers: (builder) => {
     builder
+      // ── Summary ──────────────────────────────────────────────────────────
       .addCase(fetchDashboardSummaryAsync.pending, (state) => {
         state.loading.summary = true;
         state.error = null;
@@ -216,6 +291,7 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
+      // ── Booking requests
       .addCase(fetchBookingRequestsAsync.pending, (state) => {
         state.loading.bookingRequests = true;
         state.error = null;
@@ -229,24 +305,58 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-
-      .addCase(acceptBookingRequestAsync.fulfilled, (state, action) => {
-        state.bookingRequests = state.bookingRequests.filter(
-          (b) => b.id !== action.payload.id,
-        );
+      // ── Owner bookings page
+      .addCase(fetchOwnerBookingsAsync.pending, (state) => {
+        state.loading.ownerBookings = true;
+        state.error = null;
       })
-      .addCase(rejectBookingRequestAsync.fulfilled, (state, action) => {
-        state.bookingRequests = state.bookingRequests.filter(
-          (b) => b.id !== action.payload.id,
-        );
+      .addCase(fetchOwnerBookingsAsync.fulfilled, (state, action) => {
+        state.loading.ownerBookings = false;
+        state.ownerBookings = action.payload;
+      })
+      .addCase(fetchOwnerBookingsAsync.rejected, (state, action) => {
+        state.loading.ownerBookings = false;
+        state.error = action.payload;
+      })
+
+      // ── Per-venue bookings (manage page) ─────────────────────────────────
+      .addCase(fetchVenueBookingsAsync.pending, (state) => {
+        state.loading.venueBookings = true; state.error = null;
+      })
+      .addCase(fetchVenueBookingsAsync.fulfilled, (state, action) => {
+        state.loading.venueBookings = false;
+        state.venueBookings = action.payload;
+      })
+      .addCase(fetchVenueBookingsAsync.rejected, (state, action) => {
+        state.loading.venueBookings = false; state.error = action.payload;
+      })
+
+      // ── Accept / Reject
+      .addCase(acceptBookingRequestAsync.pending, (state, action) => {
+        state.loading.actionBooking = action.meta.arg; // booking id
+      })
+      .addCase(acceptBookingRequestAsync.fulfilled, (state, action) => {
+        state.loading.actionBooking = null;
+        patchOwnerBooking(state, action.payload);
       })
       .addCase(acceptBookingRequestAsync.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-      .addCase(rejectBookingRequestAsync.rejected, (state, action) => {
+        state.loading.actionBooking = null;
         state.error = action.payload;
       })
 
+      .addCase(rejectBookingRequestAsync.pending, (state, action) => {
+        state.loading.actionBooking = action.meta.arg;
+      })
+      .addCase(rejectBookingRequestAsync.fulfilled, (state, action) => {
+        state.loading.actionBooking = null;
+        patchOwnerBooking(state, action.payload);
+      })
+      .addCase(rejectBookingRequestAsync.rejected, (state, action) => {
+        state.loading.actionBooking = null;
+        state.error = action.payload;
+      })
+
+      // ── Calendar ─────────────────────────────────────────────────────────
       .addCase(fetchAvailabilityCalendarAsync.pending, (state) => {
         state.loading.calendar = true;
         state.error = null;
@@ -260,6 +370,7 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
+      // ── My venues ────────────────────────────────────────────────────────
       .addCase(fetchMyVenuesAsync.pending, (state) => {
         state.loading.venues = true;
         state.error = null;
@@ -273,6 +384,35 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
+      .addCase(fetchVenueByIdAsync.pending, (state) => {
+        state.loading.activeVenue = true;
+        state.error = null;
+      })
+      .addCase(fetchVenueByIdAsync.fulfilled, (state, action) => {
+        state.loading.activeVenue = false;
+        state.activeVenue = action.payload;
+      })
+      .addCase(fetchVenueByIdAsync.rejected, (state, action) => {
+        state.loading.activeVenue = false;
+        state.error = action.payload;
+      })
+
+      .addCase(updateVenueAsync.pending, (state) => {
+        state.loading.updatingVenue = true;
+        state.error = null;
+      })
+      .addCase(updateVenueAsync.fulfilled, (state, action) => {
+        state.loading.updatingVenue = false;
+        state.activeVenue = action.payload;
+        const idx = state.venues.findIndex((v) => v.id === action.payload.id);
+        if (idx !== -1) state.venues[idx] = action.payload;
+      })
+      .addCase(updateVenueAsync.rejected, (state, action) => {
+        state.loading.updatingVenue = false;
+        state.error = action.payload;
+      })
+
+      // ── Create venue ─────────────────────────────────────────────────────
       .addCase(createVenueAsync.pending, (state) => {
         state.loading.creatingVenue = true;
         state.error = null;
@@ -285,7 +425,8 @@ const venueOwnerSlice = createSlice({
         state.loading.creatingVenue = false;
         state.error = action.payload;
       })
- 
+
+      // ── Venue types ───────────────────────────────────────────────────────
       .addCase(fetchVenueTypesAsync.pending, (state) => {
         state.loading.venueTypes = true;
         state.error = null;
@@ -298,6 +439,8 @@ const venueOwnerSlice = createSlice({
         state.loading.venueTypes = false;
         state.error = action.payload;
       })
+
+      // ── Amenities ─────────────────────────────────────────────────────────
       .addCase(fetchAmenitiesAsync.pending, (state) => {
         state.loading.amenities = true;
         state.error = null;
@@ -310,6 +453,7 @@ const venueOwnerSlice = createSlice({
         state.loading.amenities = false;
         state.error = action.payload;
       })
+
       .addCase(linkVenueAmenityAsync.fulfilled, (state, action) => {
         const { venueId, amenities } = action.payload;
         const venue = state.venues.find((v) => v.id === venueId);
@@ -327,6 +471,7 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
+      // ── Revenue ───────────────────────────────────────────────────────────
       .addCase(fetchRevenueOverviewAsync.pending, (state) => {
         state.loading.revenue = true;
         state.error = null;
@@ -340,6 +485,7 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
+      // ── Reviews ───────────────────────────────────────────────────────────
       .addCase(fetchRecentReviewsAsync.pending, (state) => {
         state.loading.reviews = true;
         state.error = null;
@@ -353,6 +499,7 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
+      // ── Notifications ─────────────────────────────────────────────────────
       .addCase(fetchNotificationsAsync.pending, (state) => {
         state.loading.notifications = true;
         state.error = null;
@@ -368,5 +515,6 @@ const venueOwnerSlice = createSlice({
   },
 });
 
-export const { clearVenueOwnerError } = venueOwnerSlice.actions;
+export const { clearVenueOwnerError, clearActiveVenue, clearVenueBookings } =
+  venueOwnerSlice.actions;
 export default venueOwnerSlice.reducer;

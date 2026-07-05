@@ -136,10 +136,15 @@ def reject_booking_request(db: Session, booking_id: int, owner_id: int) -> Booki
     return booking
 
 
-def get_availability_calendar(db: Session, owner_id: int, month: str) -> dict:
+def get_availability_calendar(db: Session, owner_id: int, month: str, venue_id: int | None = None, ) -> dict:
     venue_ids = _owner_venue_ids(db, owner_id)
     if not venue_ids:
         return {"month": month, "days": {}}
+    
+    if venue_id is not None:
+        if venue_id not in venue_ids:
+            raise HTTPException(status_code=403, detail="You do not own this venue.")
+        venue_ids = [venue_id]
 
     year, mon = map(int, month.split("-"))
     start, end = _month_bounds(year, mon)
@@ -149,13 +154,23 @@ def get_availability_calendar(db: Session, owner_id: int, month: str) -> dict:
         Booking.booking_date <= end, Booking.owner_status != "rejected", Booking.status != "cancelled",
     ).all()
 
-    days: dict[str, str] = {}
+    days: dict[str, dict] = {}
     for b in bookings:
         key = b.booking_date.isoformat()
-        if b.owner_status == "accepted":
-            days[key] = "booked"
-        elif b.owner_status == "pending" and days.get(key) != "booked":
-            days[key] = "pending"
+        status_val = "booked" if b.owner_status == "accepted" else "pending"
+    
+        if key in days and days[key]["status"] == "booked":
+            continue
+        
+        days[key] = {
+            "status": status_val,
+            "booking_id": b.id,
+            "venue_name": b.venue.name if b.venue else None,
+            "event_type": b.event_type,
+            "guest_count": b.guest_count,
+            "time_slot": b.time_slot.strftime("%I:%M %p") if b.time_slot else None,
+            "amount": float(b.amount),
+        }
 
     return {"month": month, "days": days}
 

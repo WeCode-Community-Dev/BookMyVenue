@@ -8,7 +8,9 @@ import AddVenueModal from "../components/VenueOwnerDashboard/AddVenueModal";
 import {
   fetchMyVenuesAsync,
   fetchVenueTypesAsync,
+  fetchAmenitiesAsync,
   createVenueAsync,
+  linkVenueAmenityAsync,
   clearVenueOwnerError,
 } from "../modules/venueOwner/venueOwnerSlice";
 
@@ -16,20 +18,40 @@ function OwnerVenuesPage() {
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { venues, venueTypes, loading, error } = useSelector((state) => state.venueOwner);
+  const { venues, venueTypes, amenities, loading, error } = useSelector(
+    (state) => state.venueOwner,
+  );
 
   useEffect(() => {
     dispatch(fetchMyVenuesAsync());
     dispatch(fetchVenueTypesAsync());
+    dispatch(fetchAmenitiesAsync());
   }, [dispatch]);
 
-  const handleAddVenue = async (payload) => {
-    const result = await dispatch(createVenueAsync(payload));
-    if (createVenueAsync.fulfilled.match(result)) {
-      setIsModalOpen(false);
+  const handleAddVenue = async ({ amenityIds, ...venuePayload }) => {
+    // Step 1: create the venue — we need its id before we can link amenities.
+    const result = await dispatch(createVenueAsync(venuePayload));
+
+    if (!createVenueAsync.fulfilled.match(result)) {
+      // createVenueAsync.rejected — error is already in state.venueOwner.error,
+      // the modal stays open so the person can see it and retry.
+      return;
     }
-    // On rejection, the modal stays open and `error` (from state.venueOwner)
-    // is passed back in so the person can see what went wrong and retry.
+
+    const newVenueId = result.payload.id;
+
+    // Step 2: link each selected amenity in parallel.
+    // Failures here are non-blocking — the venue is already created and
+    // visible in the list. Errors land in state.venueOwner.error as usual.
+    if (amenityIds && amenityIds.length > 0) {
+      await Promise.all(
+        amenityIds.map((amenityId) =>
+          dispatch(linkVenueAmenityAsync({ venueId: newVenueId, amenityId })),
+        ),
+      );
+    }
+
+    setIsModalOpen(false);
   };
 
   const handleCloseModal = () => {
@@ -63,6 +85,7 @@ function OwnerVenuesPage() {
         onClose={handleCloseModal}
         onSubmit={handleAddVenue}
         venueTypes={venueTypes}
+        amenities={amenities}
         submitting={loading.creatingVenue}
         error={error}
       />

@@ -1,6 +1,7 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
-from datetime import datetime, timezone
+from typing import Optional
+from datetime import datetime, timezone, date
 from app.models.booking import Booking
 from app.models.user import User
 from app.models.venue import Venue
@@ -126,3 +127,53 @@ def cancel_booking(db: Session, current_user: User, booking_id: int, cancellatio
     db.commit()
     db.refresh(booking)
     return booking
+
+
+
+
+def get_owner_bookings(
+    db: Session,
+    current_user: User,
+    tab: str = "all",      
+    page: int = 1,
+    limit: int = 10,
+    venue_id: Optional[int] = None,
+) -> dict:
+    today = date.today()
+ 
+    # Base: only bookings for venues owned by this user
+    base = (
+        db.query(Booking)
+        .join(Venue, Booking.venue_id == Venue.id)
+        .options(joinedload(Booking.venue), joinedload(Booking.user))
+        .filter(Venue.owner_id == current_user.id)
+    )
+    
+    if venue_id is not None:
+        base = base.filter(Booking.venue_id == venue_id)
+ 
+    if tab == "upcoming":
+        base = base.filter(
+            Booking.booking_date >= today,
+            Booking.status != "cancelled",
+        )
+    elif tab == "past":
+        base = base.filter(
+            Booking.booking_date < today,
+            Booking.status != "cancelled",
+        )
+    elif tab == "cancelled":
+        base = base.filter(Booking.status == "cancelled")
+    # "all" → no extra filter
+ 
+    total = base.count()
+    items = (
+        base.order_by(Booking.created_at.desc())
+        .offset((page - 1) * limit)
+        .limit(limit)
+        .all()
+    )
+ 
+    return {"items": items, "total": total, "page": page, "limit": limit}
+ 
+ 

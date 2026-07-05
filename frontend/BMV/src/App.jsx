@@ -1,16 +1,21 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import DashboardPage from "./pages/DashboardPage";
-import RequireAuth from "./components/RequireAuth";
 import MyBookingsPage from "./pages/MyBookingsPage";
 import BookingDetailPage from "./pages/BookingDetailPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import VenueOwnerRegisterPage from "./pages/VenueOwnerRegisterPage";
 import OwnerDashboardPage from "./pages/OwnerDashboardPage";
-import RequireVenueOwner from "./components/RequireVenueOwner";
 import OwnerVenuesPage from "./pages/OwnerVenuesPage";
+import OwnerBookingsPage from "./pages/OwnerBookingsPage";
+import OwnerVenueManagePage from "./pages/OwnerVenueManagePage";
+import OwnerVenueEditPage from "./pages/OwnerVenueEditPage";
+
+import RequireAuth from "./components/RequireAuth";
+import RequireVenueOwner from "./components/RequireVenueOwner";
 
 function ForgotPasswordPlaceholder() {
   return (
@@ -28,45 +33,25 @@ function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/register-venue-owner"
-            element={<VenueOwnerRegisterPage />}
-          />
-          <Route
-            path="/forgot-password"
-            element={<ForgotPasswordPlaceholder />}
-          />
+          <Route path="/register-venue-owner" element={<VenueOwnerRegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPlaceholder />} />
+
+          {/* Customer routes */}
           <Route element={<RequireAuth />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/my-bookings" element={<MyBookingsPage />} />
+            <Route path="/bookings/:id" element={<BookingDetailPage />} />
+            <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
           </Route>
+
+          {/* Venue owner routes */}
           <Route element={<RequireVenueOwner />}>
             <Route path="/owner/dashboard" element={<OwnerDashboardPage />} />
+            <Route path="/owner/venues" element={<OwnerVenuesPage />} />
+            <Route path="/owner/bookings" element={<OwnerBookingsPage />} />
+            <Route path="/owner/venues/:id/manage" element={<OwnerVenueManagePage />} />
+            <Route path="/owner/venues/:id/edit" element={<OwnerVenueEditPage />} />
           </Route>
-          <Route path="/owner/venues" element={<OwnerVenuesPage />} />
-          {/* <Route
-            path="/owner/bookings"
-            element={<OwnerSectionPlaceholder title="Bookings" />}
-          />
-          <Route
-            path="/owner/enquiries"
-            element={<OwnerSectionPlaceholder title="Enquiries" />}
-          />
-          <Route
-            path="/owner/revenue"
-            element={<OwnerSectionPlaceholder title="Revenue" />}
-          />
-          <Route
-            path="/owner/reviews"
-            element={<OwnerSectionPlaceholder title="Reviews" />}
-          />
-          <Route
-            path="/owner/messages"
-            element={<OwnerSectionPlaceholder title="Messages" />}
-          /> */}
-
-          <Route path="/my-bookings" element={<MyBookingsPage />} />
-          <Route path="/bookings/:id" element={<BookingDetailPage />} />
-          <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
         </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>

@@ -43,6 +43,7 @@ class Booking(Base):
     )
     
     venue = relationship("Venue")
+    user = relationship("User") 
 
     __table_args__ = (
         # one venue cannot be booked twice for the same date + time

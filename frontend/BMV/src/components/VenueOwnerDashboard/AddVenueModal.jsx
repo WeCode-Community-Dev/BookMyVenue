@@ -16,10 +16,12 @@ function AddVenueModal({
   onClose,
   onSubmit,
   venueTypes = [],
+  amenities = [],
   submitting = false,
   error = null,
 }) {
   const [fields, setFields] = useState(initialFormState);
+  const [selectedAmenityIds, setSelectedAmenityIds] = useState([]);
   const [errors, setErrors] = useState({});
 
   // Lock body scroll while the modal is open, restore on close/unmount
@@ -32,18 +34,19 @@ function AddVenueModal({
     };
   }, [isOpen]);
 
-
+  // Reset form each time the modal opens
   useEffect(() => {
     if (isOpen) {
       setFields({
         ...initialFormState,
         venueTypeId: venueTypes[0]?.id ?? "",
       });
+      setSelectedAmenityIds([]);
       setErrors({});
     }
   }, [isOpen, venueTypes]);
 
-
+  // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e) => {
@@ -58,6 +61,12 @@ function AddVenueModal({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFields((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const toggleAmenity = (id) => {
+    setSelectedAmenityIds((prev) =>
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id],
+    );
   };
 
   const validate = () => {
@@ -77,7 +86,8 @@ function AddVenueModal({
     e.preventDefault();
     if (!validate()) return;
 
-
+    // amenityIds is passed separately — OwnerVenuesPage links them after
+    // the venue is created, since /venue-amenities/ needs a venue_id first.
     onSubmit({
       name: fields.name.trim(),
       location: fields.location.trim(),
@@ -86,6 +96,7 @@ function AddVenueModal({
       capacity: fields.capacity ? Number(fields.capacity) : null,
       description: fields.description.trim() || null,
       image_url: fields.imageUrl.trim() || null,
+      amenityIds: selectedAmenityIds,
     });
   };
 
@@ -118,6 +129,7 @@ function AddVenueModal({
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Venue Name */}
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">
                   Venue Name
@@ -131,9 +143,12 @@ function AddVenueModal({
                   className={`w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border transition
                     ${errors.name ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent"}`}
                 />
-                {errors.name && <p className="mt-1 text-xs text-red-500">⚠ {errors.name}</p>}
+                {errors.name && (
+                  <p className="mt-1 text-xs text-red-500">⚠ {errors.name}</p>
+                )}
               </div>
 
+              {/* Venue Type */}
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">
                   Venue Type
@@ -159,6 +174,7 @@ function AddVenueModal({
                 )}
               </div>
 
+              {/* Location */}
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">
                   Location
@@ -172,9 +188,12 @@ function AddVenueModal({
                   className={`w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border transition
                     ${errors.location ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent"}`}
                 />
-                {errors.location && <p className="mt-1 text-xs text-red-500">⚠ {errors.location}</p>}
+                {errors.location && (
+                  <p className="mt-1 text-xs text-red-500">⚠ {errors.location}</p>
+                )}
               </div>
 
+              {/* Capacity */}
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">
                   Capacity (Guests)
@@ -189,10 +208,13 @@ function AddVenueModal({
                   className={`w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border transition
                     ${errors.capacity ? "border-red-400 bg-red-50" : "border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent"}`}
                 />
-                {errors.capacity && <p className="mt-1 text-xs text-red-500">⚠ {errors.capacity}</p>}
+                {errors.capacity && (
+                  <p className="mt-1 text-xs text-red-500">⚠ {errors.capacity}</p>
+                )}
               </div>
 
-              <div>
+              {/* Daily Rate */}
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-gray-600 mb-1">
                   Daily Rate (₹)
                 </label>
@@ -211,10 +233,51 @@ function AddVenueModal({
                     className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
                   />
                 </div>
-                {errors.dailyRate && <p className="mt-1 text-xs text-red-500">⚠ {errors.dailyRate}</p>}
+                {errors.dailyRate && (
+                  <p className="mt-1 text-xs text-red-500">⚠ {errors.dailyRate}</p>
+                )}
               </div>
             </div>
 
+            {/* Amenities */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                Amenities
+                {selectedAmenityIds.length > 0 && (
+                  <span className="ml-2 px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-800 text-[10px] font-semibold">
+                    {selectedAmenityIds.length} selected
+                  </span>
+                )}
+              </label>
+              {amenities.length === 0 ? (
+                <p className="text-xs text-gray-400">Loading amenities...</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {amenities.map((amenity) => {
+                    const isSelected = selectedAmenityIds.includes(amenity.id);
+                    return (
+                      <button
+                        key={amenity.id}
+                        type="button"
+                        onClick={() => toggleAmenity(amenity.id)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          isSelected
+                            ? "bg-rose-900 border-rose-900 text-white"
+                            : "bg-white border-gray-200 text-gray-600 hover:border-rose-300 hover:text-rose-800"
+                        }`}
+                      >
+                        {amenity.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="mt-1.5 text-xs text-gray-400">
+                These will be linked to the venue right after it&apos;s created.
+              </p>
+            </div>
+
+            {/* Description */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Description
@@ -229,6 +292,7 @@ function AddVenueModal({
               />
             </div>
 
+            {/* Image URL */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Image URL
@@ -246,7 +310,6 @@ function AddVenueModal({
               </div>
               <p className="mt-1.5 text-xs text-gray-400">
                 Direct image upload isn&apos;t available yet — paste a hosted image link for now.
-                Amenities can be added once the venue is created.
               </p>
             </div>
           </div>

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import date, datetime, time
-from typing import Optional
+from typing import Optional, Any
 
 
 class DashboardSummaryOut(BaseModel):
@@ -32,7 +32,7 @@ class BookingRequestOut(BaseModel):
 
 class AvailabilityCalendarOut(BaseModel):
     month: str  
-    days: dict[str, str]  
+    days: dict[str, Any]  
 
 
 class RevenuePointOut(BaseModel):

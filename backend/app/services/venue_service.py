@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.venue import Venue
 from app.schemas.venue import VenueCreate
 from fastapi import HTTPException
@@ -6,9 +6,26 @@ from app.models.user import User
 
 
 
+def _fetch_full(db: Session, venue_id: int) -> Venue:
+    """Re-fetch a venue with venue_type and amenities eager-loaded.
+    Used after every write (create/update) and for direct GET by id so
+    VenueOut always serializes completely without hitting a closed session.
+    """
+    venue = (
+        db.query(Venue)
+        .options(joinedload(Venue.venue_type), joinedload(Venue.amenities))
+        .filter(Venue.id == venue_id)
+        .first()
+    )
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+    return venue
+
 def create_venue(db: Session, venue_data: VenueCreate, current_user: User) -> Venue:
     new_venue = Venue(
+
         owner_id=current_user.id,
+
         name=venue_data.name,
         location=venue_data.location,
         price_per_day=venue_data.price_per_day,
@@ -20,7 +37,14 @@ def create_venue(db: Session, venue_data: VenueCreate, current_user: User) -> Ve
 
     db.add(new_venue)
     db.commit()
-    db.refresh(new_venue)
+    
+    
+    new_venue = (
+        db.query(Venue)
+        .options(joinedload(Venue.venue_type), joinedload(Venue.amenities))
+        .filter(Venue.id == new_venue.id)
+        .first()
+    )
 
     return new_venue
 
@@ -105,6 +129,7 @@ def delete_venue(db: Session, venue_id: int):
     db.commit()
 
     return venue
+
 
 
 def get_my_venues(db: Session, current_user: User):

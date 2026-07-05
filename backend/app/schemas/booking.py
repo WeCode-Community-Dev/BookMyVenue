@@ -34,3 +34,43 @@ class PaginatedBookingsOut(BaseModel):
     total: int
     page: int
     limit: int
+    
+    
+class VenueSnippet(BaseModel):
+    id: int
+    name: str
+    location: str
+ 
+    model_config = {"from_attributes": True}
+    
+    
+class CustomerSnippet(BaseModel):
+    id: int
+    name: str
+ 
+    model_config = {"from_attributes": True}
+    
+    
+class OwnerBookingOut(BaseModel):
+    id: int
+    venue: VenueSnippet
+    user: CustomerSnippet          # the customer who made the booking
+    booking_date: date
+    time_slot: time
+    event_type: Optional[str] = None
+    guest_count: Optional[int] = None
+    notes: Optional[str] = None
+    status: str                    
+    owner_status: str             
+    amount: float
+    created_at: datetime
+ 
+    model_config = {"from_attributes": True}
+    
+    
+    
+class PaginatedOwnerBookingsOut(BaseModel):
+    items: list[OwnerBookingOut]
+    total: int
+    page: int
+    limit: int
