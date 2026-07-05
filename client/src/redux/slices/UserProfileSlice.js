@@ -199,7 +199,6 @@ const UserProfileSlice = createSlice({
 
       .addCase(requestEmailChangeOtp.rejected, (state, action) => {
         state.otpLoading = false;
-        state.error = action.payload;
       })
 
       // Verify OTP
@@ -215,7 +214,6 @@ const UserProfileSlice = createSlice({
 
       .addCase(verifyEmailOtp.rejected, (state, action) => {
         state.otpLoading = false;
-        state.error = action.payload;
       })
 
       // Resend OTP
@@ -229,7 +227,6 @@ const UserProfileSlice = createSlice({
 
       .addCase(resendEmailOtp.rejected, (state, action) => {
         state.otpLoading = false;
-        state.error = action.payload;
       });
   },
 });

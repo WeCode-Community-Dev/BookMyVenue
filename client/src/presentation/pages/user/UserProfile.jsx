@@ -62,8 +62,19 @@ const UserProfile = () => {
     const result = await dispatch(verifyEmailOtp(otp));
 
     if (verifyEmailOtp.fulfilled.match(result)) {
-      console.log("Email Updated");
+      await dispatch(getProfile());
+
+      setIsEditing(false);
+
+      return {
+        success: true,
+      };
     }
+
+    return {
+      success: false,
+      message: result.payload,
+    };
   };
 
   const handleResendOtp = async () => {

@@ -1,14 +1,14 @@
 import { useState } from "react";
 
 const UserEditProfileForm = ({
-    user,
-    onSave,
-    onCancel,
-    onRequestEmailOtp,
-    onVerifyOtp,
-    onResendOtp,
-    otpLoading,
-    otpSent,
+  user,
+  onSave,
+  onCancel,
+  onRequestEmailOtp,
+  onVerifyOtp,
+  onResendOtp,
+  otpLoading,
+  otpSent,
 }) => {
   const [formData, setFormData] = useState({
     name: user.fullName || "",
@@ -40,14 +40,23 @@ const UserEditProfileForm = ({
   };
 
   const [otp, setOtp] = useState("");
-  const handleVerifyOtp = () => {
-    if (!otp.trim()) return;
 
-    onVerifyOtp(otp);
+  const handleVerifyOtp = async () => {
+    const result = await onVerifyOtp(otp);
+  
+    if (!result.success) {
+      setOtpError(result.message || "Invalid OTP");
+      return;
+    }
+  
+    setOtpError("");
   };
+
   const handleResendOtp = () => {
     onResendOtp();
   };
+
+  const [otpError, setOtpError] = useState("");
 
   return (
     <div className="bg-white rounded-3xl shadow-md p-8">
@@ -62,7 +71,7 @@ const UserEditProfileForm = ({
 
           <input
             type="text"
-            name="fullName"
+            name="name"
             value={formData.name}
             onChange={handleChange}
             className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:border-amber-500"
@@ -117,45 +126,48 @@ const UserEditProfileForm = ({
                 {otpLoading ? "Sending..." : "Send OTP"}
               </button>
               {otpSent && (
-    <div className="mt-6 space-y-4 border-t pt-5">
+                <div className="mt-6 space-y-4 border-t pt-5">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium">
+                      Enter OTP
+                    </label>
 
-        <div>
-            <label className="mb-2 block text-sm font-medium">
-                Enter OTP
-            </label>
+                    <input
+                      type="text"
+                      value={otp}
+                      maxLength={6}
+                      onChange={(e) => {
+                        setOtp(e.target.value);
+                        setOtpError("");
+                      }}
+                      placeholder="Enter 6 digit OTP"
+                      className="w-full rounded-xl border border-gray-300 px-4 py-3"
+                    />
 
-            <input
-                type="text"
-                value={otp}
-                maxLength={6}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter 6 digit OTP"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3"
-            />
-        </div>
+                    {otpError && (
+                      <p className="mt-2 text-sm text-red-500">{otpError}</p>
+                    )}
+                  </div>
 
-        <div className="flex gap-3">
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={handleVerifyOtp}
+                      className="rounded-xl bg-green-600 px-6 py-3 text-white hover:bg-green-700"
+                    >
+                      Verify OTP
+                    </button>
 
-            <button
-                type="button"
-                onClick={handleVerifyOtp}
-                className="rounded-xl bg-green-600 px-6 py-3 text-white hover:bg-green-700"
-            >
-                Verify OTP
-            </button>
-
-            <button
-                type="button"
-                onClick={handleResendOtp}
-                className="rounded-xl border border-gray-300 px-6 py-3 hover:bg-gray-100"
-            >
-                Resend OTP
-            </button>
-
-        </div>
-
-    </div>
-)}
+                    <button
+                      type="button"
+                      onClick={handleResendOtp}
+                      className="rounded-xl border border-gray-300 px-6 py-3 hover:bg-gray-100"
+                    >
+                      Resend OTP
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
