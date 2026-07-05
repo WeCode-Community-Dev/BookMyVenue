@@ -39,7 +39,8 @@ export function SearchBar({ variant = "nav", placeholder, searchQuery, setSearch
   const [selectedDates, setSelectedDates] = useState<string>("Add dates");
   const [selectedCategory, setSelectedCategory] = useState<string>("What's the occasion?");
   const [guestCount, setGuestCount] = useState<number>(0);
-  const [calendarMonth, setCalendarMonth] = useState<"July" | "August">("July");
+  const [currentYear, setCurrentYear] = useState<number>(new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState<number>(new Date().getMonth());
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -232,18 +233,34 @@ export function SearchBar({ variant = "nav", placeholder, searchQuery, setSearch
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setCalendarMonth("July")}
-                  disabled={calendarMonth === "July"}
-                  className="p-1 rounded hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer border-0 bg-transparent text-slate-600"
+                  type="button"
+                  onClick={() => {
+                    if (currentMonth === 0) {
+                      setCurrentMonth(11);
+                      setCurrentYear(prev => prev - 1);
+                    } else {
+                      setCurrentMonth(prev => prev - 1);
+                    }
+                  }}
+                  className="p-1 rounded hover:bg-slate-100 cursor-pointer border-0 bg-transparent text-slate-600"
                   aria-label="Previous Month"
                 >
                   <ChevronLeft className="size-3.5" />
                 </button>
-                <p className="text-xs font-bold text-slate-800 w-24 text-center select-none">{calendarMonth} 2026</p>
+                <p className="text-xs font-bold text-slate-800 w-28 text-center select-none">
+                  {new Date(currentYear, currentMonth).toLocaleString("default", { month: "long" })} {currentYear}
+                </p>
                 <button
-                  onClick={() => setCalendarMonth("August")}
-                  disabled={calendarMonth === "August"}
-                  className="p-1 rounded hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer border-0 bg-transparent text-slate-600"
+                  type="button"
+                  onClick={() => {
+                    if (currentMonth === 11) {
+                      setCurrentMonth(0);
+                      setCurrentYear(prev => prev + 1);
+                    } else {
+                      setCurrentMonth(prev => prev + 1);
+                    }
+                  }}
+                  className="p-1 rounded hover:bg-slate-100 cursor-pointer border-0 bg-transparent text-slate-600"
                   aria-label="Next Month"
                 >
                   <ChevronRight className="size-3.5" />
@@ -260,17 +277,19 @@ export function SearchBar({ variant = "nav", placeholder, searchQuery, setSearch
             {/* Days Grid */}
             <div className="grid grid-cols-7 gap-1">
               {/* Empty cells for starting offset */}
-              {Array.from({ length: calendarMonth === "July" ? 3 : 6 }).map((_, i) => (
+              {Array.from({ length: new Date(currentYear, currentMonth, 1).getDay() }).map((_, i) => (
                 <div key={`empty-${i}`} />
               ))}
               {/* Days List */}
-              {Array.from({ length: 31 }).map((_, i) => {
+              {Array.from({ length: new Date(currentYear, currentMonth + 1, 0).getDate() }).map((_, i) => {
                 const dayNum = i + 1;
-                const dateStr = `${calendarMonth === "July" ? "Jul" : "Aug"} ${dayNum}, 2026`;
+                const shortMonth = new Date(currentYear, currentMonth).toLocaleString("default", { month: "short" });
+                const dateStr = `${shortMonth} ${dayNum}, ${currentYear}`;
                 const isSelected = selectedDates === dateStr;
 
                 return (
                   <button
+                    type="button"
                     key={dayNum}
                     onClick={() => {
                       setSelectedDates(dateStr);

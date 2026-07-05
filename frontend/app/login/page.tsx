@@ -52,9 +52,9 @@ export default function LoginPage() {
               <label htmlFor="password" className="text-xs font-bold text-slate-500 uppercase tracking-wider block select-none">
                 Password
               </label>
-              <a href="#" className="text-xs font-semibold text-rose-600 hover:text-rose-700 transition select-none" tabIndex={-1}>
+              <Link href="/forgot-password" className="text-xs font-semibold text-rose-600 hover:text-rose-700 transition select-none">
                 Forgot Password?
-              </a>
+              </Link>
             </div>
             <PasswordInput
               id="password"

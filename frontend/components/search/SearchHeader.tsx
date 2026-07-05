@@ -92,7 +92,7 @@ export default function SearchHeader({
       {/* Result Count Title */}
       <div>
         <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none">
-          Showing {totalCount} venues in {city}
+          Explore Venues
         </h1>
         <p className="text-[11px] sm:text-xs font-semibold text-slate-400 mt-1.5">
           Find and book the perfect spaces for your events

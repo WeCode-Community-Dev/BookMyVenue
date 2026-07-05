@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { VenueCard } from "./venue-card";
 import { Venue } from "@/types";
 
@@ -18,9 +19,9 @@ export function VenueSection({ title, description, venues }: VenueSectionProps) 
             <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">{title}</h2>
             {description && <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">{description}</p>}
           </div>
-          <button className="text-xs sm:text-sm font-bold text-rose-600 hover:text-rose-700 transition cursor-pointer self-start sm:self-auto select-none bg-transparent border-none">
+          <Link href="/search" className="text-xs sm:text-sm font-bold text-rose-600 hover:text-rose-700 transition cursor-pointer self-start sm:self-auto select-none bg-transparent border-none">
             View all &rarr;
-          </button>
+          </Link>
         </div>
 
         {/* Section Grid */}

@@ -30,9 +30,8 @@ export default function Home() {
     return matchesCategory && matchesQuery;
   });
 
-  // Split filtered venues into "Popular Near You" (rating >= 4.7) and "Recently Added"
-  const popularVenues = filteredVenues.filter((venue) => venue.rating >= 4.7).slice(0, 4);
-  const recentlyAddedVenues = filteredVenues.filter((venue) => venue.rating < 4.7 || popularVenues.indexOf(venue) === -1).slice(0, 4);
+  // Filter venues for "Popular Near You" (rating >= 4.7)
+  const popularVenues = filteredVenues.filter((venue) => venue.rating >= 4.7).slice(0, 8);
 
   // Callbacks for tag clicks (popular search tags in hero)
   const handleSearchTagSelect = (tag: string) => {
@@ -65,11 +64,6 @@ export default function Home() {
             title="Popular Near You"
             description="Highly rated venues matching your filter criteria"
             venues={popularVenues}
-          />
-          <VenueSection
-            title="Recently Added"
-            description="Brand new spaces listed on BookMyVenue"
-            venues={recentlyAddedVenues}
           />
         </div>
 

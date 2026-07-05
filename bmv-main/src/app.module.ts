@@ -9,6 +9,9 @@ import { StorageModule } from './storage/storage.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { VenueModule } from './venue/venue.module';
+import { AdminModule } from './admin/admin.module';
+import { MailModule } from './mail/mail.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -22,6 +25,9 @@ import { VenueModule } from './venue/venue.module';
       serveRoot: '/uploads',
     }),
     VenueModule,
+    AdminModule,
+    MailModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

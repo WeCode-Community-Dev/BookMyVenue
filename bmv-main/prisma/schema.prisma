@@ -65,6 +65,8 @@ model User {
   isEmailVerified   Boolean   @default(false)
   emailVerifyExpiry DateTime?
   emailVerifyOtp    String?
+  forgotPasswordOtp String?
+  forgotPasswordOtpExpiry DateTime?
 
   profile           Profile?
   venues            Venue[]

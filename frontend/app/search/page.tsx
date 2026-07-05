@@ -11,7 +11,6 @@ import FilterDrawer from "@/components/search/FilterDrawer";
 import SortDropdown from "@/components/search/SortDropdown";
 import SearchResults from "@/components/search/SearchResults";
 import Pagination from "@/components/search/Pagination";
-import MapPlaceholder from "@/components/search/MapPlaceholder";
 import EmptyState from "@/components/search/EmptyState";
 
 function SearchPageContent() {
@@ -194,32 +193,22 @@ function SearchPageContent() {
             activeFiltersCount={activeFiltersCount}
           />
 
-          {/* Main 2-Column Desktop layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 items-start pt-2">
-            
-            {/* Left side column: Listings Grid (60% on desktop) */}
-            <div className="lg:col-span-6 space-y-6">
-              {paginatedVenues.length > 0 ? (
-                <>
-                  <SearchResults venues={paginatedVenues} />
-                  {totalPages > 1 && (
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={setCurrentPage}
-                    />
-                  )}
-                </>
-              ) : (
-                <EmptyState onReset={handleResetFilters} />
-              )}
-            </div>
-
-            {/* Right side column: Map panel (40% on desktop, hidden on mobile/tablet) */}
-            <div className="hidden lg:block lg:col-span-4 lg:sticky lg:top-24 h-[calc(100vh-140px)]">
-              <MapPlaceholder />
-            </div>
-
+          {/* Main layout (expanded full width) */}
+          <div className="space-y-6 pt-2 animate-in fade-in duration-200">
+            {paginatedVenues.length > 0 ? (
+              <>
+                <SearchResults venues={paginatedVenues} />
+                {totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                )}
+              </>
+            ) : (
+              <EmptyState onReset={handleResetFilters} />
+            )}
           </div>
 
         </div>
