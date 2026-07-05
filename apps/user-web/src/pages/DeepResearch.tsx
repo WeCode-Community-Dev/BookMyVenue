@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { createClient, deepResearchEndpoints } from '@venue404/api-client'
-import type { QueryUnderstanding } from '@venue404/api-client'
+import type { DeepResearchSearchResponse } from '@venue404/api-client'
 import {
   ArrowRight,
   AlertTriangle,
@@ -12,8 +13,11 @@ import {
   CalendarDays,
   Tag,
   ShieldCheck,
+  SearchX,
+  Globe2,
 } from 'lucide-react'
 import { AppNavbar } from '../components/shared/AppNavbar'
+import { VenueCard } from '../components/home/VenueCard'
 import { StageProgress, type ResearchStage } from '../components/deepResearch/StageProgress'
 
 const EXAMPLE_PROMPTS = [
@@ -22,15 +26,16 @@ const EXAMPLE_PROMPTS = [
   'Corporate offsite conference room for 40 people in Hyderabad',
 ]
 
-// Stages 2 & 3 are a visual choreography, not real backend work yet — only
-// query understanding is implemented. This anticipates the pipeline in
-// docs/deep-research-architecture.md (internal retrieval + ranking land in
-// later phases) so the reveal feels earned rather than instant.
+// Stages 2 & 3 are a visual choreography synced to the single /search call —
+// internal retrieval genuinely happens server-side within that call, but the
+// stepper breaks it into perceived steps (matching, ranking) so the reveal
+// feels earned rather than instant.
 const MATCHING_DELAY_MS = 700
 const RANKING_DELAY_MS = 1300
 
 export default function DeepResearch() {
   const client = createClient()
+  const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [stage, setStage] = useState<ResearchStage>('understanding')
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -41,8 +46,8 @@ export default function DeepResearch() {
     }
   }, [])
 
-  const understandMutation = useMutation({
-    mutationFn: (q: string) => deepResearchEndpoints(client).understandQuery(q),
+  const searchMutation = useMutation({
+    mutationFn: (q: string) => deepResearchEndpoints(client).search(q),
     onSuccess: () => {
       timers.current.push(setTimeout(() => setStage('ranking'), MATCHING_DELAY_MS))
       timers.current.push(setTimeout(() => setStage('done'), RANKING_DELAY_MS))
@@ -50,11 +55,11 @@ export default function DeepResearch() {
   })
 
   function runSearch() {
-    if (!query.trim() || understandMutation.isPending) return
+    if (!query.trim() || searchMutation.isPending) return
     timers.current.forEach(clearTimeout)
     timers.current = []
     setStage('understanding')
-    understandMutation.mutate(query.trim())
+    searchMutation.mutate(query.trim())
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -62,8 +67,11 @@ export default function DeepResearch() {
     runSearch()
   }
 
-  const breakdown: QueryUnderstanding | undefined = understandMutation.data
-  const isProcessing = understandMutation.isPending || (understandMutation.isSuccess && stage !== 'done')
+  const result: DeepResearchSearchResponse | undefined = searchMutation.data
+  const breakdown = result?.understanding
+  const internalVenues = result?.internal_results.items ?? []
+  const internalTotal = result?.internal_results.total ?? 0
+  const isProcessing = searchMutation.isPending || (searchMutation.isSuccess && stage !== 'done')
   const showResults = stage === 'done' && !!breakdown
 
   return (
@@ -141,7 +149,7 @@ export default function DeepResearch() {
             </div>
           )}
 
-          {understandMutation.isError && (
+          {searchMutation.isError && (
             <div className="page-enter mt-8 flex items-start gap-3 rounded-2xl border border-red-400/20 bg-red-500/10 p-5 text-left">
               <AlertTriangle className="h-5 w-5 shrink-0 text-red-400" />
               <div>
@@ -155,65 +163,124 @@ export default function DeepResearch() {
         </div>
       </section>
 
-      {showResults && (
-        <section className="mx-auto max-w-2xl px-6 py-12">
-          <div className="card-enter rounded-2xl border border-zinc-100 bg-white p-7 shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-zinc-100">
-            <div className="mb-6 flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand/10 text-brand">
-                <ShieldCheck className="h-4 w-4" />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-zinc-900">Here's what we understood</p>
-                <p className="text-xs text-zinc-400">Review before we search the catalog</p>
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field icon={Sparkles} label="Intent" value={breakdown.intent} />
-              <Field icon={MapPin} label="City" value={breakdown.city} />
-              <Field icon={Tag} label="Venue type" value={breakdown.venue_type} />
-              <Field
-                icon={Users}
-                label="Capacity"
-                value={breakdown.capacity != null ? `${breakdown.capacity} guests` : null}
-              />
-              <Field icon={Wallet} label="Budget" value={breakdown.budget_hint} />
-              <Field icon={CalendarDays} label="Date" value={breakdown.date_hint} />
-            </div>
-
-            {breakdown.required_amenities.length > 0 && (
-              <div className="mt-5 border-t border-zinc-100 pt-5">
-                <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
-                  Required amenities
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {breakdown.required_amenities.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-brand/15 bg-brand/5 px-3 py-1 text-xs font-medium capitalize text-brand"
-                    >
-                      {tag.replace(/_/g, ' ')}
-                    </span>
-                  ))}
+      {showResults && breakdown && (
+        <section className="mx-auto max-w-5xl px-6 py-12">
+          <div className="mx-auto max-w-2xl">
+            <div className="card-enter rounded-2xl border border-zinc-100 bg-white p-7 shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-zinc-100">
+              <div className="mb-6 flex items-center gap-2.5">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand/10 text-brand">
+                  <ShieldCheck className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-zinc-900">Here's what we understood</p>
+                  <p className="text-xs text-zinc-400">Matched against our verified catalog below</p>
                 </div>
               </div>
-            )}
 
-            {breakdown.special_requirements.length > 0 && (
-              <div className="mt-5 border-t border-zinc-100 pt-5">
-                <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
-                  Other requirements
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field icon={Sparkles} label="Intent" value={breakdown.intent} />
+                <Field icon={MapPin} label="City" value={breakdown.city} />
+                <Field icon={Tag} label="Venue type" value={breakdown.venue_type} />
+                <Field
+                  icon={Users}
+                  label="Capacity"
+                  value={breakdown.capacity != null ? `${breakdown.capacity} guests` : null}
+                />
+                <Field icon={Wallet} label="Budget" value={breakdown.budget_hint} />
+                <Field icon={CalendarDays} label="Date" value={breakdown.date_hint} />
+              </div>
+
+              {breakdown.required_amenities.length > 0 && (
+                <div className="mt-5 border-t border-zinc-100 pt-5">
+                  <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+                    Required amenities
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {breakdown.required_amenities.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full border border-brand/15 bg-brand/5 px-3 py-1 text-xs font-medium capitalize text-brand"
+                      >
+                        {tag.replace(/_/g, ' ')}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {breakdown.special_requirements.length > 0 && (
+                <div className="mt-5 border-t border-zinc-100 pt-5">
+                  <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+                    Other requirements
+                  </p>
+                  <ul className="space-y-1.5">
+                    {breakdown.special_requirements.map((req) => (
+                      <li key={req} className="flex items-start gap-2 text-sm text-zinc-700">
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-zinc-400" />
+                        {req}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Internal catalog results ─────────────────────────────── */}
+          <div className="mt-10">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-zinc-900">
+                {internalVenues.length > 0
+                  ? `${internalTotal} venue${internalTotal === 1 ? '' : 's'} in our catalog`
+                  : 'Nothing matched in our catalog'}
+              </h2>
+            </div>
+
+            {internalVenues.length > 0 ? (
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {internalVenues.map((venue) => (
+                  <div key={venue.id} className="card-enter">
+                    <VenueCard venue={venue} onClick={() => navigate(`/venues/${venue.id}`)} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 py-16 text-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-300">
+                  <SearchX className="h-5 w-5" />
+                </span>
+                <p className="text-sm font-semibold text-zinc-900">No venues matched yet</p>
+                <p className="max-w-xs text-sm text-zinc-400">
+                  Try widening your search, or let us look beyond our marketplace.
                 </p>
-                <ul className="space-y-1.5">
-                  {breakdown.special_requirements.map((req) => (
-                    <li key={req} className="flex items-start gap-2 text-sm text-zinc-700">
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-zinc-400" />
-                      {req}
-                    </li>
-                  ))}
-                </ul>
               </div>
             )}
+
+            {/* Phase 2 (external discovery) is a teammate's in-progress
+                endpoint — POST /api/deep-research/external {query_id}. Wired
+                as a disabled placeholder here so the UI is ready the moment
+                it ships. */}
+            <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 text-center">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-400 ring-1 ring-zinc-100">
+                <Globe2 className="h-4 w-4" />
+              </span>
+              <p className="text-sm font-semibold text-zinc-900">Still not finding the right fit?</p>
+              <p className="max-w-sm text-xs leading-relaxed text-zinc-400">
+                We can search beyond our marketplace and get back to you with venues that aren't
+                listed anywhere else yet.
+              </p>
+              <button
+                type="button"
+                disabled
+                title="Coming soon"
+                className="mt-2 inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-400 opacity-70"
+              >
+                Search externally
+                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-400">
+                  Soon
+                </span>
+              </button>
+            </div>
           </div>
         </section>
       )}

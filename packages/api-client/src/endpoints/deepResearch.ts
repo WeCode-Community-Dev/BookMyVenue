@@ -1,4 +1,5 @@
 import { createClient } from '../client'
+import type { SearchPage } from '../model'
 
 export type QueryUnderstanding = {
   intent: string
@@ -11,7 +12,17 @@ export type QueryUnderstanding = {
   special_requirements: string[]
 }
 
+export type DeepResearchSearchResponse = {
+  query_id: string
+  understanding: QueryUnderstanding
+  internal_results: SearchPage
+}
+
 export const deepResearchEndpoints = (client: ReturnType<typeof createClient>) => ({
-  understandQuery: (query: string) =>
-    client.post<QueryUnderstanding>('/api/deep-research/understand', { query }),
+  search: (query: string, page = 1, page_size = 20) =>
+    client.post<DeepResearchSearchResponse>('/api/deep-research/search', {
+      query,
+      page,
+      page_size,
+    }),
 })

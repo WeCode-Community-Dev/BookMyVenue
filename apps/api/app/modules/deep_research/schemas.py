@@ -1,10 +1,10 @@
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel
 
-
-class QueryUnderstandingRequest(BaseModel):
-    query: str
+from app.modules.search.schemas import SearchResult
+from app.shared.pagination import Page
 
 
 class QueryUnderstanding(BaseModel):
@@ -16,3 +16,15 @@ class QueryUnderstanding(BaseModel):
     date_hint: Optional[str] = None
     required_amenities: list[str] = []
     special_requirements: list[str] = []
+
+
+class DeepResearchSearchRequest(BaseModel):
+    query: str
+    page: int = 1
+    page_size: int = 20
+
+
+class DeepResearchSearchResponse(BaseModel):
+    query_id: UUID
+    understanding: QueryUnderstanding
+    internal_results: Page[SearchResult]
