@@ -18,17 +18,17 @@ import { SectionHeader } from '@venue404/ui'
 const api = adminGrowthEndpoints(createClient())
 
 const SERIES = [
-  { key: 'users',    label: 'Users',    color: '#6366f1' },
-  { key: 'owners',   label: 'Owners',   color: '#f59e0b' },
-  { key: 'venues',   label: 'Venues',   color: '#10b981' },
+  { key: 'users', label: 'Users', color: '#6366f1' },
+  { key: 'owners', label: 'Owners', color: '#f59e0b' },
+  { key: 'venues', label: 'Venues', color: '#10b981' },
   { key: 'bookings', label: 'Bookings', color: '#ef4444' },
 ] as const
 
 const PERIODS: { label: string; value: GrowthPeriod }[] = [
-  { label: '7D',  value: '7d'  },
+  { label: '7D', value: '7d' },
   { label: '30D', value: '30d' },
-  { label: '3M',  value: '3m'  },
-  { label: '6M',  value: '6m'  },
+  { label: '3M', value: '3m' },
+  { label: '6M', value: '6m' },
   { label: '12M', value: '12m' },
 ]
 
@@ -52,9 +52,9 @@ function TotalPill({ label, value, color }: { label: string; value: number; colo
 function ChartBody({ data }: { data: GrowthStats }) {
   const chartData = data.labels.map((label, i) => ({
     label,
-    users:    data.users[i],
-    owners:   data.owners[i],
-    venues:   data.venues[i],
+    users: data.users[i],
+    owners: data.owners[i],
+    venues: data.venues[i],
     bookings: data.bookings[i],
   }))
 
@@ -129,7 +129,7 @@ function ChartBody({ data }: { data: GrowthStats }) {
 }
 
 export function GrowthChart() {
-  const [period, setPeriod] = useState<GrowthPeriod>('6m')
+  const [period, setPeriod] = useState<GrowthPeriod>('30d')
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'growth-stats', period],
