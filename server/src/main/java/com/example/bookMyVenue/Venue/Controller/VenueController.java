@@ -1,5 +1,6 @@
 package com.example.bookMyVenue.Venue.Controller;
 
+import com.example.bookMyVenue.Venue.DTO.VenueResponse;
 import com.example.bookMyVenue.Venue.Model.Venue;
 import com.example.bookMyVenue.Venue.Repository.VenueRepo;
 import com.example.bookMyVenue.Venue.Service.VenueService;
@@ -29,9 +30,9 @@ public class VenueController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Venue> getVenueById(@RequestParam Long id) {
+    public ResponseEntity<VenueResponse> getVenueById(@RequestParam Long id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(venueService.getVenueById(id));
+                .body(venueService.getVenueResponseById(id));
     }
 }

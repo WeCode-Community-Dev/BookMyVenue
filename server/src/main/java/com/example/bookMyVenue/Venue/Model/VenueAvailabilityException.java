@@ -1,14 +1,15 @@
 package com.example.bookMyVenue.Venue.Model;
 
-import com.example.bookMyVenue.Enums.Exceptionstatus;
+import com.example.bookMyVenue.Enums.VenueActiveStatus;
 import com.example.bookMyVenue.Enums.VenueExceptionType;
+import com.example.bookMyVenue.Enums.VenueExceptionstatus;
+import com.example.bookMyVenue.Venue.Enums.VenueExceptionActiveStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -17,23 +18,41 @@ import java.time.LocalTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class VenueAvailabilityException {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "venue_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "venue_id", nullable = false)
     private Venue venue;
 
-    private LocalDate exception_date;
-    private LocalTime start_time;
-    private LocalTime end_time;
+    @NotNull
+    private LocalDate exceptionDate;
+
+    private LocalTime startTime;
+    private LocalTime endTime;
+
     @Enumerated(EnumType.STRING)
-    private VenueExceptionType venueExceptionType;
+    private VenueExceptionType exceptionType;
 
     private String reason;
 
     @Enumerated(EnumType.STRING)
-    private Exceptionstatus exceptionstatus;
+    private VenueExceptionActiveStatus status;
+    ;
+
+
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        if (this.status == null) {
+            this.status = VenueExceptionActiveStatus.ACTIVE;
+        }
+    }
 }
+

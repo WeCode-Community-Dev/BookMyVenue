@@ -1,5 +1,5 @@
 package com.example.bookMyVenue.Enums;
 
-public enum Exceptionstatus {
+public enum VenueExceptionstatus {
     UPDATED,CONFLICT
 }

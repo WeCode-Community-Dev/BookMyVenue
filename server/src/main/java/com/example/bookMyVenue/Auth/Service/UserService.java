@@ -2,6 +2,7 @@ package com.example.bookMyVenue.Auth.Service;
 
 import java.time.LocalDateTime;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,15 +31,15 @@ public class UserService implements UserDetailsService {
     PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepo.findByUserName(email);
+    public UserDetails loadUserByUsername(@NonNull String email)  {
+        return userRepo.findByEmail(email).orElseThrow(()->new UsernameNotFoundException("UserNot found"));
     }
 
     public User registerAppUser(UserDto userDto,Role role) {
         User newUser = UserMapping(userDto);
         checkUserExist(newUser.getUsername());
         if (isAdminEnabledEmailVerification) {
-            if(EmailUtil.verifyEmail(newUser.getUsername())){
+            if(EmailUtil.verifyEmail(newUser.getEmail())){
                 newUser.setEmailVerified(true);
             }
         }
@@ -51,7 +52,7 @@ public class UserService implements UserDetailsService {
 
 
     private void checkUserExist(String email) {
-        if (userRepo.existsByUserName(email)) {
+        if (userRepo.existsByEmail(email)) {
             throw new RuntimeException(email + " Already Exists");
         }
     }
@@ -61,7 +62,7 @@ public class UserService implements UserDetailsService {
                 .fullName(userDto.getFullName())
                 .password(passwordEncoder.encode(userDto.getPassword()))
                 .phone(userDto.getPhone())
-                .userName(userDto.getEmail())
+                .email(userDto.getEmail())
                 .createdAt(LocalDateTime.now())
                 .emailVerified(false)
                 .build();

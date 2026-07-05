@@ -1,16 +1,13 @@
 package com.example.bookMyVenue.Booking.Model;
 
-import com.example.bookMyVenue.Enums.BookingPaymentStatus;
-import com.example.bookMyVenue.Enums.BookingStatus;
-import com.example.bookMyVenue.Payment.Model.PaymentDetail;
 import com.example.bookMyVenue.Auth.Model.User;
+import com.example.bookMyVenue.Booking.Enums.BookingStatus;
+import com.example.bookMyVenue.Venue.Enums.DurationType;
 import com.example.bookMyVenue.Venue.Model.Venue;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -21,33 +18,42 @@ import java.time.LocalTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class VenueBooking {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "venue_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "venue_id", nullable = false)
     private Venue venue;
 
-    @ManyToOne
-    @JoinColumn(name="user_id")
-    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private User customer;
+
     private LocalDate bookingDate;
-    private LocalTime bookingStart;
-    private LocalTime bookingEnd;
+    private LocalTime startTime;
+    private LocalTime endTime;
 
     @Enumerated(EnumType.STRING)
-    private BookingStatus bookingStatus;
+    private DurationType durationType; // snapshot from the rule at booking time
 
     @Enumerated(EnumType.STRING)
-    private BookingPaymentStatus bookingPaymentStatus;
+    private BookingStatus status; // PENDING, CONFIRMED, CANCELLED, COMPLETED
 
-    @OneToOne
-    @JoinColumn(name="payment_detail_id")
-    private PaymentDetail paymentDetail;
-
-    private Double amount;
+    private BigDecimal appliedRate;
+    private String eventPurpose;
     private LocalDateTime createdAt;
+
+    private String paymentStatus;
+    private String stripePaymentIntentId;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        if (this.status == null) this.status = BookingStatus.CONFIRMED;
+        if (this.paymentStatus == null) this.paymentStatus = "NOT_INTEGRATED";
+    }
 }

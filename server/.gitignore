@@ -35,3 +35,4 @@ build/
 target/
 .env
 upload/
+src/main/java/com/example/bookMyVenue/Note.md

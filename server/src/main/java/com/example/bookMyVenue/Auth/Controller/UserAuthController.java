@@ -1,6 +1,7 @@
 package com.example.bookMyVenue.Auth.Controller;
 
 
+import com.example.bookMyVenue.Auth.Model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,12 +31,17 @@ public class UserAuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String,String>> login(@RequestBody AuthRequest request){
         try{
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUserName(),request.getPassword()));
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword()));
+            User userDetails =  (User) userService.loadUserByUsername(request.getEmail());
+            if(userDetails.getRole()!=Role.USER){
+                throw new Exception("Authenticated user is not a venue owner");
+            }
         }
         catch(Exception e){
+            System.out.println(e.getMessage());
             throw new RuntimeException(USER_AUTH_FAILED,e);
         }
-        String  s = jwtUtil.generateToken(request.getUserName());
+        String  s = jwtUtil.generateToken(request.getEmail());
         return ResponseEntity
                     .ok(Map
                         .of("token", s));

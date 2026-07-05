@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -30,13 +31,14 @@ public class SecurityConfig {
     @Bean
     @ConditionalOnProperty( name = "app.security.enabled",  havingValue = "true",  matchIfMissing = true)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
-        http.csrf(AbstractHttpConfigurer::disable).
+        http.cors(Customizer.withDefaults())
+        .csrf(AbstractHttpConfigurer::disable).
                 authorizeHttpRequests(
                         auth-> auth
-                                .requestMatchers("/owner/login","/owner/register","/user/register","/user/login").permitAll()
+                                .requestMatchers("/api/venue/**","/admin/login","/owner/login","/owner/register","/user/register","/user/login","/swagger-ui/**","/v3/api-docs/**","/swagger-ui.html").permitAll()
                                 .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
-                                .requestMatchers("/api/owner/**").hasRole(Role.VENUE_OWNER.name())
-                                .anyRequest().authenticated())
+                                .requestMatchers("/api/owner/**").hasRole( Role.VENUE_OWNER.name())
+                                .requestMatchers("/api/venue/**").hasRole( Role.USER.name())                                .anyRequest().authenticated())
                                 .addFilterBefore(jwtAuthenticationFilter,
                      UsernamePasswordAuthenticationFilter.class);;
         return http.build();

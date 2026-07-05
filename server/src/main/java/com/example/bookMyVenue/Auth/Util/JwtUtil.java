@@ -1,6 +1,7 @@
 package com.example.bookMyVenue.Auth.Util;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -16,11 +17,14 @@ public class JwtUtil {
     private final String key = "qwertyutgbyhnikedfvbnmloiasdfghjklzxcvbnmlkjhgfdsaqwertyuisdfghjklzaqwsx";
     SecretKey secretKey = Keys.hmacShaKeyFor(key.getBytes());
 
+    @Value("${auth.expire:10}")
+    private int expireMinute;
+
     public String generateToken(String userName) {
         return Jwts.builder().
                 subject(userName)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * expireMinute))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }

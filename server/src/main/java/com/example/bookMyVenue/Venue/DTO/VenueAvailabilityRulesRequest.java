@@ -1,11 +1,14 @@
 package com.example.bookMyVenue.Venue.DTO;
 
+import com.example.bookMyVenue.Venue.Enums.DurationType;
 import com.example.bookMyVenue.Venue.Model.Venue;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
@@ -16,13 +19,24 @@ import java.time.LocalTime;
 @AllArgsConstructor
 public class VenueAvailabilityRulesRequest {
 
-    private Long venueId;
-    private DayOfWeek weekStartDay = DayOfWeek.SUNDAY;
-    private DayOfWeek weekEndDay = DayOfWeek.SATURDAY;
-    private Integer minDuration = 1;
-    private LocalTime venueOpeningTime =LocalTime.of(10,0,0);
-    private LocalTime VenueClosingTime =LocalTime.of(22,0,0);//later we can modify it through admin if needed
-    private Integer bookBefore = 5;
-    private boolean isCurrentlyActive;
+    @NotNull
+    private DurationType durationType;
 
+    private Integer durationHour;
+
+    @NotNull
+    private DayOfWeek weekStartDay;
+    @NotNull
+    private DayOfWeek weekEndDay;
+
+    @NotNull
+    private LocalTime operatingStartTime;
+    @NotNull
+    private LocalTime operatingEndTime;
+
+    private BigDecimal weekdayDayRate;
+    private BigDecimal weekdayNightRate;
+    private BigDecimal weekendDayRate;
+    private BigDecimal weekendNightRate;
 }
+

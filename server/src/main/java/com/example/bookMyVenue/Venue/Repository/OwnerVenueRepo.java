@@ -14,5 +14,5 @@ public interface OwnerVenueRepo extends JpaRepository<Venue,Long> {
     public List<Venue> findAllByOwner(User owner);
 
 
-
+    public boolean existsByName(String name);
 }

@@ -1,12 +1,12 @@
 package com.example.bookMyVenue.Auth.Dto;
 
 public class AuthRequest {
-    public String getUserName() {
-        return userName;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -17,7 +17,7 @@ public class AuthRequest {
         this.password = password;
     }
 
-    private String userName;
+    private String email;
     private String password;
 
 }
