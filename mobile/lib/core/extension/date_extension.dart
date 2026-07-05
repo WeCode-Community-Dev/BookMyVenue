@@ -63,3 +63,33 @@ extension DateTimeX on DateTime {
     return '${(difference.inDays / 365).floor()} year ago${(difference.inDays / 365).floor() > 1 ? 's' : ''}';
   }
 }
+
+extension StringTimeExtension on String {
+  String get to12HourTime {
+    if (isEmpty) return '';
+    if (toLowerCase().contains('am') || toLowerCase().contains('pm')) {
+      return replaceAll(':', '.');
+    }
+    try {
+      if (contains('T')) {
+        final DateTime? dt = DateTime.tryParse(this);
+        if (dt != null) {
+          return DateFormat('hh.mm a').format(dt);
+        }
+      }
+      final List<String> parts = split(':');
+      if (parts.length >= 2) {
+        final int? hour = int.tryParse(parts[0]);
+        final int? minute = int.tryParse(parts[1]);
+        if (hour != null && minute != null) {
+          final String period = hour >= 12 ? 'PM' : 'AM';
+          final int hour12 = hour % 12 == 0 ? 12 : hour % 12;
+          final String hourStr = hour12.toString().padLeft(2, '0');
+          final String minuteStr = minute.toString().padLeft(2, '0');
+          return '$hourStr.$minuteStr $period';
+        }
+      }
+    } catch (_) {}
+    return this;
+  }
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/extension/date_extension.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
@@ -309,7 +310,7 @@ class _OwnerVenueDetailsScreenState extends State<OwnerVenueDetailsScreen> {
                           ),
                           const SizedBox(height: 4),
                           AppText(
-                            '${slot.startTime} - ${slot.endTime}',
+                            '${slot.startTime.to12HourTime} - ${slot.endTime.to12HourTime}',
                             color: AppColors.onSurfaceVariant,
                             variant: TextVariant.captionRegular,
                           ),

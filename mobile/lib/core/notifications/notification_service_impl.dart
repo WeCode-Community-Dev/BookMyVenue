@@ -13,7 +13,7 @@ class NotificationServiceImpl implements NotificationService {
   Future<void> initialize() async {
     log('Notification initialize called');
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/launcher_icon');
     const DarwinInitializationSettings iosSettings =
         DarwinInitializationSettings();
 
@@ -69,7 +69,7 @@ class NotificationServiceImpl implements NotificationService {
       iOS: iosDetails,
     );
 
-    log('${notification.body} paylod');
+    log('${notification.body} payload');
 
     await _plugin.show(
       id: notification.id,

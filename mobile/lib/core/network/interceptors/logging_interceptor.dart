@@ -47,6 +47,9 @@ ${_prettyBody(options.data)}
 🧾 METHOD     : ${response.requestOptions.method}
 ✅ STATUS     : ${response.statusCode}
 
+🔍 QUERY PARAMS
+${_prettyMap(response.requestOptions.queryParameters)}
+
 📦 RESPONSE DATA
 ${_prettyBody(response.data)}
 ''';

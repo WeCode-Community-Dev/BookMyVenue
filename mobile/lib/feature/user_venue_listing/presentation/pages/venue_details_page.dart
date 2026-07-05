@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/extension/date_extension.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_cached_image.dart';
 import '../../../../core/widgets/app_text.dart';
 import '../../domain/entity/user_venue_entity.dart';
@@ -34,17 +36,17 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
     _timeSlots = _venue.slots
         .map(
           (UserVenueSlotEntity slot) =>
-              '${slot.slotName} (${slot.startTime} - ${slot.endTime})',
+              '${slot.slotName} (${slot.startTime.to12HourTime} - ${slot.endTime.to12HourTime})',
         )
         .toList();
 
     if (_timeSlots.isEmpty) {
       _timeSlots = <String>[
-        '8:00 AM - 12:00 PM',
-        '1:00 PM - 5:00 PM',
-        '9:00 AM - 5:00 PM',
-        '6:00 PM - 10:00 PM',
-        '9:00 AM - 9:00 PM',
+        '08.00 AM - 12.00 PM',
+        '01.00 PM - 05.00 PM',
+        '09.00 AM - 05.00 PM',
+        '06.00 PM - 10.00 PM',
+        '09.00 AM - 09.00 PM',
       ];
     }
     _selectedTimeSlot = _timeSlots.first;
@@ -178,8 +180,8 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
             ),
             _buildHighlightItem(
               Icons.payments_outlined,
-              'Hourly Rate',
-              '\u{20B9} ${hourlyRate.toStringAsFixed(0)}/hr',
+              'Venue Rate',
+              '\u{20B9} ${hourlyRate.toStringAsFixed(0)}',
             ),
           ],
         ),
@@ -320,56 +322,70 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
           // Time Slot Selection
           const AppText('TIME SLOT'),
           const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            value: _selectedTimeSlot,
-            decoration: const InputDecoration(
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
-            ),
-            items: _timeSlots.map((String slot) {
-              return DropdownMenuItem<String>(
-                value: slot,
-                child: AppText(slot),
-              );
-            }).toList(),
+          RadioGroup<String>(
+            groupValue: _selectedTimeSlot,
             onChanged: (String? val) {
               setState(() {
                 _selectedTimeSlot = val ?? _timeSlots.first;
               });
             },
+            child: Column(
+              children: _timeSlots.map((String slot) {
+                return RadioListTile<String>(
+                  title: AppText(slot),
+                  value: slot,
+                  contentPadding: EdgeInsets.zero,
+                  activeColor: AppColors.primary,
+                  dense: true,
+                );
+              }).toList(),
+            ),
           ),
           const SizedBox(height: 32),
 
           // Submit Request Button
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: AppShapes.defaultBorder,
+          AppButton(
+            label: 'Review Bookings & Policy',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<UserBookingDetailsPolicyScreen>(
+                  builder: (BuildContext context) =>
+                      UserBookingDetailsPolicyScreen(
+                        venue: _venue,
+                        selectedHours: _selectedHours,
+                        selectedTimeSlot: _selectedTimeSlot,
+                      ),
                 ),
-                elevation: 0,
-              ),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<UserBookingDetailsPolicyScreen>(
-                    builder: (BuildContext context) =>
-                        UserBookingDetailsPolicyScreen(
-                          venue: _venue,
-                          selectedHours: _selectedHours,
-                          selectedTimeSlot: _selectedTimeSlot,
-                        ),
-                  ),
-                );
-              },
-              child: const AppText('Review Bookings & Policy'),
-            ),
+              );
+            },
           ),
+          // SizedBox(
+          //   width: double.infinity,
+          //   height: 52,
+          //   child: ElevatedButton(
+          //     style: ElevatedButton.styleFrom(
+          //       backgroundColor: AppColors.primary,
+          //       foregroundColor: Colors.white,
+          //       shape: RoundedRectangleBorder(
+          //         borderRadius: AppShapes.defaultBorder,
+          //       ),
+          //       elevation: 0,
+          //     ),
+          //     onPressed: () {
+          //       Navigator.of(context).push(
+          //         MaterialPageRoute<UserBookingDetailsPolicyScreen>(
+          //           builder: (BuildContext context) =>
+          //               UserBookingDetailsPolicyScreen(
+          //                 venue: _venue,
+          //                 selectedHours: _selectedHours,
+          //                 selectedTimeSlot: _selectedTimeSlot,
+          //               ),
+          //         ),
+          //       );
+          //     },
+          //     child: const AppText('Review Bookings & Policy'),
+          //   ),
+          // ),
           const SizedBox(height: 12),
           const Center(
             child: AppText('No immediate charges. Review policy first.'),

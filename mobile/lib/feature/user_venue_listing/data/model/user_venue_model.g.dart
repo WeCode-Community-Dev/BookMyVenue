@@ -148,7 +148,6 @@ _UserVenueSlotModel _$UserVenueSlotModelFromJson(Map<String, dynamic> json) =>
       slotName: json['slot_name'] as String,
       startTime: json['start_time'] as String,
       endTime: json['end_time'] as String,
-      capacity: (json['capacity'] as num).toInt(),
       price: (json['price'] as num).toDouble(),
     );
 
@@ -158,7 +157,6 @@ Map<String, dynamic> _$UserVenueSlotModelToJson(_UserVenueSlotModel instance) =>
       'slot_name': instance.slotName,
       'start_time': instance.startTime,
       'end_time': instance.endTime,
-      'capacity': instance.capacity,
       'price': instance.price,
     };
 

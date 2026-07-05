@@ -51,9 +51,8 @@ class UserVenueBloc extends Bloc<UserVenueEvent, UserVenueState> {
       (UserVenueResult venues) {
         final List<UserVenueEntity> allVenues =
             event.isRefresh
-                  ? venues.venues
-                  : List<UserVenueEntity>.from(state.venues)
-              ..addAll(venues.venues);
+                ? venues.venues
+                : <UserVenueEntity>[...state.venues, ...venues.venues];
 
         emit(
           state.copyWith(

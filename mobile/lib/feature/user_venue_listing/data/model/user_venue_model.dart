@@ -89,7 +89,6 @@ sealed class UserVenueSlotModel with _$UserVenueSlotModel {
     @JsonKey(name: 'slot_name') required String slotName,
     @JsonKey(name: 'start_time') required String startTime,
     @JsonKey(name: 'end_time') required String endTime,
-    required int capacity,
     required double price,
   }) = _UserVenueSlotModel;
 

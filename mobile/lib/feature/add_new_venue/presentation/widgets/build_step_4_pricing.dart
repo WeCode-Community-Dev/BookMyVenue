@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/extension/date_extension.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
 import '../../../../core/widgets/app_text.dart';
-import '../../domain/enum/venue_category_enum.dart';
 import '../../domain/entity/venue_response_entity.dart';
+import '../../domain/enum/venue_category_enum.dart';
 import '../../domain/params/add_venue_params.dart';
 import '../bloc/cubit/venue_details_cubit.dart';
 import '../bloc/venue_bloc.dart';
@@ -465,7 +466,9 @@ class PricingSlotCard extends StatelessWidget {
               children: <Widget>[
                 AppText(slot.name),
                 if (slot.startTime.isNotEmpty && slot.endTime.isNotEmpty)
-                  AppText('${slot.startTime} - ${slot.endTime}'),
+                  AppText(
+                    '${slot.startTime.to12HourTime} - ${slot.endTime.to12HourTime}',
+                  ),
               ],
             ),
           ),

@@ -81,7 +81,6 @@ extension UserVenueSlotMapper on UserVenueSlotModel {
       slotName: slotName,
       startTime: startTime,
       endTime: endTime,
-      capacity: capacity,
       price: price,
     );
   }

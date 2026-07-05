@@ -96,7 +96,7 @@ class BuildVenueItem extends StatelessWidget {
                       Row(
                         children: <Widget>[
                           AppText(
-                            venue.category.toUpperCase(),
+                            venue.category.replaceAll('_', ' ').toUpperCase(),
                             variant: TextVariant.labelMedium,
                             color: AppColors.primaryDark,
                           ),
@@ -154,7 +154,7 @@ class BuildVenueItem extends StatelessWidget {
                         ],
                       ),
                       AppText(
-                        '\u{20B9} $priceStr/hr',
+                        '\u{20B9} $priceStr',
                         variant: TextVariant.headingLarge,
                         color: AppColors.primaryDark,
                       ),

@@ -171,7 +171,6 @@ class UserVenueSlotEntity extends Equatable {
     required this.slotName,
     required this.startTime,
     required this.endTime,
-    required this.capacity,
     required this.price,
   });
 
@@ -179,18 +178,10 @@ class UserVenueSlotEntity extends Equatable {
   final String slotName;
   final String startTime;
   final String endTime;
-  final int capacity;
   final double price;
 
   @override
-  List<Object?> get props => <Object?>[
-    id,
-    slotName,
-    startTime,
-    endTime,
-    capacity,
-    price,
-  ];
+  List<Object?> get props => <Object?>[id, slotName, startTime, endTime, price];
 }
 
 class UserVenueServiceEntity extends Equatable {
