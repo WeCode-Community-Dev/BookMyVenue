@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Search, CheckCircle2, XCircle, Eye, Building2 } from "lucide-react";
-import { VENUE_STATUS_STYLE, VENUE_STATUS_LABEL } from "../data";
 import { VerificationStatus } from "@bookmyvenue/database/enums";
 import {
     fetchAllVenues,
@@ -24,8 +23,11 @@ import {
 } from "../ui/pagination";
 import Image from "next/image";
 import { VenueDetailModal } from "../VenueDetailModal";
+import { VENUE_STATUS_LABEL, VENUE_STATUS_STYLE } from "../../lib/utils";
 
 const PAGE_SIZE = 10;
+
+
 
 export function VenuesPage() {
     const [venues, setVenues] = useState<Venue[]>([]);

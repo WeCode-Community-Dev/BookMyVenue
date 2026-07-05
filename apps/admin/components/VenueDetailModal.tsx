@@ -9,8 +9,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "./ui/dialog";
-import { VENUE_STATUS_STYLE, VENUE_STATUS_LABEL } from "./data";
 import type { Venue } from "../app/actions/venue";
+import { VENUE_STATUS_LABEL, VENUE_STATUS_STYLE } from "../lib/utils";
 
 interface Props {
     venue: Venue | null;

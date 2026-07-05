@@ -5,15 +5,9 @@ import { Sidebar } from "../components/Sidebar";
 import { TopBar } from "../components/TopBar";
 import { OverviewPage } from "../components/tabs/Overview";
 
-import { Venue, User, USERS, BOOKINGS } from "../components/data";
 
 export default function App() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-
-    const [venues, setVenues] = useState<Venue[]>([]);
-    const [users, setUsers] = useState<User[]>(USERS);
-
-    const totalRevenue = BOOKINGS.filter((b) => b.status === "CONFIRMED").reduce((s, b) => s + b.amount, 0);
 
     return (
         <div className="h-screen flex overflow-hidden bg-background">
@@ -36,7 +30,7 @@ export default function App() {
                 <TopBar setSidebarOpen={setSidebarOpen} />
 
                 <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-6">
-                    <OverviewPage venues={venues} users={users} totalRevenue={totalRevenue} />
+                    <OverviewPage />
                 </main>
             </div>
         </div>

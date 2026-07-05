@@ -2,14 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MapPin, LogOut } from "lucide-react";
+import { MapPin, LogOut, Home, Building2, Users, CalendarCheck } from "lucide-react";
 import { useClerk } from "@clerk/nextjs";
-import { NAV } from "./data";
 
 interface SidebarProps {
   setSidebarOpen: (open: boolean) => void;
   mobile?: boolean;
 }
+
+type Tab = "overview" | "venues" | "users" | "bookings";
+
+
+const NAV = [
+    { key: "overview" as Tab, label: "Overview", icon: Home, href: "/" },
+    { key: "venues" as Tab, label: "Venues", icon: Building2, href: "/venues" },
+    { key: "users" as Tab, label: "Users", icon: Users, href: "/users" },
+    { key: "bookings" as Tab, label: "Bookings", icon: CalendarCheck, href: "/bookings" },
+];
 
 export function Sidebar({ setSidebarOpen, mobile = false }: SidebarProps) {
   const pathname = usePathname();

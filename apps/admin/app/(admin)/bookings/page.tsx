@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Search, Download, CalendarCheck } from "lucide-react";
-import { BOOKING_STATUS_STYLE } from "../../../components/data";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "../../../components/ui/table";
 import { Booking, fetchBookings } from "../../actions/booking";
 import { BookingStatus } from "@bookmyvenue/database/enums";
@@ -15,7 +14,7 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "../../../components/ui/pagination";
-import { fmtAmount } from "../../../lib/utils";
+import { BOOKING_STATUS_STYLE, fmtAmount } from "../../../lib/utils";
 import { Skeleton } from "../../../components/ui/skeleton";
 
 const PAGE_SIZE = 10;
