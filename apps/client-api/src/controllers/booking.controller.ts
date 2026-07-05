@@ -2,10 +2,9 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { prisma } from "@bookmyvenue/database";
 import { VerificationStatus } from "@bookmyvenue/database/enums";
 import type { CreateBookingBody, GetOwnerBookingQuery, GetUserBookingQuery } from "@bookmyvenue/types";
-import { Prisma } from "@bookmyvenue/database";
 import { producer } from "../utils/kafka";
 import { fromSmallUnit } from "../services/venue.service";
-import { BadRequestError, ConflictError, NotFoundError } from "../utils/errors";
+import { BadRequestError, NotFoundError } from "../utils/errors";
 
 export const createBooking = async (
     request: FastifyRequest<{ Body: CreateBookingBody }>,
@@ -13,81 +12,89 @@ export const createBooking = async (
 ) => {
     const { venueId, sessionIds, eventDate, phone, purpose } = request.body;
 
-    const venue = await prisma.venue.findFirst({
-        where: {
-            id: venueId,
-            isActive: true,
-            verificationStatus: VerificationStatus.APPROVED,
-        },
-        select: {
-            id: true,
-            name: true,
-            owner: { select: { id: true, email: true, name: true } },
-            sessions: {
-                where: { id: { in: sessionIds }, isActive: true },
-                select: { id: true, price: true },
+    const bookingTx = await prisma.$transaction(async (tx) => {
+        const venue = await tx.venue.findFirst({
+            where: {
+                id: venueId,
+                isActive: true,
+                verificationStatus: VerificationStatus.APPROVED,
             },
-        },
-    });
-
-    if (!venue || venue.sessions.length !== sessionIds.length) {
-        throw new BadRequestError("Venue or session not found");
-    }
-
-    const user = await prisma.user.findUnique({
-        where: { id: request.userId! },
-        select: { id: true, email: true, name: true },
-    });
-
-    if (!user) throw new NotFoundError("User not found");
-
-    const booking = await prisma.booking.create({
-        data: {
-            userId: user.id,
-            venueId: venue.id,
-            phone,
-            purpose,
-            bookingSessions: {
-                create: venue.sessions.map((session) => ({
-                    sessionId: session.id,
-                    eventDate: new Date(eventDate),
-                    pricePaid: session.price,
-                })),
+            select: {
+                id: true,
+                name: true,
+                owner: { select: { id: true, email: true, name: true } },
+                sessions: {
+                    where: { id: { in: sessionIds }, isActive: true },
+                    select: { id: true, price: true },
+                },
             },
-        },
-        include: { bookingSessions: true },
+        });
+
+        if (!venue || venue.sessions.length !== sessionIds.length) {
+            throw new BadRequestError("Venue or session not found");
+        }
+
+        const user = await tx.user.findUnique({
+            where: { id: request.userId! },
+            select: { id: true, email: true, name: true },
+        });
+
+        if (!user) throw new NotFoundError("User not found");
+
+        const booking = await tx.booking.create({
+            data: {
+                userId: user.id,
+                venueId: venue.id,
+                phone,
+                purpose,
+                bookingSessions: {
+                    create: venue.sessions.map((session) => ({
+                        sessionId: session.id,
+                        eventDate: new Date(eventDate),
+                        pricePaid: session.price,
+                    })),
+                },
+            },
+            include: { bookingSessions: true },
+        });
+
+        return {
+            booking,
+            venue,
+            user,
+        };
     });
 
     await producer.send("booking-created", {
-        bookingId: booking.id,
+        bookingId: bookingTx.booking.id,
         eventDate,
         purpose,
         phone,
 
         venue: {
-            id: venue.id,
-            name: venue.name,
+            id: bookingTx.venue.id,
+            name: bookingTx.venue.name,
         },
 
         user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
+            id: bookingTx.user.id,
+            email: bookingTx.user.email,
+            name: bookingTx.user.name,
         },
 
         owner: {
-            id: venue.owner.id,
-            email: venue.owner.email,
-            name: venue.owner.name,
+            id: bookingTx.venue.owner.id,
+            email: bookingTx.venue.owner.email,
+            name: bookingTx.venue.owner.name,
         },
 
-        sessions: booking.bookingSessions.map((session) => ({
+        sessions: bookingTx.booking.bookingSessions.map((session) => ({
             sessionId: session.sessionId,
             pricePaid: Number(session.pricePaid),
         })),
     });
 
-    return reply.status(201).send({ booking });
+    return reply.status(201).send({ booking: bookingTx.booking });
 };
 
 export const getBookingsByOwnerId = async (
