@@ -2,10 +2,13 @@
 
 import { CATEGORIES } from "@/lib/data";
 
+
+
 interface CategoriesProps {
     activeCategory: string;
     setActiveCategory: (cat: string) => void;
 }
+
 
 export function Categories({ activeCategory, setActiveCategory }: CategoriesProps) {
     return (
@@ -33,14 +36,20 @@ export function Categories({ activeCategory, setActiveCategory }: CategoriesProp
                             >
                                 <div
                                     className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                                        isActive ? "bg-primary-foreground/20" : "bg-secondary group-hover:bg-muted"
+                                        isActive
+                                            ? "bg-primary-foreground/20"
+                                            : "bg-secondary group-hover:bg-muted"
                                     }`}
                                 >
-                                    <Icon className={`w-6 h-6 ${isActive ? "text-accent" : "text-primary"}`} />
+                                    <Icon
+                                        className={`w-6 h-6 ${isActive ? "text-accent" : "text-primary"}`}
+                                    />
                                 </div>
                                 <div className="text-center">
                                     <p className="font-semibold text-sm">{label}</p>
-                                    <p className={`text-xs mt-0.5 ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                                    <p
+                                        className={`text-xs mt-0.5 ${isActive ? "text-primary-foreground/70" : "text-muted-foreground"}`}
+                                    >
                                         {count}
                                     </p>
                                 </div>

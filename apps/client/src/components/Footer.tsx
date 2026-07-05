@@ -1,4 +1,4 @@
-import { MapPin, Phone, Mail, Table } from "lucide-react";
+import { MapPin, Phone, Mail } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 import Image from "next/image";
 
@@ -18,16 +18,6 @@ export function Footer() {
                             Kerala&apos;s most trusted venue discovery and booking platform. Covering all 14
                             districts from Kasaragod to Thiruvananthapuram.
                         </p>
-                        <div className="flex gap-3">
-                            {[Table, Table, Table].map((Icon, i) => (
-                                <button
-                                    key={i}
-                                    className="w-8 h-8 rounded-full bg-background/10 flex items-center justify-center hover:bg-accent transition-colors"
-                                >
-                                    <Icon className="w-4 h-4" />
-                                </button>
-                            ))}
-                        </div>
                     </div>
 
                     <div>

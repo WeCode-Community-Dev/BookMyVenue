@@ -1,4 +1,25 @@
-import { VALUES } from "@/lib/data";
+import { Clock, Search, Shield } from "lucide-react";
+
+const VALUES = [
+    {
+        icon: Search,
+        title: "Easy Search",
+        description:
+            "Browse thousands of verified venues across all 14 districts of Kerala. Filter by location, capacity, and budget in seconds.",
+    },
+    {
+        icon: Shield,
+        title: "Secure Booking",
+        description:
+            "Every booking is protected with our encrypted payment gateway. Pay with confidence — full refund policy on eligible cancellations.",
+    },
+    {
+        icon: Clock,
+        title: "24/7 Support",
+        description:
+            "Our dedicated team is available around the clock to help you plan, book, and coordinate your perfect event.",
+    },
+];
 
 export function WhyChooseUs() {
     return (
@@ -8,7 +29,9 @@ export function WhyChooseUs() {
                     <p className="text-accent text-sm font-semibold uppercase tracking-widest mb-2">
                         Why Choose Us
                     </p>
-                    <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Simple. Secure. Stress-Free.</h2>
+                    <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+                        Simple. Secure. Stress-Free.
+                    </h2>
                     <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
                         We make venue booking in Kerala effortless — from first search to final confirmation.
                     </p>

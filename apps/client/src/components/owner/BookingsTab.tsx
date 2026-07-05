@@ -1,6 +1,5 @@
 import { CalendarCheck, Search } from "lucide-react";
 import { useState } from "react";
-import { STATUS_DOT, STATUS_STYLE } from "@/app/owner/types";
 import { useOwnerBookings } from "@/hooks/useBooking";
 import type { GetOwnerBookingQuery } from "@bookmyvenue/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/pagination";
 import { fmtDate, pageRange } from "@/lib/utils";
 import { BookingStatus } from "@bookmyvenue/database";
+import { STATUS_DOT, STATUS_STYLE } from "@/lib/data";
 
 const toTitleStatus = (s: string): BookingStatus => (s.charAt(0) + s.slice(1).toLowerCase()) as BookingStatus;
 

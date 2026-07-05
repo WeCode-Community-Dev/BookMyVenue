@@ -17,8 +17,6 @@ const BookingDatePIcker = ({ venue }: BookingDatePickerProps) => {
     const selectedDate = useBookingStore((s) => s.selectedDate);
     const setSelectedDate = useBookingStore((s) => s.setSelectedDate);
 
-    console.log({ selectedDate });
-
     const tomorrow = new Date();
     tomorrow.setHours(0, 0, 0, 0);
     tomorrow.setDate(tomorrow.getDate() + 1);

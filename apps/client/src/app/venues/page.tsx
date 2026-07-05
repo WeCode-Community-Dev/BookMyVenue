@@ -1,30 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { District, VenueCategory } from "@bookmyvenue/database";
 import { Sparkles, Loader2, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { DISTRICTS, VENUE_CATEGORIES } from "@bookmyvenue/types";
 import { useVenues } from "@/hooks/useVenues";
 import { formatEnum } from "@/lib/utils";
 import { VenueCard } from "@/components/VenueCard";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const PAGE_LIMIT = 50;
 const ALL = "all";
 
 export default function VenuesPage() {
-    const [category, setCategory] = useState<string>("");
-    const [district, setDistrict] = useState<string>("");
-    const [page, setPage] = useState(1);
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const category = searchParams.get("category") as VenueCategory | null;
+    const district = searchParams.get("district") as District | null;
+    const page = Math.max(1, Number(searchParams.get("page")) || 1);
 
     const { data, isLoading, error } = useVenues({
-        category: category || undefined,
-        district: district || undefined,
+        category: category ?? undefined,
+        district: district ?? undefined,
         page,
         limit: PAGE_LIMIT,
     });
@@ -32,23 +31,46 @@ export default function VenuesPage() {
     const venues = data?.venues ?? [];
     const pagination = data?.pagination;
 
+    const updateSearchParams = (updates: Record<string, string | number | null>) => {
+        const params = new URLSearchParams(searchParams.toString());
+
+        Object.entries(updates).forEach(([key, value]) => {
+            if (value === null) {
+                params.delete(key);
+                return;
+            }
+            params.set(key, String(value));
+        });
+
+        const query = params.toString();
+        router.push(query ? `${pathname}?${query}` : pathname);
+    };
+
     const updateCategory = (value: string) => {
-        setCategory(value === ALL ? "" : value);
-        setPage(1);
+        updateSearchParams({
+            category: value === ALL ? null : value,
+            page: null,
+        });
     };
 
     const updateDistrict = (value: string) => {
-        setDistrict(value === ALL ? "" : value);
-        setPage(1);
+        updateSearchParams({
+            district: value === ALL ? null : value,
+            page: null,
+        });
+    };
+
+    const updatePage = (page: number) => {
+        updateSearchParams({
+            page: page === 1 ? null : page,
+        });
     };
 
     const clearFilters = () => {
-        setCategory("");
-        setDistrict("");
-        setPage(1);
+        router.push(pathname);
     };
 
-    const hasFilters = category !== "" || district !== "";
+    const hasFilters = category !== null || district !== null;
 
     return (
         <section className="py-12 bg-secondary/40 min-h-[70vh]">
@@ -70,7 +92,7 @@ export default function VenuesPage() {
                         <SelectTrigger className="flex-1 w-full bg-card py-2.5 rounded-xl">
                             <SelectValue placeholder="All categories" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                             <SelectItem value={ALL}>All categories</SelectItem>
                             {VENUE_CATEGORIES.map((c) => (
                                 <SelectItem key={c} value={c}>
@@ -84,7 +106,7 @@ export default function VenuesPage() {
                         <SelectTrigger className="flex-1 w-full bg-card py-2.5 rounded-xl">
                             <SelectValue placeholder="All districts" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                             <SelectItem value={ALL}>All districts</SelectItem>
                             {DISTRICTS.map((d) => (
                                 <SelectItem key={d} value={d}>
@@ -97,7 +119,7 @@ export default function VenuesPage() {
                     {hasFilters && (
                         <button
                             onClick={clearFilters}
-                            className="flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-xl hover:bg-muted transition-colors"
+                            className="flex items-center justify-center gap-1.5 px-3 py-1 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-xl hover:bg-muted transition-colors"
                         >
                             <X className="w-4 h-4" />
                             Clear
@@ -142,37 +164,39 @@ export default function VenuesPage() {
                 )}
 
                 {!isLoading && !error && pagination && pagination.totalPages > 1 && (
-                    <div className="flex items-center justify-center gap-2 mt-12">
+                    <div className="mt-12 flex items-center justify-center gap-2">
                         <button
-                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            onClick={() => updatePage(page - 1)}
                             disabled={page <= 1}
-                            className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-foreground border border-border rounded-xl hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                            <ChevronLeft className="w-4 h-4" />
+                            <ChevronLeft className="h-4 w-4" />
                             Prev
                         </button>
 
-                        {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
-                            <button
-                                key={p}
-                                onClick={() => setPage(p)}
-                                className={`w-10 h-10 text-sm font-semibold rounded-xl transition-colors ${
-                                    p === page
-                                        ? "bg-primary text-primary-foreground"
-                                        : "text-foreground border border-border hover:bg-muted"
-                                }`}
-                            >
-                                {p}
-                            </button>
-                        ))}
+                        {Array.from({ length: pagination.totalPages }, (_, index) => index + 1).map(
+                            (pageNumber) => (
+                                <button
+                                    key={pageNumber}
+                                    onClick={() => updatePage(pageNumber)}
+                                    className={`h-10 w-10 rounded-xl text-sm font-semibold transition-colors ${
+                                        pageNumber === page
+                                            ? "bg-primary text-primary-foreground"
+                                            : "border border-border text-foreground hover:bg-muted"
+                                    }`}
+                                >
+                                    {pageNumber}
+                                </button>
+                            ),
+                        )}
 
                         <button
-                            onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                            onClick={() => updatePage(page + 1)}
                             disabled={page >= pagination.totalPages}
-                            className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-foreground border border-border rounded-xl hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             Next
-                            <ChevronRight className="w-4 h-4" />
+                            <ChevronRight className="h-4 w-4" />
                         </button>
                     </div>
                 )}

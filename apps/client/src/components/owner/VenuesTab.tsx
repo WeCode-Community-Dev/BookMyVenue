@@ -7,12 +7,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useOwnerVenues } from "@/hooks/useVenues";
 import { Venue } from "@bookmyvenue/types";
 import VenueModal from "./VenueModal";
-
-const STATUS_STYLE = {
-    APPROVED: "bg-emerald-200 text-emerald-700 border-emerald-700",
-    PENDING: "bg-amber-200 text-amber-700 border-amber-700",
-    REJECTED: "bg-red-200 text-red-600 border-red-700",
-} as const;
+import { STATUS_STYLE } from "@/lib/data";
 
 const PAGE_SIZE = 20
 

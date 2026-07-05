@@ -2,7 +2,7 @@ import { Plus, Users } from "lucide-react";
 import Image from "next/image";
 import type { OwnerDashboardBooking, OwnerDashboardVenue } from "@bookmyvenue/types";
 import { fmtDate } from "@/lib/utils";
-import { STATUS_STYLE } from "@/app/owner/types";
+import { STATUS_STYLE } from "@/lib/data";
 
 type Tab = "overview" | "bookings" | "venues";
 

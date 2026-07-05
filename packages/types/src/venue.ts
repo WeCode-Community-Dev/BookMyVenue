@@ -1,33 +1,8 @@
-import { District, VenueCategory, VerificationStatus } from "@bookmyvenue/database";
+import { District, VenueCategory, VerificationStatus } from "@bookmyvenue/database/enums";
 
-export const DISTRICTS = [
-    "THIRUVANANTHAPURAM",
-    "KOLLAM",
-    "PATHANAMTHITTA",
-    "ALAPPUZHA",
-    "KOTTAYAM",
-    "IDUKKI",
-    "ERNAKULAM",
-    "THRISSUR",
-    "PALAKKAD",
-    "MALAPPURAM",
-    "KOZHIKODE",
-    "WAYANAD",
-    "KANNUR",
-    "KASARAGOD",
-] as const;
+export const DISTRICTS: District[] = Object.values(District);
 
-export const VENUE_CATEGORIES = [
-    "WEDDING_HALL",
-    "CONFERENCE_HALL",
-    "PARTY_HALL",
-    "CAFE",
-    "RESTAURANT",
-    "AUDITORIUM",
-    "SPORTS_GROUND",
-    "MEETING_ROOM",
-    "OTHER",
-] as const;
+export const VENUE_CATEGORIES: VenueCategory[] = Object.values(VenueCategory);
 
 export interface SessionInput {
     id?: number;
@@ -35,10 +10,8 @@ export interface SessionInput {
     startTime: string;
     endTime: string;
     price: number;
-    isActive?: boolean
+    isActive?: boolean;
 }
-
-
 
 export interface CreateVenuePayload {
     name: string;
