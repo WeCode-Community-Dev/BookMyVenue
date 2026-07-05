@@ -53,6 +53,29 @@ export const createBooking = async (
   try {
     await client.query("BEGIN");
 
+    const expireResult = await client.query(
+      `
+      WITH expired_bookings AS (
+        UPDATE bookings
+        SET
+          booking_status = 'failed',
+          updated_at = CURRENT_TIMESTAMP
+        WHERE booking_status = 'pending_payment'
+          AND created_at < NOW() - INTERVAL '15 minutes'
+        RETURNING id
+      )
+      UPDATE payments
+      SET
+        payment_status = 'failed',
+        updated_at = CURRENT_TIMESTAMP
+      WHERE booking_id IN (SELECT id FROM expired_bookings)
+        AND payment_status = 'pending'
+      RETURNING *
+      `
+    );
+
+    console.log(`Expired pending payments: ${expireResult.rowCount}`);
+
     const venueResult = await client.query(
       `
       SELECT id, name, base_price, approval_status, is_active

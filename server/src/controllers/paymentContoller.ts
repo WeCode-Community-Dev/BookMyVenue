@@ -31,18 +31,21 @@ export const dummyPaymentSuccess = async (
 
     const bookingResult = await client.query(
       `
-      SELECT
+        SELECT
         b.id AS booking_id,
         b.customer_id,
         b.booking_status,
         b.total_amount,
+        b.created_at,
+        b.created_at < NOW() - INTERVAL '15 minutes' AS is_expired,
+
         p.id AS payment_id,
         p.payment_status
-      FROM bookings b
-      JOIN payments p ON p.booking_id = b.id
-      WHERE b.id = $1
+    FROM bookings b
+    JOIN payments p ON p.booking_id = b.id
+    WHERE b.id = $1
         AND b.customer_id = $2
-      FOR UPDATE OF b, p
+        FOR UPDATE OF b, p
       `,
       [booking_id, customerId]
     );
@@ -57,6 +60,37 @@ export const dummyPaymentSuccess = async (
     }
 
     const booking = bookingResult.rows[0];
+
+    if (booking.booking_status === "pending_payment" && booking.is_expired) {
+      await client.query(
+        `
+        UPDATE bookings
+        SET
+          booking_status = 'failed',
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+        `,
+        [booking.booking_id]
+      );
+
+      await client.query(
+        `
+        UPDATE payments
+        SET
+          payment_status = 'failed',
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+        `,
+        [booking.payment_id]
+      );
+
+      await client.query("COMMIT");
+
+      res.status(400).json({
+        message: "Payment time expired. Please create a new booking.",
+      });
+      return;
+    }
 
     if (booking.booking_status !== "pending_payment") {
       await client.query("ROLLBACK");
