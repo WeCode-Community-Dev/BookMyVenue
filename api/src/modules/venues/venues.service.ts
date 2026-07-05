@@ -142,6 +142,13 @@ const spacePricingSelect = {
   createdAt: true,
 } satisfies Prisma.SpacePricingSelect;
 
+type SuccessResponse<T> = {
+  success: true;
+  message: string;
+  data?: T;
+};
+
+
 @Injectable()
 export class VenuesService {
   constructor(
@@ -150,70 +157,68 @@ export class VenuesService {
   ) { }
 
 
-  async createVenue(dto: CreateVenueDto, authorization: string): Promise<VenueDetails> {
+  async createVenue(dto: CreateVenueDto, authorization: string): Promise<SuccessResponse<{ id: string }>> {
     try {
-    const payload = verifyAccessToken(this.jwtService, authorization);
-    if (payload.role !== UserRole.VENUE_OWNER) {
-      throw new UnauthorizedException('You are not authorized to create a venue');
-    }
-    const ownerId = payload.sub;
-    const venueAmenityIds = this.normalizeIds(dto.venueAmenityIds);
-    const venueImageIds = this.normalizeIds(dto.venueImageIds);
+      const payload = verifyAccessToken(this.jwtService, authorization);
+      if (payload.role !== UserRole.VENUE_OWNER) {
+        throw new UnauthorizedException('You are not authorized to create a venue');
+      }
+      const ownerId = payload.sub;
+      const venueAmenityIds = this.normalizeIds(dto.venueAmenityIds);
+      const venueImageIds = this.normalizeIds(dto.venueImageIds);
 
 
-    return this.prismaService.$transaction(async (tx) => {
-      await this.ensureIdsExist(tx.amenity,venueAmenityIds, 'Amenity');
-      await this.ensureIdsExist(tx.image,venueImageIds, 'Image');
+      return this.prismaService.$transaction(async (tx) => {
+        await this.ensureIdsExist(tx.amenity, venueAmenityIds, 'Amenity');
+        await this.ensureIdsExist(tx.image, venueImageIds, 'Image');
 
-      const venue = await tx.venue.create({
-        data: {
-          ownerId: ownerId,
-          name: dto.name,
-          description: dto.description,
-          address: dto.address,
-          city: dto.city,
-          state: dto.state,
-          country: dto.country,
-          postalCode: dto.postalCode,
-          latitude: dto.latitude,
-          longitude: dto.longitude,
-          timezone: dto.timezone,
-        },
-      });
-
-      if (venueAmenityIds.length > 0) {
-        await tx.venueAmenity.createMany({
-          data: venueAmenityIds.map((amenityId) => ({
-            venueId: venue.id,
-            amenityId,
-          })),
+        const venue = await tx.venue.create({
+          data: {
+            ownerId: ownerId,
+            name: dto.name,
+            description: dto.description,
+            address: dto.address,
+            city: dto.city,
+            state: dto.state,
+            country: dto.country,
+            postalCode: dto.postalCode,
+            latitude: dto.latitude,
+            longitude: dto.longitude,
+            timezone: dto.timezone,
+          },
         });
-      }
 
-      if (venueImageIds.length > 0) {
-        await tx.venueImage.createMany({
-          data: venueImageIds.map((imageId, index) => ({
-            venueId: venue.id,
-            imageId,
-            sortOrder: index,
-            isCover: index === 0,
-          })),
-        });
-      }
+        if (venueAmenityIds.length > 0) {
+          await tx.venueAmenity.createMany({
+            data: venueAmenityIds.map((amenityId) => ({
+              venueId: venue.id,
+              amenityId,
+            })),
+          });
+        }
 
-      const createdVenue = await tx.venue.findUnique({
-        where: { id: venue.id },
-        include: venueDetailsInclude,
-      });
+        if (venueImageIds.length > 0) {
+          await tx.venueImage.createMany({
+            data: venueImageIds.map((imageId, index) => ({
+              venueId: venue.id,
+              imageId,
+              sortOrder: index,
+              isCover: index === 0,
+            })),
+          });
+        }
 
-      if (!createdVenue) {
-        throw new NotFoundException('Venue not found');
-      }
-
-        return createdVenue;
+        return {
+          success: true,
+          message: 'Venue created successfully',
+          data: { id: venue.id },
+        };
       });
     } catch (error) {
-      throw new InternalServerErrorException('Failed to create venue', error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Failed to create venue');
     }
   }
 
@@ -261,6 +266,9 @@ export class VenuesService {
         include: venueDetailsInclude,
       });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
@@ -278,102 +286,108 @@ export class VenuesService {
 
       return venue;
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
 
   async updateVenue(id: string, dto: UpdateVenueDto): Promise<VenueDetails> {
     try {
-    const venueAmenityIds = dto.venueAmenityIds
-      ? this.normalizeIds(dto.venueAmenityIds)
-      : undefined;
-    const venueImageIds = dto.venueImageIds
-      ? this.normalizeIds(dto.venueImageIds)
-      : undefined;
+      const venueAmenityIds = dto.venueAmenityIds
+        ? this.normalizeIds(dto.venueAmenityIds)
+        : undefined;
+      const venueImageIds = dto.venueImageIds
+        ? this.normalizeIds(dto.venueImageIds)
+        : undefined;
 
 
-    return this.prismaService.$transaction(async (tx) => {
-      const existingVenue = await tx.venue.findUnique({
-        where: { id },
-        select: { id: true },
-      });
-
-      if (!existingVenue) {
-        throw new NotFoundException('Venue not found');
-      }
-
-      if (venueAmenityIds) {
-        await this.ensureIdsExist(tx.amenity,venueAmenityIds, 'Amenity');
-      }
-      if (venueImageIds) {
-        await this.ensureIdsExist(tx.image,venueImageIds, 'Image');
-      }
-
-      const data: Prisma.VenueUpdateInput = {};
-
-      if (dto.ownerId !== undefined) data.ownerId = dto.ownerId;
-      if (dto.name !== undefined) data.name = dto.name;
-      if (dto.description !== undefined) data.description = dto.description;
-      if (dto.address !== undefined) data.address = dto.address;
-      if (dto.city !== undefined) data.city = dto.city;
-      if (dto.state !== undefined) data.state = dto.state;
-      if (dto.country !== undefined) data.country = dto.country;
-      if (dto.postalCode !== undefined) data.postalCode = dto.postalCode;
-      if (dto.latitude !== undefined) data.latitude = dto.latitude;
-      if (dto.longitude !== undefined) data.longitude = dto.longitude;
-      if (dto.timezone !== undefined) data.timezone = dto.timezone;
-
-      if (Object.keys(data).length > 0) {
-        await tx.venue.update({
+      return this.prismaService.$transaction(async (tx) => {
+        const existingVenue = await tx.venue.findUnique({
           where: { id },
-          data,
-        });
-      }
-
-      if (venueAmenityIds) {
-        await tx.venueAmenity.deleteMany({
-          where: { venueId: id },
+          select: { id: true },
         });
 
-        if (venueAmenityIds.length > 0) {
-          await tx.venueAmenity.createMany({
-            data: venueAmenityIds.map((amenityId) => ({
-              venueId: id,
-              amenityId,
-            })),
+        if (!existingVenue) {
+          throw new NotFoundException('Venue not found');
+        }
+
+        if (venueAmenityIds) {
+          await this.ensureIdsExist(tx.amenity, venueAmenityIds, 'Amenity');
+        }
+        if (venueImageIds) {
+          await this.ensureIdsExist(tx.image, venueImageIds, 'Image');
+        }
+
+        const data: Prisma.VenueUpdateInput = {};
+
+        if (dto.ownerId !== undefined) data.ownerId = dto.ownerId;
+        if (dto.name !== undefined) data.name = dto.name;
+        if (dto.description !== undefined) data.description = dto.description;
+        if (dto.address !== undefined) data.address = dto.address;
+        if (dto.city !== undefined) data.city = dto.city;
+        if (dto.state !== undefined) data.state = dto.state;
+        if (dto.country !== undefined) data.country = dto.country;
+        if (dto.postalCode !== undefined) data.postalCode = dto.postalCode;
+        if (dto.latitude !== undefined) data.latitude = dto.latitude;
+        if (dto.longitude !== undefined) data.longitude = dto.longitude;
+        if (dto.timezone !== undefined) data.timezone = dto.timezone;
+
+        if (Object.keys(data).length > 0) {
+          await tx.venue.update({
+            where: { id },
+            data,
           });
         }
-      }
 
-      if (venueImageIds) {
-        await tx.venueImage.deleteMany({
-          where: { venueId: id },
+        if (venueAmenityIds) {
+          await tx.venueAmenity.deleteMany({
+            where: { venueId: id },
+          });
+
+          if (venueAmenityIds.length > 0) {
+            await tx.venueAmenity.createMany({
+              data: venueAmenityIds.map((amenityId) => ({
+                venueId: id,
+                amenityId,
+              })),
+            });
+          }
+        }
+
+        if (venueImageIds) {
+          await tx.venueImage.deleteMany({
+            where: { venueId: id },
+          });
+
+          if (venueImageIds.length > 0) {
+            await tx.venueImage.createMany({
+              data: venueImageIds.map((imageId, index) => ({
+                venueId: id,
+                imageId,
+                sortOrder: index,
+                isCover: index === 0,
+              })),
+            });
+          }
+        }
+
+        const updatedVenue = await tx.venue.findUnique({
+          where: { id },
+          include: venueDetailsInclude,
         });
 
-        if (venueImageIds.length > 0) {
-          await tx.venueImage.createMany({
-            data: venueImageIds.map((imageId, index) => ({
-              venueId: id,
-              imageId,
-              sortOrder: index,
-              isCover: index === 0,
-            })),
-          });
+        if (!updatedVenue) {
+          throw new NotFoundException('Venue not found');
         }
-      }
 
-      const updatedVenue = await tx.venue.findUnique({
-        where: { id },
-        include: venueDetailsInclude,
+        return updatedVenue;
       });
-
-      if (!updatedVenue) {
-        throw new NotFoundException('Venue not found');
-      }
-
-      return updatedVenue;
-    });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
@@ -393,66 +407,72 @@ export class VenuesService {
         where: { id },
       });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
 
   async createSpace(venueId: string, dto: CreateSpaceDto): Promise<SpaceDetails> {
     try {
-    const spaceAmenityIds = this.normalizeIds(dto.spaceAmenityIds);
-    const spaceImageIds = this.normalizeIds(dto.spaceImageIds);
+      const spaceAmenityIds = this.normalizeIds(dto.spaceAmenityIds);
+      const spaceImageIds = this.normalizeIds(dto.spaceImageIds);
 
-    return this.prismaService.$transaction(async (tx) => {
-      await this.ensureIdExits(tx.venue, venueId, 'Venue');
-      await this.ensureIdExits(tx.spaceCategory, dto.categoryId, 'Space category');
-      await this.ensureIdsExist(tx.amenity,spaceAmenityIds, 'Amenity');
-      await this.ensureIdsExist(tx.image,spaceImageIds, 'Image');
+      return this.prismaService.$transaction(async (tx) => {
+        await this.ensureIdExits(tx.venue, venueId, 'Venue');
+        await this.ensureIdExits(tx.spaceCategory, dto.categoryId, 'Space category');
+        await this.ensureIdsExist(tx.amenity, spaceAmenityIds, 'Amenity');
+        await this.ensureIdsExist(tx.image, spaceImageIds, 'Image');
 
-      const space = await tx.space.create({
-        data: {
-          venueId,
-          categoryId: dto.categoryId,
-          name: dto.name,
-          description: dto.description,
-          capacityValue: dto.capacityValue,
-          capacityType: dto.capacityType,
-          isActive: dto.isActive ?? true,
-          rules: dto.rules,
-        },
-      });
-
-      if (spaceAmenityIds.length > 0) {
-        await tx.spaceAmenity.createMany({
-          data: spaceAmenityIds.map((amenityId) => ({
-            spaceId: space.id,
-            amenityId,
-          })),
+        const space = await tx.space.create({
+          data: {
+            venueId,
+            categoryId: dto.categoryId,
+            name: dto.name,
+            description: dto.description,
+            capacityValue: dto.capacityValue,
+            capacityType: dto.capacityType,
+            isActive: dto.isActive ?? true,
+            rules: dto.rules,
+          },
         });
-      }
 
-      if (spaceImageIds.length > 0) {
-        await tx.spaceImage.createMany({
-          data: spaceImageIds.map((imageId, index) => ({
-            spaceId: space.id,
-            imageId,
-            sortOrder: index,
-            isCover: index === 0,
-          })),
+        if (spaceAmenityIds.length > 0) {
+          await tx.spaceAmenity.createMany({
+            data: spaceAmenityIds.map((amenityId) => ({
+              spaceId: space.id,
+              amenityId,
+            })),
+          });
+        }
+
+        if (spaceImageIds.length > 0) {
+          await tx.spaceImage.createMany({
+            data: spaceImageIds.map((imageId, index) => ({
+              spaceId: space.id,
+              imageId,
+              sortOrder: index,
+              isCover: index === 0,
+            })),
+          });
+        }
+
+        const createdSpace = await tx.space.findUnique({
+          where: { id: space.id },
+          include: spaceDetailsInclude,
         });
-      }
 
-      const createdSpace = await tx.space.findUnique({
-        where: { id: space.id },
-        include: spaceDetailsInclude,
+        if (!createdSpace) {
+          throw new NotFoundException('Space not found');
+        }
+
+        return createdSpace;
       });
-
-      if (!createdSpace) {
-        throw new NotFoundException('Space not found');
-      }
-
-      return createdSpace;
-    });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
@@ -469,6 +489,9 @@ export class VenuesService {
         include: spaceDetailsInclude,
       });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
@@ -486,107 +509,113 @@ export class VenuesService {
 
       return space;
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
 
   async updateSpace(id: string, dto: UpdateSpaceDto): Promise<SpaceDetails> {
     try {
-    const spaceAmenityIds = dto.spaceAmenityIds
-      ? this.normalizeIds(dto.spaceAmenityIds)
-      : undefined;
-    const spaceImageIds = dto.spaceImageIds
-      ? this.normalizeIds(dto.spaceImageIds)
-      : undefined;
+      const spaceAmenityIds = dto.spaceAmenityIds
+        ? this.normalizeIds(dto.spaceAmenityIds)
+        : undefined;
+      const spaceImageIds = dto.spaceImageIds
+        ? this.normalizeIds(dto.spaceImageIds)
+        : undefined;
 
 
-    return this.prismaService.$transaction(async (tx) => {
-      const existingSpace = await tx.space.findUnique({
-        where: { id },
-        select: { id: true },
-      });
-
-      if (!existingSpace) {
-        throw new NotFoundException('Space not found');
-      }
-
-      if (dto.categoryId !== undefined) {
-        await this.ensureIdExits(tx.spaceCategory, dto.categoryId, 'Space category');
-      }
-      if (spaceAmenityIds) {
-        await this.ensureIdsExist(tx.amenity,spaceAmenityIds, 'Amenity');
-      }
-      if (spaceImageIds) {
-        await this.ensureIdsExist(tx.image,spaceImageIds, 'Image');
-      }
-
-      const data: Prisma.SpaceUpdateInput = {};
-
-      if (dto.categoryId !== undefined) {
-        data.category = {
-          connect: {
-            id: dto.categoryId,
-          },
-        };
-      }
-      if (dto.name !== undefined) data.name = dto.name;
-      if (dto.description !== undefined) data.description = dto.description;
-      if (dto.capacityValue !== undefined) data.capacityValue = dto.capacityValue;
-      if (dto.capacityType !== undefined) data.capacityType = dto.capacityType;
-      if (dto.isActive !== undefined) data.isActive = dto.isActive;
-      if (dto.rules !== undefined) data.rules = dto.rules;
-
-      if (Object.keys(data).length > 0) {
-        await tx.space.update({
+      return this.prismaService.$transaction(async (tx) => {
+        const existingSpace = await tx.space.findUnique({
           where: { id },
-          data,
-        });
-      }
-
-      if (spaceAmenityIds) {
-        await tx.spaceAmenity.deleteMany({
-          where: { spaceId: id },
+          select: { id: true },
         });
 
-        if (spaceAmenityIds.length > 0) {
-          await tx.spaceAmenity.createMany({
-            data: spaceAmenityIds.map((amenityId) => ({
-              spaceId: id,
-              amenityId,
-            })),
+        if (!existingSpace) {
+          throw new NotFoundException('Space not found');
+        }
+
+        if (dto.categoryId !== undefined) {
+          await this.ensureIdExits(tx.spaceCategory, dto.categoryId, 'Space category');
+        }
+        if (spaceAmenityIds) {
+          await this.ensureIdsExist(tx.amenity, spaceAmenityIds, 'Amenity');
+        }
+        if (spaceImageIds) {
+          await this.ensureIdsExist(tx.image, spaceImageIds, 'Image');
+        }
+
+        const data: Prisma.SpaceUpdateInput = {};
+
+        if (dto.categoryId !== undefined) {
+          data.category = {
+            connect: {
+              id: dto.categoryId,
+            },
+          };
+        }
+        if (dto.name !== undefined) data.name = dto.name;
+        if (dto.description !== undefined) data.description = dto.description;
+        if (dto.capacityValue !== undefined) data.capacityValue = dto.capacityValue;
+        if (dto.capacityType !== undefined) data.capacityType = dto.capacityType;
+        if (dto.isActive !== undefined) data.isActive = dto.isActive;
+        if (dto.rules !== undefined) data.rules = dto.rules;
+
+        if (Object.keys(data).length > 0) {
+          await tx.space.update({
+            where: { id },
+            data,
           });
         }
-      }
 
-      if (spaceImageIds) {
-        await tx.spaceImage.deleteMany({
-          where: { spaceId: id },
+        if (spaceAmenityIds) {
+          await tx.spaceAmenity.deleteMany({
+            where: { spaceId: id },
+          });
+
+          if (spaceAmenityIds.length > 0) {
+            await tx.spaceAmenity.createMany({
+              data: spaceAmenityIds.map((amenityId) => ({
+                spaceId: id,
+                amenityId,
+              })),
+            });
+          }
+        }
+
+        if (spaceImageIds) {
+          await tx.spaceImage.deleteMany({
+            where: { spaceId: id },
+          });
+
+          if (spaceImageIds.length > 0) {
+            await tx.spaceImage.createMany({
+              data: spaceImageIds.map((imageId, index) => ({
+                spaceId: id,
+                imageId,
+                sortOrder: index,
+                isCover: index === 0,
+              })),
+            });
+          }
+        }
+
+        const updatedSpace = await tx.space.findUnique({
+          where: { id },
+          include: spaceDetailsInclude,
         });
 
-        if (spaceImageIds.length > 0) {
-          await tx.spaceImage.createMany({
-            data: spaceImageIds.map((imageId, index) => ({
-              spaceId: id,
-              imageId,
-              sortOrder: index,
-              isCover: index === 0,
-            })),
-          });
+        if (!updatedSpace) {
+          throw new NotFoundException('Space not found');
         }
-      }
 
-      const updatedSpace = await tx.space.findUnique({
-        where: { id },
-        include: spaceDetailsInclude,
+        return updatedSpace;
       });
-
-      if (!updatedSpace) {
-        throw new NotFoundException('Space not found');
-      }
-
-      return updatedSpace;
-    });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
@@ -606,6 +635,9 @@ export class VenuesService {
         where: { id },
       });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
@@ -623,6 +655,9 @@ export class VenuesService {
         },
       });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
@@ -651,6 +686,9 @@ export class VenuesService {
       );
       return images;
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       console.error(error);
       throw error;
     }
@@ -665,6 +703,9 @@ export class VenuesService {
         select: { id: true, name: true, description: true },
       });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new InternalServerErrorException('Failed to get all space categories');
     }
   }
@@ -673,6 +714,9 @@ export class VenuesService {
     try {
       return Object.values(CapacityType);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new InternalServerErrorException('Failed to get capacity types');
     }
   }
@@ -681,6 +725,9 @@ export class VenuesService {
     try {
       return Object.values(PricingType);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new InternalServerErrorException('Failed to get pricing types');
     }
   }
@@ -724,17 +771,23 @@ export class VenuesService {
         select: spacePricingSelect,
       });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
 
   async getSpacePricing(spaceId: string): Promise<SpacePricingDetails[]> {
     try {
-    return this.prismaService.spacePricing.findMany({
-      where: { spaceId },
-      select: spacePricingSelect,
-    });
+      return this.prismaService.spacePricing.findMany({
+        where: { spaceId },
+        select: spacePricingSelect,
+      });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       console.error(error);
       throw error;
     }
@@ -767,6 +820,9 @@ export class VenuesService {
         ),
       );
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       console.error(error);
       throw error;
     }
@@ -776,7 +832,7 @@ export class VenuesService {
     try {
       return this.prismaService.spaceOperatingHour.findMany({
         where: { spaceId },
-        orderBy:{
+        orderBy: {
           weekday: 'asc',
         },
         select: {
@@ -787,6 +843,9 @@ export class VenuesService {
         },
       });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
@@ -803,7 +862,9 @@ export class VenuesService {
         }
       });
     } catch (error) {
-      console.error(error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw error;
     }
   }
@@ -811,7 +872,7 @@ export class VenuesService {
   async updateSpaceBlockedPeriods(spaceId: string, id: string, dto: UpdateSpaceBlockedPeriodDto) {
     try {
       return this.prismaService.spaceBlockedPeriod.update({
-        where: { spaceId:spaceId, id:id },
+        where: { spaceId: spaceId, id: id },
         data: {
           startAt: dto.startAt,
           endAt: dto.endAt,
@@ -819,6 +880,9 @@ export class VenuesService {
         }
       });
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       console.error(error);
       throw error;
     }
@@ -831,28 +895,35 @@ export class VenuesService {
         orderBy: {
           startAt: 'asc',
         },
-      select: {
-        id: true,
-        startAt: true,
-        endAt: true,
-        reason: true,
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+        select: {
+          id: true,
+          startAt: true,
+          endAt: true,
+          reason: true,
+        },
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
   async removeSpaceBlockedPeriod(spaceId: string, id: string) {
     try {
-    return await this.prismaService.spaceBlockedPeriod.delete({
-      where: { spaceId:spaceId, id:id },
-    select: { id: true }});
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+      return await this.prismaService.spaceBlockedPeriod.delete({
+        where: { spaceId: spaceId, id: id },
+        select: { id: true }
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error(error);
+      throw error;
+    }
   }
 
 
@@ -869,16 +940,16 @@ export class VenuesService {
 
 
   private async ensureIdExits<
-  T extends { 
-    findUnique(args: {
-      where: { id: string };
-      select: { id: true };
-    }): Promise<{ id: string } | null>;
-  }>(
-    model: T,
-    id: string,
-    modalName: string,
-  ){
+    T extends {
+      findUnique(args: {
+        where: { id: string };
+        select: { id: true };
+      }): Promise<{ id: string } | null>;
+    }>(
+      model: T,
+      id: string,
+      modalName: string,
+    ) {
     try {
       const existing = await model.findUnique({
         where: { id },
@@ -894,17 +965,17 @@ export class VenuesService {
 
 
   private async ensureIdsExist<
-  T extends {
-    findMany(args: {
-      where: { id: { in: string[] } };
-      select: { id: true };
-    }): Promise<{ id: string }[]>;
-  },
->(
+    T extends {
+      findMany(args: {
+        where: { id: { in: string[] } };
+        select: { id: true };
+      }): Promise<{ id: string }[]>;
+    },
+  >(
     model: T,
     ids: string[],
     modalName: string,
-  ){
+  ) {
     try {
       if (ids.length === 0) {
         return;
