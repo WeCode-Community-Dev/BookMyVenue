@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# JavaScript dependencies and builds
+node_modules/
+build/
+
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Django local data and uploaded media
+*.sqlite3
+media/
