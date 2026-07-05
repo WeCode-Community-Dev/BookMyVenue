@@ -58,16 +58,25 @@ public class CancellationService {
         }
 
         // Check if cancel request already exists
-        if (cancellationRepository.findByBookingId(bookingId).isPresent()) {
+        cancellationRepository.findByBookingId(bookingId).ifPresent(existing -> {
+            if(existing.getStatus() == CancellationStatus.PENDING){
             throw new RuntimeException("A cancellation request already exists for this booking");
-        }
+            }
+        });
 
-        BookingCancellation cancellation = BookingCancellation.builder()
-                .booking(booking)
-                .reason(request.getReason())
-                .cancelledBy(BookingCancellation.CancelledBy.USER)
-                .status(CancellationStatus.PENDING)
-                .build();
+        BookingCancellation cancellation = cancellationRepository 
+            .findByBookingId(bookingId) 
+            .map(existing -> { existing.setReason(request.getReason()); 
+            existing.setStatus(CancellationStatus.PENDING); 
+            existing.setOwnerResponse(null); 
+            existing.setReviewedOn(null); 
+            existing.setCreatedOn(LocalDateTime.now()); 
+        return existing; }) 
+            .orElseGet(() -> BookingCancellation.builder() 
+            .booking(booking) .reason(request.getReason()) 
+            .cancelledBy(BookingCancellation.CancelledBy.USER) 
+            .status(CancellationStatus.PENDING) 
+            .build() );
 
         BookingCancellation saved = cancellationRepository.save(cancellation);
         return CancellationResponse.from(saved);

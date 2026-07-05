@@ -629,7 +629,7 @@ function UserDashboard({ user, onLogout }) {
                         </td>
 
                         <td style={{ maxWidth: 180 }}>
-                          {booking.ownerComments ? (
+                          {booking.ownerComments && booking.bookingStatus !== 'CANCELLED'? (
                             <span style={{
                               fontSize: 13, color: 'var(--text)', fontStyle: 'italic',
                               display: 'block', padding: '6px 10px',

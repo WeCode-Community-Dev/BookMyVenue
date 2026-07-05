@@ -58,6 +58,6 @@ public class GlobalExceptionHandler {
     // Other exceptions
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGeneral(Exception ex) {
-        return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>("Something went wrong"+ex, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
