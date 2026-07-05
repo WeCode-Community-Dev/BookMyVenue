@@ -295,3 +295,145 @@ export const getOwnerVenueBookings = async (
     }
 };
 
+export const cancelMyBooking = async (
+    req : AuthRequest,
+    res : Response
+):Promise<void> =>{
+    const customerId = req.user?.id;
+
+    if(!customerId){
+        res.status(401).json({
+            message : "Unauthorized. Please login first",
+        });
+        return;
+    }
+
+    const bookingId = Number(req.params.id);
+
+    if(!bookingId || Number.isNaN(bookingId)){
+        res.status(400).json({
+            message: "Valid booking id required",
+        });
+        return;
+    }
+
+    const client = await pool.connect();
+
+    try{
+        await client.query("BEGIN");
+
+        const bookingResult =await client.query(
+            `
+            SELECT 
+            b.id AS booking_id,
+            b.customer_id,
+            b.booking_status,
+            p.id AS payment_id,
+            p.payment_status
+
+            FROM bookings b
+            LEFT JOIN payments p on p.booking_id=b.id
+            WHERE b.id=$1
+            AND b.customer_id =$2
+            FOR UPDATE OF B
+            `,
+            [bookingId,customerId]
+        );
+
+        if (bookingResult.rows.length ===0 ){
+            await client.query("ROLLBACK");
+
+            res.status(404).json({
+                message : "Booking not found for this customer",
+            });
+            return;
+        }
+
+        const booking = bookingResult.rows[0];
+
+        if(booking.booking_status ==="cancelled"){
+            await client.query("ROLLBACK");
+
+            res.status(400).json({
+                message : "This booking is already cancelled",
+            });
+            return;
+        }
+
+        if(booking.booking_status !== "pending_payment" 
+            && booking.booking_status !== "confirmed"
+        ){
+            await client.query("ROLLBACK");
+
+            res.status(400).json({
+                message: "Only pending payment and confirmed payment can be cancelled",
+            });
+            return;
+        }
+
+        const updateBookingResult = await client.query(
+            `
+            UPDATE bookings
+            SET
+                booking_status ='cancelled',
+                updated_at     =CURRENT_TIMESTAMP
+            WHERE id = $1
+            RETURNING *
+            `,
+            [bookingId]
+        );
+
+        let updatedPayment = null;
+
+        if(booking.payment_status ==="success"){
+            const paymentResult = await client.query(
+                `
+                UPDATE payments
+                SET 
+                    payment_status = 'refunded',
+                    updated_at     = CURRENT_TIMESTAMP
+                WHERE id = $1
+                RETURNING *
+                `,
+                [booking.payment_id]
+            );
+
+            updatedPayment = paymentResult.rows[0];
+        }
+
+        if (booking.payment_status === "pending"){
+            const paymentResult = await client.query(
+                `
+                UPDATE payments
+                SET
+                    payment_status ='failed',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = $1
+                RETURNING *
+                `,
+                [booking.payment_id]
+            );
+
+            updatedPayment = paymentResult.rows[0];
+        }
+
+        await client.query("COMMIT");
+
+        res.status(200).json({
+            message : "Booking deleted successfully",
+            booking : updateBookingResult.rows[0],
+            payment : updatedPayment,
+        });
+    }catch(error){
+
+        await client.query("ROLLBACK");
+
+        console.error("Cancel booking error",error);
+
+        res.status(500).json({
+            message :"Something went wrong while cancelling booking",
+        });
+    }finally{
+        client.release();
+    }
+}
