@@ -1,5 +1,10 @@
 # TODO
 
+## Authentication
+- [ ] Migrate frontend API requests to use a centralized `apiFetch` helper.
+- [ ] Automatically refresh expired access tokens and retry the original request.
+- [ ] Redirect users to the login page when refresh token validation fails.
+
 ## Error Handling
 - [ ] Refactor service and handler error handling using sentinel/custom errors.
 - [ ] Map service errors to appropriate HTTP status codes (400, 401, 403, 404, 500).
@@ -13,4 +18,4 @@
 
 ## Amenities
 - [ ] Seed default amenities during application setup instead of creating them on demand.
-- [ ] Validate and reuse existing amenities rather than inserting duplicates.
+- [x] Validate and reuse existing amenities rather than inserting duplicates.
