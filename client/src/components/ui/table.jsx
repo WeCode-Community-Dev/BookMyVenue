@@ -1,17 +1,23 @@
-import * as React from "react"
-
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 function Table({
   className,
   ...props
 }) {
   return (
-    <div data-slot="table-container" className="relative w-full overflow-x-auto">
+    <div
+      data-slot="table-container"
+      className="relative w-full overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm"
+    >
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
-        {...props} />
+        className={cn(
+          "w-full caption-bottom text-sm border-collapse",
+          className
+        )}
+        {...props}
+      />
     </div>
   );
 }
@@ -23,8 +29,12 @@ function TableHeader({
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
-      {...props} />
+      className={cn(
+        "bg-gray-50 [&_tr]:border-b [&_tr]:border-gray-200",
+        className
+      )}
+      {...props}
+    />
   );
 }
 
@@ -35,8 +45,12 @@ function TableBody({
   return (
     <tbody
       data-slot="table-body"
-      className={cn("[&_tr:last-child]:border-0", className)}
-      {...props} />
+      className={cn(
+        "[&_tr:last-child]:border-0",
+        className
+      )}
+      {...props}
+    />
   );
 }
 
@@ -47,8 +61,12 @@ function TableFooter({
   return (
     <tfoot
       data-slot="table-footer"
-      className={cn("border-t bg-muted/50 font-medium [&>tr]:last:border-b-0", className)}
-      {...props} />
+      className={cn(
+        "border-t border-gray-200 bg-gray-50 font-medium",
+        className
+      )}
+      {...props}
+    />
   );
 }
 
@@ -60,10 +78,11 @@ function TableRow({
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b transition-colors hover:bg-muted/50 has-aria-expanded:bg-muted/50 data-[state=selected]:bg-muted",
+        "border-b border-gray-200 transition-colors hover:bg-orange-50 data-[state=selected]:bg-orange-50",
         className
       )}
-      {...props} />
+      {...props}
+    />
   );
 }
 
@@ -75,10 +94,11 @@ function TableHead({
     <th
       data-slot="table-head"
       className={cn(
-        "h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0",
+        "h-12 px-4 text-left align-middle font-semibold text-gray-800 whitespace-nowrap border-b border-gray-200",
         className
       )}
-      {...props} />
+      {...props}
+    />
   );
 }
 
@@ -90,10 +110,11 @@ function TableCell({
     <td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+        "px-4 py-3 align-middle whitespace-nowrap text-gray-700",
         className
       )}
-      {...props} />
+      {...props}
+    />
   );
 }
 
@@ -104,8 +125,12 @@ function TableCaption({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("mt-4 text-sm text-muted-foreground", className)}
-      {...props} />
+      className={cn(
+        "mt-4 text-sm text-gray-500",
+        className
+      )}
+      {...props}
+    />
   );
 }
 
@@ -118,4 +143,4 @@ export {
   TableRow,
   TableCell,
   TableCaption,
-}
+};

@@ -1,4 +1,4 @@
-import { API_ROUTES } from "@/constatnts/apiRoutes"
+import { API_ROUTES } from "@/constants/apiRoutes"
 import api from "@/lib/axios"
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 

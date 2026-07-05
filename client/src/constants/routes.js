@@ -21,6 +21,13 @@ export const ROUTES = {
         SETTINGS: '/vendor/settings',
     },
     ADMIN: {
-        
+        ROOT: "/admin", 
+        DASHBOARD: "/admin/dashboard",
+        USERS: "/admin/users",
+        VENDORS: "/admin/vendors",
+        VENUES: "/admin/venues",
+        BOOKINGS: "/admin/bookings",
+        PAYMENTS: "/admin/payments",
+        CATEGORIES: "/admin/categories",
     }
 }
