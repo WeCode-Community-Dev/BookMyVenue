@@ -60,16 +60,9 @@ const UserProfile = () => {
   
       toast.success("OTP sent to your email");
   
-      return {
-        success: true,
-      };
     } catch (error) {
       toast.error(error);
-  
-      return {
-        success: false,
-        message: error,
-      };
+      throw error;
     }
   };
 
@@ -83,14 +76,8 @@ const UserProfile = () => {
   
       setIsEditing(false);
   
-      return {
-        success: true,
-      };
     } catch (error) {
-      return {
-        success: false,
-        message: error,
-      };
+      throw error;
     }
   };
 
@@ -101,6 +88,7 @@ const UserProfile = () => {
       toast.success("OTP resent successfully");
     } catch (error) {
       toast.error(error);
+      throw error;
     }
   };
 

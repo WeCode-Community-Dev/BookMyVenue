@@ -35,39 +35,42 @@ const UserEditProfileForm = ({
 
   const handleSendOtp = async () => {
     if (!newEmail.trim()) return;
-
-    setOtpLoading(true);
-
-    const result = await onRequestEmailOtp(newEmail);
-
-    setOtpLoading(false);
-
-    if (result.success) {
+  
+    try {
+      setOtpLoading(true);
+  
+      await onRequestEmailOtp(newEmail);
+  
       setOtpSent(true);
-    } else {
-      setOtpSent(false);
+    } catch (error) {
+      // Parent already shows the toast
+    } finally {
+      setOtpLoading(false);
     }
   };
 
   const [otp, setOtp] = useState("");
 
   const handleVerifyOtp = async () => {
-    const result = await onVerifyOtp(otp);
-
-    if (!result.success) {
-      setOtpError(result.message || "Invalid OTP");
-      return;
+    try {
+      await onVerifyOtp(otp);
+  
+      setOtpError("");
+    } catch (error) {
+      setOtpError(error);
     }
-
-    setOtpError("");
   };
 
   const handleResendOtp = async () => {
-    setOtpLoading(true);
-
-    await onResendOtp();
-
-    setOtpLoading(false);
+    try {
+      setOtpLoading(true);
+  
+      await onResendOtp();
+    } catch (error) {
+      // Parent already shows the toast
+    } finally {
+      setOtpLoading(false);
+    }
   };
 
   const [otpError, setOtpError] = useState("");
