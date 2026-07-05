@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { getAdminAllVenues, getAllUsers, approveRequest } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import "../css/Admin.css";
 
 const MOCK_DATA = {
@@ -115,7 +117,8 @@ function AddNewPopUp({onClose}) {
   )
 }
 
-function RequestsTable({ data }) {
+function RequestsTable({ data, onApprove }) {
+
   return (
     <div className="table-wrap">
       <table className="data-table">
@@ -126,16 +129,16 @@ function RequestsTable({ data }) {
         </thead>
         <tbody>
           {data.map((r) => (
-            <tr key={r.id}>
-              <td className="muted">{r.id}</td>
-              <td className="bold">{r.venue}</td>
-              <td>{r.owner}</td>
-              <td><span className="tag">{r.type}</span></td>
-              <td className="muted">{r.date}</td>
+            <tr key={r.venueId}>
+              <td className="muted">{r.venueId}</td>
+              <td className="bold">{r.venueName}</td>
+              <td>{r.ownerName}</td>
+              <td><span className="tag">{r.requestType}</span></td>
+              <td className="muted">{r.requestDate}</td>
               <td><StatusBadge status={r.status} /></td>
               <td>
                 <div className="action-btns">
-                  <button className="btn-action btn-action--approve">✓</button>
+                  <button className="btn-action btn-action--approve" onClick={() => onApprove(r.venueId)}>✓</button>
                   <button className="btn-action btn-action--reject">✕</button>
                 </div>
               </td>
@@ -241,12 +244,53 @@ function PermissionsTable({ data }) {
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("requests");
+  const { user } = useAuth();
+  const [allRequest, setAllRequest] = useState([]);
+  const [allUsers, getAllUsersData] = useState([]);
 
+  
+  const handleApprove = async (venueId) => {
+    const remarks = prompt("Enter approval remarks:") || "Approved";
+    try {
+      await approveRequest(user.token, venueId, remarks);
+      const data = await getAdminAllVenues(user.token);
+      setAllRequest(data.filter(r => r.status === "PENDING_APPROVAL"));
+      alert("Venue approved!");
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.userId) {
+      getAdminAllVenues(user.token)
+        .then(data => {
+          const onlyReqst = data.filter(r=> r.status == "PENDING_APPROVAL");
+          console.log(data)
+          setAllRequest(data);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    }
+  }, [user]);
+
+  useEffect(()=> {
+    if(user?.userId) {
+      getAllUsers(user.token)
+      .then(data => {
+        getAllUsersData(data);
+      }).catch (err=> {
+        console.log(err);
+      });
+    }
+  }, [user]);
+  
   const renderContent = () => {
     switch (activeTab) {
-      case "requests": return <RequestsTable data={MOCK_DATA.requests} />;
-      case "users": return <UsersTable data={MOCK_DATA.users} />;
-      case "venueOwners": return <VenueOwnersTable data={MOCK_DATA.venueOwners} />;
+      case "requests": return <RequestsTable data={allRequest} onApprove={handleApprove} />;
+      case "users": return <UsersTable data={allUsers} />;
+      case "venueOwners": return <VenueOwnersTable data={allUsers} />;
       case "permissions": return <PermissionsTable data={MOCK_DATA.permissions} />;
       default: return null;
     }

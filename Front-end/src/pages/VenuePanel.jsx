@@ -1,11 +1,8 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { createVenue,getAllVenues } from "../services/api";
 
-const OWNER_VENUES = [
-  { id: 1, name: "The Grand Palace Banquet", type: "Wedding", city: "Bengaluru", location: "Indiranagar", capacity: "500 guests", price: 85000, rating: 4.8, reviews: 124, status: "active", bookings: 18, image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&q=80", amenities: ["AC", "Parking", "Catering", "DJ", "Decor", "Bridal Room"], description: "A luxurious banquet hall with elegant interiors, perfect for grand weddings and receptions." },
-  { id: 2, name: "Pearl Banquet & Lawn", type: "Wedding", city: "Bengaluru", location: "Koramangala", capacity: "400 guests", price: 72000, rating: 4.6, reviews: 98, status: "active", bookings: 11, image: "https://images.unsplash.com/photo-1478146059778-26ca6e370071?w=400&q=80", amenities: ["Indoor + Lawn", "AC", "Catering", "DJ", "Parking", "Decor"], description: "An exquisite combination of indoor hall and outdoor lawn for your dream wedding." },
-  { id: 3, name: "Sky Terrace Hall", type: "Party", city: "Bengaluru", location: "MG Road", capacity: "150 guests", price: 40000, rating: 4.3, reviews: 52, status: "draft", bookings: 0, image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&q=80", amenities: ["Rooftop", "DJ", "Bar", "AC"], description: "Rooftop party space with great views." },
-];
-
+// ── Mock bookings (replace later with API) ──────────────────────
 const RECENT_BOOKINGS = [
   { id: "BMV20240101", venue: "The Grand Palace Banquet", guest: "Priya Mehta", date: "2024-12-15", guests: 350, amount: 89250, status: "confirmed" },
   { id: "BMV20240102", venue: "Pearl Banquet & Lawn", guest: "Rahul Sharma", date: "2024-12-22", guests: 200, amount: 75600, status: "pending" },
@@ -13,12 +10,42 @@ const RECENT_BOOKINGS = [
   { id: "BMV20240104", venue: "Pearl Banquet & Lawn", guest: "Vikram Nair", date: "2025-01-18", guests: 300, amount: 75600, status: "cancelled" },
 ];
 
-const AMENITY_OPTIONS = ["AC", "Parking", "Catering", "DJ", "Decor", "Bridal Room", "Bar", "WiFi", "Stage", "Garden", "Pool", "Valet Parking", "Rooftop", "Dance Floor", "AV Equipment"];
-const VENUE_TYPES = ["Wedding", "Party", "Corporate", "Outdoor", "Birthday", "Reception"];
+const PRICING_TYPES = ["FULL_DAY", "HOURLY", "PER_SLOT"];
 const CITIES = ["Bengaluru", "Mumbai", "Delhi", "Hyderabad", "Chennai", "Pune", "Jaipur", "Ahmedabad", "Kolkata", "Surat"];
+const STATES = ["Karnataka", "Maharashtra", "Delhi", "Telangana", "Tamil Nadu", "Rajasthan", "Gujarat", "West Bengal"];
+
+// ── Hardcoded amenity IDs — replace with GET /api/amenities later
+const AMENITY_OPTIONS = [
+  { id: 1, label: "AC" },
+  { id: 2, label: "Parking" },
+  { id: 3, label: "Catering" },
+  { id: 4, label: "DJ" },
+  { id: 5, label: "Decor" },
+  { id: 6, label: "Bridal Room" },
+  { id: 7, label: "Bar" },
+  { id: 8, label: "WiFi" },
+  { id: 9, label: "Stage" },
+  { id: 10, label: "Garden" },
+];
+
+// ── Hardcoded event category IDs — replace with GET /api/event-categories later
+const EVENT_CATEGORIES = [
+  { id: 1, label: "Wedding" },
+  { id: 2, label: "Birthday" },
+  { id: 3, label: "Corporate" },
+  { id: 4, label: "Reception" },
+  { id: 5, label: "Party" },
+  { id: 6, label: "Outdoor" },
+];
 
 function StatusBadge({ status }) {
-  const map = { active: { bg: "#e6f9f0", color: "#1a7a4a", label: "● Active" }, draft: { bg: "#fff8e6", color: "#b07800", label: "◐ Draft" }, cancelled: { bg: "#fff0f3", color: "#8b1a2e", label: "✕ Cancelled" }, confirmed: { bg: "#e6f9f0", color: "#1a7a4a", label: "✔ Confirmed" }, pending: { bg: "#fff8e6", color: "#b07800", label: "⏳ Pending" } };
+  const map = {
+    active: { bg: "#e6f9f0", color: "#1a7a4a", label: "● Active" },
+    draft: { bg: "#fff8e6", color: "#b07800", label: "◐ Draft" },
+    cancelled: { bg: "#fff0f3", color: "#8b1a2e", label: "✕ Cancelled" },
+    confirmed: { bg: "#e6f9f0", color: "#1a7a4a", label: "✔ Confirmed" },
+    pending: { bg: "#fff8e6", color: "#b07800", label: "⏳ Pending" }
+  };
   const s = map[status] || map.draft;
   return <span style={{ background: s.bg, color: s.color, padding: "3px 10px", borderRadius: 999, fontSize: "0.76rem", fontWeight: 700 }}>{s.label}</span>;
 }
@@ -36,56 +63,162 @@ function StatCard({ icon, label, value, sub, accent }) {
   );
 }
 
-function VenueFormModal({ venue, onClose, onSave }) {
-  const isEdit = !!venue;
-  const [form, setForm] = useState(venue || { name: "", type: "Wedding", city: "", location: "", capacity: "", price: "", description: "", amenities: [], status: "draft", image: "" });
+// ── Add Venue Modal (matches VenueCreationRequest) ───────────────
+function VenueFormModal({ onClose, onSave, ownerUserId }) {
   const [activeTab, setActiveTab] = useState("basic");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [form, setForm] = useState({
+    // Basic
+    venueName: "",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    district: "",
+    state: "",
+    country: "India",
+    pincode: "",
+    latitude: "",
+    longitude: "",
+    capacity: "",
+    pricingType: "FULL_DAY",
+    basePrice: "",
+    advancePercentage: "",
+    // Amenities & Categories
+    amenityIds: [],
+    supportedEventCategoryIds: [],
+    // Photo
+    photoUrl: "",
+  });
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
-  const toggleAmenity = (a) => setForm(f => ({ ...f, amenities: f.amenities.includes(a) ? f.amenities.filter(x => x !== a) : [...f.amenities, a] }));
 
-  useEffect(()=> {
-    window.scrollTo({top: 0, behavior: "smooth"});
-  }, []);
+  const toggleId = (key, id) => {
+    setForm(f => ({
+      ...f,
+      [key]: f[key].includes(id) ? f[key].filter(x => x !== id) : [...f[key], id]
+    }));
+  };
+
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, []);
+
+  const handleSubmit = async () => {
+    console.log("ownerUserId:", ownerUserId);
+    setError("");
+    // Basic validation
+    if (!form.venueName || !form.addressLine1 || !form.city || !form.district || !form.state || !form.capacity || !form.basePrice) {
+      setError("Please fill all required fields (marked *).");
+      setActiveTab("basic");
+      return;
+    }
+
+    const payload = {
+      ownerUserId: ownerUserId,
+      venueName: form.venueName,
+      addressLine1: form.addressLine1,
+      addressLine2: form.addressLine2 || null,
+      city: form.city,
+      district: form.district,
+      state: form.state,
+      country: form.country,
+      pincode: form.pincode || null,
+      latitude: form.latitude ? parseFloat(form.latitude) : null,
+      longitude: form.longitude ? parseFloat(form.longitude) : null,
+      capacity: parseInt(form.capacity),
+      pricingType: form.pricingType,
+      basePrice: parseFloat(form.basePrice),
+      advancePercentage: form.advancePercentage ? parseFloat(form.advancePercentage) : null,
+      amenityIds: form.amenityIds,
+      supportedEventCategoryIds: form.supportedEventCategoryIds,
+      photos: form.photoUrl ? [{
+        venueId: 0,
+        isPrimary: true,
+        displayOrder: 1,
+        photoUrl: form.photoUrl,
+        createdBy: ownerUserId,
+        updatedBy: ownerUserId
+      }] : [],
+      createdBy: ownerUserId,
+    };
+
+    setLoading(true);
+    try {
+      const data = await onSave(payload);
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="vp-modal-overlay" onClick={onClose}>
       <div className="vp-modal" onClick={e => e.stopPropagation()}>
         <div className="vp-modal-header">
           <div>
-            <h2>{isEdit ? "Edit Venue" : "Add New Venue"}</h2>
-            <p>{isEdit ? `Editing: ${venue.name}` : "Fill in the details to list your venue"}</p>
+            <h2>Add New Venue</h2>
+            <p>Fill in the details to list your venue</p>
           </div>
           <button className="vp-modal-close" onClick={onClose}>✕</button>
         </div>
 
         <div className="vp-modal-tabs">
-          {["basic", "details", "amenities"].map(t => (
+          {["basic", "location", "categories"].map(t => (
             <button key={t} className={`vp-modal-tab ${activeTab === t ? "active" : ""}`} onClick={() => setActiveTab(t)}>
-              {t === "basic" ? "📋 Basic Info" : t === "details" ? "📝 Details" : "⚙ Amenities"}
+              {t === "basic" ? "📋 Basic Info" : t === "location" ? "📍 Location" : "⚙ Amenities & Events"}
             </button>
           ))}
         </div>
 
+        {error && <div style={{ background: "#fff0f3", color: "#8b1a2e", padding: "10px 20px", fontSize: "0.85rem" }}>⚠️ {error}</div>}
+
         <div className="vp-modal-body">
+
+          {/* ── TAB 1: Basic Info ── */}
           {activeTab === "basic" && (
             <div className="vp-form-grid">
               <div className="vp-form-group vp-span2">
                 <label>Venue Name *</label>
-                <input className="vp-input" placeholder="e.g. The Grand Palace Banquet" value={form.name} onChange={set("name")} />
+                <input className="vp-input" placeholder="e.g. The Grand Palace Banquet" value={form.venueName} onChange={set("venueName")} />
               </div>
               <div className="vp-form-group">
-                <label>Event Type *</label>
-                <select className="vp-input" value={form.type} onChange={set("type")}>
-                  {VENUE_TYPES.map(t => <option key={t}>{t}</option>)}
+                <label>Capacity (guests) *</label>
+                <input className="vp-input" type="number" placeholder="500" value={form.capacity} onChange={set("capacity")} />
+              </div>
+              <div className="vp-form-group">
+                <label>Pricing Type *</label>
+                <select className="vp-input" value={form.pricingType} onChange={set("pricingType")}>
+                  {PRICING_TYPES.map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div className="vp-form-group">
-                <label>Status</label>
-                <select className="vp-input" value={form.status} onChange={set("status")}>
-                  <option value="active">Active (Visible)</option>
-                  <option value="draft">Draft (Hidden)</option>
-                </select>
+                <label>Base Price (₹) *</label>
+                <input className="vp-input" type="number" placeholder="85000" value={form.basePrice} onChange={set("basePrice")} />
+              </div>
+              <div className="vp-form-group">
+                <label>Advance % (optional)</label>
+                <input className="vp-input" type="number" placeholder="30" value={form.advancePercentage} onChange={set("advancePercentage")} />
+              </div>
+              <div className="vp-form-group vp-span2">
+                <label>Cover Photo URL (optional)</label>
+                <input className="vp-input" placeholder="https://..." value={form.photoUrl} onChange={set("photoUrl")} />
+                {form.photoUrl && <img src={form.photoUrl} alt="" className="vp-img-preview" onError={e => e.target.style.display = "none"} />}
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB 2: Location ── */}
+          {activeTab === "location" && (
+            <div className="vp-form-grid">
+              <div className="vp-form-group vp-span2">
+                <label>Address Line 1 *</label>
+                <input className="vp-input" placeholder="Building name, street" value={form.addressLine1} onChange={set("addressLine1")} />
+              </div>
+              <div className="vp-form-group vp-span2">
+                <label>Address Line 2 (optional)</label>
+                <input className="vp-input" placeholder="Landmark, area" value={form.addressLine2} onChange={set("addressLine2")} />
               </div>
               <div className="vp-form-group">
                 <label>City *</label>
@@ -95,50 +228,59 @@ function VenueFormModal({ venue, onClose, onSave }) {
                 </select>
               </div>
               <div className="vp-form-group">
-                <label>Area / Location *</label>
-                <input className="vp-input" placeholder="e.g. Indiranagar" value={form.location} onChange={set("location")} />
+                <label>District *</label>
+                <input className="vp-input" placeholder="e.g. Bengaluru Urban" value={form.district} onChange={set("district")} />
               </div>
               <div className="vp-form-group">
-                <label>Price per Day (₹) *</label>
-                <input className="vp-input" type="number" placeholder="85000" value={form.price} onChange={set("price")} />
+                <label>State *</label>
+                <select className="vp-input" value={form.state} onChange={set("state")}>
+                  <option value="">Select state</option>
+                  {STATES.map(s => <option key={s}>{s}</option>)}
+                </select>
               </div>
               <div className="vp-form-group">
-                <label>Max Capacity *</label>
-                <input className="vp-input" placeholder="e.g. 500 guests" value={form.capacity} onChange={set("capacity")} />
+                <label>Country *</label>
+                <input className="vp-input" value={form.country} onChange={set("country")} />
+              </div>
+              <div className="vp-form-group">
+                <label>Pincode</label>
+                <input className="vp-input" placeholder="560001" value={form.pincode} onChange={set("pincode")} />
+              </div>
+              <div className="vp-form-group">
+                <label>Latitude (optional)</label>
+                <input className="vp-input" type="number" placeholder="12.9716" value={form.latitude} onChange={set("latitude")} />
+              </div>
+              <div className="vp-form-group">
+                <label>Longitude (optional)</label>
+                <input className="vp-input" type="number" placeholder="77.5946" value={form.longitude} onChange={set("longitude")} />
               </div>
             </div>
           )}
 
-          {activeTab === "details" && (
-            <div className="vp-form-grid">
-              <div className="vp-form-group vp-span2">
-                <label>Cover Image URL</label>
-                <input className="vp-input" placeholder="https://..." value={form.image} onChange={set("image")} />
-                {form.image && <img src={form.image} alt="" className="vp-img-preview" onError={e => e.target.style.display = "none"} />}
-              </div>
-              <div className="vp-form-group vp-span2">
-                <label>Description *</label>
-                <textarea className="vp-input vp-textarea" placeholder="Describe your venue — atmosphere, highlights, what makes it special..." value={form.description} onChange={set("description")} />
-              </div>
-              <div className="vp-form-group vp-span2">
-                <label>Venue Policies / Notes</label>
-                <textarea className="vp-input vp-textarea" placeholder="Cancellation policy, timing, restrictions, etc." style={{ minHeight: 80 }} />
-              </div>
-            </div>
-          )}
-
-          {activeTab === "amenities" && (
+          {/* ── TAB 3: Amenities & Event Categories ── */}
+          {activeTab === "categories" && (
             <div>
-              <p className="vp-amenity-hint">Select all amenities your venue offers</p>
+              <h4 style={{ marginBottom: 8 }}>Amenities</h4>
               <div className="vp-amenity-grid">
                 {AMENITY_OPTIONS.map(a => (
-                  <label key={a} className={`vp-amenity-chip ${form.amenities.includes(a) ? "selected" : ""}`}>
-                    <input type="checkbox" checked={form.amenities.includes(a)} onChange={() => toggleAmenity(a)} />
-                    {a}
+                  <label key={a.id} className={`vp-amenity-chip ${form.amenityIds.includes(a.id) ? "selected" : ""}`}>
+                    <input type="checkbox" checked={form.amenityIds.includes(a.id)} onChange={() => toggleId("amenityIds", a.id)} />
+                    {a.label}
                   </label>
                 ))}
               </div>
-              <p className="vp-amenity-count">{form.amenities.length} amenities selected</p>
+              <p className="vp-amenity-count">{form.amenityIds.length} amenities selected</p>
+
+              <h4 style={{ marginTop: 24, marginBottom: 8 }}>Supported Event Types</h4>
+              <div className="vp-amenity-grid">
+                {EVENT_CATEGORIES.map(c => (
+                  <label key={c.id} className={`vp-amenity-chip ${form.supportedEventCategoryIds.includes(c.id) ? "selected" : ""}`}>
+                    <input type="checkbox" checked={form.supportedEventCategoryIds.includes(c.id)} onChange={() => toggleId("supportedEventCategoryIds", c.id)} />
+                    {c.label}
+                  </label>
+                ))}
+              </div>
+              <p className="vp-amenity-count">{form.supportedEventCategoryIds.length} event types selected</p>
             </div>
           )}
         </div>
@@ -146,10 +288,14 @@ function VenueFormModal({ venue, onClose, onSave }) {
         <div className="vp-modal-footer">
           <button className="vp-btn-ghost" onClick={onClose}>Cancel</button>
           <div style={{ display: "flex", gap: 10 }}>
-            {activeTab !== "basic" && <button className="vp-btn-ghost" onClick={() => setActiveTab(activeTab === "amenities" ? "details" : "basic")}>← Back</button>}
-            {activeTab !== "amenities"
-              ? <button className="vp-btn-primary" onClick={() => setActiveTab(activeTab === "basic" ? "details" : "amenities")}>Next →</button>
-              : <button className="vp-btn-primary" onClick={() => { onSave(form); onClose(); }}>💾 {isEdit ? "Save Changes" : "List Venue"}</button>
+            {activeTab !== "basic" && (
+              <button className="vp-btn-ghost" onClick={() => setActiveTab(activeTab === "categories" ? "location" : "basic")}>← Back</button>
+            )}
+            {activeTab !== "categories"
+              ? <button className="vp-btn-primary" onClick={() => setActiveTab(activeTab === "basic" ? "location" : "categories")}>Next →</button>
+              : <button className="vp-btn-primary" onClick={handleSubmit} disabled={loading}>
+                  {loading ? "Saving..." : "💾 List Venue"}
+                </button>
             }
           </div>
         </div>
@@ -182,7 +328,6 @@ function ProfileSection() {
   const [form, setForm] = useState({ name: "Nikhil", email: "nikhil@gmail.com", phone: "+91 98765 43210", business: "Reddy Hospitality Pvt Ltd", city: "Bengaluru", bio: "Venue owner with 10+ years of experience in event hospitality across South India.", avatar: "N" });
   const [saved, setSaved] = useState(false);
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
-
   const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2500); };
 
   return (
@@ -191,63 +336,28 @@ function ProfileSection() {
         <div className="vp-profile-avatar-side">
           <div className="vp-avatar-big">{form.avatar}</div>
           <button className="vp-btn-ghost" style={{ marginTop: 12, fontSize: "0.85rem" }}>📷 Change Photo</button>
-          <div className="vp-profile-badge">
-            <span>✅ Verified Owner</span>
-          </div>
+          <div className="vp-profile-badge"><span>✅ Verified Owner</span></div>
           <div className="vp-profile-stats-mini">
             <div><strong>3</strong><span>Venues</span></div>
             <div><strong>29</strong><span>Bookings</span></div>
             <div><strong>4.6★</strong><span>Avg Rating</span></div>
           </div>
         </div>
-
         <div className="vp-profile-form-side">
-          <div className="vp-section-title-row">
-            <h3>Personal Information</h3>
-          </div>
+          <div className="vp-section-title-row"><h3>Personal Information</h3></div>
           <div className="vp-form-grid">
-            <div className="vp-form-group">
-              <label>Full Name</label>
-              <input className="vp-input" value={form.name} onChange={set("name")} />
-            </div>
-            <div className="vp-form-group">
-              <label>Business Name</label>
-              <input className="vp-input" value={form.business} onChange={set("business")} />
-            </div>
-            <div className="vp-form-group">
-              <label>Email</label>
-              <input className="vp-input" type="email" value={form.email} onChange={set("email")} />
-            </div>
-            <div className="vp-form-group">
-              <label>Phone</label>
-              <input className="vp-input" value={form.phone} onChange={set("phone")} />
-            </div>
+            <div className="vp-form-group"><label>Full Name</label><input className="vp-input" value={form.name} onChange={set("name")} /></div>
+            <div className="vp-form-group"><label>Business Name</label><input className="vp-input" value={form.business} onChange={set("business")} /></div>
+            <div className="vp-form-group"><label>Email</label><input className="vp-input" type="email" value={form.email} onChange={set("email")} /></div>
+            <div className="vp-form-group"><label>Phone</label><input className="vp-input" value={form.phone} onChange={set("phone")} /></div>
             <div className="vp-form-group">
               <label>City</label>
               <select className="vp-input" value={form.city} onChange={set("city")}>
                 {CITIES.map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
-            <div className="vp-form-group vp-span2">
-              <label>About / Bio</label>
-              <textarea className="vp-input vp-textarea" value={form.bio} onChange={set("bio")} style={{ minHeight: 80 }} />
-            </div>
+            <div className="vp-form-group vp-span2"><label>About / Bio</label><textarea className="vp-input vp-textarea" value={form.bio} onChange={set("bio")} style={{ minHeight: 80 }} /></div>
           </div>
-
-          <div className="vp-section-title-row" style={{ marginTop: 32 }}>
-            <h3>Change Password</h3>
-          </div>
-          <div className="vp-form-grid">
-            <div className="vp-form-group">
-              <label>Current Password</label>
-              <input className="vp-input" type="password" placeholder="••••••••" />
-            </div>
-            <div className="vp-form-group">
-              <label>New Password</label>
-              <input className="vp-input" type="password" placeholder="••••••••" />
-            </div>
-          </div>
-
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24 }}>
             {saved && <span className="vp-save-toast">✅ Profile saved!</span>}
             <button className="vp-btn-primary" onClick={handleSave}>Save Changes</button>
@@ -259,24 +369,22 @@ function ProfileSection() {
 }
 
 export default function VenuePanel() {
+  const { user } = useAuth();
   const [activeNav, setActiveNav] = useState("dashboard");
-  const [myVenues, setMyVenues] = useState(OWNER_VENUES);
+  const [myVenues, setMyVenues] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editVenue, setEditVenue] = useState(null);
   const [deleteVenue, setDeleteVenue] = useState(null);
   const [toast, setToast] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const showToast = (msg, type = "success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000); };
 
-  const handleSaveVenue = (form) => {
-    if (form.id) {
-      setMyVenues(prev => prev.map(v => v.id === form.id ? { ...v, ...form } : v));
-      showToast("Venue updated successfully!");
-    } else {
-      setMyVenues(prev => [...prev, { ...form, id: Date.now(), rating: 0, reviews: 0, bookings: 0 }]);
-      showToast("New venue listed successfully!");
-    }
+  const handleSaveVenue = async (payload) => {
+    const token = user?.token || localStorage.getItem("bmv_token"); // ← fallback
+    const data = await createVenue(payload, token);
+    setMyVenues(prev => [...prev, data]);
+    showToast("New venue listed successfully!");
+    return data;
   };
 
   const handleDelete = (id) => {
@@ -285,7 +393,6 @@ export default function VenuePanel() {
   };
 
   const totalRevenue = RECENT_BOOKINGS.filter(b => b.status === "confirmed").reduce((s, b) => s + b.amount, 0);
-  const totalBookings = RECENT_BOOKINGS.length;
   const activeVenues = myVenues.filter(v => v.status === "active").length;
 
   const NAV = [
@@ -295,13 +402,20 @@ export default function VenuePanel() {
     { id: "profile", icon: "👤", label: "My Profile" },
   ];
 
+  useEffect(() => {
+    if(user?.userId) {
+      getAllVenues(user.token).then(data=> {
+        console.log(data);
+        setMyVenues(data);
+      })
+      .catch(err=> console.log("Failed to load venues:", err));
+    }
+  },[user]);
+
   return (
     <div className="vp-root">
       <aside className={`vp-sidebar ${sidebarOpen ? "open" : ""}`}>
-        <div className="vp-sidebar-logo">
-          <span>🏛️</span>
-          <span>Venue<span>Panel</span></span>
-        </div>
+        <div className="vp-sidebar-logo"><span>🏛️</span><span>Venue<span>Panel</span></span></div>
         <nav className="vp-nav">
           {NAV.map(n => (
             <button key={n.id} className={`vp-nav-item ${activeNav === n.id ? "active" : ""}`} onClick={() => { setActiveNav(n.id); setSidebarOpen(false); }}>
@@ -311,9 +425,9 @@ export default function VenuePanel() {
         </nav>
         <div className="vp-sidebar-footer">
           <div className="vp-owner-chip">
-            <div className="vp-owner-avatar">N</div>
+            <div className="vp-owner-avatar">{user?.firstName?.[0] || "U"}</div>
             <div>
-              <p className="vp-owner-name">Nikhil</p>
+              <p className="vp-owner-name">{user?.firstName || "Owner"}</p>
               <p className="vp-owner-role">Venue Owner</p>
             </div>
           </div>
@@ -326,25 +440,21 @@ export default function VenuePanel() {
         <header className="vp-topbar">
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <button className="vp-hamburger" onClick={() => setSidebarOpen(s => !s)}>☰</button>
-            <div>
-              <h1 className="vp-page-title">
-                {NAV.find(n => n.id === activeNav)?.icon} {NAV.find(n => n.id === activeNav)?.label}
-              </h1>
-            </div>
+            <h1 className="vp-page-title">{NAV.find(n => n.id === activeNav)?.icon} {NAV.find(n => n.id === activeNav)?.label}</h1>
           </div>
           {activeNav === "venues" && (
             <button className="vp-btn-primary" onClick={() => setShowAddModal(true)}>+ Add New Venue</button>
           )}
         </header>
+
         {activeNav === "dashboard" && (
           <div className="vp-page-content">
             <div className="vp-stats-row">
               <StatCard icon="🏛️" label="Active Venues" value={activeVenues} sub={`${myVenues.length} total`} accent="#8B1A2E" />
-              <StatCard icon="📅" label="Total Bookings" value={totalBookings} sub="This season" accent="#C9952A" />
+              <StatCard icon="📅" label="Total Bookings" value={RECENT_BOOKINGS.length} sub="This season" accent="#C9952A" />
               <StatCard icon="💰" label="Revenue Earned" value={`₹${(totalRevenue / 1000).toFixed(0)}K`} sub="Confirmed only" accent="#1a7a4a" />
               <StatCard icon="⭐" label="Avg Rating" value="4.6" sub="Across all venues" accent="#0070c9" />
             </div>
-
             <div className="vp-dash-grid">
               <div className="vp-card">
                 <div className="vp-card-header">
@@ -366,28 +476,6 @@ export default function VenuePanel() {
                   </tbody>
                 </table>
               </div>
-
-              <div className="vp-card">
-                <div className="vp-card-header">
-                  <h3>My Venues</h3>
-                  <button className="vp-link-btn" onClick={() => setActiveNav("venues")}>Manage →</button>
-                </div>
-                <div className="vp-venue-quick-list">
-                  {myVenues.map(v => (
-                    <div key={v.id} className="vp-venue-quick-item">
-                      <img src={v.image} alt={v.name} className="vp-venue-quick-img" />
-                      <div className="vp-venue-quick-info">
-                        <p className="vp-venue-quick-name">{v.name}</p>
-                        <p className="vp-venue-quick-meta">{v.type} · {v.city}</p>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <StatusBadge status={v.status} />
-                        <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: 4 }}>{v.bookings} bookings</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         )}
@@ -404,30 +492,30 @@ export default function VenuePanel() {
             ) : (
               <div className="vp-venues-list">
                 {myVenues.map(v => (
-                  <div key={v.id} className="vp-venue-row-card">
-                    <img src={v.image} alt={v.name} className="vp-venue-row-img" />
+                  <div key={v.venueId || v.id} className="vp-venue-row-card">
                     <div className="vp-venue-row-info">
                       <div className="vp-venue-row-top">
                         <div>
-                          <h3 className="vp-venue-row-name">{v.name}</h3>
-                          <p className="vp-venue-row-meta">📍 {v.location}, {v.city} &nbsp;·&nbsp; 👥 {v.capacity} &nbsp;·&nbsp; 🎉 {v.type}</p>
-                        </div>
-                        <StatusBadge status={v.status} />
-                      </div>
-                      <p className="vp-venue-row-desc">{v.description}</p>
-                      <div className="vp-venue-row-stats">
-                        <span>💰 ₹{v.price.toLocaleString()}/day</span>
-                        <span>⭐ {v.rating} ({v.reviews} reviews)</span>
-                        <span>📅 {v.bookings} bookings</span>
-                        <div className="vp-venue-row-amenities">
-                          {v.amenities.slice(0, 4).map(a => <span key={a} className="vp-tag">{a}</span>)}
-                          {v.amenities.length > 4 && <span className="vp-tag">+{v.amenities.length - 4}</span>}
+                          <h3 className="vp-venue-row-name">{v.venueName}</h3>
+                          <p className="vp-venue-row-meta">📍 {v.city} &nbsp;·&nbsp; 👥 {v.capacity} guests &nbsp;·&nbsp; 💰 ₹{v.basePrice}</p>
                         </div>
                       </div>
                     </div>
                     <div className="vp-venue-row-actions">
-                      <button className="vp-action-btn edit" onClick={() => setEditVenue(v)}>✏️ Edit</button>
-                      <button className="vp-action-btn delete" onClick={() => setDeleteVenue(v)}>🗑️ Delete</button>
+                      <span
+                        className={`vp-status-badge ${
+                          v.status === "APPROVED"
+                            ? "approved"
+                            : v.status === "PENDING_APPROVAL"
+                            ? "pending"
+                            : ""
+                        }`}
+                      >
+                        {v.status === "PENDING_APPROVAL"
+                          ? "Pending Approval"
+                          : v.status}
+                      </span>
+                      {/* <button className="vp-action-btn delete" onClick={() => setDeleteVenue(v)}>🗑️ Delete</button> */}
                     </div>
                   </div>
                 ))}
@@ -438,24 +526,10 @@ export default function VenuePanel() {
 
         {activeNav === "bookings" && (
           <div className="vp-page-content">
-            <div className="vp-bookings-filter">
-              {["All", "Confirmed", "Pending", "Cancelled"].map(s => (
-                <button key={s} className="vp-filter-tab">{s}</button>
-              ))}
-            </div>
             <div className="vp-card" style={{ marginTop: 0 }}>
               <table className="vp-table vp-table-full">
                 <thead>
-                  <tr>
-                    <th>Booking ID</th>
-                    <th>Guest</th>
-                    <th>Venue</th>
-                    <th>Event Date</th>
-                    <th>Guests</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
+                  <tr><th>Booking ID</th><th>Guest</th><th>Venue</th><th>Date</th><th>Guests</th><th>Amount</th><th>Status</th></tr>
                 </thead>
                 <tbody>
                   {RECENT_BOOKINGS.map(b => (
@@ -467,15 +541,6 @@ export default function VenuePanel() {
                       <td className="vp-td-muted">{b.guests}</td>
                       <td><strong>₹{b.amount.toLocaleString()}</strong></td>
                       <td><StatusBadge status={b.status} /></td>
-                      <td>
-                        {b.status === "pending" && (
-                          <div style={{ display: "flex", gap: 6 }}>
-                            <button className="vp-action-btn edit" style={{ padding: "4px 10px", fontSize: "0.78rem" }}>✔ Accept</button>
-                            <button className="vp-action-btn delete" style={{ padding: "4px 10px", fontSize: "0.78rem" }}>✕ Decline</button>
-                          </div>
-                        )}
-                        {b.status !== "pending" && <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>—</span>}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -483,22 +548,25 @@ export default function VenuePanel() {
             </div>
           </div>
         )}
+
         {activeNav === "profile" && (
-          <div className="vp-page-content">
-            <ProfileSection />
-          </div>
+          <div className="vp-page-content"><ProfileSection /></div>
         )}
       </main>
-      {(showAddModal || editVenue) && (
+
+      {showAddModal && (
         <VenueFormModal
-          venue={editVenue}
-          onClose={() => { setShowAddModal(false); setEditVenue(null); }}
+          onClose={() => setShowAddModal(false)}
           onSave={handleSaveVenue}
+          ownerUserId={user?.userId}
+          
         />
       )}
+
       {deleteVenue && (
         <DeleteModal venue={deleteVenue} onClose={() => setDeleteVenue(null)} onConfirm={handleDelete} />
       )}
+
       {toast && (
         <div className={`vp-toast ${toast.type === "error" ? "vp-toast-error" : ""}`}>{toast.msg}</div>
       )}

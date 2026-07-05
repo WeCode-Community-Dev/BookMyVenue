@@ -8,9 +8,28 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const login = ( ) => {
+  const login = (loginResponse) => {
+    const userData = {
+      userId: loginResponse.userId,
+      firstName: loginResponse.firstName,
+      email: loginResponse.email,
+      phone: loginResponse.phone,
+      city: loginResponse.city,
+      role: loginResponse.role,
+      token: loginResponse.token
+    };
+
     setUser(userData);
-    localStorage.setItem("bmv_user", JSON.stringify(userData));
+
+    localStorage.setItem(
+      "bmv_user",
+      JSON.stringify(userData)
+    );
+
+    localStorage.setItem(
+      "bmv_token",
+      loginResponse.token
+    );
   };
 
   const logout = () => {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { loginUser } from "../services/authService";
 
 export default function Login() {
   const [userID, setUserID] = useState("");
@@ -15,17 +16,26 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!userID || !password) { setError("Please fill in all fields."); return; }
-    if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
-    console.log(userID);
-    console.log(password);
-
-    setLoading(true);
-    setTimeout(() => {
-      login({ name: email.split("@")[0].replace(".", " "), email });
-      navigate(from, { replace: true });
+    if (!userID || !password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    try {
+      setLoading(true);
+      const response = await loginUser({
+        userName: userID,
+        password: password
+      });
+      console.log(response);
+      login(response);
+      navigate(from, {
+        replace: true
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (

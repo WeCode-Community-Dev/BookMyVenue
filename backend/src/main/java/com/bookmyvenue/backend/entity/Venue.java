@@ -78,6 +78,16 @@ public class Venue {
     @Column(name = "approval_remarks",columnDefinition = "TEXT")
     private String approvalRemarks;
 
+    @Column(name = "rating")
+    private Double rating;
+
+    @Column(name = "reviews")
+    private Integer reviews;
+
+    @Builder.Default
+    @Column(name = "featured", nullable = false)
+    private Boolean featured = false;
+
     @Column(name = "contact_name",length = 150)
     private String contactName;
 

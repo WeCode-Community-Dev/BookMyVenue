@@ -1051,6 +1051,27 @@ img { max-width: 100%; display: block; }
   display: flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 1rem; flex-shrink: 0;
 }
+.vp-status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.vp-status-badge.approved {
+  background: #e8f8ee;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.vp-status-badge.pending {
+  background: #fff7e6;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
 .vp-owner-name { font-size: 0.88rem; font-weight: 700; color: var(--white); }
 .vp-owner-role { font-size: 0.75rem; color: rgba(255,255,255,0.45); }
 

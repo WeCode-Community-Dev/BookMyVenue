@@ -19,6 +19,8 @@ export default function Navbar() {
   const cityRef = useRef(null);
   const userMenuRef = useRef(null);
 
+  const userData = JSON.parse(localStorage.getItem("bmv_user"));
+
   useEffect( () => {
     const handleUserMenuOutside = (event) => {
       if(
@@ -100,8 +102,8 @@ export default function Navbar() {
         <div className="nav-auth">
           {user ? (
             <div className="user-menu-wrap" ref={userMenuRef} onClick={() => setShowUserMenu(!showUserMenu)}>
-              <div className="user-avatar">{user.name?.charAt(0).toUpperCase()}</div>
-              <span className="user-name-short">{user.name?.split(" ")[0]}</span>
+              <div className="user-avatar">{user.firstName?.charAt(0).toUpperCase()}</div>
+              <span className="user-name-short">{user.firstName?.split(" ")[0]}</span>
               {showUserMenu && (
                 <div className="user-dropdown">
                   <Link to="/bookings" className="dropdown-item">My Bookings</Link>

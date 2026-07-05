@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import SearchBar from "../components/SearchBar";
 import VenueCard from "../components/VenueCard";
 import { venues, eventCategories } from "../services/Data";
+import { getAllVenues } from "../services/api";
 
 const testimonials = [
   { name: "Priya & Arjun", event: "Wedding", text: "BookMyVenue made our dream wedding a reality! Found the perfect garden venue in just 2 days.", avatar: "P" },

@@ -5,7 +5,7 @@ import { registerUser } from "../services/api";
 
 export default function Register() {
   const [form, setForm] = useState({ fname: "", lname: "", email: "", phone: "", password: "", confirm: "" });
-  const [cusForm, setCusForm] = useState({name: "", email : "", phone : "", businessName : "", password: "", confirm : ""});
+  const [cusForm, setCusForm] = useState({ fname: "", lname: "", email: "", phone: "", password: "", confirm: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -21,12 +21,6 @@ export default function Register() {
     if (!form.fname || !form.lname || !form.email || !form.phone || !form.password) { setError("All fields are required."); return; }
     if (form.password.length < 6) { setError("Password must be at least 6 characters."); return; }
     if (form.password !== form.confirm) { setError("Passwords do not match."); return; }
-    console.log(form.fname);
-    console.log(form.lname);
-    console.log(form.email);
-    console.log(form.phone);
-    console.log(form.password);
-    console.log(form.confirm);
     setLoading(true);
 
     try {
@@ -44,30 +38,44 @@ export default function Register() {
     } catch (err) {
       console.log(err);
       setError(err.message);
+      setLoading(false);
     } finally {
-      console.log(err.message);
       setLoading(false);
     }
   };
 
-  const handleCusSubmit = (e) => {
+  const handleCusSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!cusForm.name || !cusForm.email || !cusForm.phone || !cusForm.businessName || !cusForm.password || !cusForm.confirm) { setError("All fields are required."); return; }
-    if (cusForm.password.length < 6) { setError("Password must be at least 6 characters."); return; }
-    if (cusForm.password !== cusForm.confirm) { setError("Passwords do not match."); return; }
-    console.log(cusForm.name);
-    console.log(cusForm.email);
-    console.log(cusForm.phone);
-    console.log(cusForm.businessName);
-    console.log(cusForm.password);
-    console.log(cusForm.confirm);
+    if (!cusForm.fname || !cusForm.lname || !cusForm.email || !cusForm.phone || !cusForm.password || !cusForm.confirm) { 
+      setError("All fields are required."); return; 
+    }
+    if (cusForm.password.length < 8) { 
+      setError("Password must be at least 8 characters."); return; 
+    }
+    if (cusForm.password !== cusForm.confirm) { 
+      setError("Passwords do not match."); return; 
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      login({ name: cusForm.name, email: cusForm.email, phone: cusForm.phone });
-      navigate("/");
+    try {
+      const data = await registerUser({
+        firstName: cusForm.fname,
+        lastName: cusForm.lname,
+        phone: cusForm.phone,
+        email: cusForm.email,
+        password: cusForm.password,
+        role: "VENUE_OWNER"
+      });
+      login(data);
+      navigate("/login"); 
+      console.log(data);
+    } catch (err) {
+      console.log(err);
+      setError(err.message);
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -143,9 +151,15 @@ export default function Register() {
           ) : (
             <>
             <form onSubmit={handleCusSubmit} className="auth-form">
-              <div className="form-group">
-                <label>Venue Name</label>
-                <input type="text" placeholder="Rahul Sharma" value={cusForm.name} onChange={setCus("name")} className="form-input" />
+              <div className="form-row">
+                <div className="form-group">
+                  <label>First Name</label>
+                  <input type="text" placeholder="Rahul" value={cusForm.fname} onChange={setCus("fname")} className="form-input" />
+                </div>
+                <div className="form-group">
+                  <label>Last Name</label>
+                  <input type="text" placeholder="Sharma" value={cusForm.lname} onChange={setCus("lname")} className="form-input" />
+                </div>
               </div>
               <div className="form-group">
                 <label>Email Address</label>
@@ -153,11 +167,7 @@ export default function Register() {
               </div>
               <div className="form-group">
                 <label>Phone Number</label>
-                <input type="tel" placeholder="+91 98765 43210" value={cusForm.phone} onChange={setCus("phone")} className="form-input" />
-              </div>
-              <div className="form-group">
-                <label>Business Name</label>
-                <input type="text" placeholder="The Heritage Hall" value={cusForm.businessName} onChange={setCus("businessName")} className="form-input" />
+                <input type="tel" placeholder="9876543210" value={cusForm.phone} onChange={setCus("phone")} className="form-input" />
               </div>
               <div className="form-row">
                 <div className="form-group">
@@ -169,12 +179,10 @@ export default function Register() {
                   <input type="password" placeholder="••••••••" value={cusForm.confirm} onChange={setCus("confirm")} className="form-input" />
                 </div>
               </div>
-
               <label className="checkbox-label terms-label">
                 <input type="checkbox" required />
                 I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
               </label>
-
               <button type="submit" className="auth-submit-btn" disabled={loading}>
                 {loading ? "Creating account..." : "Create Account"}
               </button>
