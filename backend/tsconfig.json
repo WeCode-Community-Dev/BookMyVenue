@@ -23,7 +23,7 @@
     "noFallthroughCasesInSwitch": false,
     "types": [
       "node",
-      "Multer"
+      // "Multer"
     ]
   },
   "watchOptions": {

@@ -1,0 +1,29 @@
+services:
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: ${BACKEND_CONTAINER_NAME}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      BASE_URL: ${BASE_URL}
+      NODE_ENV: ${NODE_ENV}
+      JWT_SECRET: ${JWT_SECRET}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_SECRET: ${RAZORPAY_SECRET}
+      UPLOAD_DIR: ${UPLOAD_DIR}
+    ports:
+      - "${BACKEND_PORT}:3000"
+    volumes:
+      - uploads_data:${UPLOAD_DIR}
+
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    container_name: ${FRONTEND_CONTAINER_NAME}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT}:80"
+
+volumes:
+  uploads_data:

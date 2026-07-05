@@ -85,6 +85,12 @@ async function main() {
   });
   const prisma = new PrismaClient({ adapter });
 
+  const isSeeded = await prisma.users.findFirst()
+  if (isSeeded) {
+    console.log("Database already seeded!,skipping...");
+    return
+  }
+
   try {
     console.log('🌱  Starting database seed…\n');
 

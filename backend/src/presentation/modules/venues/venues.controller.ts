@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, UseInterceptors, ParseUUIDPipe, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, UseInterceptors, ParseUUIDPipe, UploadedFiles } from '@nestjs/common';
 import { CreateVenueCommand } from '../../../core/application/venues/commands/create-venue.command';
 import { SearchVenuesQuery } from '../../../core/application/venues/queries/search-venues.query';
 import { GetVenueDetailsQuery } from '../../../core/application/venues/queries/get-venue-details.query';
@@ -86,6 +86,7 @@ export class VenuesController {
   })
   async uploadVenueImages(
     @Param('venueId', ParseUUIDPipe,) venueId: string,
+    // @ts-expect-error docker and typescript issue  
     @UploadedFiles() files: Express.Multer.File[],
     @CurrentUser() user: TokenPayload
   ) {
