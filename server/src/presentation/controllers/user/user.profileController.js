@@ -26,7 +26,7 @@ export class UserProfileController{
 
     getProfile=asyncHandler(async(req,res)=>{
         
-        const userId='6a34d4fee9293b6950bbbc6f'
+        const userId=req.user.userId;
 
         const user=await this._userGetProfileUsecase.execute(userId);
 
@@ -34,7 +34,7 @@ export class UserProfileController{
     })
 
     updateProfile=asyncHandler(async(req,res)=>{
-        const userId='6a34d4fee9293b6950bbbc6f'   
+        const userId=req.user.userId;
         const {fullName,phone}=req.body
         const updatedUser=await this._userUpdateProfileUsecase.execute(
             userId,
@@ -50,14 +50,14 @@ export class UserProfileController{
 
     requestEmailChangeOtp=asyncHandler(
         async(req,res)=>{
-            const userId='6a34d4fee9293b6950bbbc6f'
+            const userId=req.user.userId;
             const {newEmail}=req.body
             const result=await this._requestEmailChangeOtpUsecase.execute(userId,newEmail)
             return sendSuccess(res,statusCode.OK,result.message)
         }
     )
     verifyEmailChangeOtp=asyncHandler(async(req,res)=>{
-        const userId='6a34d4fee9293b6950bbbc6f'
+        const userId=req.user.userId;
         const {otp}=req.body
         const updatedUser=await this._verifyEmailChangeOtpUsecase.execute(userId,otp)
 
@@ -71,7 +71,7 @@ export class UserProfileController{
     })
     resendEmailChangeOtp=asyncHandler(async(req,res)=>{
 
-    const userId='6a34d4fee9293b6950bbbc6f'
+    const userId=req.user.userId;
 
     const result=await this._resendEmailChangeOtpUsecase.execute(userId)
 
@@ -83,7 +83,7 @@ export class UserProfileController{
     })
     updateProfileImage = asyncHandler(async(req,res)=>{
 
-        const userId = '6a34d4fee9293b6950bbbc6f'
+        const userId = req.user.userId;
 
         if(!req.file){
             throw new ValidationError(
