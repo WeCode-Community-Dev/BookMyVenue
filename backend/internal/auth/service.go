@@ -2,11 +2,13 @@ package auth
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/hash"
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/token"
+	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/utils"
 )
 
 // Service provides business logic for authentication operations.
@@ -80,4 +82,32 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (*TokenPair, erro
 		RefreshToken: refreshToken,
 		Role:         user.Role,
 	}, nil
+}
+
+func (s *Service) refresh(ctx context.Context, refreshToken string) (string, error) {
+	// verify token
+	claims, err := token.VerifyRefreshToken(refreshToken)
+	if err != nil {
+		return "", errors.New("Invalid or expired refresh token")
+	}
+
+	userUUID, err := utils.StringToUUID(claims.UserID)
+	if err != nil {
+		return "", errors.New(err.Error())
+	}
+	user, err := s.db.GetUserByID(ctx, userUUID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", errors.New("user not found")
+		}
+		return "", errors.New("cannot find user")
+	}
+
+	accessToken, err := token.GenerateAccessToken(claims.UserID, user.Email, user.Role)
+	if err != nil {
+		return "", errors.New("cannot generate access token")
+	}
+
+	return accessToken, nil
+
 }

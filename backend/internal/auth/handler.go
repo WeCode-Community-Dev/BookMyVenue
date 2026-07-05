@@ -62,7 +62,7 @@ func (h *Handler) Login(c *gin.Context) {
 		HttpOnly: true,
 		Secure:   os.Getenv("ENV") == "production",
 		SameSite: http.SameSiteLaxMode,
-		Path:     "/",
+		Path:     "/api/v1/auth/refresh",
 		MaxAge:   7 * 24 * 60 * 60, // 7 days
 	})
 	response.Success(c, http.StatusOK, "Login successful", token.Role)
@@ -72,6 +72,50 @@ func (h *Handler) Logout(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "logout",
 	})
+}
+
+// Refresh validates the refresh token and issues a new access token.
+// If the refresh token is invalid or expired, it clears the authentication
+// cookies and returns an unauthorized response.
+func (h *Handler) Refresh(c *gin.Context) {
+	refreshToken, err := c.Cookie("refresh_token")
+	if err != nil {
+		response.Error(c, http.StatusUnauthorized, "cannot find refresh token")
+		return
+	}
+
+	newToken, err := h.service.refresh(c.Request.Context(), refreshToken)
+	if err != nil {
+		http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "access_token",
+			Value:    "",
+			Path:     "/",
+			MaxAge:   -1,
+			HttpOnly: true,
+		})
+
+		http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "refresh_token",
+			Value:    "",
+			Path:     "/api/v1/auth/refresh",
+			MaxAge:   -1,
+			HttpOnly: true,
+		})
+		response.Error(c, http.StatusUnauthorized, "invalid or expired refresh token")
+		return
+	}
+
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "access_token",
+		Value:    newToken,
+		HttpOnly: true,
+		Secure:   os.Getenv("ENV") == "production",
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		MaxAge:   15 * 60, // 15 minutes
+	})
+
+	response.Success(c, http.StatusOK, "access token refreshed", nil)
 }
 
 type LoginRequest struct {

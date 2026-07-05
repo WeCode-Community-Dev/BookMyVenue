@@ -68,6 +68,18 @@ None
 
 ---
 
+## Refresh
+
+**POST** `/auth/refresh`
+
+Generates a new access token using the refresh token stored in an HttpOnly cookie.
+
+### Authentication
+
+Refresh token (HttpOnly cookie)
+
+---
+
 # Venue Owner APIs
 
 Requires **Owner** role.

@@ -47,6 +47,7 @@ func SetupRouter(r *gin.Engine, db *sqlc.Queries, rediClient *redis.Client, pool
 		authRoutes.POST("/register", authHandler.Register)
 		authRoutes.POST("/login", authHandler.Login)
 		authRoutes.POST("/logout", authHandler.Logout)
+		authRoutes.POST("/refresh", authHandler.Refresh)
 	}
 
 	// Venue routes
