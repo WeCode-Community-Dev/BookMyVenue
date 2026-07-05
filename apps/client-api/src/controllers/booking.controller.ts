@@ -90,7 +90,7 @@ export const createBooking = async (
 
         sessions: bookingTx.booking.bookingSessions.map((session) => ({
             sessionId: session.sessionId,
-            pricePaid: Number(session.pricePaid),
+            pricePaid: fromSmallUnit(Number(session.pricePaid)),
         })),
     });
 
