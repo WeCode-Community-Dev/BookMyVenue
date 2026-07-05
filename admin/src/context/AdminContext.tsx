@@ -34,7 +34,9 @@ import {
   createAmenityApi,
   deleteAmenityApi,
   hasAmenitiesApiConfig,
-  updateVenueStatusApi
+  updateVenueStatusApi,
+  fetchBookingsApi,
+  hasBookingsApiConfig
 } from '../api/adminApi';
 
 interface ApiResourceState {
@@ -58,10 +60,12 @@ interface AdminContextProps {
     users: ApiResourceState;
     venues: ApiResourceState;
     amenities: ApiResourceState;
+    bookings: ApiResourceState;
   };
   refreshUsers: () => Promise<void>;
   refreshVenues: () => Promise<void>;
   refreshAmenities: () => Promise<void>;
+  refreshBookings: () => Promise<void>;
   createAmenity: (name: string) => Promise<void>;
   deleteAmenity: (id: string) => Promise<void>;
   
@@ -143,7 +147,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const [owners, setOwners] = useState<VenueOwner[]>(initialOwners);
   const [venues, setVenues] = useState<Venue[]>(hasVenuesApiConfig ? [] : initialVenues);
-  const [bookings, setBookings] = useState<Booking[]>(initialBookings);
+  const [bookings, setBookings] = useState<Booking[]>(hasBookingsApiConfig ? [] : initialBookings);
   const [reports, setReports] = useState<ComplaintReport[]>(initialReports);
   const [settings, setSettings] = useState<PlatformSettings>(defaultSettings);
   const [notifications, setNotifications] = useState<SystemNotification[]>(initialNotifications);
@@ -164,6 +168,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     loading: hasAmenitiesApiConfig,
     error: null,
     usingMockData: !hasAmenitiesApiConfig
+  });
+  const [bookingsApiState, setBookingsApiState] = useState<ApiResourceState>({
+    loading: hasBookingsApiConfig,
+    error: null,
+    usingMockData: !hasBookingsApiConfig
   });
 
   const refreshUsers = useCallback(async () => {
@@ -324,6 +333,39 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
+  const refreshBookings = useCallback(async () => {
+    if (!hasBookingsApiConfig) {
+      setBookingsApiState({
+        loading: false,
+        error: null,
+        usingMockData: true
+      });
+      return;
+    }
+
+    setBookingsApiState(prev => ({
+      ...prev,
+      loading: true,
+      error: null
+    }));
+
+    try {
+      const data = await fetchBookingsApi(settings.commissionPercentage);
+      setBookings(data);
+      setBookingsApiState({
+        loading: false,
+        error: null,
+        usingMockData: false
+      });
+    } catch (error) {
+      setBookingsApiState({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Unable to load bookings from API.',
+        usingMockData: true
+      });
+    }
+  }, [settings.commissionPercentage]);
+
   useEffect(() => {
     if (!hasDirectoryApiConfig) {
       return;
@@ -398,6 +440,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       });
   }, []);
+
+  useEffect(() => {
+    if (!hasBookingsApiConfig) {
+      return;
+    }
+
+    refreshBookings();
+  }, [refreshBookings]);
 
 
   // CUSTOMERS HANDLERS
@@ -737,11 +787,13 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         apiState: {
           users: usersApiState,
           venues: venuesApiState,
-          amenities: amenitiesApiState
+          amenities: amenitiesApiState,
+          bookings: bookingsApiState
         },
         refreshUsers,
         refreshVenues,
         refreshAmenities,
+        refreshBookings,
         blockCustomer,
         unblockCustomer,
         deleteCustomer,

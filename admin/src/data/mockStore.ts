@@ -98,6 +98,13 @@ export interface Booking {
   amount: number;
   commissionAmount: number;
   notes?: string;
+  slots?: {
+    id: string;
+    slot_name: string;
+    start_time: string;
+    end_time: string;
+    price: number;
+  }[];
 }
 
 export interface ComplaintReport {

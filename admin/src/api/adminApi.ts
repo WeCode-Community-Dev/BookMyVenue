@@ -1,4 +1,4 @@
-import type { Customer, Venue, VenueOwner, Amenity } from '../data/mockStore';
+import type { Customer, Venue, VenueOwner, Amenity, Booking } from '../data/mockStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() ?? '';
 const USERS_ENDPOINT = import.meta.env.VITE_USERS_ENDPOINT?.trim() ?? '';
@@ -8,6 +8,7 @@ const VENUE_OWNER_STATUS_ENDPOINT =
   import.meta.env.VITE_VENUE_OWNER_STATUS_ENDPOINT?.trim() ?? '/api/v1/auth/venue-owner/update-status';
 const AMENITIES_ENDPOINT = import.meta.env.VITE_AMENITIES_ENDPOINT?.trim() ?? '/api/v1/venue-owner/venue/amenities';
 const VENUE_STATUS_UPDATE_ENDPOINT = import.meta.env.VITE_VENUE_STATUS_UPDATE_ENDPOINT?.trim() ?? '/api/v1/venue-owner/venue/update-status';
+const BOOKINGS_ENDPOINT = import.meta.env.VITE_BOOKINGS_ENDPOINT?.trim() ?? '/api/v1/bookings';
 
 
 const DEFAULT_VENUE_PHOTO = 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800';
@@ -36,6 +37,7 @@ export const hasDirectoryApiConfig = Boolean(
 
 export const hasVenuesApiConfig = Boolean(API_BASE_URL && VENUES_ENDPOINT);
 export const hasAmenitiesApiConfig = Boolean(API_BASE_URL && AMENITIES_ENDPOINT);
+export const hasBookingsApiConfig = Boolean(API_BASE_URL && BOOKINGS_ENDPOINT);
 
 const buildUrl = (endpoint: string) => {
   const base = API_BASE_URL.replace(/\/+$/, '');
@@ -470,6 +472,75 @@ export const updateVenueStatusApi = async (
     rejection_reason: rejectionReason || null
   });
   return payload as VenueStatusUpdateResponse;
+};
+
+const normalizeBookingStatus = (status: string, eventDate?: string): Booking['status'] => {
+  const s = status?.toLowerCase() || '';
+  if (s === 'cancelled' || s === 'refunded') return 'cancelled';
+  if (s === 'failed' || s === 'noshow') return 'failed';
+  if (s === 'completed' || s === 'done' || s === 'finished') return 'completed';
+  if (s === 'paid' || s === 'payed') {
+    if (eventDate) {
+      const today = new Date().toISOString().slice(0, 10);
+      return eventDate >= today ? 'upcoming' : 'completed';
+    }
+    return 'completed';
+  }
+  return 'upcoming';
+};
+
+const normalizeBookingPaymentStatus = (status: string, bookingStatus: string): Booking['paymentStatus'] => {
+  const s = status?.toLowerCase() || '';
+  const bs = bookingStatus?.toLowerCase() || '';
+  if (s === 'paid' || s === 'payed' || s === 'completed' || bs === 'completed' || bs === 'paid' || bs === 'payed') return 'paid';
+  if (s === 'refunded' || bs === 'cancelled') return 'refunded';
+  if (s === 'failed' || bs === 'failed') return 'failed';
+  return 'pending';
+};
+
+const normalizeBooking = (entity: ApiEntity, index: number, commissionPercentage = 10): Booking => {
+  const id = readString(entity, ['id'], `BKG-${String(index + 1).padStart(3, '0')}`);
+  const amount = readNumber(entity, ['amount']);
+  const commissionAmount = Number((amount * (commissionPercentage / 100)).toFixed(2));
+  const bookingDateStr = readString(entity, ['created_at', 'createdAt', 'bookingDate', 'booking_date']);
+  const eventDateStr = readString(entity, ['booking_date', 'bookingDate', 'eventDate', 'event_date']);
+  const statusStr = readString(entity, ['status']);
+
+  const status = normalizeBookingStatus(statusStr, eventDateStr);
+  const paymentStatus = normalizeBookingPaymentStatus(readString(entity, ['payment_status', 'paymentStatus']), statusStr);
+
+  const slots = readEntityArray(entity, 'slots').map(slot => ({
+    id: readString(slot, ['id']),
+    slot_name: readString(slot, ['slot_name', 'slotName']),
+    start_time: readString(slot, ['start_time', 'startTime']),
+    end_time: readString(slot, ['end_time', 'endTime']),
+    price: readNumber(slot, ['price'])
+  }));
+
+  return {
+    id,
+    customerId: readString(entity, ['customer_id', 'customerId', 'user_id', 'userId'], 'CUST-API'),
+    customerName: readString(entity, ['customer_name', 'customerName', 'user_name', 'userName'], 'Guest Client'),
+    customerEmail: readString(entity, ['customer_email', 'customerEmail', 'email'], 'guest@example.com'),
+    venueId: readString(entity, ['venue_id', 'venueId']),
+    venueName: readString(entity, ['venue_name', 'venueName'], 'Unknown Venue'),
+    ownerId: readString(entity, ['owner_id', 'ownerId'], ''),
+    ownerName: readString(entity, ['owner_name', 'ownerName'], 'Venue Partner'),
+    bookingDate: normalizeDate(bookingDateStr),
+    eventDate: normalizeDate(eventDateStr),
+    guestCount: readNumber(entity, ['guest_count', 'guestCount'], 1),
+    status,
+    paymentStatus,
+    amount,
+    commissionAmount,
+    notes: readString(entity, ['notes', 'special_instructions', 'remarks']),
+    slots: slots.length > 0 ? slots : undefined
+  };
+};
+
+export const fetchBookingsApi = async (commissionPercentage = 10): Promise<Booking[]> => {
+  const payload = await getJson(BOOKINGS_ENDPOINT);
+  return readArray(payload).map((entity, index) => normalizeBooking(entity, index, commissionPercentage));
 };
 
 
