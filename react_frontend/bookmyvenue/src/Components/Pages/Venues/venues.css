@@ -1,0 +1,616 @@
+/* =====================================================
+   GLOBAL VARIABLES
+   Easy to change colors here later
+   ===================================================== */
+:root {
+  --dark-blue: #071d44;
+  --text-blue: #091b3d;
+  --teal: #0097a7;
+  --teal-dark: #008392;
+  --light-teal: #e8fbff;
+  --muted-text: #5d6678;
+  --border: #dce3eb;
+  --shadow: 0 8px 22px rgba(7, 29, 68, 0.12);
+  --card-shadow: 0 4px 14px rgba(7, 29, 68, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-blue);
+  background: #f9fbfd;
+}
+
+a {
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* =====================================================
+   REUSABLE BUTTONS
+   ===================================================== */
+.primary-btn {
+  background: linear-gradient(135deg, var(--teal), #10b8c7);
+  color: #ffffff;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 700;
+  padding: 10px 18px;
+  box-shadow: 0 5px 14px rgba(0, 151, 167, 0.25);
+}
+
+.primary-btn:hover {
+  background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+  color: #ffffff;
+}
+
+.small-outline-btn {
+  color: var(--teal);
+  border: 2px solid var(--teal);
+  background: #ffffff;
+  border-radius: 8px;
+  font-weight: 700;
+  padding: 7px 18px;
+  font-size: 0.85rem;
+}
+
+.small-outline-btn:hover {
+  background: var(--teal);
+  color: #ffffff;
+}
+
+.reset-btn {
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--dark-blue);
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.reset-btn:hover {
+  background: #f3f7fa;
+  color: var(--dark-blue);
+}
+
+.big-btn {
+  min-height: 56px;
+}
+
+/* =====================================================
+   HEADER / NAVBAR
+   ===================================================== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #ffffff;
+  box-shadow: 0 2px 14px rgba(7, 29, 68, 0.12);
+}
+
+.navbar {
+  min-height: 76px;
+}
+
+.logo-circle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  border: 5px solid #dff8fb;
+}
+
+.brand-text {
+  color: var(--dark-blue);
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.brand-text span {
+  color: var(--teal);
+}
+
+.nav-links {
+  gap: 34px;
+}
+
+.nav-link {
+  color: #07142f;
+  font-weight: 700;
+  position: relative;
+  padding: 16px 0;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--teal);
+}
+
+.nav-link.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--teal);
+}
+
+.login-link {
+  color: #07142f;
+  font-weight: 700;
+}
+
+/* =====================================================
+   TOP FILTERS SECTION
+   ===================================================== */
+.filters-section {
+  padding: 26px 0 10px;
+}
+
+.filters-box {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 14px;
+}
+
+.filter-field {
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+}
+
+.filter-field i {
+  font-size: 1.3rem;
+  color: var(--dark-blue);
+}
+
+.filter-field span {
+  width: 100%;
+  color: var(--dark-blue);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.filter-field input,
+.filter-field select {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: #5f687a;
+  font-size: 0.88rem;
+  background: transparent;
+  padding: 3px 0 0;
+}
+
+.action-btn-col {
+  min-width: 110px;
+}
+
+/* =====================================================
+   PAGE HEADING / SORT BAR
+   ===================================================== */
+.venues-listing-section {
+  padding: 14px 0 30px;
+}
+
+.page-heading-wrap {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1;
+  font-weight: 900;
+  color: var(--dark-blue);
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  color: #5f687a;
+  font-size: 1.12rem;
+  margin: 0;
+}
+
+.results-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.results-count {
+  color: var(--muted-text);
+  font-size: 0.95rem;
+}
+
+.sort-box {
+  min-width: 240px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.sort-label {
+  margin: 0;
+  color: var(--dark-blue);
+  font-size: 0.95rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sort-select {
+  border: 0;
+  box-shadow: none !important;
+  color: #5f687a;
+  font-size: 0.95rem;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* =====================================================
+   VENUE LISTING CARDS
+   ===================================================== */
+.listing-card {
+  height: 100%;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.listing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 22px rgba(7, 29, 68, 0.12);
+}
+
+.card-image-wrap {
+  position: relative;
+}
+
+.card-image-wrap img {
+  width: 100%;
+  height: 235px;
+  object-fit: cover;
+}
+
+.wishlist-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--dark-blue);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(7, 29, 68, 0.12);
+}
+
+.wishlist-btn:hover {
+  color: #d63384;
+}
+
+.wishlist-btn.is-favorite {
+  color: #d63384;
+}
+
+.wishlist-btn:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.listing-card-body {
+  padding: 14px 16px 16px;
+}
+
+.title-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.title-price-row h2 {
+  color: var(--dark-blue);
+  font-size: 1.1rem;
+  font-weight: 900;
+  margin: 0 0 6px;
+}
+
+.location-text {
+  color: var(--muted-text);
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.location-text i {
+  color: var(--teal);
+}
+
+.price-box {
+  color: var(--teal);
+  font-size: 1.7rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.price-box span {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 12px;
+  color: #4d5567;
+  font-size: 0.95rem;
+}
+
+.meta-row i {
+  color: var(--dark-blue);
+}
+
+.rating-star {
+  color: #f4b400 !important;
+}
+
+.amenities-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.amenities-list span {
+  background: #eef5f8;
+  color: #2d7382;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.card-btn-wrap {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* =====================================================
+   PAGINATION
+   ===================================================== */
+.pagination-wrap {
+  padding-top: 28px;
+}
+
+.custom-pagination .page-link {
+  color: var(--dark-blue);
+  border-color: var(--border);
+  padding: 10px 16px;
+}
+
+.custom-pagination .page-item.active .page-link {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #ffffff;
+}
+
+.custom-pagination .page-link:focus {
+  box-shadow: none;
+}
+
+/* =====================================================
+   FOOTER
+   ===================================================== */
+.footer {
+  background: linear-gradient(135deg, #061c40, #082c5c);
+  color: #ffffff;
+  padding-top: 24px;
+}
+
+.small-logo {
+  width: 42px;
+  height: 42px;
+  font-size: 1.1rem;
+}
+
+.footer .brand-text {
+  font-size: 1.55rem;
+}
+
+.footer p,
+.footer li,
+.footer a {
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
+.footer h3 {
+  font-size: 1.1rem;
+  font-weight: 900;
+  margin-bottom: 16px;
+}
+
+.social-links {
+  display: flex;
+  gap: 12px;
+}
+
+.social-links a {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 36px;
+}
+
+.contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.contact-list li {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 8px;
+}
+
+.newsletter-form input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.newsletter-form button {
+  border-radius: 6px;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  margin-top: 18px;
+  padding: 14px 0;
+  text-align: center;
+}
+
+.footer-bottom p {
+  margin: 0;
+}
+
+/* =====================================================
+   RESPONSIVE DESIGN
+   ===================================================== */
+
+/* Tablet */
+@media (max-width: 991px) {
+  .nav-links {
+    gap: 4px;
+    padding-top: 16px;
+  }
+
+  .auth-buttons {
+    align-items: flex-start !important;
+    padding-bottom: 16px;
+  }
+
+  .results-toolbar {
+    justify-content: flex-start;
+  }
+
+  .sort-box {
+    width: 100%;
+  }
+
+  .card-image-wrap img {
+    height: 220px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .navbar {
+    min-height: auto;
+  }
+
+  .brand-text {
+    font-size: 1.45rem;
+  }
+
+  .logo-circle {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  .filters-section {
+    padding-top: 20px;
+  }
+
+  .filters-box {
+    padding: 12px;
+  }
+
+  .page-title {
+    font-size: 2.1rem;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+  }
+
+  .title-price-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .price-box {
+    font-size: 1.45rem;
+  }
+
+  .card-image-wrap img {
+    height: 210px;
+  }
+
+  .card-btn-wrap {
+    justify-content: flex-start;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+  }
+
+  .footer-links {
+    grid-template-columns: 1fr;
+  }
+}
