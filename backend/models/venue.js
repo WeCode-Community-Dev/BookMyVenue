@@ -58,6 +58,12 @@ const venueSchema = new mongoose.Schema(
          default: null,
          index: true,
       },
+      // References the Amenity collection (admin-managed). A venue may offer many
+      // amenities, so this is an array of refs (unlike the single venueCategory).
+      amenities: {
+         type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Amenity" }],
+         default: [],
+      },
       capacity: { type: Number, min: 0 },
 
       // Address fields.

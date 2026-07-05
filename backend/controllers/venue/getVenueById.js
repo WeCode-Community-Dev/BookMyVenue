@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Venues = require("../../models/venue");
-const { PUBLIC_VENUE_FILTER, PUBLIC_FIELDS, CATEGORY_POPULATE } = require("./shared");
+const { PUBLIC_VENUE_FILTER, PUBLIC_FIELDS, VENUE_POPULATE } = require("./shared");
 
 // GET /venues/:id — public detail for a single APPROVED venue.
 async function getVenueById(req, res) {
@@ -14,7 +14,7 @@ async function getVenueById(req, res) {
 
       const venue = await Venues.findOne({ _id: id, ...PUBLIC_VENUE_FILTER })
          .select(PUBLIC_FIELDS)
-         .populate(CATEGORY_POPULATE)
+         .populate(VENUE_POPULATE)
          .lean();
 
       // 404 whether it doesn't exist or isn't public — avoids leaking
