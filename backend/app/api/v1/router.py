@@ -5,6 +5,7 @@ from app.api.v1.endpoints import user_auth
 from app.api.v1.endpoints import venue_owner_auth
 from app.api.v1.endpoints import venue
 from app.api.v1.endpoints import upload_media
+from app.api.v1.endpoints import booking
 
 api_router = APIRouter()
 
@@ -37,4 +38,11 @@ api_router.include_router(
     upload_media.router,
     prefix="/uploads",
     tags=["Book my venue media Uploads"],
+)
+
+# /api/v1/bookings
+api_router.include_router(
+    booking.router,
+    prefix="/bookings",
+    tags=["User bookings and checkout related api"],
 )

@@ -173,6 +173,49 @@ class VenueServiceCreate(BaseModel):
         max_digits=12,
     )
 
+def validate_slot_duration(category: str, start_time: time, end_time: time) -> None:
+    from datetime import datetime, time as dt_time
+
+    start_dt = datetime.combine(datetime.min, start_time)
+    end_dt = datetime.combine(datetime.min, end_time)
+    duration_hours = (end_dt - start_dt).total_seconds() / 3600.0
+
+    cat = category.lower().strip()
+
+    # 1. Marriage Hall or Auditorium
+    if cat in ["marriage_hall", "auditorium"]:
+        valid_slots = [
+            (dt_time(9, 0), dt_time(15, 0)),  # Morning Session (09:00 AM - 03:00 PM)
+            (dt_time(17, 0), dt_time(23, 0)), # Evening Session (05:00 PM - 11:00 PM)
+            (dt_time(9, 0), dt_time(23, 0)),  # Full Day (09:00 AM - 11:00 PM)
+        ]
+        if (start_time, end_time) not in valid_slots:
+            raise ValueError(
+                f"For {category}, slots must be Morning Session (09:00 AM - 03:00 PM), "
+                "Evening Session (05:00 PM - 11:00 PM), or Full Day (09:00 AM - 11:00 PM)."
+            )
+
+    # 2. Party Hall -> 2, 4, 6, 8 hours
+    elif cat == "party_hall":
+        if duration_hours not in [2.0, 4.0, 6.0, 8.0]:
+            raise ValueError(f"For Party Hall, slot duration must be exactly 2, 4, 6, or 8 hours (got {duration_hours} hours).")
+
+    # 3. Conference Room -> 2, 4, 6, 8 hours or Full Day (9 AM - 9 PM)
+    elif cat == "conference_room":
+        is_full_day = (start_time == dt_time(9, 0) and end_time == dt_time(21, 0))
+        if duration_hours not in [2.0, 4.0, 6.0, 8.0] and not is_full_day:
+            raise ValueError(f"For Conference Room, slot duration must be exactly 2, 4, 6, or 8 hours, or Full Day (09:00 AM - 09:00 PM).")
+
+    # 4. Sports Ground / Arena -> 1, 2, 3 hours
+    elif cat in ["sports_arena", "sports_ground"]:
+        if duration_hours not in [1.0, 2.0, 3.0]:
+            raise ValueError(f"For Sports Ground, slot duration must be exactly 1, 2, or 3 hours (got {duration_hours} hours).")
+
+    # 5. Photography Studio -> 1, 2, 4, 8 hours
+    elif cat == "photography_studio":
+        if duration_hours not in [1.0, 2.0, 4.0, 8.0]:
+            raise ValueError(f"For Photography Studio, slot duration must be exactly 1, 2, 4, or 8 hours (got {duration_hours} hours).")
+
 
 # --------------------------------------------------
 # Venue Create Request
@@ -279,10 +322,11 @@ class CreateVenueRequest(BaseModel):
         return value.strip().lower()
 
     @model_validator(mode="after")
-    def validate_cover_gallery(self):
+    def validate_venue_data(self) -> "CreateVenueRequest":
         if len(self.gallery_images) > 20:
             raise ValueError("Maximum 20 gallery images allowed.")
-
+        for slot in self.slots:
+            validate_slot_duration(self.category, slot.start_time, slot.end_time)
         return self
 
 

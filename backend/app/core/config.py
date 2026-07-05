@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: str
     CLOUDINARY_API_SECRET: str
 
+    RAZORPAY_KEY_ID: str
+    RAZORPAY_KEY_SECRET: str
+
     # Use SettingsConfigDict for Pydantic v2 settings loading configuration
     model_config = SettingsConfigDict(
         env_file=os.path.join(BASE_DIR, ".env"),
