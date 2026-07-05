@@ -16,7 +16,10 @@ export class UserEntity {
         wishlist = [],
         createdAt,
         updatedAt,
-        refreshToken
+        refreshToken,
+        pendingEmail = null,
+        otpCode = null,
+        otpExpiresAt = null
     }) {
         this.id = id;
         this.fullName = fullName;
@@ -32,5 +35,8 @@ export class UserEntity {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.refreshToken = refreshToken;
+        this.pendingEmail = pendingEmail;
+        this.otpCode = otpCode;
+        this.otpExpiresAt = otpExpiresAt;
     }
 }
