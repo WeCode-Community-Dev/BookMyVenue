@@ -3,6 +3,7 @@ const authenticate = require("../middleware/authenticate");
 const requireRole = require("../middleware/requireRole");
 const { USER_ROLES } = require("../constants/user");
 const adminListVenues = require("../controllers/admin/adminListVenues");
+const adminGetVenueById = require("../controllers/admin/adminGetVenueById");
 
 const router = express.Router();
 
@@ -10,5 +11,6 @@ const router = express.Router();
 router.use(authenticate, requireRole(USER_ROLES.ADMIN));
 
 router.get("/venues", adminListVenues);
+router.get("/venues/:id", adminGetVenueById);
 
 module.exports = router;
