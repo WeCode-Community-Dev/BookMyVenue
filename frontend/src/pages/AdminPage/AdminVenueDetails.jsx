@@ -1,38 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { ExternalLink } from "lucide-react";
+import { getAdminVenueById } from "../../services/admin.service.js";
 
-const venueData = {
-  id: 1,
-  name: "Grand Palace Convention Center",
-  category: "Convention Center",
-  description:
-    "A premium convention center suitable for weddings, conferences, exhibitions and corporate events.",
-  address: "MG Road, Kochi, Kerala",
-  capacity: 500,
-  pricePerHour: 5000,
-  contactPerson: "John Doe",
-  phone: "+91 9876543210",
-  email: "john@example.com",
-  amenities: [
-    "Parking",
-    "Air Conditioning",
-    "Stage",
-    "Sound System",
-    "WiFi",
-  ],
-  images: [
-    "https://images.unsplash.com/photo-1519167758481-83f550bb49b3",
-    "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3",
-    "https://images.unsplash.com/photo-1511578314322-379afb476865",
-  ],
-};
+// Joins the venue's address parts into a single readable line, skipping blanks.
+function formatAddress(venue) {
+  return [venue.addressLine, venue.city, venue.district, venue.state, venue.pincode]
+    .filter(Boolean)
+    .join(", ");
+}
+
+// Placeholder for fields the venue model doesn't have yet (contact, amenities).
+const NOT_PROVIDED = "Not provided";
 
 export function AdminVenueDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const [venue, setVenue] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [reason, setReason] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    async function loadVenueDetails() {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await getAdminVenueById(id);
+        if (active) setVenue(data);
+      } catch (err) {
+        if (active) setError(err.message);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    loadVenueDetails();
+    return () => {
+      active = false;
+    };
+  }, [id]);
 
   const handleApprove = () => {
     alert(`Venue ${id} approved`);
@@ -49,6 +59,14 @@ export function AdminVenueDetails() {
     navigate("/admin/venues/pending");
   };
 
+  if (loading) {
+    return <p className="py-10 text-center text-sm text-gray-400">Loading venue...</p>;
+  }
+
+  if (error) {
+    return <p className="py-10 text-center text-sm text-red-500">{error}</p>;
+  }
+
   return (
     <>
       <div className="max-w-6xl mx-auto">
@@ -60,6 +78,19 @@ export function AdminVenueDetails() {
           <p className="mt-2 text-gray-500">
             Review venue details before approval.
           </p>
+
+          {/* For an edit copy, link to the live original listing for comparison. */}
+          {venue.editOf && (
+            <a
+              href={`/venue/${venue.editOf}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-red-600 hover:underline"
+            >
+              View live venue details
+              <ExternalLink size={14} />
+            </a>
+          )}
         </div>
 
         {/* Basic Information */}
@@ -73,36 +104,26 @@ export function AdminVenueDetails() {
               <label className="text-sm font-medium text-gray-500">
                 Venue Name
               </label>
-              <p className="mt-1 font-medium">
-                {venueData.name}
-              </p>
+              <p className="mt-1 font-medium">{venue.name}</p>
             </div>
 
             <div>
               <label className="text-sm font-medium text-gray-500">
                 Category
               </label>
-              <p className="mt-1">
-                {venueData.category}
-              </p>
+              <p className="mt-1">{venue.venueCategory?.name || NOT_PROVIDED}</p>
             </div>
 
             <div>
               <label className="text-sm font-medium text-gray-500">
                 Capacity
               </label>
-              <p className="mt-1">
-                {venueData.capacity} Guests
-              </p>
+              <p className="mt-1">{venue.capacity} Guests</p>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-500">
-                Price Per Hour
-              </label>
-              <p className="mt-1">
-                ₹{venueData.pricePerHour}
-              </p>
+              <label className="text-sm font-medium text-gray-500">Base Price</label>
+              <p className="mt-1">₹{venue.basePrice}</p>
             </div>
           </div>
 
@@ -110,9 +131,7 @@ export function AdminVenueDetails() {
             <label className="text-sm font-medium text-gray-500">
               Description
             </label>
-            <p className="mt-1">
-              {venueData.description}
-            </p>
+            <p className="mt-1">{venue.description}</p>
           </div>
         </div>
 
@@ -125,10 +144,7 @@ export function AdminVenueDetails() {
           <label className="text-sm font-medium text-gray-500">
             Address
           </label>
-
-          <p className="mt-1">
-            {venueData.address}
-          </p>
+          <p className="mt-1">{formatAddress(venue)}</p>
         </div>
 
         {/* Contact */}
@@ -142,27 +158,21 @@ export function AdminVenueDetails() {
               <label className="text-sm font-medium text-gray-500">
                 Contact Person
               </label>
-              <p className="mt-1">
-                {venueData.contactPerson}
-              </p>
+              <p className="mt-1">{NOT_PROVIDED}</p>
             </div>
 
             <div>
               <label className="text-sm font-medium text-gray-500">
                 Phone
               </label>
-              <p className="mt-1">
-                {venueData.phone}
-              </p>
+              <p className="mt-1">{NOT_PROVIDED}</p>
             </div>
 
             <div>
               <label className="text-sm font-medium text-gray-500">
                 Email
               </label>
-              <p className="mt-1">
-                {venueData.email}
-              </p>
+              <p className="mt-1">{NOT_PROVIDED}</p>
             </div>
           </div>
         </div>
@@ -172,17 +182,7 @@ export function AdminVenueDetails() {
           <h2 className="mb-4 text-xl font-semibold">
             Amenities
           </h2>
-
-          <div className="flex flex-wrap gap-2">
-            {venueData.amenities.map((item) => (
-              <span
-                key={item}
-                className="rounded-full bg-red-50 px-4 py-2 text-sm text-red-600"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
+          <p className="text-sm text-gray-500">{NOT_PROVIDED}</p>
         </div>
 
         {/* Images */}
@@ -191,16 +191,20 @@ export function AdminVenueDetails() {
             Venue Images
           </h2>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {venueData.images.map((image, index) => (
-              <img
-                key={index}
-                src={image}
-                alt={`Venue ${index + 1}`}
-                className="h-56 w-full rounded-lg object-cover"
-              />
-            ))}
-          </div>
+          {venue.images?.length ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {venue.images.map((image, index) => (
+                <img
+                  key={index}
+                  src={image.url}
+                  alt={`Venue ${index + 1}`}
+                  className="h-56 w-full rounded-lg object-cover"
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">{NOT_PROVIDED}</p>
+          )}
         </div>
 
         {/* Actions */}

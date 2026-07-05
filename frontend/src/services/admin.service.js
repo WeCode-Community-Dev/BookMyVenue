@@ -18,3 +18,10 @@ export const getAdminVenuesCount = async ({ status }) => {
   const res = await api.get(`/admin/venues?${params}`);
   return res.data.total;
 };
+
+// Fetches one venue awaiting review (PENDING or CHANGES_PENDING) for the review
+// page. For an edit copy the returned venue carries `editOf` (the original's id).
+export const getAdminVenueById = async (id) => {
+  const res = await api.get(`/admin/venues/${id}`);
+  return res.data;
+};
