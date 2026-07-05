@@ -73,8 +73,8 @@ export const ROUTES = {
             RESEND_OTP: "/user/resendotp",
             FORGOT_PASSWORD: '/user/forgotpassword',
             RESET_PASSWORD: '/user/resetpassword',
-            VERIFY_EMAIL: "/user/verifyemail",
-            VERIFY_OTP_RESET: '/user/verifyotpforforgotpassword',
+            // VERIFY_EMAIL: "/user/verifyemail",
+            // VERIFY_OTP_RESET: '/user/verifyotpforforgotpassword',
             REFRESH: '/user/refresh',
             LOGOUT: '/user/logout'
         },

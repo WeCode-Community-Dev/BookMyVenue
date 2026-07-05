@@ -12,7 +12,7 @@ export class HashService extends IHashService {
         return await bcrypt.compare(password, hashedPassword);
     }
 
-    async hashToken(token) {
+    hashToken(token) {
         return crypto.createHash('sha256').update(token).digest("hex")
     }
 }

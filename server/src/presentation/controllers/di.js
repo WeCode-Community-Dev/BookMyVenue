@@ -13,7 +13,7 @@ import LogoutUseCase from '../../application/user/usecases/auth/LogoutUseCase.js
 import RefreshTokenUseCase from '../../application/user/usecases/auth/RefreshTokenUseCase.js'
 import VerifyOtpUseCase from '../../application/user/usecases/auth/VerifyOtpUseCase.js'
 import ResendOtpUseCase from '../../application/user/usecases/auth/ResendOtpUseCase.js'
-import ForgotPasswordUseCase from '../../application/user/usecases/auth/ForgotPasswordUseCase.js'
+import UserForgotPasswordUseCase from '../../application/user/usecases/auth/ForgotPasswordUseCase.js'
 import ResetPasswordUseCase from '../../application/user/usecases/auth/ResetPasswordUseCase.js'
 import { AdminGetAllUsersUsecase } from '../../application/admin/usecases/user/admin.getAllUsers.usecase.js'
 import { AdminUpdateUserStatusUsecase } from '../../application/admin/usecases/user/admin.updateUserStatus.usecase.js'
@@ -154,7 +154,12 @@ const iResendOtpUseCase = new ResendOtpUseCase(
   iOtpStoreService,
   iMailService
 )
-const iForgotPasswordUseCase = new ForgotPasswordUseCase(iUserRepository,TokenService,iMailService)
+const iUserForgotPasswordUseCase = new UserForgotPasswordUseCase(
+    iUserRepository,
+    iTokenService,
+    iMailService,
+    iHashService
+)
 const iResetPasswordUseCase = new ResetPasswordUseCase(iUserRepository,HashService)
 
 // --- vendor usecases ---
@@ -300,7 +305,7 @@ export const iUserAuthController = new UserAuthController(
     iRefreshTokenUseCase,
     iVerifyOtpUseCase,
     iResendOtpUseCase,
-    iForgotPasswordUseCase,
+    iUserForgotPasswordUseCase,
     iResetPasswordUseCase,
 )
 

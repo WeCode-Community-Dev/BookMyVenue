@@ -2,7 +2,7 @@ export class IHashService {
     async hash(password) {
         throw new Error("Method not implemented");
     }
-    async hashToken(token){
+    hashToken(token){
         throw new Error("Method not implemented")
     }
     async compare(password, hashedPassword){

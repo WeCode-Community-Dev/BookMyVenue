@@ -13,8 +13,7 @@ router.post(ROUTES.USER.AUTH.RESEND_OTP, validate(resendOtpSchema, 'body'), iUse
 router.post(ROUTES.USER.AUTH.LOGIN, validate(loginSchema, 'body'), iUserAuthController.login)
 router.post(ROUTES.USER.AUTH.REFRESH, iUserAuthController.refreshToken)
 router.post(ROUTES.USER.AUTH.LOGOUT, iUserAuthController.logout)
-
-router.post('/forgot-password', validate(forgotPasswordSchema, 'body'), iUserAuthController.forgotPassword)
+router.post(ROUTES.USER.AUTH.FORGOT_PASSWORD, validate(forgotPasswordSchema, 'body'), iUserAuthController.forgotPassword)
 router.post('/reset-password', validate(resetPasswordSchema, 'body'), iUserAuthController.resetPassword)
 
 

@@ -5,6 +5,12 @@ export class ITokenService {
     async generateRefreshToken(id, role){
         throw new Error("Method not implemented")
     }
+    async generateResetToken(){
+        throw new Error("Method not implemented")
+    }
+    async getResetTokenExpiry(){
+        throw new Error("Method not implemented")
+    }
     async verifyAccessToken(token){
         throw new Error("Method not implemented")
     }

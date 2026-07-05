@@ -53,8 +53,8 @@ export class UserAuthController {
     });
 
     forgotPassword = asyncHandler(async (req, res) => {
-        const result = await this._forgotPasswordUseCase.execute(req.body);
-        return sendSuccess(res, statusCode.OK, authMessages.success.FORGOT_PASSWORD, result);
+        await this._forgotPasswordUseCase.execute({email: req.body.email});
+        return sendSuccess(res, statusCode.OK, authMessages.success.FORGOT_PASSWORD);
     });
 
     resetPassword = asyncHandler(async (req, res) => {
