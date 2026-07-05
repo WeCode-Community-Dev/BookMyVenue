@@ -8,13 +8,36 @@ import { useOwnerVenues } from "@/hooks/useVenues";
 import { Venue } from "@bookmyvenue/types";
 import VenueModal from "./VenueModal";
 import { STATUS_STYLE } from "@/lib/data";
+import { useDeleteVenue } from "@/hooks/useDeleteVenue";
 
-const PAGE_SIZE = 20
+import DeleteConformation from "./DeleteConformation";
+import { toast } from "sonner";
+
+const PAGE_SIZE = 20;
 
 export default function VenuesTab() {
     const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
+    const [deletingVenue, setDeletingVenue] = useState<Venue | null>(null);
     const [token, setToken] = useState("");
     const { getToken } = useAuth();
+
+    const { mutate: deleteVenue, isPending } = useDeleteVenue();
+    const { data, isLoading, error } = useOwnerVenues({ page: 1, limit: PAGE_SIZE }, token);
+
+    const venues = data?.venues ?? [];
+
+    console.log({ deletingVenue });
+
+    const handleDeleteVenue = () => {
+        if (!deletingVenue) return;
+        deleteVenue(deletingVenue.id, {
+            onSuccess: () => {
+                setDeletingVenue(null);
+                toast.success(`${deleteVenue.name} deleted`);
+            },
+            onError: (e) => toast.error(e.message),
+        });
+    };
 
     useEffect(() => {
         const fetchToken = async () => {
@@ -23,10 +46,6 @@ export default function VenuesTab() {
         };
         fetchToken();
     }, [getToken]);
-
-    const { data, isLoading, error } = useOwnerVenues({ page: 1, limit: PAGE_SIZE }, token);
-
-    const venues = data?.venues ?? [];
 
     if (isLoading) {
         return <div className="flex justify-center py-10">Loading venues...</div>;
@@ -142,7 +161,12 @@ export default function VenuesTab() {
                                         <Pencil className="w-3.5 h-3.5" />
                                         Edit
                                     </button>
-                                    <button className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg py-2 transition-colors">
+                                    <button
+                                        type="button"
+                                        onClick={() => setDeletingVenue(v)}
+                                        disabled={isPending && deletingVenue?.id === v.id}
+                                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
                                         <Trash2 className="w-3.5 h-3.5" />
                                         Delete
                                     </button>
@@ -155,6 +179,12 @@ export default function VenuesTab() {
             {editingVenue && (
                 <VenueModal mode="EDIT" venue={editingVenue} onClose={() => setEditingVenue(null)} />
             )}
+            <DeleteConformation
+                deletingVenue={deletingVenue}
+                setDeletingVenue={setDeletingVenue}
+                isPending={isPending}
+                handleDeleteVenue={handleDeleteVenue}
+            />
         </div>
     );
 }

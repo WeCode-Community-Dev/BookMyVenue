@@ -364,3 +364,26 @@ export const editVenue = async (
         message: "Venue updated successfully",
     });
 };
+
+export const deleteVenue = async (
+    request: FastifyRequest<{ Params: { venueId: string } }>,
+    reply: FastifyReply,
+) => {
+    const userId = request.userId;
+    const venueId = Number(request.params.venueId);
+
+    if (isNaN(venueId) || venueId <= 0) return reply.status(400).send({ message: "Invalid venue id" });
+
+    const result = await prisma.venue.updateMany({
+        where: { id: venueId, ownerId: userId, isActive: true },
+        data: { isActive: false },
+    });
+
+    if (result.count === 0) {
+        return reply.status(404).send({
+            message: "Venue not found",
+        });
+    }
+
+    return reply.status(204).send();
+};

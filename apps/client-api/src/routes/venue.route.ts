@@ -6,6 +6,7 @@ import {
     getVenueById,
     editVenue,
     getVenuesByOwnerId,
+    deleteVenue,
 } from "../controllers/venue.controller.js";
 import { CreateVenueBody, EditVenueBody, GetVenuesQuery } from "@bookmyvenue/types";
 import { createVenueSchema, editVenueSchema, getVenuesSchema } from "../schemas/venue.schema.js";
@@ -31,5 +32,11 @@ export const venueRoute = async (fastify: FastifyInstance) => {
         "/:id",
         { preHandler: ownerAuthMiddleware, schema: editVenueSchema },
         editVenue,
+    );
+
+    fastify.delete<{ Params: { venueId: string } }>(
+        "/:venueId",
+        { preHandler: ownerAuthMiddleware },
+        deleteVenue,
     );
 };

@@ -50,6 +50,19 @@ export async function getOwnerVenuesApi(
     return res.json();
 }
 
+export async function deleteVenue(venueId: number, token: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/venue/${venueId}`, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { message?: string }).message ?? "Failed to delete venue");
+    }
+}
+
 export async function getVenueByIdApi(id: number | string): Promise<GetVenueByIdResponse> {
     const res = await fetch(`${API_BASE}/venue/${id}`);
 
