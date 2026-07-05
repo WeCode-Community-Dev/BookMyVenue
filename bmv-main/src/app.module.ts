@@ -12,6 +12,7 @@ import { VenueModule } from './venue/venue.module';
 import { AdminModule } from './admin/admin.module';
 import { MailModule } from './mail/mail.module';
 import { SearchModule } from './search/search.module';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { SearchModule } from './search/search.module';
     AdminModule,
     MailModule,
     SearchModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
