@@ -11,14 +11,24 @@ import BookingsTab from "@/components/owner/BookingsTab";
 import VenuesTab from "@/components/owner/VenuesTab";
 import VenueModal from "@/components/owner/VenueModal";
 import { useOwnerDashboard } from "@/hooks/useDashboard";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Tab, TABS } from "@/lib/data";
 
-type Tab = "overview" | "bookings" | "venues";
+function isTab(value: string | null): value is Tab {
+    return value !== null && TABS.includes(value as Tab);
+}
 
 export default function OwnerDashboard() {
     const { getToken } = useAuth();
     const { isLoaded, user } = useUser();
 
-    const [activeTab, setActiveTab] = useState<Tab>("overview");
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const tab = searchParams.get("tab");
+
+    const activeTab: Tab = isTab(tab) ? tab : "overview";
+
     const [showModal, setShowModal] = useState(false);
     const [successToast] = useState(false);
 
@@ -59,6 +69,12 @@ export default function OwnerDashboard() {
         ensureOwnerRole().then(() => getToken({ skipCache: true }));
     }, [isLoaded, user, getToken]);
 
+    const handleTabChange = (tab: Tab) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("tab", tab);
+        router.replace(`?${params.toString()}`);
+    };
+
     return (
         <div className="min-h-screen bg-background">
             {successToast && (
@@ -88,13 +104,13 @@ export default function OwnerDashboard() {
 
                 <StatCards stats={stats} />
 
-                <NavTabs activeTab={activeTab} onTabChange={setActiveTab} />
+                <NavTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
                 {activeTab === "overview" && (
                     <OverviewTab
                         venues={venues}
                         recentBookings={recentBookings}
-                        onSetActiveTab={setActiveTab}
+                        onSetActiveTab={handleTabChange}
                         onShowModal={() => setShowModal(true)}
                         isLoading={isLoading}
                     />

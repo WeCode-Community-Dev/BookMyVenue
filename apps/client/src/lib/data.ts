@@ -22,3 +22,7 @@ export const STATUS_DOT: Record<BookingStatus, string> = {
     PENDING: "bg-amber-400",
     CANCELLED: "bg-red-500",
 };
+
+export const TABS = ["overview", "bookings", "venues"] as const;
+
+export type Tab = (typeof TABS)[number];

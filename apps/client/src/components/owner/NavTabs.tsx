@@ -1,10 +1,4 @@
-type Tab = "overview" | "bookings" | "venues";
-
-const NAV_TABS = [
-    { key: "overview" as const, label: "Overview" },
-    { key: "bookings" as const, label: "Bookings" },
-    { key: "venues" as const, label: "My Venues" },
-];
+import { Tab, TABS } from "@/lib/data";
 
 interface NavTabsProps {
     activeTab: Tab;
@@ -14,17 +8,17 @@ interface NavTabsProps {
 export default function NavTabs({ activeTab, onTabChange }: NavTabsProps) {
     return (
         <div className="flex border-b border-border mb-6 gap-0">
-            {NAV_TABS.map(({ key, label }) => (
+            {TABS.map((tab) => (
                 <button
-                    key={key}
-                    onClick={() => onTabChange(key)}
-                    className={`px-5 py-3 text-sm font-semibold transition-all border-b-2 -mb-px ${
-                        activeTab === key
+                    key={tab}
+                    onClick={() => onTabChange(tab)}
+                    className={`px-5 py-3 text-sm font-semibold transition-all border-b-2 -mb-px capitalize ${
+                        activeTab === tab
                             ? "border-primary text-primary"
                             : "border-transparent text-muted-foreground hover:text-foreground"
                     }`}
                 >
-                    {label}
+                    {tab}
                 </button>
             ))}
         </div>
