@@ -6,9 +6,6 @@ const initialState = {
   loading: false,
   error: null,
   user: null,
-  otpLoading: false,
-  otpSent: false,
-  otpVerified: false,
 };
 
 // Get Profile
@@ -187,46 +184,10 @@ const UserProfileSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Request OTP
-      .addCase(requestEmailChangeOtp.pending, (state) => {
-        state.otpLoading = true;
-      })
-
-      .addCase(requestEmailChangeOtp.fulfilled, (state) => {
-        state.otpLoading = false;
-        state.otpSent = true;
-      })
-
-      .addCase(requestEmailChangeOtp.rejected, (state, action) => {
-        state.otpLoading = false;
-      })
-
       // Verify OTP
-      .addCase(verifyEmailOtp.pending, (state) => {
-        state.otpLoading = true;
-      })
 
       .addCase(verifyEmailOtp.fulfilled, (state, action) => {
-        state.otpLoading = false;
-        state.otpVerified = true;
         state.user = action.payload;
-      })
-
-      .addCase(verifyEmailOtp.rejected, (state, action) => {
-        state.otpLoading = false;
-      })
-
-      // Resend OTP
-      .addCase(resendEmailOtp.pending, (state) => {
-        state.otpLoading = true;
-      })
-
-      .addCase(resendEmailOtp.fulfilled, (state) => {
-        state.otpLoading = false;
-      })
-
-      .addCase(resendEmailOtp.rejected, (state, action) => {
-        state.otpLoading = false;
       });
   },
 });

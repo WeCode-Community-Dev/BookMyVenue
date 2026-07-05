@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 import Header from "@/presentation/components/common/Header";
 import UserSidebar from "@/presentation/components/user/UserSidebar";
@@ -28,57 +29,79 @@ const UserProfile = () => {
   }, [dispatch]);
 
   const handleSave = async (formData) => {
-    const payload = {
-      fullName: formData.name,
-      phone: formData.phone,
-    };
-
-    const resultAction = await dispatch(updateProfile(payload));
-
-    if (updateProfile.fulfilled.match(resultAction)) {
+    try {
+      const payload = {
+        fullName: formData.name,
+        phone: formData.phone,
+      };
+  
+      await dispatch(updateProfile(payload)).unwrap();
+  
+      toast.success("Profile updated successfully");
       setIsEditing(false);
+    } catch (error) {
+      toast.error(error);
     }
   };
 
   const handleImageChange = async (file) => {
-    const resultAction = await dispatch(updateProfileImage(file));
-
-    if (updateProfileImage.fulfilled.match(resultAction)) {
-      console.log("Profile image updated");
+    try {
+      await dispatch(updateProfileImage(file)).unwrap();
+  
+      toast.success("Profile picture updated successfully");
+    } catch (error) {
+      toast.error(error);
     }
   };
 
-  const { otpLoading, otpSent } = useSelector((state) => state.userProfile);
-
   const handleRequestEmailOtp = async (newEmail) => {
-    const resultAction = await dispatch(requestEmailChangeOtp(newEmail));
-
-    if (requestEmailChangeOtp.fulfilled.match(resultAction)) {
-      console.log("OTP Sent");
+    try {
+      await dispatch(requestEmailChangeOtp(newEmail)).unwrap();
+  
+      toast.success("OTP sent to your email");
+  
+      return {
+        success: true,
+      };
+    } catch (error) {
+      toast.error(error);
+  
+      return {
+        success: false,
+        message: error,
+      };
     }
   };
 
   const handleVerifyOtp = async (otp) => {
-    const result = await dispatch(verifyEmailOtp(otp));
-
-    if (verifyEmailOtp.fulfilled.match(result)) {
+    try {
+      await dispatch(verifyEmailOtp(otp)).unwrap();
+  
+      toast.success("Email updated successfully");
+  
       await dispatch(getProfile());
-
+  
       setIsEditing(false);
-
+  
       return {
         success: true,
       };
+    } catch (error) {
+      return {
+        success: false,
+        message: error,
+      };
     }
-
-    return {
-      success: false,
-      message: result.payload,
-    };
   };
 
   const handleResendOtp = async () => {
-    await dispatch(resendEmailOtp());
+    try {
+      await dispatch(resendEmailOtp()).unwrap();
+  
+      toast.success("OTP resent successfully");
+    } catch (error) {
+      toast.error(error);
+    }
   };
 
   if (loading) {
@@ -147,8 +170,6 @@ const UserProfile = () => {
                   onSave={handleSave}
                   onCancel={() => setIsEditing(false)}
                   onRequestEmailOtp={handleRequestEmailOtp}
-                  otpLoading={otpLoading}
-                  otpSent={otpSent}
                   onVerifyOtp={handleVerifyOtp}
                   onResendOtp={handleResendOtp}
                 />

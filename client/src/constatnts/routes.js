@@ -9,7 +9,8 @@ export const ROUTES = {
         BROWSE_VENUES: '/user/venues',
         VENUE_DETAILS: '/user/venue/:id',
         ACCOUNT_SETTINGS: '/user/accountsettings',
-        WISHLIST: '/user/wishlist'
+        WISHLIST: '/user/wishlist',
+        BOOKINGS: '/user/bookings'
     },
     VENDOR: {
         DASHBOARD: '/vendor/dashboard',

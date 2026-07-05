@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constatnts/routes";
 import { CalendarDays, Heart, Settings, User } from "lucide-react";
 import React from "react";
 import { NavLink } from "react-router-dom";
@@ -6,22 +7,22 @@ const UserSidebar = () => {
   const menuItems = [
     {
       name: "Profile",
-      path: "/user/profile",
+      path: ROUTES.USER.PROFILE,
       icon: User,
     },
     {
       name: "Wishlist",
-      path: "/user/wishlist",
+      path: ROUTES.USER.WISHLIST,
       icon: Heart,
     },
     {
       name: "Bookings",
-      path: "/user/bookings",
+      path: ROUTES.USER.BOOKINGS,
       icon: CalendarDays,
     },
     {
       name: "Settings",
-      path: "/user/accountsettings",
+      path: ROUTES.USER.ACCOUNT_SETTINGS,
       icon: Settings,
     },
   ];

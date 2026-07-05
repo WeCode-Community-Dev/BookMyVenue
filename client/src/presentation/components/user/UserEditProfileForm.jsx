@@ -7,8 +7,6 @@ const UserEditProfileForm = ({
   onRequestEmailOtp,
   onVerifyOtp,
   onResendOtp,
-  otpLoading,
-  otpSent,
 }) => {
   const [formData, setFormData] = useState({
     name: user.fullName || "",
@@ -32,28 +30,44 @@ const UserEditProfileForm = ({
 
   const [showEmailSection, setShowEmailSection] = useState(false);
   const [newEmail, setNewEmail] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
     if (!newEmail.trim()) return;
 
-    onRequestEmailOtp(newEmail);
+    setOtpLoading(true);
+
+    const result = await onRequestEmailOtp(newEmail);
+
+    setOtpLoading(false);
+
+    if (result.success) {
+      setOtpSent(true);
+    } else {
+      setOtpSent(false);
+    }
   };
 
   const [otp, setOtp] = useState("");
 
   const handleVerifyOtp = async () => {
     const result = await onVerifyOtp(otp);
-  
+
     if (!result.success) {
       setOtpError(result.message || "Invalid OTP");
       return;
     }
-  
+
     setOtpError("");
   };
 
-  const handleResendOtp = () => {
-    onResendOtp();
+  const handleResendOtp = async () => {
+    setOtpLoading(true);
+
+    await onResendOtp();
+
+    setOtpLoading(false);
   };
 
   const [otpError, setOtpError] = useState("");
