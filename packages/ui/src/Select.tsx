@@ -15,9 +15,10 @@ export interface SelectProps {
   className?: string
   disabled?: boolean
   label?: string
+  name?: string
 }
 
-export default function Select({ options, value, onChange, placeholder = 'Select...', className = '', disabled, label }: SelectProps) {
+export default function Select({ options, value, onChange, placeholder = 'Select...', className = '', disabled, label, name }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
@@ -59,6 +60,8 @@ export default function Select({ options, value, onChange, placeholder = 'Select
           {label}
         </label>
       )}
+      
+      {name && <input type="hidden" name={name} value={value} />}
       
       <button
         type="button"

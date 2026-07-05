@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom'
-import { Card, Button, Input, LocationPickerMap, InfoTooltip, Skeleton } from '@venue404/ui'
+import { Card, Button, Input, LocationPickerMap, InfoTooltip, Skeleton, Select } from '@venue404/ui'
 import { ArrowLeft } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -439,16 +439,14 @@ export default function VenueEdit() {
               
               <div className="space-y-1">
                 <label className="text-sm font-medium text-zinc-700">Venue Category<span className="text-red-500 ml-1">*</span></label>
-                <select name="category_id" defaultValue={venue.category?.id} required
+                <Select
+                  name="category_id"
+                  value={venue.category?.id || ''}
+                  onChange={(val) => setVenue(prev => prev ? { ...prev, category: { id: val, name: '', label: '' } } : null)}
+                  options={venueCategories.map(cat => ({ label: `${cat.icon ? `${cat.icon} ` : ''}${cat.label}`, value: cat.id }))}
+                  placeholder={venueCategories.length === 0 ? 'Loading categories...' : 'Select a category...'}
                   disabled={venueCategories.length === 0}
-                  className="w-full h-10 px-3 py-2 rounded-md border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:opacity-50">
-                  <option value="">{venueCategories.length === 0 ? 'Loading categories…' : 'Select a category…'}</option>
-                  {venueCategories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.icon ? `${cat.icon} ` : ''}{cat.label}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
 
               <div>
