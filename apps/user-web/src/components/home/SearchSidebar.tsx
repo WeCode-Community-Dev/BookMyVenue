@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { createClient, venueEndpoints } from '@venue404/api-client'
 import type { VenueCategory } from '@venue404/api-client'
 
@@ -22,6 +23,7 @@ export function SearchSidebar({
 }: Props) {
   // FIX #SearchSidebar: pull categories from the same API CategorySection uses,
   // instead of the hardcoded CATEGORIES constant which can drift out of sync
+  const navigate = useNavigate()
   const [categories, setCategories] = useState<VenueCategory[]>([])
   const [loadingCategories, setLoadingCategories] = useState(true)
 
@@ -110,6 +112,7 @@ export function SearchSidebar({
         </p>
         <button
           type="button"
+          onClick={() => navigate('/deep-research')}
           className="w-full rounded-xl bg-brand py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover active:scale-[0.98]"
         >
           Try Deep Research

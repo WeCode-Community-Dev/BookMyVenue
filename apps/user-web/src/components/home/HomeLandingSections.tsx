@@ -5,6 +5,7 @@
 //   4. IntelligentPlatform — 6-feature grid
 
 import type { ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 1 · What your booking programme gets back
@@ -131,6 +132,8 @@ export function WhyVenue404() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export function DeepResearchSection() {
+  const navigate = useNavigate()
+
   return (
     <section className="bg-zinc-50 py-10 sm:py-14">
       <div className="mx-auto max-w-5xl px-6">
@@ -160,6 +163,7 @@ export function DeepResearchSection() {
               </p>
               <button
                 type="button"
+                onClick={() => navigate('/deep-research')}
                 className="mt-8 inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-all hover:bg-brand-hover hover:shadow-brand/30 active:scale-[0.98]"
               >
                 Start Deep Research

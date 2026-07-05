@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { CATEGORIES, VENUE_TYPE_LABELS } from '../../constants'
 
 const INPUT_BASE =
@@ -39,6 +40,7 @@ function FilterHero({
   | 'onCapacityChange'
   | 'onSubmit'
 >) {
+  const navigate = useNavigate()
   const typeLabel = venueType ? (VENUE_TYPE_LABELS[venueType] ?? venueType) : ''
   const titleParts = [typeLabel ? `${typeLabel} Venues` : '', city ? `in ${city}` : ''].filter(
     Boolean
@@ -183,7 +185,11 @@ function FilterHero({
             />
           </svg>
           Can't find the right venue?{' '}
-          <button type="button" className="text-zinc-300 transition-colors hover:text-white">
+          <button
+            type="button"
+            onClick={() => navigate('/deep-research')}
+            className="text-zinc-300 transition-colors hover:text-white"
+          >
             Try Deep Research, we'll source options not listed anywhere →
           </button>
         </p>

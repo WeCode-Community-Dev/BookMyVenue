@@ -14,6 +14,7 @@ import Payment from './pages/Payment'
 import Profile from './pages/Profile'
 import Notifications from './pages/Notifications'
 import PaymentResult from './pages/PaymentResult'
+import DeepResearch from './pages/DeepResearch'
 
 export const router = createBrowserRouter([
   // public routes
@@ -79,6 +80,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <PaymentResult />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/deep-research',
+    element: (
+      <ProtectedRoute>
+        <DeepResearch />
       </ProtectedRoute>
     ),
   },
