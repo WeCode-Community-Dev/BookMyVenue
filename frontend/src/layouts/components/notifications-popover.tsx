@@ -1,6 +1,8 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
+import type { Notification as NovuNotification } from '@novu/js';
 
-import { useState, useCallback } from 'react';
+import { useNotifications } from '@novu/react/hooks';
+import { useMemo, useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
@@ -16,6 +18,9 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
+import CircularProgress from '@mui/material/CircularProgress';
+
+import { useRouter } from 'src/routes/hooks';
 
 import { fToNow } from 'src/utils/format-time';
 
@@ -24,24 +29,33 @@ import { Scrollbar } from 'src/components/scrollbar';
 
 // ----------------------------------------------------------------------
 
-type NotificationItemProps = {
-  id: string;
-  type: string;
-  title: string;
-  isUnRead: boolean;
-  description: string;
-  avatarUrl: string | null;
-  postedAt: string | number | null;
-};
+export type NotificationsPopoverProps = IconButtonProps;
 
-export type NotificationsPopoverProps = IconButtonProps & {
-  data?: NotificationItemProps[];
-};
+export function NotificationsPopover({ sx, ...other }: NotificationsPopoverProps) {
+  const router = useRouter();
 
-export function NotificationsPopover({ data = [], sx, ...other }: NotificationsPopoverProps) {
-  const [notifications, setNotifications] = useState(data);
+  const {
+    notifications = [],
+    isLoading,
+    hasMore,
+    readAll,
+    fetchMore,
+  } = useNotifications({ limit: 20 });
 
-  const totalUnRead = notifications.filter((item) => item.isUnRead === true).length;
+  const totalUnRead = useMemo(
+    () => notifications.filter((notification) => !notification.isRead).length,
+    [notifications]
+  );
+
+  const unreadNotifications = useMemo(
+    () => notifications.filter((notification) => !notification.isRead),
+    [notifications]
+  );
+
+  const readNotifications = useMemo(
+    () => notifications.filter((notification) => notification.isRead),
+    [notifications]
+  );
 
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
@@ -54,13 +68,28 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
   }, []);
 
   const handleMarkAllAsRead = useCallback(() => {
-    const updatedNotifications = notifications.map((notification) => ({
-      ...notification,
-      isUnRead: false,
-    }));
+    readAll();
+  }, [readAll]);
 
-    setNotifications(updatedNotifications);
-  }, [notifications]);
+  const handleClickNotification = useCallback(
+    (notification: NovuNotification) => {
+      if (!notification.isRead) {
+        notification.read();
+      }
+
+      handleClosePopover();
+
+      const url = notification.redirect?.url;
+      if (!url) return;
+
+      if (notification.redirect?.target === '_blank' || /^https?:\/\//i.test(url)) {
+        window.open(url, notification.redirect?.target ?? '_blank');
+      } else {
+        router.push(url);
+      }
+    },
+    [handleClosePopover, router]
+  );
 
   return (
     <>
@@ -120,38 +149,70 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         <Scrollbar fillContent sx={{ minHeight: 240, maxHeight: { xs: 360, sm: 'none' } }}>
-          <List
-            disablePadding
-            subheader={
-              <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
-                New
-              </ListSubheader>
-            }
-          >
-            {notifications.slice(0, 2).map((notification) => (
-              <NotificationItem key={notification.id} notification={notification} />
-            ))}
-          </List>
+          {isLoading && notifications.length === 0 ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+              <CircularProgress size={24} />
+            </Box>
+          ) : notifications.length === 0 ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                You don&apos;t have any notifications yet
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              {unreadNotifications.length > 0 && (
+                <List
+                  disablePadding
+                  subheader={
+                    <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
+                      New
+                    </ListSubheader>
+                  }
+                >
+                  {unreadNotifications.map((notification) => (
+                    <NotificationItem
+                      key={notification.id}
+                      notification={notification}
+                      onClick={handleClickNotification}
+                    />
+                  ))}
+                </List>
+              )}
 
-          <List
-            disablePadding
-            subheader={
-              <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
-                Before that
-              </ListSubheader>
-            }
-          >
-            {notifications.slice(2, 5).map((notification) => (
-              <NotificationItem key={notification.id} notification={notification} />
-            ))}
-          </List>
+              {readNotifications.length > 0 && (
+                <List
+                  disablePadding
+                  subheader={
+                    <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
+                      Before that
+                    </ListSubheader>
+                  }
+                >
+                  {readNotifications.map((notification) => (
+                    <NotificationItem
+                      key={notification.id}
+                      notification={notification}
+                      onClick={handleClickNotification}
+                    />
+                  ))}
+                </List>
+              )}
+            </>
+          )}
         </Scrollbar>
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         <Box sx={{ p: 1 }}>
-          <Button fullWidth disableRipple color="inherit">
-            View all
+          <Button
+            fullWidth
+            disableRipple
+            color="inherit"
+            disabled={!hasMore}
+            onClick={() => fetchMore()}
+          >
+            {hasMore ? 'Load more' : 'No more notifications'}
           </Button>
         </Box>
       </Popover>
@@ -161,22 +222,30 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
 
 // ----------------------------------------------------------------------
 
-function NotificationItem({ notification }: { notification: NotificationItemProps }) {
+type NotificationItemProps = {
+  notification: NovuNotification;
+  onClick: (notification: NovuNotification) => void;
+};
+
+function NotificationItem({ notification, onClick }: NotificationItemProps) {
   const { avatarUrl, title } = renderContent(notification);
 
   return (
     <ListItemButton
+      onClick={() => onClick(notification)}
       sx={{
         py: 1.5,
         px: 2.5,
         mt: '1px',
-        ...(notification.isUnRead && {
+        ...(!notification.isRead && {
           bgcolor: 'action.selected',
         }),
       }}
     >
       <ListItemAvatar>
-        <Avatar sx={{ bgcolor: 'background.neutral' }}>{avatarUrl}</Avatar>
+        <Avatar src={notification.avatar} sx={{ bgcolor: 'background.neutral' }}>
+          {avatarUrl}
+        </Avatar>
       </ListItemAvatar>
       <ListItemText
         primary={title}
@@ -192,7 +261,7 @@ function NotificationItem({ notification }: { notification: NotificationItemProp
             }}
           >
             <Iconify width={14} icon="solar:clock-circle-outline" />
-            {fToNow(notification.postedAt)}
+            {fToNow(notification.createdAt)}
           </Typography>
         }
       />
@@ -202,58 +271,22 @@ function NotificationItem({ notification }: { notification: NotificationItemProp
 
 // ----------------------------------------------------------------------
 
-function renderContent(notification: NotificationItemProps) {
+function renderContent(notification: NovuNotification) {
   const title = (
     <Typography variant="subtitle2">
-      {notification.title}
-      <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
-        &nbsp; {notification.description}
-      </Typography>
+      {notification.subject || notification.body}
+      {notification.subject && (
+        <Typography component="span" variant="body2" sx={{ color: 'text.secondary' }}>
+          &nbsp; {notification.body}
+        </Typography>
+      )}
     </Typography>
   );
 
-  if (notification.type === 'order-placed') {
-    return {
-      avatarUrl: (
-        <img
-          alt={notification.title}
-          src="/assets/icons/notification/ic-notification-package.svg"
-        />
-      ),
-      title,
-    };
-  }
-  if (notification.type === 'order-shipped') {
-    return {
-      avatarUrl: (
-        <img
-          alt={notification.title}
-          src="/assets/icons/notification/ic-notification-shipping.svg"
-        />
-      ),
-      title,
-    };
-  }
-  if (notification.type === 'mail') {
-    return {
-      avatarUrl: (
-        <img alt={notification.title} src="/assets/icons/notification/ic-notification-mail.svg" />
-      ),
-      title,
-    };
-  }
-  if (notification.type === 'chat-message') {
-    return {
-      avatarUrl: (
-        <img alt={notification.title} src="/assets/icons/notification/ic-notification-chat.svg" />
-      ),
-      title,
-    };
-  }
   return {
-    avatarUrl: notification.avatarUrl ? (
-      <img alt={notification.title} src={notification.avatarUrl} />
-    ) : null,
+    avatarUrl: notification.avatar ? null : (
+      <Iconify width={24} icon="solar:bell-bing-bold-duotone" />
+    ),
     title,
   };
 }

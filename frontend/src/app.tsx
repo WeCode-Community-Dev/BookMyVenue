@@ -26,7 +26,9 @@ export default function App({ children }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

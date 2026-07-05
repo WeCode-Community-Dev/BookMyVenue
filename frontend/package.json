@@ -37,6 +37,7 @@
     "@iconify/react": "^5.2.1",
     "@mui/lab": "^7.0.0-beta.10",
     "@mui/material": "^7.0.1",
+    "@novu/react": "^3.17.0",
     "@tanstack/react-query": "^5.101.0",
     "apexcharts": "^4.5.0",
     "axios": "^1.18.0",
