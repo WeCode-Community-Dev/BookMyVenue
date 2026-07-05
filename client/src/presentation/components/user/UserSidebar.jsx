@@ -1,4 +1,4 @@
-import { ROUTES } from "@/constatnts/routes";
+import { ROUTES } from "@/constants/routes";
 import { CalendarDays, Heart, Settings, User } from "lucide-react";
 import React from "react";
 import { NavLink } from "react-router-dom";

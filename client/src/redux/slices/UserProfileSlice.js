@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "@/lib/axios";
-import { API_ROUTES } from "@/constatnts/apiRoutes";
+import { API_ROUTES } from "@/constants/apiRoutes";
 
 const initialState = {
   loading: false,
