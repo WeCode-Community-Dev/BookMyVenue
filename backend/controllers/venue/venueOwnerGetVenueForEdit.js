@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Venues = require("../../models/venue");
 const { VENUE_STATUSES } = require("../../constants/venue");
-const { buildEditDraftSeed, CATEGORY_POPULATE, OWNER_HIDDEN_FIELDS } = require("./shared");
+const { buildEditDraftSeed, VENUE_POPULATE, OWNER_HIDDEN_FIELDS } = require("./shared");
 
 // POST /venueOwner/getVenueForEdit/:id
 // Starts (or resumes) editing of a live APPROVED venue. Editing an APPROVED
@@ -58,7 +58,7 @@ async function venueOwnerGetVenueForEdit(req, res) {
          deletedAt: null,
       })
          .select(OWNER_HIDDEN_FIELDS)
-         .populate(CATEGORY_POPULATE)
+         .populate(VENUE_POPULATE)
          .lean();
 
       if (existingDraft) {
@@ -68,7 +68,7 @@ async function venueOwnerGetVenueForEdit(req, res) {
       const created = await Venues.create(buildEditDraftSeed(original));
       const editDraft = await Venues.findById(created._id)
          .select(OWNER_HIDDEN_FIELDS)
-         .populate(CATEGORY_POPULATE)
+         .populate(VENUE_POPULATE)
          .lean();
 
       return res.status(200).json({ data: editDraft });

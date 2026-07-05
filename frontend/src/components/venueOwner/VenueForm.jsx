@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { getVenueCategories } from "../../services/venueCategory.service.js";
+import { getAmenities } from "../../services/amenity.service.js";
 
 const AUTOSAVE_DELAY_MS = 2000;
 
@@ -14,6 +15,10 @@ function buildPayload(data) {
         name:          (data.name ?? "").trim(),
         description:   (data.description ?? "").trim(),
         venueCategory: data.venueCategory || "",
+        // RHF collects the checked amenity checkboxes into an array of _id
+        // strings (or a bare string if the group renders a single box). Normalise
+        // to an array and drop any falsy entries left by unchecked boxes.
+        amenities: [data.amenities].flat().filter(Boolean),
         addressLine:   (data.addressLine ?? "").trim(),
         city:          (data.city ?? "").trim(),
         district:      data.district || "",
@@ -65,6 +70,8 @@ function inputCls(hasError) {
 export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, onContinueLater }) {
     const [categories, setCategories] = useState([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
+    const [amenities, setAmenities] = useState([]);
+    const [loadingAmenities, setLoadingAmenities] = useState(true);
     const [imageFiles, setImageFiles] = useState([]);   // new uploads
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
@@ -90,6 +97,10 @@ export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, on
             venueCategory: initialValues.venueCategory?._id
                         || initialValues.venueCategory
                         || "",
+            // Populated amenities arrive as {_id, identifier, name} objects (or
+            // bare id strings on an unpopulated read); reduce to id strings so the
+            // checkbox `value`s match and pre-check the venue's saved amenities.
+            amenities: (initialValues.amenities || []).map((a) => a?._id || a),
             capacity:    initialValues.capacity    || "",
             basePrice:   initialValues.basePrice   || "",
             addressLine: initialValues.addressLine || "",
@@ -113,7 +124,18 @@ export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, on
                 setLoadingCategories(false);
             }
         }
+        async function loadAmenities() {
+            try {
+                const data = await getAmenities();
+                setAmenities(data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoadingAmenities(false);
+            }
+        }
         loadCategories();
+        loadAmenities();
     }, []);
 
     // ── Autosave ─────────────────────────────────────────────────────────────
@@ -330,6 +352,39 @@ export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, on
                             ))}
                         </select>
                         <FieldError error={errors.venueCategory} />
+                    </div>
+
+                    {/* Amenities — multiselect checkbox grid */}
+                    <div>
+                        <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                            Amenities <span className="text-red-500">*</span>
+                        </label>
+                        <p className="mb-2.5 text-sm text-gray-500">
+                            Select all amenities available at this venue.
+                        </p>
+                        {loadingAmenities ? (
+                            <p className="text-sm text-gray-400">Loading amenities…</p>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 sm:grid-cols-3">
+                                {amenities.map((amenity) => (
+                                    <label
+                                        key={amenity._id}
+                                        className="flex cursor-pointer items-center gap-2 text-sm text-gray-700"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            value={amenity._id}
+                                            className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                            {...register("amenities", {
+                                                required: "Select at least one amenity",
+                                            })}
+                                        />
+                                        <span>{amenity.name}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        )}
+                        <FieldError error={errors.amenities} />
                     </div>
                 </div>
             </section>

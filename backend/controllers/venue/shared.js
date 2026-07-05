@@ -15,9 +15,14 @@ const PUBLIC_VENUE_FILTER = {
    deletedAt: null,
 };
 
-const PUBLIC_FIELDS = "name description venueCategory capacity addressLine state district city pincode location basePrice images createdAt";
+const PUBLIC_FIELDS = "name description venueCategory amenities capacity addressLine state district city pincode location basePrice images createdAt";
 
+// Populate specs for a venue's referenced lookups. Every venue read that
+// resolves the category label also resolves amenity labels, so callers spread
+// VENUE_POPULATE rather than passing CATEGORY_POPULATE alone.
 const CATEGORY_POPULATE = { path: "venueCategory", select: "identifier name" };
+const AMENITIES_POPULATE = { path: "amenities", select: "identifier name" };
+const VENUE_POPULATE = [CATEGORY_POPULATE, AMENITIES_POPULATE];
 
 function parsePageParam(rawValue, fallback) {
    const parsed = Number.parseInt(rawValue, 10);
@@ -102,7 +107,7 @@ const OWNER_HIDDEN_FIELDS = "-deletedAt -__v";
 // Fields a venue owner may set on a venue. Never spread req.body directly — pick from this list
 // so venueOwner/status/editOf/isActive cannot be client-set.
 const EDITABLE_VENUE_FIELDS = [
-   "name", "description", "venueCategory", "capacity",
+   "name", "description", "venueCategory", "amenities", "capacity",
    "addressLine", "city", "district", "state", "pincode",
    "location", "basePrice", "images",
 ];
@@ -113,19 +118,21 @@ const EDITABLE_VENUE_FIELDS = [
 // are intentionally omitted — coordinates are optional and images are not yet
 // part of the MVP upload pipeline.
 const REQUIRED_VENUE_FIELDS = [
-   "name", "description", "venueCategory", "capacity",
+   "name", "description", "venueCategory", "amenities", "capacity",
    "addressLine", "city", "district", "state", "pincode", "basePrice",
 ];
 
 // Returns the REQUIRED_VENUE_FIELDS that are missing/empty on a venue document.
-// Empty string, null, undefined, and NaN all count as missing; a 0 capacity or
-// price is allowed through here (the schema's min:0 governs range separately).
+// Empty string, null, undefined, NaN, and empty array all count as missing (the
+// last so a venue must carry at least one amenity); a 0 capacity or price is
+// allowed through here (the schema's min:0 governs range separately).
 function missingRequiredVenueFields(venue) {
    return REQUIRED_VENUE_FIELDS.filter((field) => {
       const value = venue[field];
       if (value === null || value === undefined) return true;
       if (typeof value === "string" && value.trim() === "") return true;
       if (typeof value === "number" && Number.isNaN(value)) return true;
+      if (Array.isArray(value) && value.length === 0) return true;
       return false;
    });
 }
@@ -153,6 +160,8 @@ module.exports = {
    PUBLIC_VENUE_FILTER,
    PUBLIC_FIELDS,
    CATEGORY_POPULATE,
+   AMENITIES_POPULATE,
+   VENUE_POPULATE,
    OWNER_HIDDEN_FIELDS,
    EDITABLE_VENUE_FIELDS,
    REQUIRED_VENUE_FIELDS,

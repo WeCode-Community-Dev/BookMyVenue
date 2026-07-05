@@ -6,6 +6,7 @@ const { corsOrigin } = require("./config/config");
 const venueRoutes = require("./routes/venue");
 const venueOwnerRoutes = require("./routes/venueOwner");
 const categoryRoutes = require("./routes/category");
+const amenityRoutes = require("./routes/amenity");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 
@@ -21,6 +22,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/venues", venueRoutes);
 app.use("/api/venueOwner", venueOwnerRoutes);
 app.use("/api/venueCategories", categoryRoutes);
+app.use("/api/amenities", amenityRoutes);
 app.use("/api/admin", adminRoutes);
 
 connectDB()

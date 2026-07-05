@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Venues = require("../../models/venue");
 const { REVIEW_STATUSES } = require("../../constants/venue");
-const { CATEGORY_POPULATE } = require("../venue/shared");
+const { VENUE_POPULATE } = require("../venue/shared");
 
 // Owner fields surfaced to the review page — enough to identify/contact the owner.
 const OWNER_POPULATE = { path: "venueOwner", select: "name email" };
@@ -30,7 +30,7 @@ async function adminGetVenueById(req, res) {
          deletedAt: null,
       })
          .select(DETAIL_HIDDEN_FIELDS)
-         .populate(CATEGORY_POPULATE)
+         .populate(VENUE_POPULATE)
          .populate(OWNER_POPULATE)
          .lean();
 

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Venues = require("../../models/venue");
-const { CATEGORY_POPULATE, OWNER_HIDDEN_FIELDS } = require("./shared");
+const { VENUE_POPULATE, OWNER_HIDDEN_FIELDS } = require("./shared");
 
 // GET /venueOwner/venues/:id
 // Returns a single venue owned by the authenticated venue owner, in ANY status
@@ -19,7 +19,7 @@ async function venueOwnerGetVenueById(req, res) {
          deletedAt: null,
       })
          .select(OWNER_HIDDEN_FIELDS)
-         .populate(CATEGORY_POPULATE)
+         .populate(VENUE_POPULATE)
          .lean();
 
       if (!venue) {
