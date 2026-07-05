@@ -70,6 +70,11 @@ class Settings(BaseSettings):
     search_normalizer_match_threshold: int = 85
     search_normalizer_min_token_len: int = 3
 
+    # Groq — used for Deep Research's query-understanding stage (OpenAI-compatible API).
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.1-8b-instant"
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+
     log_level: str = "INFO"  # DEBUG / INFO / WARNING / ERROR
 
     class Config:
