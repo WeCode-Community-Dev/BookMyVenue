@@ -220,7 +220,10 @@ export async function getOwnedVenues(): Promise<VenueResponse[]> {
                 Authorization: accessToken,
             },
         });
-        return response;
+        if (!response.success) {
+            throw new Error(response.message);
+        }
+        return response.data;
     } catch (error) {
         console.error(error);
         throw error;

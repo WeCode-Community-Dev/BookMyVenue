@@ -146,6 +146,14 @@ type SuccessResponse<T> = {
   success: true;
   message: string;
   data?: T;
+  meta?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+  };
 };
 
 
@@ -222,33 +230,61 @@ export class VenuesService {
     }
   }
 
-  async getOwnedVenues(authorization: string): Promise<OwnedVenueDetails[]> {
+  async getOwnedVenues(authorization: string, page: number = 1, limit: number = 10): Promise<SuccessResponse<OwnedVenueDetails[]>> {
     try {
       const payload = verifyAccessToken(this.jwtService, authorization);
       if (payload.role !== UserRole.VENUE_OWNER) {
         throw new UnauthorizedException('You are not authorized to get owned venues');
       }
       const ownerId = payload.sub;
-      return this.prismaService.venue.findMany({
-        where: { ownerId },
-        select: {
-          id: true,
-          name: true,
-          address: true,
-          images: {
-            take: 1,
+      
+      const [venues, totalVenues] = await Promise.all(
+        [
+          this.prismaService.venue.findMany({
+            where: { ownerId },
+            orderBy: {
+              createdAt: 'desc',
+            },
+            skip: (page - 1) * limit,
+            take: limit,
             select: {
-              image: {
+              id: true,
+              name: true,
+              address: true,
+              images: {
+                take: 1,
                 select: {
-                  id: true,
-                  url: true,
-                  altText: true,
+                  image: {
+                    select: {
+                      id: true,
+                      url: true,
+                      altText: true,
+                    }
+                  }
                 }
               }
             }
-          }
-        }
-      });
+          }),
+          this.prismaService.venue.count({
+            where: { ownerId },
+          })
+        ]
+        
+      )
+      
+      return {
+        success: true,
+        message: 'Owned venues fetched successfully',
+        data: venues,
+        meta: {
+          total: totalVenues,
+          page,
+          limit,
+          totalPages: Math.ceil(totalVenues / limit),
+          hasNext: page < Math.ceil(totalVenues / limit),
+          hasPrevious: page > 1,
+        },
+      };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

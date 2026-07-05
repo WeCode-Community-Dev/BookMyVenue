@@ -11,6 +11,7 @@ import {
   Post,
   Headers,
   Put,
+  Query,
 } from '@nestjs/common';
 import { CreateSpaceDto } from './dto/create-space.dto';
 import { CreateVenueDto } from './dto/create-venue.dto';
@@ -22,6 +23,7 @@ import { CreateSpaceOperatingHoursDto } from './dto/create-space-op-hours.dto';
 import { CreateSpaceBlockedPeriodDto } from './dto/create-space-block-period.dto';
 import { UpdateSpaceBlockedPeriodDto } from './dto/update-space-block-period.dto';
 import { UpsertSpacePricingDto } from './dto/upsert-space-pricing.dto';
+import { PaginationDto } from './dto/pagination-dto';
 
 @Controller()
 export class VenuesController {
@@ -33,8 +35,8 @@ export class VenuesController {
   }
 
   @Get('venues/owned')
-  getOwnedVenues(@Headers('authorization') authorization: string) {
-    return this.venuesService.getOwnedVenues(authorization);
+  getOwnedVenues(@Headers('authorization') authorization: string, @Query() paginationDto: PaginationDto) {
+    return this.venuesService.getOwnedVenues(authorization, paginationDto.page, paginationDto.limit);
   }
 
   @Get('venues')
