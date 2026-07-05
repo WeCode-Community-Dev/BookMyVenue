@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import '../../../../core/extension/date_extension.dart';
+import '../../../../core/router/route_name.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
+import '../../../../core/utils/ui/snackbar_command.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_cached_image.dart';
 import '../../../../core/widgets/app_text.dart';
+import '../../../../core/widgets/custom_app_bar.dart';
+import '../../../booking/domain/entity/booking_entities.dart';
+import '../../../booking/presentation/bloc/booking_bloc.dart';
 import '../../domain/entity/user_venue_entity.dart';
 
 class UserVenueDetailsScreen extends StatefulWidget {
@@ -21,14 +29,13 @@ class UserVenueDetailsScreen extends StatefulWidget {
 class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
   late final UserVenueEntity _venue;
   late DateTime _selectedDate;
-  double _selectedHours = 8.0;
   String _selectedTimeSlot = '';
   late List<String> _timeSlots;
 
   @override
   void initState() {
     super.initState();
-    _selectedDate = DateTime.now().add(const Duration(days: 2));
+    _selectedDate = DateTime.now().add(const Duration(days: 5));
 
     _venue = widget.venue;
 
@@ -267,8 +274,8 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
               final DateTime? pickedDate = await showDatePicker(
                 context: context,
                 initialDate: _selectedDate,
-                firstDate: DateTime.now(),
-                lastDate: DateTime.now().add(const Duration(days: 365)),
+                firstDate: DateTime.now().add(const Duration(days: 1)),
+                lastDate: DateTime.now().add(const Duration(days: 150)),
               );
               if (pickedDate != null) {
                 setState(() {
@@ -296,28 +303,28 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
           const SizedBox(height: 20),
 
           // Hours Selection
-          const AppText('DURATION HOURS'),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<double>(
-            value: _selectedHours,
-            decoration: const InputDecoration(
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
-            ),
-            items: const <DropdownMenuItem<double>>[
-              DropdownMenuItem<double>(value: 4.0, child: AppText('4 Hours')),
-              DropdownMenuItem<double>(value: 8.0, child: AppText('8 Hours')),
-              DropdownMenuItem<double>(value: 12.0, child: AppText('12 Hours')),
-            ],
-            onChanged: (double? val) {
-              setState(() {
-                _selectedHours = val ?? 8.0;
-              });
-            },
-          ),
-          const SizedBox(height: 20),
+          // const AppText('DURATION HOURS'),
+          // const SizedBox(height: 8),
+          // DropdownButtonFormField<double>(
+          //   value: _selectedHours,
+          //   decoration: const InputDecoration(
+          //     contentPadding: EdgeInsets.symmetric(
+          //       horizontal: 12,
+          //       vertical: 12,
+          //     ),
+          //   ),
+          //   items: const <DropdownMenuItem<double>>[
+          //     DropdownMenuItem<double>(value: 4.0, child: AppText('4 Hours')),
+          //     DropdownMenuItem<double>(value: 8.0, child: AppText('8 Hours')),
+          //     DropdownMenuItem<double>(value: 12.0, child: AppText('12 Hours')),
+          //   ],
+          //   onChanged: (double? val) {
+          //     setState(() {
+          //       _selectedHours = val ?? 8.0;
+          //     });
+          //   },
+          // ),
+          // const SizedBox(height: 20),
 
           // Time Slot Selection
           const AppText('TIME SLOT'),
@@ -347,15 +354,13 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
           AppButton(
             label: 'Review Bookings & Policy',
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<UserBookingDetailsPolicyScreen>(
-                  builder: (BuildContext context) =>
-                      UserBookingDetailsPolicyScreen(
-                        venue: _venue,
-                        selectedHours: _selectedHours,
-                        selectedTimeSlot: _selectedTimeSlot,
-                      ),
-                ),
+              context.push(
+                '/${AppRouteNames.checkoutPolicy}',
+                extra: <String, dynamic>{
+                  'venue': _venue,
+                  'selectedDate': _selectedDate,
+                  'selectedTimeSlot': _selectedTimeSlot,
+                },
               );
             },
           ),
@@ -398,7 +403,7 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: AppSpacing.screenPadding,
           child: Center(
             child: Container(
               constraints: const BoxConstraints(maxWidth: 1100),
@@ -426,13 +431,13 @@ class _UserVenueDetailsScreenState extends State<UserVenueDetailsScreen> {
 class UserBookingDetailsPolicyScreen extends StatefulWidget {
   const UserBookingDetailsPolicyScreen({
     required this.venue,
-    required this.selectedHours,
+    required this.selectedDate,
     required this.selectedTimeSlot,
     super.key,
   });
 
   final UserVenueEntity venue;
-  final double selectedHours;
+  final DateTime selectedDate;
   final String selectedTimeSlot;
 
   @override
@@ -443,13 +448,86 @@ class UserBookingDetailsPolicyScreen extends StatefulWidget {
 class _UserBookingDetailsPolicyScreenState
     extends State<UserBookingDetailsPolicyScreen> {
   bool _agreedToPolicies = false;
+  late final Razorpay _razorpay;
+  String _bookingId = '';
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _agreedToPolicies = false;
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear();
+    super.dispose();
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    SnackbarCommand.show(
+      type: ToastType.success,
+      title: 'Payment Successful',
+      description: 'Verifying payment status...',
+    );
+
+    context.read<BookingBloc>().add(
+      BookingEvent.verifyPayment(
+        bookingId: _bookingId,
+        razorpayOrderId: response.orderId ?? '',
+        razorpayPaymentId: response.paymentId ?? '',
+        razorpaySignature: response.signature ?? '',
+      ),
+    );
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (response.code == Razorpay.PAYMENT_CANCELLED) {
+      SnackbarCommand.show(
+        type: ToastType.error,
+        title: 'Payment Cancelled',
+        description: 'You have cancelled the payment.',
+      );
+
+      context.read<BookingBloc>().add(
+        BookingEvent.cancel(bookingId: _bookingId),
+      );
+    } else {
+      SnackbarCommand.show(
+        type: ToastType.error,
+        title: 'Payment Failed',
+        description: response.message ?? 'Payment failed.',
+      );
+
+      context.push(
+        '/booking_failure',
+        extra: response.message ?? 'Payment failed.',
+      );
+    }
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    SnackbarCommand.show(
+      type: ToastType.info,
+      title: 'External Wallet',
+      description: 'External wallet chosen: ${response.walletName}',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final double hourlyRate = widget.venue.slots.isNotEmpty
         ? widget.venue.slots.first.price
         : 0.0;
-    final double baseAmount = widget.selectedHours * hourlyRate;
+    final double baseAmount = hourlyRate;
 
     // Search for cleaning fee or fallback to first service
     final double cleaning = widget.venue.services.isNotEmpty
@@ -464,212 +542,279 @@ class _UserBookingDetailsPolicyScreenState
         : 0.0;
 
     const double security = 1000.0;
-    final double serviceFee = baseAmount * 0.05;
+    final double serviceFee = baseAmount * 0.02;
     final double totalAmount = baseAmount + cleaning + security + serviceFee;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const AppText('Policies & Review'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: AppColors.outline, height: 1.0),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                // Venue Details Summary Card
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: AppShapes.md,
-                    border: Border.all(color: AppColors.outline),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: AppCachedImage(
-                          imageUrl: widget.venue.coverImageUrl.isNotEmpty
-                              ? widget.venue.coverImageUrl
-                              : 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=400',
-                          height: 100,
-                          width: double.infinity,
-                          borderRadius: BorderRadius.circular(
-                            AppShapes.radiusMd,
+    return BlocConsumer<BookingBloc, BookingState>(
+      listener: (BuildContext context, BookingState state) {
+        state.maybeWhen(
+          loading: () {
+            setState(() {
+              _isLoading = true;
+            });
+          },
+          checkoutSuccess: (BookingCheckoutResult checkoutResult) {
+            setState(() {
+              _isLoading = false;
+            });
+            _bookingId = checkoutResult.bookingId;
+
+            final Map<String, dynamic> options = <String, dynamic>{
+              'key': checkoutResult.razorpayKeyId,
+              'amount': (checkoutResult.amount * 100).toInt(),
+              'name': 'Book My Venue',
+              'description': 'Booking for ${widget.venue.venueName}',
+              'order_id': checkoutResult.razorpayOrderId,
+              'prefill': <String, String>{'contact': '', 'email': ''},
+            };
+
+            try {
+              _razorpay.open(options);
+            } catch (e) {
+              SnackbarCommand.show(
+                type: ToastType.error,
+                title: 'Checkout Error',
+                description: 'Failed to launch Razorpay: $e',
+              );
+            }
+          },
+          verifySuccess: (BookingDetailsEntity details, String message) {
+            setState(() {
+              _isLoading = false;
+            });
+            SnackbarCommand.show(
+              type: ToastType.success,
+              title: 'Success',
+              description: message,
+            );
+            context.pushReplacement('/booking_success', extra: details);
+          },
+          cancelSuccess: (BookingDetailsEntity details, String message) {
+            setState(() {
+              _isLoading = false;
+            });
+            SnackbarCommand.show(
+              type: ToastType.info,
+              title: 'Cancelled',
+              description: message,
+            );
+          },
+          failure: (String message) {
+            setState(() {
+              _isLoading = false;
+            });
+            SnackbarCommand.show(
+              type: ToastType.error,
+              title: 'Booking Error',
+              description: message,
+            );
+            context.push('/booking_failure', extra: message);
+          },
+          orElse: () {
+            setState(() {
+              _isLoading = false;
+            });
+          },
+        );
+      },
+      builder: (BuildContext context, BookingState state) {
+        return Scaffold(
+          appBar: const CustomAppBar(title: 'Policies & Review'),
+          body: Stack(
+            children: <Widget>[
+              SingleChildScrollView(
+                padding: AppSpacing.screenPadding,
+                child: Center(
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 800),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        // Venue Details Summary Card
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: AppShapes.md,
+                            border: Border.all(color: AppColors.outline),
+                          ),
+                          child: Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: AppCachedImage(
+                                  imageUrl:
+                                      widget.venue.coverImageUrl.isNotEmpty
+                                      ? widget.venue.coverImageUrl
+                                      : 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=400',
+                                  height: 100,
+                                  width: double.infinity,
+                                  borderRadius: BorderRadius.circular(
+                                    AppShapes.radiusMd,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    AppText(
+                                      widget.venue.venueName,
+                                      variant: TextVariant.headingMedium,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    AppText(
+                                      '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year} | ${widget.selectedTimeSlot}',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        const SizedBox(height: 32),
+
+                        // Policies Section
+                        const AppText(
+                          'Cancellation Policy',
+                          variant: TextVariant.headingMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceLow,
+                            borderRadius: AppShapes.defaultBorder,
+                            border: Border.all(color: AppColors.outline),
+                          ),
+                          child: const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              AppText(
+                                'Standard Cancellation Policy',
+                                fontWeight: FontWeight.bold,
+                              ),
+                              SizedBox(height: 8),
+                              AppText(
+                                '• Free cancellation up to 7 days before your scheduled reservation.\n• 50% refund for cancellations between 7 days and 48 hours.\n• Cancellations within 48 hours are non-refundable.\n• Security deposits are always refunded 100% in case of cancellation.',
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Rules
+                        const AppText(
+                          'House Rules & Guidelines',
+                          variant: TextVariant.headingMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        const AppText(
+                          '1. Overtime hours are charged at an additional ₹500 per hour, separate from the standard hourly rate.\n2. No smoking permitted indoors. Outdoor smoking areas available.\n3. Noise levels must be kept within municipal guidelines after 10:00 PM.\n4. Clean-up fee covers normal usage. Excess clutter will require additional security deposit deduction.',
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Pricing Breakdown Table
+                        const AppText(
+                          'Pricing Breakdown',
+                          variant: TextVariant.headingMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: AppShapes.defaultBorder,
+                            border: Border.all(color: AppColors.outline),
+                          ),
+                          child: Column(
+                            children: <Widget>[
+                              _buildBreakdownRow(
+                                'Base Rate \u{20B9} ${hourlyRate.toStringAsFixed(0)})',
+                                '\u{20B9} ${baseAmount.toStringAsFixed(2)}',
+                              ),
+                              _buildBreakdownRow(
+                                'Cleaning Fee',
+                                '\u{20B9} ${cleaning.toStringAsFixed(2)}',
+                              ),
+                              _buildBreakdownRow(
+                                'Refundable Security Deposit',
+                                '\u{20B9} ${security.toStringAsFixed(2)}',
+                              ),
+                              _buildBreakdownRow(
+                                'Service & Platform Fee (2%)',
+                                '\u{20B9} ${serviceFee.toStringAsFixed(2)}',
+                              ),
+                              Divider(height: 1, color: AppColors.outline),
+                              _buildBreakdownRow(
+                                'Total Booking Cost',
+                                '\u{20B9} ${totalAmount.toStringAsFixed(2)}',
+                                isTotal: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Agreement Checkbox
+                        Row(
                           children: <Widget>[
-                            AppText(
-                              widget.venue.venueName,
-                              variant: TextVariant.headingMedium,
+                            Checkbox(
+                              value: _agreedToPolicies,
+                              activeColor: AppColors.primary,
+                              onChanged: (bool? val) {
+                                setState(() {
+                                  _agreedToPolicies = val ?? false;
+                                });
+                              },
                             ),
-                            const SizedBox(height: 6),
-                            AppText(
-                              '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year} | ${widget.selectedTimeSlot} | ${widget.selectedHours.toInt()} hrs',
+                            const Expanded(
+                              child: AppText(
+                                'I agree to the cancellation policies, house rules, and detailed breakdown above.',
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
+                        const SizedBox(height: 32),
 
-                // Policies Section
-                const AppText(
-                  'Cancellation Policy',
-                  variant: TextVariant.headingMedium,
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceLow,
-                    borderRadius: AppShapes.defaultBorder,
-                    border: Border.all(color: AppColors.outline),
-                  ),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Icon(
-                            Icons.info_outline,
-                            color: AppColors.primary,
-                            size: 20,
-                          ),
-                          SizedBox(width: 8),
-                          AppText('Standard 7-Day Refund'),
-                        ],
-                      ),
-                      SizedBox(height: 8),
-                      AppText(
-                        '• Free cancellation up to 7 days before your scheduled reservation.\n• 50% refund for cancellations between 7 days and 48 hours.\n• Cancellations within 48 hours are non-refundable.\n• Security deposits are always refunded 100% in case of cancellation.',
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
+                        // Actions
+                        AppButton(
+                          label: 'Proceed to Secure Checkout',
+                          onPressed: _agreedToPolicies
+                              ? () {
+                                  final int
+                                  selectedIndex = widget.venue.slots.indexWhere(
+                                    (UserVenueSlotEntity slot) =>
+                                        '${slot.slotName} (${slot.startTime.to12HourTime} - ${slot.endTime.to12HourTime})' ==
+                                        widget.selectedTimeSlot,
+                                  );
+                                  final String slotId = selectedIndex != -1
+                                      ? widget.venue.slots[selectedIndex].id
+                                      : widget.venue.slots.first.id;
 
-                // Rules
-                const AppText(
-                  'House Rules & Guidelines',
-                  variant: TextVariant.headingMedium,
-                ),
-                const SizedBox(height: 12),
-                const AppText(
-                  '1. Overtime hours are billed at 1.5x the hourly rate.\n2. No smoking permitted indoors. Outdoor smoking areas available.\n3. Noise levels must be kept within municipal guidelines after 10:00 PM.\n4. Clean-up fee covers normal usage. Excess clutter will require additional security deposit deduction.',
-                ),
-                const SizedBox(height: 32),
+                                  context.read<BookingBloc>().add(
+                                    BookingEvent.checkout(
+                                      venueId: widget.venue.id,
+                                      bookingDate: widget.selectedDate.yyyyMmDd,
+                                      slotIds: <String>[slotId],
+                                    ),
+                                  );
+                                }
+                              : null,
+                        ),
 
-                // Pricing Breakdown Table
-                const AppText(
-                  'Pricing Breakdown',
-                  variant: TextVariant.headingMedium,
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: AppShapes.defaultBorder,
-                    border: Border.all(color: AppColors.outline),
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      _buildBreakdownRow(
-                        'Base Rate (${widget.selectedHours.toInt()} hrs × \u{20B9} ${hourlyRate.toStringAsFixed(0)})',
-                        '\u{20B9} ${baseAmount.toStringAsFixed(2)}',
-                      ),
-                      _buildBreakdownRow(
-                        'Cleaning Fee',
-                        '\u{20B9} ${cleaning.toStringAsFixed(2)}',
-                      ),
-                      _buildBreakdownRow(
-                        'Refundable Security Deposit',
-                        '\u{20B9} ${security.toStringAsFixed(2)}',
-                      ),
-                      _buildBreakdownRow(
-                        'Service & Platform Fee (5%)',
-                        '\u{20B9} ${serviceFee.toStringAsFixed(2)}',
-                      ),
-                      Divider(height: 1, color: AppColors.outline),
-                      _buildBreakdownRow(
-                        'Total Booking Cost',
-                        '\u{20B9} ${totalAmount.toStringAsFixed(2)}',
-                        isTotal: true,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Agreement Checkbox
-                Row(
-                  children: <Widget>[
-                    Checkbox(
-                      value: _agreedToPolicies,
-                      activeColor: AppColors.primary,
-                      onChanged: (bool? val) {
-                        setState(() {
-                          _agreedToPolicies = val ?? false;
-                        });
-                      },
+                        const SizedBox(height: 40),
+                      ],
                     ),
-                    const Expanded(
-                      child: AppText(
-                        'I agree to the cancellation policies, house rules, and detailed breakdown above.',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                // Actions
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppShapes.defaultBorder,
-                      ),
-                    ),
-                    onPressed: _agreedToPolicies
-                        ? () {
-                            // Proceed to Secure Checkout
-                          }
-                        : null,
-                    child: const AppText('Proceed to Secure Checkout'),
                   ),
                 ),
-                const SizedBox(height: 40),
-              ],
-            ),
+              ),
+              if (_isLoading)
+                const ModalBarrier(dismissible: false, color: Colors.black26),
+              if (_isLoading) const Center(child: CircularProgressIndicator()),
+            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

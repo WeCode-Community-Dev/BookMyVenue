@@ -13,6 +13,7 @@ class AppRouteNames {
   static const String payoutDetails = 'payout_details';
   static const String payoutHistory = 'payout_history';
   static const String ownerProfile = 'owner_profile';
+  static const String ownerBookingHistory = 'owner_booking_history';
 
   /// User routes
   static const String userDashboard = 'user_dashboard';

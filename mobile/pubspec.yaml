@@ -52,6 +52,7 @@ dependencies:
   geolocator: ^14.0.3
   geocoding: ^4.0.0
   permission_handler: ^12.0.3
+  razorpay_flutter: ^1.4.5
 
 dev_dependencies:
   flutter_test:

@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import '../../feature/add_new_venue/venue_injection.dart';
 import '../../feature/auth/auth_injection.dart';
 import '../../feature/auth/data/datasource/auth_local_datasource.dart';
+import '../../feature/booking/booking_injection.dart';
 import '../../feature/owner_profile/owner_profile_injection.dart';
 import '../../feature/user_profile/user_profile_injection.dart';
 import '../../feature/user_venue_listing/user_venue_injection.dart';
@@ -24,6 +25,7 @@ Future<void> setupInjector() async {
   await registerOwnerProfileDependencies();
   await registerUserProfileDependencies();
   await registerUserVenueDependencies();
+  await registerBookingDependencies();
 }
 
 Future<void> _registerCore() async {

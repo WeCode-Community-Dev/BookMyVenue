@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/router/app_router.dart';
 import '../../../../core/utils/app_spacing.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/shape_constants.dart';
 import '../../../../core/widgets/app_cached_image.dart';
 import '../../../../core/widgets/app_text.dart';
 import '../../domain/entity/user_venue_entity.dart';
-import '../pages/venue_details_page.dart';
 
 class BuildVenueItem extends StatelessWidget {
   const BuildVenueItem({required this.venue, super.key});
@@ -22,9 +21,7 @@ class BuildVenueItem extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          AppRouter.createHeroPageRoute(UserVenueDetailsScreen(venue: venue)),
-        );
+        context.push('/venue_details', extra: venue);
       },
       child: Container(
         decoration: BoxDecoration(

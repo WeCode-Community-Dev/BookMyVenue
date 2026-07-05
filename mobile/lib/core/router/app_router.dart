@@ -15,6 +15,12 @@ import '../../feature/auth/presentation/pages/user_login/signin_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/owner_verification_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/venue_owner_signup_page.dart';
 import '../../feature/auth/presentation/pages/venue_owner_account_creation/verify_otp_page.dart';
+import '../../feature/booking/domain/entity/booking_entities.dart';
+import '../../feature/booking/presentation/bloc/booking_bloc.dart';
+import '../../feature/booking/presentation/pages/booking_failure_screen.dart';
+import '../../feature/booking/presentation/pages/booking_history_page.dart';
+import '../../feature/booking/presentation/pages/booking_success_screen.dart';
+import '../../feature/booking/presentation/pages/owner_booking_history_page.dart';
 import '../../feature/bottom_nav_bar/user_bottom_nav/user_bottom_navigation_bar.dart';
 import '../../feature/bottom_nav_bar/venue_owner_bottom_nav/venue_owner_bottom_navigation_bar.dart';
 import '../../feature/owner_dashboard_page/presentation/pages/owner_dashboard_page.dart';
@@ -26,7 +32,9 @@ import '../../feature/owner_profile/presentation/pages/owner_profile.dart';
 import '../../feature/user_dashbaord/presentation/pages/user_dashboard.dart';
 import '../../feature/user_profile/presentation/bloc/user_profile_bloc.dart';
 import '../../feature/user_profile/presentation/pages/user_profile_page.dart';
+import '../../feature/user_venue_listing/domain/entity/user_venue_entity.dart';
 import '../../feature/user_venue_listing/presentation/bloc/user_venue_bloc.dart';
+import '../../feature/user_venue_listing/presentation/pages/venue_details_page.dart';
 import '../../feature/user_venue_listing/presentation/pages/venue_list_page.dart';
 import '../auth/auth_session.dart';
 import '../di/injection.dart';
@@ -190,6 +198,20 @@ class AppRouter {
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
+                path: '/${AppRouteNames.ownerBookingHistory}',
+                name: AppRouteNames.ownerBookingHistory,
+                builder: (BuildContext context, GoRouterState state) =>
+                    BlocProvider<BookingBloc>(
+                      create: (BuildContext context) =>
+                          sl<BookingBloc>()..add(const BookingEvent.fetchOwnerBookings()),
+                      child: const OwnerBookingHistoryScreen(),
+                    ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
                 path: '/${AppRouteNames.ownerProfile}',
                 name: AppRouteNames.ownerProfile,
                 builder: (BuildContext context, GoRouterState state) =>
@@ -241,10 +263,14 @@ class AppRouter {
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
-                path: '/${AppRouteNames.favoriteVenue}',
-                name: AppRouteNames.favoriteVenue,
+                path: '/${AppRouteNames.bookingHistory}',
+                name: AppRouteNames.bookingHistory,
                 builder: (BuildContext context, GoRouterState state) =>
-                    const Scaffold(),
+                    BlocProvider<BookingBloc>(
+                      create: (BuildContext context) =>
+                          sl<BookingBloc>()..add(const BookingEvent.fetchMyBookings()),
+                      child: const BookingHistoryScreen(),
+                    ),
               ),
             ],
           ),
@@ -275,6 +301,67 @@ class AppRouter {
         name: AppRouteNames.payoutDetails,
         builder: (BuildContext context, GoRouterState state) {
           return const OwnerPayoutDetails();
+        },
+      ),
+      GoRoute(
+        path: '/venue_details',
+        name: 'venue_details',
+        pageBuilder: (BuildContext context, GoRouterState state) {
+          final UserVenueEntity venue = state.extra! as UserVenueEntity;
+          return CustomTransitionPage<void>(
+            key: state.pageKey,
+            child: UserVenueDetailsScreen(venue: venue),
+            transitionDuration: const Duration(milliseconds: 550),
+            reverseTransitionDuration: const Duration(milliseconds: 550),
+            transitionsBuilder: (
+              BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+              Widget child,
+            ) {
+              final Animation<double> fadeAnimation = animation.drive(
+                Tween<double>(begin: 0.0, end: 1.0)
+                    .chain(CurveTween(curve: Curves.easeInOutCubic)),
+              );
+              return FadeTransition(opacity: fadeAnimation, child: child);
+            },
+          );
+        },
+      ),
+      GoRoute(
+        path: '/${AppRouteNames.checkoutPolicy}',
+        name: AppRouteNames.checkoutPolicy,
+        builder: (BuildContext context, GoRouterState state) {
+          final Map<String, dynamic> extra =
+              state.extra! as Map<String, dynamic>;
+          final UserVenueEntity venue = extra['venue'] as UserVenueEntity;
+          final DateTime selectedDate = extra['selectedDate'] as DateTime;
+          final String selectedTimeSlot = extra['selectedTimeSlot'] as String;
+          return BlocProvider<BookingBloc>(
+            create: (BuildContext context) => sl<BookingBloc>(),
+            child: UserBookingDetailsPolicyScreen(
+              venue: venue,
+              selectedDate: selectedDate,
+              selectedTimeSlot: selectedTimeSlot,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/booking_success',
+        name: 'booking_success',
+        builder: (BuildContext context, GoRouterState state) {
+          final BookingDetailsEntity details =
+              state.extra! as BookingDetailsEntity;
+          return BookingSuccessScreen(bookingDetails: details);
+        },
+      ),
+      GoRoute(
+        path: '/booking_failure',
+        name: 'booking_failure',
+        builder: (BuildContext context, GoRouterState state) {
+          final String errorMessage = state.extra! as String;
+          return BookingFailureScreen(errorMessage: errorMessage);
         },
       ),
     ],

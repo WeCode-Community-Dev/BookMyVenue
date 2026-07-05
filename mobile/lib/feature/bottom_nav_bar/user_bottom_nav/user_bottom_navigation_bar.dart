@@ -32,9 +32,9 @@ class UserBottomNavigationBar extends StatelessWidget {
             label: 'Venues',
           ),
           NavigationDestination(
-            icon: Icon(Icons.payments_outlined),
-            selectedIcon: Icon(Icons.payments),
-            label: 'Payouts',
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long),
+            label: 'Bookings',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
