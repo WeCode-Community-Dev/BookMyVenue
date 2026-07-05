@@ -8,6 +8,7 @@ import {
     timeToMinutes,
     toSmallUnit,
 } from "../services/venue.service";
+import { BadRequestError, ForbiddenError, NotFoundError } from "../utils/errors";
 // import { producer } from "../utils/kafka";
 
 // Get all approved venues
@@ -67,7 +68,7 @@ export const getVenueById = async (
 ) => {
     const id = Number(request.params.id);
 
-    if (isNaN(id)) return reply.status(400).send({ message: "Invalid venue id" });
+    if (isNaN(id)) throw new BadRequestError("Invalid venue id");
 
     const venue = await prisma.venue.findFirst({
         where: { id, isActive: true, verificationStatus: VerificationStatus.APPROVED },
@@ -78,7 +79,7 @@ export const getVenueById = async (
         },
     });
 
-    if (!venue) return reply.status(404).send({ message: "Venue not found" });
+    if (!venue) throw new NotFoundError("Venue not found");
 
     const sessionIds = venue.sessions.map((s) => s.id);
     const totalSessions = sessionIds.length;
@@ -150,7 +151,7 @@ export const createVenue = async (
     });
 
     if (!owner) {
-        return reply.status(404).send({ message: "Owner account not found" });
+        throw new NotFoundError("Owner account not found");
     }
 
     const sessionLabels = sessions.map((session) => session.label.trim().toLowerCase());
@@ -158,9 +159,7 @@ export const createVenue = async (
     const hasDuplicateSessionLabels = new Set(sessionLabels).size !== sessionLabels.length;
 
     if (hasDuplicateSessionLabels) {
-        return reply.status(400).send({
-            message: "Duplicate session labels are not allowed",
-        });
+        throw new BadRequestError("Duplicate session labels are not allowed");
     }
 
     const invalidSession = sessions.find(
@@ -168,9 +167,7 @@ export const createVenue = async (
     );
 
     if (invalidSession) {
-        return reply.status(400).send({
-            message: `"${invalidSession.label}" end time must be after start time`,
-        });
+        throw new BadRequestError(`"${invalidSession.label}" end time must be after start time`);
     }
 
     const sortedSessions = [...sessions].sort(
@@ -185,9 +182,9 @@ export const createVenue = async (
         const currentStartTime = timeToMinutes(currentSession.startTime);
 
         if (currentStartTime < previousEndTime) {
-            return reply.status(400).send({
-                message: `"${currentSession.label}'s" time overlaps with "${previousSession.label}'s time"`,
-            });
+            throw new BadRequestError(
+                `"${currentSession.label}'s" time overlaps with "${previousSession.label}'s time"`,
+            );
         }
     }
 
@@ -238,11 +235,11 @@ export const editVenue = async (
     });
 
     if (!venue) {
-        return reply.status(404).send({ message: "Venue not found" });
+        throw new NotFoundError("Venue not found");
     }
 
     if (venue.ownerId !== userId) {
-        return reply.status(403).send({ message: "Forbidden" });
+        throw new ForbiddenError();
     }
 
     const existingSessions = body.sessions.filter(
@@ -256,7 +253,7 @@ export const editVenue = async (
     const hasInvalidSessionId = existingSessions.some((session) => !existingSessionIds.has(session.id));
 
     if (hasInvalidSessionId) {
-        return reply.status(400).send({ message: "Invalid venue session" });
+        throw new BadRequestError("Invalid venue session");
     }
 
     const sessionActiveState = new Map(existingSessions.map((session) => [session.id, session.isActive]));
@@ -281,7 +278,7 @@ export const editVenue = async (
     const hasDuplicateSessionLabels = new Set(sessionLabels).size !== sessionLabels.length;
 
     if (hasDuplicateSessionLabels) {
-        return reply.status(400).send({ message: "Duplicate session labels are not allowed" });
+        throw new BadRequestError("Duplicate session labels are not allowed");
     }
 
     const invalidSession = sessionsToValidate.find(
@@ -289,9 +286,7 @@ export const editVenue = async (
     );
 
     if (invalidSession) {
-        return reply
-            .status(400)
-            .send({ message: `"${invalidSession.label}" end time must be after start time` });
+        throw new BadRequestError(`"${invalidSession.label}" end time must be after start time`);
     }
 
     const sortedSessions = [...sessionsToValidate].sort(
@@ -307,9 +302,9 @@ export const editVenue = async (
         const currentStartTime = timeToMinutes(currentSession.startTime);
 
         if (currentStartTime < previousEndTime) {
-            return reply.status(400).send({
-                message: `"${currentSession.label}'s" time overlaps with "${previousSession.label}'s" time`,
-            });
+            throw new BadRequestError(
+                `"${currentSession.label}'s" time overlaps with "${previousSession.label}'s" time`,
+            );
         }
     }
 
@@ -372,7 +367,7 @@ export const deleteVenue = async (
     const userId = request.userId;
     const venueId = Number(request.params.venueId);
 
-    if (isNaN(venueId) || venueId <= 0) return reply.status(400).send({ message: "Invalid venue id" });
+    if (isNaN(venueId) || venueId <= 0) throw new BadRequestError("Invalid venue id");
 
     const result = await prisma.venue.updateMany({
         where: { id: venueId, ownerId: userId, isActive: true },
@@ -380,9 +375,7 @@ export const deleteVenue = async (
     });
 
     if (result.count === 0) {
-        return reply.status(404).send({
-            message: "Venue not found",
-        });
+        throw new NotFoundError("Venue not found");
     }
 
     return reply.status(204).send();

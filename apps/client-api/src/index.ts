@@ -1,14 +1,19 @@
-import Fastify from "fastify";
+import Fastify, { type FastifyError } from "fastify";
 import cors from "@fastify/cors";
 import { clerkPlugin } from "@clerk/fastify";
+import { Prisma } from "@bookmyvenue/database";
 import { venueRoute } from "./routes/venue.route";
 import { bookingRoute } from "./routes/booking.route";
 import { reviewRoute } from "./routes/review.route";
 import { consumer, producer } from "./utils/kafka";
 import { dashboardRoute } from "./routes/dashboard.route";
+import { AppError } from "./utils/errors";
+import { registerErrorHandler } from "./plugins/error-handler";
 
 const app = Fastify({ logger: true });
-// app.register(cors, { origin: true });
+
+registerErrorHandler(app);
+
 await app.register(cors, {
     origin: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

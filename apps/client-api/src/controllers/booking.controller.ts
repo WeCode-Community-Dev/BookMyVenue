@@ -2,8 +2,10 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { prisma } from "@bookmyvenue/database";
 import { VerificationStatus } from "@bookmyvenue/database/enums";
 import type { CreateBookingBody, GetOwnerBookingQuery, GetUserBookingQuery } from "@bookmyvenue/types";
+import { Prisma } from "@bookmyvenue/database";
 import { producer } from "../utils/kafka";
 import { fromSmallUnit } from "../services/venue.service";
+import { BadRequestError, ConflictError, NotFoundError } from "../utils/errors";
 
 export const createBooking = async (
     request: FastifyRequest<{ Body: CreateBookingBody }>,
@@ -29,7 +31,7 @@ export const createBooking = async (
     });
 
     if (!venue || venue.sessions.length !== sessionIds.length) {
-        return reply.status(400).send({ message: "Venue or session not found" });
+        throw new BadRequestError("Venue or session not found");
     }
 
     const user = await prisma.user.findUnique({
@@ -37,62 +39,55 @@ export const createBooking = async (
         select: { id: true, email: true, name: true },
     });
 
-    if (!user) return reply.status(404).send({ message: "User not found" });
+    if (!user) throw new NotFoundError("User not found");
 
-    try {
-        const booking = await prisma.booking.create({
-            data: {
-                userId: user.id,
-                venueId: venue.id,
-                phone,
-                purpose,
-                bookingSessions: {
-                    create: venue.sessions.map((session) => ({
-                        sessionId: session.id,
-                        eventDate: new Date(eventDate),
-                        pricePaid: session.price,
-                    })),
-                },
-            },
-            include: { bookingSessions: true },
-        });
-
-        await producer.send("booking-created", {
-            bookingId: booking.id,
-            eventDate,
-            purpose,
+    const booking = await prisma.booking.create({
+        data: {
+            userId: user.id,
+            venueId: venue.id,
             phone,
-
-            venue: {
-                id: venue.id,
-                name: venue.name,
+            purpose,
+            bookingSessions: {
+                create: venue.sessions.map((session) => ({
+                    sessionId: session.id,
+                    eventDate: new Date(eventDate),
+                    pricePaid: session.price,
+                })),
             },
+        },
+        include: { bookingSessions: true },
+    });
 
-            user: {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-            },
+    await producer.send("booking-created", {
+        bookingId: booking.id,
+        eventDate,
+        purpose,
+        phone,
 
-            owner: {
-                id: venue.owner.id,
-                email: venue.owner.email,
-                name: venue.owner.name,
-            },
+        venue: {
+            id: venue.id,
+            name: venue.name,
+        },
 
-            sessions: booking.bookingSessions.map((session) => ({
-                sessionId: session.sessionId,
-                pricePaid: Number(session.pricePaid),
-            })),
-        });
+        user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+        },
 
-        return reply.status(201).send({ booking });
-    } catch (err: any) {
-        if (err.code === "P2002") {
-            return reply.status(409).send({ message: "One or more slots are already booked" });
-        }
-        throw err;
-    }
+        owner: {
+            id: venue.owner.id,
+            email: venue.owner.email,
+            name: venue.owner.name,
+        },
+
+        sessions: booking.bookingSessions.map((session) => ({
+            sessionId: session.sessionId,
+            pricePaid: Number(session.pricePaid),
+        })),
+    });
+
+    return reply.status(201).send({ booking });
 };
 
 export const getBookingsByOwnerId = async (
@@ -159,6 +154,9 @@ export const getBookingByUserId = async (
     const skip = (Number(page) - 1) * limit;
 
     const todayDate = new Date(today);
+    if (Number.isNaN(todayDate.getTime())) {
+        throw new BadRequestError("Invalid today date");
+    }
     todayDate.setHours(0, 0, 0, 0);
 
     const where =

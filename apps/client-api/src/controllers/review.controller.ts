@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { getVenueReviewStatusService } from "../services/review.service";
 import { WriteReviewBody, GetReviewsQuery } from "@bookmyvenue/types";
 import { prisma } from "@bookmyvenue/database";
+import { ForbiddenError } from "../utils/errors";
 
 export const getVenueReviewStatus = async (
     request: FastifyRequest<{ Params: { venueId: string } }>,
@@ -23,15 +24,13 @@ export const writeReview = async (
     const userId = request.userId;
 
     if (!userId) {
-        return reply.status(403).send({ message: "Not authenticated" });
+        throw new ForbiddenError("Not authenticated");
     }
 
     const reviewStatus = await getVenueReviewStatusService(Number(venueId), userId);
 
     if (reviewStatus !== "CAN_REVIEW") {
-        return reply.status(403).send({
-            message: "You are not allowed to review this venue.",
-        });
+        throw new ForbiddenError("You are not allowed to review this venue.");
     }
 
     const review = await prisma.review.create({
