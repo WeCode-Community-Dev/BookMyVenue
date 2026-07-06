@@ -25,6 +25,7 @@ export interface Venue {
   rejectionReason: string | null;
   isActive: boolean;
   isFeatured?: boolean;
+  pricing:{amount:number,unit:string}
   isElite?: boolean;
   isDeleted: boolean;
   createdAt: string;

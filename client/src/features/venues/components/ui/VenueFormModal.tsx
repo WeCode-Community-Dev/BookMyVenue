@@ -27,6 +27,7 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>(venue?.images || []);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState<boolean>(false)
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -76,11 +77,16 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
 
   // Load categories for dropdown
   useEffect(() => {
+    setIsLoadingCategories(true)
     publicVenuesApi
       .getCategoreis()
-      .then((res) => setCategories(res?.data?.categories))
-      .catch(() => toast.error('Failed to load categories'));
-  }, []);
+      .then((res) => {
+        setCategories(res?.data?.categories);
+      })
+      .catch(() => toast.error('Failed to load categories'))
+      .finally(() => setIsLoadingCategories(false))
+  }, [venue, setValue]);
+
 
   // Initialize Leaflet map
   useEffect(() => {
@@ -330,24 +336,36 @@ const VenueFormModal = ({ venue, onClose, onSuccess }: Props) => {
                 />
                 {errors.name && <p className="text-xs text-error mt-1">{errors.name.message}</p>}
               </div>
-
               <div>
                 <label className="block text-xs font-semibold text-muted mb-1.5">Category *</label>
-                <select
-                  {...register('categoryId', { required: 'Category is required' })}
-                  className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none cursor-pointer focus:border-primary focus:ring-2 focus:ring-primary/10"
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((cat) => (
-                    <option key={cat._id || cat.id} value={cat._id || cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.categoryId && (
-                  <p className="text-xs text-error mt-1">{errors.categoryId.message}</p>
+
+                {/* If loading, show a disabled select with a spinner icon */}
+                {isLoadingCategories ? (
+                  <div className="flex items-center w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-muted opacity-60 cursor-not-allowed">
+                    <Loader2 size={16} className="animate-spin mr-2" />
+                    Loading categories...
+                  </div>
+                ) : (
+                  /* If done loading, show the real select */
+                  <>
+                    <select
+                      {...register('categoryId', { required: 'Category is required' })}
+                      className="w-full rounded-xl border border-border bg-background py-2.5 px-4 text-sm text-foreground outline-none cursor-pointer focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    >
+                      <option value="">Select a category</option>
+                      {categories.map((cat) => (
+                        <option key={cat._id || cat.id} value={cat._id || cat.id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.categoryId && (
+                      <p className="text-xs text-error mt-1">{errors.categoryId.message}</p>
+                    )}
+                  </>
                 )}
               </div>
+
             </div>
 
             <div>
