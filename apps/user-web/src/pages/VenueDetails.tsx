@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { createClient, venueEndpoints } from '@venue404/api-client'
+import { useLikes } from '../lib/useLikes'
+import { useAuth } from '../lib/AuthContext'
+import { useLocation } from 'react-router-dom'
 import { toUtcIso } from '../utils'
 
 import { AppNavbar }                from '../components/shared/AppNavbar'
@@ -274,20 +277,68 @@ export default function VenueDetails() {
     <div className="min-h-screen bg-white">
       <AppNavbar />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pb-24 pt-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to results
-        </button>
+        <div className="mb-6 flex items-center justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to results
+          </button>
+          
+          {venue && <VenueActions venueId={venue.id} />}
+        </div>
 
         {isLoading && <VenueDetailSkeleton />}
         {(isError || (!isLoading && !venue)) && <VenueNotFound onBack={() => navigate('/')} />}
         {venue && <VenueContent venue={venue} />}
       </main>
+    </div>
+  )
+}
+
+// ─── Venue Actions ────────────────────────────────────────────────────────────
+
+function VenueActions({ venueId }: { venueId: string }) {
+  const { isLiked, toggleLike } = useLikes()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  
+  const liked = isLiked(venueId)
+  
+  const handleLike = () => {
+    if (!user) {
+      navigate('/login', { state: { from: location.pathname } })
+      return
+    }
+    toggleLike(venueId)
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <button className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline">
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+        </svg>
+        Share
+      </button>
+      <button 
+        onClick={handleLike}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline"
+      >
+        <svg 
+          className={`h-4 w-4 transition-colors ${liked ? 'text-red-500' : ''}`}
+          fill={liked ? 'currentColor' : 'none'} 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={liked ? 1 : 2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+        {liked ? 'Saved' : 'Save'}
+      </button>
     </div>
   )
 }

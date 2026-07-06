@@ -11,6 +11,7 @@ export type Venue = components['schemas']['VenueResponse'] & {
   max_price_pct: string
   display_price_min_paise?: number | null
   display_price_max_paise?: number | null
+  is_liked?: boolean
 }
 export type VenueCategory = components['schemas']['VenueCategoryResponse']
 export type Amenity = components['schemas']['AmenityResponse']
@@ -34,6 +35,7 @@ export type SearchResult = components['schemas']['SearchResult'] & {
   vector_score?: number | null
   category_boost?: number | null
   match_score?: number | null
+  is_liked?: boolean
 }
 // Page_SearchResult_'s generated `items` type points at the raw (unpatched)
 // components['schemas']['SearchResult'], not the SearchResult alias above —
