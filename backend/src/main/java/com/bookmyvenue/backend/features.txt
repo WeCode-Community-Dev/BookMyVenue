@@ -1,0 +1,492 @@
+
+1. Database Connection Pooling
+Use:
+HikariCP (default in Spring Boot)
+Benefits:
+Reuses database connections
+Reduces connection creation overhead
+Improves response time
+
+************************************************
+2. Asynchronous Processing
+Use:
+Java
+@Async
+public void sendEmail() {
+   // Long-running task
+}
+Benefits:
+User doesn't wait for email, report generation, etc.
+Faster API responses
+********************************************
+3. Message Queues
+Use:
+Apache Kafka
+RabbitMQ
+Benefits:
+Decouples components
+Handles spikes in traffic
+Improves reliability
+Example:
+Plain text
+Order Service
+     ↓
+Message Queue
+     ↓
+Email Processing
+***************************************
+4. Database Optimization
+Techniques:
+Proper indexing
+Query tuning
+Pagination
+Example:
+SQL
+CREATE INDEX idx_customer_email
+ON customer(email);
+Can reduce query time dramatically.
+***************************************
+5. Read Replicas
+Plain text
+Application
+   ↓
+Primary DB (Writes)
+   ↓
+Read Replica (Reads)
+Benefits:
+Reduces load on the main database
+Improves read performance
+***************************************
+6. Batch Processing
+Use:
+Spring Batch
+Instead of:
+Java
+for(100000 records)
+   save();
+Process records in chunks.
+Benefits:
+Better memory usage
+Faster bulk operations
+***************************************
+7. API Rate Limiting
+Prevent abuse using:
+Redis-based counters
+Libraries such as Bucket4j
+Example:
+100 requests per minute per user
+***************************************
+8. Compression
+Enable GZIP:
+Properties
+server.compression.enabled=true
+Benefits:
+Smaller responses
+Faster network transfers
+***************************************
+9. Monitoring & Observability
+Use:
+Spring Boot Actuator
+Prometheus
+Grafana
+Monitor:
+Response times
+Memory usage
+Database calls
+Error rates
+***************************************
+10. JVM Tuning
+Tune:
+Heap size
+Garbage collection
+Example:
+Bash
+-Xms2g -Xmx4g
+Benefits:
+Better memory management
+Fewer GC pauses
+***************************************
+11. Scheduled Jobs
+Use:
+Java
+@Scheduled(cron = "0 0 * * * *")
+For:
+Cleanup jobs
+Report generation
+Cache refresh
+***************************************
+12. Search Engine Integration
+For large datasets, use:
+Elasticsearch
+Instead of complex database searches.
+Benefits:
+Fast full-text search
+Better user experience
+**************************************
+
+13. Caching (You already mentioned)
+
+Use cache for:
+
+Venue details
+Venue availability
+Amenities list
+Venue categories
+City/state lookup data
+@Cacheable(value = "venues", key = "#venueId")
+public VenueResponseDto getVenue(Long venueId) {
+    return venueRepository.findById(venueId);
+}
+***************************************
+14. Pagination
+
+Never return all venues at once.
+
+Bad
+List<Venue> findAll();
+Good
+Page<Venue> findAll(Pageable pageable);
+
+Controller:
+
+@GetMapping
+public Page<VenueResponseDto> getAllVenues(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+
+    return venueService.getAllVenues(page, size);
+}
+
+Benefits:
+
+Faster API response
+Reduced memory usage
+******************************************************************************
+15. Database Indexing
+
+For frequently searched columns.
+
+CREATE INDEX idx_venue_city ON venue(city);
+
+CREATE INDEX idx_venue_status ON venue(status);
+
+CREATE INDEX idx_booking_date ON booking(event_date);
+
+Useful for:
+
+City search
+Venue status
+Availability lookup
+Booking dates
+******************************************************************************
+16. DTO Layer
+
+Avoid exposing entities.
+
+Request DTO
+public class CreateVenueRequest {
+    private String venueName;
+    private Integer capacity;
+}
+Response DTO
+public class VenueResponse {
+    private Long venueId;
+    private String venueName;
+}
+
+Benefits:
+
+Better security
+API versioning
+Cleaner responses
+******************************************************************************
+17. MapStruct
+
+Avoid manual mapping.
+
+@Mapper(componentModel = "spring")
+public interface VenueMapper {
+
+    Venue toEntity(CreateVenueRequest dto);
+
+    VenueResponse toDto(Venue venue);
+}
+
+Benefits:
+
+Less boilerplate
+Faster than reflection-based mappers
+******************************************************************************
+18. Global Exception Handling
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleNotFound(
+            ResourceNotFoundException ex) {
+
+        return ResponseEntity.status(404)
+                .body(new ApiResponse(ex.getMessage()));
+    }
+}
+
+Benefits:
+
+Consistent error responses
+
+******************************************************************************
+18. Auditing
+
+Track who created/updated records.
+
+@EntityListeners(AuditingEntityListener.class)
+
+Base entity:
+
+@CreatedDate
+private LocalDateTime createdAt;
+
+@LastModifiedDate
+private LocalDateTime updatedAt;
+
+Useful for:
+
+Venue
+Booking
+Documents
+Availability
+******************************************************************************
+19. Soft Delete
+
+Instead of deleting data.
+
+private Boolean deleted = false;
+
+Query:
+
+WHERE deleted = false
+
+Benefits:
+
+Recover records
+Audit history
+*********************************************************************************************************************
+20. API Documentation
+
+Use Swagger/OpenAPI.
+
+springdoc-openapi
+
+Access:
+
+/swagger-ui.html
+
+Benefits:
+
+Easy testing
+Frontend integration
+*********************************************************************************************************************
+21. Validation
+@NotBlank
+private String venueName;
+
+@Min(1)
+private Integer capacity;
+
+Controller:
+
+@PostMapping
+public VenueResponse create(
+        @Valid @RequestBody CreateVenueRequest request) {
+}
+*********************************************************************************************************************
+22. Security
+
+Use JWT Authentication.
+
+Roles:
+
+ADMIN
+OWNER
+CUSTOMER
+
+Example:
+
+@PreAuthorize("hasRole('ADMIN')")
+*********************************************************************************************************************
+23. File Storage
+
+For venue documents.
+
+Instead of storing files in DB:
+
+Store:
+
+AWS S3
+Azure Blob Storage
+Local storage (development)
+
+Store only URL in database.
+
+document_url
+*********************************************************************************************************************
+24. Asynchronous Processing
+
+For email/SMS notifications.
+
+@Async
+public void sendBookingEmail() {
+}
+
+Benefits:
+
+Faster API responses
+*********************************************************************************************************************
+25. Database Connection Pooling
+
+Use HikariCP.
+
+spring.datasource.hikari.maximum-pool-size=20
+spring.datasource.hikari.minimum-idle=5
+
+Benefits:
+
+Better DB performance
+*********************************************************************************************************************
+26. Logging
+
+Use SLF4J.
+
+private static final Logger log =
+    LoggerFactory.getLogger(VenueService.class);
+log.info("Venue created: {}", venueId);
+*********************************************************************************************************************
+27. Monitoring
+
+Add Spring Boot Actuator.
+
+Dependency:
+
+spring-boot-starter-actuator
+
+Endpoints:
+
+/actuator/health
+/actuator/metrics
+
+Useful for production monitoring.
+*********************************************************************************************************************
+28. Search & Filtering
+
+Instead of:
+
+GET /venues
+
+Support:
+
+GET /venues?
+city=Kochi&
+capacity=500&
+priceMin=10000&
+priceMax=50000
+
+Use JPA Specifications.
+******************************************************************************
+29. Optimistic Locking
+
+Prevent concurrent updates.
+
+@Version
+private Long version;
+
+Useful when two admins edit the same venue.
+******************************************************************************
+30. Flyway Database Migration
+
+Instead of manually creating tables.
+
+V1__create_user_table.sql
+V2__create_venue_table.sql
+V3__create_booking_table.sql
+
+Benefits:
+
+Version-controlled database
+*********************************************************************************************************************
+31. API Response Standardization
+{
+  "success": true,
+  "message": "Venue created successfully",
+  "data": {}
+}
+
+Using your existing:
+
+ApiResponseWrapper<T>
+*********************************************************************************************************************
+32. Rate Limiting
+
+Prevent abuse.
+
+Libraries:
+
+Bucket4j
+Resilience4j
+
+Example:
+
+100 requests/minute
+
+per user/IP.
+*********************************************************************************************************************
+33. Redis Session Storage
+
+If multiple application instances are added later.
+
+Store:
+
+JWT blacklist
+OTP
+Session data
+Cache
+
+Using Redis.
+*********************************************************************************************************************
+34. Notification Module
+
+Send:
+
+Booking confirmation
+Venue approval
+Venue rejection
+Payment success
+
+Through:
+
+Email
+SMS
+Push notifications
+*********************************************************************************************************************
+35. Event-Driven Design Inside Monolith
+
+Instead of tightly coupling services:
+
+applicationEventPublisher.publishEvent(
+        new VenueCreatedEvent(venueId));
+
+Listener:
+
+@EventListener
+public void handleVenueCreated(
+        VenueCreatedEvent event) {
+}
+
+Benefits:
+
+Easier future migration to microservices
+*********************************************************************************************************************
+36. API Versioning
+/api/v1/venues
+/api/v2/venues
+
+Useful when APIs evolve.
