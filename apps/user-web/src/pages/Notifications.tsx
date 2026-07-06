@@ -1,7 +1,9 @@
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient, notificationEndpoints } from '@venue404/api-client'
 import { AppNavbar } from '../components/shared/AppNavbar'
-import { NotificationList } from '@venue404/ui'
+import { NotificationList, NotificationView } from '@venue404/ui'
+import { getNotificationPath } from '@venue404/ui'
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────
 function NotificationsSkeleton() {
@@ -64,9 +66,9 @@ function NotificationsError({ onRetry }: { onRetry: () => void }) {
 function NotificationsEmpty() {
   return (
     <div className="rounded-2xl border border-dashed border-zinc-200 py-20 text-center">
-      <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100">
+      <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50">
         <svg
-          className="h-6 w-6 text-zinc-300"
+          className="h-6 w-6 text-emerald-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -91,6 +93,7 @@ function NotificationsEmpty() {
 export default function Notifications() {
   const client = createClient()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   const {
     data: notifications = [],
@@ -109,6 +112,24 @@ export default function Notifications() {
       void queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },
   })
+
+  const markAllReadMutation = useMutation({
+    mutationFn: (ids: string[]) =>
+      Promise.all(ids.map((id) => notificationEndpoints(client).markRead(id))),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['notifications'] })
+    },
+  })
+
+  const unreadIds = notifications.filter((n) => n.read_at == null).map((n) => n.id)
+
+  const handleOpen = (notification: NotificationView) => {
+    if (notification.read_at == null) {
+      markReadMutation.mutate(notification.id)
+    }
+    const path = getNotificationPath(notification)
+    if (path) navigate(path)
+  }
 
   if (isLoading) {
     return (
@@ -134,11 +155,22 @@ export default function Notifications() {
 
       <div className="mx-auto max-w-3xl px-4 py-8">
         {/* ── Page header ─────────────────────────── */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Notifications</h1>
-          <p className="mt-1.5 text-sm text-zinc-500">
-            Booking updates, confirmations, and reminders.
-          </p>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Notifications</h1>
+            <p className="mt-1.5 text-sm text-zinc-500">
+              Booking updates, confirmations, and reminders.
+            </p>
+          </div>
+          {unreadIds.length > 0 && (
+            <button
+              onClick={() => markAllReadMutation.mutate(unreadIds)}
+              disabled={markAllReadMutation.isPending}
+              className="press shrink-0 rounded-lg px-3 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+            >
+              Mark all as read
+            </button>
+          )}
         </div>
 
         {/* ── Notification list ───────────────────── */}
@@ -146,10 +178,7 @@ export default function Notifications() {
           <NotificationsEmpty />
         ) : (
           <div className="rounded-2xl border border-zinc-100 bg-white shadow-sm overflow-hidden">
-            <NotificationList
-              notifications={notifications}
-              onRead={(id) => markReadMutation.mutate(id)}
-            />
+            <NotificationList notifications={notifications} onOpen={handleOpen} />
           </div>
         )}
       </div>
