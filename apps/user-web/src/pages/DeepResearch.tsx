@@ -19,6 +19,7 @@ import {
 import { AppNavbar } from '../components/shared/AppNavbar'
 import { VenueCard } from '../components/home/VenueCard'
 import { StageProgress, type ResearchStage } from '../components/deepResearch/StageProgress'
+import { MatchBadge } from '../components/deepResearch/MatchCitation'
 
 const EXAMPLE_PROMPTS = [
   'Wedding hall in Bangalore for 300 guests, under 5 lakhs',
@@ -241,6 +242,7 @@ export default function DeepResearch() {
                 {internalVenues.map((venue) => (
                   <div key={venue.id} className="card-enter">
                     <VenueCard venue={venue} onClick={() => navigate(`/venues/${venue.id}`)} />
+                    <MatchBadge venue={venue} />
                   </div>
                 ))}
               </div>

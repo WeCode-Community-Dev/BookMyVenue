@@ -16,5 +16,6 @@ export * from './endpoints/adminBookings'
 export * from './endpoints/profile'
 export * from './endpoints/owner'
 export * from './endpoints/deepResearch'
+export * from './endpoints/adminDeepResearch'
 
 

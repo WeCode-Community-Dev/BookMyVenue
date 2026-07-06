@@ -28,6 +28,9 @@ from app.modules.admin.schemas import (
     AdminBookingListResponse,
     VenueStatsResponse,
     GrowthStatsResponse,
+    DeepResearchQueryDetail,
+    DeepResearchQueryListResponse,
+    DeepResearchStatsResponse,
 )
 from app.modules.auth.dependencies import require_admin, AuthContext
 from app.modules.admin import service
@@ -323,3 +326,34 @@ def get_growth_stats(
     db: Session = Depends(get_db),
 ):
     return service.get_growth_stats(db, period=period)
+
+
+# ─── Deep Research observability ───────────────────────────────────────────────
+
+@router.get("/deep-research/stats", response_model=DeepResearchStatsResponse)
+def get_deep_research_stats(
+    days: int = Query(30, ge=1, le=90),
+    _: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return service.get_deep_research_stats(db, days=days)
+
+
+@router.get("/deep-research/queries", response_model=DeepResearchQueryListResponse)
+def list_deep_research_queries(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    search: str | None = Query(None),
+    _: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return service.list_deep_research_queries(db, page=page, page_size=page_size, search=search)
+
+
+@router.get("/deep-research/queries/{query_id}", response_model=DeepResearchQueryDetail)
+def get_deep_research_query(
+    query_id: UUID,
+    _: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return service.get_deep_research_query(db, query_id)

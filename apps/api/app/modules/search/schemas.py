@@ -24,3 +24,12 @@ class SearchResult(BaseModel):
     display_price_min_paise: Optional[int] = None
     display_price_max_paise: Optional[int] = None
     cover_photo_url: Optional[str] = None
+    # Match diagnostics — only populated by search_hybrid (None for plain
+    # /search, /search/fts, /search/semantic). Lets a caller (e.g. Deep
+    # Research's citation UI) show which signal(s) actually matched and how
+    # strongly, without re-deriving it client-side.
+    match_source: Optional[str] = None  # "hybrid" | "semantic" | "keyword"
+    fts_score: Optional[float] = None
+    vector_score: Optional[float] = None
+    category_boost: Optional[float] = None
+    match_score: Optional[float] = None

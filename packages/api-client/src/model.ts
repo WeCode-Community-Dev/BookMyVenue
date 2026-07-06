@@ -30,11 +30,21 @@ export type PricingQuote = components['schemas']['PricingQuote'] & {
 }
 export type ValidationResponse = components['schemas']['ValidationResponse']
 export type SearchResult = components['schemas']['SearchResult'] & {
-  booking_mode?: BookingMode
-  display_price_min_paise?: number | null
-  display_price_max_paise?: number | null
+  // Hand-added until `pnpm generate` is run (mirrors SearchResult in
+  // search/schemas.py) — match diagnostics, only populated by /search/hybrid.
+  match_source?: 'hybrid' | 'semantic' | 'keyword' | null
+  fts_score?: number | null
+  vector_score?: number | null
+  category_boost?: number | null
+  match_score?: number | null
 }
-export type SearchPage = components['schemas']['Page_SearchResult_']
+// Page_SearchResult_'s generated `items` type points at the raw (unpatched)
+// components['schemas']['SearchResult'], not the SearchResult alias above —
+// override it here so callers reading match diagnostics off paginated
+// results get the patched fields too.
+export type SearchPage = Omit<components['schemas']['Page_SearchResult_'], 'items'> & {
+  items: SearchResult[]
+}
 
 // Hand-written until `pnpm generate` is run against a live API (mirrors
 // app/modules/venue/schemas.py — VenuePricingRuleResponse / PricingBreakdownItem).
