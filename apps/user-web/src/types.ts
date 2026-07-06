@@ -19,6 +19,14 @@ export type SearchResult = {
   display_price_min_paise?: number | null
   display_price_max_paise?: number | null
   cover_photo_url?: string | null
+  // Match diagnostics — only populated by /search/hybrid (see
+  // app/modules/search/schemas.py SearchResult). Deep Research's match
+  // citation UI uses these; plain search results just leave them undefined.
+  match_source?: 'hybrid' | 'semantic' | 'keyword' | null
+  fts_score?: number | null
+  vector_score?: number | null
+  category_boost?: number | null
+  match_score?: number | null
 }
 
 // ─── API response shapes (mirrors OpenAPI schema) ────────────────────────────
