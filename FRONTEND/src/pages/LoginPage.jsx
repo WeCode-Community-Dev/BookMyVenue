@@ -1,9 +1,11 @@
-import Logo from "../assets/Logo.png";
-import stock1 from "../assets/stock1.png";
+import { useEffect } from "react";
+import toast, {Toaster} from "react-hot-toast";
+import { useSearchParams } from "react-router-dom";
 import { useAuthForm } from "../hooks/useAuthForm";
 import { Users, Store, ArrowRight, SpinnerOne } from "@mynaui/icons-react";
+import Logo from "../assets/Logo.png";
+import stock1 from "../assets/stock1.png";
 
-// --- Extracted Components ---
 
 const InputField = ({ label, name, type = "text", value, onChange, placeholder }) => (
   <div>
@@ -23,7 +25,7 @@ const RoleButton = ({ isActive, onClick, icon: Icon, title, subtitle }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`flex flex-col items-center justify-center p-5 border rounded-xl transition-all duration-200 ${
+    className={`flex flex-col cursor-pointer items-center justify-center p-5 border rounded-xl transition-all duration-200 ${
       isActive
         ? "border-[#2b5155] bg-slate-50 text-[#2b5155] shadow-sm ring-1 ring-[#2b5155]"
         : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50"
@@ -58,6 +60,14 @@ const LeftPanel = () => (
 // --- Main Page Component ---
 
 export default function LoginPage() {
+  const [SearchParams] = useSearchParams();
+  useEffect(() => {
+    const expired = SearchParams.get("expired");
+    if (expired === "true") {
+      toast.error("Session Expired. Please log in again.");
+    }
+  },[SearchParams])
+
   const {
     role, setRole, isLoginView, toggleView,
     formData, handleChange, error, isLoading, handleSubmit,
@@ -75,6 +85,7 @@ export default function LoginPage() {
 
   return (
     <div className="Login-Container flex justify-start h-screen overflow-hidden">
+      <Toaster position="top-right" reverseOrder={false} />
       <LeftPanel />
 
       <div className="w-full lg:w-1/2 flex justify-center m-auto p-8 bg-white h-full overflow-y-auto">
@@ -153,7 +164,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#ff6660] hover:bg-[#BF5842] text-white font-semibold py-3.5 rounded-lg flex items-center justify-center gap-2 transition-colors mt-8 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full bg-[#ff6660] cursor-pointer hover:bg-[#BF5842] text-white font-semibold py-3.5 rounded-lg flex items-center justify-center gap-2 transition-colors mt-8 shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <SpinnerOne className="w-4 h-4 animate-spin" />
@@ -171,7 +182,7 @@ export default function LoginPage() {
             {footerText}
             <button
               type="button"
-              className="font-bold text-[#2b5155] hover:underline"
+              className="font-bold text-[#2b5155] hover:underline cursor-pointer"
               onClick={toggleView}
             >
               {footerActionText}

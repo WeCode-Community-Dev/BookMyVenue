@@ -23,7 +23,6 @@ export default function FormBooking ({
             }
         })
     }
-
     
 
     // generate time interval list to display time intervals (9am - 11am)

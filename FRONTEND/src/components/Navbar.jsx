@@ -40,7 +40,32 @@ function ActionButton({ role, isMobile, onClick }) {
       </button>
     )
   } else if (role === "user") {
-    return null;
+    return (
+      <button
+        onClick={() => handleNavigation("/user/dashboard")}
+        className={
+          isMobile
+            //  mobile
+            ? "w-11/12 max-w-xs flex items-center justify-center gap-2 px-4 py-3 mt-2 bg-[#f56d5e] text-white text-lg font-medium rounded-full shadow-md hover:shadow-lg hover:bg-[#BF5842] active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
+            // desktop 
+            : "flex items-center justify-center gap-2 px-5 py-2 bg-[#f56d5e] text-white text-base font-medium rounded-full shadow-md hover:shadow-lg hover:bg-[#BF5842] hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
+        }
+      >
+        Dashboard
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-5 w-5" 
+          viewBox="0 0 20 20" 
+          fill="currentColor"
+        >
+          <path 
+            fillRule="evenodd" 
+            d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" 
+            clipRule="evenodd" 
+          />
+        </svg>
+      </button>
+    )
   } else {
     return (
       <button 
@@ -104,7 +129,7 @@ function NavBar() {
         </div>
 
         {/* Desktop User Actions (Hidden on Mobile) */}
-        <div className={`USERACTIONS hidden md:flex gap-4 ${role === "user" ? "pl-44" : ""} `}>
+        <div className={`USERACTIONS hidden md:flex gap-4 `}>
           <ActionButton role={role} isMobile={false} />
         </div>
 

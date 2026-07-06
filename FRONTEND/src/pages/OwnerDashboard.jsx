@@ -3,17 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Layout, Building, Rupee, PlusCircle,
   MapPin, Menu, X,
-  Users,
+  User, Calendar, Mail, ExternalLink,
 } from '@mynaui/icons-react';
 import Cookies from 'js-cookie';
 import apiService from '../services/apiService';
 import Logo from '../assets/Logo.png'
+import EditVenueModal from '../components/EditVenueModal';
+import { all } from 'axios';
 
-
-const RECENT_BOOKINGS = [
-  { id: 1, guestName: 'Sarah Jenkins', guestAvatar: 'https://i.pravatar.cc/150?u=sarah', status: 'PENDING', venueName: 'Maple Community Hall', venueImage: 'https://images.unsplash.com/photo-1505843513577-22bb7d21e455?auto=format&fit=crop&w=150&q=80', date: 'Oct 24, 14:00 - 18:00', price: '$120.00' },
-  { id: 2, guestName: 'Alex Miller', guestAvatar: 'https://i.pravatar.cc/150?u=alex', status: 'CONFIRMED', venueName: 'Skyline Rooftop Garden', venueImage: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=150&q=80', date: 'Oct 26, 18:00 - 22:00', price: '$300.00' }
-];
 
 const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
   <button 
@@ -81,7 +78,7 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen,navigate }) => (
 
       {/* Bottom Action */}
       <Link to="/host/dashboard/list-new-venues" className="p-6 border-t border-gray-100 cursor-pointer bg-white">
-        <button className="w-full bg-[#8b3d2c] cursor-pointer hover:bg-[#733224] text-white flex items-center justify-center space-x-2 py-4 rounded-xl transition-colors font-semibold text-sm shadow-sm">
+        <button className="w-full bg-[#ff535e] cursor-pointer hover:bg-[#733224] text-white flex items-center justify-center space-x-2 py-4 rounded-xl transition-colors font-semibold text-sm shadow-sm">
           <PlusCircle size={20} />
           <span>List New Space</span>
         </button>
@@ -99,7 +96,7 @@ const TopHeader = () => (
   </header>
 );
 
-const StatsOverview = ({venue}) => (
+const StatsOverview = ({venue, ownerRevenue}) => (
   <div className="bg-white border border-gray-100 rounded-2xl flex flex-col md:flex-row items-center justify-between p-2 mb-10 shadow-sm">
     {/* <div className="flex-1 w-full flex items-center space-x-5 p-6 md:border-r border-gray-100">
       <div className="bg-red-50 p-4 rounded-xl text-red-400">
@@ -118,7 +115,7 @@ const StatsOverview = ({venue}) => (
       </div>
       <div>
         <div className="flex items-baseline space-x-3">
-          <span className="text-4xl font-bold text-gray-900">28k</span>
+          <span className="text-4xl font-bold text-gray-900">{ownerRevenue}</span>
           <span className="text-sm font-semibold text-gray-500">Total Revenue</span>
         </div>
       </div>
@@ -137,53 +134,82 @@ const StatsOverview = ({venue}) => (
   </div>
 );
 
-const RecentBookings = () => (
+const RecentBookings = ({allBookings}) => (
   <div className="mb-10">
     <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-gray-900">Recent Bookings</h3>
+      <h3 className="text-xl font-bold text-gray-900">All Bookings</h3>
     </div>
     
     <div className="space-y-4">
-      {RECENT_BOOKINGS.map(booking => (
+      {allBookings.map(booking => (
         <div key={booking.id} className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4 w-full md:w-auto md:min-w-[180px]">
-            <img src={booking.guestAvatar} alt={booking.guestName} className="w-12 h-12 rounded-full object-cover shadow-sm border border-gray-50" />
+            {/* <img src={booking.guestAvatar} alt={booking.guestName}  /> */}
             <div className="flex flex-col items-start">
-              <p className="font-bold text-gray-900 text-sm mb-1">{booking.guestName}</p>
-              {/* <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                booking.status === 'PENDING' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-600'
-              }`}>
-                {booking.status}
-              </span> */}
+              <div className='flex gap-1 mb-1' >
+                < User size={16} className="rounded-full object-cover shadow-sm border border-gray-50" />
+                <p className="font-bold text-gray-900 text-sm ">{booking.user.name}</p>
+              </div>
+              <div className='flex gap-1 mb-1' >
+                < Mail size={16} color="#3e517f" />
+                <p className="text-xs font-semibold text-gray-500 whitespace-nowrap">{booking.user.email}</p>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
-            <img src={booking.venueImage} alt="Venue" className="w-14 h-10 rounded-lg object-cover shrink-0" />
-            <div className="flex flex-col min-w-0">
-              <p className="text-sm font-bold text-gray-800 mb-0.5 truncate">{booking.venueName}</p>
-              <p className="text-xs font-semibold text-gray-500 whitespace-nowrap">{booking.date}</p>
+            {/* <img src={booking.venueImage} alt="Venue" className="w-14 h-10 rounded-lg object-cover shrink-0" /> */}
+            <div className="flex flex-col min-w-0 gap-1">
+              <p className="text-sm font-bold text-gray-800 mb-0.5 truncate">{booking.venue.venue_name}</p>
+              <p className="text-xs font-semibold text-gray-500 whitespace-nowrap">{booking.venue.venue_description}</p>
             </div>
           </div>
-          <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-none border-gray-50 pt-4 md:pt-0 shrink-0">
-            <p className="font-black text-gray-900 text-lg whitespace-nowrap">{booking.price}</p>
-            {/* {booking.status === 'PENDING' ? (
-              <div className="flex gap-2">
-                <button className="bg-[#2a5660] hover:bg-[#1f4048] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm">Accept</button>
-                <button className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Decline</button>
+          <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
+            <div className="flex flex-col min-w-0 gap-1">
+              <div className='flex gap-1' >
+                <Calendar size={16} color="#3e517f" />
+                <p className="text-xs font-bold text-gray-800 mb-0.5 truncate">{booking.booking_date}</p>
               </div>
-            ) : (
-              <button className="p-2 text-gray-400 hover:text-gray-900 transition-colors rounded-full hover:bg-gray-50">
-                <DotsVertical size={24} />
-              </button>
-            )} */}
+              <div className='flex gap-1' >
+                <MapPin size={16} color="#3e517f" />
+                <p className="text-xs font-semibold text-gray-500 whitespace-nowrap">{booking.venue.location}</p>
+              </div>
+            </div>
           </div>
+          <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
+            <div className="flex flex-col min-w-0 gap-1">
+              <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col' >Paid Amount</h2>
+              <div className='flex gap-1' >
+                <p className="text-xs font-bold text-gray-800 mb-0.5 truncate">1000rs</p>
+              </div>
+            </div>
+          </div>
+          {booking.start_time !== "" || booking.end_time !== "" 
+              ? <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-none border-gray-50 pt-4 md:pt-0 shrink-0">
+                  <div>
+                    <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col' >Start Time</h2>
+                    <p className="font-black text-gray-900 text-sm whitespace-nowrap">{booking.start_time}</p>
+                  </div>
+                  <div>
+                    <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col' >End Time</h2>
+                    <p className="font-black text-gray-900 text-sm whitespace-nowrap"> {booking.end_time}</p>
+                  </div>
+                </div>
+              : <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-none border-gray-50 pt-4 md:pt-0 shrink-0">
+                  <div>
+                    <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col' >Venue Type</h2>
+                    <p className="font-black text-gray-900 text-sm whitespace-nowrap">Day</p>
+                  </div>
+                  <div className='ml-12' ></div>
+                </div>
+          }
+          
         </div>
       ))}
     </div>
   </div>
 );
 
-const ListedProperties = ({handleToggleAvailability, userVenues}) => (
+const ListedProperties = ({handleToggleAvailability, userVenues, setSelectedVenue, setIsEditOpen}) => (
   <>
     <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <h3 className="text-2xl font-bold text-gray-900">Listed Properties</h3>
@@ -194,6 +220,11 @@ const ListedProperties = ({handleToggleAvailability, userVenues}) => (
         <div key={venue.id} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm flex flex-col">
           <div className="relative h-48 w-full">
             <img src={venue.image} alt={venue.venue_name} className="w-full h-full object-cover" />
+            <button onClick={() => {setSelectedVenue(venue); setIsEditOpen(true)}}
+              className='flex absolute text-black cursor-pointer right-2 top-2 text-white rounded-2xl p-2 bg-white' >
+                < ExternalLink size={16} color='black' className='mr-1 mt-1' />
+                <span className='text-black' >Edit</span>
+            </button>
             {/* <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-lg flex items-center space-x-1.5 shadow-sm">
               <Star size={14} className="text-[#ff5c5d] fill-[#ff5c5d]" />
               <span className="text-xs font-bold text-gray-900">{venue.rating}</span>
@@ -216,7 +247,7 @@ const ListedProperties = ({handleToggleAvailability, userVenues}) => (
             </div>
           </div>
         </div>
-      ))}
+      )) }
 
       <Link to="/host/dashboard/list-new-venues" className="border-2 cursor-pointer border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center h-full min-h-[280px] text-gray-500 hover:text-[#ff5c5d] hover:border-[#ff5c5d] hover:bg-[#fff9f9] transition-colors group">
         <div className="bg-white rounded-full p-4 shadow-sm mb-4 border border-gray-50 group-hover:border-[#ff5c5d]/20 transition-colors">
@@ -236,9 +267,17 @@ export default function OwnerDashboard() {
   const navigate = useNavigate()
 
   const [userVenues, setUserVenues] = useState([])
-
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [ownerRevenue, setOwnerRevenue] = useState(0);
+  const [allBookings, setAllBookings] = useState([]);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedVenue, setSelectedVenue] = useState(null);
+
+  const onClose = () => {
+    setIsEditOpen(false);
+  }
+
 
   //  Toggle Availability Function
   const handleToggleAvailability = async (venue) => {
@@ -271,20 +310,22 @@ export default function OwnerDashboard() {
       try {
         const response = await apiService.GetOwnerVenues(Cookies.get('userId'));
 
+        const revenueResponse = await apiService.GetOwnerRevenue();
+        setOwnerRevenue(revenueResponse.total_earnings);
+
+        const allBookings = await apiService.GetAllBookingForOwner();
+        setAllBookings(Array.isArray(allBookings) ? allBookings : []);
+        
         if(Array.isArray(response)){
-          console.log(response);
           setUserVenues(response)
         } else {
           setUserVenues([]);
         }
         
-        // Get user Venue from All venues
-        // const UserVenue = response.filter(venue => Cookies.get("userId") == venue.user_id)
-        setUserVenues(response)
-        
       } catch (error) {
         console.log(error);
-        setUserVenues([])
+        setUserVenues([]);
+        setAllBookings([]);
       }
     }
     fetchVenues()
@@ -321,10 +362,11 @@ export default function OwnerDashboard() {
         {/* Dashboard Content Container */}
         <div className="max-w-[1400px] mx-auto p-6 md:p-10 lg:p-12">
           <TopHeader />
-          <StatsOverview venue={userVenues} />
-          <RecentBookings />
+          <StatsOverview venue={userVenues} ownerRevenue={ownerRevenue} />
+          <RecentBookings allBookings={allBookings} />
+          < EditVenueModal isOpen={isEditOpen} venueData={selectedVenue} onClose={onClose}  />
           <ListedProperties handleToggleAvailability={handleToggleAvailability}
-            userVenues={userVenues}
+            userVenues={userVenues} setSelectedVenue={setSelectedVenue} setIsEditOpen={setIsEditOpen}
           />
         </div>
       </main>

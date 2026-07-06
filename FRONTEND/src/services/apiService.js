@@ -57,15 +57,39 @@ const apiService = {
     },
     GetAllVenuesForAdmin: async () => {
         const response = await axiosInstance.get(`/venues/all`)
-        return response.data
+        return response.data;
     },
     updateAdminVenueApproval: async (payload, venue_id) => {
-        const response = await axiosInstance.post(`/admin/venue/${venue_id}`, payload)
-        return response.data
+        const response = await axiosInstance.post(`/admin/venue/${venue_id}`, payload);
+        return response.data;
     },
     GetUserListForAdmin: async () => {
-        const response = await axiosInstance.get(`/user/users`)
-        return response.data
+        const response = await axiosInstance.get(`/user/users`);
+        return response.data;
+    },
+    GetOwnerRevenue: async () => {
+        const response = await axiosInstance.get(`/order/total-earnings`);
+        return response.data;
+    },
+    GetAllBookingForOwner: async () => {
+        const response = await axiosInstance.get(`/booking/all-bookings`);
+        return response.data;
+    },
+    UpdateAmenities: async (venue_id, payload) => {
+        const response = await axiosInstance.put(`/venues/${venue_id}/amenities`, payload);
+        return response.data;
+    },
+    UpdateImages: async (venue_id, payload) => {
+        const response = await axiosInstance.put(`/venues/${venue_id}/images`, payload);
+        return response.data;
+    },
+    UpdateBasicDetails: async (venue_id, payload) => {
+        const response = await axiosInstance.put(`/venues/${venue_id}/basic-details`, payload);
+        return response.data;
+    },
+    updateAvailability: async (venue_id, payload) => {
+        const response = await axiosInstance.put(`/venues/${venue_id}/availability`, payload);
+        return response.data;
     },
 
 }

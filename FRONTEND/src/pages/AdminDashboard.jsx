@@ -53,13 +53,16 @@ export default function AdminDashboard() {
   const fetchPendingVenues = async () => {
     try {
       const response = await apiService.GetAllVenuesForAdmin()
-      setAllVenues(response);
+      const safeResponse = Array.isArray(response) ? response : []
+      setAllVenues(safeResponse);
       
-      const unapproved = response.filter(venue => venue.is_approved === false);
+      const unapproved = safeResponse.filter(venue => venue.is_approved === false);
       SetPendingVenues(unapproved);
       
     } catch (error) {
       console.log("Failed to Fetch Venues:", error);
+      setAllVenues([]);
+      SetPendingVenues([]);
     }
 
   }
