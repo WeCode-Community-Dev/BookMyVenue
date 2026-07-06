@@ -31,6 +31,15 @@ class BookingSlotDetail(BaseModel):
     class Config:
         from_attributes = True
 
+class BookingUserDetail(BaseModel):
+    id: UUID
+    full_name: Optional[str] = None
+    mobile_number: str
+    email: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
 class BookingDetailResponse(BaseModel):
     id: UUID
     venue_id: UUID
@@ -47,6 +56,7 @@ class BookingDetailResponse(BaseModel):
     lock_expires_at: datetime
     created_at: datetime
     slots: List[BookingSlotDetail]
+    user: Optional[BookingUserDetail] = None
 
     class Config:
         from_attributes = True

@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 import razorpay
 
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.config import settings
 from app.model.booking import Booking, BookingStatus
@@ -276,6 +276,7 @@ class BookingService:
     def get_user_bookings(self, db: Session, user_id: UUID) -> List[Booking]:
         return (
             db.query(Booking)
+            .options(joinedload(Booking.slots), joinedload(Booking.venue), joinedload(Booking.user))
             .filter(Booking.user_id == user_id)
             .order_by(Booking.created_at.desc())
             .all()
@@ -284,7 +285,12 @@ class BookingService:
     def get_booking_details(
         self, db: Session, user_id: UUID, booking_id: UUID
     ) -> Booking:
-        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        booking = (
+            db.query(Booking)
+            .options(joinedload(Booking.slots), joinedload(Booking.venue), joinedload(Booking.user))
+            .filter(Booking.id == booking_id)
+            .first()
+        )
         if not booking:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found."
@@ -301,6 +307,7 @@ class BookingService:
     def get_all_bookings(self, db: Session, skip: int = 0, limit: int = 100) -> List[Booking]:
         return (
             db.query(Booking)
+            .options(joinedload(Booking.slots), joinedload(Booking.venue), joinedload(Booking.user))
             .order_by(Booking.created_at.desc())
             .offset(skip)
             .limit(limit)
@@ -310,6 +317,7 @@ class BookingService:
     def get_owner_bookings(self, db: Session, owner_id: UUID, skip: int = 0, limit: int = 100) -> List[Booking]:
         return (
             db.query(Booking)
+            .options(joinedload(Booking.slots), joinedload(Booking.venue), joinedload(Booking.user))
             .join(Venue)
             .filter(Venue.owner_id == owner_id)
             .order_by(Booking.created_at.desc())

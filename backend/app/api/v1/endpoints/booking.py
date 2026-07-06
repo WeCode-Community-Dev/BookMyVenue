@@ -11,6 +11,7 @@ from app.schema.booking_schema import (
     PaymentVerificationRequest,
     BookingDetailResponse,
     BookingSlotDetail,
+    BookingUserDetail,
 )
 from app.service.booking_service import booking_service
 from app.config.database import get_db
@@ -33,6 +34,14 @@ def map_booking_to_response(booking: Booking) -> BookingDetailResponse:
         )
         for slot in booking.slots
     ]
+    user_detail = None
+    if booking.user:
+        user_detail = BookingUserDetail(
+            id=booking.user.id,
+            full_name=booking.user.full_name,
+            mobile_number=booking.user.mobile_number,
+            email=booking.user.email,
+        )
     return BookingDetailResponse(
         id=booking.id,
         venue_id=booking.venue_id,
@@ -49,6 +58,7 @@ def map_booking_to_response(booking: Booking) -> BookingDetailResponse:
         lock_expires_at=booking.lock_expires_at,
         created_at=booking.created_at,
         slots=slots_detail,
+        user=user_detail,
     )
 
 
