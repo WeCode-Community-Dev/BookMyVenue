@@ -317,4 +317,3 @@ class DeepResearchStatsResponse(BaseModel):
     total_queries: int
     avg_result_count: float
     avg_match_score_overall: Optional[float] = None
-    stats: AdminVenueStats
