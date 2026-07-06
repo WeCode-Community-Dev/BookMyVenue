@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/router/route_name.dart';
@@ -9,6 +10,7 @@ import '../../../../core/utils/shape_constants.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text.dart';
 import '../../domain/entity/booking_entities.dart';
+import '../bloc/booking_bloc.dart';
 
 class BookingSuccessScreen extends StatefulWidget {
   const BookingSuccessScreen({required this.bookingDetails, super.key});
@@ -43,6 +45,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen> {
   }
 
   void _redirectToBookingHistory() {
+    context.read<BookingBloc>().add(const BookingEvent.fetchMyBookings());
     context.go('/${AppRouteNames.bookingHistory}');
   }
 
@@ -107,8 +110,14 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         _buildDetailRow('Booking ID', widget.bookingDetails.id),
-                        _buildDetailRow('Venue', widget.bookingDetails.venueName),
-                        _buildDetailRow('Date', widget.bookingDetails.bookingDate),
+                        _buildDetailRow(
+                          'Venue',
+                          widget.bookingDetails.venueName,
+                        ),
+                        _buildDetailRow(
+                          'Date',
+                          widget.bookingDetails.bookingDate,
+                        ),
                         _buildDetailRow(
                           'Amount Paid',
                           '₹${widget.bookingDetails.amount.toStringAsFixed(2)}',
