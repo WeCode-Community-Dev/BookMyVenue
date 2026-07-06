@@ -290,6 +290,9 @@ export const BookingsView: React.FC<BookingsViewProps> = ({
                 <div className="space-y-0.5">
                   <span className="font-semibold text-slate-200 block text-sm">{viewingBooking.customerName}</span>
                   <span className="text-slate-400 block">{viewingBooking.customerEmail}</span>
+                  {viewingBooking.customerPhone && (
+                    <span className="text-slate-400 block">Phone: {viewingBooking.customerPhone}</span>
+                  )}
                   <span className="text-slate-500 block">ID: {viewingBooking.customerId}</span>
                 </div>
               </div>

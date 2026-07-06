@@ -527,11 +527,18 @@ const normalizeBooking = (entity: ApiEntity, index: number, commissionPercentage
     price: readNumber(slot, ['price'])
   }));
 
+  const user = readRecord(entity, 'user');
+  const customerId = readString(user, ['id'], readString(entity, ['customer_id', 'customerId', 'user_id', 'userId'], 'CUST-API'));
+  const customerName = readString(user, ['full_name', 'name', 'fullName'], readString(entity, ['customer_name', 'customerName', 'user_name', 'userName'], 'Guest Client'));
+  const customerEmail = readString(user, ['email'], readString(entity, ['customer_email', 'customerEmail'], 'guest@example.com'));
+  const customerPhone = readString(user, ['mobile_number', 'phone', 'mobile'], readString(entity, ['customer_phone', 'customerPhone'], ''));
+
   return {
     id,
-    customerId: readString(entity, ['customer_id', 'customerId', 'user_id', 'userId'], 'CUST-API'),
-    customerName: readString(entity, ['customer_name', 'customerName', 'user_name', 'userName'], 'Guest Client'),
-    customerEmail: readString(entity, ['customer_email', 'customerEmail', 'email'], 'guest@example.com'),
+    customerId,
+    customerName,
+    customerEmail,
+    customerPhone,
     venueId: readString(entity, ['venue_id', 'venueId']),
     venueName: readString(entity, ['venue_name', 'venueName'], 'Unknown Venue'),
     ownerId: readString(entity, ['owner_id', 'ownerId'], ''),

@@ -109,6 +109,7 @@ export interface Booking {
   cleaningFee?: number;
   securityAmount?: number;
   commissionPercent?: number;
+  customerPhone?: string;
 }
 
 export interface ComplaintReport {
