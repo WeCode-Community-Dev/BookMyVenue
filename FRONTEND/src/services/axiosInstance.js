@@ -26,31 +26,31 @@ axiosInstance.interceptors.request.use(
     }
 )
 
-// axiosInstance.interceptors.response.use(
-//     (response) => {
-//         const newTokenHeader = response.headers['authorization'] || response.headers['x-new-token'];
+axiosInstance.interceptors.response.use(
+    (response) => {
+        const newTokenHeader = response.headers['authorization'] || response.headers['x-new-token'];
 
-//         if (newTokenHeader) {
-//             const tokenValue = newTokenHeader.startsWith('Bearer ') 
-//                 ? newTokenHeader.split(' ')[1] 
-//                 : newTokenHeader;
+        if (newTokenHeader) {
+            const tokenValue = newTokenHeader.startsWith('Bearer ') 
+                ? newTokenHeader.split(' ')[1] 
+                : newTokenHeader;
             
-//             Cookies.set("authToken", tokenValue, { expires: 30, secure: true, sameSite: 'Lax' });
-//             console.log("Token successfully refreshed and saved to cookies!");
-//         }
+            Cookies.set("authToken", tokenValue, { expires: 30, secure: true, sameSite: 'Lax' });
+            console.log("Token successfully refreshed and saved to cookies!");
+        }
 
-//         return response;
-//     },
-//     (error) => {
-//         if (error.response && error.response.status === 401) {
-//             console.warn("Session expired. Logging out.");
-//             Cookies.remove("authToken");
-//             Cookies.remove("userRole");
-//             window.location.href = '/auth';
-//         }
+        return response;
+    },
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            console.warn("Session expired. Logging out.");
+            Cookies.remove("authToken");
+            Cookies.remove("userRole");            
+            window.location.href = "/auth?expired=true";
+        }
         
-//         return Promise.reject(error);
-//     }
-// )
+        return Promise.reject(error);
+    }
+)
 
 export default axiosInstance

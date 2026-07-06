@@ -132,6 +132,8 @@ export default function SpaceListing() {
     const venue_location= venue.location
     const venue_type = venue.availability.booking_types
     const venue_amenities = venue.amenities
+    console.log(venue_amenities);
+    
     // const venue_min_hour = venue.availability.minimum_hours
     // console.log(venue_min_hour);
 
@@ -165,8 +167,6 @@ export default function SpaceListing() {
 
             if(start24 < minStart) minStart = start24;
             if(end24 > maxEnd) maxEnd = end24;
-            console.log(minStart);
-            console.log(maxEnd);
             
         })
 
@@ -180,8 +180,10 @@ export default function SpaceListing() {
         const year = dateObj.getFullYear();
         const date = String(dateObj.getDate()).padStart(2, '0');
         const month = String(dateObj.getMonth()+1).padStart(2, '0');
+        console.log(year,date,month);
+        
 
-        return `${year}-${date}-${month}`;
+        return `${year}-${month}-${date}`;
     }
     
 
@@ -202,7 +204,7 @@ export default function SpaceListing() {
             let startTime = "";
             let endTime = "";
 
-            if(venue_type === "hourly" && selectedTimes.length === 0){
+            if(venue_type === "hourly" && selectedTimes.length > 0){
                 const times = getFormattedStartAndEndTimes(selectedTimes);
                 startTime = times.start_time;
                 endTime = times.end_time;
@@ -399,11 +401,11 @@ export default function SpaceListing() {
                         <Coffee className="w-6 h-6 text-gray-600" />
                         <span>Kitchen access</span>
                     </div>}
-                    {venue_amenities.kitchen && <div className="flex items-center gap-3 text-gray-700">
+                    {venue_amenities.ac && <div className="flex items-center gap-3 text-gray-700">
                         <AirVent className="w-6 h-6 text-gray-600" />
                         <span>Air Conditioned</span>
                     </div>}
-                    {venue_amenities.kitchen && <div className="flex items-center gap-3 text-gray-700">
+                    {venue_amenities.wheel_chair && <div className="flex items-center gap-3 text-gray-700">
                         <Wheelchair className="w-6 h-6 text-gray-600" />
                         <span>Wheen Chair</span>
                     </div>}

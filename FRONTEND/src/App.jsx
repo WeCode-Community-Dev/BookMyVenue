@@ -6,7 +6,7 @@ import BookMyVenueLanding from "./pages/HostLandingPage"
 import OwnerDashboard from './pages/OwnerDashboard';
 import ListNewVenue from './pages/ListNewVenues';
 import AdminDashboard from './pages/AdminDashboard';
-
+import UserBookings from './pages/UserDashboard'
 
 function App() {
 
@@ -21,6 +21,7 @@ function App() {
           <Route path="/host/dashboard" element={<OwnerDashboard />} />
           <Route path="/host/dashboard/list-new-venues" element={<ListNewVenue />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/user/dashboard" element={<UserBookings />} />
         </Routes>
       </main>
     </div>

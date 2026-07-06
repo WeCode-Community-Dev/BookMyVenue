@@ -39,6 +39,7 @@ function VenueCard({ venue }) {
     const venue_details = venue.venue_description;
     const venue_price = venue.price;
     const venue_location = venue.location;
+    const venue_booking_type = venue.booking_types
 
     return (
         <div 
@@ -70,7 +71,7 @@ function VenueCard({ venue }) {
 
                     {/* Price Badge */}
                     <div className={`shrink-0 font-bold text-[#ae3b2f] bg-red-50 px-2.5 py-1 rounded-md ${priceSize}`}>
-                        {venue_price}₹
+                        {venue_price}₹<span className={" text-xs text-[#6684b0] bg-red-50 py-1 rounded-md"} >/{venue_booking_type === "hourly" ? "hour" : "day"}</span>
                     </div>
                 </div>
                 
