@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query, Path, HTTPException
 from app.core.dependencies import get_current_user
 from sqlalchemy.orm import Session
 from app.db.session import get_db
-from app.services.booking_service import get_booking, create_booking, cancel_booking
+from app.services.booking_service import get_booking, create_booking, cancel_booking, get_all_booking_across_venues
 from typing import List, Optional
 from app.schema.booking import OfflineBookingRequest, CancelBookingRequest
 from app.services.order_service import update_order_status_refund
@@ -61,6 +61,7 @@ async def get_venue_bookings(
 
 @router.get("/all-bookings")
 async def get_all_bookings(
+    current_user: dict = Depends(get_current_user),
     page_no: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(20, ge=1, le=100, description="Records per page"),
     db: Session = Depends(get_db)
@@ -69,10 +70,9 @@ async def get_all_bookings(
     Get all bookings for the current user.
     """ 
     try:
-        return get_booking(
+        return get_all_booking_across_venues(
             db,
-            user_id=None,
-            venue_id=None,
+            user_id=current_user["sub"],
             page_no=page_no,
             limit=limit
         ) 

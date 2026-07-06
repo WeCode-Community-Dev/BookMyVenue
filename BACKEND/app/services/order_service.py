@@ -127,12 +127,27 @@ def get_earnings(db: Session, user_id: int):
             .scalar()
         )
 
+        current_date = datetime.now().date()
+
+        amount_to_receive_paise = (
+            db.query(func.sum(Order.amount))
+            .join(Booking, Booking.order_id == Order.id)
+            .filter(
+                Order.user_id == user_id,
+                Order.status == "paid",
+                Booking.booking_date <= current_date
+            )
+            .scalar()
+        )
+
         total_earnings_paise = total_earnings_paise or 0
         total_earnings_rupees = total_earnings_paise / 100
+        amount_to_receive_paise = amount_to_receive_paise or 0
+        amount_to_receive_rupees = amount_to_receive_paise / 100
 
         return {
             "total_earnings": total_earnings_rupees,
-            "total_earnings_paise": total_earnings_paise,
+            "amount_yet_to_receive": amount_to_receive_rupees,
             "currency": "INR"
         }
 
