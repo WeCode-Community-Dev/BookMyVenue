@@ -29,18 +29,6 @@ export type ExternalLeadPublic = {
   disclaimer: string
 }
 
-export type ExternalDiscoveryJobResponse = {
-  job_id: string
-  status: 'pending' | 'processing' | 'completed' | 'failed'
-}
-
-export type ExternalDiscoveryJobResult = {
-  job_id: string
-  status: string
-  leads: ExternalLeadPublic[]
-  error_message: string | null
-}
-
 export type ReserveLeadResponse = {
   reservation_id: string
   status: string
@@ -64,21 +52,29 @@ export const deepResearchEndpoints = (client: ReturnType<typeof createClient>) =
       page,
       page_size,
     }),
+
+  // Single async call — returns leads directly when complete. No polling needed.
   triggerExternal: (query_id: string, latitude: number, longitude: number) =>
-    client.post<ExternalDiscoveryJobResponse>('/api/deep-research/external', {
+    client.post<ExternalLeadPublic[]>('/api/deep-research/external', {
       query_id,
       latitude,
       longitude,
     }),
-  getExternalJob: (job_id: string) =>
-    client.get<ExternalDiscoveryJobResult>(`/api/deep-research/external/${job_id}`),
-  reserveLead: (lead_id: string, event_date?: string, guest_count?: number, phone?: string, notes?: string) =>
+
+  reserveLead: (
+    lead_id: string,
+    event_date?: string,
+    guest_count?: number,
+    phone?: string,
+    notes?: string,
+  ) =>
     client.post<ReserveLeadResponse>(`/api/deep-research/leads/${lead_id}/reserve`, {
       event_date,
       guest_count,
       phone,
       notes,
     }),
+
   getMyReservations: () =>
     client.get<UserReservationResponse[]>('/api/deep-research/reservations'),
 })

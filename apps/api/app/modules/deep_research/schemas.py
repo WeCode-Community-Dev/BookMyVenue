@@ -1,4 +1,4 @@
-from typing import Optional, Literal
+from typing import Optional
 from uuid import UUID
 from datetime import datetime
 
@@ -33,13 +33,8 @@ class DeepResearchSearchResponse(BaseModel):
 
 class TriggerExternalDiscoveryRequest(BaseModel):
     query_id: UUID
-    latitude: float   # from browser geolocation, sent only at this step
+    latitude: float
     longitude: float
-
-
-class ExternalDiscoveryJobResponse(BaseModel):
-    job_id: UUID
-    status: Literal["pending", "processing", "completed", "failed"]
 
 
 class ExternalLeadPublic(BaseModel):
@@ -56,13 +51,6 @@ class ExternalLeadPublic(BaseModel):
     )
 
 
-class ExternalDiscoveryJobResult(BaseModel):
-    job_id: UUID
-    status: str
-    leads: list[ExternalLeadPublic] = []
-    error_message: Optional[str] = None
-
-
 class ReserveLeadRequest(BaseModel):
     event_date: Optional[str] = None
     guest_count: Optional[int] = None
@@ -74,6 +62,7 @@ class ReserveLeadResponse(BaseModel):
     reservation_id: UUID
     status: str
 
+
 class UserReservationResponse(BaseModel):
     id: UUID
     lead: ExternalLeadPublic
@@ -83,4 +72,3 @@ class UserReservationResponse(BaseModel):
     phone: Optional[str] = None
     notes: Optional[str] = None
     created_at: datetime
-

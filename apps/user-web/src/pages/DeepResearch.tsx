@@ -43,9 +43,8 @@ export default function DeepResearch() {
   const [stage, setStage] = useState<ResearchStage>('understanding')
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
-  // External discovery state
-  const [extJobId, setExtJobId] = useState<string | null>(null)
-  const [extStatus, setExtStatus] = useState<'idle' | 'locating' | 'pending' | 'processing' | 'completed' | 'failed'>('idle')
+  // External discovery state — simple: idle | locating | loading | completed | failed
+  const [extStatus, setExtStatus] = useState<'idle' | 'locating' | 'loading' | 'completed' | 'failed'>('idle')
   const [extLeads, setExtLeads] = useState<ExternalLeadPublic[]>([])
   const [extError, setExtError] = useState<string | null>(null)
 
@@ -54,31 +53,6 @@ export default function DeepResearch() {
       timers.current.forEach(clearTimeout)
     }
   }, [])
-
-  // External polling effect
-  useEffect(() => {
-    if (!extJobId || extStatus === 'completed' || extStatus === 'failed') return
-
-    const timer = setInterval(async () => {
-      try {
-        const endpoints = deepResearchEndpoints(client)
-        const res = await endpoints.getExternalJob(extJobId)
-        if (res.status === 'completed') {
-          setExtStatus('completed')
-          setExtLeads(res.leads)
-        } else if (res.status === 'failed') {
-          setExtStatus('failed')
-          setExtError(res.error_message || 'Failed to fetch external venues.')
-        } else {
-          setExtStatus(res.status as any)
-        }
-      } catch (err) {
-        console.error('Polling error', err)
-      }
-    }, 2000)
-
-    return () => clearInterval(timer)
-  }, [extJobId, extStatus, client])
 
   const searchMutation = useMutation({
     mutationFn: (q: string) => deepResearchEndpoints(client).search(q),
@@ -95,7 +69,6 @@ export default function DeepResearch() {
     setStage('understanding')
     
     // reset external state
-    setExtJobId(null)
     setExtStatus('idle')
     setExtLeads([])
     setExtError(null)
@@ -106,29 +79,30 @@ export default function DeepResearch() {
   function handleTriggerExternal() {
     const queryId = searchMutation.data?.query_id
     if (!queryId) return
-    setExtStatus('locating')
-    
+
     if (!navigator.geolocation) {
       setExtStatus('failed')
       setExtError('Geolocation is not supported by your browser.')
       return
     }
 
+    setExtStatus('locating')
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
+        setExtStatus('loading')
         try {
-          setExtStatus('pending')
           const endpoints = deepResearchEndpoints(client)
-          const res = await endpoints.triggerExternal(
+          const leads = await endpoints.triggerExternal(
             queryId,
             pos.coords.latitude,
-            pos.coords.longitude
+            pos.coords.longitude,
           )
-          setExtJobId(res.job_id)
+          setExtLeads(leads)
+          setExtStatus('completed')
         } catch (err) {
           console.error(err)
           setExtStatus('failed')
-          setExtError('Failed to start external search.')
+          setExtError('External search failed. Please try again.')
         }
       },
       (err) => {
@@ -136,7 +110,7 @@ export default function DeepResearch() {
         setExtStatus('failed')
         setExtError('Could not get your location. We need it to find venues near you.')
       },
-      { timeout: 10000 }
+      { timeout: 10000 },
     )
   }
 
@@ -371,15 +345,15 @@ export default function DeepResearch() {
             ) : (
               <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 text-center transition-all">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-400 ring-1 ring-zinc-100">
-                  <Globe2 className={`h-4 w-4 ${['locating', 'pending', 'processing'].includes(extStatus) ? 'animate-pulse text-brand' : ''}`} />
+                  <Globe2 className={`h-4 w-4 ${['locating', 'loading'].includes(extStatus) ? 'animate-pulse text-brand' : ''}`} />
                 </span>
                 <p className="text-sm font-semibold text-zinc-900">
                   {extStatus === 'locating' ? 'Getting your location...'
-                    : ['pending', 'processing'].includes(extStatus) ? 'Searching externally...'
+                    : extStatus === 'loading' ? 'Searching externally...'
                     : 'Still not finding the right fit?'}
                 </p>
                 <p className="max-w-sm text-xs leading-relaxed text-zinc-400">
-                  {extError || "We can search beyond our marketplace and get back to you with venues that aren't listed anywhere else yet."}
+                  {extError || "We can search beyond our marketplace and find venues that aren't listed anywhere else yet."}
                 </p>
                 {extStatus === 'idle' || extStatus === 'failed' ? (
                   <button
@@ -390,9 +364,9 @@ export default function DeepResearch() {
                     Search externally
                   </button>
                 ) : (
-                   <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-brand animate-pulse">
-                     Searching the web... this usually takes ~5 seconds.
-                   </div>
+                  <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-brand animate-pulse">
+                    Searching the web — this usually takes ~5 seconds...
+                  </div>
                 )}
               </div>
             )}
