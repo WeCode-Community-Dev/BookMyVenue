@@ -3,6 +3,7 @@ from app.core.config import settings
 from typing import List
 from sqlalchemy.orm import Session
 from app.model.bookings import Booking
+from app.model.venue import Venue
 from app.model.user import User
 from typing import Optional
 from sqlalchemy.orm import joinedload
@@ -62,6 +63,28 @@ def get_booking(
 
         # Apply pagination
         query = query.offset((page_no - 1) * limit).limit(limit)
+
+        bookings = query.all()
+        return bookings
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving bookings: {e}"
+        )
+
+def get_all_booking_across_venues(
+    db: Session,
+    user_id: int,
+    page_no: int = 1,
+    limit: int = 20
+)  -> List[Booking]:
+    try:
+        
+        venue_ids = [venue.id for venue in db.query(Venue).filter(Venue.user_id == user_id).all()]
+
+        # Apply pagination
+        query = db.query(Booking).filter(Booking.venue_id.in_(venue_ids)).offset((page_no - 1) * limit).limit(limit)
 
         bookings = query.all()
         return bookings
