@@ -5,6 +5,7 @@ import { MailService } from 'src/providers/mail/mail.service';
 import { PrismaService } from 'src/providers/prisma/prisma.service';
 import { RedisService } from 'src/providers/redis/redis.service';
 import { RequestOtpDto } from './dto/request-otp.dto';
+import { User } from '@prisma/client';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 @Injectable()
@@ -106,9 +107,8 @@ export class AuthService {
       user,
     };
   }
-  getMyProfile() {
-    return {
-      message: 'gddhydh',
-    };
+
+  getMyProfile(user: User) {
+    return user;
   }
 }
