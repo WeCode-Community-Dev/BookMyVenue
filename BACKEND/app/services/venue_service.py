@@ -485,10 +485,15 @@ def search_venues(
 ):
     offset = (page_no - 1) * limit
 
-    query = db.query(Venue)
+    query = db.query(Venue).filter(
+        Venue.is_available.is_(True),
+        Venue.is_approved.is_(True)
+    )
 
-    if q:
-        search_text = f"%{q}%"
+    if q and q.strip():
+        search_text = f"%{q.strip()}%"
+        print(search_text, "search_text")
+
         query = query.filter(
             or_(
                 Venue.venue_name.ilike(search_text),
@@ -497,61 +502,61 @@ def search_venues(
             )
         )
 
-    if location:
-        query = query.filter(Venue.location.ilike(f"%{location}%"))
+    if location and location.strip():
+        query = query.filter(Venue.location.ilike(f"%{location.strip()}%"))
 
-    query = query.join(VenueAvailability)
+    if min_price is not None or max_price is not None:
+        query = query.join(VenueAvailability)
 
-    if min_price is not None:
-        query = query.filter(VenueAvailability.venue_price >= min_price)
+        if min_price is not None:
+            query = query.filter(VenueAvailability.venue_price >= min_price)
 
-    if max_price is not None:
-        query = query.filter(VenueAvailability.venue_price <= max_price)
+        if max_price is not None:
+            query = query.filter(VenueAvailability.venue_price <= max_price)
 
-    query = query.join(VenueAmenities)
+    if wifi is not None or parking is not None or ac is not None:
+        query = query.join(VenueAmenities)
 
-    if wifi is not None:
-        query = query.filter(VenueAmenities.wifi == wifi)
+        if wifi is not None:
+            query = query.filter(VenueAmenities.wifi == wifi)
 
-    if parking is not None:
-        query = query.filter(VenueAmenities.parking == parking)
+        if parking is not None:
+            query = query.filter(VenueAmenities.parking == parking)
 
-    if ac is not None:
-        query = query.filter(VenueAmenities.ac == ac)
-    
-    venues = db.query(Venue).filter(
-        Venue.is_available.is_(True),
-        Venue.is_approved.is_(True)
-    ).offset(offset).limit(limit).all()
+        if ac is not None:
+            query = query.filter(VenueAmenities.ac == ac)
 
-    result = []
+    venues = query.offset(offset).limit(limit).all()
 
     if not venues:
         return {
             "message": "venues are not added"
         }
 
+    result = []
+
     for venue in venues:
         first_image = venue.venue_images[0] if venue.venue_images else None
         price = venue.venue_availability.venue_price if venue.venue_availability else None
 
-    result.append({
-        "id": venue.id,
-        "user_id": venue.user_id,
-        "venue_name": venue.venue_name,
-        "venue_description": venue.venue_description,
-        "location": venue.location,
-        "capacity": venue.capacity,
-        "is_available": venue.is_available,
-        "is_approved": venue.is_approved,
-        "not_available_reason": venue.not_available_reason,
-        "created_at": venue.created_at,
-        "updated_at": venue.updated_at,
-        "image": first_image.image_url if first_image else None,
-        "price": price
-    })
-        
+        result.append({
+            "id": venue.id,
+            "user_id": venue.user_id,
+            "venue_name": venue.venue_name,
+            "venue_description": venue.venue_description,
+            "location": venue.location,
+            "capacity": venue.capacity,
+            "is_available": venue.is_available,
+            "is_approved": venue.is_approved,
+            "not_available_reason": venue.not_available_reason,
+            "created_at": venue.created_at,
+            "updated_at": venue.updated_at,
+            "image": first_image.image_url if first_image else None,
+            "price": price
+        })
+
     return result
+
 
 
 def add_venue_availability(
