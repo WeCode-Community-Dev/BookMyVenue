@@ -33,5 +33,6 @@ export const authMessages = {
         RESET_TOKEN_EXPIRED: 'Password reset link has expired',
         RESET_PASSWORD_FAILED: 'Failed to reset password',
         EMAIL_ALREADY_EXISTS: 'Email already exists',
+        ACCESS_TOKEN_EXPIRED: 'Access token expired',
     }
 }

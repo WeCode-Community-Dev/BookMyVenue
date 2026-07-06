@@ -7,6 +7,7 @@ import cors from 'cors'
 import routes from './presentation/routes/index.js'
 import { connectDB } from './infrastructure/config/mongo.config.js';
 import cloudinaryUpload from "./presentation/middlewares/cloudinaryUpload.js";
+import { errorHandler } from './presentation/middlewares/errorHandler.js';
 
 const app = express()
 
@@ -47,11 +48,10 @@ app.get('/test', (req, res) => {
 })
 
 app.use('/api', routes)
+app.use(errorHandler)
+
 
 const PORT = process.env.PORT || 4000
-
-
-
 
 app.listen(PORT, () => {
     console.log('Server connected')
