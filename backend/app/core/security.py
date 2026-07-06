@@ -82,6 +82,18 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 
+def get_current_venue_owner(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    if current_user.venue_owner_profile is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account does not have a venue owner profile.",
+        )
+    return current_user
+
+
+
 # function to verify Google ID token
 
 def verify_google_token(token: str) -> dict:

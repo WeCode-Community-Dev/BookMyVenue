@@ -5,10 +5,11 @@ from typing import Optional
 
 class BookingCreate(BaseModel):
     venue_id: int
-    booking_date: date
-    time_slot: time
-    notes: Optional[str] = None
-
+    booking_date: date          
+    time_slot: time             
+    notes: Optional[str] = None 
+    event_type: Optional[str] = None
+    guest_count: Optional[int] = None
 
 class BookingOut(BaseModel):
     id: int
@@ -16,46 +17,61 @@ class BookingOut(BaseModel):
     booking_date: date
     time_slot: time
     notes: Optional[str] = None
+    event_type: Optional[str] = None
+    guest_count: Optional[int] = None
     status: str
+    owner_status: str
     amount: float
     created_at: datetime
-
-    model_config = {"from_attributes": True}
-
-
-class BookingListOut(BaseModel):
-    id: int
-    venue_id: int
-    venue_name: Optional[str] = None
-    venue_location: Optional[str] = None
-    booking_date: date
-    time_slot: time
-    status: str
-    amount: float
-    payment_status: Optional[str] = None
-    created_at: datetime
-
-    model_config = {"from_attributes": True}
-
-
-class PaymentBrief(BaseModel):
-    payment_id: str
-    status: str
-    paid_at: Optional[datetime] = None
-
-
-class BookingDetailOut(BookingListOut):
-    user_id: int
-    notes: Optional[str] = None
-    cancellation_reason: Optional[str] = None
-    cancelled_at: Optional[datetime] = None
-    payment: Optional[PaymentBrief] = None
-
-
+    model_config = {"from_attributes": True} 
+    
+    
 class BookingCancelRequest(BaseModel):
     cancellation_reason: Optional[str] = None
 
 
-class PaginatedBookings(BaseModel):
-    data: list[BookingListOut]
-    pagination: dict
+class PaginatedBookingsOut(BaseModel):
+    items: list[BookingOut]
+    total: int
+    page: int
+    limit: int
+    
+    
+class VenueSnippet(BaseModel):
+    id: int
+    name: str
+    location: str
+ 
+    model_config = {"from_attributes": True}
+    
+    
+class CustomerSnippet(BaseModel):
+    id: int
+    name: str
+ 
+    model_config = {"from_attributes": True}
+    
+    
+class OwnerBookingOut(BaseModel):
+    id: int
+    venue: VenueSnippet
+    user: CustomerSnippet          # the customer who made the booking
+    booking_date: date
+    time_slot: time
+    event_type: Optional[str] = None
+    guest_count: Optional[int] = None
+    notes: Optional[str] = None
+    status: str                    
+    owner_status: str             
+    amount: float
+    created_at: datetime
+ 
+    model_config = {"from_attributes": True}
+    
+    
+    
+class PaginatedOwnerBookingsOut(BaseModel):
+    items: list[OwnerBookingOut]
+    total: int
+    page: int
+    limit: int

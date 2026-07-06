@@ -15,7 +15,17 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 @router.post("/register", response_model = UserOut)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     new_user = create_user(db, user_data)
-    return new_user
+    return UserOut(
+        id=new_user.id,
+        name=new_user.name,
+        email=new_user.email,
+        phone_number=new_user.phone_number,
+        role=new_user.role,
+        is_active=new_user.is_active,
+        auth_provider=new_user.auth_provider,
+        created_at=new_user.created_at,
+        is_venue_owner=False, 
+    )
 
 
 # Login router
@@ -33,7 +43,17 @@ def login(credential: UserLogin, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=UserOut)
 def get_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    return UserOut(
+        id=current_user.id,
+        name=current_user.name,
+        email=current_user.email,
+        phone_number=current_user.phone_number,
+        role=current_user.role,
+        is_active=current_user.is_active,
+        auth_provider=current_user.auth_provider,
+        created_at=current_user.created_at,
+        is_venue_owner=current_user.venue_owner_profile is not None,
+    )
 
 
 # Route for Google Authentication

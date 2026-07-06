@@ -4,14 +4,8 @@ from sqlalchemy.orm import Session
 from app.core.security import get_current_user
 from app.db.deps import get_db
 from app.models.user import User
-from app.schemas.booking import (
-    BookingCancelRequest,
-    BookingCreate,
-    BookingDetailOut,
-    BookingOut,
-    PaginatedBookings,
-)
-from app.services import booking_service
+from app.schemas.booking import BookingCreate, BookingOut, BookingCancelRequest, PaginatedBookingsOut
+from app.services import booking_service 
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -37,8 +31,18 @@ def my_bookings(
         db, current_user, status_filter=status, page=page, limit=limit
     )
 
+   
+@router.get("/my-bookings", response_model=PaginatedBookingsOut)
+def my_bookings(
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return booking_service.get_my_bookings(db, current_user, page, limit)
 
-@router.get("/{booking_id}", response_model=BookingDetailOut)
+
+@router.get("/{booking_id}", response_model=BookingOut)
 def booking_detail(
     booking_id: int,
     db: Session = Depends(get_db),
@@ -50,9 +54,10 @@ def booking_detail(
 @router.patch("/{booking_id}/cancel", response_model=BookingOut)
 def cancel_booking(
     booking_id: int,
-    body: BookingCancelRequest | None = None,
+    data: BookingCancelRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    reason = body.cancellation_reason if body else None
-    return booking_service.cancel_booking(db, current_user, booking_id, reason)
+    return booking_service.cancel_booking(
+        db, current_user, booking_id, data.cancellation_reason
+    ) 

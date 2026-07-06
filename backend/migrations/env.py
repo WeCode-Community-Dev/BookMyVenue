@@ -7,7 +7,17 @@ from app.core.config import settings
 from app.db.database import Base
 
 # Import all models so they register on Base.metadata (needed for autogenerate)
-from app.models import user, venue, booking, payment  # noqa: F401
+from app.models import (  # noqa: F401
+    user,
+    venue,
+    booking,
+    payment,
+    venue_owner,
+    review,
+    notification,
+    amenity,
+    venue_amenity,
+)
 
 config = context.config
 

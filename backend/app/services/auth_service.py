@@ -50,7 +50,7 @@ def create_user(db: Session, user_data: UserCreate) -> User:
         phone_number=user_data.phone_number,
         hashed_password=hashed,
         auth_provider="email",
-        role=user_data.role
+        role="user"
     )
 
     
