@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Button, Card, Input, SectionHeader, LocationPickerMap, InfoTooltip } from '@venue404/ui'
+import { Button, Card, Input, SectionHeader, LocationPickerMap, InfoTooltip, Select } from '@venue404/ui'
 import * as Icons from 'lucide-react'
 import { createClient, venueEndpoints } from '@venue404/api-client'
 import type { VenuePhoto } from '@venue404/api-client'
@@ -517,16 +517,13 @@ export default function CreateVenueWizard() {
               <Input label="Venue Name" name="name" value={formData.name} onChange={handleChange} placeholder="e.g. Skyline Rooftop" required />
               <div className="space-y-1">
                 <label className="text-sm font-medium text-zinc-700">Venue Category<span className="text-red-500 ml-1">*</span></label>
-                <select name="category_id" value={formData.category_id} onChange={handleChange} required
+                <Select
+                  value={formData.category_id}
+                  onChange={(val) => setFormData(prev => ({ ...prev, category_id: val }))}
+                  options={venueCategories.map(cat => ({ label: `${cat.icon ? `${cat.icon} ` : ''}${cat.label}`, value: cat.id }))}
+                  placeholder={venueCategories.length === 0 ? 'Loading categories...' : 'Select a category...'}
                   disabled={venueCategories.length === 0}
-                  className="w-full h-10 px-3 py-2 rounded-md border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand disabled:opacity-50">
-                  <option value="">{venueCategories.length === 0 ? 'Loading categories…' : 'Select a category…'}</option>
-                  {venueCategories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.icon ? `${cat.icon} ` : ''}{cat.label}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
             <div>
               <label className="block text-sm font-medium text-zinc-700 mb-1">Description</label>
