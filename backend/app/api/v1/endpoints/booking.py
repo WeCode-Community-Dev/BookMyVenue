@@ -1,7 +1,7 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.schema.base_schema import SuccessResponse
@@ -222,7 +222,7 @@ def get_owner_bookings(
     if current_user.role not in [UserRole.VENUE_OWNER, UserRole.ADMIN]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only venue owners and admins can retrieve owner bookings."
+            detail="Only venue owners and admins can retrieve owner bookings.",
         )
 
     bookings = booking_service.get_owner_bookings(

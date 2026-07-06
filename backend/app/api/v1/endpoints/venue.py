@@ -85,21 +85,6 @@ def get_all_venues(
         data=result,
     )
 
-
-@router.get(
-    "/{venue_id}",
-    response_model=VenueResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Get Venue by ID",
-    description="Retrieves a specific venue by its ID (no token required).",
-)
-def get_venue_by_id(
-    venue_id: UUID,
-    db: Session = Depends(get_db),
-):
-    return venue_service.get_venue_by_id(db=db, venue_id=venue_id)
-
-
 @router.patch(
     "/update-status",
     response_model=SuccessResponse[UpdateVenueStatusResponse],
@@ -178,3 +163,17 @@ def delete_amenity(
         message="Amenities deleted successfully",
         data=result,
     )
+
+
+@router.get(
+    "/{venue_id}",
+    response_model=VenueResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get Venue by ID",
+    description="Retrieves a specific venue by its ID (no token required).",
+)
+def get_venue_by_id(
+    venue_id: UUID,
+    db: Session = Depends(get_db),
+):
+    return venue_service.get_venue_by_id(db=db, venue_id=venue_id)
