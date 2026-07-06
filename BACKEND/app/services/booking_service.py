@@ -95,6 +95,7 @@ def get_all_booking_across_venues(
         bookings = (
             db.query(Booking)
             .options(
+                joinedload(Booking.user),
                 joinedload(Booking.venue).joinedload(Venue.venue_availability)
             )
             .filter(Booking.venue_id.in_(venue_ids))
