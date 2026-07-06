@@ -13,6 +13,7 @@ import VenueApprovals from './pages/VenueApprovals'
 import Amenities from './pages/Amenities'
 import Categories from './pages/Categories'
 import AuditLog from './pages/AuditLog'
+import DeepResearchInsights from './pages/DeepResearchInsights'
 
 export const router = createBrowserRouter([
   // Auth
@@ -75,6 +76,10 @@ export const router = createBrowserRouter([
   {
     path: '/audit-log',
     element: <ProtectedRoute><AuditLog /></ProtectedRoute>,
+  },
+  {
+    path: '/deep-research-insights',
+    element: <ProtectedRoute><DeepResearchInsights /></ProtectedRoute>,
   },
   {
     path: '/settings',

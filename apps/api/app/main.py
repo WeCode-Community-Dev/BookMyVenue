@@ -19,6 +19,7 @@ from app.modules.payment.routes import router as payment_router
 from app.modules.internal.routes import router as internal_router
 from app.modules.owner.routes import router as owner_router
 from app.modules.deep_research.routes import router as deep_research_router
+from app.modules.deep_research.admin_routes import router as deep_research_admin_router
 from app.modules.admin.service import seed_super_admin
 
 
@@ -68,6 +69,9 @@ app.include_router(payment_router, prefix="/api/payments", tags=["payments"])
 app.include_router(internal_router, prefix="/api/internal", tags=["internal"])
 app.include_router(owner_router, prefix="/api/owner", tags=["owner"])
 app.include_router(deep_research_router, prefix="/api/deep-research", tags=["deep-research"])
+app.include_router(
+    deep_research_admin_router, prefix="/api/admin/deep-research", tags=["admin", "deep-research"]
+)
 
 @app.get("/health", tags=["health"])
 async def health_check():
