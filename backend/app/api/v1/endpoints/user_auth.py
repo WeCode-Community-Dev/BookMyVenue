@@ -6,6 +6,7 @@ from app.schema.user_auth_schema import (
     OTPVerifyRequest,
     TokenResponse,
     UserResponse,
+    UserProfileUpdateRequest,
 )
 from app.schema.base_schema import SuccessResponse
 from app.service.user_auth_service import user_auth_service
@@ -83,4 +84,26 @@ def get_user_profile(
     return SuccessResponse(
         message="User profile retrieved successfully",
         data=user_profile,
+    )
+
+
+@router.patch(
+    "/user/profile",
+    response_model=SuccessResponse[UserResponse],
+    summary="Update user profile",
+    description="Updates the profile information (full_name and email) of the authenticated user.",
+)
+def update_user_profile(
+    data: UserProfileUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    updated_profile = user_auth_service.update_user_profile(
+        db=db,
+        user_id=current_user.id,
+        data=data,
+    )
+    return SuccessResponse(
+        message="User profile updated successfully.",
+        data=updated_profile,
     )

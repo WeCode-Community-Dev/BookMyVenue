@@ -132,3 +132,9 @@ class RefreshTokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+
+
+class UserProfileUpdateRequest(BaseModel):
+    full_name: str | None = Field(None, max_length=100)
+    email: str | None = Field(None, max_length=255)
+

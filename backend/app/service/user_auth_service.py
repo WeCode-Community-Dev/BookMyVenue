@@ -11,6 +11,7 @@ from app.schema.user_auth_schema import (
     OTPVerifyRequest,
     TokenResponse,
     UserResponse,
+    UserProfileUpdateRequest,
 )
 from app.config.security import create_access_token, create_refresh_token, verify_token
 from app.config.constant import ADMIN_EMAIL, ADMIN_PASSWORD
@@ -225,6 +226,37 @@ class UserAuthService:
         except HTTPException:
             raise
 
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail=str(e),
+            )
+
+    def update_user_profile(
+        self,
+        db: Session,
+        user_id: str,
+        data: UserProfileUpdateRequest,
+    ) -> UserResponse:
+        try:
+            user = user_service.get_user_by_id(db=db, user_id=user_id)
+            if data.full_name is not None:
+                user.full_name = data.full_name
+            if data.email is not None:
+                if data.email != user.email:
+                    existing_user = db.query(User).filter(User.email == data.email).first()
+                    if existing_user:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Email is already registered by another user.",
+                        )
+                user.email = data.email
+            db.commit()
+            db.refresh(user)
+            return UserResponse.model_validate(user)
+        except HTTPException:
+            raise
         except Exception as e:
             db.rollback()
             raise HTTPException(
