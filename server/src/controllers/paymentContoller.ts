@@ -45,7 +45,7 @@ export const dummyPaymentSuccess = async (
     JOIN payments p ON p.booking_id = b.id
     WHERE b.id = $1
         AND b.customer_id = $2
-        FOR UPDATE OF b, p
+    FOR UPDATE OF b, p
       `,
       [booking_id, customerId]
     );
