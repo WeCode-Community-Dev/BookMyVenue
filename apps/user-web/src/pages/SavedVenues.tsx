@@ -17,7 +17,13 @@ export default function SavedVenues() {
       const endpoints = venueEndpoints(client)
       const promises = likedVenueIds.map(id => endpoints.getVenue(id))
       const results = await Promise.all(promises)
-      return results
+      return results.map(venue => {
+        const coverPhoto = venue.photos?.find(p => p.is_cover) || venue.photos?.[0]
+        return {
+          ...venue,
+          cover_photo_url: coverPhoto?.image_url || null
+        }
+      })
     },
     enabled: likedVenueIds.length > 0,
   })
