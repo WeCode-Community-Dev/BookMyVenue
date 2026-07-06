@@ -22,8 +22,22 @@ sealed class OwnerBookingVerifyResponse with _$OwnerBookingVerifyResponse {
     @JsonKey(name: 'lock_expires_at') required String lockExpiresAt,
     @JsonKey(name: 'created_at') required String createdAt,
     required List<BookingVerifySlotResponse> slots,
+    OwnerBookingUserResponse? user,
   }) = _OwnerBookingVerifyResponse;
 
   factory OwnerBookingVerifyResponse.fromJson(Map<String, dynamic> json) =>
       _$OwnerBookingVerifyResponseFromJson(json);
+}
+
+@freezed
+sealed class OwnerBookingUserResponse with _$OwnerBookingUserResponse {
+  const factory OwnerBookingUserResponse({
+    required String id,
+    @JsonKey(name: 'full_name') required String fullName,
+    @JsonKey(name: 'mobile_number') required String mobileNumber,
+    required String email,
+  }) = _OwnerBookingUserResponse;
+
+  factory OwnerBookingUserResponse.fromJson(Map<String, dynamic> json) =>
+      _$OwnerBookingUserResponseFromJson(json);
 }

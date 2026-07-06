@@ -409,6 +409,31 @@ class _OwnerBookingCardState extends State<OwnerBookingCard> {
           // Expander block
           if (_isExpanded) ...<Widget>[
             const SizedBox(height: 16),
+            if (widget.booking.user != null) ...<Widget>[
+              Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLow,
+                  borderRadius: AppShapes.sm,
+                  border: Border.all(color: AppColors.outline),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const AppText(
+                      'Customer Details',
+                      fontWeight: FontWeight.bold,
+                      variant: TextVariant.bodyMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildDetailRow('Name', widget.booking.user!.fullName),
+                    _buildDetailRow('Mobile', widget.booking.user!.mobileNumber),
+                    _buildDetailRow('Email', widget.booking.user!.email),
+                  ],
+                ),
+              ),
+            ],
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -440,6 +465,32 @@ class _OwnerBookingCardState extends State<OwnerBookingCard> {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          SizedBox(
+            width: 80,
+            child: AppText(
+              '$label:',
+              fontWeight: FontWeight.w600,
+              variant: TextVariant.captionMedium,
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+          Expanded(
+            child: AppText(
+              value,
+              variant: TextVariant.captionMedium,
+            ),
+          ),
         ],
       ),
     );

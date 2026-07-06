@@ -7,6 +7,7 @@ import '../../domain/entity/user_profile_entity.dart';
 import '../../domain/repository/i_user_profile_repository.dart';
 import '../datasource/i_user_profile_remote_datasource.dart';
 import '../mapper/user_profile_mapper.dart';
+import '../model/update_user_profile_request.dart';
 import '../model/user_profile_model.dart';
 
 class UserProfileRepositoryImpl extends BaseRepository
@@ -24,6 +25,20 @@ class UserProfileRepositoryImpl extends BaseRepository
     return handleRequest(() async {
       final ApiResponse<UserProfileModel> response =
           await remoteDatasource.getUserProfile();
+      return UserProfileResult(
+        message: response.message ?? '',
+        user: response.data!.toEntity(),
+      );
+    });
+  }
+
+  @override
+  ResultFuture<UserProfileResult> updateUserProfile({
+    required UpdateUserProfileRequest request,
+  }) {
+    return handleRequest(() async {
+      final ApiResponse<UserProfileModel> response =
+          await remoteDatasource.updateUserProfile(request: request);
       return UserProfileResult(
         message: response.message ?? '',
         user: response.data!.toEntity(),

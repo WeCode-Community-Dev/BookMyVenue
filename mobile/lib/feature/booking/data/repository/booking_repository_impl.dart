@@ -166,6 +166,14 @@ class BookingRepositoryImpl extends BaseRepository
                     ),
                   )
                   .toList(),
+              user: d.user != null
+                  ? BookingUserEntity(
+                      id: d.user!.id,
+                      fullName: d.user!.fullName,
+                      mobileNumber: d.user!.mobileNumber,
+                      email: d.user!.email,
+                    )
+                  : null,
             ),
           )
           .toList();

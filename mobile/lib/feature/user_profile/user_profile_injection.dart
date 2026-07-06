@@ -7,6 +7,7 @@ import 'data/datasource/user_profile_remote_datasource_impl.dart';
 import 'data/repository/user_profile_repository_impl.dart';
 import 'domain/repository/i_user_profile_repository.dart';
 import 'domain/usecase/get_user_profile_usecase.dart';
+import 'domain/usecase/update_user_profile_usecase.dart';
 import 'domain/usecase/user_logout_usecase.dart';
 import 'presentation/bloc/user_profile_bloc.dart';
 
@@ -29,6 +30,9 @@ Future<void> registerUserProfileDependencies() async {
     () => GetUserProfileUseCase(repository: sl<IUserProfileRepository>()),
   );
   sl.registerLazySingleton(
+    () => UpdateUserProfileUseCase(repository: sl<IUserProfileRepository>()),
+  );
+  sl.registerLazySingleton(
     () => UserLogoutUseCase(repository: sl<IUserProfileRepository>()),
   );
 
@@ -36,6 +40,7 @@ Future<void> registerUserProfileDependencies() async {
   sl.registerFactory(
     () => UserProfileBloc(
       getUserProfileUseCase: sl<GetUserProfileUseCase>(),
+      updateUserProfileUseCase: sl<UpdateUserProfileUseCase>(),
       logoutUseCase: sl<UserLogoutUseCase>(),
     ),
   );

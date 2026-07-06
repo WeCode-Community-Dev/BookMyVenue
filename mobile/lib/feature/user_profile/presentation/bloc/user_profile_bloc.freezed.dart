@@ -55,12 +55,13 @@ extension UserProfileEventPatterns on UserProfileEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _GetUserProfile value)?  getUserProfile,TResult Function( _Logout value)?  logout,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _GetUserProfile value)?  getUserProfile,TResult Function( _Logout value)?  logout,TResult Function( _UpdateUserProfile value)?  updateUserProfile,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _GetUserProfile() when getUserProfile != null:
 return getUserProfile(_that);case _Logout() when logout != null:
-return logout(_that);case _:
+return logout(_that);case _UpdateUserProfile() when updateUserProfile != null:
+return updateUserProfile(_that);case _:
   return orElse();
 
 }
@@ -78,12 +79,13 @@ return logout(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _GetUserProfile value)  getUserProfile,required TResult Function( _Logout value)  logout,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _GetUserProfile value)  getUserProfile,required TResult Function( _Logout value)  logout,required TResult Function( _UpdateUserProfile value)  updateUserProfile,}){
 final _that = this;
 switch (_that) {
 case _GetUserProfile():
 return getUserProfile(_that);case _Logout():
-return logout(_that);case _:
+return logout(_that);case _UpdateUserProfile():
+return updateUserProfile(_that);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -100,12 +102,13 @@ return logout(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _GetUserProfile value)?  getUserProfile,TResult? Function( _Logout value)?  logout,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _GetUserProfile value)?  getUserProfile,TResult? Function( _Logout value)?  logout,TResult? Function( _UpdateUserProfile value)?  updateUserProfile,}){
 final _that = this;
 switch (_that) {
 case _GetUserProfile() when getUserProfile != null:
 return getUserProfile(_that);case _Logout() when logout != null:
-return logout(_that);case _:
+return logout(_that);case _UpdateUserProfile() when updateUserProfile != null:
+return updateUserProfile(_that);case _:
   return null;
 
 }
@@ -122,11 +125,12 @@ return logout(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getUserProfile,TResult Function()?  logout,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  getUserProfile,TResult Function()?  logout,TResult Function( String fullName,  String email)?  updateUserProfile,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GetUserProfile() when getUserProfile != null:
 return getUserProfile();case _Logout() when logout != null:
-return logout();case _:
+return logout();case _UpdateUserProfile() when updateUserProfile != null:
+return updateUserProfile(_that.fullName,_that.email);case _:
   return orElse();
 
 }
@@ -144,11 +148,12 @@ return logout();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getUserProfile,required TResult Function()  logout,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  getUserProfile,required TResult Function()  logout,required TResult Function( String fullName,  String email)  updateUserProfile,}) {final _that = this;
 switch (_that) {
 case _GetUserProfile():
 return getUserProfile();case _Logout():
-return logout();case _:
+return logout();case _UpdateUserProfile():
+return updateUserProfile(_that.fullName,_that.email);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -165,11 +170,12 @@ return logout();case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getUserProfile,TResult? Function()?  logout,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  getUserProfile,TResult? Function()?  logout,TResult? Function( String fullName,  String email)?  updateUserProfile,}) {final _that = this;
 switch (_that) {
 case _GetUserProfile() when getUserProfile != null:
 return getUserProfile();case _Logout() when logout != null:
-return logout();case _:
+return logout();case _UpdateUserProfile() when updateUserProfile != null:
+return updateUserProfile(_that.fullName,_that.email);case _:
   return null;
 
 }
@@ -240,6 +246,74 @@ String toString() {
 
 
 
+
+/// @nodoc
+
+
+class _UpdateUserProfile implements UserProfileEvent {
+  const _UpdateUserProfile({required this.fullName, required this.email});
+  
+
+ final  String fullName;
+ final  String email;
+
+/// Create a copy of UserProfileEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$UpdateUserProfileCopyWith<_UpdateUserProfile> get copyWith => __$UpdateUserProfileCopyWithImpl<_UpdateUserProfile>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UpdateUserProfile&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.email, email) || other.email == email));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,fullName,email);
+
+@override
+String toString() {
+  return 'UserProfileEvent.updateUserProfile(fullName: $fullName, email: $email)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$UpdateUserProfileCopyWith<$Res> implements $UserProfileEventCopyWith<$Res> {
+  factory _$UpdateUserProfileCopyWith(_UpdateUserProfile value, $Res Function(_UpdateUserProfile) _then) = __$UpdateUserProfileCopyWithImpl;
+@useResult
+$Res call({
+ String fullName, String email
+});
+
+
+
+
+}
+/// @nodoc
+class __$UpdateUserProfileCopyWithImpl<$Res>
+    implements _$UpdateUserProfileCopyWith<$Res> {
+  __$UpdateUserProfileCopyWithImpl(this._self, this._then);
+
+  final _UpdateUserProfile _self;
+  final $Res Function(_UpdateUserProfile) _then;
+
+/// Create a copy of UserProfileEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? fullName = null,Object? email = null,}) {
+  return _then(_UpdateUserProfile(
+fullName: null == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
+as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
 
 /// @nodoc
 mixin _$UserProfileState {

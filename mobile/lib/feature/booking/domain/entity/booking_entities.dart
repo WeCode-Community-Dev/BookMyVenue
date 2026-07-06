@@ -81,6 +81,23 @@ class BookingSlotEntity extends Equatable {
   List<Object?> get props => <Object?>[id, slotName, startTime, endTime, price];
 }
 
+class BookingUserEntity extends Equatable {
+  const BookingUserEntity({
+    required this.id,
+    required this.fullName,
+    required this.mobileNumber,
+    required this.email,
+  });
+
+  final String id;
+  final String fullName;
+  final String mobileNumber;
+  final String email;
+
+  @override
+  List<Object?> get props => <Object?>[id, fullName, mobileNumber, email];
+}
+
 class OwnerBookingDetailsEntity extends Equatable {
   const OwnerBookingDetailsEntity({
     required this.id,
@@ -98,6 +115,7 @@ class OwnerBookingDetailsEntity extends Equatable {
     required this.lockExpiresAt,
     required this.createdAt,
     required this.slots,
+    this.user,
   });
 
   final String id;
@@ -115,6 +133,7 @@ class OwnerBookingDetailsEntity extends Equatable {
   final String lockExpiresAt;
   final String createdAt;
   final List<BookingSlotEntity> slots;
+  final BookingUserEntity? user;
 
   @override
   List<Object?> get props => <Object?>[
@@ -133,5 +152,6 @@ class OwnerBookingDetailsEntity extends Equatable {
         lockExpiresAt,
         createdAt,
         slots,
+        user,
       ];
 }

@@ -337,8 +337,16 @@ class AppRouter {
           final UserVenueEntity venue = extra['venue'] as UserVenueEntity;
           final DateTime selectedDate = extra['selectedDate'] as DateTime;
           final String selectedTimeSlot = extra['selectedTimeSlot'] as String;
-          return BlocProvider<BookingBloc>(
-            create: (BuildContext context) => sl<BookingBloc>(),
+          return MultiBlocProvider(
+            providers: <SingleChildWidget>[
+              BlocProvider<BookingBloc>(
+                create: (BuildContext context) => sl<BookingBloc>(),
+              ),
+              BlocProvider<UserProfileBloc>(
+                create: (BuildContext context) =>
+                    sl<UserProfileBloc>()..add(const UserProfileEvent.getUserProfile()),
+              ),
+            ],
             child: UserBookingDetailsPolicyScreen(
               venue: venue,
               selectedDate: selectedDate,

@@ -15,6 +15,7 @@ import '../../../../core/widgets/app_text.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../booking/domain/entity/booking_entities.dart';
 import '../../../booking/presentation/bloc/booking_bloc.dart';
+import '../../../user_profile/presentation/bloc/user_profile_bloc.dart';
 import '../../domain/entity/user_venue_entity.dart';
 
 class UserVenueDetailsScreen extends StatefulWidget {
@@ -451,6 +452,7 @@ class _UserBookingDetailsPolicyScreenState
   late final Razorpay _razorpay;
   String _bookingId = '';
   bool _isLoading = false;
+  bool _waitingForProfileUpdate = false;
 
   @override
   void initState() {
@@ -545,7 +547,44 @@ class _UserBookingDetailsPolicyScreenState
     final double serviceFee = baseAmount * 0.02;
     final double totalAmount = baseAmount + cleaning + security + serviceFee;
 
-    return BlocConsumer<BookingBloc, BookingState>(
+    return BlocListener<UserProfileBloc, UserProfileState>(
+      listener: (BuildContext context, UserProfileState profileState) {
+        if (profileState.status == UserProfileStatus.success &&
+            profileState.profile != null) {
+          final String? name = profileState.profile!.fullName;
+          final String? email = profileState.profile!.email;
+
+          if (_waitingForProfileUpdate &&
+              name != null &&
+              name.trim().isNotEmpty &&
+              email != null &&
+              email.trim().isNotEmpty) {
+            setState(() {
+              _waitingForProfileUpdate = false;
+              _isLoading = false;
+            });
+            _proceedToCheckoutDirectly();
+          }
+        } else if (profileState.status == UserProfileStatus.failure &&
+            _waitingForProfileUpdate) {
+          setState(() {
+            _waitingForProfileUpdate = false;
+            _isLoading = false;
+          });
+          SnackbarCommand.show(
+            type: ToastType.error,
+            title: 'Profile Update Failed',
+            description:
+                profileState.errorMessage ?? 'Failed to update profile info',
+          );
+        } else if (profileState.status == UserProfileStatus.loading &&
+            _waitingForProfileUpdate) {
+          setState(() {
+            _isLoading = true;
+          });
+        }
+      },
+      child: BlocConsumer<BookingBloc, BookingState>(
       listener: (BuildContext context, BookingState state) {
         state.maybeWhen(
           loading: () {
@@ -780,25 +819,7 @@ class _UserBookingDetailsPolicyScreenState
                         AppButton(
                           label: 'Proceed to Secure Checkout',
                           onPressed: _agreedToPolicies
-                              ? () {
-                                  final int
-                                  selectedIndex = widget.venue.slots.indexWhere(
-                                    (UserVenueSlotEntity slot) =>
-                                        '${slot.slotName} (${slot.startTime.to12HourTime} - ${slot.endTime.to12HourTime})' ==
-                                        widget.selectedTimeSlot,
-                                  );
-                                  final String slotId = selectedIndex != -1
-                                      ? widget.venue.slots[selectedIndex].id
-                                      : widget.venue.slots.first.id;
-
-                                  context.read<BookingBloc>().add(
-                                    BookingEvent.checkout(
-                                      venueId: widget.venue.id,
-                                      bookingDate: widget.selectedDate.yyyyMmDd,
-                                      slotIds: <String>[slotId],
-                                    ),
-                                  );
-                                }
+                              ? _onProceedToSecureCheckoutPressed
                               : null,
                         ),
 
@@ -812,6 +833,158 @@ class _UserBookingDetailsPolicyScreenState
                 const ModalBarrier(dismissible: false, color: Colors.black26),
               if (_isLoading) const Center(child: CircularProgressIndicator()),
             ],
+          ),
+        );
+      },
+    ),
+  );
+}
+
+  void _proceedToCheckoutDirectly() {
+    final int selectedIndex = widget.venue.slots.indexWhere(
+      (UserVenueSlotEntity slot) =>
+          '${slot.slotName} (${slot.startTime.to12HourTime} - ${slot.endTime.to12HourTime})' ==
+          widget.selectedTimeSlot,
+    );
+    final String slotId = selectedIndex != -1
+        ? widget.venue.slots[selectedIndex].id
+        : widget.venue.slots.first.id;
+
+    context.read<BookingBloc>().add(
+      BookingEvent.checkout(
+        venueId: widget.venue.id,
+        bookingDate: widget.selectedDate.yyyyMmDd,
+        slotIds: <String>[slotId],
+      ),
+    );
+  }
+
+  void _onProceedToSecureCheckoutPressed() {
+    final UserProfileState profileState = context.read<UserProfileBloc>().state;
+    final String? name = profileState.profile?.fullName;
+    final String? email = profileState.profile?.email;
+
+    if (name != null &&
+        name.trim().isNotEmpty &&
+        email != null &&
+        email.trim().isNotEmpty) {
+      _proceedToCheckoutDirectly();
+    } else {
+      _showCompleteProfileBottomSheet(
+        initialName: name ?? '',
+        initialEmail: email ?? '',
+      );
+    }
+  }
+
+  void _showCompleteProfileBottomSheet({
+    required String initialName,
+    required String initialEmail,
+  }) {
+    final TextEditingController nameController =
+        TextEditingController(text: initialName);
+    final TextEditingController emailController =
+        TextEditingController(text: initialEmail);
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            left: 24,
+            right: 24,
+            top: 24,
+          ),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    const AppText(
+                      'Complete Profile',
+                      variant: TextVariant.headingMedium,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                AppText(
+                  'Please update your name and email to proceed with secure checkout.',
+                  variant: TextVariant.bodyMedium,
+                  color: AppColors.onSurfaceVariant,
+                ),
+                const SizedBox(height: 24),
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Full Name',
+                    hintText: 'Enter your full name',
+                    prefixIcon: Icon(Icons.person_outline),
+                  ),
+                  validator: (String? val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Full name is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: emailController,
+                  decoration: const InputDecoration(
+                    labelText: 'Email Address',
+                    hintText: 'Enter your email address',
+                    prefixIcon: Icon(Icons.email_outlined),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (String? val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'Email is required';
+                    }
+                    final RegExp emailRegex = RegExp(
+                      r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
+                    );
+                    if (!emailRegex.hasMatch(val.trim())) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 32),
+                AppButton(
+                  label: 'Save & Proceed',
+                  onPressed: () {
+                    if (formKey.currentState!.validate()) {
+                      Navigator.pop(context);
+                      setState(() {
+                        _waitingForProfileUpdate = true;
+                      });
+                      this.context.read<UserProfileBloc>().add(
+                            UserProfileEvent.updateUserProfile(
+                              fullName: nameController.text.trim(),
+                              email: emailController.text.trim(),
+                            ),
+                          );
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },

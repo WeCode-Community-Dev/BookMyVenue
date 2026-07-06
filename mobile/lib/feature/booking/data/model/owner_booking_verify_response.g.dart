@@ -26,6 +26,9 @@ _OwnerBookingVerifyResponse _$OwnerBookingVerifyResponseFromJson(
   slots: (json['slots'] as List<dynamic>)
       .map((e) => BookingVerifySlotResponse.fromJson(e as Map<String, dynamic>))
       .toList(),
+  user: json['user'] == null
+      ? null
+      : OwnerBookingUserResponse.fromJson(json['user'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$OwnerBookingVerifyResponseToJson(
@@ -46,4 +49,23 @@ Map<String, dynamic> _$OwnerBookingVerifyResponseToJson(
   'lock_expires_at': instance.lockExpiresAt,
   'created_at': instance.createdAt,
   'slots': instance.slots,
+  'user': instance.user,
+};
+
+_OwnerBookingUserResponse _$OwnerBookingUserResponseFromJson(
+  Map<String, dynamic> json,
+) => _OwnerBookingUserResponse(
+  id: json['id'] as String,
+  fullName: json['full_name'] as String,
+  mobileNumber: json['mobile_number'] as String,
+  email: json['email'] as String,
+);
+
+Map<String, dynamic> _$OwnerBookingUserResponseToJson(
+  _OwnerBookingUserResponse instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'full_name': instance.fullName,
+  'mobile_number': instance.mobileNumber,
+  'email': instance.email,
 };
