@@ -58,10 +58,22 @@ def _cover_photos(db: Session, venue_ids: list) -> dict:
     return {p.venue_id: p.image_url for p in photos}
 
 
-def _to_results(venues: list[Venue], cover_photos: dict) -> list[SearchResult]:
+def _match_source(fts_matched: bool, vector_matched: bool) -> str:
+    if fts_matched and vector_matched:
+        return "hybrid"
+    if vector_matched:
+        return "semantic"
+    return "keyword"
+
+
+def _to_results(
+    venues: list[Venue], cover_photos: dict, scores: dict | None = None
+) -> list[SearchResult]:
+    scores = scores or {}
     results = []
     for v in venues:
         starting_price = v.starting_price_paise if v.pricing_mode in ('flat', 'mixed') else v.hourly_rate_paise
+        row_scores = scores.get(v.id)
         results.append(SearchResult(
             id=v.id,
             name=v.name,
@@ -73,6 +85,15 @@ def _to_results(venues: list[Venue], cover_photos: dict) -> list[SearchResult]:
             display_price_min_paise=v.display_price_min_paise,
             display_price_max_paise=v.display_price_max_paise,
             cover_photo_url=cover_photos.get(v.id),
+            match_source=(
+                _match_source(row_scores["fts_matched"], row_scores["vector_matched"])
+                if row_scores
+                else None
+            ),
+            fts_score=row_scores["fts_score"] if row_scores else None,
+            vector_score=row_scores["vector_score"] if row_scores else None,
+            category_boost=row_scores["boost"] if row_scores else None,
+            match_score=row_scores["hybrid_score"] if row_scores else None,
         ))
     return results
 
@@ -433,6 +454,13 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
                     1 - (v.embedding <=> CAST(:qvec AS vector)),
                     0
                 ) AS vector_score,
+                (
+                    v.search_vector @@ plainto_tsquery('english', :q)
+                ) AS fts_matched,
+                (
+                    v.embedding IS NOT NULL
+                    AND (1 - (v.embedding <=> CAST(:qvec AS vector))) >= :min_vector_score
+                ) AS vector_matched,
                 CASE
                     WHEN vc.slug = ANY(:wedding_slugs) THEN :wedding_boost
                     WHEN vc.slug = ANY(:event_slugs) THEN :event_boost
@@ -449,6 +477,8 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
             category_slug,
             fts_score,
             vector_score,
+            fts_matched,
+            vector_matched,
             boost,
             (:fts_weight * fts_score + :vector_weight * vector_score) * boost AS hybrid_score,
             COUNT(*) OVER() AS total_count
@@ -468,6 +498,17 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
 
     total = rows[0].total_count
     venue_ids: list[UUID] = [row.id for row in rows]
+    scores = {
+        row.id: {
+            "fts_score": row.fts_score,
+            "vector_score": row.vector_score,
+            "fts_matched": row.fts_matched,
+            "vector_matched": row.vector_matched,
+            "boost": row.boost,
+            "hybrid_score": row.hybrid_score,
+        }
+        for row in rows
+    }
 
     # Fetch full venue objects with relationships
     venues_by_id = {
@@ -484,7 +525,7 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
     covers = _cover_photos(db, venue_ids)
 
     return Page(
-        items=_to_results(venues, covers),
+        items=_to_results(venues, covers, scores),
         total=total,
         page=params.page,
         page_size=params.page_size,
