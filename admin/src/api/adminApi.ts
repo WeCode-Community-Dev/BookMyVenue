@@ -479,7 +479,7 @@ const normalizeBookingStatus = (status: string, eventDate?: string): Booking['st
   if (s === 'cancelled' || s === 'refunded') return 'cancelled';
   if (s === 'failed' || s === 'noshow') return 'failed';
   if (s === 'completed' || s === 'done' || s === 'finished') return 'completed';
-  if (s === 'paid' || s === 'payed') {
+  if (s === 'paid' || s === 'payed' || s === 'confirmed') {
     if (eventDate) {
       const today = new Date().toISOString().slice(0, 10);
       return eventDate >= today ? 'upcoming' : 'completed';
@@ -492,7 +492,17 @@ const normalizeBookingStatus = (status: string, eventDate?: string): Booking['st
 const normalizeBookingPaymentStatus = (status: string, bookingStatus: string): Booking['paymentStatus'] => {
   const s = status?.toLowerCase() || '';
   const bs = bookingStatus?.toLowerCase() || '';
-  if (s === 'paid' || s === 'payed' || s === 'completed' || bs === 'completed' || bs === 'paid' || bs === 'payed') return 'paid';
+  if (
+    s === 'paid' ||
+    s === 'payed' ||
+    s === 'confirmed' ||
+    s === 'completed' ||
+    bs === 'completed' ||
+    bs === 'paid' ||
+    bs === 'payed' ||
+    bs === 'confirmed'
+  )
+    return 'paid';
   if (s === 'refunded' || bs === 'cancelled') return 'refunded';
   if (s === 'failed' || bs === 'failed') return 'failed';
   return 'pending';
@@ -501,7 +511,7 @@ const normalizeBookingPaymentStatus = (status: string, bookingStatus: string): B
 const normalizeBooking = (entity: ApiEntity, index: number, commissionPercentage = 10): Booking => {
   const id = readString(entity, ['id'], `BKG-${String(index + 1).padStart(3, '0')}`);
   const amount = readNumber(entity, ['amount']);
-  const commissionAmount = Number((amount * (commissionPercentage / 100)).toFixed(2));
+  const commissionAmount = readNumber(entity, ['commission_amount', 'commissionAmount'], Number((amount * (commissionPercentage / 100)).toFixed(2)));
   const bookingDateStr = readString(entity, ['created_at', 'createdAt', 'bookingDate', 'booking_date']);
   const eventDateStr = readString(entity, ['booking_date', 'bookingDate', 'eventDate', 'event_date']);
   const statusStr = readString(entity, ['status']);
@@ -534,7 +544,11 @@ const normalizeBooking = (entity: ApiEntity, index: number, commissionPercentage
     amount,
     commissionAmount,
     notes: readString(entity, ['notes', 'special_instructions', 'remarks']),
-    slots: slots.length > 0 ? slots : undefined
+    slots: slots.length > 0 ? slots : undefined,
+    venueAmount: readNumber(entity, ['venue_amount', 'venueAmount']),
+    cleaningFee: readNumber(entity, ['cleaning_fee', 'cleaningFee']),
+    securityAmount: readNumber(entity, ['security_amount', 'securityAmount']),
+    commissionPercent: readNumber(entity, ['commission_percent', 'commissionPercent'])
   };
 };
 

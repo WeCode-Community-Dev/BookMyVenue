@@ -105,6 +105,10 @@ export interface Booking {
     end_time: string;
     price: number;
   }[];
+  venueAmount?: number;
+  cleaningFee?: number;
+  securityAmount?: number;
+  commissionPercent?: number;
 }
 
 export interface ComplaintReport {

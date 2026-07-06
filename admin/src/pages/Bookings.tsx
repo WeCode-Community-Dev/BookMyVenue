@@ -354,17 +354,41 @@ export const BookingsView: React.FC<BookingsViewProps> = ({
             <div className="space-y-2 border-t border-slate-900 pt-4">
               <h3 className="font-bold text-white text-sm">Financial Split Audit</h3>
               <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-900 text-xs space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Event Booking Value:</span>
-                  <span className="text-slate-200 font-bold">{formatCurrency(viewingBooking.amount)}</span>
+                {viewingBooking.venueAmount !== undefined && viewingBooking.venueAmount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Venue Rent:</span>
+                    <span className="text-slate-200 font-semibold">{formatCurrency(viewingBooking.venueAmount)}</span>
+                  </div>
+                )}
+                {viewingBooking.cleaningFee !== undefined && viewingBooking.cleaningFee > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Cleaning & Setup Fee:</span>
+                    <span className="text-slate-200 font-semibold">{formatCurrency(viewingBooking.cleaningFee)}</span>
+                  </div>
+                )}
+                {viewingBooking.securityAmount !== undefined && viewingBooking.securityAmount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Security Deposit (Refundable):</span>
+                    <span className="text-slate-200 font-semibold">{formatCurrency(viewingBooking.securityAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t border-slate-900/40 pt-2">
+                  <span className="text-slate-400">Total Event Value Paid:</span>
+                  <span className="text-white font-bold">{formatCurrency(viewingBooking.amount)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Platform Commission ({settings.commissionPercentage}%):</span>
-                  <span className="text-primary font-bold">+{formatCurrency(viewingBooking.commissionAmount)}</span>
+                <div className="flex justify-between border-b border-slate-900/40 pb-2">
+                  <span className="text-slate-400">Deduction: Platform Commission ({viewingBooking.commissionPercent ?? settings.commissionPercentage}%):</span>
+                  <span className="text-red-400 font-bold">-{formatCurrency(viewingBooking.commissionAmount)}</span>
                 </div>
-                <div className="flex justify-between border-t border-slate-900/60 pt-2 font-bold text-sm">
+                <div className="flex justify-between pt-1 font-bold text-sm">
                   <span className="text-white">Venue Owner Payout Share:</span>
-                  <span className="text-emerald-400">{formatCurrency(viewingBooking.amount - viewingBooking.commissionAmount)}</span>
+                  <span className="text-emerald-400">
+                    {formatCurrency(
+                      viewingBooking.venueAmount !== undefined && viewingBooking.cleaningFee !== undefined
+                        ? (viewingBooking.venueAmount + viewingBooking.cleaningFee - viewingBooking.commissionAmount)
+                        : (viewingBooking.amount - viewingBooking.commissionAmount)
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
