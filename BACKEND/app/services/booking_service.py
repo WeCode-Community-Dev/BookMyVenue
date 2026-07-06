@@ -81,13 +81,42 @@ def get_all_booking_across_venues(
 )  -> List[Booking]:
     try:
         
-        venue_ids = [venue.id for venue in db.query(Venue).filter(Venue.user_id == user_id).all()]
+        venue_ids = [
+            venue.id
+            for venue in db.query(Venue.id)
+            .filter(Venue.user_id == user_id)
+            .all()
+        ]
 
-        # Apply pagination
-        query = db.query(Booking).filter(Booking.venue_id.in_(venue_ids)).offset((page_no - 1) * limit).limit(limit)
+        if not venue_ids:
+            return []
 
-        bookings = query.all()
-        return bookings
+
+        bookings = (
+            db.query(Booking)
+            .options(
+                joinedload(Booking.venue).joinedload(Venue.venue_availability)
+            )
+            .filter(Booking.venue_id.in_(venue_ids))
+            .offset((page_no - 1) * limit)
+            .limit(limit)
+            .all()
+        )
+
+        result = []
+        
+        for booking in bookings:
+            venue_price = None
+
+            if booking.venue and booking.venue.venue_availability:
+                venue_price = booking.venue.venue_availability.venue_price
+
+            result.append({
+                "booking": booking,
+                "venue_price": venue_price
+            })
+
+        return result
 
     except Exception as e:
         raise HTTPException(
