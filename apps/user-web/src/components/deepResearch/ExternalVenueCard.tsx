@@ -33,7 +33,7 @@ export function ExternalVenueCard({ lead }: Props) {
       )
       setStatus('requested')
       setIsModalOpen(false)
-      navigate('/bookings', { state: { tab: 'reservations' } })
+      navigate('/my-bookings', { state: { tab: 'reservations' } })
     } catch (err) {
       console.error(err)
       setStatus('error')
