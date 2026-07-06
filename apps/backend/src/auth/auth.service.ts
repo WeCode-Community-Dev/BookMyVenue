@@ -1,11 +1,12 @@
+import { AuthProvider, User } from '@prisma/client';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
+import { GoogleUser } from 'src/types/google-auth.request.interface';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from 'src/providers/mail/mail.service';
 import { PrismaService } from 'src/providers/prisma/prisma.service';
 import { RedisService } from 'src/providers/redis/redis.service';
 import { RequestOtpDto } from './dto/request-otp.dto';
-import { User } from '@prisma/client';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 @Injectable()
@@ -91,6 +92,7 @@ export class AuthService {
         data: {
           email,
           name,
+          authProvider: AuthProvider.EMAIL,
         },
       });
     }
@@ -110,5 +112,53 @@ export class AuthService {
 
   getMyProfile(user: User) {
     return user;
+  }
+
+  async googleLogin(googleUser: GoogleUser) {
+    let user = await this.prismaService.user.findUnique({
+      where: {
+        email: googleUser.email,
+      },
+    });
+
+    // First time Google login
+    if (!user) {
+      user = await this.prismaService.user.create({
+        data: {
+          email: googleUser.email,
+          name: `${googleUser.firstName} ${googleUser.lastName}`,
+          googleId: googleUser.googleId,
+          avatarUrl: googleUser.picture,
+          authProvider: AuthProvider.GOOGLE,
+          isVerified: true,
+        },
+      });
+    }
+
+    // User already exists (possibly created using OTP)
+    else if (!user.googleId) {
+      user = await this.prismaService.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          googleId: googleUser.googleId,
+          avatarUrl: googleUser.picture,
+          isVerified: true,
+        },
+      });
+    }
+
+    const token = await this.jwtService.signAsync({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    return {
+      message: 'Google login successful.',
+      token,
+      user,
+    };
   }
 }

@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Req,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -11,6 +12,8 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { AuthRequest } from 'src/types/auth.request.interface';
+import type { GoogleAuthRequest } from 'src/types/google-auth.request.interface';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -30,5 +33,17 @@ export class AuthController {
   @Get('myprofile')
   getMyProfile(@Request() req: AuthRequest) {
     return this.authService.getMyProfile(req.user);
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleLogin() {
+    // Passport automatically redirects to Google.
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  googleCallback(@Req() req: GoogleAuthRequest) {
+    return this.authService.googleLogin(req.user);
   }
 }
