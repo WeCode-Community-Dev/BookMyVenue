@@ -1,4 +1,5 @@
 import Venue from '@/models/venue.model';
+import User from '@/models/user.model';
 import { VenueDocument } from '@/types/venue.types';
 import { CreateVenueDTO } from '@/dto/venue/create-venue.dto';
 import { UpdateVenueDTO } from '@/dto/venue/update-venue.dto';
@@ -104,9 +105,12 @@ export const findAllVenues = async (query: GetAdminVenuesQueryDTO) => {
   }
 
   if (search) {
+    const matchingUsers = await User.find({ fullName: { $regex: search, $options: 'i' } }).select('_id');
+
     filter.$or = [
       { name: { $regex: search, $options: 'i' } },
       { description: { $regex: search, $options: 'i' } },
+      { ownerId: { $in: matchingUsers } },
     ];
   }
 
@@ -120,13 +124,7 @@ export const findAllVenues = async (query: GetAdminVenuesQueryDTO) => {
     Venue.find(filter)
       .populate('categoryId', 'name')
       .populate('availability')
-      .populate({
-        path: 'ownerId', // Go to the Owner profile
-        populate: {
-          path: 'userId', // Inside the Owner profile, go to the User profile!
-          select: 'fullName email',
-        },
-      })
+      .populate('ownerId', 'fullName email avatar')
       .sort(sortOption)
       .skip(skip)
       .limit(limit),
@@ -148,13 +146,7 @@ export const findVenueByIdWithOwner = async (id: string): Promise<VenueDocument 
   return await Venue.findById(id)
     .populate('categoryId', 'name')
     .populate('availability')
-    .populate({
-      path: 'ownerId',
-      populate: {
-        path: 'userId',
-        select: 'fullName email avatar',
-      },
-    });
+    .populate('ownerId', 'fullName email avatar');
 };
 
 export const approveVenue = async (id: string): Promise<VenueDocument | null> => {
@@ -199,6 +191,7 @@ export const findPublicVenues = async (query: GetPublicVenuesQueryDTO) => {
     verificationStatus: 'approved',
     isActive: true,
     isDeleted: { $ne: true },
+    isAvailabilityConfigured:true,
   };
 
   if (category) {
@@ -277,6 +270,7 @@ export const findPublicVenueById = async (id: string): Promise<VenueDocument | n
     verificationStatus: 'approved',
     isActive: true,
     isDeleted: { $ne: true },
+    isAvailabilityConfigured:true,
   })
     .populate('categoryId', 'name')
     .populate('availability');

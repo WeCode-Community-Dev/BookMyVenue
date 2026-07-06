@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Building2, MapPin, Users, IndianRupee } from 'lucide-react';
+import { Building2, MapPin, Users, IndianRupee, Clock } from 'lucide-react';
 import type { Venue } from '@/features/venues/types/venues.types';
 
 interface VenueCardProps {
@@ -8,7 +8,6 @@ interface VenueCardProps {
 
 export default function VenueCard({ venue }: VenueCardProps) {
   const navigate = useNavigate();
-
   const categoryName =
     venue.categoryId && typeof venue.categoryId === 'object'
       ? venue.categoryId.name
@@ -52,17 +51,34 @@ export default function VenueCard({ venue }: VenueCardProps) {
             </span>
           </div>
         </div>
-
         {/* Stats */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <div className="flex items-center gap-1.5 text-xs text-foreground">
-            <Users size={13} className="text-muted" />
-            <span className="font-semibold">{venue.capacity} guests</span>
-          </div>
-          <div className="flex items-center gap-0.5 text-sm font-bold text-primary">
-            <IndianRupee size={14} />
-          </div>
-        </div>
+<div className="border-t border-border pt-4 space-y-3">
+  {/* Capacity */}
+  <div className="flex items-center gap-2 text-sm">
+    <Users size={16} className="text-muted shrink-0" />
+    <span className="font-medium">
+      {venue.capacity.toLocaleString()} Guests
+    </span>
+  </div>
+
+  {/* Price & Time */}
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2 text-primary">
+      <IndianRupee size={17} />
+      <span className="text-lg font-bold">
+        {venue.availability.pricePerHour}
+      </span>
+      <span className="text-sm text-muted">/ Hour</span>
+    </div>
+
+    <div className="flex items-center gap-2 text-sm text-muted">
+      <Clock size={15} />
+      <span>
+        {venue.availability.openingTime} - {venue.availability.closingTime}
+      </span>
+    </div>
+  </div>
+</div>
       </div>
     </div>
   );

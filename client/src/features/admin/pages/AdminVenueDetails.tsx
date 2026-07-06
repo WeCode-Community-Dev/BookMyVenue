@@ -170,14 +170,15 @@ const AdminVenueDetails = () => {
     );
   }
 
-  const categoryName =
-    venue.categoryId && typeof venue.categoryId === 'object'
-      ? venue.categoryId.name
-      : venue.categoryId || 'Uncategorized';
+    const categoryName =
+    typeof venue.categoryId === 'string'
+      ? venue.categoryId
+      : venue.categoryId?.name || 'Uncategorized';
   const statusClass = statusStyles[venue.verificationStatus] || statusStyles.pending;
-
   // Owner info from populated field
   const ownerInfo = venue.ownerId as any;
+  console.log(venue)
+
   const ownerName = ownerInfo && typeof ownerInfo === 'object' ? ownerInfo.fullName : 'Unknown';
   const ownerEmail = ownerInfo && typeof ownerInfo === 'object' ? ownerInfo.email : 'N/A';
   const ownerAvatar = ownerInfo && typeof ownerInfo === 'object' ? ownerInfo.avatar : null;

@@ -3,7 +3,6 @@ import {
   User as UserIcon,
   Calendar,
   Heart,
-  Settings,
   LogOut,
   Building,
   Wallet,
@@ -89,14 +88,7 @@ const ProfileList = ({ onClose }: ProfileListProps) => {
           <Heart size={14} className="text-foreground/50" />
           Favorites
         </Link>
-        <Link
-          to="/settings"
-          onClick={onClose}
-          className="flex items-center gap-2.5 px-4 py-2 text-[12px] text-foreground/80 hover:bg-muted/30 hover:text-primary transition-all duration-150"
-        >
-          <Settings size={14} className="text-foreground/50" />
-          Settings
-        </Link>
+
       </div>
       <div className="border-t border-border pt-1 mt-1">
         <button

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminVenuesApi } from '../services/admin-venues.api';
+import { publicVenuesApi } from '@/features/public/services/public-venues.api';
+import type { Category } from '@/features/categories/types';
 import { useAsyncFetch } from '@/shared/hooks/useAsyncFetch';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import Pagination, { type PaginationInfo } from '@/shared/components/ui/Pagination';
@@ -36,6 +38,8 @@ const AdminVenuesList = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>(
     'all'
   );
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [categories, setCategories] = useState<Category[]>([]);
   const [sortBy, setSortBy] = useState<'asc' | 'desc'>('desc');
 
   // Fetch hooks
@@ -64,17 +68,22 @@ const AdminVenuesList = () => {
         search: debouncedSearch,
         status: statusFilter,
         sort: sortBy,
+        category: categoryFilter !== 'all' ? categoryFilter : undefined,
       })
     );
   };
 
   useEffect(() => {
+    publicVenuesApi.getCategoreis().then((res) => setCategories(res?.data?.categories || [])).catch(console.error);
+  }, []);
+
+  useEffect(() => {
     loadVenues();
-  }, [page, debouncedSearch, statusFilter, sortBy]);
+  }, [page, debouncedSearch, statusFilter, sortBy, categoryFilter]);
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter, sortBy]);
+  }, [debouncedSearch, statusFilter, sortBy, categoryFilter]);
 
   // Stats (computed from current page data)
   const pendingCount = venues.filter((v) => v.verificationStatus === 'pending').length;
@@ -181,6 +190,25 @@ const AdminVenuesList = () => {
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
+            </select>
+          </div>
+
+          <div className="relative">
+            <SlidersHorizontal
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
+            />
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="appearance-none rounded-xl border border-border bg-background pl-9 pr-8 py-2.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary cursor-pointer transition-all max-w-[150px] truncate"
+            >
+              <option value="all">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat._id || cat.id} value={cat._id || cat.id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
 

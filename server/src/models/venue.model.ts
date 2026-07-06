@@ -4,7 +4,7 @@ const venueSchema = new mongoose.Schema(
   {
     ownerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Owner',
+      ref: 'User',
       required: true,
       index: true,
     },

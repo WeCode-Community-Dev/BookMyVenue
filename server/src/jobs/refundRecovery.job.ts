@@ -19,7 +19,7 @@ export const startRefundRecoveryJob = () => {
       const stuckBookings = await Booking.find({
         bookingStatus: BookingStatus.CANCELLED,
         cancellationType: CancellationType.USER,
-        refundStatus: { $in: [RefundStatus.PENDING, RefundStatus.FAILED] },
+        refundStatus: { $in: [RefundStatus.FAILED] },
         refundAmount: { $gt: 0 },
       }).select('_id refundStatus refundAmount user');
 
