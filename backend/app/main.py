@@ -18,6 +18,32 @@ from app.db.database import Base, engine, SessionLocal
 
 from app.seeds.amenity_seed import seed_amenities
 
+from app.db.database import Base, engine, SessionLocal
+
+# Models
+from app.models import (
+    user,
+    venue,
+    amenity,
+    venue_amenity,
+    owner_profile,
+    booking,
+    payment,
+)
+
+# Routers
+from app.routers import (
+    auth,
+    venue,
+    amenity,
+    venue_amenity,
+    owner_profile,
+    bookings,
+    payments,
+    admin,
+)
+
+from app.seeds.amenity_seed import seed_amenities
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("bookmyvenue")
@@ -30,6 +56,15 @@ async def lifespan(app: FastAPI):
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
         logger.info("Database is connected")
+
+        # Seed initial amenities
+        db = SessionLocal()
+        try:
+            seed_amenities(db)
+            logger.info("Amenities seeded successfully")
+        finally:
+            db.close()
+
     except Exception as exc:
         logger.error("Database connection failed: %s", exc)
         raise
@@ -58,7 +93,7 @@ app = FastAPI(
 # Defining which origins are allowed to talk to this backend
 origins = [
     "http://localhost:5173",
-    "http://localhost:3000", 
+    "http://localhost:3000",
 ]
 
 app.add_middleware(

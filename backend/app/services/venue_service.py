@@ -89,7 +89,8 @@ def get_venue_by_id(db: Session, venue_id: int):
 def update_venue(
     db: Session,
     venue_id: int,
-    venue_data
+    venue_data,
+    owner_id: int
 ):
     venue = db.query(Venue).filter(
         Venue.id == venue_id
@@ -99,6 +100,13 @@ def update_venue(
         raise HTTPException(
             status_code=404,
             detail="Venue not found"
+        )
+    
+    # Check if the current user owns this venue
+    if venue.owner_id != owner_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You don't have permission to update this venue"
         )
 
     venue.name = venue_data.name
@@ -114,7 +122,41 @@ def update_venue(
 
     return venue
 
-def delete_venue(db: Session, venue_id: int):
+def delete_venue(db: Session, venue_id: int, owner_id: int):
+    venue = db.query(Venue).filter(
+        Venue.id == venue_id
+    ).first()
+
+    if not venue:
+        raise HTTPException(
+            status_code=404,
+            detail="Venue not found"
+        )
+    
+    # Check if the current user owns this venue
+    if venue.owner_id != owner_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You don't have permission to delete this venue"
+        )
+
+    db.delete(venue)
+    db.commit()
+
+    return {"message": "Venue deleted successfully"}
+
+def get_my_venues(
+    db: Session,
+    owner_id: int
+):
+    return db.query(Venue).filter(
+        Venue.owner_id == owner_id
+    ).all()    
+
+def approve_venue(
+    db: Session,
+    venue_id: int
+):
     venue = db.query(Venue).filter(
         Venue.id == venue_id
     ).first()
@@ -125,8 +167,10 @@ def delete_venue(db: Session, venue_id: int):
             detail="Venue not found"
         )
 
-    db.delete(venue)
+    venue.approval_status = "approved"
+
     db.commit()
+    db.refresh(venue)
 
     return venue
 

@@ -1,20 +1,35 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from app.db.deps import get_db
+
 from app.core.security import get_current_user
+from app.db.deps import get_db
 from app.models.user import User
 from app.schemas.booking import BookingCreate, BookingOut, BookingCancelRequest, PaginatedBookingsOut
 from app.services import booking_service 
 
-router = APIRouter(prefix="/bookings", tags=["Bookings"]) 
+router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
-@router.post("", response_model=BookingOut)
+
+@router.post("", response_model=BookingOut, status_code=201)
 def create_booking(
     data: BookingCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return booking_service.create_booking(db, current_user, data) 
+    return booking_service.create_booking(db, current_user, data)
+
+
+@router.get("/my-bookings", response_model=PaginatedBookings)
+def my_bookings(
+    status: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return booking_service.get_my_bookings(
+        db, current_user, status_filter=status, page=page, limit=limit
+    )
 
    
 @router.get("/my-bookings", response_model=PaginatedBookingsOut)

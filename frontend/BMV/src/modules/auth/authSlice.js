@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { authService } from "./services/authService";
-import { isAuthenticated } from "../../core/auth/tokenStorage";
+import { clearTokens, isAuthenticated } from "../../core/auth/tokenStorage";
 
 export const registerUserAsync = createAsyncThunk(
   "auth/register",
@@ -131,9 +131,10 @@ const authSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(loginUserAsync.fulfilled, (state) => {
+      .addCase(loginUserAsync.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = true;
+        state.user = action.payload.user;
       })
       .addCase(loginUserAsync.rejected, (state, action) => {
         state.isLoading = false;
@@ -164,6 +165,31 @@ const authSlice = createSlice({
       .addCase(googleAuthAsync.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+      })
+
+      .addCase(adminLoginAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(adminLoginAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      })
+      .addCase(adminLoginAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.error = action.payload;
+      })
+
+      .addCase(fetchMeAsync.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.isAuthenticated = true;
+      })
+      .addCase(fetchMeAsync.rejected, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
       });
   },
 });

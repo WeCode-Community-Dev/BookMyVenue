@@ -88,6 +88,11 @@ export const authService = {
     clearTokens();
   },
 
+  async getMe() {
+    const res = await client.get("/auth/me");
+    return res.data;
+  },
+
   // async refreshToken() {
   //   try {
   //     const refresh_token = getRefreshToken();
