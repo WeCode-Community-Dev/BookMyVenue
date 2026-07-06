@@ -9,6 +9,7 @@ from app.modules.deep_research.schemas import (
     DeepResearchSearchRequest, DeepResearchSearchResponse,
     TriggerExternalDiscoveryRequest, ExternalDiscoveryJobResponse,
     ExternalDiscoveryJobResult, ReserveLeadRequest, ReserveLeadResponse,
+    UserReservationResponse,
 )
 
 router = APIRouter()
@@ -47,5 +48,12 @@ def reserve(
     lead_id: UUID, body: ReserveLeadRequest,
     db: Session = Depends(get_db), auth: AuthContext = Depends(require_auth),
 ):
-    reservation = service.reserve_lead(db, lead_id, auth.user_id, body.event_date, body.notes)
+    reservation = service.reserve_lead(db, lead_id, auth.user_id, body.event_date, body.guest_count, body.phone, body.notes)
     return ReserveLeadResponse(reservation_id=reservation.id, status=reservation.status.value)
+
+@router.get("/reservations", response_model=list[UserReservationResponse])
+def get_reservations(
+    db: Session = Depends(get_db), auth: AuthContext = Depends(require_auth)
+):
+    return service.get_user_reservations(db, auth.user_id)
+

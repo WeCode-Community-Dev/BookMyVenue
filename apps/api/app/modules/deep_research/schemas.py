@@ -1,5 +1,6 @@
 from typing import Optional, Literal
 from uuid import UUID
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -45,6 +46,8 @@ class ExternalLeadPublic(BaseModel):
     id: UUID
     name: str
     city: Optional[str] = None
+    formatted_address: Optional[str] = None
+    cover_photo_url: Optional[str] = None
     category_guess: Optional[str] = None
     source: str
     disclaimer: str = (
@@ -62,9 +65,22 @@ class ExternalDiscoveryJobResult(BaseModel):
 
 class ReserveLeadRequest(BaseModel):
     event_date: Optional[str] = None
+    guest_count: Optional[int] = None
+    phone: Optional[str] = None
     notes: Optional[str] = None
 
 
 class ReserveLeadResponse(BaseModel):
     reservation_id: UUID
     status: str
+
+class UserReservationResponse(BaseModel):
+    id: UUID
+    lead: ExternalLeadPublic
+    status: str
+    event_date: Optional[str] = None
+    guest_count: Optional[int] = None
+    phone: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime
+

@@ -7,8 +7,31 @@ logger = logging.getLogger(__name__)
 
 PLACES_TEXT_SEARCH_URL = "https://places.googleapis.com/v1/places:searchText"
 PLACES_DETAILS_URL = "https://places.googleapis.com/v1/places/{place_id}"
-TEXT_SEARCH_FIELD_MASK = "places.id,places.displayName,places.formattedAddress,places.location,places.types"
-DETAILS_FIELD_MASK = "id,displayName,formattedAddress,location,internationalPhoneNumber,websiteUri,rating,userRatingCount,types"
+
+
+TEXT_SEARCH_FIELD_MASK = (
+    "places.id,"                    # Essentials
+    "places.displayName,"           # Pro — venue name
+    "places.formattedAddress,"      # Pro — full address
+    "places.location,"              # Pro — lat/lng for map pin
+    "places.postalAddress,"         # Pro
+    "places.types,"                 # Pro — category tags
+    "places.photos,"                # Pro — photo reference (uploaded to Cloudinary once, cached forever)
+    "places.businessStatus,"        # Pro
+)
+
+DETAILS_FIELD_MASK = (
+    "formattedAddress,"
+    "priceLevel,"
+    "googleMapsUri,"
+    "internationalPhoneNumber,"
+    "websiteUri,"
+    "rating,"
+    "userRatingCount,"
+    "regularOpeningHours,"
+    "editorialSummary"
+)
+
 
 
 class ExternalSourceError(Exception):

@@ -6,6 +6,7 @@ from app.jobs import (
     booking_completion,
     balance_overdue,
     search_indexer,
+    discovery_indexer,
 )
 
 scheduler = BackgroundScheduler()
@@ -20,6 +21,7 @@ def start():
     scheduler.add_job(balance_overdue.run_flag, "interval", hours=6, id="balance_overdue_flag")
     scheduler.add_job(balance_overdue.run_autocancel, "interval", hours=6, id="balance_overdue_autocancel")
     scheduler.add_job(search_indexer.run, "interval", hours=1, id="search_indexer")
+    scheduler.add_job(discovery_indexer.run, "interval", seconds=5, id="discovery_indexer")
     scheduler.start()
 
 

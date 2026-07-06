@@ -80,7 +80,15 @@ def run_search(
 
 
 def _to_public_lead(lead: ExternalVenueLead) -> ExternalLeadPublic:
-    return ExternalLeadPublic(id=lead.id, name=lead.name, city=lead.city, category_guess=lead.category_guess, source=lead.source)
+    return ExternalLeadPublic(
+        id=lead.id,
+        name=lead.name,
+        city=lead.city,
+        formatted_address=lead.formatted_address,
+        cover_photo_url=lead.cover_photo_url,
+        category_guess=lead.category_guess,
+        source=lead.source
+    )
 
 
 def trigger_external_discovery(db: Session, query_id: UUID, latitude: float, longitude: float):
@@ -110,7 +118,7 @@ def get_discovery_job_result(db: Session, job_id: UUID):
     return job, leads
 
 
-def reserve_lead(db: Session, lead_id: UUID, user_id: UUID, event_date=None, notes=None) -> LeadReservation:
+def reserve_lead(db: Session, lead_id: UUID, user_id: UUID, event_date=None, guest_count=None, phone=None, notes=None) -> LeadReservation:
     from app.modules.deep_research.external_source import external_source
 
     lead = db.get(ExternalVenueLead, lead_id)
@@ -123,10 +131,43 @@ def reserve_lead(db: Session, lead_id: UUID, user_id: UUID, event_date=None, not
             "phone": details.get("internationalPhoneNumber"),
             "website": details.get("websiteUri"),
             "formatted_address": details.get("formattedAddress"),
+            "price_level": details.get("priceLevel"),
+            "rating": details.get("rating"),
+            "user_rating_count": details.get("userRatingCount"),
+            "regular_opening_hours": details.get("regularOpeningHours"),
+            "editorial_summary": details.get("editorialSummary"),
+            "google_maps_uri": details.get("googleMapsUri"),
         }
 
-    reservation = LeadReservation(lead_id=lead.id, user_id=user_id, platform_fee_paise=50000, event_date=event_date, notes=notes)
+    reservation = LeadReservation(lead_id=lead.id, user_id=user_id, platform_fee_paise=50000, event_date=event_date, guest_count=guest_count, phone=phone, notes=notes)
     db.add(reservation)
     db.commit()
     db.refresh(reservation)
     return reservation
+
+def get_user_reservations(db: Session, user_id: UUID) -> list[dict]:
+    from sqlalchemy.orm import joinedload
+    
+    reservations = (
+        db.query(LeadReservation)
+        .options(joinedload(LeadReservation.lead))
+        .filter(LeadReservation.user_id == user_id)
+        .order_by(LeadReservation.created_at.desc())
+        .all()
+    )
+    
+    # We manually map this to a dictionary structure matching UserReservationResponse
+    result = []
+    for res in reservations:
+        result.append({
+            "id": res.id,
+            "status": res.status.value,
+            "event_date": res.event_date.isoformat() if res.event_date else None,
+            "guest_count": res.guest_count,
+            "phone": res.phone,
+            "notes": res.notes,
+            "created_at": res.created_at,
+            "lead": _to_public_lead(res.lead)
+        })
+    return result
+
