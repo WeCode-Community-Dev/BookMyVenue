@@ -91,6 +91,14 @@ const apiService = {
         const response = await axiosInstance.put(`/venues/${venue_id}/availability`, payload);
         return response.data;
     },
+    cancelBooking: async (payload) => {
+        const response = await axiosInstance.patch(`/booking/cancel-booking`, payload);
+        return response.data;
+    },
+    UserMyBooking: async () => {
+        const response = await axiosInstance.get(`/booking/my-bookings`);
+        return response.data;
+    },
 
 }
 

@@ -5,8 +5,8 @@ import {
   Layout, Building, MapPin, Menu, X, 
   Calendar, Clock1, SlashCircle 
 } from '@mynaui/icons-react';
-// import apiService from '../services/apiService'; // Uncomment when you add backend logic
 import Logo from '../assets/Logo.png';
+import apiService from '../services/apiService';
 
 // ==========================================
 // 1. SIDEBAR COMPONENT
@@ -74,45 +74,20 @@ export default function UserBookings() {
   const [activeTab, setActiveTab] = useState('My Bookings');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [bookings, setBookings] = useState([]);
+  console.log(bookings);
   
   // Modal State
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [cancelReason, setCancelReason] = useState("");
 
-  // TODO: Replace with your actual apiService call
+// Fetch User Bookings
   useEffect(() => {
-    // Mocking the data you provided so the UI works immediately
-    const mockData = [
-        {
-          "order_id": 21,
-          "booking_date": "2026-03-07",
-          "status": "confirmed",
-          "id": 1,
-          "start_time": "",
-          "end_time": "",
-          "venue": { "venue_name": "test Venue samoosa asfsdf", "location": "Malappuram" }
-        },
-        {
-          "order_id": 30,
-          "booking_date": "2026-07-04",
-          "status": "confirmed",
-          "id": 3,
-          "start_time": "12:25",
-          "end_time": "14:25",
-          "venue": { "venue_name": "patikkal venue", "location": "Malappuram" }
-        },
-        {
-          "order_id": 34,
-          "booking_date": "2026-07-05",
-          "status": "confirmed",
-          "id": 4,
-          "start_time": "10:30",
-          "end_time": "12:30",
-          "venue": { "venue_name": "nishan", "location": "kdy" }
-        }
-    ];
-    setBookings(mockData);
+    const fetchBookings = async () => {
+        const response = await apiService.UserMyBooking();
+        setBookings(response)
+    }
+    fetchBookings()
   }, []);
 
   // Open the cancel modal
@@ -130,7 +105,7 @@ export default function UserBookings() {
     }
 
     const payload = {
-      booking_id: selectedBooking.id, // Using the 'id' field from your response
+      booking_id: selectedBooking.id,
       order_id: selectedBooking.order_id,
       cancel_reason: cancelReason
     };
@@ -138,10 +113,9 @@ export default function UserBookings() {
     console.log("SENDING CANCELLATION PAYLOAD TO BACKEND:", payload);
 
     try {
-      // TODO: Add your backend call here
-      // await apiService.cancelBooking(payload);
+      const response = await apiService.cancelBooking(payload);
       
-      // Update UI optimistically (or re-fetch bookings)
+        //   Update UI
       setBookings(prev => prev.map(b => 
         b.id === selectedBooking.id ? { ...b, status: 'cancelled' } : b
       ));
