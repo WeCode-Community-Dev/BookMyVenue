@@ -22,6 +22,17 @@ class BookingRequestIn(BaseModel):
     expected_total_paise: int | None = None
 
 
+class PaymentOption(BaseModel):
+    label: str
+    amount_paise: int
+    display_amount: str
+
+
+class PaymentOptions(BaseModel):
+    advance: PaymentOption
+    full: PaymentOption
+
+
 class BookingDisplay(BaseModel):
     quoted_price: str
     advance_due: str
@@ -72,6 +83,12 @@ class BookingOut(BaseModel):
     balance_overdue_at: datetime | None = None
     owner_action_deadline: datetime | None = None
     display: BookingDisplay
+    payment_required: bool = False
+    payment_options: PaymentOptions | None = None
+    client_secret: str | None = None
+    payment_expires_at: datetime | None = None
+    auto_confirmed_at: datetime | None = None
+    confirmed_by: str | None = None
 
 
 class CancellationDisplay(BaseModel):

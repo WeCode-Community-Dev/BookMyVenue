@@ -164,6 +164,7 @@ function useVenueBooking(venue: VenueResponse) {
           venueName: venue.name,
           venueCoverImage: venue.photos?.find((p) => p.is_cover)?.image_url ?? null,
           bookingType,
+          bookingMode: venue.booking_mode ?? 'MANUAL',
 
           userStartsAt: toUtcIso(selectedStart),
           userEndsAt: toUtcIso(selectedEnd),
@@ -296,6 +297,7 @@ export default function VenueDetails() {
 
 function VenueContent({ venue }: { venue: VenueResponse }) {
   const b = useVenueBooking(venue)
+  const isInstantBooking = venue.booking_mode === 'INSTANT'
 
     const [, setScrollTrigger] = useState(0)
 
@@ -388,6 +390,21 @@ function VenueContent({ venue }: { venue: VenueResponse }) {
 
             {/* Trust micro-copy */}
             <div className="mt-4 space-y-2.5 px-1">
+              {[
+                isInstantBooking
+                  ? 'Instant confirmation after payment'
+                  : 'No charge until the owner accepts',
+                'Verified venue on Venue404',
+                'Cancellation terms per policy below',
+              ].map((text) => (
+                <div key={text} className="flex items-start gap-2.5 text-xs text-zinc-400">
+                  <span className="font-semibold text-brand">OK</span>
+                  <span>{text}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden">
               {[
                 { icon: '🛡️', text: 'No charge until the owner accepts' },
                 { icon: '✓', text: 'Verified venue on Venue404' },

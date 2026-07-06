@@ -1,4 +1,7 @@
 import { useState } from 'react'
+
+type BookingMode = 'MANUAL' | 'INSTANT'
+type InstantPaymentChoice = 'advance' | 'full'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { createClient, bookingEndpoints } from '@venue404/api-client'
@@ -12,6 +15,7 @@ type CheckoutState = {
   venueId: string
   venueName: string
   venueCoverImage: string | null
+  bookingMode?: BookingMode
   userStartsAt: string
   userEndsAt: string
   bookingType: BookingType
@@ -52,7 +56,15 @@ function SectionCard({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Primary CTA button ───────────────────────────────────────────────────────
-function BookButton({ pending, onClick }: { pending: boolean; onClick: () => void }) {
+function BookButton({
+  pending,
+  instant,
+  onClick,
+}: {
+  pending: boolean
+  instant: boolean
+  onClick: () => void
+}) {
   return (
     <>
       <button
@@ -64,11 +76,17 @@ function BookButton({ pending, onClick }: { pending: boolean; onClick: () => voi
           <>
             <Spinner /> Sending request…
           </>
+        ) : instant ? (
+          'Book Instantly'
         ) : (
           'Request to Book'
         )}
       </button>
-      <p className="mt-2 text-center text-xs text-zinc-400">No charge until owner accepts</p>
+      <p className="mt-2 text-center text-xs text-zinc-400">
+        {instant
+          ? 'Payment is required to confirm this instant booking'
+          : 'No charge until owner accepts'}
+      </p>
     </>
   )
 }
@@ -243,6 +261,45 @@ function NextSteps({ quote }: { quote: PricingQuote | undefined }) {
   )
 }
 
+function InstantNextSteps({ quote }: { quote: PricingQuote | undefined }) {
+  const steps = [
+    {
+      n: '1',
+      title: 'Slot reserved',
+      desc: 'We briefly hold this slot while you complete payment.',
+    },
+    {
+      n: '2',
+      title: 'Choose payment',
+      desc: `Pay ${formatPrice(quote?.advance_due_paise || 0)} advance or the full amount now.`,
+    },
+    {
+      n: '3',
+      title: 'Instant confirmation',
+      desc: 'Your booking is confirmed automatically after successful payment.',
+    },
+  ]
+
+  return (
+    <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
+      <h2 className="mb-4 text-sm font-semibold text-zinc-900">What happens next</h2>
+      <ol className="space-y-4">
+        {steps.map((item) => (
+          <li key={item.n} className="flex gap-3.5">
+            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-xs font-bold text-white">
+              {item.n}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-zinc-900">{item.title}</p>
+              <p className="mt-0.5 text-xs text-zinc-500">{item.desc}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
 // ─── Empty / guard state ──────────────────────────────────────────────────────
 function NoBookingState({ onBrowse }: { onBrowse: () => void }) {
   return (
@@ -286,6 +343,9 @@ export default function Checkout() {
   const [guestCount, setGuestCount] = useState(1)
   const [eventType, setEventType] = useState('')
   const [userNotes, setUserNotes] = useState('')
+  const [paymentChoice, setPaymentChoice] = useState<InstantPaymentChoice>('advance')
+
+  const isInstantBooking = state?.bookingMode === 'INSTANT'
 
   const createBooking = useMutation({
     mutationFn: () =>
@@ -301,7 +361,14 @@ export default function Checkout() {
         event_type: eventType.trim() || null,
         user_notes: userNotes.trim() || null,
       }),
-    onSuccess: (booking) => navigate(`/bookings/${booking.id}`),
+    onSuccess: (booking) => {
+      if (isInstantBooking) {
+        navigate(`/payment/${booking.id}?type=${paymentChoice}`)
+        return
+      }
+
+      navigate(`/bookings/${booking.id}`)
+    },
   })
 
   // ── Guard: no state ────────────────────────────────────────────────────
@@ -331,7 +398,7 @@ export default function Checkout() {
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            Confirm your request
+            {isInstantBooking ? 'Complete your booking' : 'Confirm your request'}
           </div>
           <button
             onClick={() => navigate(-1)}
@@ -349,8 +416,15 @@ export default function Checkout() {
           <div className="min-w-0 flex-1 space-y-6">
             {/* ... your existing form content ... */}
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Request to book</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+                {isInstantBooking ? 'Complete Payment' : 'Request to book'}
+              </h1>
               <p className="mt-1.5 text-sm text-zinc-500">
+                {isInstantBooking
+                  ? 'Choose how much to pay now. Your booking is confirmed after payment.'
+                  : 'No payment taken now - the owner will confirm your request first.'}
+              </p>
+              <p className="hidden">
                 No payment taken now — the owner will confirm your request first.
               </p>
             </div>
@@ -404,6 +478,49 @@ export default function Checkout() {
             </SectionCard>
 
             {/* ── Event details ────────────────────────────────── */}
+            {isInstantBooking && state.quote && (
+              <SectionCard>
+                <div>
+                  <h2 className="text-base font-semibold text-zinc-900">Choose Payment</h2>
+                  <p className="mt-0.5 text-xs text-zinc-400">
+                    Pay the advance to reserve now, or settle the full amount in one payment.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    {
+                      value: 'advance' as const,
+                      title: 'Pay Advance',
+                      amount: formatPrice(state.quote.advance_due_paise),
+                    },
+                    {
+                      value: 'full' as const,
+                      title: 'Pay Full Amount',
+                      amount: formatPrice(state.quote.quoted_price_paise),
+                    },
+                  ].map((option) => {
+                    const selected = paymentChoice === option.value
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setPaymentChoice(option.value)}
+                        className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+                          selected
+                            ? 'border-brand bg-brand-light text-brand'
+                            : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
+                        }`}
+                      >
+                        <span className="block text-sm font-semibold">{option.title}</span>
+                        <span className="mt-1 block text-lg font-bold">{option.amount}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </SectionCard>
+            )}
+
             <SectionCard>
               <div>
                 <h2 className="text-base font-semibold text-zinc-900">Event details</h2>
@@ -438,7 +555,11 @@ export default function Checkout() {
             </SectionCard>
 
             {/* ── What happens next ────────────────────────────── */}
-            <NextSteps quote={state.quote} />
+            {isInstantBooking ? (
+              <InstantNextSteps quote={state.quote} />
+            ) : (
+              <NextSteps quote={state.quote} />
+            )}
 
             {/* Error Banner */}
             {createBooking.isError && (
@@ -472,6 +593,7 @@ export default function Checkout() {
             <div className="lg:hidden">
               <BookButton
                 pending={createBooking.isPending}
+                instant={isInstantBooking}
                 onClick={() => createBooking.mutate()}
               />
             </div>
@@ -485,6 +607,7 @@ export default function Checkout() {
             <div className="mt-4 hidden lg:block">
               <BookButton
                 pending={createBooking.isPending}
+                instant={isInstantBooking}
                 onClick={() => createBooking.mutate()}
               />
             </div>

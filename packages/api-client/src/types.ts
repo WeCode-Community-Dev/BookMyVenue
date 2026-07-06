@@ -2153,7 +2153,7 @@ export interface components {
              * @default advance
              * @enum {string}
              */
-            payment_type: "advance" | "balance";
+            payment_type: "advance" | "balance" | "full";
         };
         /** CreateVenueRequest */
         CreateVenueRequest: {

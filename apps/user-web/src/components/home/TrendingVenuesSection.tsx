@@ -91,6 +91,13 @@ function TrendingCard({ venue, onClick }: { venue: SearchResult; onClick: () => 
         )}
 
         {/* Venue type pill */}
+        {venue.booking_mode === 'INSTANT' && (
+          <div className="absolute right-3 top-3">
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 shadow-sm">
+              Instant Booking
+            </span>
+          </div>
+        )}
         <div className="absolute left-3 top-3">
           <span className="rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-semibold text-zinc-700 shadow-sm backdrop-blur-sm">
             {typeLabel}

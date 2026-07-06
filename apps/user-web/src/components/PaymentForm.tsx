@@ -10,7 +10,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!)
 
 type Props = {
   booking: BookingOut
-  paymentType?: 'advance' | 'balance'
+  paymentType?: 'advance' | 'balance' | 'full'
   isFullPayment?: boolean
   onSuccess: () => void
   onCancel: () => void
@@ -67,7 +67,9 @@ function InnerCheckoutForm({
     ? `Pay Full Amount · ${booking.display?.quoted_price ?? ''}`
     : paymentType === 'balance'
       ? `Pay Balance · ${booking.display?.balance_due ?? ''}`
-      : `Pay Advance · ${booking.display?.advance_due ?? ''}`
+      : paymentType === 'full'
+        ? `Pay Full Amount · ${booking.display?.quoted_price ?? ''}`
+        : `Pay Advance · ${booking.display?.advance_due ?? ''}`
 
   return (
     <div className="space-y-5 pt-2">

@@ -9,6 +9,13 @@ VALID_TRANSITIONS: dict[BookingStatus, set[BookingStatus]] = {
         BookingStatus.conflict_cancelled,
         BookingStatus.admin_cancelled,
     },
+    BookingStatus.payment_pending: {
+        BookingStatus.confirmed,
+        BookingStatus.hold_expired,
+        BookingStatus.user_cancelled,
+        BookingStatus.admin_cancelled,
+        BookingStatus.conflict_cancelled,
+    },
     BookingStatus.owner_accepted: {
         BookingStatus.confirmed,
         BookingStatus.hold_expired,

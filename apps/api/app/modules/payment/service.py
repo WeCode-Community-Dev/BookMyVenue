@@ -65,11 +65,15 @@ def create_payment_intent(
         raise NotFoundError("Venue not found")
 
     if payment_type == ADVANCE:
-        if booking.status != BookingStatus.owner_accepted:
+        if booking.status not in (BookingStatus.owner_accepted, BookingStatus.payment_pending):
             raise BadRequestError("Booking is not awaiting payment")
         now = datetime.now(timezone.utc)
-        if not booking.hold_expires_at or booking.hold_expires_at < now:
-            raise BadRequestError("Payment hold has expired")
+        if booking.status == BookingStatus.owner_accepted:
+            if not booking.hold_expires_at or booking.hold_expires_at < now:
+                raise BadRequestError("Payment hold has expired")
+        elif booking.status == BookingStatus.payment_pending:
+            if not booking.payment_expires_at or booking.payment_expires_at < now:
+                raise BadRequestError("Payment hold has expired")
         amount_paise = booking.advance_due_paise
         if amount_paise <= 0:
             raise BadRequestError("Booking has no advance amount due")
@@ -81,6 +85,20 @@ def create_payment_intent(
         if amount_paise <= 0:
             raise BadRequestError("Booking has no balance amount due")
         idempotency_key = f"booking-{booking.id}-balance"
+    elif payment_type == "full":
+        if booking.status not in (BookingStatus.owner_accepted, BookingStatus.payment_pending):
+            raise BadRequestError("Booking is not awaiting payment")
+        now = datetime.now(timezone.utc)
+        if booking.status == BookingStatus.owner_accepted:
+            if not booking.hold_expires_at or booking.hold_expires_at < now:
+                raise BadRequestError("Payment hold has expired")
+        elif booking.status == BookingStatus.payment_pending:
+            if not booking.payment_expires_at or booking.payment_expires_at < now:
+                raise BadRequestError("Payment hold has expired")
+        amount_paise = booking.quoted_price_paise
+        if amount_paise <= 0:
+            raise BadRequestError("Booking has no amount due")
+        idempotency_key = f"booking-{booking.id}-full"
     else:
         raise BadRequestError("Invalid payment type")
 
@@ -106,7 +124,7 @@ def create_payment_intent(
         payment_type=payment_type,
     )
     db.add(payment)
-    if payment_type == ADVANCE:
+    if payment_type in (ADVANCE, "full"):
         booking.stripe_advance_payment_intent_id = intent.id
         booking.payment_status = PaymentStatus.unpaid
     else:
@@ -146,14 +164,14 @@ def confirm_payment(db: Session, payment_intent_id: str) -> None:
         confirm_balance_payment(db, payment, booking)
         return
 
-    # ---- advance payment confirmation ----
+    # ---- advance / full payment confirmation ----
     # Idempotent: already confirmed
     if payment.status == PaymentAttemptStatus.succeeded and booking.status == BookingStatus.confirmed:
         return
 
     # Booking left the payable state (hold expired / canceled) before the webhook
     # arrived — the money is owed back.
-    if booking.status != BookingStatus.owner_accepted:
+    if booking.status not in (BookingStatus.owner_accepted, BookingStatus.payment_pending):
         logger.warning("confirm_payment: booking %s in %s, refunding stray payment", booking.id, booking.status)
         _record_refund(db, payment, booking, payment.amount_paise, "booking_not_payable")
         return
@@ -178,13 +196,25 @@ def confirm_payment(db: Session, payment_intent_id: str) -> None:
         logger.error("confirm_payment: illegal transition %s -> confirmed", booking.status)
         return
 
+    old_status = booking.status
     payment.status = PaymentAttemptStatus.succeeded
     booking.status = BookingStatus.confirmed
     booking.confirmed_at = datetime.now(timezone.utc)
     booking.amount_paid_paise = (booking.amount_paid_paise or 0) + payment.amount_paise
-    booking.payment_status = (
-        PaymentStatus.fully_paid if booking.balance_due_paise == 0 else PaymentStatus.advance_paid
-    )
+    
+    if payment.payment_type == "full":
+        booking.balance_due_paise = 0
+        booking.payment_status = PaymentStatus.fully_paid
+    else:
+        booking.payment_status = (
+            PaymentStatus.fully_paid if booking.balance_due_paise == 0 else PaymentStatus.advance_paid
+        )
+
+    if old_status == BookingStatus.payment_pending:
+        booking.auto_confirmed_at = datetime.now(timezone.utc)
+        booking.confirmed_by = "SYSTEM"
+    else:
+        booking.confirmed_by = "OWNER"
 
     owner_id = venue.owner_id if venue else booking.user_id
     db.add(LedgerEntry(
@@ -203,9 +233,10 @@ def confirm_payment(db: Session, payment_intent_id: str) -> None:
             direction="debit", stripe_pi_ref=payment_intent_id,
         ))
 
+    reason_str = "full_payment_succeeded" if payment.payment_type == "full" else "token_payment_succeeded"
     db.add(BookingStatusHistory(
-        booking_id=booking.id, old_status=BookingStatus.owner_accepted,
-        new_status=BookingStatus.confirmed, reason="token_payment_succeeded",
+        booking_id=booking.id, old_status=old_status,
+        new_status=BookingStatus.confirmed, reason=reason_str,
     ))
 
     # Knock out competitors for the same slot and refund any who already paid.
@@ -533,7 +564,7 @@ def _find_competing_bookings(db: Session, booking: Booking) -> list[Booking]:
         .filter(
             Booking.id != booking.id,
             Booking.venue_id == booking.venue_id,
-            Booking.status.in_([BookingStatus.requested, BookingStatus.owner_accepted]),
+            Booking.status.in_([BookingStatus.requested, BookingStatus.owner_accepted, BookingStatus.payment_pending]),
             BookingSlot.deleted_at.is_(None),
             BookingSlot.effective_starts_at < slot.effective_ends_at,
             BookingSlot.effective_ends_at > slot.effective_starts_at,

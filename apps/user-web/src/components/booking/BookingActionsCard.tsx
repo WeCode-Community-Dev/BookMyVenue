@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 
 import type { BookingOut } from '../../types'
 
 import { CancellationPreviewModal } from './CancellationPreviewModal'
 import { Alert } from '@venue404/ui'
-import { useState } from 'react'
 
 type Props = {
   booking: BookingOut
@@ -16,6 +16,36 @@ const CANCELLED_STATUSES = [
   'conflict_cancelled',
   'balance_overdue_cancelled',
 ]
+
+// NEW — simple mm:ss countdown against an ISO deadline
+function useCountdown(deadlineIso: string | null | undefined) {
+  const [remainingMs, setRemainingMs] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!deadlineIso) {
+      setRemainingMs(null)
+      return
+    }
+
+    const deadline = new Date(deadlineIso).getTime()
+
+    const tick = () => setRemainingMs(Math.max(0, deadline - Date.now()))
+    tick()
+
+    const interval = setInterval(tick, 1000)
+    return () => clearInterval(interval)
+  }, [deadlineIso])
+
+  if (remainingMs === null) return null
+
+  const totalSeconds = Math.floor(remainingMs / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return {
+    label: `${minutes}:${seconds.toString().padStart(2, '0')}`,
+    expired: remainingMs <= 0,
+  }
+}
 
 function PrimaryActionButton({
   onClick,
@@ -57,14 +87,15 @@ export function BookingActionsCard({ booking }: Props) {
 
   const isFullPaymentRequired = booking.advance_pct === 100 || booking.balance_due_paise === 0
 
-  // These conditions read live server state, so once the webhook flips the
-  // booking to fully_paid / confirmed the buttons disappear automatically —
-  // no local flag racing the async webhook.
   const showAdvancePayment = booking.status === 'owner_accepted'
   const showBalancePayment =
     booking.status === 'confirmed' &&
     booking.payment_status === 'advance_paid' &&
     booking.balance_due_paise > 0
+
+  // NEW — Instant Booking: reserved slot, payment_pending, hold ticking down
+  const showInstantPayment = booking.status === 'payment_pending' && booking.payment_required
+  const countdown = useCountdown(showInstantPayment ? booking.payment_expires_at : null)
 
   const isCancelled = CANCELLED_STATUSES.includes(booking.status)
   const isCompleted = booking.status === 'completed'
@@ -80,14 +111,64 @@ export function BookingActionsCard({ booking }: Props) {
           {isCancelled && <Alert variant="destructive">This booking has been cancelled.</Alert>}
           {isCompleted && <Alert variant="success">Event completed.</Alert>}
 
-          {/* Advance Payment Button */}
-          {showAdvancePayment && (
-            <PrimaryActionButton onClick={() => navigate(`/payment/${booking.id}?type=advance`)}>
-              {isFullPaymentRequired
-                ? `Pay Full Amount • ${booking.display?.quoted_price || ''}`
-                : `Pay Advance • ${booking.display?.advance_due || ''}`}
-            </PrimaryActionButton>
+          {/* Instant Booking — payment countdown + Advance/Full choice */}
+          {showInstantPayment && !countdown?.expired && (
+            <>
+              {countdown && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center">
+                  <div className="text-xs font-medium uppercase tracking-wide text-amber-700">
+                    Time remaining
+                  </div>
+                  <div className="mt-1 text-2xl font-bold tabular-nums text-amber-900">
+                    {countdown.label}
+                  </div>
+                </div>
+              )}
+
+              {booking.payment_options && !isFullPaymentRequired ? (
+                <>
+                  <PrimaryActionButton
+                    onClick={() => navigate(`/payment/${booking.id}?type=advance`)}
+                  >
+                    {`Pay Advance • ${booking.payment_options.advance.display_amount}`}
+                  </PrimaryActionButton>
+                  <button
+                    onClick={() => navigate(`/payment/${booking.id}?type=full`)}
+                    className="w-full rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
+                  >
+                    {`Pay Full Amount • ${booking.payment_options.full.display_amount}`}
+                  </button>
+                </>
+              ) : (
+                <PrimaryActionButton onClick={() => navigate(`/payment/${booking.id}?type=full`)}>
+                  {`Complete Payment • ${booking.display?.quoted_price || ''}`}
+                </PrimaryActionButton>
+              )}
+            </>
           )}
+
+          {showInstantPayment && countdown?.expired && (
+            <Alert variant="warning">This reservation hold has expired. Please book again.</Alert>
+          )}
+
+          {/* Advance Payment Button (Manual flow) */}
+          {showAdvancePayment && booking.payment_options && !isFullPaymentRequired ? (
+            <>
+              <PrimaryActionButton onClick={() => navigate(`/payment/${booking.id}?type=advance`)}>
+                {`Pay Advance • ${booking.payment_options.advance.display_amount}`}
+              </PrimaryActionButton>
+              <button
+                onClick={() => navigate(`/payment/${booking.id}?type=full`)}
+                className="w-full rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
+              >
+                {`Pay Full Amount • ${booking.payment_options.full.display_amount}`}
+              </button>
+            </>
+          ) : showAdvancePayment ? (
+            <PrimaryActionButton onClick={() => navigate(`/payment/${booking.id}?type=full`)}>
+              {`Pay Full Amount • ${booking.display?.quoted_price || ''}`}
+            </PrimaryActionButton>
+          ) : null}
 
           {/* Balance Payment Button */}
           {showBalancePayment && (
@@ -97,7 +178,9 @@ export function BookingActionsCard({ booking }: Props) {
           )}
 
           {/* Cancel Buttons */}
-          {(showAdvancePayment || showBalancePayment) && (
+          {(showAdvancePayment ||
+            showBalancePayment ||
+            (showInstantPayment && !countdown?.expired)) && (
             <DestructiveActionButton onClick={() => setCancelOpen(true)}>
               Cancel Booking
             </DestructiveActionButton>

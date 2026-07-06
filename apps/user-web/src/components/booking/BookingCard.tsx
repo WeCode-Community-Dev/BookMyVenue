@@ -15,6 +15,7 @@ type Props = {
 export default function MyBookingCard({ booking }: Props) {
   const navigate = useNavigate()
 
+  const requiresInstantPayment = booking.status === 'payment_pending' && booking.payment_required
   const requiresAdvance = booking.status === 'owner_accepted'
 
   const requiresBalance =
@@ -22,11 +23,13 @@ export default function MyBookingCard({ booking }: Props) {
     booking.payment_status === 'advance_paid' &&
     booking.balance_due_paise > 0
 
-  const actionLabel = requiresAdvance
-    ? 'Pay Advance'
-    : requiresBalance
-      ? 'Pay Balance'
-      : 'View Booking'
+  const actionLabel = requiresInstantPayment
+    ? 'Complete Payment'
+    : requiresAdvance
+      ? 'Pay Advance'
+      : requiresBalance
+        ? 'Pay Balance'
+        : 'View Booking'
 
   return (
     <Card className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition-all hover:shadow-md">
@@ -57,7 +60,7 @@ export default function MyBookingCard({ booking }: Props) {
             </div>
           )}
 
-          {(requiresAdvance || requiresBalance) && (
+          {(requiresInstantPayment || requiresAdvance || requiresBalance) && (
             <div className="absolute left-4 top-4 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white shadow">
               Action Required
             </div>
@@ -119,13 +122,15 @@ export default function MyBookingCard({ booking }: Props) {
             </div>
           </div>
 
-          {(requiresAdvance || requiresBalance) && (
+          {(requiresInstantPayment || requiresAdvance || requiresBalance) && (
             <div className="mt-6 rounded-xl border border-brand-light-strong bg-brand-light p-4">
               <div className="text-sm font-semibold text-brand">Payment Required</div>
               <div className="mt-1 text-sm text-brand">
-                {requiresAdvance
-                  ? `Advance payment of ${booking.display.advance_due} is required to confirm this booking.`
-                  : `Balance payment of ${booking.display.balance_due} is pending.`}
+                {requiresInstantPayment
+                  ? 'Payment is required to secure this instant booking.'
+                  : requiresAdvance
+                    ? `Advance payment of ${booking.display.advance_due} is required to confirm this booking.`
+                    : `Balance payment of ${booking.display.balance_due} is pending.`}
               </div>
             </div>
           )}
@@ -133,11 +138,13 @@ export default function MyBookingCard({ booking }: Props) {
           <div className="mt-auto flex items-center justify-end pt-8">
             <Button
               onClick={() =>
-                requiresAdvance
-                  ? navigate(`/payment/${booking.id}?type=advance`)
-                  : requiresBalance
-                    ? navigate(`/payment/${booking.id}?type=balance`)
-                    : navigate(`/bookings/${booking.id}`)
+                requiresInstantPayment
+                  ? navigate(`/payment/${booking.id}?type=full`)
+                  : requiresAdvance
+                    ? navigate(`/payment/${booking.id}?type=advance`)
+                    : requiresBalance
+                      ? navigate(`/payment/${booking.id}?type=balance`)
+                      : navigate(`/bookings/${booking.id}`)
               }
             >
               {actionLabel}

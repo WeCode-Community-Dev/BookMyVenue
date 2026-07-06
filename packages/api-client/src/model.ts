@@ -3,6 +3,8 @@
 import type { components } from './types'
 
 export type Booking = components['schemas']['BookingOut']
+export type BookingMode = 'MANUAL' | 'INSTANT'
+
 export type Venue = components['schemas']['VenueResponse'] & {
   rejection_reason?: string | null
   // Hand-added until `pnpm generate` is run (mirrors VenueResponse in venue/schemas.py).
@@ -11,6 +13,7 @@ export type Venue = components['schemas']['VenueResponse'] & {
   max_price_pct: string
   display_price_min_paise?: number | null
   display_price_max_paise?: number | null
+  booking_mode?: BookingMode
 }
 export type VenueCategory = components['schemas']['VenueCategoryResponse']
 export type Amenity = components['schemas']['AmenityResponse']
@@ -26,7 +29,11 @@ export type PricingQuote = components['schemas']['PricingQuote'] & {
   clamped?: boolean
 }
 export type ValidationResponse = components['schemas']['ValidationResponse']
-export type SearchResult = components['schemas']['SearchResult']
+export type SearchResult = components['schemas']['SearchResult'] & {
+  booking_mode?: BookingMode
+  display_price_min_paise?: number | null
+  display_price_max_paise?: number | null
+}
 export type SearchPage = components['schemas']['Page_SearchResult_']
 
 // Hand-written until `pnpm generate` is run against a live API (mirrors

@@ -80,6 +80,7 @@ export function VenueReserveCard({
   onBook,
   onEditDates,
 }: Props) {
+  const isInstantBooking = venue.booking_mode === 'INSTANT'
   const startLabel = startDate ? formatDate(startDate + 'T00:00:00') : null
   const endLabel = endDate ? formatDate(endDate + 'T00:00:00') : null
   const timeLabel =
@@ -335,18 +336,28 @@ export function VenueReserveCard({
               </span>
             ) : advanceLabel ? (
               <span className="flex flex-col leading-tight">
-                <span>Reserve now</span>
+                <span>{isInstantBooking ? 'Book Instantly' : 'Request Booking'}</span>
                 <span className="text-xs font-normal opacity-80">
+                  {isInstantBooking
+                    ? `${advanceLabel} advance or pay full next`
+                    : `${advanceLabel} advance - no charge yet`}
+                </span>
+                <span className="hidden">
                   {advanceLabel} advance · no charge yet
                 </span>
               </span>
             ) : (
-              'Reserve'
+              isInstantBooking ? 'Book Instantly' : 'Request Booking'
             )}
           </button>
         )}
 
         <p className="mt-3 text-center text-xs text-zinc-400">
+          {isInstantBooking
+            ? 'Your slot is held briefly while you complete payment'
+            : "You won't be charged yet - owner must confirm first"}
+        </p>
+        <p className="hidden">
           You won't be charged yet · Owner must confirm first
         </p>
       </div>

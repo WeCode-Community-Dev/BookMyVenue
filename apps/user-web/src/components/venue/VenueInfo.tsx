@@ -66,6 +66,7 @@ const DESC_LIMIT = 320
 export function VenueInfo({ venue }: Props) {
   const [descExpanded, setDescExpanded] = useState(false)
   const typeLabel = venue.category?.label ?? venue.category?.slug ?? ''
+  const isInstantBooking = venue.booking_mode === 'INSTANT'
 
   const bookingTypeLabel =
     venue.allowed_booking_types.includes('full_day') && venue.allowed_booking_types.includes('time_slot')
@@ -126,6 +127,11 @@ export function VenueInfo({ venue }: Props) {
         <span className="inline-flex items-center rounded-full border border-brand-muted bg-brand-light px-2.5 py-0.5 text-xs font-semibold text-brand">
           {typeLabel}
         </span>
+        {isInstantBooking && (
+          <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+            Instant Booking
+          </span>
+        )}
       </div>
 
       {/* ── Reviews row (placeholder) ─────────────────────── */}
@@ -171,6 +177,13 @@ export function VenueInfo({ venue }: Props) {
 
       {/* ── Highlights ───────────────────────────────────────── */}
       <div>
+        {isInstantBooking && (
+          <Highlight
+            icon={<ClockIcon />}
+            title="Instant Confirmation"
+            sub="No owner approval required after payment is completed"
+          />
+        )}
         <Highlight icon={<CalIcon />}  title={bookingTypeLabel} sub={bookingTypeSub} />
         <Highlight icon={<ClockIcon />} title="Operating hours" sub={openLabel} />
         <Highlight icon={<PeopleIcon />} title={capacityLabel} sub={venue.min_capacity ? `Minimum ${venue.min_capacity} · maximum ${venue.max_capacity}` : `Maximum capacity ${venue.max_capacity} people`} />

@@ -20,6 +20,12 @@ class VenueStatus(str, enum.Enum):
     suspended = "suspended"
 
 
+class BookingMode(str, enum.Enum):
+    MANUAL = "MANUAL"
+    INSTANT = "INSTANT"
+
+
+
 class VenueCategory(Base):
     __tablename__ = "venue_categories"
 
@@ -98,6 +104,11 @@ class Venue(Base):
         Enum(VenueStatus, name="venue_status"),
         nullable=False,
         server_default=text("'draft'")
+    )
+    booking_mode: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        server_default=text("'MANUAL'")
     )
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
     last_completed_step: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")

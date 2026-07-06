@@ -96,6 +96,10 @@ def create_booking_request(
             },
         )
 
+    is_instant = (venue.booking_mode == "INSTANT")
+    initial_status = BookingStatus.payment_pending if is_instant else BookingStatus.requested
+    payment_expires_at = _now() + timedelta(minutes=15) if is_instant else None
+
     booking = Booking(
         id=uuid.uuid4(),
         venue_id=venue.id,
@@ -104,7 +108,8 @@ def create_booking_request(
         event_type=payload.event_type,
         guest_count=payload.guest_count,
         user_notes=payload.user_notes,
-        status=BookingStatus.requested,
+        status=initial_status,
+        payment_expires_at=payment_expires_at,
         balance_due_date=starts_at.date() - timedelta(days=venue.balance_due_days_before_event),
         pricing_mode=quote.pricing_mode,
         quoted_price_paise=quote.quoted_price_paise,
@@ -129,21 +134,36 @@ def create_booking_request(
         ends_at=ends_at,
         effective_starts_at=validation.effective_starts_at,
         effective_ends_at=validation.effective_ends_at,
-        is_blocking=False,
+        is_blocking=is_instant,
     )
     db.add(slot)
-    db.add(_history(booking, None, BookingStatus.requested, changed_by=user_id))
+    db.add(_history(booking, None, initial_status, changed_by=user_id))
     db.flush()
-    db.refresh(booking)
 
-    notifications.notify(
-        db, venue.owner_id, NotificationType.NEW_REQUEST_OWNER,
-        context={"venue_name": venue.name}, booking_id=booking.id,
-    )
-    notifications.notify(
-        db, user_id, NotificationType.REQUEST_RECEIVED,
-        context={"venue_name": venue.name}, booking_id=booking.id,
-    )
+    if is_instant:
+        from app.modules.payment.service import create_payment_intent
+        try:
+            create_payment_intent(db, user_id, booking.id, payment_type="advance")
+        except Exception as e:
+            logger.exception("Failed to create initial payment intent for instant booking %s", booking.id)
+            db.rollback()
+            if isinstance(e, HTTPException):
+                raise e
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to initialize payment for instant booking"
+            ) from e
+    else:
+        notifications.notify(
+            db, venue.owner_id, NotificationType.NEW_REQUEST_OWNER,
+            context={"venue_name": venue.name}, booking_id=booking.id,
+        )
+        notifications.notify(
+            db, user_id, NotificationType.REQUEST_RECEIVED,
+            context={"venue_name": venue.name}, booking_id=booking.id,
+        )
+
+    db.refresh(booking)
     return _booking_out(booking)
 
 
