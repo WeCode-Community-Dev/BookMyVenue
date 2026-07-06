@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { VenueStatus } from "../../domain/enums/Venue.enum";
+import { VenueStatus } from "../../domain/enums/Venue.enum.js";
 
 export const getAllVenuesQuerySchema = z.object({
 

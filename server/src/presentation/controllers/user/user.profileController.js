@@ -26,7 +26,7 @@ export class UserProfileController{
 
     getProfile=asyncHandler(async(req,res)=>{
         
-        const userId=req.user.userId
+        const userId=req.user.userId;
 
         const user=await this._userGetProfileUsecase.execute(userId);
 
@@ -34,7 +34,7 @@ export class UserProfileController{
     })
 
     updateProfile=asyncHandler(async(req,res)=>{
-        const userId=req.user.userId   
+        const userId=req.user.userId;
         const {fullName,phone}=req.body
         const updatedUser=await this._userUpdateProfileUsecase.execute(
             userId,
@@ -57,7 +57,7 @@ export class UserProfileController{
         }
     )
     verifyEmailChangeOtp=asyncHandler(async(req,res)=>{
-        const userId=req.user.userId
+        const userId=req.user.userId;
         const {otp}=req.body
         const updatedUser=await this._verifyEmailChangeOtpUsecase.execute(userId,otp)
 
@@ -71,7 +71,7 @@ export class UserProfileController{
     })
     resendEmailChangeOtp=asyncHandler(async(req,res)=>{
 
-    const userId=req.user.userId
+    const userId=req.user.userId;
 
     const result=await this._resendEmailChangeOtpUsecase.execute(userId)
 
