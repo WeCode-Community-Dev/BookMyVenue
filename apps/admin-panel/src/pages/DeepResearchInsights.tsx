@@ -330,6 +330,16 @@ function QueryDetailModal({ queryId, onClose }: { queryId: string; onClose: () =
                       ))}
                     </div>
                   )}
+                  {(breakdown.special_requirements?.length ?? 0) > 0 && (
+                    <ul className="mt-3 space-y-1">
+                      {breakdown.special_requirements!.map((req) => (
+                        <li key={req} className="flex items-start gap-2 text-sm text-zinc-700">
+                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-zinc-400" />
+                          {req}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
 
