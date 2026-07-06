@@ -32,12 +32,12 @@ export class AdminPaymentController {
             const {
 
                 search,
-        paymentStatus,
-        paymentMethod,
-        paymentType,
-        sortBy,
-        page,
-        limit
+                paymentStatus,
+                paymentMethod,
+                paymentType,
+                sortBy,
+                page,
+                limit
 
             } = req.validatedQuery;
 
@@ -46,13 +46,13 @@ export class AdminPaymentController {
                     ._adminGetAllPaymentsUsecase
                     .execute(
 
-search,
-        paymentStatus,
-        paymentMethod,
-        paymentType,
-        sortBy,
-        page,
-        limit
+                        search,
+                        paymentStatus,
+                        paymentMethod,
+                        paymentType,
+                        sortBy,
+                        page,
+                        limit
                     );
 
             return sendSuccess(

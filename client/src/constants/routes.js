@@ -7,7 +7,10 @@ export const ROUTES = {
     USER: {
         PROFILE: '/user/profile',
         BROWSE_VENUES: '/user/venues',
-        VENUE_DETAILS: '/user/venue/:id'
+        VENUE_DETAILS: '/user/venue/:id',
+        ACCOUNT_SETTINGS: '/user/accountsettings',
+        WISHLIST: '/user/wishlist',
+        BOOKINGS: '/user/bookings'
     },
     VENDOR: {
         DASHBOARD: '/vendor/dashboard',
@@ -18,6 +21,13 @@ export const ROUTES = {
         SETTINGS: '/vendor/settings',
     },
     ADMIN: {
-        
+        ROOT: "/admin", 
+        DASHBOARD: "/admin/dashboard",
+        USERS: "/admin/users",
+        VENDORS: "/admin/vendors",
+        VENUES: "/admin/venues",
+        BOOKINGS: "/admin/bookings",
+        PAYMENTS: "/admin/payments",
+        CATEGORIES: "/admin/categories",
     }
 }

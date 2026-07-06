@@ -9,8 +9,6 @@ export class UserEntity {
         role,
         isVerified = false,
         isOtpVerified = false,
-        otpCode,
-        otpExpiresAt,
         profileImage = {
             publicId: "",
             url: ""
@@ -21,7 +19,10 @@ export class UserEntity {
         updatedAt,
         refreshToken,
         resetToken,
-        resetTokenExpiry
+        resetTokenExpiry,
+        pendingEmail = null,
+        otpCode = null,
+        otpExpiresAt = null
     }) {
         this.id = id;
         this.fullName = fullName;
@@ -32,8 +33,6 @@ export class UserEntity {
         this.role = role;
         this.isVerified = isVerified;
         this.isOtpVerified = isOtpVerified;
-        this.otpCode = otpCode;
-        this.otpExpiresAt = otpExpiresAt;
         this.profileImage = profileImage;
         this.isBlocked = isBlocked;
         this.wishlist = wishlist;
@@ -42,5 +41,8 @@ export class UserEntity {
         this.refreshToken = refreshToken;
         this.resetToken = resetToken;
         this.resetTokenExpiry = resetTokenExpiry;
+        this.pendingEmail = pendingEmail;
+        this.otpCode = otpCode;
+        this.otpExpiresAt = otpExpiresAt;
     }
 }

@@ -1,10 +1,14 @@
 import {BrowserRouter,Routes,Route} from "react-router-dom";
 import { Suspense,lazy } from "react";
-import { ROUTES } from "@/constatnts/routes";
+import { ROUTES } from "@/constants/routes";
 import BrowseVenues from "@/presentation/pages/user/BrowseVenue";
 
 
 const Home = lazy(() => import("@/presentation/pages/Home"))
+
+const UserProfile = lazy(() => import("@/presentation/pages/user/UserProfile"))
+const AccountSettings = lazy(() => import("@/presentation/pages/user/AccountSettings"))
+const Wishlist = lazy(() => import("@/presentation/pages/user/Wishlist"))
 
 const Dashboard=lazy(()=>
 import("@/presentation/pages/vendor/Dashboard")
@@ -25,6 +29,39 @@ import("@/presentation/pages/vendor/AddVenue"))
 const Settings=lazy(()=>
 import("@/presentation/pages/vendor/Settings"))
 
+// Admin Layout
+const AdminLayout = lazy(() =>
+  import("@/presentation/layouts/AdminLayout")
+);
+
+// Admin Pages
+const AdminDashboard = lazy(() =>
+  import("@/presentation/pages/admin/Dashboard")
+);
+
+const UserManagement = lazy(() =>
+  import("@/presentation/pages/admin/UserManagement")
+);
+
+const VendorManagement = lazy(() =>
+  import("@/presentation/pages/admin/VendorManagement")
+);
+
+const VenueManagement = lazy(() =>
+  import("@/presentation/pages/admin/VenueManagement")
+);
+
+const BookingManagement = lazy(() =>
+  import("@/presentation/pages/admin/BookingManagement")
+);
+
+const PaymentManagement = lazy(() =>
+  import("@/presentation/pages/admin/PaymentManagement")
+);
+
+const CategoryManagement = lazy(() =>
+  import("@/presentation/pages/admin/CategoryManagement")
+);
 
 
 function App() {
@@ -34,6 +71,9 @@ function App() {
       <Routes>
           <Route path={ROUTES.PUBLIC.HOME} element={<Home />}/>
           <Route path={ROUTES.USER.BROWSE_VENUES} element={<BrowseVenues />} />
+          <Route path={ROUTES.USER.PROFILE} element={<UserProfile />} />
+          <Route path={ROUTES.USER.ACCOUNT_SETTINGS} element={<AccountSettings />} />
+          <Route path={ROUTES.USER.WISHLIST} element={<Wishlist />} />
 
           <Route path={ROUTES.VENDOR.DASHBOARD} element={<Dashboard/>}/>
           <Route path={ROUTES.VENDOR.VENUES} element={<VenueList/>}/>
@@ -41,6 +81,48 @@ function App() {
           <Route path={ROUTES.VENDOR.ADD_VENUE} element={<AddVenue/>}/>
           <Route path={ROUTES.VENDOR.PROFILE} element={<Profile/>}/>
           <Route path={ROUTES.VENDOR.SETTINGS} element={<Settings />} />
+
+          {/* Admin Routes */}
+
+          <Route path="/admin" element={<AdminLayout />}>
+
+            <Route
+              path="dashboard"
+              element={<AdminDashboard />}
+            />
+
+            <Route
+              path="users"
+              element={<UserManagement />}
+            />
+
+            <Route
+              path="vendors"
+              element={<VendorManagement />}
+            />
+
+            <Route
+              path="venues"
+              element={<VenueManagement />}
+            />
+
+            <Route
+              path="bookings"
+              element={<BookingManagement />}
+            />
+
+            <Route
+              path="payments"
+              element={<PaymentManagement />}
+            />
+
+            <Route
+              path="categories"
+              element={<CategoryManagement />}
+            />
+
+          </Route>
+
       </Routes>
     </Suspense>
     </BrowserRouter>
