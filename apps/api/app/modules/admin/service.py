@@ -440,7 +440,7 @@ def get_owner_stats(db: Session) -> dict:
     owner_subq = (
         db.query(UserRoleAssignment.user_id)
         .filter(UserRoleAssignment.role == UserRole.venue_owner)
-        .subquery()
+        .scalar_subquery()
     )
     base = db.query(Profile).filter(
         Profile.deleted_at.is_(None),
@@ -486,7 +486,7 @@ def list_users(
         role_subq = (
             db.query(UserRoleAssignment.user_id)
             .filter(UserRoleAssignment.role == UserRole(role))
-            .subquery()
+            .scalar_subquery()
         )
         filtered = filtered.filter(Profile.id.in_(role_subq))
 

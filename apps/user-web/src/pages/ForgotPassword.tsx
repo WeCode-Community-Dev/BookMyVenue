@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { resetPasswordForEmail } from '@venue404/api-client'
+import { createClient, authEndpoints } from '@venue404/api-client'
 import { AuthLayout, AuthCard, Logo } from '@venue404/ui'
 import { VenueFlowPanel } from '../components/VenueFlowPanel'
 
@@ -15,7 +15,7 @@ export default function ForgotPassword() {
     setError(null)
     setSubmitting(true)
     try {
-      await resetPasswordForEmail(email, `${window.location.origin}/reset-password`)
+      await authEndpoints(createClient()).forgotPassword(email, `${window.location.origin}/reset-password`)
       setSent(true)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Could not send reset email. Try again.')

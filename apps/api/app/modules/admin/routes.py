@@ -35,6 +35,7 @@ from app.modules.admin.schemas import (
     ContactOwnerRequest,
     MarkInterestedRequest,
     InviteOwnerRequest,
+    InviteOwnerResponse,
 )
 from app.modules.auth.dependencies import require_admin, AuthContext
 from app.modules.admin import service
@@ -401,18 +402,19 @@ def mark_external_reservation_interested(
     reservation_service.mark_owner_interested(db, admin_id=auth.user_id, reservation_id=reservation_id, reason=body.reason)
 
 
-@router.post("/external-reservations/{reservation_id}/invite-owner", status_code=204)
+@router.post("/external-reservations/{reservation_id}/invite-owner", response_model=InviteOwnerResponse)
 def invite_owner_for_external_reservation(
     reservation_id: UUID,
     body: InviteOwnerRequest,
     auth: AuthContext = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    reservation_service.invite_owner_for_reservation(
+    _reservation, action_link = reservation_service.invite_owner_for_reservation(
         db, admin_id=auth.user_id, reservation_id=reservation_id,
         venue_name=body.venue_name, owner_name=body.owner_name, email=body.email, phone=body.phone,
         category_id=body.category_id,
     )
+    return InviteOwnerResponse(action_link=action_link)
 
 
 @router.post("/external-reservations/{reservation_id}/create-booking", status_code=204)

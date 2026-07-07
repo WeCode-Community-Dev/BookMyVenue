@@ -63,6 +63,10 @@ export type InviteOwnerBody = {
   phone?: string
 }
 
+export type InviteOwnerResponse = {
+  action_link: string
+}
+
 function buildQS(params: ListExternalReservationsParams = {}): string {
   const qs = new URLSearchParams()
   if (params.page) qs.set('page', String(params.page))
@@ -82,8 +86,8 @@ export const adminExternalReservationEndpoints = (client: ReturnType<typeof crea
   markInterested: (reservationId: string, body: { reason?: string } = {}): Promise<void> =>
     client.patch<void>(`/api/admin/external-reservations/${reservationId}/mark-interested`, body),
 
-  inviteOwner: (reservationId: string, body: InviteOwnerBody): Promise<void> =>
-    client.post<void>(`/api/admin/external-reservations/${reservationId}/invite-owner`, body),
+  inviteOwner: (reservationId: string, body: InviteOwnerBody): Promise<InviteOwnerResponse> =>
+    client.post<InviteOwnerResponse>(`/api/admin/external-reservations/${reservationId}/invite-owner`, body),
 
   createBooking: (reservationId: string): Promise<void> =>
     client.post<void>(`/api/admin/external-reservations/${reservationId}/create-booking`, {}),

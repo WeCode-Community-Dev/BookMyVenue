@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { Button, Card } from '@venue404/ui'
 
@@ -136,19 +136,24 @@ export default function MyBookingCard({ booking }: Props) {
           )}
 
           <div className="mt-auto flex items-center justify-end pt-8">
-            <Button
-              onClick={() =>
-                requiresInstantPayment
-                  ? navigate(`/payment/${booking.id}?type=full`)
-                  : requiresAdvance
-                    ? navigate(`/payment/${booking.id}?type=advance`)
-                    : requiresBalance
-                      ? navigate(`/payment/${booking.id}?type=balance`)
-                      : navigate(`/bookings/${booking.id}`)
-              }
-            >
-              {actionLabel}
-            </Button>
+            <div className='flex items-end justify-center gap-2'>
+              <Link to={`/bookings/${booking.id}`} className="mt-8">
+                <Button>View Booking</Button>
+              </Link>
+              <Button
+                onClick={() =>
+                  requiresInstantPayment
+                    ? navigate(`/payment/${booking.id}?type=full`)
+                    : requiresAdvance
+                      ? navigate(`/payment/${booking.id}?type=advance`)
+                      : requiresBalance
+                        ? navigate(`/payment/${booking.id}?type=balance`)
+                        : navigate(`/bookings/${booking.id}`)
+                }
+              >
+                {actionLabel}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

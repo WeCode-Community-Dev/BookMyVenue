@@ -384,5 +384,11 @@ class InviteOwnerRequest(BaseModel):
     category_id: Optional[uuid.UUID] = None
 
 
+class InviteOwnerResponse(BaseModel):
+    # Always populated so the admin can share it manually (WhatsApp, etc.) if
+    # email delivery to the owner failed or isn't configured yet.
+    action_link: str
+
+
 class ReservationActionRequest(BaseModel):
     reason: str = ""

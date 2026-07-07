@@ -98,3 +98,30 @@ def render_notification(
         link = f'<p><a href="{url}">View booking</a></p>'
     html = f"<h2>{title}</h2><p>{body}</p>{link}"
     return title, body, html
+
+
+# ─── Auth emails (invite / password reset) ────────────────────────────────────
+# Not tied to a booking_id or an in-app notification row like the templates
+# above, but kept in this file so all outbound email copy lives in one place.
+
+def render_owner_invite_email(owner_name: str | None, venue_name: str, action_link: str) -> tuple[str, str]:
+    subject = "You're invited to manage your venue on Venue404"
+    html = f"""
+    <h2>You've been invited to Venue404</h2>
+    <p>{owner_name or 'Hi'}, an admin has invited you to manage
+    <strong>{venue_name}</strong> on Venue404.</p>
+    <p><a href="{action_link}">Set your password and get started</a></p>
+    <p>If you weren't expecting this, you can ignore this email.</p>
+    """
+    return subject, html
+
+
+def render_password_reset_email(action_link: str) -> tuple[str, str]:
+    subject = "Reset your Venue404 password"
+    html = f"""
+    <h2>Reset your password</h2>
+    <p>We received a request to reset your Venue404 password.</p>
+    <p><a href="{action_link}">Set a new password</a></p>
+    <p>If you didn't request this, you can ignore this email.</p>
+    """
+    return subject, html

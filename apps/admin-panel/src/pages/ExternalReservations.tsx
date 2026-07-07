@@ -57,6 +57,8 @@ export default function ExternalReservations() {
   const [ownerName, setOwnerName] = useState('')
   const [ownerEmail, setOwnerEmail] = useState('')
   const [ownerPhone, setOwnerPhone] = useState('')
+  const [inviteLink, setInviteLink] = useState<string | null>(null)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin', 'external-reservations', { page, status: activeTab }],
@@ -92,7 +94,7 @@ export default function ExternalReservations() {
         email: ownerEmail,
         phone: ownerPhone || undefined,
       }),
-    onSuccess: () => { invalidate(); closeInvite() },
+    onSuccess: (res) => { invalidate(); setInviteLink(res.action_link) },
   })
 
   const createBookingMutation = useMutation({
@@ -106,6 +108,7 @@ export default function ExternalReservations() {
   }
   function closeInvite() {
     setInviteTarget(null); setVenueName(''); setOwnerName(''); setOwnerEmail(''); setOwnerPhone('')
+    setInviteLink(null); setLinkCopied(false)
     inviteMutation.reset()
   }
 
@@ -245,44 +248,67 @@ export default function ExternalReservations() {
       <Modal open={inviteTarget !== null} onClose={closeInvite}>
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
-            <h3 className="mb-1 text-base font-semibold text-zinc-900">Invite owner</h3>
-            <p className="mb-4 text-sm text-zinc-500">
-              Creates the owner's account and a draft venue in{' '}
-              <span className="font-medium text-zinc-800">{inviteTarget?.category_label ?? 'the category the customer picked'}</span>,
-              then emails them an account-setup link.
-            </p>
-            <div className="space-y-3">
-              <div>
-                <label htmlFor="venue-name">Venue name</label>
-                <input id="venue-name" type="text" value={venueName} onChange={(e) => setVenueName(e.target.value)} autoFocus />
-              </div>
-              <div>
-                <label htmlFor="owner-name">Owner name <span className="font-normal text-zinc-400 text-xs">(optional)</span></label>
-                <input id="owner-name" type="text" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} />
-              </div>
-              <div>
-                <label htmlFor="owner-email">Email</label>
-                <input id="owner-email" type="email" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} />
-              </div>
-              <div>
-                <label htmlFor="owner-phone">Phone <span className="font-normal text-zinc-400 text-xs">(optional)</span></label>
-                <input id="owner-phone" type="tel" value={ownerPhone} onChange={(e) => setOwnerPhone(e.target.value)} />
-              </div>
-              {inviteMutation.error && (
-                <p className="text-xs font-medium text-red-500">
-                  {inviteMutation.error instanceof Error ? inviteMutation.error.message : 'Failed to invite owner'}
+            {inviteLink ? (
+              <>
+                <h3 className="mb-1 text-base font-semibold text-zinc-900">Owner invited</h3>
+                <p className="mb-4 text-sm text-zinc-500">
+                  We tried emailing {ownerEmail} an account-setup link. If email delivery isn't working yet,
+                  copy this link and share it with them directly (WhatsApp, SMS, etc.) — it's one-time use.
                 </p>
-              )}
-            </div>
-            <div className="mt-5 flex justify-end gap-2">
-              <Button variant="secondary" onClick={closeInvite} disabled={inviteMutation.isPending}>Cancel</Button>
-              <button type="button"
-                onClick={() => inviteTarget && inviteMutation.mutate({ id: inviteTarget.id })}
-                disabled={inviteMutation.isPending || !venueName.trim() || !ownerEmail.trim()}
-                className="press rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-hover disabled:opacity-50">
-                {inviteMutation.isPending ? 'Inviting…' : 'Send invite'}
-              </button>
-            </div>
+                <div className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2">
+                  <input readOnly value={inviteLink} className="flex-1 truncate border-0 bg-transparent p-0 text-xs text-zinc-600 focus:ring-0" />
+                  <button type="button"
+                    onClick={() => { navigator.clipboard.writeText(inviteLink); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000) }}
+                    className="press shrink-0 rounded-md bg-zinc-900 px-2.5 py-1 text-xs font-medium text-white hover:bg-zinc-700">
+                    {linkCopied ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+                <div className="mt-5 flex justify-end">
+                  <Button variant="secondary" onClick={closeInvite}>Done</Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="mb-1 text-base font-semibold text-zinc-900">Invite owner</h3>
+                <p className="mb-4 text-sm text-zinc-500">
+                  Creates the owner's account and a draft venue in{' '}
+                  <span className="font-medium text-zinc-800">{inviteTarget?.category_label ?? 'the category the customer picked'}</span>,
+                  then emails them an account-setup link.
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <label htmlFor="venue-name">Venue name</label>
+                    <input id="venue-name" type="text" value={venueName} onChange={(e) => setVenueName(e.target.value)} autoFocus />
+                  </div>
+                  <div>
+                    <label htmlFor="owner-name">Owner name <span className="font-normal text-zinc-400 text-xs">(optional)</span></label>
+                    <input id="owner-name" type="text" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} />
+                  </div>
+                  <div>
+                    <label htmlFor="owner-email">Email</label>
+                    <input id="owner-email" type="email" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} />
+                  </div>
+                  <div>
+                    <label htmlFor="owner-phone">Phone <span className="font-normal text-zinc-400 text-xs">(optional)</span></label>
+                    <input id="owner-phone" type="tel" value={ownerPhone} onChange={(e) => setOwnerPhone(e.target.value)} />
+                  </div>
+                  {inviteMutation.error && (
+                    <p className="text-xs font-medium text-red-500">
+                      {inviteMutation.error instanceof Error ? inviteMutation.error.message : 'Failed to invite owner'}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-5 flex justify-end gap-2">
+                  <Button variant="secondary" onClick={closeInvite} disabled={inviteMutation.isPending}>Cancel</Button>
+                  <button type="button"
+                    onClick={() => inviteTarget && inviteMutation.mutate({ id: inviteTarget.id })}
+                    disabled={inviteMutation.isPending || !venueName.trim() || !ownerEmail.trim()}
+                    className="press rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-hover disabled:opacity-50">
+                    {inviteMutation.isPending ? 'Inviting…' : 'Send invite'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </Modal>

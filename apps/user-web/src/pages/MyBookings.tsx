@@ -150,6 +150,8 @@ export default function MyBookings() {
     CANCELLED_STATUSES.includes(booking.status)
   )
 
+  const featuredBooking = upcomingBookings[0]
+
   const filteredBookings = useMemo(() => {
     switch (activeTab) {
       case 'upcoming':
@@ -168,8 +170,6 @@ export default function MyBookings() {
         return []
     }
   }, [activeTab, upcomingBookings, pendingBookings, pastBookings, cancelledBookings])
-
-  const featuredBooking = upcomingBookings[0]
 
   if (isLoading) {
     return <LoadingScreen />
@@ -197,7 +197,6 @@ export default function MyBookings() {
 
       <div className="mx-auto max-w-6xl px-4 py-8">
 
-        {featuredBooking && <FeaturedBookingHero booking={featuredBooking} />}
         <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -235,9 +234,9 @@ export default function MyBookings() {
           <UserReservations />
         ) : (
           <>
-            {featuredBooking && (
+            {/* {featuredBooking && (
               <FeaturedBookingHero booking={featuredBooking} />
-            )}
+            )} */}
 
             <div className="mb-8 border-b border-zinc-200 dark:border-ink-700">
               <div className="flex gap-8 overflow-x-auto">

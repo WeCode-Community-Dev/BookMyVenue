@@ -60,16 +60,16 @@ def _seed_reservation(db, category_id=None, guest_count=450):
 
 
 def _mock_invite(monkeypatch, db, invited_user_id):
-    def fake_invite_user(self, email, *, full_name=None, phone=None, redirect_to=None):
+    def fake_create_invite_link(self, email, *, full_name=None, phone=None, redirect_to=None):
         # Mirrors what the `handle_new_user` DB trigger does for a real invite.
         db.add(Profile(id=invited_user_id, email=email, full_name=full_name, phone=phone, status=ProfileStatus.active))
         db.add(UserRoleAssignment(user_id=invited_user_id, role=UserRole.customer))
         db.commit()
-        return ProviderUser(id=invited_user_id, email=email)
+        return ProviderUser(id=invited_user_id, email=email), "https://example.com/accept-invite?token=fake"
 
     monkeypatch.setattr(
-        "app.modules.auth.providers.supabase.SupabaseAuthProvider.invite_user",
-        fake_invite_user,
+        "app.modules.auth.providers.supabase.SupabaseAuthProvider.create_invite_link",
+        fake_create_invite_link,
     )
 
 
@@ -95,11 +95,12 @@ def test_reservation_conversion_happy_path(db, category_id, monkeypatch):
     invited_user_id = uuid4()
     _mock_invite(monkeypatch, db, invited_user_id)
 
-    reservation_service.invite_owner_for_reservation(
+    _reservation, action_link = reservation_service.invite_owner_for_reservation(
         db, admin_id=admin_id, reservation_id=reservation.id,
         venue_name="Grand Palace Kochi", owner_name="Ravi Kumar",
         email="ravi@example.com", phone="+911234567890",
     )
+    assert action_link
     db.refresh(reservation)
 
     assert reservation.status == LeadReservationStatus.OWNER_INVITED

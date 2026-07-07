@@ -535,7 +535,7 @@ def invite_owner_for_reservation(
     email: str,
     phone: str | None,
     category_id: UUID | None = None,
-) -> LeadReservation:
+) -> tuple[LeadReservation, str]:
     from datetime import datetime, time, timezone
 
     from app.core.exceptions import ConflictError
@@ -553,7 +553,7 @@ def invite_owner_for_reservation(
     if resolved_category_id is None:
         raise ConflictError("This reservation has no category — pass category_id to invite the owner")
 
-    provider_user = get_auth_provider().invite_user(
+    provider_user, action_link = get_auth_provider().create_invite_link(
         email, full_name=owner_name, phone=phone,
         redirect_to=f"{settings.owner_portal_base_url}/accept-invite",
     )
@@ -576,6 +576,8 @@ def invite_owner_for_reservation(
     # Same creation path (and same defaults) an owner uses through CreateVenueWizard —
     # the draft is a completely ordinary `venues` row that the owner later edits and
     # submits through the normal owner-portal flow.
+    from app.modules.venue.schemas import BookingType
+
     lead = reservation.lead
     venue = create_venue(
         db,
@@ -589,6 +591,11 @@ def invite_owner_for_reservation(
             max_capacity=reservation.guest_count or 100,
             open_time=time(9, 0),
             close_time=time(23, 0),
+            # Single booking type keeps this consistent with the default
+            # pricing_mode ('flat'), which in turn requires a starting price —
+            # both are placeholders the owner fills in for real before submitting.
+            allowed_booking_types=[BookingType.full_day],
+            starting_price_paise=0,
         ),
     )
 
@@ -604,11 +611,24 @@ def invite_owner_for_reservation(
     ))
     db.commit()
     db.refresh(reservation)
-    return reservation
+
+    # Best-effort — email delivery must never undo the invite/venue/role work
+    # above, which already succeeded and is committed by this point.
+    try:
+        from app.core.email import send_email
+        from app.modules.notification.templates import render_owner_invite_email
+
+        subject, html = render_owner_invite_email(owner_name, venue_name, action_link)
+        send_email(email, subject, html)
+    except Exception:
+        logger.warning("Could not email invite link to %s — admin must share it manually", email, exc_info=True)
+
+    return reservation, action_link
 
 
 def create_booking_for_reservation(db: Session, *, admin_id: UUID, reservation_id: UUID):
-    from datetime import datetime, timezone
+    from datetime import datetime, timedelta, timezone
+    from zoneinfo import ZoneInfo
 
     from app.core.exceptions import ConflictError
     from app.modules.admin.models import AdminAction
@@ -623,11 +643,23 @@ def create_booking_for_reservation(db: Session, *, admin_id: UUID, reservation_i
         raise ConflictError("A booking already exists for this reservation")
     if reservation.venue_id is None:
         raise ConflictError("Reservation has no linked venue")
+    if reservation.event_date is None:
+        raise ConflictError("Reservation has no event date")
 
     venue = db.get(Venue, reservation.venue_id)
     cover_photo = db.query(VenuePhoto).filter(
         VenuePhoto.venue_id == venue.id, VenuePhoto.is_cover.is_(True), VenuePhoto.deleted_at.is_(None),
     ).first()
+
+    # No frontend step computes starts_at/ends_at for this flow (unlike the normal
+    # booking form), so derive them the same way it would: event_date + the venue's
+    # own operating hours, localized to the venue's timezone.
+    venue_tz = ZoneInfo(venue.timezone)
+    starts_at = datetime.combine(reservation.event_date, venue.open_time, tzinfo=venue_tz)
+    end_date = reservation.event_date
+    if venue.spans_next_day and venue.close_time <= venue.open_time:
+        end_date += timedelta(days=1)
+    ends_at = datetime.combine(end_date, venue.close_time, tzinfo=venue_tz)
 
     booking = create_booking_request(
         db,
@@ -637,6 +669,8 @@ def create_booking_for_reservation(db: Session, *, admin_id: UUID, reservation_i
             venue_name=venue.name,
             venue_cover_image=cover_photo.image_url if cover_photo else None,
             booking_type="full_day",
+            starts_at=starts_at,
+            ends_at=ends_at,
             booking_date=reservation.event_date,
             guest_count=reservation.guest_count or 1,
             user_notes=reservation.notes,

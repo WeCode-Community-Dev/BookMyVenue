@@ -14,3 +14,8 @@ class AuthMeResponse(BaseModel):
     email: str | None
     profile: ProfileResponse
     roles: list[str]
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+    redirect_to: str
