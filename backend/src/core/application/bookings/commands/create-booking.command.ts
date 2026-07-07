@@ -72,7 +72,7 @@ export class CreateBookingCommand {
     await this.notificationService.trigger({
       subscriberId: dto.userId,
       payload: {
-        title: 'Welcome to bmv',
+        title: 'Booking confirmed',
         message: `Your booking for ${venue.title} has been success`
       }
     })

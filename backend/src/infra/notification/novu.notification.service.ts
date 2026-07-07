@@ -68,7 +68,10 @@ export class NovuNotificationService implements INotificationService {
             to: {
                 subscriberId: input.subscriberId,
             },
-            payload: input.payload,
+            payload: {
+                ...input.payload,
+                actionUrl: 'https://bmv.com'
+            },
         });
 
         return {
