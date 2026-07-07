@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { ownerDashboardController } from '@/controllers/dashboard.controller';
 import * as venueController from '@/controllers/venue.controller';
+import * as bookingController from '@/controllers/booking.controller';
 
 import { authMiddleware } from '@/middlewares/auth.middleware';
 import { authorizeRoles, requireOwnerVerification } from '@/middlewares/role.middleware';
@@ -68,5 +69,15 @@ router
     validateInputs(updateAvailabilitySchema),
     availabilityController.updateAvailability
   );
+
+// Bookings
+router.get('/bookings', bookingController.getOwnerBookings);
+router.get('/bookings/:bookingId', validateObjectId('bookingId'), bookingController.getOwnerBookingById);
+router.patch(
+  '/bookings/:bookingId/status',
+  validateObjectId('bookingId'),
+  requireOwnerVerification,
+  bookingController.updateOwnerBookingStatus
+);
 
 export default router;

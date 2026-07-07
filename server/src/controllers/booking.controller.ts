@@ -13,6 +13,9 @@ import {
   verifyBalancePaymentService,
   calculateQuoteService,
   getBookingByIdService,
+  getOwnerBookingsService,
+  getOwnerBookingByIdService,
+  updateOwnerBookingStatusService,
 } from '@/services/booking.service';
 import { createOrder as createRazorpayOrder } from '@/services/razorpay.service';
 import { CreateBookingPayload } from '@/types/booking.types';
@@ -202,6 +205,65 @@ export const getBookingById = async (req: Request, res: Response, next: NextFunc
 
     const booking = await getBookingByIdService(userId, bookingId);
     success(res, HTTP_STATUS.OK, booking, 'Booking fetched successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /owners/bookings
+export const getOwnerBookings = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const ownerId = req.user?.id;
+    if (!ownerId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const status = req.query.status as string | undefined;
+
+    const result = await getOwnerBookingsService(ownerId, page, limit, status);
+    success(res, HTTP_STATUS.OK, result, 'Owner bookings fetched successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /owners/bookings/:bookingId
+export const getOwnerBookingById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const ownerId = req.user?.id;
+    if (!ownerId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
+
+    const { bookingId } = req.params;
+    if (!bookingId || typeof bookingId !== 'string') {
+      throw new AppError('Invalid Booking ID parameter', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const booking = await getOwnerBookingByIdService(ownerId, bookingId);
+    success(res, HTTP_STATUS.OK, booking, 'Owner booking details fetched successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PATCH /owners/bookings/:bookingId/status
+export const updateOwnerBookingStatus = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const ownerId = req.user?.id;
+    if (!ownerId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
+
+    const { bookingId } = req.params;
+    if (!bookingId || typeof bookingId !== 'string') {
+      throw new AppError('Invalid Booking ID parameter', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const { bookingStatus } = req.body;
+    const updatedBooking = await updateOwnerBookingStatusService(
+      ownerId,
+      bookingId,
+      bookingStatus
+    );
+
+    success(res, HTTP_STATUS.OK, updatedBooking, 'Booking status updated successfully');
   } catch (error) {
     next(error);
   }

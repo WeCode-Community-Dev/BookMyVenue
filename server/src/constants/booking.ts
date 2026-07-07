@@ -32,6 +32,7 @@ export enum BookingScenario {
 export enum CancellationType {
   SYSTEM = 'SYSTEM',
   USER = 'USER',
+  OWNER = 'OWNER',
 }
 
 export enum RefundStatus {

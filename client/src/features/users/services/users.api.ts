@@ -118,12 +118,18 @@ export const usersApi = {
     };
   },
 
-  getBookings: async (): Promise<{
+  getBookings: async (page = 1, limit = 10, status?: string): Promise<{
     success: boolean;
     message: string;
     data: MyBookingsResponse;
   }> => {
-    const res = await apiClient.get('/users/bookings');
+    const params = new URLSearchParams();
+    params.append('page', String(page));
+    params.append('limit', String(limit));
+    if (status && status !== 'all') {
+      params.append('status', status);
+    }
+    const res = await apiClient.get(`/users/bookings?${params.toString()}`);
     const rawData = res.data?.data;
 
     return {
@@ -132,6 +138,7 @@ export const usersApi = {
       data: {
         bookings: rawData?.bookings ?? [],
         totalBookings: rawData?.totalBookings ?? 0,
+        pagination: rawData?.pagination ?? null,
       },
     };
   },
