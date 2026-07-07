@@ -49,12 +49,12 @@ function DateField({
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 min-w-0 px-4 py-3 text-left transition-colors hover:bg-zinc-50 active:bg-zinc-100
-        ${borderRight ? 'border-r border-zinc-200' : ''}`}
+      className={`flex-1 min-w-0 px-4 py-3 text-left transition-colors hover:bg-zinc-50 active:bg-zinc-100 dark:hover:bg-ink-800 dark:active:bg-ink-700
+        ${borderRight ? 'border-r border-zinc-200 dark:border-ink-700' : ''}`}
     >
       <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">{label}</p>
       <p
-        className={`mt-0.5 text-sm font-semibold truncate ${isInvalid ? 'text-red-600' : value ? 'text-zinc-900' : 'text-zinc-400'}`}
+        className={`mt-0.5 text-sm font-semibold truncate ${isInvalid ? 'text-red-600 dark:text-red-400' : value ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'}`}
       >
         {value ?? placeholder}
       </p>
@@ -106,13 +106,13 @@ export function VenueReserveCard({
         : null
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white shadow-lg overflow-hidden">
+    <div className="brand-glow rounded-2xl border border-zinc-200 bg-white shadow-lg overflow-hidden dark:border-ink-700 dark:bg-ink-900">
       {/* Price Header */}
-      <div className="px-6 pt-6 pb-5 border-b border-zinc-100">
+      <div className="px-6 pt-6 pb-5 border-b border-zinc-100 dark:border-ink-800">
         {totalLabel && !quoteLoading ? (
           <div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl font-bold text-zinc-900 underline underline-offset-2">
+              <span className="text-2xl font-bold text-zinc-900 underline underline-offset-2 dark:text-zinc-100">
                 {totalLabel}
               </span>
               <span className="text-sm text-zinc-500">total</span>
@@ -125,7 +125,7 @@ export function VenueReserveCard({
           </div>
         ) : priceDisplay ? (
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold text-zinc-900">{priceDisplay.amount}</span>
+            <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{priceDisplay.amount}</span>
             <span className="text-sm text-zinc-500">/ {priceDisplay.unit}</span>
           </div>
         ) : (
@@ -158,14 +158,14 @@ export function VenueReserveCard({
       {/* Booking Type Toggle */}
       {showTypeToggle && (
         <div className="px-6 pt-4">
-          <div className="flex overflow-hidden rounded-xl border border-zinc-200">
+          <div className="flex overflow-hidden rounded-xl border border-zinc-200 dark:border-ink-700">
             <button
               type="button"
               onClick={() => onBookingTypeChange('full_day')}
               className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
                 bookingType === 'full_day'
-                  ? 'bg-zinc-900 text-white'
-                  : 'bg-white text-zinc-500 hover:bg-zinc-50'
+                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                  : 'bg-white text-zinc-500 hover:bg-zinc-50 dark:bg-ink-900 dark:hover:bg-ink-800'
               }`}
             >
               Full Day
@@ -173,10 +173,10 @@ export function VenueReserveCard({
             <button
               type="button"
               onClick={() => onBookingTypeChange('time_slot')}
-              className={`flex-1 border-l border-zinc-200 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex-1 border-l border-zinc-200 py-2.5 text-sm font-medium transition-colors dark:border-ink-700 ${
                 bookingType === 'time_slot'
-                  ? 'bg-zinc-900 text-white'
-                  : 'bg-white text-zinc-500 hover:bg-zinc-50'
+                  ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                  : 'bg-white text-zinc-500 hover:bg-zinc-50 dark:bg-ink-900 dark:hover:bg-ink-800'
               }`}
             >
               Time Slot
@@ -187,9 +187,9 @@ export function VenueReserveCard({
 
       {/* Date / Time Fields */}
       <div className="px-6 py-4">
-        <div className="overflow-hidden rounded-xl border border-zinc-300">
+        <div className="overflow-hidden rounded-xl border border-zinc-300 dark:border-ink-700">
           {bookingType === 'full_day' ? (
-            <div className="flex divide-x divide-zinc-200">
+            <div className="flex divide-x divide-zinc-200 dark:divide-ink-700">
               <DateField
                 label="Check-in"
                 value={startLabel}
@@ -207,7 +207,7 @@ export function VenueReserveCard({
               />
             </div>
           ) : (
-            <div className="flex divide-x divide-zinc-200">
+            <div className="flex divide-x divide-zinc-200 dark:divide-ink-700">
               <DateField
                 label="Date"
                 value={startLabel}
@@ -230,19 +230,19 @@ export function VenueReserveCard({
           <button
             type="button"
             onClick={onReset}
-            className="mt-2 text-xs text-zinc-400 underline hover:text-zinc-600"
+            className="mt-2 text-xs text-zinc-400 underline hover:text-zinc-600 dark:hover:text-zinc-300"
           >
             Clear dates
           </button>
         )}
         {/* Guests */}
-        <div className="mt-3 overflow-hidden rounded-xl border border-zinc-200">
+        <div className="mt-3 overflow-hidden rounded-xl border border-zinc-200 dark:border-ink-700">
           <div className="flex items-center px-4 py-3">
             <div className="flex-1">
               <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                 Guests
               </p>
-              <p className="mt-0.5 text-sm font-semibold text-zinc-900">
+              <p className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 {venue.min_capacity
                   ? `${venue.min_capacity}–${venue.max_capacity}`
                   : `Up to ${venue.max_capacity}`}{' '}
@@ -271,7 +271,7 @@ export function VenueReserveCard({
         <div className="px-6 pb-2">
           {quoteLoading && <QuoteBreakdown source="quote" quote={{} as PricingQuote} loading />}
           {quoteError && (
-            <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+            <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
               Could not calculate price. Please try again.
             </div>
           )}
@@ -281,7 +281,7 @@ export function VenueReserveCard({
 
       {/* Errors */}
       {slotError && (
-        <div className="mx-6 mb-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="mx-6 mb-4 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
           <svg
             className="h-4 w-4 mt-0.5 shrink-0"
             fill="none"
@@ -300,7 +300,7 @@ export function VenueReserveCard({
       )}
 
       {isInvalidRange && (
-        <div className="mx-6 mb-4 text-sm text-red-600">
+        <div className="mx-6 mb-4 text-sm text-red-600 dark:text-red-400">
           Check-out must be after or on check-in date.
         </div>
       )}
@@ -312,7 +312,7 @@ export function VenueReserveCard({
           <button
             type="button"
             onClick={onEditDates}
-            className="w-full rounded-xl bg-zinc-900 py-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 active:scale-[0.99]"
+            className="w-full rounded-xl bg-zinc-900 py-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 active:scale-[0.99] dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
           >
             Choose a date ↓
           </button>

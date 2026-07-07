@@ -19,12 +19,12 @@ export function ErrorState({
     <div
       className={cn(
         'flex flex-col items-center justify-center px-4 text-center',
-        fullScreen && 'min-h-[100dvh] bg-zinc-50',
+        fullScreen && 'min-h-[100dvh] bg-zinc-50 dark:bg-ink-950',
         !fullScreen && 'py-16',
         className,
       )}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-red-100 bg-red-50">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-red-100 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30">
         <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
@@ -34,7 +34,7 @@ export function ErrorState({
           />
         </svg>
       </div>
-      <h3 className="mt-4 text-base font-semibold text-zinc-900">{title}</h3>
+      <h3 className="mt-4 text-base font-semibold text-zinc-900 dark:text-zinc-100">{title}</h3>
       <p className="mt-1 max-w-xs text-sm text-zinc-500">{message}</p>
       {action && <div className="mt-5">{action}</div>}
     </div>

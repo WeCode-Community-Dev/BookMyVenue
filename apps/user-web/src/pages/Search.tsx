@@ -83,17 +83,15 @@ export default function Search() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-ink-950">
       <HomeNavbar />
 
       <FilterHero
         q={q}
         venueType={venueType}
         city={city}
-        capacity={capacity}
         onQChange={setQ}
         onCityChange={setCity}
-        onCapacityChange={handleCapacityChange}
         onSubmit={handleSearchSubmit}
       />
 

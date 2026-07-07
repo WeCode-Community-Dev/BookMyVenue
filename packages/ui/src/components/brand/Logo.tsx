@@ -30,7 +30,7 @@ export function Logo({ className, textClassName, showText = true, variant = 'lig
         <span
           className={cn(
             'text-[15px] font-semibold tracking-tight',
-            variant === 'light' ? 'text-zinc-900' : 'text-white',
+            variant === 'light' ? 'text-zinc-900 dark:text-zinc-100' : 'text-white',
             textClassName,
           )}
         >

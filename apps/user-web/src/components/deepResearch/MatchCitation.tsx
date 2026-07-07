@@ -42,18 +42,18 @@ export function MatchBadge({ venue }: { venue: MatchDiagnostics }) {
           e.stopPropagation()
           setOpen(true)
         }}
-        className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-brand/15 bg-brand/5 px-2.5 py-1 text-[11px] font-medium text-brand transition-colors hover:bg-brand/10"
+        className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-brand/15 bg-brand/5 px-2.5 py-1 text-[11px] font-medium text-brand transition-colors hover:bg-brand/10 dark:border-brand/25 dark:bg-brand/10 dark:text-brand-secondary dark:hover:bg-brand/15"
       >
         <Icon className="h-3 w-3" />
         {label}
-        <Info className="h-3 w-3 text-brand/60" />
+        <Info className="h-3 w-3 text-brand/60 dark:text-brand-secondary/70" />
       </button>
 
       {open &&
         createPortal(
           <Modal open={open} onClose={() => setOpen(false)} className="max-w-sm">
-            <div className="border-b border-zinc-100 px-6 py-5">
-              <h2 className="text-base font-semibold text-zinc-900">Why this venue matched</h2>
+            <div className="border-b border-zinc-100 px-6 py-5 dark:border-ink-800">
+              <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Why this venue matched</h2>
               <p className="mt-1 text-xs text-zinc-500">
                 From our internal catalog — matched via {label.toLowerCase()}.
               </p>
@@ -75,7 +75,7 @@ export function MatchBadge({ venue }: { venue: MatchDiagnostics }) {
                 value={venue.category_boost != null ? `${venue.category_boost.toFixed(2)}x` : '—'}
                 hint="Ranking bonus when your query's intent matches this venue's category"
               />
-              <div className="mt-4 border-t border-zinc-100 pt-4">
+              <div className="mt-4 border-t border-zinc-100 pt-4 dark:border-ink-800">
                 <Row
                   label="Overall match strength"
                   value={pct(venue.match_score)}
@@ -85,11 +85,11 @@ export function MatchBadge({ venue }: { venue: MatchDiagnostics }) {
               </div>
             </div>
 
-            <div className="flex justify-end border-t border-zinc-100 px-6 py-4">
+            <div className="flex justify-end border-t border-zinc-100 px-6 py-4 dark:border-ink-800">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
+                className="rounded-lg border border-zinc-200 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-ink-700 dark:text-zinc-300 dark:hover:bg-ink-800"
               >
                 Close
               </button>
@@ -115,12 +115,12 @@ function Row({
   return (
     <div className="flex items-start justify-between gap-4">
       <div>
-        <p className={`text-sm ${emphasize ? 'font-semibold text-zinc-900' : 'text-zinc-700'}`}>
+        <p className={`text-sm ${emphasize ? 'font-semibold text-zinc-900 dark:text-zinc-100' : 'text-zinc-700 dark:text-zinc-300'}`}>
           {label}
         </p>
         <p className="mt-0.5 text-xs text-zinc-400">{hint}</p>
       </div>
-      <p className={`shrink-0 text-sm ${emphasize ? 'font-bold text-brand' : 'font-medium text-zinc-900'}`}>
+      <p className={`shrink-0 text-sm ${emphasize ? 'font-bold text-brand dark:text-brand-secondary' : 'font-medium text-zinc-900 dark:text-zinc-100'}`}>
         {value}
       </p>
     </div>

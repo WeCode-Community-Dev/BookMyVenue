@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.exceptions import UnauthorizedError, ForbiddenError
 from app.modules.auth.providers.supabase import SupabaseAuthProvider
-from app.modules.profile.models import Profile, UserRoleAssignment, ProfileStatus
+from app.modules.profile.models import Profile, UserRole, UserRoleAssignment, ProfileStatus
 
 _auth_provider = SupabaseAuthProvider()
 
@@ -64,6 +64,17 @@ def get_current_user(
         UserRoleAssignment.user_id == provider_user.id
     ).all()
 
+    roles = [r.role.value for r in role_rows]
+
+    # Every account carries 'customer' as a baseline role (see CLAUDE.md role
+    # model). Accounts created before the signup trigger existed, or via
+    # out-of-band inserts (admin scripts, direct SQL), may be missing it —
+    # self-heal here so login works without a manual backfill.
+    if UserRole.customer.value not in roles:
+        db.add(UserRoleAssignment(user_id=profile.id, role=UserRole.customer))
+        db.commit()
+        roles.append(UserRole.customer.value)
+
     return AuthContext(
         user_id=profile.id,
         email=provider_user.email,
@@ -71,7 +82,7 @@ def get_current_user(
         phone=profile.phone,
         avatar_url=profile.avatar_url,
         status=profile.status.value,
-        roles=[r.role.value for r in role_rows],
+        roles=roles,
     )
 
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Logo } from '@venue404/ui'
+import { Logo, ThemeToggle } from '@venue404/ui'
 import { useAuth } from '../../lib/AuthContext'
 
 function getInitials(name: string): string {
@@ -30,7 +30,7 @@ function UserMenu({ displayName, onSignOut }: { displayName: string; onSignOut: 
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-zinc-100"
+        className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-zinc-100 dark:hover:bg-ink-800"
         aria-label="Account menu"
       >
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white shadow-sm">
@@ -45,15 +45,15 @@ function UserMenu({ displayName, onSignOut }: { displayName: string; onSignOut: 
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg">
-          <div className="border-b border-zinc-100 px-4 py-3">
-            <p className="truncate text-xs font-semibold text-zinc-900">{displayName}</p>
+        <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-ink-800 dark:bg-ink-900">
+          <div className="border-b border-zinc-100 px-4 py-3 dark:border-ink-800">
+            <p className="truncate text-xs font-semibold text-zinc-900 dark:text-zinc-100">{displayName}</p>
           </div>
           <div className="py-1">
             <Link
               to="/my-bookings"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-ink-800"
             >
               <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -63,7 +63,7 @@ function UserMenu({ displayName, onSignOut }: { displayName: string; onSignOut: 
             <Link
               to="/saved"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-ink-800"
             >
               <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -73,7 +73,7 @@ function UserMenu({ displayName, onSignOut }: { displayName: string; onSignOut: 
             <Link
               to="/profile"
               onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-ink-800"
             >
               <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -81,10 +81,10 @@ function UserMenu({ displayName, onSignOut }: { displayName: string; onSignOut: 
               Profile
             </Link>
           </div>
-          <div className="border-t border-zinc-100 py-1">
+          <div className="border-t border-zinc-100 py-1 dark:border-ink-800">
             <button
               onClick={() => { setOpen(false); onSignOut() }}
-              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-700"
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-ink-800 dark:hover:text-zinc-200"
             >
               <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -103,18 +103,19 @@ export function AppNavbar() {
   const displayName = user?.profile?.full_name ?? user?.email ?? ''
 
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white/95 backdrop-blur-sm">
+    <header className="brand-glow sticky top-0 z-50 border-b border-zinc-100 bg-white/95 backdrop-blur-sm dark:border-ink-800 dark:bg-ink-950/95">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
         <Link to="/">
           <Logo />
         </Link>
 
         <nav className="flex items-center gap-1">
+          <ThemeToggle className="mr-1" />
           {user ? (
             <>
               <Link
                 to="/notifications"
-                className="relative flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800"
+                className="relative flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-ink-800 dark:hover:text-zinc-100"
                 aria-label="Notifications"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,7 +128,7 @@ export function AppNavbar() {
             <>
               <Link
                 to="/login"
-                className="rounded-lg px-3.5 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+                className="rounded-lg px-3.5 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-ink-800 dark:hover:text-zinc-100"
               >
                 Sign in
               </Link>

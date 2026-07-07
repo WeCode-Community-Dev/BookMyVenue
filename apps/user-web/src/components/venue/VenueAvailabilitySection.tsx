@@ -118,7 +118,7 @@ export function VenueAvailabilitySection({
     >
       {/* ── Header ───────────────────────────────────────── */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-zinc-900">{headerText}</h2>
+        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{headerText}</h2>
         {subText && <p className="mt-1 text-sm text-zinc-500">{subText}</p>}
         {!startDate && bookingType === 'full_day' && (
           <p className="mt-1 text-sm text-zinc-400">Click a start date, then click an end date</p>
@@ -141,19 +141,19 @@ export function VenueAvailabilitySection({
 
       {/* ── Time slot picker (time_slot only) ────────────── */}
       {bookingType === 'time_slot' && startDate && (
-        <div className="mt-8 border-t border-zinc-100 pt-8">
-          <h3 className="mb-4 text-base font-semibold text-zinc-900">Select your time</h3>
+        <div className="mt-8 border-t border-zinc-100 pt-8 dark:border-ink-800">
+          <h3 className="mb-4 text-base font-semibold text-zinc-900 dark:text-zinc-100">Select your time</h3>
 
           {availLoading && (
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
               {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="h-10 bg-zinc-100 rounded-xl animate-pulse" />
+                <div key={i} className="h-10 bg-zinc-100 dark:bg-ink-800 rounded-xl animate-pulse" />
               ))}
             </div>
           )}
 
           {availError && (
-            <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+            <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
               Failed to load time slots. Please try again.
             </div>
           )}

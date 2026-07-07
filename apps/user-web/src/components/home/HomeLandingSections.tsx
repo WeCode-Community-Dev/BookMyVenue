@@ -20,7 +20,7 @@ const METRICS = [
 
 export function ProgrammeMetrics() {
   return (
-    <section className="border-y border-zinc-100 bg-zinc-50/60 py-14 sm:py-16">
+    <section className="border-y border-zinc-100 bg-zinc-50/60 py-14 sm:py-16 dark:border-ink-800 dark:bg-ink-900/40">
       <div className="mx-auto max-w-5xl px-6">
         <p className="mb-10 text-center text-xs font-semibold uppercase tracking-widest text-zinc-400">
           What your event programme gets back
@@ -28,7 +28,7 @@ export function ProgrammeMetrics() {
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           {METRICS.map(({ value, label }) => (
             <div key={label} className="text-center">
-              <p className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
+              <p className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-100">
                 {value}
               </p>
               <p className="mt-2 text-sm leading-snug text-zinc-500">{label}</p>
@@ -49,11 +49,11 @@ type FeatureRowProps = { icon: ReactNode; title: string; body: string }
 function FeatureRow({ icon, title, body }: FeatureRowProps) {
   return (
     <div className="flex items-start gap-5">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand dark:bg-brand/15 dark:text-brand-secondary">
         {icon}
       </div>
       <div>
-        <p className="text-sm font-semibold text-zinc-900">{title}</p>
+        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</p>
         <p className="mt-1 text-sm leading-relaxed text-zinc-500">{body}</p>
       </div>
     </div>
@@ -62,18 +62,18 @@ function FeatureRow({ icon, title, body }: FeatureRowProps) {
 
 export function WhyVenue404() {
   return (
-    <section className="bg-white py-16 sm:py-24">
+    <section className="bg-white py-16 sm:py-24 dark:bg-ink-950">
       <div className="mx-auto max-w-5xl px-6">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 lg:items-center">
 
           {/* Left — copy */}
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-brand">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-brand dark:text-brand-secondary">
               Why Venue404
             </p>
-            <h2 className="text-2xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-3xl lg:text-4xl">
+            <h2 className="text-2xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-3xl lg:text-4xl dark:text-zinc-100">
               We don't just list venues.{' '}
-              <span className="text-brand">We find, price, and make booking easy.</span>
+              <span className="text-brand dark:text-brand-secondary">We find, price, and make booking easy.</span>
             </h2>
             <p className="mt-5 text-base leading-relaxed text-zinc-500">
               Other platforms search a database. We search the whole market — including
@@ -135,9 +135,9 @@ export function DeepResearchSection() {
   const navigate = useNavigate()
 
   return (
-    <section className="bg-zinc-50 py-10 sm:py-14">
+    <section className="bg-zinc-50 py-10 sm:py-14 dark:border-y dark:border-ink-800 dark:bg-ink-900/40">
       <div className="mx-auto max-w-5xl px-6">
-        <div className="relative overflow-hidden rounded-3xl bg-zinc-900 px-8 py-12 sm:px-14 sm:py-16">
+        <div className="relative overflow-hidden rounded-3xl bg-zinc-900 px-8 py-12 sm:px-14 sm:py-16 dark:bg-ink-900 dark:ring-1 dark:ring-ink-700">
 
           {/* Background glow blobs */}
           <div className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-brand/20 blur-3xl" aria-hidden="true" />
@@ -164,7 +164,7 @@ export function DeepResearchSection() {
               <button
                 type="button"
                 onClick={() => navigate('/deep-research')}
-                className="mt-8 inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-all hover:bg-brand-hover hover:shadow-brand/30 active:scale-[0.98]"
+                className="mt-8 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition-all hover:bg-brand-hover hover:shadow-brand/30 active:scale-[0.98]"
               >
                 Start Deep Research
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,15 +259,15 @@ const PLATFORM_FEATURES: PlatformFeature[] = [
 
 export function IntelligentPlatform() {
   return (
-    <section className="bg-white py-16 sm:py-24">
+    <section className="bg-white py-16 sm:py-24 dark:bg-ink-950">
       <div className="mx-auto max-w-5xl px-6">
 
         {/* Header */}
         <div className="mb-12 max-w-2xl">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-brand">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-brand dark:text-brand-secondary">
             Platform
           </p>
-          <h2 className="text-2xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-3xl lg:text-4xl">
+          <h2 className="text-2xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-3xl lg:text-4xl dark:text-zinc-100">
             The intelligent venue platform
           </h2>
           <p className="mt-4 text-base leading-relaxed text-zinc-500">
@@ -281,12 +281,12 @@ export function IntelligentPlatform() {
           {PLATFORM_FEATURES.map(({ title, body, icon }) => (
             <div
               key={title}
-              className="group rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 transition-all duration-200 hover:border-brand/20 hover:bg-brand/5 hover:shadow-sm"
+              className="group rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 transition-all duration-200 hover:border-brand/20 hover:bg-brand/5 hover:shadow-sm dark:border-ink-800 dark:bg-ink-900/60"
             >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm text-brand ring-1 ring-zinc-100 transition-all group-hover:bg-brand group-hover:text-white group-hover:shadow-brand/20">
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm text-brand ring-1 ring-zinc-100 transition-all group-hover:bg-brand group-hover:text-white group-hover:shadow-brand/20 dark:bg-ink-800 dark:text-brand-secondary dark:ring-ink-700">
                 {icon}
               </div>
-              <p className="text-sm font-semibold text-zinc-900">{title}</p>
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</p>
               <p className="mt-2 text-sm leading-relaxed text-zinc-500">{body}</p>
             </div>
           ))}

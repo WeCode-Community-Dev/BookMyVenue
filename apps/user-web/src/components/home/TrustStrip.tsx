@@ -39,7 +39,7 @@ const STATS = [
 
 export function TrustStrip() {
   return (
-    <section className="border-t border-zinc-100 bg-zinc-50/50 py-12">
+    <section className="border-t border-zinc-100 bg-zinc-50/50 py-12 dark:border-ink-800 dark:bg-ink-900/40">
       <div className="mx-auto max-w-6xl px-6">
         <p className="mb-8 text-center text-xs font-semibold uppercase tracking-wider text-zinc-400">
           Trusted by event planners across India
@@ -48,12 +48,12 @@ export function TrustStrip() {
           {STATS.map(({ stat, label, icon }) => (
             <div
               key={label}
-              className="flex flex-col items-center gap-2 rounded-2xl border border-zinc-100 bg-white px-4 py-6 shadow-sm text-center"
+              className="flex flex-col items-center gap-2 rounded-2xl border border-zinc-100 bg-white px-4 py-6 shadow-sm text-center dark:border-ink-800 dark:bg-ink-900"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-light dark:bg-brand/15">
                 {icon}
               </div>
-              <p className="text-2xl font-bold tracking-tight text-zinc-900">{stat}</p>
+              <p className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{stat}</p>
               <p className="text-xs text-zinc-400 leading-snug">{label}</p>
             </div>
           ))}

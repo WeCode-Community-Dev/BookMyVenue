@@ -9,16 +9,16 @@ import { getNotificationPath } from '@venue404/ui'
 function NotificationsSkeleton() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 space-y-6">
-      <div className="h-10 w-48 animate-pulse rounded-2xl bg-zinc-100" />
-      <div className="h-4 w-72 animate-pulse rounded-lg bg-zinc-100" />
-      <div className="rounded-2xl border border-zinc-100 bg-white shadow-sm divide-y divide-zinc-100">
+      <div className="h-10 w-48 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
+      <div className="h-4 w-72 animate-pulse rounded-lg bg-zinc-100 dark:bg-ink-800" />
+      <div className="rounded-2xl border border-zinc-100 bg-white shadow-sm divide-y divide-zinc-100 dark:border-ink-800 dark:bg-ink-900 dark:divide-ink-800">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-start gap-3.5 p-5">
-            <div className="h-9 w-9 shrink-0 animate-pulse rounded-xl bg-zinc-100" />
+            <div className="h-9 w-9 shrink-0 animate-pulse rounded-xl bg-zinc-100 dark:bg-ink-800" />
             <div className="flex-1 space-y-2 pt-0.5">
-              <div className="h-3.5 w-32 animate-pulse rounded bg-zinc-100" />
-              <div className="h-3 w-full animate-pulse rounded bg-zinc-100" />
-              <div className="h-3 w-2/3 animate-pulse rounded bg-zinc-100" />
+              <div className="h-3.5 w-32 animate-pulse rounded bg-zinc-100 dark:bg-ink-800" />
+              <div className="h-3 w-full animate-pulse rounded bg-zinc-100 dark:bg-ink-800" />
+              <div className="h-3 w-2/3 animate-pulse rounded bg-zinc-100 dark:bg-ink-800" />
             </div>
           </div>
         ))}
@@ -31,8 +31,8 @@ function NotificationsSkeleton() {
 function NotificationsError({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
-      <div className="rounded-2xl border border-dashed border-zinc-200 py-20 text-center">
-        <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100">
+      <div className="rounded-2xl border border-dashed border-zinc-200 py-20 text-center dark:border-ink-700">
+        <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-ink-800">
           <svg
             className="h-6 w-6 text-zinc-300"
             fill="none"
@@ -47,7 +47,7 @@ function NotificationsError({ onRetry }: { onRetry: () => void }) {
             />
           </svg>
         </div>
-        <p className="text-sm font-semibold text-zinc-900">Couldn't load notifications</p>
+        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Couldn't load notifications</p>
         <p className="mt-1 text-sm text-zinc-400">
           We had trouble fetching your updates. Please try again.
         </p>
@@ -65,8 +65,8 @@ function NotificationsError({ onRetry }: { onRetry: () => void }) {
 // ─── Empty state ──────────────────────────────────────────────────────────────
 function NotificationsEmpty() {
   return (
-    <div className="rounded-2xl border border-dashed border-zinc-200 py-20 text-center">
-      <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50">
+    <div className="rounded-2xl border border-dashed border-zinc-200 py-20 text-center dark:border-ink-700">
+      <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/30">
         <svg
           className="h-6 w-6 text-emerald-400"
           fill="none"
@@ -81,7 +81,7 @@ function NotificationsEmpty() {
           />
         </svg>
       </div>
-      <p className="text-sm font-semibold text-zinc-900">No notifications yet</p>
+      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No notifications yet</p>
       <p className="mt-1 text-sm text-zinc-400">
         We'll let you know when something needs your attention.
       </p>
@@ -133,7 +133,7 @@ export default function Notifications() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white dark:bg-ink-950">
         <AppNavbar />
         <NotificationsSkeleton />
       </div>
@@ -142,7 +142,7 @@ export default function Notifications() {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white dark:bg-ink-950">
         <AppNavbar />
         <NotificationsError onRetry={() => void refetch()} />
       </div>
@@ -150,14 +150,14 @@ export default function Notifications() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-ink-950">
       <AppNavbar />
 
       <div className="mx-auto max-w-3xl px-4 py-8">
         {/* ── Page header ─────────────────────────── */}
         <div className="mb-8 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Notifications</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Notifications</h1>
             <p className="mt-1.5 text-sm text-zinc-500">
               Booking updates, confirmations, and reminders.
             </p>
@@ -166,7 +166,7 @@ export default function Notifications() {
             <button
               onClick={() => markAllReadMutation.mutate(unreadIds)}
               disabled={markAllReadMutation.isPending}
-              className="press shrink-0 rounded-lg px-3 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+              className="press shrink-0 rounded-lg px-3 py-2 text-sm font-semibold text-emerald-600 hover:bg-emerald-50 disabled:opacity-50 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
             >
               Mark all as read
             </button>
@@ -177,7 +177,7 @@ export default function Notifications() {
         {notifications.length === 0 ? (
           <NotificationsEmpty />
         ) : (
-          <div className="rounded-2xl border border-zinc-100 bg-white shadow-sm overflow-hidden">
+          <div className="rounded-2xl border border-zinc-100 bg-white shadow-sm overflow-hidden dark:border-ink-800 dark:bg-ink-900">
             <NotificationList notifications={notifications} onOpen={handleOpen} />
           </div>
         )}

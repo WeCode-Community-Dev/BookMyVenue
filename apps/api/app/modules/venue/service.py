@@ -24,6 +24,7 @@ from app.modules.venue.schemas import (
     CreatePricingRuleRequest,
     UpdatePricingRuleRequest,
     MAX_ACTIVE_PRICING_RULES_PER_VENUE,
+    MIN_VENUE_PHOTOS,
 )
 from app.modules.venue import pricing_engine
 from app.modules.booking.models import BookingType, Booking, BookingStatus
@@ -567,6 +568,12 @@ def submit_venue(db: Session, venue_id: UUID, owner_id: UUID) -> Venue:
         raise ConflictError(
             f"Cannot submit venue in status '{venue.status.value}'. "
             "Only draft or rejected venues can be submitted for review."
+        )
+
+    if len(venue.photos) < MIN_VENUE_PHOTOS:
+        raise ConflictError(
+            f"At least {MIN_VENUE_PHOTOS} photos are required before submitting "
+            f"for review. This venue currently has {len(venue.photos)}."
         )
 
     venue.status = VenueStatus.pending_approval

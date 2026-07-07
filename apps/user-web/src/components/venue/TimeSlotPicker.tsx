@@ -154,13 +154,13 @@ const handleSlotClick = useCallback(
       </div>
 
       {isSelectingEnd && (
-        <div className="mb-3 rounded-lg bg-brand-light px-3 py-2 text-xs text-brand">
+        <div className="mb-3 rounded-lg bg-brand-light px-3 py-2 text-xs text-brand dark:bg-brand/15 dark:text-brand-secondary">
           Start: <strong>{formatTime(selectedStart!)}</strong> — Tap a valid end time
         </div>
       )}
 
       {selectedStartMin != null && selectedEndMin != null && (
-        <div className="mb-3 flex items-center gap-2 text-xs text-zinc-500 bg-brand-light rounded-lg px-3 py-2">
+        <div className="mb-3 flex items-center gap-2 text-xs text-zinc-500 bg-brand-light rounded-lg px-3 py-2 dark:bg-brand/15">
           <svg
             className="h-3.5 w-3.5 text-brand-secondary"
             fill="none"
@@ -176,7 +176,7 @@ const handleSlotClick = useCallback(
           </svg>
           <span>
             {formatTime(selectedStart!)} – {formatTime(selectedEnd!)} ·{' '}
-            <strong className="text-brand">
+            <strong className="text-brand dark:text-brand-secondary">
               {durationLabel(selectedStartMin, selectedEndMin)}
             </strong>
           </span>
@@ -210,13 +210,13 @@ const handleSlotClick = useCallback(
 
           let cls = 'px-3 py-2.5 rounded-xl text-sm font-medium text-center transition-all border '
           if (isStart || isEnd) {
-            cls += 'bg-zinc-900 text-white border-zinc-900 shadow-sm'
+            cls += 'bg-zinc-900 text-white border-zinc-900 shadow-sm dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100'
           } else if (isInRange) {
-            cls += 'bg-blue-50 text-blue-700 border-blue-200'
+            cls += 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900'
           } else if (isDisabled) {
-            cls += 'bg-zinc-50 text-zinc-300 border-zinc-100 cursor-not-allowed'
+            cls += 'bg-zinc-50 text-zinc-300 border-zinc-100 cursor-not-allowed dark:bg-ink-900 dark:text-zinc-700 dark:border-ink-800'
           } else {
-            cls += 'hover:bg-blue-50 hover:border-blue-200 border-zinc-200 active:bg-blue-100'
+            cls += 'hover:bg-blue-50 hover:border-blue-200 border-zinc-200 active:bg-blue-100 dark:border-ink-700 dark:text-zinc-300 dark:hover:bg-blue-950/40 dark:hover:border-blue-900'
           }
 
           const isPeak = peakMinutes?.has(minutes) ?? false

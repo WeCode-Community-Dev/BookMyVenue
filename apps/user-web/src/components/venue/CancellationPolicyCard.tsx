@@ -62,7 +62,7 @@ export function CancellationPolicyCard({ policy }: Props) {
   if (!policy) {
     return (
       <div>
-        <h2 className="text-sm font-semibold text-zinc-900 mb-3">Cancellation Policy</h2>
+        <h2 className="text-sm font-semibold text-zinc-900 mb-3 dark:text-zinc-100">Cancellation Policy</h2>
         <p className="text-sm text-zinc-400 italic">No cancellation policy set by this venue.</p>
       </div>
     )
@@ -72,13 +72,13 @@ export function CancellationPolicyCard({ policy }: Props) {
 
   return (
     <div>
-      <h2 className="text-sm font-semibold text-zinc-900 mb-3">Cancellation Policy</h2>
+      <h2 className="text-sm font-semibold text-zinc-900 mb-3 dark:text-zinc-100">Cancellation Policy</h2>
 
-      <div className="rounded-xl border border-zinc-100 overflow-hidden">
+      <div className="rounded-xl border border-zinc-100 overflow-hidden dark:border-ink-800">
         {tiers.length > 0 ? (
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-zinc-50 border-b border-zinc-100">
+              <tr className="bg-zinc-50 border-b border-zinc-100 dark:bg-ink-900 dark:border-ink-800">
                 <th className="text-left px-4 py-2.5 text-xs font-medium text-zinc-500 uppercase tracking-wide">
                   Cancel at least
                 </th>
@@ -87,17 +87,17 @@ export function CancellationPolicyCard({ policy }: Props) {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-50">
+            <tbody className="divide-y divide-zinc-50 dark:divide-ink-800">
               {tiers.map((tier) => (
-                <tr key={tier.hours} className="bg-white hover:bg-zinc-50/50 transition-colors">
-                  <td className="px-4 py-3 text-zinc-700">{tier.label}</td>
+                <tr key={tier.hours} className="bg-white hover:bg-zinc-50/50 transition-colors dark:bg-ink-950 dark:hover:bg-ink-900/50">
+                  <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">{tier.label}</td>
                   <td className="px-4 py-3 text-right">
                     <RefundPill pct={tier.refundPct} />
                   </td>
                 </tr>
               ))}
               {/* Fallback / last-minute row */}
-              <tr className="bg-white hover:bg-zinc-50/50 transition-colors">
+              <tr className="bg-white hover:bg-zinc-50/50 transition-colors dark:bg-ink-950 dark:hover:bg-ink-900/50">
                 <td className="px-4 py-3 text-zinc-500 italic">
                   {tiers.length > 0 ? 'Less notice / no-show' : 'Any cancellation'}
                 </td>
@@ -109,7 +109,7 @@ export function CancellationPolicyCard({ policy }: Props) {
           </table>
         ) : (
           <div className="px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-zinc-700">Any cancellation</span>
+            <span className="text-sm text-zinc-700 dark:text-zinc-300">Any cancellation</span>
             <RefundPill pct={policy.no_show_refund_pct} />
           </div>
         )}

@@ -12,11 +12,16 @@ export default function LoginSuccess() {
       try {
         const user = await authEndpoints(createClient()).me()
 
-        if (user.roles.includes('customer')) {
+        // Any authenticated user (customer, venue_owner, super_admin, or a
+        // combination) can use user-web — 'customer' is the baseline role
+        // every account should carry, but we don't gate the redirect on it
+        // specifically so admin/owner accounts still land on the site.
+        if (user.roles.length > 0) {
           navigate('/', { replace: true })
           return
         }
 
+        setError('Your account has no assigned role. Please contact support.')
       } catch {
         setError('Session verification failed. Please sign in again.')
       }

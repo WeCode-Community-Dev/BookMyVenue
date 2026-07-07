@@ -55,11 +55,11 @@ function Breadcrumbs() {
         <span key={i} className="flex items-center gap-1.5">
           {i > 0 && <span className="text-zinc-300">&rsaquo;</span>}
           {crumb.href ? (
-            <Link to={crumb.href} className="transition-colors hover:text-zinc-700">
+            <Link to={crumb.href} className="transition-colors hover:text-zinc-700 dark:hover:text-zinc-200">
               {crumb.label}
             </Link>
           ) : (
-            <span className="font-medium text-zinc-700">{crumb.label}</span>
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">{crumb.label}</span>
           )}
         </span>
       ))}
@@ -84,10 +84,10 @@ function ResultsHeading({ total, loading }: { total: number | null; loading: boo
   const suffix = parts.join(' ')
   const label = q && !typeLabel ? `results for "${q}"` : suffix
 
-  if (loading) return <div className="mb-6 h-8 w-64 animate-pulse rounded-lg bg-zinc-200" />
+  if (loading) return <div className="mb-6 h-8 w-64 animate-pulse rounded-lg bg-zinc-200 dark:bg-ink-800" />
 
   return (
-    <h2 className="mb-6 text-2xl font-bold text-zinc-900 sm:text-3xl">
+    <h2 className="mb-6 text-2xl font-bold text-zinc-900 sm:text-3xl dark:text-zinc-100">
       {(total ?? 0) > 0 ? (
         <>
           {total} {label}
@@ -103,7 +103,7 @@ function FilterToggle({ onClick, count }: { onClick: () => void; count: number }
   return (
     <button
       onClick={onClick}
-      className="lg:hidden flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50"
+      className="lg:hidden flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
     >
       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -125,8 +125,8 @@ function FilterToggle({ onClick, count }: { onClick: () => void; count: number }
 
 function EmptyState({ onClearFilters }: { onClearFilters: () => void }) {
   return (
-    <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 py-24 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100">
+    <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 py-24 text-center dark:border-ink-700">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-ink-800">
         <svg
           className="h-6 w-6 text-zinc-300"
           fill="none"
@@ -141,13 +141,13 @@ function EmptyState({ onClearFilters }: { onClearFilters: () => void }) {
           />
         </svg>
       </div>
-      <p className="text-sm font-semibold text-zinc-800">No venues found</p>
+      <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">No venues found</p>
       <p className="mt-1.5 max-w-xs text-sm text-zinc-400">
         Try adjusting your filters or searching a different location.
       </p>
       <button
         onClick={onClearFilters}
-        className="mt-6 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50"
+        className="mt-6 cursor-pointer rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
       >
         Clear all filters
       </button>
@@ -213,8 +213,8 @@ export function VenueGrid({
   }
 
   return (
-    <div className="bg-white">
-      <div className="border-b border-zinc-100 bg-white px-6 py-3.5">
+    <div className="bg-white dark:bg-ink-950">
+      <div className="border-b border-zinc-100 bg-white px-6 py-3.5 dark:border-ink-800 dark:bg-ink-950">
         <div className="mx-auto max-w-7xl px-6">
           <Breadcrumbs />
         </div>
@@ -237,46 +237,33 @@ export function VenueGrid({
                 count={activeFilterCount}
               />
 
-              <div className="relative flex items-center gap-2 ml-auto">
+              <div className="flex items-center gap-2 ml-auto">
                 <span className="hidden text-xs text-zinc-400 sm:block">Sort</span>
                 <select
                   value={sort}
                   onChange={(e) => handleSort(e.target.value as SortKey)}
-                  className="appearance-none rounded-xl border border-zinc-200 bg-white py-2 pl-3.5 pr-8 text-sm text-zinc-700 shadow-sm focus:border-zinc-400 focus:outline-none"
+                  className="rounded-xl border border-zinc-200 bg-white py-2 pl-3.5 text-sm text-zinc-700 shadow-sm focus:border-zinc-400 focus:outline-none dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300"
                 >
                   <option value="recommended">Recommended</option>
                   <option value="price_asc">Price: Low → High</option>
                   <option value="price_desc">Price: High → Low</option>
                   <option value="capacity_desc">Largest first</option>
                 </select>
-                <svg
-                  className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
               </div>
             </div>
 
             {mobileFiltersOpen && (
-              <div className="mb-6 lg:hidden rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+              <div className="mb-6 lg:hidden">
                 <SearchSidebar {...sidebarProps} />
               </div>
             )}
 
             {!loading && error && (
-              <div className="rounded-2xl border border-red-100 bg-red-50 p-10 text-center">
-                <p className="text-sm font-medium text-red-600">{error}</p>
+              <div className="rounded-2xl border border-red-100 bg-red-50 p-10 text-center dark:border-red-900/50 dark:bg-red-950/30">
+                <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>
                 <button
                   onClick={onRetry}
-                  className="mt-4 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                  className="mt-4 cursor-pointer rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-900/50 dark:bg-ink-900 dark:text-red-400 dark:hover:bg-red-950/30"
                 >
                   Try again
                 </button>
@@ -302,7 +289,7 @@ export function VenueGrid({
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -331,10 +318,10 @@ export function VenueGrid({
                     <button
                       key={p}
                       onClick={() => setPage(p)}
-                      className={`flex h-9 w-9 items-center justify-center rounded-xl text-sm font-medium transition-colors ${
+                      className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-sm font-medium transition-colors ${
                         isActive
-                          ? 'bg-zinc-900 text-white'
-                          : 'border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50'
+                          ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                          : 'border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800'
                       }`}
                     >
                       {p}
@@ -345,7 +332,7 @@ export function VenueGrid({
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path

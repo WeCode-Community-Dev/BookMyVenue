@@ -16,6 +16,11 @@ export { Skeleton } from './Skeleton'
 export { cn } from './lib/utils'
 export { formatPaise } from './lib/money'
 
+// Theme
+export { ThemeProvider, useTheme, noFlashThemeScript, THEME_STORAGE_KEY } from './lib/theme'
+export type { ThemeMode } from './lib/theme'
+export { ThemeToggle } from './components/ThemeToggle'
+
 // Payments
 export { PaymentStatusBadge } from './components/payment/PaymentStatusBadge'
 export { ConfirmPaymentDialog } from './components/payment/ConfirmPaymentDialog'

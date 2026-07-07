@@ -18,7 +18,7 @@ export function BookingInformationCard({ booking, venue }: Props) {
   const endTime = formatTimeTz(booking.ends_at, timezone)
 
   return (
-    <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900">
       <div className="space-y-6">
         <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
           Booking Details
@@ -54,22 +54,22 @@ export function BookingInformationCard({ booking, venue }: Props) {
         </div>
 
         {booking.user_notes && (
-          <div className="border-t border-zinc-100 pt-6">
+          <div className="border-t border-zinc-100 pt-6 dark:border-ink-800">
             <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">
               User Notes
             </div>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
               {booking.user_notes}
             </p>
           </div>
         )}
 
         {booking.owner_notes && (
-          <div className="border-t border-zinc-100 pt-6">
+          <div className="border-t border-zinc-100 pt-6 dark:border-ink-800">
             <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">
               Venue Owner Notes
             </div>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
               {booking.owner_notes}
             </p>
           </div>
@@ -89,7 +89,7 @@ function Field({ label, value }: FieldProps) {
   return (
     <div>
       <div className="text-sm text-zinc-500">{label}</div>
-      <div className="mt-1 font-medium text-zinc-900">{value || '—'}</div>
+      <div className="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{value || '—'}</div>
     </div>
   )
 }

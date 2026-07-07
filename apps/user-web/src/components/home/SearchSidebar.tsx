@@ -32,18 +32,18 @@ export function SearchSidebar({
     venueEndpoints(client)
       .getVenueCategories()
       .then(setCategories)
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoadingCategories(false))
   }, [])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-ink-700 dark:bg-ink-900">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-zinc-900">Advanced filters</h3>
+        <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">Advanced filters</h3>
         {hasFilters && (
           <button
             onClick={onClearFilters}
-            className="text-xs text-zinc-400 underline transition-colors hover:text-zinc-700"
+            className="cursor-pointer text-xs text-zinc-400 underline transition-colors hover:text-zinc-700 dark:hover:text-zinc-200"
           >
             Clear all
           </button>
@@ -51,23 +51,23 @@ export function SearchSidebar({
       </div>
 
       <div>
-        <p className="mb-2.5 text-sm font-medium text-zinc-800">Capacity</p>
+        <p className="mb-2.5 text-sm font-medium text-zinc-800 dark:text-zinc-200">Capacity</p>
         <input
           type="number"
           min={1}
           value={capacity}
           onChange={(e) => onCapacityChange(e.target.value)}
           placeholder="Number of people"
-          className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none"
+          className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-100"
         />
       </div>
 
       <div>
-        <p className="mb-2.5 text-sm font-medium text-zinc-800">Venue Type</p>
+        <p className="mb-2.5 text-sm font-medium text-zinc-800 dark:text-zinc-200">Venue Type</p>
         {loadingCategories ? (
           <div className="flex flex-wrap gap-2 animate-pulse">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-8 w-20 rounded-full bg-zinc-100" />
+              <div key={i} className="h-8 w-20 rounded-full bg-zinc-100 dark:bg-ink-800" />
             ))}
           </div>
         ) : (
@@ -79,11 +79,10 @@ export function SearchSidebar({
                   key={c.id}
                   type="button"
                   onClick={() => onVenueTypeChange(active ? '' : c.slug)}
-                  className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all ${
-                    active
-                      ? 'border-zinc-900 bg-zinc-900 text-white'
-                      : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50'
-                  }`}
+                  className={`cursor-pointer rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all ${active
+                    ? 'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
+                    : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800'
+                    }`}
                 >
                   {c.icon && <span className="mr-1">{c.icon}</span>}
                   {c.label}
@@ -94,7 +93,7 @@ export function SearchSidebar({
         )}
       </div>
 
-      <div className="rounded-2xl bg-zinc-900 p-5">
+      <div className="rounded-2xl border border-white/10 bg-zinc-900 p-5">
         <div className="mb-2 flex items-center gap-2">
           <svg className="h-4 w-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -113,7 +112,7 @@ export function SearchSidebar({
         <button
           type="button"
           onClick={() => navigate('/deep-research')}
-          className="w-full rounded-xl bg-brand py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover active:scale-[0.98]"
+          className="w-full cursor-pointer rounded-xl bg-brand py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover active:scale-[0.98]"
         >
           Try Deep Research
         </button>
