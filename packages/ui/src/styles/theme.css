@@ -31,6 +31,17 @@
   --color-brand-light:           #e8f2ee;  /* primary tint — backgrounds */
   --color-brand-light-strong:    #d1e6dc;  /* primary tint — stronger */
   --color-brand-muted:           #9ec5b4;  /* primary tint — rings/borders */
+
+  /* Dark-mode neutrals — tinted toward --color-brand-black instead of
+     plain gray, so dark surfaces read as "the brand" rather than a
+     generic OS dark theme. Use in place of zinc-950/900/800/700/600
+     for any dark: background/border/divide utility. */
+  --color-ink-950: #0a1412;  /* page background */
+  --color-ink-900: #101d1a;  /* card / surface background */
+  --color-ink-850: #152623;  /* elevated surface */
+  --color-ink-800: #1b302b;  /* hover surface, default borders */
+  --color-ink-700: #253f38;  /* stronger borders / dividers */
+  --color-ink-600: #325146;  /* interactive borders on hover */
 }
 
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
@@ -50,14 +61,16 @@
     --color-text:        #18181b; /* zinc-900 */
     --color-border:      #e4e4e7; /* zinc-200 */
     --color-border-strong: #d4d4d8; /* zinc-300 */
+    color-scheme: light;
   }
 
   .dark {
-    --color-surface: #18181b;  /* zinc-900 */
-    --color-bg:      #09090b;  /* zinc-950 */
+    --color-surface: var(--color-ink-900);
+    --color-bg:      var(--color-ink-950);
     --color-text:        #f4f4f5; /* zinc-100 */
-    --color-border:      #27272a; /* zinc-800 */
-    --color-border-strong: #3f3f46; /* zinc-700 */
+    --color-border:      var(--color-ink-800);
+    --color-border-strong: var(--color-ink-700);
+    color-scheme: dark;
   }
 
   *, *::before, *::after {
@@ -76,6 +89,34 @@
   :focus-visible {
     outline: 2px solid var(--color-brand);
     outline-offset: 2px;
+  }
+}
+
+/* ─── Brand glow (dark-mode depth) ──────────────────────────────────────────
+ * A soft radial wash of brand green behind hero/nav/card surfaces in dark
+ * mode, so panels read as lit from within rather than flat gray-on-black.
+ * No-op in light mode. Host element needs `position: relative` (or use
+ * `.brand-glow` which sets it) and `overflow: hidden` to clip the blob.
+ * ────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .brand-glow {
+    position: relative;
+    isolation: isolate;
+  }
+  .brand-glow::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+    background:
+      radial-gradient(ellipse 60% 50% at 15% 0%, rgb(64 138 113 / 0.16), transparent 65%),
+      radial-gradient(ellipse 45% 40% at 100% 100%, rgb(40 90 72 / 0.12), transparent 70%);
+  }
+  .dark .brand-glow::before {
+    opacity: 1;
   }
 }
 
@@ -183,7 +224,7 @@
   .dark input:disabled,
   .dark textarea:disabled,
   .dark select:disabled {
-    background-color: #27272a; /* zinc-800 */
+    background-color: var(--color-ink-800);
     color: #71717a;
   }
 
@@ -254,7 +295,7 @@
     border-color: #d4d4d8;     /* zinc-300 */
   }
   .dark button[data-variant="secondary"]:hover:not(:disabled) {
-    background-color: #27272a; /* zinc-800 */
+    background-color: var(--color-ink-800);
     border-color: var(--color-border-strong);
   }
 
@@ -272,7 +313,7 @@
     color: #18181b;
   }
   .dark button[data-variant="ghost"]:hover:not(:disabled) {
-    background-color: #27272a; /* zinc-800 */
+    background-color: var(--color-ink-800);
     color: #f4f4f5;
   }
 }

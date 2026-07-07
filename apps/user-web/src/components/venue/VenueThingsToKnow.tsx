@@ -12,7 +12,7 @@ function formatTimeStr(t: string): string {
 
 function RuleItem({ text }: { text: string }) {
   return (
-    <li className="flex items-start gap-2.5 text-sm text-zinc-600">
+    <li className="flex items-start gap-2.5 text-sm text-zinc-600 dark:text-zinc-400">
       <svg className="h-4 w-4 shrink-0 mt-0.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
       </svg>
@@ -26,7 +26,7 @@ function Column({ title, icon, items }: { title: string; icon: ReactNode; items:
     <div>
       <div className="mb-4 flex items-center gap-2">
         <span className="text-zinc-500">{icon}</span>
-        <h3 className="text-base font-semibold text-zinc-900">{title}</h3>
+        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">{title}</h3>
       </div>
       <ul className="space-y-3">
         {items.map((item, i) => (
@@ -93,7 +93,7 @@ export function VenueThingsToKnow({ venue }: Props) {
 
   return (
     <div>
-      <h2 className="mb-6 text-xl font-semibold text-zinc-900">Things to know</h2>
+      <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-zinc-100">Things to know</h2>
 
       <div className="grid gap-8 sm:grid-cols-3">
         <Column

@@ -22,9 +22,9 @@ const FALLBACK_GRADIENT: Record<string, string> = {
 function CategorySkeleton() {
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 animate-pulse">
-      <div className="lg:col-span-1 lg:row-span-2 aspect-square sm:aspect-[3/4] rounded-2xl bg-zinc-100" />
+      <div className="lg:col-span-1 lg:row-span-2 aspect-square sm:aspect-[3/4] rounded-2xl bg-zinc-100 dark:bg-ink-800" />
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="aspect-[4/3] rounded-2xl bg-zinc-100" />
+        <div key={i} className="aspect-[4/3] rounded-2xl bg-zinc-100 dark:bg-ink-800" />
       ))}
     </div>
   )
@@ -46,10 +46,10 @@ export function CategorySection({ onCategoryClick }: Props) {
   if (!loading && categories.length === 0) return null
 
   return (
-    <section className="bg-white py-16 sm:py-20">
+    <section className="bg-white py-16 sm:py-20 dark:bg-ink-950">
       <div className="mx-auto max-w-5xl px-6">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
             Find a space for your event
           </h2>
           <p className="mt-2 text-sm text-zinc-400">

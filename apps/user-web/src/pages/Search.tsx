@@ -90,10 +90,8 @@ export default function Search() {
         q={q}
         venueType={venueType}
         city={city}
-        capacity={capacity}
         onQChange={setQ}
         onCityChange={setCity}
-        onCapacityChange={handleCapacityChange}
         onSubmit={handleSearchSubmit}
       />
 

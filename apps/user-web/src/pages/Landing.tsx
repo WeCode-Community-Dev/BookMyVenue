@@ -58,7 +58,7 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-ink-950">
       <HomeNavbar />
 
       <HeroFull

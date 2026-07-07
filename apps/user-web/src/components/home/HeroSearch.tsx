@@ -24,22 +24,10 @@ function FilterHero({
   q,
   venueType,
   city,
-  capacity,
   onQChange,
   onCityChange,
-  onCapacityChange,
   onSubmit,
-}: Pick<
-  Props,
-  | 'q'
-  | 'venueType'
-  | 'city'
-  | 'capacity'
-  | 'onQChange'
-  | 'onCityChange'
-  | 'onCapacityChange'
-  | 'onSubmit'
->) {
+}: Pick<Props, 'q' | 'venueType' | 'city' | 'onQChange' | 'onCityChange' | 'onSubmit'>) {
   const navigate = useNavigate()
   const typeLabel = venueType ? (VENUE_TYPE_LABELS[venueType] ?? venueType) : ''
   const titleParts = [typeLabel ? `${typeLabel} Venues` : '', city ? `in ${city}` : ''].filter(
@@ -57,13 +45,13 @@ function FilterHero({
           budget, we're here to help.
         </p>
 
-        {/* Search pill — now 3 fields: Keyword / Area / People */}
+        {/* Search pill — Keyword / Area */}
         <form
           onSubmit={onSubmit}
-          className="mx-auto mt-8 flex h-[60px] max-w-3xl items-stretch overflow-hidden rounded-2xl bg-white shadow-2xl"
+          className="mx-auto mt-8 flex max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:h-[60px] sm:flex-row sm:items-stretch"
         >
           {/* Keyword */}
-          <div className="flex flex-1 items-center gap-3 px-5">
+          <div className="flex items-center gap-3 px-5 py-3.5 sm:flex-1 sm:py-0">
             <svg
               className="h-4 w-4 shrink-0 text-zinc-400"
               fill="none"
@@ -77,24 +65,19 @@ function FilterHero({
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
             </svg>
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
-                Keyword
-              </p>
-              <input
-                type="text"
-                value={q}
-                onChange={(e) => onQChange(e.target.value)}
-                placeholder="Venue name or type"
-                className={INPUT_BASE}
-              />
-            </div>
+            <input
+              type="text"
+              value={q}
+              onChange={(e) => onQChange(e.target.value)}
+              placeholder="Venue name or type"
+              className={`min-w-0 flex-1 ${INPUT_BASE}`}
+            />
           </div>
 
-          <div className="my-3.5 w-px bg-zinc-100" />
+          <div className="mx-5 h-px bg-zinc-100 sm:mx-0 sm:my-3.5 sm:h-auto sm:w-px" />
 
           {/* City / Area */}
-          <div className="flex flex-1 items-center gap-3 px-5">
+          <div className="flex items-center gap-3 px-5 py-3.5 sm:flex-1 sm:py-0">
             <svg
               className="h-4 w-4 shrink-0 text-zinc-400"
               fill="none"
@@ -108,53 +91,19 @@ function FilterHero({
                 d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
               />
             </svg>
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Area</p>
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => onCityChange(e.target.value)}
-                placeholder="Any area"
-                className={INPUT_BASE}
-              />
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="my-3.5 w-px bg-zinc-100" />
-
-          {/* Capacity */}
-          <div className="flex flex-1 items-center gap-3 px-5">
-            <svg
-              className="h-4 w-4 shrink-0 text-zinc-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">People</p>
-              <input
-                type="number"
-                min={1}
-                value={capacity}
-                onChange={(e) => onCapacityChange(e.target.value)}
-                placeholder="Any capacity"
-                className={INPUT_BASE}
-              />
-            </div>
+            <input
+              type="text"
+              value={city}
+              onChange={(e) => onCityChange(e.target.value)}
+              placeholder="Any area"
+              className={`min-w-0 flex-1 ${INPUT_BASE}`}
+            />
           </div>
 
           {/* Search button */}
           <button
             type="submit"
-            className="flex shrink-0 items-center gap-2 bg-brand px-7 text-sm font-bold text-white transition-colors hover:bg-brand-hover"
+            className="flex cursor-pointer items-center justify-center gap-2 rounded-b-2xl bg-brand px-7 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-hover sm:shrink-0 sm:rounded-b-none sm:rounded-r-2xl sm:py-0"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -188,7 +137,7 @@ function FilterHero({
           <button
             type="button"
             onClick={() => navigate('/deep-research')}
-            className="text-zinc-300 transition-colors hover:text-white"
+            className="cursor-pointer text-zinc-300 transition-colors hover:text-white"
           >
             Try Deep Research, we'll source options not listed anywhere →
           </button>
@@ -231,14 +180,14 @@ function HeroFull({
 }: Omit<Props, 'capacity' | 'onCapacityChange'>) {
   return (
     <>
-      <section className="bg-white pb-10 pt-16 sm:pt-24">
+      <section className="brand-glow bg-white pb-10 pt-16 sm:pt-24 dark:bg-ink-950">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-4 py-1.5 text-xs font-semibold text-brand">
             <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
             Venue discovery &amp; booking · India
           </div>
 
-          <h1 className="text-4xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-5xl lg:text-[3.25rem]">
+          <h1 className="text-4xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-5xl lg:text-[3.25rem] dark:text-zinc-100">
             Venue booking, <span className="text-brand">accelerated.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-zinc-500">
@@ -248,9 +197,9 @@ function HeroFull({
 
           <form
             onSubmit={onSubmit}
-            className="mx-auto mt-9 flex h-14 max-w-2xl items-stretch overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl shadow-zinc-200/60 transition-shadow focus-within:border-brand/40 focus-within:shadow-brand/10"
+            className="mx-auto mt-9 flex h-14 max-w-2xl items-stretch overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl shadow-zinc-200/60 transition-shadow focus-within:border-brand/40 focus-within:shadow-brand/10 dark:border-ink-700 dark:bg-ink-900 dark:shadow-none"
           >
-            <div className="flex flex-1 items-center gap-3 px-5">
+            <div className="flex items-center gap-3 px-5 py-3.5 sm:flex-1 sm:py-0">
               <svg
                 className="h-4 w-4 shrink-0 text-zinc-400"
                 fill="none"
@@ -268,12 +217,12 @@ function HeroFull({
                 type="text"
                 value={q}
                 onChange={(e) => onQChange(e.target.value)}
-                placeholder="Venue name, type, or keyword..."
-                className={`flex-1 min-w-0 ${INPUT_BASE}`}
+                placeholder="Venue name or keyword ..."
+                className={`flex-1 min-w-0 dark:text-zinc-100 ${INPUT_BASE}`}
               />
             </div>
 
-            <div className="hidden sm:flex items-center gap-2.5 border-l border-zinc-100 px-5">
+            <div className="hidden sm:flex items-center gap-2.5 border-l border-zinc-100 px-5 dark:border-ink-800">
               <svg
                 className="h-3.5 w-3.5 shrink-0 text-zinc-400"
                 fill="none"
@@ -292,13 +241,13 @@ function HeroFull({
                 value={city}
                 onChange={(e) => onCityChange(e.target.value)}
                 placeholder="City"
-                className={`w-28 ${INPUT_BASE}`}
+                className={`w-28 dark:text-zinc-100 ${INPUT_BASE}`}
               />
             </div>
 
             <button
               type="submit"
-              className="shrink-0 bg-brand px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+              className="shrink-0 cursor-pointer rounded-r-2xl bg-brand px-7 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
             >
               Find venues
             </button>
@@ -312,11 +261,10 @@ function HeroFull({
                   key={c.venue_type}
                   type="button"
                   onClick={() => onCategoryClick(c.venue_type)}
-                  className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
-                    active
-                      ? 'border-brand bg-brand text-white shadow-sm'
-                      : 'border-zinc-200 bg-zinc-50 text-zinc-600 hover:border-brand/40 hover:bg-brand/5 hover:text-brand'
-                  }`}
+                  className={`flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${active
+                    ? 'border-brand bg-brand text-white shadow-sm'
+                    : 'border-zinc-200 bg-zinc-50 text-zinc-600 hover:border-brand/40 hover:bg-brand/5 hover:text-brand dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300'
+                    }`}
                 >
                   <span>{c.icon}</span>
                   {c.label}
@@ -327,7 +275,7 @@ function HeroFull({
               <button
                 type="button"
                 onClick={onClearFilters}
-                className="flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-100 transition-colors"
+                className="flex cursor-pointer items-center gap-1 rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-100 transition-colors"
               >
                 <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -344,7 +292,7 @@ function HeroFull({
         </div>
       </section>
 
-      <div className="border-y border-zinc-100 bg-zinc-50/70">
+      <div className="border-y border-zinc-100 bg-zinc-50/70 dark:border-ink-800 dark:bg-ink-900/40">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-8 gap-y-2.5 px-6 py-3.5">
           {[
             { icon: '★', text: '4.8 average rating' },
@@ -374,10 +322,8 @@ export function HeroSearch(props: Props) {
         q={props.q}
         venueType={props.venueType}
         city={props.city}
-        capacity={props.capacity}
         onQChange={props.onQChange}
         onCityChange={props.onCityChange}
-        onCapacityChange={props.onCapacityChange}
         onSubmit={props.onSubmit}
       />
     )

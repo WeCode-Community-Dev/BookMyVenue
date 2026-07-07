@@ -19,10 +19,10 @@ export function AmenitiesList({ amenities }: Props) {
   if (amenities.length === 0) {
     return (
       <div>
-        <h2 className="mb-3 text-lg font-semibold text-zinc-900">What this venue offers</h2>
-        <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50 px-5 py-8 text-center">
+        <h2 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">What this venue offers</h2>
+        <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50 px-5 py-8 text-center dark:border-ink-700 dark:bg-ink-900">
           <div className="mb-2 flex justify-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-ink-800">
               <svg className="h-5 w-5 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
@@ -39,13 +39,13 @@ export function AmenitiesList({ amenities }: Props) {
 
   return (
     <div>
-      <h2 className="mb-5 text-lg font-semibold text-zinc-900">What this venue offers</h2>
+      <h2 className="mb-5 text-lg font-semibold text-zinc-900 dark:text-zinc-100">What this venue offers</h2>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {visible.map((a) => (
           <div
             key={a.id}
-            className="flex items-center gap-3 rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm text-zinc-700"
+            className="flex items-center gap-3 rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 dark:border-ink-800 dark:bg-ink-900 dark:text-zinc-300"
           >
             {a.icon ? (
               <span className="shrink-0 text-lg leading-none">{a.icon}</span>
@@ -60,7 +60,7 @@ export function AmenitiesList({ amenities }: Props) {
       {hasMore && (
         <button
           onClick={() => setExpanded(v => !v)}
-          className="mt-4 flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 active:scale-[0.97]"
+          className="mt-4 flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 active:scale-[0.97] dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
         >
           {expanded ? (
             <>

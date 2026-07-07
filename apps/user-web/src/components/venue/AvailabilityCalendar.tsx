@@ -43,7 +43,7 @@ type MonthGridProps = {
 
 function DaySkeleton({ compact }: { compact?: boolean }) {
   const sz = compact ? 'h-8 w-8' : 'h-10 w-10'
-  return <div className={`${sz} rounded-full bg-zinc-100 animate-pulse`} />
+  return <div className={`${sz} rounded-full bg-zinc-100 dark:bg-ink-800 animate-pulse`} />
 }
 
 function MonthGrid({
@@ -75,7 +75,7 @@ function MonthGrid({
         {DAY_LABELS.map((label) => (
           <div
             key={label}
-            className={`text-center ${compact ? 'text-[10px]' : 'text-xs'} font-medium text-zinc-400 py-1`}
+            className={`text-center ${compact ? 'text-[10px]' : 'text-xs'} font-medium text-zinc-400 dark:text-zinc-500 py-1`}
           >
             {compact ? label[0] : label}
           </div>
@@ -135,16 +135,16 @@ function MonthGrid({
           // Circle button
           let btnClass = `relative z-10 flex flex-col items-center justify-center ${btnSize} rounded-full font-medium transition-colors `
           if (isStart || isEnd) {
-            btnClass += 'bg-zinc-900 text-white shadow-sm'
+            btnClass += 'bg-zinc-900 text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-900'
           } else if (isInRange || isHovering) {
-            btnClass += 'text-zinc-800 font-semibold'
+            btnClass += 'text-zinc-800 font-semibold dark:text-zinc-200'
           } else if (isDisabled) {
-            btnClass += 'text-zinc-300 cursor-not-allowed line-through'
+            btnClass += 'text-zinc-300 cursor-not-allowed line-through dark:text-zinc-700'
           } else {
             btnClass +=
               calDay?.status === 'partially_booked'
-                ? 'text-zinc-700 hover:bg-amber-50 cursor-pointer'
-                : 'text-zinc-700 hover:bg-brand-light cursor-pointer'
+                ? 'text-zinc-700 hover:bg-amber-50 cursor-pointer dark:text-zinc-300 dark:hover:bg-amber-950/30'
+                : 'text-zinc-700 hover:bg-brand-light cursor-pointer dark:text-zinc-300 dark:hover:bg-brand/15'
           }
 
           return (
@@ -185,17 +185,17 @@ function MonthGrid({
 function Legend() {
   return (
     <div className="flex items-center gap-4">
-      <LegendItem color="bg-zinc-900" label="Selected" />
+      <LegendItem color="bg-zinc-900 dark:bg-zinc-100" label="Selected" />
       <LegendItem color="bg-brand-light" label="Range" />
       <LegendItem dot="bg-amber-400" label="Partial" />
-      <LegendItem color="bg-zinc-200" label="Unavailable" />
+      <LegendItem color="bg-zinc-200 dark:bg-ink-700" label="Unavailable" />
     </div>
   )
 }
 
 function LegendItem({ color, dot, label }: { color?: string; dot?: string; label: string }) {
   return (
-    <span className="flex items-center gap-1.5 text-xs text-zinc-400">
+    <span className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
       {dot ? (
         <span className="relative flex h-4 w-4 items-center justify-center">
           <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
@@ -251,7 +251,7 @@ export function AvailabilityCalendar({ venueId, selectedDate, onDateSelect }: Si
         <button
           onClick={() => setViewDate(addMonths(viewDate, -1))}
           disabled={!canGoPrev}
-          className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:text-zinc-200 dark:hover:bg-ink-800"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -267,7 +267,7 @@ export function AvailabilityCalendar({ venueId, selectedDate, onDateSelect }: Si
         </span>
         <button
           onClick={() => setViewDate(addMonths(viewDate, 1))}
-          className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+          className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 dark:hover:text-zinc-200 dark:hover:bg-ink-800"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -287,7 +287,7 @@ export function AvailabilityCalendar({ venueId, selectedDate, onDateSelect }: Si
         onDayClick={onDateSelect}
         onDayHover={() => {}}
       />
-      <div className="mt-3 pt-3 border-t border-zinc-100">
+      <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-ink-800">
         <Legend />
       </div>
     </div>
@@ -398,7 +398,7 @@ export function AvailabilityCalendarDouble({
             <button
               onClick={() => setViewDate(addMonths(viewDate, -1))}
               disabled={!canGoPrev}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors dark:hover:bg-ink-800"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -409,7 +409,7 @@ export function AvailabilityCalendarDouble({
                 />
               </svg>
             </button>
-            <span className="text-sm font-semibold text-zinc-900">{label1}</span>
+            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label1}</span>
             <div className="h-8 w-8" />
           </div>
           <MonthGrid
@@ -427,10 +427,10 @@ export function AvailabilityCalendarDouble({
         <div>
           <div className="mb-5 flex items-center justify-between">
             <div className="h-8 w-8" />
-            <span className="text-sm font-semibold text-zinc-900">{label2}</span>
+            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label2}</span>
             <button
               onClick={() => setViewDate(addMonths(viewDate, 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 transition-colors dark:hover:bg-ink-800"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -455,12 +455,12 @@ export function AvailabilityCalendarDouble({
       </div>
 
       {/* ── Footer ───────────────────────────────────────────── */}
-      <div className="mt-5 flex items-center justify-between border-t border-zinc-100 pt-4">
+      <div className="mt-5 flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-ink-800">
         <Legend />
         {(startDate || endDate) && (
           <button
             onClick={onClear}
-            className="text-sm font-medium text-zinc-500 underline underline-offset-2 hover:text-zinc-900 transition-colors"
+            className="text-sm font-medium text-zinc-500 underline underline-offset-2 hover:text-zinc-900 transition-colors dark:hover:text-zinc-100"
           >
             Clear dates
           </button>

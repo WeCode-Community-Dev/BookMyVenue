@@ -32,19 +32,19 @@ function Row({
 }) {
   return (
     <div
-      className={`flex items-center justify-between py-2.5 ${!muted ? 'border-b border-zinc-100' : ''}`}
+      className={`flex items-center justify-between py-2.5 ${!muted ? 'border-b border-zinc-100 dark:border-ink-800' : ''}`}
     >
       <span className={`text-sm ${muted ? 'text-zinc-400' : 'text-zinc-500'}`}>{label}</span>
       {loading ? (
-        <span className="h-4 w-20 rounded bg-zinc-100 animate-pulse" />
+        <span className="h-4 w-20 rounded bg-zinc-100 dark:bg-ink-800 animate-pulse" />
       ) : (
         <span
           className={`text-sm ${
             bold
-              ? 'text-base font-semibold text-zinc-900'
+              ? 'text-base font-semibold text-zinc-900 dark:text-zinc-100'
               : muted
                 ? 'text-zinc-400'
-                : 'font-medium text-zinc-700'
+                : 'font-medium text-zinc-700 dark:text-zinc-300'
           }`}
         >
           {value}
@@ -58,7 +58,7 @@ function Row({
 
 function BalanceDueNotice({ date }: { date: string }) {
   return (
-    <div className="mt-3 flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+    <div className="mt-3 flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
       <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
@@ -92,11 +92,11 @@ export function QuoteBreakdown(props: Props) {
     const payout = loading ? '—' : formatPrice(quote?.owner_payout_paise ?? null)
 
     return (
-      <div className="rounded-2xl border border-zinc-100 bg-white px-4 py-1 shadow-sm">
+      <div className="rounded-2xl border border-zinc-100 bg-white px-4 py-1 shadow-sm dark:border-ink-800 dark:bg-ink-900">
         <Row label="Total price" value={quoted} bold loading={loading} />
         <Row label="Advance due now" value={advance} loading={loading} />
         <Row label="Balance due later" value={balance} loading={loading} />
-        <div className="mt-1 border-t border-zinc-100 pt-1">
+        <div className="mt-1 border-t border-zinc-100 pt-1 dark:border-ink-800">
           <Row label="Platform fee" value={fee} muted loading={loading} />
           <Row label="Owner receives" value={payout} muted loading={loading} />
         </div>
