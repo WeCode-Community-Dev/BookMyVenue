@@ -38,7 +38,7 @@ export class PaymentController {
         @CurrentUser() user: TokenPayload,
         @Body() data: VerifyPaymentDto
     ) {
-        return this.verifyPaymentCommand.execute(data);
+        return this.verifyPaymentCommand.execute(data, user.userId);
     }
 
 }

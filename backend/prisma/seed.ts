@@ -85,12 +85,6 @@ async function main() {
   });
   const prisma = new PrismaClient({ adapter });
 
-  const isSeeded = await prisma.users.findFirst()
-  if (isSeeded) {
-    console.log("Database already seeded!,skipping...");
-    return
-  }
-
   try {
     console.log('🌱  Starting database seed…\n');
 
@@ -107,9 +101,13 @@ async function main() {
     // ── 1. Users ───────────────────────────────────────────────────
     console.log('👤  Seeding users…');
     const hashedPassword = await hashPassword('password123');
+    const adminId = '14d1f934-0e40-4c9a-b0cb-5922af2b3074'
+    const owenrId = '4bb43d76-6646-45e5-8a79-4aeb1ff8ec95'
+    const userId = 'e3780270-8f0d-4eb1-86e6-0139ca7ab8ed'
 
     const admin = await prisma.users.create({
       data: {
+        id: adminId,
         email: 'admin@bmv.com',
         password: hashedPassword,
         first_name: 'Super',
@@ -122,6 +120,7 @@ async function main() {
 
     const owner1 = await prisma.users.create({
       data: {
+        id: owenrId,
         email: 'owner@bmv.com',
         password: hashedPassword,
         first_name: 'Owner',
@@ -158,6 +157,7 @@ async function main() {
 
     const user1 = await prisma.users.create({
       data: {
+        id: userId,
         email: 'user@bmv.com',
         password: hashedPassword,
         first_name: 'John',
@@ -500,64 +500,6 @@ async function main() {
 
     console.log('✅  6 bookings created.\n');
 
-    // ── 5. Payments ────────────────────────────────────────────────
-    console.log('💳  Seeding payments…');
-
-    await prisma.payments.createMany({
-      data: [
-        {
-          booking_id: booking1.id,
-          provider: 'razorpay',
-          provider_payment_id: 'pay_RZP_001_abc123xyz',
-          amount: 240000.0,
-          status: 'PAID',
-          paid_at: daysAgo(29),
-        },
-        {
-          booking_id: booking2.id,
-          provider: 'razorpay',
-          provider_payment_id: 'pay_RZP_002_def456uvw',
-          amount: 250000.0,
-          status: 'PAID',
-          paid_at: daysAgo(59),
-        },
-        {
-          booking_id: booking3.id,
-          provider: 'razorpay',
-          provider_payment_id: 'pay_RZP_003_ghi789rst',
-          amount: 95000.0,
-          status: 'PAID',
-          paid_at: daysAgo(4),
-        },
-        {
-          booking_id: booking4.id,
-          provider: 'stripe',
-          provider_payment_id: 'pi_stripe_004_jkl012mno',
-          amount: 70000.0,
-          status: 'PAID',
-          paid_at: daysAgo(1),
-        },
-        {
-          booking_id: booking5.id,
-          provider: 'razorpay',
-          provider_payment_id: 'pay_RZP_005_pqr345stu',
-          amount: 55000.0,
-          status: 'REFUNDED',
-          paid_at: daysAgo(14),
-        },
-        {
-          booking_id: booking6.id,
-          provider: 'razorpay',
-          provider_payment_id: null,
-          amount: 38000.0,
-          status: 'INITIATED',
-          paid_at: null,
-        },
-      ],
-    });
-
-    console.log('✅  6 payment records created.\n');
-
     // ── Summary ────────────────────────────────────────────────────
     console.log('─'.repeat(50));
     console.log('🎉  Seed complete! Summary:');
@@ -575,7 +517,6 @@ async function main() {
     console.log(`    • 8 venues (5 approved, 1 pending, 1 rejected)`);
     console.log(`    • ${imageInserts.length} venue images`);
     console.log(`    • 6 bookings`);
-    console.log(`    • 6 payments (4 paid, 1 refunded, 1 pending)`);
     console.log('─'.repeat(50));
   } finally {
     await prisma.$disconnect();

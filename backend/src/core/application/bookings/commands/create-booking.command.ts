@@ -8,6 +8,7 @@ import { BusinessRuleException } from '../../../domain/_shared/exception/busines
 import * as crypto from 'crypto';
 import { BookingStatus } from 'src/core/domain/bookings/enum/booking-status.enum';
 import { PaymentStatus } from 'src/core/domain/_shared/enum/PaymentStatus.enum';
+import type { INotificationService } from 'src/core/domain/notification/notification.service.interface';
 
 export interface CreateBookingDto {
   userId: string;
@@ -24,6 +25,8 @@ export class CreateBookingCommand {
     private readonly bookingRepository: IBookingRepository,
     @Inject('IVenueRepository')
     private readonly venueRepository: IVenueRepository,
+    @Inject('INotificationService')
+    private readonly notificationService: INotificationService
   ) { }
 
   async execute(dto: CreateBookingDto): Promise<{ bookingId: string; totalAmount: number }> {
@@ -65,6 +68,14 @@ export class CreateBookingCommand {
     booking.calculateTotalAmount(venue.pricePerDay);
 
     await this.bookingRepository.save(booking);
+
+    await this.notificationService.trigger({
+      subscriberId: dto.userId,
+      payload: {
+        title: 'Welcome to bmv',
+        message: `Your booking for ${venue.title} has been success`
+      }
+    })
 
     return {
       bookingId,

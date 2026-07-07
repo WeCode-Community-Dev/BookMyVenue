@@ -9,3 +9,7 @@ export const PAYMENT_CONFIG = {
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID!,
     RAZORPAY_SECRET: process.env.RAZORPAY_SECRET!,
 }
+
+export const NOTIFICATION_CONFIG = {
+    NOVU_SECRET_KEY: process.env.NOVU_SECRET_KEY!
+}

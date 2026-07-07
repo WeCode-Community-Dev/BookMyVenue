@@ -5,6 +5,7 @@ import { type IPasswordHasher } from '../../users/services/password-hasher.inter
 import { BusinessRuleException } from '../../../domain/_shared/exception/business-rule.exception';
 import * as crypto from 'crypto';
 import type { UserRole } from 'src/core/domain/_shared/enum/UserRole';
+import type { INotificationService } from 'src/core/domain/notification/notification.service.interface';
 
 export interface CreateUserDto {
   email: string;
@@ -22,6 +23,8 @@ export class CreateUserCommand {
     private readonly userRepository: IUserRepository,
     @Inject('IPasswordHasher')
     private readonly passwordHasher: IPasswordHasher,
+    @Inject('INotificationService')
+    private readonly notificationService: INotificationService
   ) { }
 
   async execute(dto: CreateUserDto): Promise<{ userId: string }> {
@@ -47,6 +50,22 @@ export class CreateUserCommand {
     });
 
     await this.userRepository.save(user);
+
+    await this.notificationService.createSubscriber({
+      email: user.email,
+      subscriberId: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName || '',
+      phone: user.phone || ''
+    })
+
+    await this.notificationService.trigger({
+      subscriberId: user.id,
+      payload: {
+        title: 'Welcome to bmv',
+        message: `Hi ${user.firstName}, welcome to BMV. we are happy to see here`
+      }
+    })
 
     return { userId };
   }

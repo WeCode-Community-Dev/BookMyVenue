@@ -2,6 +2,7 @@ import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common
 import { PaymentStatus } from 'src/core/domain/_shared/enum/PaymentStatus.enum';
 import { BusinessRuleException } from 'src/core/domain/_shared/exception/business-rule.exception';
 import type { IBookingRepository } from 'src/core/domain/bookings/repositories/booking-repository.interface';
+import type { INotificationService } from 'src/core/domain/notification/notification.service.interface';
 import type { IPaymentProvider } from 'src/core/domain/payment/payment-provider.interface';
 import type { IPaymentRepository } from 'src/core/domain/payment/repositories/payment-repository.interface';
 
@@ -23,10 +24,11 @@ export class VerifyPaymentCommandHandler {
         private readonly bookingRepository: IBookingRepository,
         @Inject('IPaymentProvider')
         private readonly paymentProvider: IPaymentProvider,
-
+        @Inject('INotificationService')
+        private readonly notificationService: INotificationService
     ) { }
 
-    async execute(command: VerifyPaymentCommand) {
+    async execute(command: VerifyPaymentCommand, userId) {
 
         const payment = await this.paymentRepository.findByProviderOrderId(
             command.providerOrderId,
@@ -69,6 +71,14 @@ export class VerifyPaymentCommandHandler {
 
         await this.bookingRepository.update(payment.bookingId, {
             paymentStatus: PaymentStatus.PAID
+        })
+
+        await this.notificationService.trigger({
+            subscriberId: userId,
+            payload: {
+                title: "Payment success",
+                message: `Your recent payment is success`
+            }
         })
 
         return {

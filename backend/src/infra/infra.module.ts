@@ -11,6 +11,7 @@ import { PrismaDashboardRepository } from './repositories/prisma-dashboard.repos
 import { PrismaPaymentRepository } from './repositories/prisma-payment.repository';
 import { RazorpayPaymentProvider } from './payment/razorpay-provider';
 import { Argon2PasswordHasher } from './services/argon-password-hasher';
+import { NovuNotificationService } from './notification/novu.notification.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -63,6 +64,10 @@ import { Argon2PasswordHasher } from './services/argon-password-hasher';
     {
       provide: 'ILogger',
       useClass: ConsoleLogger
+    },
+    {
+      provide: 'INotificationService',
+      useClass: NovuNotificationService
     }
   ],
   exports: [
@@ -77,7 +82,8 @@ import { Argon2PasswordHasher } from './services/argon-password-hasher';
     'IDashboardRepository',
     'IPaymentRepository',
     'IPaymentProvider',
-    'ILogger'
+    'ILogger',
+    'INotificationService'
   ],
 })
 export class InfraModule { } 
