@@ -10,7 +10,8 @@ export const ROUTES = {
         VENUE_DETAILS: '/user/venue/:id',
         ACCOUNT_SETTINGS: '/user/accountsettings',
         WISHLIST: '/user/wishlist',
-        BOOKINGS: '/user/bookings'
+        BOOKINGS: '/user/bookings',
+        BOOKING_DETAIL: '/user/bookings/:bookingId'
     },
     VENDOR: {
         DASHBOARD: '/vendor/dashboard',

@@ -9,6 +9,8 @@ const Home = lazy(() => import("@/presentation/pages/Home"))
 const UserProfile = lazy(() => import("@/presentation/pages/user/UserProfile"))
 const AccountSettings = lazy(() => import("@/presentation/pages/user/AccountSettings"))
 const Wishlist = lazy(() => import("@/presentation/pages/user/Wishlist"))
+const UserBookings = lazy(() => import("@/presentation/pages/user/BookingHistory"))
+const UserBookingsDetail = lazy(() => import("@/presentation/pages/user/BookingDetail"))
 
 const Dashboard=lazy(()=>
 import("@/presentation/pages/vendor/Dashboard")
@@ -74,6 +76,8 @@ function App() {
           <Route path={ROUTES.USER.PROFILE} element={<UserProfile />} />
           <Route path={ROUTES.USER.ACCOUNT_SETTINGS} element={<AccountSettings />} />
           <Route path={ROUTES.USER.WISHLIST} element={<Wishlist />} />
+          <Route path={ROUTES.USER.BOOKINGS} element={<UserBookings />} />
+          <Route path={ROUTES.USER.BOOKING_DETAIL} element={<UserBookingsDetail />}/>
 
           <Route path={ROUTES.VENDOR.DASHBOARD} element={<Dashboard/>}/>
           <Route path={ROUTES.VENDOR.VENUES} element={<VenueList/>}/>

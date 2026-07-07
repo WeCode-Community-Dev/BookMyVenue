@@ -18,6 +18,9 @@ export const API_ROUTES = {
           GET: "/user/wishlist",
           ADD: (venueId) => `/user/wishlist/${venueId}`,
           REMOVE: (venueId) => `/user/wishlist/${venueId}`,
+        },
+        BOOKINGS: {
+          BOOKINGS: "user/bookings"
         }
     },
    ADMIN: {
