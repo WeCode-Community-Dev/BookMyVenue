@@ -1,5 +1,8 @@
 import { formatPrice } from '../../utils'
 import type { SearchResult } from '../../types'
+import { useLikes } from '../../lib/useLikes'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../../lib/AuthContext'
 
 type Props = { venue: SearchResult; onClick: () => void }
 
@@ -38,6 +41,21 @@ export function VenueCard({ venue, onClick }: Props) {
     : venue.starting_price_paise != null
       ? `From ${formatPrice(venue.starting_price_paise)}${unitSuffix}`
       : null
+
+  const { isLiked, toggleLike } = useLikes()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const liked = isLiked(venue.id)
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!user) {
+      navigate('/login', { state: { from: location.pathname } })
+      return
+    }
+    toggleLike(venue.id)
+  }
 
   return (
     <article
@@ -93,20 +111,20 @@ export function VenueCard({ venue, onClick }: Props) {
         )}
 
         <button
-          onClick={(e) => e.stopPropagation()}
+          onClick={handleLike}
           className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-110"
-          aria-label="Save venue"
+          aria-label={liked ? 'Unsave venue' : 'Save venue'}
         >
           <svg
-            className="h-4 w-4 text-zinc-400 transition-colors hover:text-red-400"
-            fill="none"
+            className={`h-4 w-4 transition-colors ${liked ? 'text-red-500' : 'text-zinc-400 hover:text-red-400'}`}
+            fill={liked ? 'currentColor' : 'none'}
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={1.75}
+              strokeWidth={liked ? 1 : 1.75}
               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
             />
           </svg>

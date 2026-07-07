@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
 import { createClient, bookingEndpoints } from '@venue404/api-client'
@@ -12,6 +12,7 @@ import type { BookingOut } from '../types'
 
 import BookingCard from '../components/booking/BookingCard'
 import BookingStatusBadge from '../components/booking/BookingStatusBadge'
+import { UserReservations } from '../components/booking/UserReservations'
 
 import { formatDate } from '../utils'
 
@@ -115,6 +116,11 @@ function TabButton({
 
 export default function MyBookings() {
   const client = createClient()
+  const location = useLocation()
+
+  const [masterTab, setMasterTab] = useState<'bookings' | 'reservations'>(
+    location.state?.tab === 'reservations' ? 'reservations' : 'bookings'
+  )
 
   const [activeTab, setActiveTab] = useState<BookingTab>('upcoming')
 
@@ -199,6 +205,48 @@ export default function MyBookings() {
         </div>
 
         {featuredBooking && <FeaturedBookingHero booking={featuredBooking} />}
+        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-zinc-900">
+              My Bookings
+            </h1>
+            <p className="mt-2 max-w-2xl text-zinc-500">
+              Manage reservations, complete payments, and track upcoming events.
+            </p>
+          </div>
+          
+          {/* Master View Switcher */}
+          <div className="flex h-10 shrink-0 items-center rounded-xl bg-zinc-200/50 p-1">
+            <button
+              onClick={() => setMasterTab('bookings')}
+              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${
+                masterTab === 'bookings'
+                  ? 'bg-white text-zinc-900 shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-700'
+              }`}
+            >
+              Platform Bookings
+            </button>
+            <button
+              onClick={() => setMasterTab('reservations')}
+              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${
+                masterTab === 'reservations'
+                  ? 'bg-white text-zinc-900 shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-700'
+              }`}
+            >
+              Venue Requests
+            </button>
+          </div>
+        </div>
+
+        {masterTab === 'reservations' ? (
+          <UserReservations />
+        ) : (
+          <>
+            {featuredBooking && (
+              <FeaturedBookingHero booking={featuredBooking} />
+            )}
 
         <div className="mb-8 border-b border-zinc-200">
           <div className="flex gap-8 overflow-x-auto">
@@ -247,6 +295,8 @@ export default function MyBookings() {
               <BookingCard key={booking.id} booking={booking} />
             ))}
           </div>
+        )}
+          </>
         )}
       </div>
     </div>

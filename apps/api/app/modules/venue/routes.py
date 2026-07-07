@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.modules.auth.dependencies import require_owner, AuthContext
+from app.modules.auth.dependencies import require_owner, require_auth, get_current_user_optional, AuthContext
 from app.modules.venue.schemas import (
     VenueResponse,
     VenueListResponse,
@@ -281,6 +281,27 @@ def list_pending_venue_bookings(
 
 
 
+# User routes
+
+@router.get("/likes", response_model=list[UUID])
+def get_liked_venue_ids(
+    auth: AuthContext = Depends(require_auth),
+    db: Session = Depends(get_db),
+):
+    return service.get_liked_venue_ids(db, auth.user_id)
+
+
+@router.post("/{venue_id}/like", response_model=dict)
+def toggle_venue_like(
+    venue_id: UUID,
+    auth: AuthContext = Depends(require_auth),
+    db: Session = Depends(get_db),
+):
+    is_liked = service.toggle_venue_like(db, venue_id, auth.user_id)
+    return {"is_liked": is_liked}
+
+
+
 # Public routes
 
 @router.get("/categories", response_model=list[VenueCategoryResponse])
@@ -296,10 +317,11 @@ def get_platform_amenities(db: Session = Depends(get_db)):
 @router.get("/{identifier}", response_model=VenueResponse)
 def get_venue(
     identifier: str,
+    auth: AuthContext | None = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
 
-    return service.get_venue(db, identifier)
+    return service.get_venue(db, identifier, user_id=auth.user_id if auth else None)
 
 
 @router.get("/{venue_id}/pricing", response_model=PricingPreviewResponse)

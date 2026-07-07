@@ -1,5 +1,6 @@
 from typing import Optional
 from uuid import UUID
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -28,3 +29,46 @@ class DeepResearchSearchResponse(BaseModel):
     query_id: UUID
     understanding: QueryUnderstanding
     internal_results: Page[SearchResult]
+
+
+class TriggerExternalDiscoveryRequest(BaseModel):
+    query_id: UUID
+    latitude: float
+    longitude: float
+
+
+class ExternalLeadPublic(BaseModel):
+    id: UUID
+    name: str
+    city: Optional[str] = None
+    formatted_address: Optional[str] = None
+    cover_photo_url: Optional[str] = None
+    category_guess: Optional[str] = None
+    source: str
+    disclaimer: str = (
+        "Not verified on Venue404. Reservation is a request only, subject to "
+        "availability, and includes an additional platform fee."
+    )
+
+
+class ReserveLeadRequest(BaseModel):
+    event_date: Optional[str] = None
+    guest_count: Optional[int] = None
+    phone: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class ReserveLeadResponse(BaseModel):
+    reservation_id: UUID
+    status: str
+
+
+class UserReservationResponse(BaseModel):
+    id: UUID
+    lead: ExternalLeadPublic
+    status: str
+    event_date: Optional[str] = None
+    guest_count: Optional[int] = None
+    phone: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime

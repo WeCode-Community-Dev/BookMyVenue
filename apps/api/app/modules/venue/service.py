@@ -7,7 +7,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.exceptions import NotFoundError, ForbiddenError, ConflictError
-from app.modules.venue.models import Venue, VenueCategory, VenueStatus, VenueAvailability, VenueBlockedDate, VenueCancellationPolicy, VenueAmenity, Amenity, VenuePhoto, VenuePricingRule
+from app.modules.venue.models import Venue, VenueCategory, VenueStatus, VenueAvailability, VenueBlockedDate, VenueCancellationPolicy, VenueAmenity, Amenity, VenuePhoto, VenuePricingRule, VenueLike
 from app.modules.venue.schemas import (
     CreateVenueRequest,
     UpdateVenueRequest,
@@ -128,10 +128,10 @@ def get_venue_categories(db: Session) -> list[VenueCategory]:
 def get_platform_amenities(db: Session) -> list[Amenity]:
     return db.query(Amenity).filter(Amenity.deleted_at.is_(None)).order_by(Amenity.name.asc()).all()
 
-def get_venue(db: Session, identifier: str) -> Venue:
+def get_venue(db: Session, identifier: str, user_id: UUID | None = None) -> Venue:
     try:
         venue_id = UUID(identifier)
-        return _get_active_venue_or_404(db, venue_id)
+        venue = _get_active_venue_or_404(db, venue_id)
     except ValueError:
         venue = db.query(Venue).filter(
             Venue.slug == identifier,
@@ -141,7 +141,27 @@ def get_venue(db: Session, identifier: str) -> Venue:
         ).first()
         if not venue:
             raise NotFoundError("Venue not found")
-        return venue
+    return venue
+
+
+def toggle_venue_like(db: Session, venue_id: UUID, user_id: UUID) -> bool:
+    venue = _get_active_venue_or_404(db, venue_id)
+    like = db.query(VenueLike).filter(VenueLike.user_id == user_id, VenueLike.venue_id == venue.id).first()
+    
+    if like:
+        db.delete(like)
+        db.commit()
+        return False
+    else:
+        new_like = VenueLike(user_id=user_id, venue_id=venue.id)
+        db.add(new_like)
+        db.commit()
+        return True
+
+
+def get_liked_venue_ids(db: Session, user_id: UUID) -> list[UUID]:
+    likes = db.query(VenueLike).filter(VenueLike.user_id == user_id).all()
+    return [like.venue_id for like in likes]
 
 
 def get_pricing_preview(

@@ -4,6 +4,8 @@ import type { Venue, VenuePhoto, Amenity, VenueAvailability, BlockedDate, VenueC
 export const venueEndpoints = (client: ReturnType<typeof createClient>) => ({
   getVenueCategories: () => client.get<VenueCategory[]>('/api/venues/categories'),
   getVenue: (id: string) => client.get<Venue>(`/api/venues/${id}`),
+  toggleVenueLike: (id: string) => client.post<{ is_liked: boolean }>(`/api/venues/${id}/like`, {}),
+  getLikedVenueIds: () => client.get<string[]>('/api/venues/likes'),
   createVenue: (body: unknown) => client.post<Venue>('/api/venues/', body),
   updateVenue: (id: string, body: unknown) => client.patch<Venue>(`/api/venues/${id}`, body),
   addVenuePhoto: (id: string, body: FormData) =>

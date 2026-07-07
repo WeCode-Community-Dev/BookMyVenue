@@ -75,6 +75,18 @@ def get_current_user(
     )
 
 
+def get_current_user_optional(
+    authorization: str | None = Header(default=None),
+    db: Session = Depends(get_db),
+) -> AuthContext | None:
+    if not authorization:
+        return None
+    try:
+        return get_current_user(authorization, db)
+    except Exception:
+        return None
+
+
 def require_auth(
     current_user: AuthContext = Depends(get_current_user),
 ) -> AuthContext:

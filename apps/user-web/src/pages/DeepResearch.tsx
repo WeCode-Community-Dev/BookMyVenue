@@ -20,6 +20,8 @@ import { AppNavbar } from '../components/shared/AppNavbar'
 import { VenueCard } from '../components/home/VenueCard'
 import { StageProgress, type ResearchStage } from '../components/deepResearch/StageProgress'
 import { MatchBadge } from '../components/deepResearch/MatchCitation'
+import { ExternalVenueCard } from '../components/deepResearch/ExternalVenueCard'
+import type { ExternalLeadPublic } from '@venue404/api-client'
 
 const EXAMPLE_PROMPTS = [
   'Wedding hall in Bangalore for 300 guests, under 5 lakhs',
@@ -41,6 +43,11 @@ export default function DeepResearch() {
   const [stage, setStage] = useState<ResearchStage>('understanding')
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
+  // External discovery state — simple: idle | locating | loading | completed | failed
+  const [extStatus, setExtStatus] = useState<'idle' | 'locating' | 'loading' | 'completed' | 'failed'>('idle')
+  const [extLeads, setExtLeads] = useState<ExternalLeadPublic[]>([])
+  const [extError, setExtError] = useState<string | null>(null)
+
   useEffect(() => {
     return () => {
       timers.current.forEach(clearTimeout)
@@ -60,7 +67,51 @@ export default function DeepResearch() {
     timers.current.forEach(clearTimeout)
     timers.current = []
     setStage('understanding')
+    
+    // reset external state
+    setExtStatus('idle')
+    setExtLeads([])
+    setExtError(null)
+
     searchMutation.mutate(query.trim())
+  }
+
+  function handleTriggerExternal() {
+    const queryId = searchMutation.data?.query_id
+    if (!queryId) return
+
+    if (!navigator.geolocation) {
+      setExtStatus('failed')
+      setExtError('Geolocation is not supported by your browser.')
+      return
+    }
+
+    setExtStatus('locating')
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        setExtStatus('loading')
+        try {
+          const endpoints = deepResearchEndpoints(client)
+          const leads = await endpoints.triggerExternal(
+            queryId,
+            pos.coords.latitude,
+            pos.coords.longitude,
+          )
+          setExtLeads(leads)
+          setExtStatus('completed')
+        } catch (err) {
+          console.error(err)
+          setExtStatus('failed')
+          setExtError('External search failed. Please try again.')
+        }
+      },
+      (err) => {
+        console.error(err)
+        setExtStatus('failed')
+        setExtError('Could not get your location. We need it to find venues near you.')
+      },
+      { timeout: 10000 },
+    )
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -258,31 +309,67 @@ export default function DeepResearch() {
               </div>
             )}
 
-            {/* Phase 2 (external discovery) is a teammate's in-progress
-                endpoint — POST /api/deep-research/external {query_id}. Wired
-                as a disabled placeholder here so the UI is ready the moment
-                it ships. */}
-            <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 text-center">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-400 ring-1 ring-zinc-100">
-                <Globe2 className="h-4 w-4" />
-              </span>
-              <p className="text-sm font-semibold text-zinc-900">Still not finding the right fit?</p>
-              <p className="max-w-sm text-xs leading-relaxed text-zinc-400">
-                We can search beyond our marketplace and get back to you with venues that aren't
-                listed anywhere else yet.
-              </p>
-              <button
-                type="button"
-                disabled
-                title="Coming soon"
-                className="mt-2 inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-400 opacity-70"
-              >
-                Search externally
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-400">
-                  Soon
+            {/* ── External discovery results ─────────────────────────────── */}
+            {extStatus === 'completed' && extLeads.length > 0 ? (
+              <div className="mt-12 border-t border-zinc-100 pt-10">
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-zinc-900">
+                      Discovered externally
+                    </h2>
+                    <p className="mt-1 text-sm text-zinc-500">
+                      We searched beyond our catalog based on your location.
+                    </p>
+                  </div>
+                  <span className="flex items-center gap-1.5 rounded-full border border-orange-200/60 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                    <Globe2 className="h-3.5 w-3.5" />
+                    Web Results
+                  </span>
+                </div>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {extLeads.map((lead) => (
+                    <ExternalVenueCard key={lead.id} lead={lead} />
+                  ))}
+                </div>
+              </div>
+            ) : extStatus === 'completed' && extLeads.length === 0 ? (
+              <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 py-10 text-center">
+                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400">
+                  <SearchX className="h-5 w-5" />
                 </span>
-              </button>
-            </div>
+                <p className="text-sm font-semibold text-zinc-900">No external venues found</p>
+                <p className="max-w-xs text-xs text-zinc-400">
+                  We searched near you but couldn't find any unlisted venues matching your criteria.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 text-center transition-all">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-400 ring-1 ring-zinc-100">
+                  <Globe2 className={`h-4 w-4 ${['locating', 'loading'].includes(extStatus) ? 'animate-pulse text-brand' : ''}`} />
+                </span>
+                <p className="text-sm font-semibold text-zinc-900">
+                  {extStatus === 'locating' ? 'Getting your location...'
+                    : extStatus === 'loading' ? 'Searching externally...'
+                    : 'Still not finding the right fit?'}
+                </p>
+                <p className="max-w-sm text-xs leading-relaxed text-zinc-400">
+                  {extError || "We can search beyond our marketplace and find venues that aren't listed anywhere else yet."}
+                </p>
+                {extStatus === 'idle' || extStatus === 'failed' ? (
+                  <button
+                    type="button"
+                    onClick={handleTriggerExternal}
+                    className="mt-2 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm ring-1 ring-inset ring-zinc-300 hover:bg-zinc-50 transition-all hover:text-zinc-900"
+                  >
+                    Search externally
+                  </button>
+                ) : (
+                  <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-brand animate-pulse">
+                    Searching the web — this usually takes ~5 seconds...
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
       )}

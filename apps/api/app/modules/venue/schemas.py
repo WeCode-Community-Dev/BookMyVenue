@@ -238,6 +238,7 @@ class VenueResponse(BaseModel):
     photos: list[VenuePhotoResponse] = Field(default_factory=list)
     amenities: list[AmenityResponse] = Field(default_factory=list)
     cancellation_policy: Optional[CancellationPolicyResponse] = None
+    is_liked: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -511,6 +512,7 @@ class VenueSearchResult(BaseModel):
     hourly_rate_paise: Optional[int] = None
     cover_photo_url: Optional[str] = None
     status: VenueStatus
+    is_liked: bool = False
 
     model_config = {"from_attributes": True}
 
