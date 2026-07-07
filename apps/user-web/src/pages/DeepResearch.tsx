@@ -67,7 +67,7 @@ export default function DeepResearch() {
     timers.current.forEach(clearTimeout)
     timers.current = []
     setStage('understanding')
-    
+
     // reset external state
     setExtStatus('idle')
     setExtLeads([])
@@ -147,7 +147,7 @@ export default function DeepResearch() {
         <div className="relative mx-auto w-full max-w-2xl px-6 text-center">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-3.5 py-1.5 text-xs font-semibold text-brand backdrop-blur-sm dark:border-brand-secondary/30 dark:bg-white/5 dark:text-brand-secondary">
             <Sparkles className="h-3.5 w-3.5" />
-            Deep Research
+            Deep Research <span className="rounded-full bg-brand/10 px-2 py-0.5 text-brand-secondary">Beta with 4 daily searches</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl lg:text-[2.75rem] dark:text-white">
             Describe the venue you need.
@@ -344,7 +344,7 @@ export default function DeepResearch() {
               </div>
             ) : extStatus === 'completed' && extLeads.length === 0 ? (
               <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 py-10 text-center dark:border-ink-700">
-                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 dark:bg-ink-800">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 dark:bg-ink-800">
                   <SearchX className="h-5 w-5" />
                 </span>
                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No external venues found</p>
@@ -360,7 +360,7 @@ export default function DeepResearch() {
                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   {extStatus === 'locating' ? 'Getting your location...'
                     : extStatus === 'loading' ? 'Searching externally...'
-                    : 'Still not finding the right fit?'}
+                      : 'Still not finding the right fit?'}
                 </p>
                 <p className="max-w-sm text-xs leading-relaxed text-zinc-400">
                   {extError || "We can search beyond our marketplace and find venues that aren't listed anywhere else yet."}
