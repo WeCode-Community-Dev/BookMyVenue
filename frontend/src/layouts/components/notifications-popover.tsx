@@ -79,14 +79,15 @@ export function NotificationsPopover({ sx, ...other }: NotificationsPopoverProps
 
       handleClosePopover();
 
-      const url = notification.redirect?.url;
-      if (!url) return;
+      // const url = notification.redirect?.url;
+      // if (!url) return;
+      return
 
-      if (notification.redirect?.target === '_blank' || /^https?:\/\//i.test(url)) {
-        window.open(url, notification.redirect?.target ?? '_blank');
-      } else {
-        router.push(url);
-      }
+      // if (notification.redirect?.target === '_blank' || /^https?:\/\//i.test(url)) {
+      //   window.open(url, notification.redirect?.target ?? '_blank');
+      // } else {
+      //   router.push(url);
+      // }
     },
     [handleClosePopover, router]
   );
@@ -227,8 +228,16 @@ type NotificationItemProps = {
   onClick: (notification: NovuNotification) => void;
 };
 
+function getIcon(message: string) {
+  if (message.includes('welcome')) return 'mdi:human-welcome'
+  if (message.includes('booking') || message.includes('reservation')) return 'solar:calendar-mark-bold-duotone'
+  if (message.includes('payment')) return 'solar:wallet-money-bold-duotone'
+  return 'solar:bell-bing-bold-duotone'
+}
+
 function NotificationItem({ notification, onClick }: NotificationItemProps) {
   const { avatarUrl, title } = renderContent(notification);
+
 
   return (
     <ListItemButton
@@ -243,9 +252,9 @@ function NotificationItem({ notification, onClick }: NotificationItemProps) {
       }}
     >
       <ListItemAvatar>
-        <Avatar src={notification.avatar} sx={{ bgcolor: 'background.neutral' }}>
-          {avatarUrl}
-        </Avatar>
+        <Iconify
+          icon={getIcon(notification.body)}
+        />
       </ListItemAvatar>
       <ListItemText
         primary={title}
@@ -271,6 +280,22 @@ function NotificationItem({ notification, onClick }: NotificationItemProps) {
 
 // ----------------------------------------------------------------------
 
+function getNotificationIcon(notification: NovuNotification) {
+  const text = `${notification.subject ?? ''} ${notification.body ?? ''}`.toLowerCase();
+
+  if (text.includes('welcome')) {
+    return 'solar:hand-stars-bold-duotone';
+  }
+  if (text.includes('booking') || text.includes('reservation')) {
+    return 'solar:calendar-mark-bold-duotone';
+  }
+  if (text.includes('payment') || text.includes('paid') || text.includes('refund') || text.includes('invoice')) {
+    return 'solar:wallet-money-bold-duotone';
+  }
+
+  return 'solar:bell-bing-bold-duotone';
+}
+
 function renderContent(notification: NovuNotification) {
   const title = (
     <Typography variant="subtitle2">
@@ -285,7 +310,7 @@ function renderContent(notification: NovuNotification) {
 
   return {
     avatarUrl: notification.avatar ? null : (
-      <Iconify width={24} icon="solar:bell-bing-bold-duotone" />
+      <Iconify width={24} icon={getNotificationIcon(notification)} />
     ),
     title,
   };

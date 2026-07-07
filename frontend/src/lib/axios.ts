@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type AxiosError } from 'axios';
 
 import { tokenStorage } from './token';
 
@@ -38,34 +38,31 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
     (response) => response,
 
-    async (error) => {
-        const originalRequest =
-            error.config;
+    async (error: AxiosError) => {
+        const originalRequest = error.config as any;
 
         if (
             error.response?.status !== 401 ||
-            originalRequest._retry
+            originalRequest?._retry
         ) {
-            return Promise.reject(error);
+            return Promise.reject(normalizeAxiosError(error));
         }
 
         originalRequest._retry = true;
 
         try {
-            const refreshToken =
-                tokenStorage.getRefreshToken();
+            const refreshToken = tokenStorage.getRefreshToken();
 
             if (!refreshToken) {
                 throw error;
             }
 
-            const response =
-                await axios.post(
-                    `${API_URL}/auth/refresh`,
-                    {
-                        refreshToken,
-                    },
-                );
+            const response = await axios.post(
+                `${API_URL}/auth/refresh`,
+                {
+                    refreshToken,
+                },
+            );
 
             const {
                 accessToken,
@@ -84,11 +81,33 @@ axiosClient.interceptors.response.use(
         } catch (refreshError) {
             tokenStorage.clear();
 
-            // if (window.location.href !== '/sign-in') window.location.href = '/sign-in';
+            // window.location.href = '/sign-in';
 
             return Promise.reject(
-                refreshError,
+                normalizeAxiosError(refreshError),
             );
         }
     },
 );
+
+function normalizeAxiosError(error: unknown): Error {
+    if (!axios.isAxiosError(error)) {
+        return error instanceof Error
+            ? error
+            : new Error('Something went wrong');
+    }
+
+    const data = error.response?.data as any;
+
+    const message =
+        data?.message ||
+        data?.error ||
+        error.message ||
+        'Something went wrong';
+
+    return new Error(
+        Array.isArray(message)
+            ? message.join('\n')
+            : message,
+    );
+}
