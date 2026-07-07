@@ -1,82 +1,74 @@
 import {
-    IsArray,
-    ArrayMinSize,
-    IsEnum,
-    IsInt,
-    IsLatitude,
-    IsLongitude,
-    IsOptional,
-    IsString,
-    IsUUID,
-    MaxLength,
-    Min,
-    MinLength,
-    IsBoolean,
+  ArrayUnique,
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsLatitude,
+  IsLongitude,
+  IsNotEmpty,
+  IsString,
+  IsUUID,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { EventCategory, VenueType } from '@prisma/client';
 
-import { VenueType, EventCategory, VenueStatus } from '@prisma/client';
+import { CreateSlotTemplateDto } from './create-slot-template.dto';
+import { Type } from 'class-transformer';
 
 export class CreateVenueDto {
-    @IsString()
-    @MinLength(3)
-    @MaxLength(100)
-    name: string;
+  @IsString()
+  @MinLength(3)
+  @MaxLength(100)
+  name!: string;
 
-    @IsString()
-    @MinLength(20)
-    @MaxLength(2000)
-    description: string;
+  @IsString()
+  @MinLength(20)
+  @MaxLength(2000)
+  description!: string;
 
-    @IsEnum(VenueType)
-    venueType: VenueType;
+  @IsEnum(VenueType)
+  venueType!: VenueType;
 
-    @IsArray()
-    @ArrayMinSize(1)
-    @IsEnum(EventCategory,{each:true})
-    categories: EventCategory[];
+  @IsInt()
+  @Min(1)
+  @Max(100000)
+  capacityMin!: number;
 
-    @IsInt()
-    @Min(1)
-    capacityMin: number;
+  @IsInt()
+  @Min(1)
+  @Max(100000)
+  capacityMax!: number;
 
-    @IsInt()
-    @Min(1)
-    capacityMax: number;
+  @IsString()
+  @IsNotEmpty()
+  addressLine!: string;
 
-    @IsString()
-    addressLine: string;
+  @IsString()
+  @IsNotEmpty()
+  city!: string;
 
-    @IsString()
-    city: string;
+  @IsLatitude()
+  latitude!: number;
 
-    @IsOptional()
-    @IsString()
-    state?: string;
+  @IsLongitude()
+  longitude!: number;
 
-    @IsLatitude()
-    latitude: number;
+  @IsArray()
+  @ArrayUnique()
+  @IsEnum(EventCategory, { each: true })
+  categories!: EventCategory[];
 
-    @IsLongitude()
-    longitude: number;
+  @IsArray()
+  @ArrayUnique()
+  @IsUUID('4', { each: true })
+  amenityIds!: string[];
 
-    @IsOptional()
-    @IsArray()
-    @IsUUID('4', {
-        each: true,
-    })
-    amenityIds?: string[];
-
-    @IsString()
-    status: VenueStatus;
-
-    @IsArray()
-    @ArrayMinSize(1)
-    @IsEnum(EventCategory, {
-        each: true,
-    })
-
-    @IsOptional()
-    @IsBoolean()
-    isActive?: boolean;
-
-};
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateSlotTemplateDto)
+  slotTemplates!: CreateSlotTemplateDto[];
+}
