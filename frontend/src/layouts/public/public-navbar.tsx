@@ -23,6 +23,7 @@ import {
 } from '@mui/material';
 
 import { useAuth } from 'src/context/auth/use-auth';
+import { NotificationsPopover } from 'src/layouts/components/notifications-popover';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -151,6 +152,7 @@ export function PublicNavbar({ transparent = false }: Props) {
                                     >
                                         My Bookings
                                     </Button>
+                                    <NotificationsPopover sx={{ color: 'inherit' }} />
                                     <IconButton onClick={handleUserMenuOpen} sx={{ p: 0.5 }}>
                                         <Avatar
                                             sx={{
@@ -226,6 +228,11 @@ export function PublicNavbar({ transparent = false }: Props) {
                                 </>
                             )}
                         </Stack>
+
+                        {/* Mobile notifications */}
+                        {isAuthenticated && user && (
+                            <NotificationsPopover sx={{ display: { md: 'none' }, color: 'inherit' }} />
+                        )}
 
                         {/* Mobile hamburger */}
                         <IconButton

@@ -28,8 +28,30 @@ export function NovuProvider({ children }: NovuProviderProps) {
       applicationIdentifier={NOVU_APPLICATION_IDENTIFIER}
       subscriberId={user.id}
     // subscriberId={'6a4a7c53860a3d9235078de4'}
+    // subscriberId={'6a4a7c53860a3d9235078de4'}
     >
       {children}
     </NovuReactProvider>
   );
 }
+
+// curl -X POST "https://api.novu.co/v1/events/trigger" \
+//   -H "Authorization: ApiKey f5106da845af1db23a15f253d7db10ec" \
+//   -H "Content-Type: application/json" \
+//   -d '{
+//   "name": "generic-in-app-notification",
+//   "to": {
+//     "subscriberId": "6a4a7c53860a3d9235078de4",
+//     "firstName": "Mohammed",
+//     "lastName": "Shahul pm",
+//     "email": "mshahulpm@gmail.com"
+//   },
+//   "payload": {
+//     "title": "Booking success",
+//     "message": "Your bookig at casa da papel has been confirmed",
+//     "actionUrl": "https://example.com",
+//     "avatarUrl": "https://example.com",
+//     "actionLabel": "example text",
+//     "__source": "dashboard"
+//   }
+// }'

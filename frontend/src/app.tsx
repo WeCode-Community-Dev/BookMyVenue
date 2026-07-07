@@ -10,6 +10,8 @@ import { usePathname } from 'src/routes/hooks';
 
 import { ThemeProvider } from 'src/theme/theme-provider';
 
+import { NovuProvider } from 'src/components/novu/novu-provider';
+
 import { AuthProvider } from './context/auth/auth-provider';
 
 // ----------------------------------------------------------------------
@@ -26,9 +28,11 @@ export default function App({ children }: AppProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <NovuProvider>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </NovuProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
