@@ -10,7 +10,6 @@ axiosInstance.interceptors.request.use(
         const token = Cookies.get("authToken")
         const role = Cookies.get("userRole")
 
-        config.headers["ngrok-skip-browser-warning"] = `69420`
         if(token){
             config.headers["Authorization"] = `Bearer ${token}`
         }
