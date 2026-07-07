@@ -15,6 +15,7 @@ import Profile from './pages/Profile'
 import Notifications from './pages/Notifications'
 import PaymentResult from './pages/PaymentResult'
 import DeepResearch from './pages/DeepResearch'
+import SavedVenues from './pages/SavedVenues'
 
 export const router = createBrowserRouter([
   // public routes
@@ -88,6 +89,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <DeepResearch />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/saved',
+    element: (
+      <ProtectedRoute>
+        <SavedVenues />
       </ProtectedRoute>
     ),
   },

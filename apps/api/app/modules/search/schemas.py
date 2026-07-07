@@ -24,6 +24,7 @@ class SearchResult(BaseModel):
     display_price_min_paise: Optional[int] = None
     display_price_max_paise: Optional[int] = None
     cover_photo_url: Optional[str] = None
+    is_liked: bool = False
     # Match diagnostics — only populated by search_hybrid (None for plain
     # /search, /search/fts, /search/semantic). Lets a caller (e.g. Deep
     # Research's citation UI) show which signal(s) actually matched and how

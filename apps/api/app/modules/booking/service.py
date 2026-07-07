@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload, selectinload
-from sqlalchemy import or_
+from sqlalchemy import or_, and_, func
 
 from app.modules.availability.service import validate_booking_request
 from app.modules.notification import service as notifications
@@ -224,7 +224,18 @@ def list_all_owner_bookings(
             )
         elif tab == "overdue":
             query = query.filter(
-                Booking.payment_status.in_([PaymentStatus.unpaid, PaymentStatus.advance_paid])
+                or_(
+                    and_(
+                        Booking.status == BookingStatus.confirmed,
+                        Booking.balance_overdue_at != None,
+                        Booking.balance_overdue_at < func.now()
+                    ),
+                    and_(
+                        Booking.status == BookingStatus.owner_accepted,
+                        Booking.hold_expires_at != None,
+                        Booking.hold_expires_at < func.now()
+                    )
+                )
             )
 
     bookings = query.order_by(Booking.created_at.desc()).all()
