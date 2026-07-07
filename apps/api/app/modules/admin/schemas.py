@@ -271,6 +271,7 @@ class AdminVenueListResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+    stats: AdminVenueStats
 
 
 # ── Deep Research observability ────────────────────────────────────────────────

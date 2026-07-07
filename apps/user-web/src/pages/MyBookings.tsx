@@ -68,14 +68,14 @@ function FeaturedBookingHero({ booking }: { booking: BookingOut }) {
           </div>
 
           {(booking.status === 'owner_accepted' ||
-             booking.status === 'payment_pending' ||
+            booking.status === 'payment_pending' ||
             (booking.status === 'confirmed' &&
               booking.payment_status === 'advance_paid' &&
               booking.balance_due_paise > 0)) && (
-            <div className="mt-6 inline-flex w-fit rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand dark:bg-brand/15 dark:text-brand-secondary">
-              Action Required
-            </div>
-          )}
+              <div className="mt-6 inline-flex w-fit rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand dark:bg-brand/15 dark:text-brand-secondary">
+                Action Required
+              </div>
+            )}
 
           <Link to={`/bookings/${booking.id}`} className="mt-8">
             <Button>View Booking</Button>
@@ -196,13 +196,6 @@ export default function MyBookings() {
       <AppNavbar />
 
       <div className="mx-auto max-w-6xl px-4 py-8">
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">My Bookings</h1>
-
-          <p className="mt-2 max-w-2xl text-zinc-500">
-            Manage reservations, complete payments and track upcoming events.
-          </p>
-        </div>
 
         {featuredBooking && <FeaturedBookingHero booking={featuredBooking} />}
         <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -214,26 +207,24 @@ export default function MyBookings() {
               Manage reservations, complete payments, and track upcoming events.
             </p>
           </div>
-          
+
           {/* Master View Switcher */}
           <div className="flex h-10 shrink-0 items-center rounded-xl bg-zinc-200/50 p-1 dark:bg-ink-800">
             <button
               onClick={() => setMasterTab('bookings')}
-              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${
-                masterTab === 'bookings'
-                  ? 'bg-white text-zinc-900 shadow-sm dark:bg-ink-900 dark:text-zinc-100'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-              }`}
+              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${masterTab === 'bookings'
+                ? 'bg-white text-zinc-900 shadow-sm dark:bg-ink-900 dark:text-zinc-100'
+                : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                }`}
             >
               Platform Bookings
             </button>
             <button
               onClick={() => setMasterTab('reservations')}
-              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${
-                masterTab === 'reservations'
-                  ? 'bg-white text-zinc-900 shadow-sm dark:bg-ink-900 dark:text-zinc-100'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-              }`}
+              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${masterTab === 'reservations'
+                ? 'bg-white text-zinc-900 shadow-sm dark:bg-ink-900 dark:text-zinc-100'
+                : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+                }`}
             >
               Venue Requests
             </button>
@@ -248,54 +239,54 @@ export default function MyBookings() {
               <FeaturedBookingHero booking={featuredBooking} />
             )}
 
-        <div className="mb-8 border-b border-zinc-200 dark:border-ink-700">
-          <div className="flex gap-8 overflow-x-auto">
-            <TabButton
-              active={activeTab === 'upcoming'}
-              count={upcomingBookings.length}
-              onClick={() => setActiveTab('upcoming')}
-            >
-              Upcoming
-            </TabButton>
+            <div className="mb-8 border-b border-zinc-200 dark:border-ink-700">
+              <div className="flex gap-8 overflow-x-auto">
+                <TabButton
+                  active={activeTab === 'upcoming'}
+                  count={upcomingBookings.length}
+                  onClick={() => setActiveTab('upcoming')}
+                >
+                  Upcoming
+                </TabButton>
 
-            <TabButton
-              active={activeTab === 'pending'}
-              count={pendingBookings.length}
-              onClick={() => setActiveTab('pending')}
-            >
-              Pending
-            </TabButton>
+                <TabButton
+                  active={activeTab === 'pending'}
+                  count={pendingBookings.length}
+                  onClick={() => setActiveTab('pending')}
+                >
+                  Pending
+                </TabButton>
 
-            <TabButton
-              active={activeTab === 'past'}
-              count={pastBookings.length}
-              onClick={() => setActiveTab('past')}
-            >
-              Past
-            </TabButton>
+                <TabButton
+                  active={activeTab === 'past'}
+                  count={pastBookings.length}
+                  onClick={() => setActiveTab('past')}
+                >
+                  Past
+                </TabButton>
 
-            <TabButton
-              active={activeTab === 'cancelled'}
-              count={cancelledBookings.length}
-              onClick={() => setActiveTab('cancelled')}
-            >
-              Cancelled
-            </TabButton>
-          </div>
-        </div>
+                <TabButton
+                  active={activeTab === 'cancelled'}
+                  count={cancelledBookings.length}
+                  onClick={() => setActiveTab('cancelled')}
+                >
+                  Cancelled
+                </TabButton>
+              </div>
+            </div>
 
-        {filteredBookings.length === 0 ? (
-          <EmptyState
-            title={`No ${activeTab} bookings`}
-            description="Bookings will appear here once available."
-          />
-        ) : (
-          <div className="space-y-6">
-            {filteredBookings.map((booking) => (
-              <BookingCard key={booking.id} booking={booking} />
-            ))}
-          </div>
-        )}
+            {filteredBookings.length === 0 ? (
+              <EmptyState
+                title={`No ${activeTab} bookings`}
+                description="Bookings will appear here once available."
+              />
+            ) : (
+              <div className="space-y-6">
+                {filteredBookings.map((booking) => (
+                  <BookingCard key={booking.id} booking={booking} />
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>

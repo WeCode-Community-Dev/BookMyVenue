@@ -78,6 +78,13 @@ class Settings(BaseSettings):
     # Google Places API Key
     google_places_api_key: str = ""
 
+    # Deep Research rate limiting — protects the Groq / Google Places /
+    # Cloudinary calls behind /search and /external from burst abuse and
+    # caps the per-user daily cost. Backed by Upstash Redis; if Upstash isn't
+    # configured, limiting is skipped (fails open, matching indexer.py).
+    deep_research_rate_limit_per_minute: int = 5
+    deep_research_daily_limit: int = 4
+
     log_level: str = "INFO"  # DEBUG / INFO / WARNING / ERROR
 
     class Config:

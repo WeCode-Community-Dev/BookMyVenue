@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { createClient, deepResearchEndpoints } from '@venue404/api-client'
+import { ApiError, createClient, deepResearchEndpoints } from '@venue404/api-client'
 import type { DeepResearchSearchResponse } from '@venue404/api-client'
 import {
   ArrowRight,
@@ -125,6 +125,10 @@ export default function DeepResearch() {
   const internalTotal = result?.internal_results.total ?? 0
   const isProcessing = searchMutation.isPending || (searchMutation.isSuccess && stage !== 'done')
   const showResults = stage === 'done' && !!breakdown
+  const rateLimitMessage =
+    searchMutation.error instanceof ApiError && searchMutation.error.status === 429
+      ? searchMutation.error.message
+      : null
 
   return (
     <div className="min-h-screen bg-white dark:bg-ink-950">
@@ -186,7 +190,7 @@ export default function DeepResearch() {
               </div>
               <button
                 type="submit"
-                disabled={!query.trim() || isProcessing}
+                disabled={!query.trim() || isProcessing || !!rateLimitMessage}
                 className="press flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-brand-secondary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:shadow-brand/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
               >
                 Start Deep Research
@@ -195,13 +199,19 @@ export default function DeepResearch() {
             </div>
           </form>
 
+          {rateLimitMessage && (
+            <p className="mt-2.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+              {rateLimitMessage}
+            </p>
+          )}
+
           {isProcessing && (
             <div className="page-enter mt-8 text-left">
               <StageProgress current={stage} />
             </div>
           )}
 
-          {searchMutation.isError && (
+          {searchMutation.isError && !rateLimitMessage && (
             <div className="page-enter mt-8 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 text-left dark:border-red-400/20 dark:bg-red-500/10">
               <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
               <div>
