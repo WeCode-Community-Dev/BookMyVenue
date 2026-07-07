@@ -6,7 +6,7 @@ from uuid import UUID
 from jose import jwt, JWTError
 
 from app.core.config import settings
-from app.core.exceptions import ConflictError, UnauthorizedError
+from app.core.exceptions import BadRequestError, ConflictError, UnauthorizedError
 from app.modules.auth.providers.base import AuthProvider, ProviderUser
 
 
@@ -85,6 +85,10 @@ class SupabaseAuthProvider(AuthProvider):
             error_body = exc.read().decode()
             if exc.code == 422 or "already been registered" in error_body:
                 raise ConflictError("This email is already registered")
-            raise
+            raise BadRequestError(
+                f"Supabase could not send the invite (HTTP {exc.code}): {error_body or exc.reason}"
+            )
+        except urllib.error.URLError as exc:
+            raise BadRequestError(f"Could not reach Supabase to send the invite: {exc.reason}")
 
         return ProviderUser(id=UUID(payload["id"]), email=payload.get("email"))
