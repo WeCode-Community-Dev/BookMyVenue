@@ -7,7 +7,7 @@ const Categories = require("../../models/category");
 async function adminListCategories(req, res) {
    try {
       const categories = await Categories.find({ deletedAt: null })
-         .select("identifier name isActive createdAt updatedAt")
+         .select("name isActive")
          .sort({ name: 1 })
          .lean();
 

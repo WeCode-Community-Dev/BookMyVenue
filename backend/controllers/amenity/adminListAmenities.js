@@ -7,7 +7,7 @@ const Amenities = require("../../models/amenity");
 async function adminListAmenities(req, res) {
    try {
       const amenities = await Amenities.find({ deletedAt: null })
-         .select("identifier name isActive createdAt updatedAt")
+         .select("name isActive")
          .sort({ name: 1 })
          .lean();
 

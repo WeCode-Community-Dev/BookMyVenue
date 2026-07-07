@@ -16,7 +16,10 @@ async function updateCategory(req, res) {
          update.name = name.trim();
       }
       if (isActive !== undefined) {
-         update.isActive = Boolean(isActive);
+         if (typeof isActive !== "boolean") {
+            return res.status(400).json({ message: "isActive must be a boolean" });
+         }
+         update.isActive = isActive;
       }
 
       if (Object.keys(update).length === 0) {
