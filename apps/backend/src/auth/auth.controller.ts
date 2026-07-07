@@ -4,6 +4,7 @@ import {
   Get,
   Post,
   Req,
+  Res,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -14,10 +15,12 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { AuthRequest } from 'src/types/auth.request.interface';
 import type { GoogleAuthRequest } from 'src/types/google-auth.request.interface';
 import { AuthGuard } from '@nestjs/passport';
+import type { Response } from 'express';
+
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('otp/request')
   requestOtp(@Body() dto: RequestOtpDto) {
@@ -25,8 +28,22 @@ export class AuthController {
   }
 
   @Post('otp/verify')
-  verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.authService.verifyOtp(dto);
+  async verifyOtp(@Body() dto: VerifyOtpDto, @Res({ passthrough: true }) res: Response) {
+
+    const result = await this.authService.verifyOtp(dto);
+
+    res.cookie('access_token', result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    });
+
+    return {
+      message: result.message,
+      user: result.user,
+    };
+
   }
 
   @UseGuards(JwtAuthGuard)
@@ -43,7 +60,22 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  googleCallback(@Req() req: GoogleAuthRequest) {
-    return this.authService.googleLogin(req.user);
+  async googleCallback(@Req() req: GoogleAuthRequest,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const result = await this.authService.googleLogin(req.user);
+
+  res.cookie('access_token', result.token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  });
+
+
+  return {
+    message: result.message,
+    user: result.user,
+  };
   }
 }
