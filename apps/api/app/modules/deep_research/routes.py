@@ -52,7 +52,7 @@ def reserve(
     auth: AuthContext = Depends(require_auth),
 ):
     reservation = service.reserve_lead(
-        db, lead_id, auth.user_id, body.event_date, body.guest_count, body.phone, body.notes
+        db, lead_id, auth.user_id, body.category_id, body.event_date, body.guest_count, body.phone, body.notes
     )
     return ReserveLeadResponse(reservation_id=reservation.id, status=reservation.status.value)
 

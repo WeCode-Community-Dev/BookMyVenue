@@ -63,12 +63,14 @@ export const deepResearchEndpoints = (client: ReturnType<typeof createClient>) =
 
   reserveLead: (
     lead_id: string,
+    category_id: string,
     event_date?: string,
     guest_count?: number,
     phone?: string,
     notes?: string,
   ) =>
     client.post<ReserveLeadResponse>(`/api/deep-research/leads/${lead_id}/reserve`, {
+      category_id,
       event_date,
       guest_count,
       phone,

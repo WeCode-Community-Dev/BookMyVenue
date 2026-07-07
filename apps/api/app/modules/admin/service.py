@@ -293,6 +293,10 @@ def approve_venue(
         admin_id=admin_id, action_type="venue_approved",
         target_type="venue", target_id=venue_id, reason=reason or None,
     ))
+
+    from app.modules.deep_research.service import sync_reservation_status_for_venue
+    sync_reservation_status_for_venue(db, venue_id, VenueStatus.approved)
+
     db.commit()
 
     from app.modules.search.indexer import enqueue_job

@@ -1,11 +1,12 @@
 import json
+import urllib.error
 import urllib.request
 from uuid import UUID
 
 from jose import jwt, JWTError
 
 from app.core.config import settings
-from app.core.exceptions import UnauthorizedError
+from app.core.exceptions import ConflictError, UnauthorizedError
 from app.modules.auth.providers.base import AuthProvider, ProviderUser
 
 
@@ -53,3 +54,37 @@ class SupabaseAuthProvider(AuthProvider):
             raise UnauthorizedError("Token missing subject claim")
 
         return ProviderUser(id=UUID(sub), email=payload.get("email"))
+
+    def invite_user(
+        self,
+        email: str,
+        *,
+        full_name: str | None = None,
+        phone: str | None = None,
+        redirect_to: str | None = None,
+    ) -> ProviderUser:
+        url = f"{settings.supabase_url}/auth/v1/invite"
+        if redirect_to:
+            url += f"?redirect_to={redirect_to}"
+
+        body = {"email": email, "data": {"full_name": full_name, "phone": phone}}
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(body).encode(),
+            method="POST",
+            headers={
+                "apikey": settings.supabase_service_role_key,
+                "Authorization": f"Bearer {settings.supabase_service_role_key}",
+                "Content-Type": "application/json",
+            },
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
+                payload = json.loads(resp.read())
+        except urllib.error.HTTPError as exc:
+            error_body = exc.read().decode()
+            if exc.code == 422 or "already been registered" in error_body:
+                raise ConflictError("This email is already registered")
+            raise
+
+        return ProviderUser(id=UUID(payload["id"]), email=payload.get("email"))

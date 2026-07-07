@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     # Used to build deep links inside notification emails
     frontend_base_url: str = "https://venue404-user-web-git-main-venue123.vercel.app"
 
+    # Used to build the Supabase invite redirect for admin-invited venue owners
+    owner_portal_base_url: str = "https://venue404-owner-portal-git-main-venue123.vercel.app"
+
     # Comma-separated list of allowed browser origins for CORS. Defaults to the
     # local dev ports; in production set this to the deployed Vercel app URLs.
     cors_origins: str = ("https://venue404-owner-portal-git-main-venue123.vercel.app,https://venue404-user-web-git-main-venue123.vercel.app,https://venue404-admin-panel-git-main-venue123.vercel.app,http://localhost:5397,http://localhost:5398,http://localhost:5399"

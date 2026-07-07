@@ -13,6 +13,7 @@ import RegisterSuccess from './pages/RegisterSuccess'
 import LoginSuccess from './pages/LoginSuccess'
 import PendingApproval from './pages/PendingApproval'
 import Rejected from './pages/Rejected'
+import AcceptInvite from './pages/AcceptInvite'
 
 import CreateVenueWizard from './pages/venues/CreateVenueWizard'
 import VenueOverview from './pages/venues/VenueOverview'
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
   { path: '/register', element: <Register /> },
   { path: '/register/success', element: <RegisterSuccess /> },
   { path: '/login/success', element: <LoginSuccess /> },
+  { path: '/accept-invite', element: <AcceptInvite /> },
   { path: '/pending-approval', element: <PendingApproval /> },
   { path: '/rejected', element: <Rejected /> },
   { path: '/403', element: <div>Access denied. You need a venue owner account.</div> },
