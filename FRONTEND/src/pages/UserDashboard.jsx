@@ -114,6 +114,7 @@ export default function UserBookings() {
 
     try {
       const response = await apiService.cancelBooking(payload);
+      console.log(response);
       
         //   Update UI
       setBookings(prev => prev.map(b => 
@@ -231,6 +232,17 @@ export default function UserBookings() {
             )}
           </div>
         </div>
+
+        {/* <div className='bg-[#ff535e] p-3 pl-5 rounded-3xl text-white font-medium mx-12' >
+            <h1 className='text-xl font-bold' >REFUND POLICY</h1>
+            <p>
+                - if current date and booking date is more than 24 hours, then refund is not allowed <br />
+                - if cancelled within 24 hours, then refund is allowed 30% of the amount <br />
+                - if 3 days before the booking date, then refund is allowed 50% of the amount <br />
+                - if 7 days before the booking date, then refund is allowed 70% of the amount <br />
+                - else no refund is allowed
+            </p>
+        </div> */}
       </main>
 
       {/* ==========================================

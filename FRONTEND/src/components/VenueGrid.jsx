@@ -1,4 +1,4 @@
-import { MapPin, SpinnerOne } from "@mynaui/icons-react";
+import { MapPin, SpinnerOne, Users } from "@mynaui/icons-react"; // Added Users icon
 import { useVenueGrid } from "../hooks/useVenueGrid";
 import { useNavigate } from 'react-router-dom';
 
@@ -31,15 +31,16 @@ function VenueCard({ venue }) {
     const titleSize = venue.isLarge ? "text-2xl" : "text-lg";
     const detailSize = venue.isLarge ? "text-base" : "text-sm";
     const priceSize = venue.isLarge ? "text-lg" : "text-sm";
-    const imageSize = venue.isLarge ? "h-144" : "h-56"; // Slightly taller base height for better aspect ratio
+    const imageSize = venue.isLarge ? "h-144" : "h-56";
 
-    // Variables for API INTEGRATION PHASE
+    // Variables mapped from your JSON data
     const venue_name = venue.venue_name;
     const venue_image = venue.image;
     const venue_details = venue.venue_description;
     const venue_price = venue.price;
     const venue_location = venue.location;
-    const venue_booking_type = venue.booking_types
+    const venue_booking_type = venue.booking_types;
+    const venue_capacity = venue.capacity; // Extracted capacity
 
     return (
         <div 
@@ -49,38 +50,53 @@ function VenueCard({ venue }) {
             {/* Image Container */}
             <div className="relative w-full overflow-hidden bg-gray-100">
                 <img 
-                    src={venue_image} 
+                    src={venue_image || "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&q=80"} // Safe fallback
                     alt={venue_name} 
                     className={`w-full ${imageSize} object-cover`}
                 />
-                {/* Subtle dark overlay on hover instead of scaling */}
+                
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/[0.03] transition-colors duration-300" />
             </div>
             
             {/* Content Container */}
             <div className="p-5 flex flex-col flex-grow">
                 <div className="flex justify-between items-start gap-4 mb-3">
-                    <div  >
-                        <h3 className={`font-bold text-[#1a3d46] leading-tight ${titleSize}`}>
+                    {/* Added min-w-0 to prevent long titles from pushing the price badge off-screen */}
+                    <div className="flex-1 min-w-0">
+                        <h3 className={`font-bold text-[#1a3d46] leading-tight truncate ${titleSize}`}>
                             {venue_name}
                         </h3>
-                        <p className={` text-[#2a5660] leading-relaxed text-sm`}>
+                        {/* line-clamp-2 ensures the description never exceeds 2 lines */}
+                        <p className={`text-[#2a5660] leading-relaxed mt-1.5 line-clamp-2 text-sm`}>
                             {venue_details}
                         </p>
                     </div>
 
                     {/* Price Badge */}
                     <div className={`shrink-0 font-bold text-[#ae3b2f] bg-red-50 px-2.5 py-1 rounded-md ${priceSize}`}>
-                        {venue_price}₹<span className={" text-xs text-[#6684b0] bg-red-50 py-1 rounded-md"} >/{venue_booking_type === "hourly" ? "hour" : "day"}</span>
+                        {venue_price}₹<span className={" text-xs text-[#ff485e] bg-red-50 py-1 rounded-md"} >/{venue_booking_type === "hourly" ? "hour" : "day"}</span>
                     </div>
                 </div>
                 
-                {/* Location/Details anchored to bottom */}
-                <div className="flex items-start gap-2 mt-auto text-gray-500 pt-2">
-                    <MapPin className="shrink-0 mt-0.5 text-[#2a5660]" size={16} stroke={2.5} />
-                    <p className={`leading-relaxed line-clamp-2 ${detailSize}`}>
-                        {venue_location}
-                    </p>
+                {/* Footer Details: Capacity and Location */}
+                <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-gray-50">
+                    
+                    {/* Capacity Row */}
+                    <div className="flex items-center gap-2 text-gray-500">
+                        <Users className="shrink-0 text-[#2a5660]" size={16} stroke={2.5} />
+                        <p className={`font-semibold text-gray-600 ${detailSize}`}>
+                            Up to {venue_capacity} Guests
+                        </p>
+                    </div>
+
+                    {/* Location Row */}
+                    <div className="flex items-start gap-2 text-gray-500">
+                        <MapPin className="shrink-0 mt-0.5 text-[#2a5660]" size={16} stroke={2.5} />
+                        <p className={`font-medium line-clamp-1 ${detailSize}`}>
+                            {venue_location}
+                        </p>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -125,7 +141,7 @@ export default function VenueGrid() {
     }
 
     return (
-        <div className="pb-12 bg-[#fafaf9] min-h-screen bg-[#f9f9f7] ">
+        <div className="pb-12 bg-[#fafaf9] min-h-screen">
             <GridHeader venueCount={Data.length} />
 
             <div className="grid grid-cols-1 md:grid-cols-3 grid-rows-auto max-w-7xl gap-6 md:gap-8 px-4 md:px-8 py-6 mx-auto">
