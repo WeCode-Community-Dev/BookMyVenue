@@ -6,12 +6,14 @@ from app.jobs import (
     booking_completion,
     balance_overdue,
     search_indexer,
+    payment_pending_expiry,
 )
 
 scheduler = BackgroundScheduler()
 
 
 def start():
+    scheduler.add_job(payment_pending_expiry.run, "interval", minutes=1, id="payment_pending_expiry")
     scheduler.add_job(hold_expiry.run, "interval", hours=1, id="hold_expiry")
     scheduler.add_job(stale_requests.run, "interval", hours=6, id="stale_requests")
     # Hourly so the 12h pre-hold-expiry reminder window is reliably caught.

@@ -49,6 +49,7 @@ class BookingStatus(str, enum.Enum):
     admin_cancelled = "admin_cancelled"
     owner_rejected = "owner_rejected"
     balance_overdue_cancelled = "balance_overdue_cancelled"
+    payment_pending = "payment_pending"
 
 
 class PaymentStatus(str, enum.Enum):
@@ -260,6 +261,21 @@ class Booking(Base):
         nullable=True,
     )
 
+    payment_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    auto_confirmed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    confirmed_by: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
     deleted_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
@@ -385,7 +401,8 @@ class BookingStatusHistory(Base):
             (old_status = 'requested' AND new_status IN ('owner_accepted', 'owner_rejected', 'user_cancelled', 'conflict_cancelled', 'request_expired')) OR
             (old_status = 'owner_accepted' AND new_status IN ('confirmed', 'hold_expired', 'user_cancelled')) OR
             (old_status = 'confirmed' AND new_status IN ('completed', 'user_cancelled', 'admin_cancelled', 'balance_overdue_cancelled')) OR
-            (old_status = 'hold_expired' AND new_status = 'owner_accepted')
+            (old_status = 'hold_expired' AND new_status = 'owner_accepted') OR
+            (old_status = 'payment_pending' AND new_status IN ('confirmed', 'hold_expired', 'user_cancelled', 'admin_cancelled', 'conflict_cancelled'))
             """,
             name="ck_booking_status_history_transition",
         ),

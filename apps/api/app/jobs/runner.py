@@ -17,6 +17,7 @@ from app.jobs import (
     payment_reminders,
     balance_overdue,
     search_indexer,
+    payment_pending_expiry,
 )
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ JOBS = {
     "overdue_flag": balance_overdue.run_flag,
     "overdue_autocancel": balance_overdue.run_autocancel,
     "search_indexer": search_indexer.run,
+    "payment_pending_expiry": payment_pending_expiry.run,
 }
 
 

@@ -26,6 +26,12 @@ class VenueStatus(str, Enum):
     suspended = "suspended"
 
 
+class BookingMode(str, Enum):
+    MANUAL = "MANUAL"
+    INSTANT = "INSTANT"
+
+
+
 class VenueCategoryResponse(BaseModel):
     id: UUID
     slug: str
@@ -219,6 +225,7 @@ class VenueResponse(BaseModel):
 
 
     status: VenueStatus
+    booking_mode: BookingMode = BookingMode.MANUAL
     is_active: bool
 
     

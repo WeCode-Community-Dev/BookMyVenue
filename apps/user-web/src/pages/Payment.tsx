@@ -11,7 +11,7 @@ import { QuoteBreakdown } from '../components/venue/QuoteBreakdown'
 import { formatDate, formatTime, formatPrice } from '../utils'
 import type { BookingOut } from '../types'
 
-type PaymentType = 'advance' | 'balance'
+type PaymentType = 'advance' | 'balance' | 'full'
 
 // ─── Booking summary sidebar ──────────────────────────────────────────────────
 function BookingSummaryCard({ booking }: { booking: BookingOut }) {
@@ -211,7 +211,9 @@ export default function Payment() {
   const navigate = useNavigate()
   const client = createClient()
 
-  const paymentType = (searchParams.get('type') as PaymentType) || 'advance'
+  const paymentType = ['advance', 'balance', 'full'].includes(searchParams.get('type') ?? '')
+    ? (searchParams.get('type') as PaymentType)
+    : 'advance'
 
   const bookingQuery = useQuery({
     queryKey: ['booking', bookingId],
@@ -222,7 +224,9 @@ export default function Payment() {
   const booking = bookingQuery.data as BookingOut | undefined
 
   const isAdvanceDue =
-    booking != null && booking.status === 'owner_accepted' && booking.advance_due_paise > 0
+    booking != null &&
+    (booking.status === 'owner_accepted' || booking.status === 'payment_pending') &&
+    booking.advance_due_paise > 0
 
   const isBalanceDue =
     booking != null &&
@@ -230,7 +234,17 @@ export default function Payment() {
     booking.payment_status === 'advance_paid' &&
     booking.balance_due_paise > 0
 
-  const isPaymentDue = paymentType === 'balance' ? isBalanceDue : isAdvanceDue
+  const isFullDue =
+    booking != null &&
+    ((booking.status === 'payment_pending' && booking.payment_required) ||
+      (booking.status === 'owner_accepted' && booking.advance_pct === 100))
+
+  const isPaymentDue =
+    paymentType === 'balance'
+      ? isBalanceDue
+      : paymentType === 'full'
+        ? isFullDue
+        : isAdvanceDue
 
   const intentQuery = useQuery({
     queryKey: ['payment-intent', bookingId, paymentType],
@@ -295,22 +309,28 @@ export default function Payment() {
     )
   }
 
-  const isFullPayment = booking.advance_pct === 100
+  const isFullPayment = paymentType === 'full' || booking.advance_pct === 100
   const amountDuePaise =
-    paymentType === 'balance' ? booking.balance_due_paise : booking.advance_due_paise
+    paymentType === 'balance'
+      ? booking.balance_due_paise
+      : paymentType === 'full'
+        ? booking.quoted_price_paise
+        : booking.advance_due_paise
   const payLabel = formatPrice(amountDuePaise)
 
   const heading =
     paymentType === 'balance'
       ? 'Pay your balance'
-      : isFullPayment
+      : paymentType === 'full' || isFullPayment
         ? 'Complete your payment'
         : 'Pay the token advance'
 
   const subheading =
     paymentType === 'balance'
       ? 'Settle the remaining amount to complete your booking.'
-      : 'Pay the advance to confirm your slot. The balance is due closer to the date.'
+      : paymentType === 'full'
+        ? 'Pay the full booking amount now to secure this reservation.'
+        : 'Pay the advance to confirm your slot. The balance is due closer to the date.'
 
   return (
     <div className="min-h-screen bg-zinc-50/60">

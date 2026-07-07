@@ -8,6 +8,11 @@ const STATUS_CONFIG = {
     className: 'bg-amber-50 text-amber-700 border-amber-200',
   },
 
+  payment_pending: {
+    label: 'Awaiting Payment',
+    className: 'bg-amber-50 text-amber-700 border-amber-200',
+  },
+
   owner_accepted: {
     label: 'Accepted',
     className: 'bg-brand-light text-brand border-brand-muted',

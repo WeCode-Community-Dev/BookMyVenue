@@ -102,6 +102,14 @@ export function VenueCard({ venue, onClick }: Props) {
           </div>
         )}
 
+        {venue.booking_mode === 'INSTANT' && (
+          <div className="absolute left-3 top-3">
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 shadow-sm">
+              Instant Booking
+            </span>
+          </div>
+        )}
+
         <button
           onClick={handleLike}
           className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-110"

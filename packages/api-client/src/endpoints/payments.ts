@@ -10,7 +10,7 @@ export type PaymentIntent = {
 }
 
 export type CreatePaymentIntentRequest = {
-  payment_type?: 'advance' | 'balance'
+  payment_type?: 'advance' | 'balance' | 'full'
 }
 
 export type Payment = {
@@ -51,7 +51,7 @@ export type LedgerEntry = {
 }
 
 export const paymentEndpoints = (client: ReturnType<typeof createClient>) => ({
-  /** Create a Stripe PaymentIntent for a booking's token advance or balance. */
+  /** Create a Stripe PaymentIntent for a booking's token advance, balance, or full amount. */
   createPaymentIntent: (bookingId: string, params: CreatePaymentIntentRequest) =>
     client.post<PaymentIntent>('/api/payments/', { booking_id: bookingId, payment_type: params.payment_type || 'advance' }),
   /** Owner/admin full refund of a booking's captured payment. */

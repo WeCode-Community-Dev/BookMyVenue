@@ -12,7 +12,7 @@ from app.modules.booking.models import (
     BookingStatusHistory,
     PaymentStatus,
 )
-from app.modules.booking.schemas import BookingOut, BookingDisplay
+from app.modules.booking.schemas import BookingOut, BookingDisplay, PaymentOption, PaymentOptions
 from app.modules.venue.models import Venue, VenueCancellationPolicy
 
 logger = logging.getLogger(__name__)
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 MAX_DEADLINE_EXTENSIONS = 2
 USER_PAYMENT_HOLD_HOURS = 24
 REQUEST_EXPIRY_DAYS = 7
+INSTANT_BOOKING_PAYMENT_TIMEOUT_MINUTES = 15
 
 TERMINAL_STATUSES = {
     BookingStatus.completed,
@@ -126,6 +127,41 @@ def _booking_out(booking: Booking) -> BookingOut:
         None,
     )
 
+    payment_required = (booking.status == BookingStatus.payment_pending)
+
+    payment_options = None
+    if booking.status in (BookingStatus.payment_pending, BookingStatus.owner_accepted):
+        payment_options = PaymentOptions(
+            advance=PaymentOption(
+                label="Advance",
+                amount_paise=booking.advance_due_paise,
+                display_amount=_format_inr(booking.advance_due_paise),
+            ),
+            full=PaymentOption(
+                label="Full",
+                amount_paise=booking.quoted_price_paise,
+                display_amount=_format_inr(booking.quoted_price_paise),
+            ),
+        )
+
+    client_secret = None
+    if booking.status in (BookingStatus.payment_pending, BookingStatus.owner_accepted):
+        from sqlalchemy.orm import object_session
+        session = object_session(booking)
+        if session:
+            from app.modules.payment.models import Payment, PaymentAttemptStatus
+            pending_payment = (
+                session.query(Payment)
+                .filter(
+                    Payment.booking_id == booking.id,
+                    Payment.status == PaymentAttemptStatus.pending
+                )
+                .order_by(Payment.created_at.desc())
+                .first()
+            )
+            if pending_payment:
+                client_secret = pending_payment.stripe_client_secret
+
     return BookingOut(
         id=booking.id,
         venue_id=booking.venue_id,
@@ -174,6 +210,12 @@ def _booking_out(booking: Booking) -> BookingOut:
             platform_fee=_format_inr(booking.platform_fee_paise),
             owner_payout=_format_inr(booking.owner_payout_paise),
         ),
+        payment_required=payment_required,
+        payment_options=payment_options,
+        client_secret=client_secret,
+        payment_expires_at=booking.payment_expires_at,
+        auto_confirmed_at=booking.auto_confirmed_at,
+        confirmed_by=booking.confirmed_by,
     )
 
 

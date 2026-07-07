@@ -11,6 +11,13 @@ const STATUS_META = {
     description: 'Your booking request has been submitted and is awaiting venue approval.',
   },
 
+  payment_pending: {
+    label: 'Awaiting Payment',
+    color: 'bg-amber-50 text-amber-700',
+    description:
+      'Your slot is reserved. Complete payment before the timer runs out to confirm your booking.',
+  },
+
   owner_accepted: {
     label: 'Accepted',
     color: 'bg-brand-light text-brand',

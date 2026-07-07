@@ -8,12 +8,15 @@ export type VenueCategory = {
   sort_order: number
 }
 
+export type BookingMode = 'MANUAL' | 'INSTANT'
+
 export type SearchResult = {
   id: string
   name: string
   city: string
   category: VenueCategory
   capacity: number
+  booking_mode?: BookingMode
   pricing_mode: string
   starting_price_paise?: number | null
   display_price_min_paise?: number | null
@@ -95,6 +98,7 @@ export type VenueResponse = {
   platform_commission_pct: string
   advance_pct: string
   balance_due_days_before_event: number
+  booking_mode?: BookingMode
   owner_action_window_hours: number
   overdue_advance_refund_pct: string
   status: string
@@ -229,6 +233,20 @@ export type BookingOut = {
   balance_overdue_at?: string | null
   owner_action_deadline?: string | null
   display: BookingDisplay
+  payment_required?: boolean
+  payment_expires_at?: string | null
+  payment_options?: {
+    full: {
+      label: string
+      amount_paise: number
+      display_amount: string
+    }
+    advance: {
+      label: string
+      amount_paise: number
+      display_amount: string
+    }
+  }
 }
 export type CancellationPreviewOut = {
   refund_amount_paise: number

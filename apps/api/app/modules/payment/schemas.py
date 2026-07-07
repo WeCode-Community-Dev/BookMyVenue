@@ -8,7 +8,7 @@ class CreatePaymentRequest(BaseModel):
     # "advance" (token, confirms the booking) or "balance" (settles a confirmed
     # booking). Amount is computed server-side from the venue pricing snapshot —
     # never trusted from the client.
-    payment_type: Literal["advance", "balance"] = "advance"
+    payment_type: Literal["advance", "balance", "full"] = "advance"
 
 
 class PaymentIntentResponse(BaseModel):
