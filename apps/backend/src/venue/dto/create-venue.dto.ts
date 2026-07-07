@@ -30,6 +30,9 @@ export class CreateVenueDto {
     @IsEnum(VenueType)
     venueType: VenueType;
 
+    @IsArray()
+    @ArrayMinSize(1)
+    @IsEnum(EventCategory,{each:true})
     categories: EventCategory[];
 
     @IsInt()
