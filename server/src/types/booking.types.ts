@@ -2,6 +2,7 @@ import { Document, Types } from 'mongoose';
 import { BookingStatus, BookingScenario, PaymentMethod, PaymentStatus } from '@/constants/booking';
 
 export interface IBooking extends Document {
+  bookingId?: string;
   venue: Types.ObjectId;
   user: Types.ObjectId;
   startDateTime: Date;

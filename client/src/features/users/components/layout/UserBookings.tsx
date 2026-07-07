@@ -1,13 +1,20 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Loader2, Calendar } from 'lucide-react';
 import { useAsyncFetch } from '@/shared/hooks/useAsyncFetch';
 import { usersApi } from '../../services/users.api';
 import BookingFilters from '../ui/BookingFilters';
 import type { MyBookingsResponse } from '../../types';
 import BookingCard from '../ui/BookingCard';
+import { Pagination } from '@/shared/components/ui';
 
 export default function UserBookings() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const selectedFilter = searchParams.get('status') || 'ALL';
+  const page = Number(searchParams.get('page')) || 1;
+  const limit = Number(searchParams.get('limit')) || 6; // Default to 6 per page for customer grid view
+
   const {
     data: response,
     loading,
@@ -19,11 +26,38 @@ export default function UserBookings() {
     data: MyBookingsResponse;
   }>();
 
-  const [selectedFilter, setSelectedFilter] = useState('ALL');
+  const updateParams = (updates: Record<string, string | number | undefined>) => {
+    setSearchParams(
+      (prev) => {
+        const newParams = new URLSearchParams(prev);
+        Object.entries(updates).forEach(([key, value]) => {
+          if (value === undefined || value === '') {
+            newParams.delete(key);
+          } else {
+            newParams.set(key, String(value));
+          }
+        });
+        return newParams;
+      },
+      { replace: true }
+    );
+  };
 
   const fetchBookings = useCallback(() => {
-    execute(usersApi.getBookings);
-  }, [execute]);
+    // Map status filter to API parameters
+    let apiStatus: string | undefined;
+    if (selectedFilter === 'PENDING_PAYMENT') {
+      apiStatus = 'reserved';
+    } else if (selectedFilter === 'CANCELLED') {
+      apiStatus = 'cancelled';
+    } else if (selectedFilter === 'COMPLETED') {
+      apiStatus = 'completed';
+    } else if (selectedFilter === 'UPCOMING') {
+      apiStatus = 'confirmed';
+    }
+
+    execute(() => usersApi.getBookings(page, limit, apiStatus));
+  }, [execute, page, limit, selectedFilter]);
 
   useEffect(() => {
     fetchBookings();
@@ -95,15 +129,27 @@ export default function UserBookings() {
 
       {/* Filters */}
       <div className="mb-8">
-        <BookingFilters selected={selectedFilter} onChange={setSelectedFilter} />
+        <BookingFilters
+          selected={selectedFilter}
+          onChange={(newVal) => updateParams({ status: newVal, page: 1 })}
+        />
       </div>
 
       {/* Bookings Grid */}
       {filteredBookings.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBookings.map((booking) => (
-            <BookingCard key={booking.id} booking={booking} onCancelSuccess={fetchBookings} />
-          ))}
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredBookings.map((booking) => (
+              <BookingCard key={booking.id} booking={booking} onCancelSuccess={fetchBookings} />
+            ))}
+          </div>
+          {response?.data?.pagination && (
+            <Pagination
+              pagination={response.data.pagination}
+              onPageChange={(newPage) => updateParams({ page: newPage })}
+              itemName="booking"
+            />
+          )}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-surface border border-border rounded-3xl shadow-sm">

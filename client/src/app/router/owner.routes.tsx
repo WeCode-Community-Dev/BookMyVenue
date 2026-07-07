@@ -9,6 +9,8 @@ import OwnerVenuesList from '@/features/venues/pages/OwnerVenuesList';
 import OwnerVenueDetails from '@/features/venues/pages/OwnerVenueDetails';
 import VenueAvailabilityPage from '@/features/venues/pages/VenueAvailabilityPage';
 import UserProfile from '@/features/profile/pages/UserProfile';
+import OwnerBookingsList from '@/features/bookings/pages/OwnerBookingsList';
+import OwnerBookingDetails from '@/features/bookings/pages/OwnerBookingDetails';
 
 export const ownerRoutes = {
   path: '/owner',
@@ -40,6 +42,14 @@ export const ownerRoutes = {
     {
       path: 'venues/:id/availability',
       element: <VenueAvailabilityPage />,
+    },
+    {
+      path: 'bookings',
+      element: <OwnerBookingsList />,
+    },
+    {
+      path: 'bookings/:id',
+      element: <OwnerBookingDetails />,
     },
     {
       path: 'profile',
