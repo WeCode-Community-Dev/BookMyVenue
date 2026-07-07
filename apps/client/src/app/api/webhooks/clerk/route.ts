@@ -48,12 +48,12 @@ export async function POST(req: Request) {
 
         const role = (unsafe_metadata?.role as string) === "OWNER" ? "OWNER" : "USER";
 
-        if (role === "USER") {
+        // if (role === "USER") {
             const clerk = await clerkClient();
             await clerk.users.updateUserMetadata(id, {
                 publicMetadata: { role },
             });
-        }
+        // }
 
         await prisma.user.create({
             data: { id, email, name, role },

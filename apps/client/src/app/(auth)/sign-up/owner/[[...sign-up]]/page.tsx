@@ -26,7 +26,6 @@ export default function OwnerSignUpPage() {
             <SignUp
                 appearance={appearance}
                 unsafeMetadata={{ role: "OWNER" }}
-                fallbackRedirectUrl="/owner"
             />
         </div>
     );

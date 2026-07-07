@@ -1,9 +1,7 @@
 "use client";
 
-import { useAuth, useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { Building2, CalendarCheck, CheckCircle2, IndianRupee, Plus } from "lucide-react";
-import { ensureOwnerRole } from "./actions";
 import StatCards from "@/components/owner/StatCards";
 import NavTabs from "@/components/owner/NavTabs";
 import OverviewTab from "@/components/owner/OverviewTab";
@@ -19,8 +17,7 @@ function isTab(value: string | null): value is Tab {
 }
 
 export default function OwnerDashboard() {
-    const { getToken } = useAuth();
-    const { isLoaded, user } = useUser();
+
 
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -61,13 +58,6 @@ export default function OwnerDashboard() {
             color: "bg-primary/10 text-primary",
         },
     ];
-
-    useEffect(() => {
-        if (!isLoaded || !user) return;
-        if (user.publicMetadata?.role === "OWNER") return;
-
-        ensureOwnerRole().then(() => getToken({ skipCache: true }));
-    }, [isLoaded, user, getToken]);
 
     const handleTabChange = (tab: Tab) => {
         const params = new URLSearchParams(searchParams.toString());

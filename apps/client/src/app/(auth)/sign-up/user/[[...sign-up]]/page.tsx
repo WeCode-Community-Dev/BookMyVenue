@@ -26,7 +26,6 @@ export default function CustomerSignUpPage() {
             <SignUp
                 appearance={appearance}
                 unsafeMetadata={{ role: "USER" }}
-                fallbackRedirectUrl="/"
             />
         </div>
     );
