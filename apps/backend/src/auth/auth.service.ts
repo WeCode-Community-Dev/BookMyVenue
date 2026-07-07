@@ -18,6 +18,14 @@ export class AuthService {
     private readonly mailService: MailService,
   ) {}
 
+  private async generateToken(user: User) {
+    return this.jwtService.signAsync({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+  }
+
   async requestOtp(dto: RequestOtpDto) {
     console.log(dto);
     const { email } = dto;
@@ -97,11 +105,7 @@ export class AuthService {
       });
     }
 
-    const token = await this.jwtService.signAsync({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    const token = await this.generateToken(user);
 
     return {
       message: 'User verified successfully.',
@@ -149,11 +153,7 @@ export class AuthService {
       });
     }
 
-    const token = await this.jwtService.signAsync({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    const token = await this.generateToken(user);
 
     return {
       message: 'Google login successful.',
