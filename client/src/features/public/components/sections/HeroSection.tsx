@@ -3,12 +3,22 @@ import heroImage1 from '@/features/public/assets/hero-venue.png';
 import heroImage2 from '@/features/public/assets/hero-venue-2.png';
 import heroImage3 from '@/features/public/assets/hero-venue-3.png';
 import heroImage4 from '@/features/public/assets/hero-venue-4.png';
-import { MapPin, Search } from 'lucide-react';
+import { LocationEdit } from 'lucide-react';
+import Search from '@/shared/components/ui/Search/Search';
+import { useSearch } from '@/shared/hooks/useSearch';
+import { searchService } from '@/shared/services/search.service';
 
 const images = [heroImage1, heroImage2, heroImage3, heroImage4];
 
 export default function HeroSection() {
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [query, setQuery] = useState('');
+
+  const { suggestions, loading } = useSearch({
+    query,
+    fetchSuggestions:
+      searchService.getVenueSuggestions
+  })
 
 
   useEffect(() => {
@@ -52,23 +62,21 @@ export default function HeroSection() {
         </h1>
 
         {/* Search Box */}
-        <div className="mt-10 bg-zinc-900/80 backdrop-blur-md border border-zinc-800/60 rounded-2xl p-3 flex flex-col md:flex-row gap-3 max-w-3xl shadow-xl relative">
-          {/* Location */}
-          <div className="flex items-center gap-3 px-4 py-3 bg-zinc-950/40 rounded-xl border border-zinc-800/40 focus-within:border-zinc-700/60 flex-1 transition-all">
-            <MapPin className="text-zinc-500 w-5 h-5 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Location in Kerala..."
-              className="w-full bg-transparent outline-none border-none text-white placeholder-zinc-500 text-sm focus:ring-0"
-            />
-          </div>
-
-          {/* Search Button */}
-          <button className="bg-[#e21a47] hover:bg-[#c81239] transition-all duration-200 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] font-medium text-sm cursor-pointer">
-            <Search className="w-4 h-4" />
-            <span>Search Venues</span>
-          </button>
-        </div>
+         <Search
+          value={query}
+          onChange={setQuery}
+          placeholder='Search a location'
+          buttonLabel='Search Venues'
+          suggestions={suggestions}
+          onSuggestionSelect={(venue)=>{
+            console.log('Selected',venue)
+          }}
+          icon={
+            <LocationEdit className="text-zinc-500 w-5 h-5 cursor-pointer"/>
+          } onSearch={ () => {
+            console.log(query)
+          }}
+         />
 
         {/* Trusted By */}
         <div className="mt-12 flex flex-col sm:flex-row sm:items-center gap-4 text-xs font-semibold tracking-wider text-zinc-500">
