@@ -12,22 +12,22 @@ const AUTOSAVE_DELAY_MS = 2000;
 // to clear). Used by both autosave and the final submit.
 function buildPayload(data) {
     const payload = {
-        name:          (data.name ?? "").trim(),
-        description:   (data.description ?? "").trim(),
+        name: (data.name ?? "").trim(),
+        description: (data.description ?? "").trim(),
         venueCategory: data.venueCategory || "",
         // RHF collects the checked amenity checkboxes into an array of _id
         // strings (or a bare string if the group renders a single box). Normalise
         // to an array and drop any falsy entries left by unchecked boxes.
         amenities: [data.amenities].flat().filter(Boolean),
-        addressLine:   (data.addressLine ?? "").trim(),
-        city:          (data.city ?? "").trim(),
-        district:      data.district || "",
-        state:         (data.state ?? "").trim(),
-        pincode:       (data.pincode ?? "").trim(),
+        addressLine: (data.addressLine ?? "").trim(),
+        city: (data.city ?? "").trim(),
+        district: data.district || "",
+        state: (data.state ?? "").trim(),
+        pincode: (data.pincode ?? "").trim(),
         // With valueAsNumber, an empty/invalid number input yields NaN — store
         // null in that case
-        capacity:      Number.isFinite(data.capacity) ? data.capacity : null,
-        basePrice:     Number.isFinite(data.basePrice) ? data.basePrice : null,
+        capacity: Number.isFinite(data.capacity) ? data.capacity : null,
+        basePrice: Number.isFinite(data.basePrice) ? data.basePrice : null,
         location:
             data.latitude && data.longitude
                 ? { type: "Point", coordinates: [parseFloat(data.longitude), parseFloat(data.latitude)] }
@@ -92,24 +92,24 @@ export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, on
         formState: { errors },
     } = useForm({
         defaultValues: {
-            name:        initialValues.name        || "",
+            name: initialValues.name || "",
             description: initialValues.description || "",
             venueCategory: initialValues.venueCategory?._id
-                        || initialValues.venueCategory
-                        || "",
+                || initialValues.venueCategory
+                || "",
             // Populated amenities arrive as {_id, identifier, name} objects (or
             // bare id strings on an unpopulated read); reduce to id strings so the
             // checkbox `value`s match and pre-check the venue's saved amenities.
             amenities: (initialValues.amenities || []).map((a) => a?._id || a),
-            capacity:    initialValues.capacity    || "",
-            basePrice:   initialValues.basePrice   || "",
+            capacity: initialValues.capacity || "",
+            basePrice: initialValues.basePrice || "",
             addressLine: initialValues.addressLine || "",
-            city:        initialValues.city        || "",
-            district:    initialValues.district    || "",
-            state:       initialValues.state       || "",
-            pincode:     initialValues.pincode     || "",
-            latitude:    initialValues.location?.coordinates?.[1] || "",
-            longitude:   initialValues.location?.coordinates?.[0] || "",
+            city: initialValues.city || "",
+            district: initialValues.district || "",
+            state: initialValues.state || "",
+            pincode: initialValues.pincode || "",
+            latitude: initialValues.location?.coordinates?.[1] || "",
+            longitude: initialValues.location?.coordinates?.[0] || "",
         },
     });
 
@@ -169,7 +169,7 @@ export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, on
         };
         // runAutosave is intentionally omitted — including it would re-subscribe
         // the listener on every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [subscribe, onAutosave]);
 
     const autosaveTimer = useRef(null);
@@ -337,7 +337,8 @@ export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, on
                         </label>
                         <select
                             disabled={loadingCategories}
-                            className={inputCls(errors.venueCategory) + " cursor-pointer"}
+                            className={inputCls(errors.venueCategory) +
+                                " cursor-pointer appearance-none bg-white pr-10"}
                             {...register("venueCategory", {
                                 required: "Please select a category",
                             })}
@@ -374,7 +375,7 @@ export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, on
                                         <input
                                             type="checkbox"
                                             value={amenity._id}
-                                            className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                            className="h-4  w-4  rounded  border-gray-300  text-red-600  accent-red-600  focus:ring-2  focus:ring-red-200"
                                             {...register("amenities", {
                                                 required: "Select at least one amenity",
                                             })}
@@ -483,7 +484,7 @@ export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, on
                                 District <span className="text-red-500">*</span>
                             </label>
                             <select
-                                className={inputCls(errors.district) + " cursor-pointer"}
+                                className={inputCls(errors.district) + " cursor-pointer appearance-none bg-white pr-10"}
                                 {...register("district", {
                                     required: "Please select a district",
                                 })}
