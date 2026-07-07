@@ -1,0 +1,163 @@
+import { CloudinaryService } from 'src/providers/cloudinary/cloudinary.service';
+import { CreateVenueDto } from './dto/create-venue.dto';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/providers/prisma/prisma.service';
+
+interface UploadedFile {
+  buffer: Buffer;
+}
+
+@Injectable()
+export class VenueService {
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
+  // async createVenue(
+  //   dto: CreateVenueDto,
+  //   files: UploadedFile[],
+  //   ownerId: string,
+  // ) {
+  //   const uploadedImages = await Promise.all(
+  //     files.map((file, index) =>
+  //       this.cloudinaryService.uploadImage(file, {
+  //         folder: 'venues',
+  //         publicId: `${ownerId}-${Date.now()}-${index}`,
+  //       }),
+  //     ),
+  //   );
+
+  //   const venueImages = uploadedImages.map((image, index) => ({
+  //     url: image.secure_url,
+  //     isPrimary: index === 0,
+  //     sortOrder: index,
+  //   }));
+
+  //   const venue = await this.prismaService.venue.create({
+  //     data: {
+  //       ownerId,
+  //       name: dto.name,
+  //       description: dto.description,
+  //       venueType: dto.venueType,
+  //       capacityMin: dto.capacityMin,
+  //       capacityMax: dto.capacityMax,
+  //       addressLine: dto.addressLine,
+  //       city: dto.city,
+  //       latitude: dto.latitude,
+  //       longitude: dto.longitude,
+  //     },
+  //   });
+
+  //   return {
+  //     venue,
+  //     venueImages,
+  //   };
+  // }
+  async createVenue(
+    dto: CreateVenueDto,
+    files: UploadedFile[],
+    ownerId: string,
+  ) {
+    // Upload images to Cloudinary
+    const uploadedImages = await Promise.all(
+      files.map((file, index) =>
+        this.cloudinaryService.uploadImage(file, {
+          folder: 'venues',
+          publicId: `${ownerId}-${Date.now()}-${index}`,
+        }),
+      ),
+    );
+
+    // Prepare image data for DB
+    const venueImages = uploadedImages.map((image, index) => ({
+      url: image.secure_url,
+      isPrimary: index === 0,
+      sortOrder: index,
+    }));
+
+    return await this.prismaService.$transaction(async (tx) => {
+      // Create Venue
+      const venue = await tx.venue.create({
+        data: {
+          ownerId,
+          name: dto.name,
+          description: dto.description,
+          venueType: dto.venueType,
+          capacityMin: dto.capacityMin,
+          capacityMax: dto.capacityMax,
+          addressLine: dto.addressLine,
+          city: dto.city,
+          latitude: dto.latitude,
+          longitude: dto.longitude,
+        },
+      });
+
+      await tx.venueCategory.createMany({
+        data: dto.categories.map((category) => ({
+          venueId: venue.id,
+          category,
+        })),
+      });
+
+      await tx.venueAmenity.createMany({
+        data: dto.amenityIds.map((amenityId) => ({
+          venueId: venue.id,
+          amenityId,
+        })),
+      });
+
+      await tx.venueImage.createMany({
+        data: venueImages.map((image) => ({
+          venueId: venue.id,
+          url: image.url,
+          isPrimary: image.isPrimary,
+          sortOrder: image.sortOrder,
+        })),
+      });
+
+      for (const slot of dto.slotTemplates) {
+        const createdSlot = await tx.venueSlotTemplate.create({
+          data: {
+            venueId: venue.id,
+            label: slot.label,
+            startDayOffset: slot.startDayOffset,
+            startTime: slot.startTime,
+            endDayOffset: slot.endDayOffset,
+            endTime: slot.endTime,
+            isCustom: slot.isCustom,
+            customRatePerGuestPerHour: slot.customRatePerGuestPerHour,
+          },
+        });
+
+        await tx.venueSlotPricing.createMany({
+          data: slot.pricingTiers.map((tier) => ({
+            slotTemplateId: createdSlot.id,
+            minGuests: tier.minGuests,
+            maxGuests: tier.maxGuests,
+            price: tier.price,
+          })),
+        });
+      }
+
+      return await tx.venue.findUnique({
+        where: {
+          id: venue.id,
+        },
+        include: {
+          categories: true,
+          amenities: {
+            include: {
+              amenity: true,
+            },
+          },
+          images: true,
+          slotTemplates: {
+            include: {
+              pricingTiers: true,
+            },
+          },
+        },
+      });
+    });
+  }
+}

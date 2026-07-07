@@ -161,4 +161,16 @@ export class AuthService {
       user,
     };
   }
+
+  async upgradeToVenueOwner(userId: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: { id: userId },
+    });
+    if (user && user.role === 'USER') {
+      await this.prismaService.user.update({
+        where: { id: userId },
+        data: { role: 'VENUE_OWNER' },
+      });
+    }
+  }
 }
