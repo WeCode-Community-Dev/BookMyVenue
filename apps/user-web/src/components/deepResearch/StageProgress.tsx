@@ -35,7 +35,7 @@ function statusOf(stage: ResearchStage, current: ResearchStage): 'done' | 'activ
 
 export function StageProgress({ current }: { current: ResearchStage }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
+    <div className="rounded-2xl border border-zinc-200 bg-white/60 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.03]">
       <ul className="space-y-0">
         {STAGES.map((s, i) => {
           const status = statusOf(s.key, current)
@@ -46,7 +46,7 @@ export function StageProgress({ current }: { current: ResearchStage }) {
               {!isLast && (
                 <span
                   className={`absolute left-[15px] top-8 h-full w-px transition-colors duration-500 ${
-                    status === 'done' ? 'bg-brand-secondary/60' : 'bg-white/10'
+                    status === 'done' ? 'bg-brand/60 dark:bg-brand-secondary/60' : 'bg-zinc-200 dark:bg-white/10'
                   }`}
                   aria-hidden="true"
                 />
@@ -55,10 +55,10 @@ export function StageProgress({ current }: { current: ResearchStage }) {
               <span
                 className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
                   status === 'done'
-                    ? 'border-brand-secondary bg-brand-secondary/20 text-brand-secondary'
+                    ? 'border-brand bg-brand/10 text-brand dark:border-brand-secondary dark:bg-brand-secondary/20 dark:text-brand-secondary'
                     : status === 'active'
-                      ? 'border-brand-secondary bg-brand-secondary/10 text-brand-secondary shadow-[0_0_0_4px_rgba(64,138,113,0.15)]'
-                      : 'border-white/15 bg-white/5 text-white/25'
+                      ? 'border-brand bg-brand/5 text-brand shadow-[0_0_0_4px_rgba(40,90,72,0.12)] dark:border-brand-secondary dark:bg-brand-secondary/10 dark:text-brand-secondary dark:shadow-[0_0_0_4px_rgba(64,138,113,0.15)]'
+                      : 'border-zinc-200 bg-zinc-100 text-zinc-300 dark:border-white/15 dark:bg-white/5 dark:text-white/25'
                 }`}
               >
                 {status === 'done' ? (
@@ -73,14 +73,14 @@ export function StageProgress({ current }: { current: ResearchStage }) {
               <div className="pt-0.5">
                 <p
                   className={`text-sm font-semibold transition-colors duration-300 ${
-                    status === 'pending' ? 'text-white/35' : 'text-white'
+                    status === 'pending' ? 'text-zinc-400 dark:text-white/35' : 'text-zinc-900 dark:text-white'
                   }`}
                 >
                   {s.label}
                 </p>
                 <p
                   className={`mt-0.5 text-xs leading-relaxed transition-colors duration-300 ${
-                    status === 'pending' ? 'text-white/20' : 'text-zinc-400'
+                    status === 'pending' ? 'text-zinc-300 dark:text-white/20' : 'text-zinc-500 dark:text-zinc-400'
                   }`}
                 >
                   {s.sublabel}
@@ -91,7 +91,7 @@ export function StageProgress({ current }: { current: ResearchStage }) {
                     {[0, 1, 2].map((row) => (
                       <div
                         key={row}
-                        className="h-2.5 animate-pulse rounded-full bg-white/10"
+                        className="h-2.5 animate-pulse rounded-full bg-zinc-200 dark:bg-white/10"
                         style={{ width: `${85 - row * 18}%`, animationDelay: `${row * 120}ms` }}
                       />
                     ))}

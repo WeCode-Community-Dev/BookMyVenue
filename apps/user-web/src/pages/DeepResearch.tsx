@@ -130,17 +130,17 @@ export default function DeepResearch() {
     <div className="min-h-screen bg-white dark:bg-ink-950">
       <AppNavbar />
 
-      <section className="brand-glow relative overflow-hidden bg-white py-16 sm:py-20 dark:bg-ink-950">
+      <section className="relative flex min-h-[calc(100dvh-60px)] items-center overflow-hidden bg-gradient-to-br from-brand-light via-white to-white py-16 sm:py-20 dark:bg-ink-950 dark:from-ink-950 dark:via-ink-950 dark:to-ink-950">
         <div
-          className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-brand-secondary/20 blur-3xl"
+          className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-brand-secondary/30 blur-3xl dark:bg-brand-secondary/20"
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-brand/20 blur-3xl"
+          className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-brand/30 blur-3xl dark:bg-brand/20"
           aria-hidden="true"
         />
 
-        <div className="relative mx-auto max-w-2xl px-6 text-center">
+        <div className="relative mx-auto w-full max-w-2xl px-6 text-center">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-3.5 py-1.5 text-xs font-semibold text-brand backdrop-blur-sm dark:border-brand-secondary/30 dark:bg-white/5 dark:text-brand-secondary">
             <Sparkles className="h-3.5 w-3.5" />
             Deep Research
