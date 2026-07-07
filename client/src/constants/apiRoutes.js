@@ -15,8 +15,10 @@ export const API_ROUTES = {
           ACCOUNT_SETTINGS: "user/account/status",
         },
         WISHLIST: {
-          WISHLIST: "/user/wishlist",
-        },
+          GET: "/user/wishlist",
+          ADD: (venueId) => `/user/wishlist/${venueId}`,
+          REMOVE: (venueId) => `/user/wishlist/${venueId}`,
+        }
     },
    ADMIN: {
     USER: {
