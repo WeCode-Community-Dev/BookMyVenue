@@ -1,8 +1,8 @@
 import { formatPrice } from '../../utils'
 import type { SearchResult } from '../../types'
 import { useLikes } from '../../lib/useLikes'
-import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../lib/AuthContext'
+import { useAuthModal } from '../../lib/AuthModalContext'
 
 type Props = { venue: SearchResult; onClick: () => void }
 
@@ -44,14 +44,13 @@ export function VenueCard({ venue, onClick }: Props) {
 
   const { isLiked, toggleLike } = useLikes()
   const { user } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const { openLogin } = useAuthModal()
   const liked = isLiked(venue.id)
 
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (!user) {
-      navigate('/login', { state: { from: location.pathname } })
+      openLogin()
       return
     }
     toggleLike(venue.id)

@@ -330,8 +330,16 @@ class ExternalReservationSummary(BaseModel):
     lead_name: str
     lead_city: Optional[str] = None
     lead_formatted_address: Optional[str] = None
+    lead_category_guess: Optional[str] = None
+    lead_cover_photo_url: Optional[str] = None
+    lead_phone: Optional[str] = None
+    lead_website: Optional[str] = None
+    lead_rating: Optional[float] = None
+    lead_google_maps_uri: Optional[str] = None
     customer_name: Optional[str] = None
     customer_email: Optional[str] = None
+    customer_phone: Optional[str] = None
+    customer_notes: Optional[str] = None
     category_id: Optional[uuid.UUID] = None
     category_label: Optional[str] = None
     guest_count: Optional[int] = None
@@ -340,7 +348,10 @@ class ExternalReservationSummary(BaseModel):
     venue_id: Optional[uuid.UUID] = None
     booking_id: Optional[uuid.UUID] = None
     contact_method: Optional[str] = None
+    contact_notes: Optional[str] = None
     follow_up_date: Optional[str] = None
+    owner_invited_at: Optional[datetime] = None
+    booking_created_at: Optional[datetime] = None
     created_at: datetime
 
 

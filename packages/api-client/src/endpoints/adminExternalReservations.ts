@@ -11,8 +11,16 @@ export type ExternalReservationSummary = {
   lead_name: string
   lead_city: string | null
   lead_formatted_address: string | null
+  lead_category_guess: string | null
+  lead_cover_photo_url: string | null
+  lead_phone: string | null
+  lead_website: string | null
+  lead_rating: number | null
+  lead_google_maps_uri: string | null
   customer_name: string | null
   customer_email: string | null
+  customer_phone: string | null
+  customer_notes: string | null
   category_id: string | null
   category_label: string | null
   guest_count: number | null
@@ -21,7 +29,10 @@ export type ExternalReservationSummary = {
   venue_id: string | null
   booking_id: string | null
   contact_method: string | null
+  contact_notes: string | null
   follow_up_date: string | null
+  owner_invited_at: string | null
+  booking_created_at: string | null
   created_at: string
 }
 

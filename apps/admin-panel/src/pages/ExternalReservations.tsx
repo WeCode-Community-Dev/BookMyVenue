@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   PhoneCall, UserCheck, Send, CalendarPlus, MapPin, Users as UsersIcon, Tag,
+  X, Mail, Phone, Globe, Star, ExternalLink, StickyNote, Calendar,
 } from 'lucide-react'
 import { createClient, adminExternalReservationEndpoints } from '@venue404/api-client'
 import type {
@@ -47,6 +49,8 @@ export default function ExternalReservations() {
   const [contactMethod, setContactMethod] = useState('')
   const [contactNotes, setContactNotes] = useState('')
   const [followUpDate, setFollowUpDate] = useState('')
+
+  const [detailTarget, setDetailTarget] = useState<ExternalReservationSummary | null>(null)
 
   const [inviteTarget, setInviteTarget] = useState<ExternalReservationSummary | null>(null)
   const [venueName, setVenueName] = useState('')
@@ -168,6 +172,7 @@ export default function ExternalReservations() {
                 onMarkInterested={() => markInterestedMutation.mutate(r.id)}
                 onInvite={() => { setInviteTarget(r); setVenueName(r.lead_name) }}
                 onCreateBooking={() => createBookingMutation.mutate(r.id)}
+                onViewDetails={() => setDetailTarget(r)}
                 markInterestedPending={markInterestedMutation.isPending}
                 createBookingPending={createBookingMutation.isPending}
               />
@@ -281,6 +286,10 @@ export default function ExternalReservations() {
           </div>
         </div>
       </Modal>
+
+      {detailTarget && (
+        <ReservationDetailModal reservation={detailTarget} onClose={() => setDetailTarget(null)} />
+      )}
     </AdminLayout>
   )
 }
@@ -293,12 +302,13 @@ type CardProps = {
   onMarkInterested: () => void
   onInvite: () => void
   onCreateBooking: () => void
+  onViewDetails: () => void
   markInterestedPending: boolean
   createBookingPending: boolean
 }
 
 function ReservationCard({
-  reservation: r, onContact, onMarkInterested, onInvite, onCreateBooking,
+  reservation: r, onContact, onMarkInterested, onInvite, onCreateBooking, onViewDetails,
   markInterestedPending, createBookingPending,
 }: CardProps) {
   return (
@@ -353,7 +363,158 @@ function ReservationCard({
             <CalendarPlus className="h-3.5 w-3.5" /> Create Booking
           </button>
         )}
+        <button
+          type="button"
+          onClick={onViewDetails}
+          className="ml-auto text-xs text-zinc-400 hover:text-zinc-700 underline underline-offset-2"
+        >
+          View details
+        </button>
       </div>
     </div>
+  )
+}
+
+// ── Reservation Detail Modal ─────────────────────────────────────────────────
+
+function ContactRow({ icon, value, href }: { icon: React.ReactNode; value: string | null; href?: string }) {
+  if (!value) return null
+  const content = (
+    <div className="flex items-center gap-2 text-sm text-zinc-600">
+      <span className="text-zinc-300">{icon}</span>
+      <span className="truncate">{value}</span>
+    </div>
+  )
+  return href ? <a href={href} target="_blank" rel="noreferrer" className="hover:text-brand">{content}</a> : content
+}
+
+function InfoBlock({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-zinc-100 px-4 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-400">{label}</p>
+      <p className="mt-1 text-sm font-medium text-zinc-900">{value}</p>
+    </div>
+  )
+}
+
+function fmtDateTime(iso: string | null): string {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+}
+
+function ReservationDetailModal({ reservation: r, onClose }: { reservation: ExternalReservationSummary; onClose: () => void }) {
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+
+      <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl ring-1 ring-zinc-900/5">
+
+        {/* Header */}
+        <div className="flex items-start justify-between border-b border-zinc-100 px-6 py-5">
+          <div>
+            <h3 className="text-base font-semibold text-zinc-900">Reservation details</h3>
+            <p className="mt-0.5 font-mono text-xs text-zinc-400 select-all">{r.id}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <StatusBadge label={statusLabel(r.status)} variant={statusVariant(r.status)} dot={false} />
+            <button
+              type="button"
+              onClick={onClose}
+              className="press flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="px-6 py-5">
+
+          {/* Event info strip */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <InfoBlock label="Category" value={r.category_label ?? 'Not selected'} />
+            <InfoBlock label="Guests" value={r.guest_count ?? '—'} />
+            <InfoBlock label="Event date" value={r.event_date ?? 'Not set'} />
+            <InfoBlock label="Requested" value={fmtDateTime(r.created_at)} />
+          </div>
+
+          {/* Two-column: customer+contact log / external venue lead */}
+          <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+
+            <div className="space-y-4">
+              {/* Customer */}
+              <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4">
+                <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Customer</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-sm font-semibold text-zinc-600">
+                    {r.customer_name?.[0]?.toUpperCase() ?? '?'}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-zinc-900">{r.customer_name ?? '—'}</p>
+                  </div>
+                </div>
+                <div className="mt-3 space-y-1.5">
+                  <ContactRow icon={<Mail className="h-3.5 w-3.5" />} value={r.customer_email} href={r.customer_email ? `mailto:${r.customer_email}` : undefined} />
+                  <ContactRow icon={<Phone className="h-3.5 w-3.5" />} value={r.customer_phone} href={r.customer_phone ? `tel:${r.customer_phone}` : undefined} />
+                </div>
+                {r.customer_notes && (
+                  <div className="mt-3 flex items-start gap-2 border-t border-zinc-200 pt-3 text-sm text-zinc-600">
+                    <StickyNote className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-300" />
+                    <span>{r.customer_notes}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Admin contact log */}
+              {(r.contact_method || r.contact_notes || r.follow_up_date) && (
+                <div className="rounded-xl border border-zinc-100 px-4 py-3">
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">Contact log</p>
+                  {r.contact_method && <p className="text-sm text-zinc-700">Reached via {r.contact_method}</p>}
+                  {r.contact_notes && <p className="mt-1 text-sm text-zinc-600">{r.contact_notes}</p>}
+                  {r.follow_up_date && (
+                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-zinc-400">
+                      <Calendar className="h-3.5 w-3.5" /> Follow up on {r.follow_up_date}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Workflow timestamps */}
+              {(r.owner_invited_at || r.booking_created_at) && (
+                <div className="grid grid-cols-2 gap-3">
+                  {r.owner_invited_at && <InfoBlock label="Owner invited" value={fmtDateTime(r.owner_invited_at)} />}
+                  {r.booking_created_at && <InfoBlock label="Booking created" value={fmtDateTime(r.booking_created_at)} />}
+                </div>
+              )}
+            </div>
+
+            {/* External venue lead */}
+            <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4">
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">External venue (unregistered)</p>
+              <div className="flex items-center gap-3">
+                {r.lead_cover_photo_url ? (
+                  <img src={r.lead_cover_photo_url} alt={r.lead_name} className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+                ) : (
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-zinc-200 text-zinc-500">
+                    <MapPin className="h-5 w-5" />
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-zinc-900">{r.lead_name}</p>
+                  <p className="truncate text-xs text-zinc-400">{r.lead_formatted_address ?? r.lead_city ?? '—'}</p>
+                </div>
+              </div>
+              <div className="mt-3 space-y-1.5">
+                <ContactRow icon={<Phone className="h-3.5 w-3.5" />} value={r.lead_phone} href={r.lead_phone ? `tel:${r.lead_phone}` : undefined} />
+                <ContactRow icon={<Globe className="h-3.5 w-3.5" />} value={r.lead_website} href={r.lead_website ?? undefined} />
+                <ContactRow icon={<Star className="h-3.5 w-3.5" />} value={r.lead_rating != null ? `${r.lead_rating} rating` : null} />
+                <ContactRow icon={<ExternalLink className="h-3.5 w-3.5" />} value={r.lead_google_maps_uri ? 'View on Google Maps' : null} href={r.lead_google_maps_uri ?? undefined} />
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
   )
 }

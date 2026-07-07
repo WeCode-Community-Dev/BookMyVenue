@@ -431,14 +431,23 @@ def list_external_reservations(
     for r in reservations:
         customer = customers.get(r.user_id)
         category = categories.get(r.category_id) if r.category_id else None
+        contact_info = r.lead.raw_contact_info or {}
         items.append({
             "id": r.id,
             "status": r.status.value,
             "lead_name": r.lead.name,
             "lead_city": r.lead.city,
             "lead_formatted_address": r.lead.formatted_address,
+            "lead_category_guess": r.lead.category_guess,
+            "lead_cover_photo_url": r.lead.cover_photo_url,
+            "lead_phone": contact_info.get("phone"),
+            "lead_website": contact_info.get("website"),
+            "lead_rating": contact_info.get("rating"),
+            "lead_google_maps_uri": contact_info.get("google_maps_uri"),
             "customer_name": customer.full_name if customer else None,
             "customer_email": customer.email if customer else None,
+            "customer_phone": r.phone,
+            "customer_notes": r.notes,
             "category_id": r.category_id,
             "category_label": category.label if category else None,
             "guest_count": r.guest_count,
@@ -447,7 +456,10 @@ def list_external_reservations(
             "venue_id": r.venue_id,
             "booking_id": r.booking_id,
             "contact_method": r.contact_method,
+            "contact_notes": r.contact_notes,
             "follow_up_date": r.follow_up_date.isoformat() if r.follow_up_date else None,
+            "owner_invited_at": r.owner_invited_at,
+            "booking_created_at": r.booking_created_at,
             "created_at": r.created_at,
         })
 
