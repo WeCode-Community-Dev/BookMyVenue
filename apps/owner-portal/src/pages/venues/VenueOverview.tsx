@@ -13,6 +13,8 @@ import { useQuery } from '@tanstack/react-query'
 import { confirmAction } from '../../lib/confirm'
 import toast from 'react-hot-toast'
 
+const MIN_VENUE_PHOTOS = 3
+
 export default function VenueOverview() {
   const { venueId } = useParams()
   const [submitting, setSubmitting] = useState(false)
@@ -117,7 +119,15 @@ export default function VenueOverview() {
           <Button
             variant="primary"
             onClick={async () => {
-              if (!venueId || !(await confirmAction("Our team will review your venue within 24-48 hours. Are you sure you're ready?"))) return
+              if (!venueId) return
+              const photoCount = venue.photos?.length ?? 0
+              if (photoCount < MIN_VENUE_PHOTOS) {
+                const msg = `Add at least ${MIN_VENUE_PHOTOS} photos before submitting for review. This venue currently has ${photoCount}.`
+                toast.error(msg)
+                setError(msg)
+                return
+              }
+              if (!(await confirmAction("Our team will review your venue within 24-48 hours. Are you sure you're ready?"))) return
               setSubmitting(true)
               setError(null)
               try {

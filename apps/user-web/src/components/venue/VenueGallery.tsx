@@ -170,7 +170,15 @@ export function VenueGallery({ photos, venueName }: Props) {
 
       {/* ── Desktop: Airbnb-style grid ──────────────────────── */}
       <div className="hidden md:block relative">
-        <div className={`grid gap-2 h-[500px] overflow-hidden rounded-2xl ${previews.length > 0 ? 'grid-cols-[3fr_2fr]' : ''}`}>
+        <div
+          className={`grid gap-2 h-[500px] overflow-hidden rounded-2xl ${
+            previews.length === 0
+              ? ''
+              : previews.length >= 3
+                ? 'grid-cols-[3fr_2fr]'
+                : 'grid-cols-[4fr_1fr]'
+          }`}
+        >
           {/* Cover photo — left, full height */}
           <button
             onClick={() => open(0)}
@@ -183,9 +191,16 @@ export function VenueGallery({ photos, venueName }: Props) {
             />
           </button>
 
-          {/* Right grid: 2×2 */}
+          {/* Right grid: 2×2 when there's enough photos to fill it,
+              otherwise a plain stack of exactly as many cells as photos —
+              no placeholder tiles for venues with fewer than 3 preview photos. */}
           {previews.length > 0 && (
-            <div className="grid grid-rows-2 grid-cols-2 gap-2">
+            <div
+              className={`grid gap-2 ${
+                previews.length >= 3 ? 'grid-cols-2 grid-rows-2' : 'grid-cols-1'
+              }`}
+              style={previews.length < 3 ? { gridTemplateRows: `repeat(${previews.length}, 1fr)` } : undefined}
+            >
               {previews.map((photo, i) => (
                 <button
                   key={photo.id}
@@ -200,14 +215,15 @@ export function VenueGallery({ photos, venueName }: Props) {
                 </button>
               ))}
 
-              {/* Fill empty cells with placeholder */}
-              {Array.from({ length: Math.max(0, 4 - previews.length) }).map((_, i) => (
-                <div key={`ph-${i}`} className="bg-zinc-100 flex items-center justify-center dark:bg-ink-800">
-                  <svg className="h-6 w-6 text-zinc-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              ))}
+              {/* Fill empty cells with placeholder — only once we've committed to the 2×2 grid */}
+              {previews.length >= 3 &&
+                Array.from({ length: 4 - previews.length }).map((_, i) => (
+                  <div key={`ph-${i}`} className="bg-zinc-100 flex items-center justify-center dark:bg-ink-800">
+                    <svg className="h-6 w-6 text-zinc-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                ))}
             </div>
           )}
         </div>

@@ -596,6 +596,8 @@ class PricingRuleAppliesTo(str, Enum):
 
 MAX_ACTIVE_PRICING_RULES_PER_VENUE = 20
 
+MIN_VENUE_PHOTOS = 3
+
 
 class VenuePricingRuleResponse(BaseModel):
     id: UUID
