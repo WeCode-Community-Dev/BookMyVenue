@@ -127,7 +127,7 @@ export default function DeepResearch() {
   const showResults = stage === 'done' && !!breakdown
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-ink-950">
       <AppNavbar />
 
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0b1c19] via-[#0f2920] to-[#163326] py-16 sm:py-20">
@@ -218,13 +218,13 @@ export default function DeepResearch() {
       {showResults && breakdown && (
         <section className="mx-auto max-w-5xl px-6 py-12">
           <div className="mx-auto max-w-2xl">
-            <div className="card-enter rounded-2xl border border-zinc-100 bg-white p-7 shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-zinc-100">
+            <div className="card-enter rounded-2xl border border-zinc-100 bg-white p-7 shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-zinc-100 dark:border-ink-800 dark:bg-ink-900 dark:ring-ink-800">
               <div className="mb-6 flex items-center gap-2.5">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand/10 text-brand">
                   <ShieldCheck className="h-4 w-4" />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-zinc-900">Here's what we understood</p>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Here's what we understood</p>
                   <p className="text-xs text-zinc-400">Matched against our verified catalog below</p>
                 </div>
               </div>
@@ -243,7 +243,7 @@ export default function DeepResearch() {
               </div>
 
               {breakdown.required_amenities.length > 0 && (
-                <div className="mt-5 border-t border-zinc-100 pt-5">
+                <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
                   <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
                     Required amenities
                   </p>
@@ -261,13 +261,13 @@ export default function DeepResearch() {
               )}
 
               {breakdown.special_requirements.length > 0 && (
-                <div className="mt-5 border-t border-zinc-100 pt-5">
+                <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
                   <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
                     Other requirements
                   </p>
                   <ul className="space-y-1.5">
                     {breakdown.special_requirements.map((req) => (
-                      <li key={req} className="flex items-start gap-2 text-sm text-zinc-700">
+                      <li key={req} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
                         <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-zinc-400" />
                         {req}
                       </li>
@@ -281,7 +281,7 @@ export default function DeepResearch() {
           {/* ── Internal catalog results ─────────────────────────────── */}
           <div className="mt-10">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-zinc-900">
+              <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
                 {internalVenues.length > 0
                   ? `${internalTotal} venue${internalTotal === 1 ? '' : 's'} in our catalog`
                   : 'Nothing matched in our catalog'}
@@ -298,11 +298,11 @@ export default function DeepResearch() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 py-16 text-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-300">
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 py-16 text-center dark:border-ink-700">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-300 dark:bg-ink-800">
                   <SearchX className="h-5 w-5" />
                 </span>
-                <p className="text-sm font-semibold text-zinc-900">No venues matched yet</p>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No venues matched yet</p>
                 <p className="max-w-xs text-sm text-zinc-400">
                   Try widening your search, or let us look beyond our marketplace.
                 </p>
@@ -311,17 +311,17 @@ export default function DeepResearch() {
 
             {/* ── External discovery results ─────────────────────────────── */}
             {extStatus === 'completed' && extLeads.length > 0 ? (
-              <div className="mt-12 border-t border-zinc-100 pt-10">
+              <div className="mt-12 border-t border-zinc-100 pt-10 dark:border-ink-800">
                 <div className="mb-6 flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-bold text-zinc-900">
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
                       Discovered externally
                     </h2>
                     <p className="mt-1 text-sm text-zinc-500">
                       We searched beyond our catalog based on your location.
                     </p>
                   </div>
-                  <span className="flex items-center gap-1.5 rounded-full border border-orange-200/60 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                  <span className="flex items-center gap-1.5 rounded-full border border-orange-200/60 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-400">
                     <Globe2 className="h-3.5 w-3.5" />
                     Web Results
                   </span>
@@ -333,21 +333,21 @@ export default function DeepResearch() {
                 </div>
               </div>
             ) : extStatus === 'completed' && extLeads.length === 0 ? (
-              <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 py-10 text-center">
-                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400">
+              <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 py-10 text-center dark:border-ink-700">
+                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 dark:bg-ink-800">
                   <SearchX className="h-5 w-5" />
                 </span>
-                <p className="text-sm font-semibold text-zinc-900">No external venues found</p>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No external venues found</p>
                 <p className="max-w-xs text-xs text-zinc-400">
                   We searched near you but couldn't find any unlisted venues matching your criteria.
                 </p>
               </div>
             ) : (
-              <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 text-center transition-all">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-400 ring-1 ring-zinc-100">
+              <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 text-center transition-all dark:border-ink-800 dark:bg-ink-900/40">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-400 ring-1 ring-zinc-100 dark:bg-ink-800 dark:ring-ink-700">
                   <Globe2 className={`h-4 w-4 ${['locating', 'loading'].includes(extStatus) ? 'animate-pulse text-brand' : ''}`} />
                 </span>
-                <p className="text-sm font-semibold text-zinc-900">
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   {extStatus === 'locating' ? 'Getting your location...'
                     : extStatus === 'loading' ? 'Searching externally...'
                     : 'Still not finding the right fit?'}
@@ -359,7 +359,7 @@ export default function DeepResearch() {
                   <button
                     type="button"
                     onClick={handleTriggerExternal}
-                    className="mt-2 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm ring-1 ring-inset ring-zinc-300 hover:bg-zinc-50 transition-all hover:text-zinc-900"
+                    className="mt-2 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm ring-1 ring-inset ring-zinc-300 hover:bg-zinc-50 transition-all hover:text-zinc-900 dark:bg-ink-800 dark:text-zinc-300 dark:ring-ink-700 dark:hover:bg-ink-700 dark:hover:text-zinc-100"
                   >
                     Search externally
                   </button>
@@ -387,13 +387,13 @@ function Field({
   value: string | null
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-zinc-100 bg-zinc-50/60 p-3.5">
-      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-zinc-400 ring-1 ring-zinc-100">
+    <div className="flex items-start gap-3 rounded-xl border border-zinc-100 bg-zinc-50/60 p-3.5 dark:border-ink-800 dark:bg-ink-900/40">
+      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-zinc-400 ring-1 ring-zinc-100 dark:bg-ink-800 dark:ring-ink-700">
         <Icon className="h-3.5 w-3.5" />
       </span>
       <div className="min-w-0">
         <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">{label}</p>
-        <p className="mt-0.5 truncate text-sm font-medium text-zinc-900">{value ?? '—'}</p>
+        <p className="mt-0.5 truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{value ?? '—'}</p>
       </div>
     </div>
   )

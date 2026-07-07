@@ -26,7 +26,7 @@ export default function Modal({ open, onClose, children, className }: ModalProps
       onClick={onClose}
     >
       <div 
-        className={`bg-white rounded-2xl shadow-2xl w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${className || 'max-w-lg'}`}
+        className={`bg-white dark:bg-ink-900 rounded-2xl shadow-2xl w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${className || 'max-w-lg'}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

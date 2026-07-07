@@ -35,13 +35,13 @@ export function NotificationList({
   }
 
   return (
-    <div className="divide-y divide-zinc-100">
+    <div className="divide-y divide-zinc-100 dark:divide-ink-800">
       {GROUP_ORDER.filter((g) => groups.has(g)).map((group) => (
         <div key={group}>
-          <div className="bg-zinc-50/60 px-5 py-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
+          <div className="bg-zinc-50/60 px-5 py-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-400 dark:bg-ink-900/60">
             {group}
           </div>
-          <div className="divide-y divide-zinc-100">
+          <div className="divide-y divide-zinc-100 dark:divide-ink-800">
             {groups.get(group)!.map((n) => (
               <NotificationItem key={n.id} notification={n} onOpen={onOpen} />
             ))}

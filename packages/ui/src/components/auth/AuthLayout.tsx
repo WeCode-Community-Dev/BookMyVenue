@@ -13,7 +13,7 @@ export function AuthLayout({ left, right, className }: AuthLayoutProps) {
         <div className="mx-auto w-full max-w-sm">{left}</div>
       </div>
       {right && (
-        <div className="relative hidden flex-1 overflow-hidden bg-brand-black lg:flex lg:flex-col">
+        <div className="relative hidden flex-1 overflow-hidden bg-brand-black lg:flex lg:flex-col lg:border-l lg:border-white/10">
           {right}
         </div>
       )}

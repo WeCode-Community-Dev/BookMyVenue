@@ -37,19 +37,19 @@ function Spinner() {
 
 function FieldLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-zinc-700">
+    <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
       {children}
     </label>
   )
 }
 
 const inputCls =
-  'w-full rounded-lg border border-zinc-200 px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-secondary'
+  'w-full rounded-lg border border-zinc-200 px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition-shadow focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-secondary dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-100'
 
 // ─── Section card wrapper ──────────────────────────────────────────────────────
 function SectionCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="space-y-5 rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
+    <div className="space-y-5 rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900">
       {children}
     </div>
   )
@@ -109,9 +109,9 @@ function BookingSummaryCard({ state, guestCount }: { state: CheckoutState; guest
 
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm dark:border-ink-800 dark:bg-ink-900">
       {/* Venue image (unchanged) */}
-      <div className="relative h-48 bg-zinc-100">
+      <div className="relative h-48 bg-zinc-100 dark:bg-ink-800">
         {venueCoverImage ? (
           <img src={venueCoverImage} alt={venueName} className="h-full w-full object-cover" />
         ) : (
@@ -134,7 +134,7 @@ function BookingSummaryCard({ state, guestCount }: { state: CheckoutState; guest
       </div>
 
       <div className="p-5">
-        <h3 className="text-base font-semibold leading-snug text-zinc-900">{venueName}</h3>
+        <h3 className="text-base font-semibold leading-snug text-zinc-900 dark:text-zinc-100">{venueName}</h3>
 
         <div className="mt-3 space-y-1.5">
           <div className="flex items-center gap-2 text-sm text-zinc-500">
@@ -191,7 +191,7 @@ function BookingSummaryCard({ state, guestCount }: { state: CheckoutState; guest
           </div>
         </div>
 
-        <div className="my-5 border-t border-zinc-100" />
+        <div className="my-5 border-t border-zinc-100 dark:border-ink-800" />
 
         {quote ? (
           <QuoteBreakdown source="quote" quote={quote} />
@@ -202,8 +202,8 @@ function BookingSummaryCard({ state, guestCount }: { state: CheckoutState; guest
         )}
 
         {quote && (
-          <div className="mt-4 rounded-xl border border-brand-light-strong bg-brand-light px-4 py-3">
-            <p className="text-sm font-semibold text-brand">
+          <div className="mt-4 rounded-xl border border-brand-light-strong bg-brand-light px-4 py-3 dark:border-brand/30 dark:bg-brand/15">
+            <p className="text-sm font-semibold text-brand dark:text-brand-secondary">
               {formatPrice(quote.advance_due_paise)} due now
             </p>
             <p className="mt-0.5 text-xs text-brand-secondary">
@@ -242,8 +242,8 @@ function NextSteps({ quote }: { quote: PricingQuote | undefined }) {
   ]
 
   return (
-    <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-sm font-semibold text-zinc-900">What happens next</h2>
+    <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900">
+      <h2 className="mb-4 text-sm font-semibold text-zinc-900 dark:text-zinc-100">What happens next</h2>
       <ol className="space-y-4">
         {steps.map((item) => (
           <li key={item.n} className="flex gap-3.5">
@@ -251,7 +251,7 @@ function NextSteps({ quote }: { quote: PricingQuote | undefined }) {
               {item.n}
             </div>
             <div>
-              <p className="text-sm font-medium text-zinc-900">{item.title}</p>
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{item.title}</p>
               <p className="mt-0.5 text-xs text-zinc-500">{item.desc}</p>
             </div>
           </li>
@@ -281,8 +281,8 @@ function InstantNextSteps({ quote }: { quote: PricingQuote | undefined }) {
   ]
 
   return (
-    <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-sm font-semibold text-zinc-900">What happens next</h2>
+    <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900">
+      <h2 className="mb-4 text-sm font-semibold text-zinc-900 dark:text-zinc-100">What happens next</h2>
       <ol className="space-y-4">
         {steps.map((item) => (
           <li key={item.n} className="flex gap-3.5">
@@ -290,7 +290,7 @@ function InstantNextSteps({ quote }: { quote: PricingQuote | undefined }) {
               {item.n}
             </div>
             <div>
-              <p className="text-sm font-medium text-zinc-900">{item.title}</p>
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{item.title}</p>
               <p className="mt-0.5 text-xs text-zinc-500">{item.desc}</p>
             </div>
           </li>
@@ -303,8 +303,8 @@ function InstantNextSteps({ quote }: { quote: PricingQuote | undefined }) {
 // ─── Empty / guard state ──────────────────────────────────────────────────────
 function NoBookingState({ onBrowse }: { onBrowse: () => void }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 text-center">
-      <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 text-center dark:bg-ink-950">
+      <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-ink-800">
         <svg
           className="h-6 w-6 text-zinc-300"
           fill="none"
@@ -319,7 +319,7 @@ function NoBookingState({ onBrowse }: { onBrowse: () => void }) {
           />
         </svg>
       </div>
-      <h2 className="mb-2 text-lg font-semibold text-zinc-900">No booking details found</h2>
+      <h2 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">No booking details found</h2>
       <p className="mb-6 max-w-sm text-sm text-zinc-500">
         Please start your booking from a venue page.
       </p>
@@ -377,9 +377,9 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50/60">
+    <div className="min-h-screen bg-zinc-50/60 dark:bg-ink-950">
       {/* Header unchanged */}
-      <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white/95 backdrop-blur-sm dark:border-ink-800 dark:bg-ink-950/95">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
           <Link to="/">
             <Logo />
@@ -402,7 +402,7 @@ export default function Checkout() {
           </div>
           <button
             onClick={() => navigate(-1)}
-            className="text-sm text-zinc-500 transition-colors hover:text-zinc-800"
+            className="text-sm text-zinc-500 transition-colors hover:text-zinc-800 dark:hover:text-zinc-200"
           >
             ← Back
           </button>
@@ -416,7 +416,7 @@ export default function Checkout() {
           <div className="min-w-0 flex-1 space-y-6">
             {/* ... your existing form content ... */}
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 {isInstantBooking ? 'Complete Payment' : 'Request to book'}
               </h1>
               <p className="mt-1.5 text-sm text-zinc-500">
@@ -430,7 +430,7 @@ export default function Checkout() {
             </div>
             {/* ── Guest count ─────────────────────────────────── */}
             <SectionCard>
-              <h2 className="text-base font-semibold text-zinc-900">Your booking</h2>
+              <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Your booking</h2>
 
               <div>
                 <FieldLabel htmlFor="guest_count">Number of guests</FieldLabel>
@@ -438,7 +438,7 @@ export default function Checkout() {
                   <button
                     type="button"
                     onClick={() => setGuestCount((n) => Math.max(1, n - 1))}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:border-zinc-400 hover:text-zinc-900"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:border-zinc-400 hover:text-zinc-900 dark:border-ink-700 dark:text-zinc-400 dark:hover:border-ink-600 dark:hover:text-zinc-100"
                     aria-label="Decrease guests"
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -456,12 +456,12 @@ export default function Checkout() {
                     min={1}
                     value={guestCount}
                     onChange={(e) => setGuestCount(Math.max(1, Number(e.target.value) || 1))}
-                    className="w-16 rounded-lg border border-zinc-200 px-2 py-2 text-center text-base font-semibold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand-secondary"
+                    className="w-16 rounded-lg border border-zinc-200 px-2 py-2 text-center text-base font-semibold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-brand-secondary dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-100"
                   />
                   <button
                     type="button"
                     onClick={() => setGuestCount((n) => n + 1)}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:border-zinc-400 hover:text-zinc-900"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:border-zinc-400 hover:text-zinc-900 dark:border-ink-700 dark:text-zinc-400 dark:hover:border-ink-600 dark:hover:text-zinc-100"
                     aria-label="Increase guests"
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -481,7 +481,7 @@ export default function Checkout() {
             {isInstantBooking && state.quote && (
               <SectionCard>
                 <div>
-                  <h2 className="text-base font-semibold text-zinc-900">Choose Payment</h2>
+                  <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Choose Payment</h2>
                   <p className="mt-0.5 text-xs text-zinc-400">
                     Pay the advance to reserve now, or settle the full amount in one payment.
                   </p>
@@ -508,8 +508,8 @@ export default function Checkout() {
                         onClick={() => setPaymentChoice(option.value)}
                         className={`rounded-xl border px-4 py-3 text-left transition-colors ${
                           selected
-                            ? 'border-brand bg-brand-light text-brand'
-                            : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
+                            ? 'border-brand bg-brand-light text-brand dark:bg-brand/15 dark:text-brand-secondary'
+                            : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800'
                         }`}
                       >
                         <span className="block text-sm font-semibold">{option.title}</span>
@@ -523,7 +523,7 @@ export default function Checkout() {
 
             <SectionCard>
               <div>
-                <h2 className="text-base font-semibold text-zinc-900">Event details</h2>
+                <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Event details</h2>
                 <p className="mt-0.5 text-xs text-zinc-400">
                   Optional — helps the owner prepare for your event
                 </p>
@@ -565,7 +565,7 @@ export default function Checkout() {
             {createBooking.isError && (
               <div
                 role="alert"
-                className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700"
+                className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400"
               >
                 <svg
                   className="mt-0.5 h-4 w-4 shrink-0"

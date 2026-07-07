@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { useTheme } from '@venue404/ui'
 
 // Loaded once and reused across mounts.
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!)
@@ -50,7 +51,7 @@ function InnerCheckoutForm({ payLabel, onSuccess, onCancel }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Stripe Payment Element */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-4">
+      <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-ink-700 dark:bg-ink-900">
         <PaymentElement options={{ layout: 'tabs' }} />
       </div>
 
@@ -58,7 +59,7 @@ function InnerCheckoutForm({ payLabel, onSuccess, onCancel }: Props) {
       {error && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700"
+          className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400"
         >
           <svg
             className="mt-0.5 h-4 w-4 shrink-0"
@@ -97,7 +98,7 @@ function InnerCheckoutForm({ payLabel, onSuccess, onCancel }: Props) {
           type="button"
           onClick={onCancel}
           disabled={processing}
-          className="flex flex-1 items-center justify-center rounded-lg border border-zinc-200 bg-white px-5 py-3.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex flex-1 items-center justify-center rounded-lg border border-zinc-200 bg-white px-5 py-3.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
         >
           Cancel
         </button>
@@ -107,8 +108,16 @@ function InnerCheckoutForm({ payLabel, onSuccess, onCancel }: Props) {
 }
 
 export function StripePaymentForm(props: Props) {
+  const { resolved } = useTheme()
+
   return (
-    <Elements stripe={stripePromise} options={{ clientSecret: props.clientSecret }}>
+    <Elements
+      stripe={stripePromise}
+      options={{
+        clientSecret: props.clientSecret,
+        appearance: { theme: resolved === 'dark' ? 'night' : 'stripe' },
+      }}
+    >
       <InnerCheckoutForm {...props} />
     </Elements>
   )

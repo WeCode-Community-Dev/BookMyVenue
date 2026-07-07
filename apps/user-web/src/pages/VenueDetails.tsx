@@ -328,9 +328,9 @@ function VenueActions({ venueId }: { venueId: string }) {
       </button>
       <button 
         onClick={handleLike}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline dark:hover:text-zinc-100"
       >
-        <svg 
+        <svg
           className={`h-4 w-4 transition-colors ${liked ? 'text-red-500' : ''}`}
           fill={liked ? 'currentColor' : 'none'} 
           stroke="currentColor" 

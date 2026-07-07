@@ -57,7 +57,7 @@ function PrimaryActionButton({
   return (
     <button
       onClick={onClick}
-      className="press w-full rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm outline-none transition-colors hover:bg-brand-hover focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2"
+      className="press w-full rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm outline-none transition-colors hover:bg-brand-hover focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-ink-900"
     >
       {children}
     </button>
@@ -74,7 +74,7 @@ function DestructiveActionButton({
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-lg border border-red-200 px-5 py-3 text-sm font-medium text-red-700 transition-colors hover:bg-red-50"
+      className="w-full rounded-lg border border-red-200 px-5 py-3 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/30"
     >
       {children}
     </button>
@@ -102,7 +102,7 @@ export function BookingActionsCard({ booking }: Props) {
 
   return (
     <>
-      <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900">
         <div className="space-y-4">
           <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
             Actions
@@ -115,11 +115,11 @@ export function BookingActionsCard({ booking }: Props) {
           {showInstantPayment && !countdown?.expired && (
             <>
               {countdown && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center">
-                  <div className="text-xs font-medium uppercase tracking-wide text-amber-700">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center dark:border-amber-900/50 dark:bg-amber-950/30">
+                  <div className="text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
                     Time remaining
                   </div>
-                  <div className="mt-1 text-2xl font-bold tabular-nums text-amber-900">
+                  <div className="mt-1 text-2xl font-bold tabular-nums text-amber-900 dark:text-amber-300">
                     {countdown.label}
                   </div>
                 </div>
@@ -134,7 +134,7 @@ export function BookingActionsCard({ booking }: Props) {
                   </PrimaryActionButton>
                   <button
                     onClick={() => navigate(`/payment/${booking.id}?type=full`)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
+                    className="w-full rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
                   >
                     {`Pay Full Amount • ${booking.payment_options.full.display_amount}`}
                   </button>

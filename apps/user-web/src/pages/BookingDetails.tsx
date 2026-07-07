@@ -19,14 +19,14 @@ function BookingDetailSkeleton() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-col gap-8 lg:flex-row">
         <div className="flex-1 space-y-8">
-          <div className="h-40 animate-pulse rounded-2xl bg-zinc-100" />
-          <div className="h-72 animate-pulse rounded-2xl bg-zinc-100" />
-          <div className="h-64 animate-pulse rounded-2xl bg-zinc-100" />
-          <div className="h-64 animate-pulse rounded-2xl bg-zinc-100" />
+          <div className="h-40 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
+          <div className="h-72 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
+          <div className="h-64 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
+          <div className="h-64 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
         </div>
 
         <div className="w-full lg:w-[380px]">
-          <div className="h-80 animate-pulse rounded-2xl bg-zinc-100" />
+          <div className="h-80 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
         </div>
       </div>
     </div>
@@ -36,7 +36,7 @@ function BookingDetailSkeleton() {
 function BookingNotFound({ onBack }: { onBack: () => void }) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-24 text-center">
-      <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-100">
+      <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-ink-800">
         <svg
           className="h-7 w-7 text-zinc-300"
           fill="none"
@@ -52,7 +52,7 @@ function BookingNotFound({ onBack }: { onBack: () => void }) {
         </svg>
       </div>
 
-      <h2 className="mb-2 text-xl font-semibold text-zinc-900">Booking not found</h2>
+      <h2 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">Booking not found</h2>
       <p className="mb-8 text-sm text-zinc-500">The booking may have been removed.</p>
 
       <button
@@ -90,7 +90,7 @@ export default function BookingDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white dark:bg-ink-950">
         <AppNavbar />
         <BookingDetailSkeleton />
       </div>
@@ -99,7 +99,7 @@ export default function BookingDetail() {
 
   if (bookingQuery.isError || venueQuery.isError || !booking || !venue) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white dark:bg-ink-950">
         <AppNavbar />
         <BookingNotFound onBack={() => navigate('/my-bookings')} />
       </div>
@@ -107,13 +107,13 @@ export default function BookingDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-ink-950">
       <AppNavbar />
 
       <div className="mx-auto max-w-6xl px-4 py-8">
         <button
           onClick={() => navigate(-1)}
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-700"
+          className="mb-8 inline-flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-200"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

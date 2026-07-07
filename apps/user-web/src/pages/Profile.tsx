@@ -6,16 +6,16 @@ import { useAuth } from '../lib/AuthContext'
 import { AppNavbar } from '../components/shared/AppNavbar'
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
-  super_admin: { label: 'Super Admin', color: 'bg-violet-100 text-violet-700 border-violet-200' },
-  venue_owner: { label: 'Venue Owner', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-  customer:    { label: 'Customer',    color: 'bg-brand-light text-brand border-brand-muted' },
+  super_admin: { label: 'Super Admin', color: 'bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-900/50' },
+  venue_owner: { label: 'Venue Owner', color: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/50' },
+  customer:    { label: 'Customer',    color: 'bg-brand-light text-brand border-brand-muted dark:bg-brand/15 dark:text-brand-secondary dark:border-brand/30' },
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  active:    { label: 'Active',    color: 'bg-emerald-100 text-emerald-700' },
-  suspended: { label: 'Suspended', color: 'bg-red-100 text-red-600' },
-  pending:   { label: 'Pending',   color: 'bg-amber-100 text-amber-700' },
-  rejected:  { label: 'Rejected',  color: 'bg-zinc-100 text-zinc-500' },
+  active:    { label: 'Active',    color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400' },
+  suspended: { label: 'Suspended', color: 'bg-red-100 text-red-600 dark:bg-red-950/30 dark:text-red-400' },
+  pending:   { label: 'Pending',   color: 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400' },
+  rejected:  { label: 'Rejected',  color: 'bg-zinc-100 text-zinc-500 dark:bg-ink-800 dark:text-zinc-400' },
 }
 
 function getInitials(name: string): string {
@@ -71,21 +71,21 @@ export default function Profile() {
   const statusConfig = STATUS_LABELS[status] ?? STATUS_LABELS.active
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50 dark:bg-ink-950">
       <AppNavbar />
 
       <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
 
         {/* ── Page header ─────────────────────────────────── */}
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">My Profile</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">My Profile</h1>
           <p className="mt-1 text-sm text-zinc-500">Manage your account and personal details.</p>
         </div>
 
         <div className="space-y-4">
 
           {/* ── Avatar + identity card ──────────────────── */}
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-ink-700 dark:bg-ink-900">
             <div className="flex items-center gap-5">
               {/* Avatar */}
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand text-xl font-bold text-white shadow-sm">
@@ -93,7 +93,7 @@ export default function Profile() {
               </div>
 
               <div className="min-w-0">
-                <p className="truncate text-lg font-semibold text-zinc-900">
+                <p className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                   {fullName || 'No name set'}
                 </p>
                 <p className="mt-0.5 truncate text-sm text-zinc-500">{email}</p>
@@ -113,13 +113,13 @@ export default function Profile() {
           </div>
 
           {/* ── Edit name ───────────────────────────────── */}
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-1 text-sm font-semibold text-zinc-900">Personal Information</h2>
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-ink-700 dark:bg-ink-900">
+            <h2 className="mb-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Personal Information</h2>
             <p className="mb-5 text-xs text-zinc-400">Update your display name shown across the platform.</p>
 
             <form onSubmit={handleSave} className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-zinc-600">
+                <label className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
                   Full Name
                 </label>
                 <input
@@ -127,19 +127,19 @@ export default function Profile() {
                   value={nameInput}
                   onChange={(e) => { setNameInput(e.target.value); setSaved(false) }}
                   placeholder="Enter your full name"
-                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 transition focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/10"
+                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 transition focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/10 dark:border-ink-700 dark:bg-ink-800 dark:text-zinc-100 dark:focus:bg-ink-900"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-zinc-600">
+                <label className="mb-1.5 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
                   Email Address
                 </label>
                 <input
                   type="email"
                   value={email}
                   disabled
-                  className="w-full rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-400 cursor-not-allowed"
+                  className="w-full rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-2.5 text-sm text-zinc-400 cursor-not-allowed dark:border-ink-800 dark:bg-ink-800"
                 />
                 <p className="mt-1 text-xs text-zinc-400">Email is managed by your auth provider and cannot be changed here.</p>
               </div>
@@ -168,12 +168,12 @@ export default function Profile() {
           </div>
 
           {/* ── Account details (read-only) ─────────────── */}
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-sm font-semibold text-zinc-900">Account Details</h2>
-            <dl className="divide-y divide-zinc-100">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-ink-700 dark:bg-ink-900">
+            <h2 className="mb-4 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Account Details</h2>
+            <dl className="divide-y divide-zinc-100 dark:divide-ink-800">
               <div className="flex items-center justify-between py-3">
                 <dt className="text-xs font-medium text-zinc-400 uppercase tracking-wider">User ID</dt>
-                <dd className="font-mono text-xs text-zinc-500 truncate max-w-[200px]">{user?.id ?? '—'}</dd>
+                <dd className="font-mono text-xs text-zinc-500 dark:text-zinc-400 truncate max-w-[200px]">{user?.id ?? '—'}</dd>
               </div>
               <div className="flex items-center justify-between py-3">
                 <dt className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Role</dt>
@@ -196,8 +196,8 @@ export default function Profile() {
           </div>
 
           {/* ── Quick links ─────────────────────────────── */}
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-sm font-semibold text-zinc-900">Quick Links</h2>
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-ink-700 dark:bg-ink-900">
+            <h2 className="mb-4 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Quick Links</h2>
             <div className="grid grid-cols-2 gap-3">
               {[
                 { label: 'My Bookings', href: '/my-bookings', icon: (
@@ -210,7 +210,7 @@ export default function Profile() {
                 <a
                   key={href}
                   href={href}
-                  className="flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-200 hover:bg-white"
+                  className="flex items-center gap-2.5 rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-700 transition-colors hover:border-zinc-200 hover:bg-white dark:border-ink-800 dark:bg-ink-800 dark:text-zinc-300 dark:hover:border-ink-700 dark:hover:bg-ink-900"
                 >
                   <span className="text-zinc-400">{icon}</span>
                   {label}
@@ -220,15 +220,15 @@ export default function Profile() {
           </div>
 
           {/* ── Danger zone ─────────────────────────────── */}
-          <div className="rounded-2xl border border-red-100 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-red-100 bg-white p-6 shadow-sm dark:border-red-900/40 dark:bg-ink-900">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 className="text-sm font-semibold text-zinc-900">Sign Out</h2>
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Sign Out</h2>
                 <p className="mt-0.5 text-xs text-zinc-400">Sign out from your account on this device.</p>
               </div>
               <button
                 onClick={handleSignOut}
-                className="shrink-0 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 active:scale-[0.97]"
+                className="shrink-0 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 active:scale-[0.97] dark:border-red-900/50 dark:bg-ink-900 dark:text-red-400 dark:hover:bg-red-950/30"
               >
                 Sign out
               </button>

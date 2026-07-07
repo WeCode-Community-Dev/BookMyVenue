@@ -72,7 +72,7 @@ export function CancellationPolicyCard({ policy }: Props) {
 
   return (
     <div>
-      <h2 className="text-sm font-semibold text-zinc-900 mb-3">Cancellation Policy</h2>
+      <h2 className="text-sm font-semibold text-zinc-900 mb-3 dark:text-zinc-100">Cancellation Policy</h2>
 
       <div className="rounded-xl border border-zinc-100 overflow-hidden dark:border-ink-800">
         {tiers.length > 0 ? (

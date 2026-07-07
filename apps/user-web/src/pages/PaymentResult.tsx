@@ -9,10 +9,10 @@ import { formatTime, formatDate, formatPrice } from '../utils'
 function VerifyingState() {
   return (
     <div className="mx-auto max-w-xl px-4 py-16 text-center">
-      <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-brand-light">
+      <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-brand-light dark:bg-brand/15">
         <span className="h-7 w-7 animate-spin rounded-full border-[3px] border-brand/30 border-t-brand" />
       </div>
-      <h2 className="text-xl font-semibold text-zinc-900">Securing your time slot…</h2>
+      <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Securing your time slot…</h2>
       <p className="mt-2 text-sm text-zinc-400 max-w-xs mx-auto">
         We're verifying your payment and locking the venue block. This usually takes a moment.
       </p>
@@ -24,8 +24,8 @@ function VerifyingState() {
 function VerifyError({ onRetry, onGoToBookings }: { onRetry: () => void; onGoToBookings: () => void }) {
   return (
     <div className="mx-auto max-w-xl px-4 py-16">
-      <div className="rounded-2xl border border-dashed border-zinc-200 py-20 text-center">
-        <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100">
+      <div className="rounded-2xl border border-dashed border-zinc-200 py-20 text-center dark:border-ink-700">
+        <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-ink-800">
           <svg className="h-6 w-6 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -35,7 +35,7 @@ function VerifyError({ onRetry, onGoToBookings }: { onRetry: () => void; onGoToB
             />
           </svg>
         </div>
-        <p className="text-sm font-semibold text-zinc-900">Unable to verify payment</p>
+        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Unable to verify payment</p>
         <p className="mt-1 text-sm text-zinc-400">
           We had trouble checking your booking status.
         </p>
@@ -48,7 +48,7 @@ function VerifyError({ onRetry, onGoToBookings }: { onRetry: () => void; onGoToB
           </button>
           <button
             onClick={onGoToBookings}
-            className="rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 transition-colors"
+            className="rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 transition-colors dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
           >
             My bookings
           </button>
@@ -91,7 +91,7 @@ export default function PaymentResult() {
 
   if (isLoading || !booking) {
     return (
-      <div className="min-h-screen bg-zinc-50">
+      <div className="min-h-screen bg-zinc-50 dark:bg-ink-950">
         <AppNavbar />
         <VerifyingState />
       </div>
@@ -100,7 +100,7 @@ export default function PaymentResult() {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-zinc-50">
+      <div className="min-h-screen bg-zinc-50 dark:bg-ink-950">
         <AppNavbar />
         <VerifyError
           onRetry={() => void refetch()}
@@ -117,34 +117,38 @@ export default function PaymentResult() {
   const isPending = !isConfirmed && !isFullyPaid && !isCancelled
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50 dark:bg-ink-950">
       <AppNavbar />
 
       <div className="mx-auto max-w-xl px-4 py-16">
-        <div className="overflow-hidden rounded-3xl border border-zinc-100 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-3xl border border-zinc-100 bg-white shadow-sm dark:border-ink-800 dark:bg-ink-900">
 
           {/* ── Status icon block ────────────────────────────────────────── */}
           <div
             className={[
               'flex flex-col items-center px-8 pt-10 pb-8 text-center',
-              isCancelled ? 'bg-red-50' : isPending ? 'bg-amber-50' : 'bg-brand-light',
+              isCancelled
+                ? 'bg-red-50 dark:bg-red-950/30'
+                : isPending
+                  ? 'bg-amber-50 dark:bg-amber-950/30'
+                  : 'bg-brand-light dark:bg-brand/15',
             ].join(' ')}
           >
             {isCancelled ? (
               <>
-                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-                  <svg className="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/40">
+                  <svg className="h-8 w-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-bold text-zinc-900">Slot unavailable</h2>
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Slot unavailable</h2>
                 <p className="mt-2 text-sm text-zinc-500 max-w-xs">
                   Another booking confirmed this slot right before your payment went through. Any amount deducted has been refunded to your original payment method.
                 </p>
               </>
             ) : isPending ? (
               <>
-                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/40">
                   <svg
                     className="h-8 w-8 text-amber-500 animate-pulse"
                     fill="none"
@@ -154,7 +158,7 @@ export default function PaymentResult() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-bold text-zinc-900">Confirming payment…</h2>
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Confirming payment…</h2>
                 <p className="mt-2 text-sm text-zinc-500 max-w-xs">
                   Stripe is still processing your transaction. This page will update automatically.
                 </p>
@@ -166,7 +170,7 @@ export default function PaymentResult() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-bold text-zinc-900">
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
                   {isFullyPaid ? `Fully paid — you're all set!` : `Booking confirmed!`}
                 </h2>
                 <p className="mt-2 text-sm text-zinc-500 max-w-xs">
@@ -180,7 +184,7 @@ export default function PaymentResult() {
 
           {/* ── Booking details (success only) ───────────────────────────── */}
           {(isConfirmed || isFullyPaid) && (
-            <div className="px-8 py-6 space-y-4 border-b border-zinc-100">
+            <div className="px-8 py-6 space-y-4 border-b border-zinc-100 dark:border-ink-800">
               <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
                 Booking details
               </p>
@@ -197,12 +201,12 @@ export default function PaymentResult() {
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-center justify-between">
                     <span className="text-sm text-zinc-400">{label}</span>
-                    <span className="text-sm font-medium text-zinc-900">{value}</span>
+                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{value}</span>
                   </div>
                 ))}
 
                 {/* Amount paid — emphasised */}
-                <div className="flex items-center justify-between border-t border-zinc-100 pt-3">
+                <div className="flex items-center justify-between border-t border-zinc-100 pt-3 dark:border-ink-800">
                   <span className="text-sm text-zinc-500">Amount paid</span>
                   <span className="text-base font-semibold text-brand">
                     {formatPrice(booking.amount_paid_paise)}
