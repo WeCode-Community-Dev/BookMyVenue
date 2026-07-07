@@ -42,11 +42,11 @@ export function MatchBadge({ venue }: { venue: MatchDiagnostics }) {
           e.stopPropagation()
           setOpen(true)
         }}
-        className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-brand/15 bg-brand/5 px-2.5 py-1 text-[11px] font-medium text-brand transition-colors hover:bg-brand/10"
+        className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-brand/15 bg-brand/5 px-2.5 py-1 text-[11px] font-medium text-brand transition-colors hover:bg-brand/10 dark:border-brand/25 dark:bg-brand/10 dark:text-brand-secondary dark:hover:bg-brand/15"
       >
         <Icon className="h-3 w-3" />
         {label}
-        <Info className="h-3 w-3 text-brand/60" />
+        <Info className="h-3 w-3 text-brand/60 dark:text-brand-secondary/70" />
       </button>
 
       {open &&
@@ -120,7 +120,7 @@ function Row({
         </p>
         <p className="mt-0.5 text-xs text-zinc-400">{hint}</p>
       </div>
-      <p className={`shrink-0 text-sm ${emphasize ? 'font-bold text-brand' : 'font-medium text-zinc-900 dark:text-zinc-100'}`}>
+      <p className={`shrink-0 text-sm ${emphasize ? 'font-bold text-brand dark:text-brand-secondary' : 'font-medium text-zinc-900 dark:text-zinc-100'}`}>
         {value}
       </p>
     </div>

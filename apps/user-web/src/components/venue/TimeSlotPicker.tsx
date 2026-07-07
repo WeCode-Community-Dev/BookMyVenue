@@ -154,7 +154,7 @@ const handleSlotClick = useCallback(
       </div>
 
       {isSelectingEnd && (
-        <div className="mb-3 rounded-lg bg-brand-light px-3 py-2 text-xs text-brand dark:bg-brand/15">
+        <div className="mb-3 rounded-lg bg-brand-light px-3 py-2 text-xs text-brand dark:bg-brand/15 dark:text-brand-secondary">
           Start: <strong>{formatTime(selectedStart!)}</strong> — Tap a valid end time
         </div>
       )}
@@ -176,7 +176,7 @@ const handleSlotClick = useCallback(
           </svg>
           <span>
             {formatTime(selectedStart!)} – {formatTime(selectedEnd!)} ·{' '}
-            <strong className="text-brand">
+            <strong className="text-brand dark:text-brand-secondary">
               {durationLabel(selectedStartMin, selectedEndMin)}
             </strong>
           </span>

@@ -130,7 +130,7 @@ export default function DeepResearch() {
     <div className="min-h-screen bg-white dark:bg-ink-950">
       <AppNavbar />
 
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0b1c19] via-[#0f2920] to-[#163326] py-16 sm:py-20">
+      <section className="brand-glow relative overflow-hidden bg-white py-16 sm:py-20 dark:bg-ink-950">
         <div
           className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-brand-secondary/20 blur-3xl"
           aria-hidden="true"
@@ -141,21 +141,21 @@ export default function DeepResearch() {
         />
 
         <div className="relative mx-auto max-w-2xl px-6 text-center">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-secondary/30 bg-white/5 px-3.5 py-1.5 text-xs font-semibold text-brand-secondary backdrop-blur-sm">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-3.5 py-1.5 text-xs font-semibold text-brand backdrop-blur-sm dark:border-brand-secondary/30 dark:bg-white/5 dark:text-brand-secondary">
             <Sparkles className="h-3.5 w-3.5" />
             Deep Research
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl lg:text-[2.75rem] dark:text-white">
             Describe the venue you need.
           </h1>
-          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-zinc-400 sm:text-base">
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-zinc-500 sm:text-base dark:text-zinc-400">
             We'll search our marketplace first — and go further if you need us to. Not listed
             anywhere else? We'll find it.
           </p>
 
           <form
             onSubmit={handleSubmit}
-            className="group mx-auto mt-9 rounded-2xl border border-white/10 bg-white p-3 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] transition-shadow duration-300 focus-within:shadow-[0_20px_60px_-10px_rgba(64,138,113,0.35)]"
+            className="group mx-auto mt-9 rounded-2xl border border-zinc-200 bg-white p-3 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] transition-shadow duration-300 focus-within:shadow-[0_20px_60px_-10px_rgba(64,138,113,0.25)] dark:border-white/10 dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] dark:focus-within:shadow-[0_20px_60px_-10px_rgba(64,138,113,0.35)]"
           >
             <textarea
               value={query}
@@ -168,7 +168,7 @@ export default function DeepResearch() {
               }}
               placeholder="e.g. Wedding hall in Bangalore for 300 guests, under 5 lakhs..."
               rows={3}
-              className="w-full resize-none rounded-xl border-0 px-4 py-3 text-sm text-zinc-900 shadow-none focus:shadow-none"
+              className="w-full resize-none rounded-xl border-0 bg-transparent px-4 py-3 text-sm text-zinc-900 shadow-none focus:shadow-none"
             />
             <div className="flex flex-col gap-3 px-1 pb-1 pt-1 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap gap-2">
@@ -202,11 +202,11 @@ export default function DeepResearch() {
           )}
 
           {searchMutation.isError && (
-            <div className="page-enter mt-8 flex items-start gap-3 rounded-2xl border border-red-400/20 bg-red-500/10 p-5 text-left">
-              <AlertTriangle className="h-5 w-5 shrink-0 text-red-400" />
+            <div className="page-enter mt-8 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 text-left dark:border-red-400/20 dark:bg-red-500/10">
+              <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
               <div>
-                <p className="text-sm font-semibold text-red-300">Something went wrong</p>
-                <p className="mt-0.5 text-xs text-red-300/70">
+                <p className="text-sm font-semibold text-red-700 dark:text-red-300">Something went wrong</p>
+                <p className="mt-0.5 text-xs text-red-600/80 dark:text-red-300/70">
                   We couldn't understand that request. Please try again.
                 </p>
               </div>
@@ -220,7 +220,7 @@ export default function DeepResearch() {
           <div className="mx-auto max-w-2xl">
             <div className="card-enter rounded-2xl border border-zinc-100 bg-white p-7 shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-zinc-100 dark:border-ink-800 dark:bg-ink-900 dark:ring-ink-800">
               <div className="mb-6 flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand/10 text-brand">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand/10 text-brand dark:bg-brand/15 dark:text-brand-secondary">
                   <ShieldCheck className="h-4 w-4" />
                 </span>
                 <div>
@@ -251,7 +251,7 @@ export default function DeepResearch() {
                     {breakdown.required_amenities.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full border border-brand/15 bg-brand/5 px-3 py-1 text-xs font-medium capitalize text-brand"
+                        className="rounded-full border border-brand/15 bg-brand/5 px-3 py-1 text-xs font-medium capitalize text-brand dark:border-brand/25 dark:bg-brand/10 dark:text-brand-secondary"
                       >
                         {tag.replace(/_/g, ' ')}
                       </span>
@@ -345,7 +345,7 @@ export default function DeepResearch() {
             ) : (
               <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 text-center transition-all dark:border-ink-800 dark:bg-ink-900/40">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-400 ring-1 ring-zinc-100 dark:bg-ink-800 dark:ring-ink-700">
-                  <Globe2 className={`h-4 w-4 ${['locating', 'loading'].includes(extStatus) ? 'animate-pulse text-brand' : ''}`} />
+                  <Globe2 className={`h-4 w-4 ${['locating', 'loading'].includes(extStatus) ? 'animate-pulse text-brand dark:text-brand-secondary' : ''}`} />
                 </span>
                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   {extStatus === 'locating' ? 'Getting your location...'
@@ -364,7 +364,7 @@ export default function DeepResearch() {
                     Search externally
                   </button>
                 ) : (
-                  <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-brand animate-pulse">
+                  <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-brand dark:text-brand-secondary animate-pulse">
                     Searching the web — this usually takes ~5 seconds...
                   </div>
                 )}

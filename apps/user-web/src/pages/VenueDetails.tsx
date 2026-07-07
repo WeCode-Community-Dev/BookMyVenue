@@ -449,7 +449,7 @@ function VenueContent({ venue }: { venue: VenueResponse }) {
                 'Cancellation terms per policy below',
               ].map((text) => (
                 <div key={text} className="flex items-start gap-2.5 text-xs text-zinc-400">
-                  <span className="font-semibold text-brand">OK</span>
+                  <span className="font-semibold text-brand dark:text-brand-secondary">OK</span>
                   <span>{text}</span>
                 </div>
               ))}

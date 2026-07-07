@@ -165,8 +165,8 @@ export default function PaymentResult() {
               </>
             ) : (
               <>
-                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-brand/10">
-                  <svg className="h-8 w-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-brand/10 dark:bg-brand/20">
+                  <svg className="h-8 w-8 text-brand dark:text-brand-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
@@ -208,7 +208,7 @@ export default function PaymentResult() {
                 {/* Amount paid — emphasised */}
                 <div className="flex items-center justify-between border-t border-zinc-100 pt-3 dark:border-ink-800">
                   <span className="text-sm text-zinc-500">Amount paid</span>
-                  <span className="text-base font-semibold text-brand">
+                  <span className="text-base font-semibold text-brand dark:text-brand-secondary">
                     {formatPrice(booking.amount_paid_paise)}
                   </span>
                 </div>

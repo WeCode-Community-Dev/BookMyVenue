@@ -182,13 +182,13 @@ function HeroFull({
     <>
       <section className="brand-glow bg-white pb-10 pt-16 sm:pt-24 dark:bg-ink-950">
         <div className="mx-auto max-w-4xl px-6 text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-4 py-1.5 text-xs font-semibold text-brand">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-4 py-1.5 text-xs font-semibold text-brand dark:border-brand/30 dark:bg-brand/10 dark:text-brand-secondary">
             <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
             Venue discovery &amp; booking · India
           </div>
 
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-5xl lg:text-[3.25rem] dark:text-zinc-100">
-            Venue booking, <span className="text-brand">accelerated.</span>
+            Venue booking, <span className="text-brand dark:text-brand-secondary">accelerated.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-zinc-500">
             Instant availability and transparent pricing from verified venues across India — from
@@ -301,7 +301,7 @@ function HeroFull({
             { icon: '🛡️', text: 'Secure payments' },
           ].map(({ icon, text }) => (
             <div key={text} className="flex items-center gap-1.5 text-xs font-medium text-zinc-500">
-              <span className="text-brand">{icon}</span>
+              <span className="text-brand dark:text-brand-secondary">{icon}</span>
               {text}
             </div>
           ))}

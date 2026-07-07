@@ -49,7 +49,7 @@ type FeatureRowProps = { icon: ReactNode; title: string; body: string }
 function FeatureRow({ icon, title, body }: FeatureRowProps) {
   return (
     <div className="flex items-start gap-5">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand dark:bg-brand/15 dark:text-brand-secondary">
         {icon}
       </div>
       <div>
@@ -68,12 +68,12 @@ export function WhyVenue404() {
 
           {/* Left — copy */}
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-brand">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-brand dark:text-brand-secondary">
               Why Venue404
             </p>
             <h2 className="text-2xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-3xl lg:text-4xl dark:text-zinc-100">
               We don't just list venues.{' '}
-              <span className="text-brand">We find, price, and make booking easy.</span>
+              <span className="text-brand dark:text-brand-secondary">We find, price, and make booking easy.</span>
             </h2>
             <p className="mt-5 text-base leading-relaxed text-zinc-500">
               Other platforms search a database. We search the whole market — including
@@ -264,7 +264,7 @@ export function IntelligentPlatform() {
 
         {/* Header */}
         <div className="mb-12 max-w-2xl">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-brand">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-brand dark:text-brand-secondary">
             Platform
           </p>
           <h2 className="text-2xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-3xl lg:text-4xl dark:text-zinc-100">
@@ -283,7 +283,7 @@ export function IntelligentPlatform() {
               key={title}
               className="group rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 transition-all duration-200 hover:border-brand/20 hover:bg-brand/5 hover:shadow-sm dark:border-ink-800 dark:bg-ink-900/60"
             >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm text-brand ring-1 ring-zinc-100 transition-all group-hover:bg-brand group-hover:text-white group-hover:shadow-brand/20 dark:bg-ink-800 dark:ring-ink-700">
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm text-brand ring-1 ring-zinc-100 transition-all group-hover:bg-brand group-hover:text-white group-hover:shadow-brand/20 dark:bg-ink-800 dark:text-brand-secondary dark:ring-ink-700">
                 {icon}
               </div>
               <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</p>
