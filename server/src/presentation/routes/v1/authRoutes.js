@@ -20,5 +20,8 @@ router.post(ROUTES.USER.AUTH.RESET_PASSWORD, validate(resetPasswordSchema, 'body
 router.post(ROUTES.OWNER.AUTH.REGISTER, validate(registerSchema, 'body'), iVendorAuthController.register)
 router.post(ROUTES.OWNER.AUTH.LOGIN, validate(loginSchema, 'body'), iVendorAuthController.login)
 router.post(ROUTES.OWNER.AUTH.VERIFY_OTP, validate(verifyOtpSchema, 'body'), iVendorAuthController.verifyOtp)
+router.post(ROUTES.OWNER.AUTH.RESEND_OTP, validate(resendOtpSchema, 'body'), iVendorAuthController.resendOtp)
+
+
 
 export default router
