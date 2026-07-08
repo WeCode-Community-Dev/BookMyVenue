@@ -63,6 +63,8 @@ export class BookingService {
                     throw new BadRequestException('This slot has already been booked.');
                 }
 
+                const holdMinutes = Number(process.env.BOOKING_HOLD_MINUTES ?? 10);
+
                 return tx.booking.create({
                     data: {
                         userId,
@@ -72,6 +74,7 @@ export class BookingService {
                         totalPrice: slot.price,
                         bookedStartTime: slot.startTime,
                         bookedEndTime: slot.endTime,
+                        expiresAt: new Date(Date.now() + holdMinutes * 60 * 1000),
                     },
                     include: this.bookingInclude,
                 });
