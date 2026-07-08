@@ -52,7 +52,7 @@ export const createBooking = async (
 
 export const findBookingById = async (id: string): Promise<IBooking | null> => {
   return Booking.findById(id)
-    .populate('venue', 'name address images')
+    .populate('venue', 'name address images ownerId')
     .populate('user', 'fullName email') as Promise<IBooking | null>;
 };
 
@@ -295,3 +295,29 @@ export const findFailedRefundBookings = async () => {
 
   return docs;
 }
+
+export const findBookingsByVenueIds = async (
+  venueIds: mongoose.Types.ObjectId[] | string[],
+  page: number,
+  limit: number,
+  status?: string
+) => {
+  const filter: Record<string, any> = { venue: { $in: venueIds } };
+  if (status && status !== 'all') filter.bookingStatus = status;
+
+  const skip = (page - 1) * limit;
+  const [bookings, total] = await Promise.all([
+    Booking.find(filter)
+      .populate('venue', 'name address images ownerId')
+      .populate('user', 'fullName email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Booking.countDocuments(filter),
+  ]);
+
+  return {
+    bookings,
+    pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
+  };
+};

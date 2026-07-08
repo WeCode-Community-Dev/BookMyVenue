@@ -279,6 +279,7 @@ export const getUserBookings = async (req: Request, res: Response, next: NextFun
       {
         bookings: result.bookings,
         totalBookings: result.pagination.total,
+        pagination: result.pagination,
       },
       'Bookings fetched successfully'
     );

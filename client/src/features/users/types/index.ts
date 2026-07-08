@@ -73,10 +73,12 @@ export type PaymentStatus =
 export interface MyBookingsResponse {
   bookings: Booking[];
   totalBookings: number;
+  pagination?: any;
 }
 
 export interface Booking {
   id: string;
+  bookingId?: string;
 
   venue: {
     id: string;
