@@ -252,11 +252,11 @@ export default function DeepResearch() {
                 <Field icon={CalendarDays} label="Date" value={breakdown.date_hint} />
               </div>
 
-              {breakdown.required_amenities.length > 0 && (
-                <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
-                  <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
-                    Required amenities
-                  </p>
+              <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
+                <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+                  Required amenities
+                </p>
+                {breakdown.required_amenities.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {breakdown.required_amenities.map((tag) => (
                       <span
@@ -267,14 +267,16 @@ export default function DeepResearch() {
                       </span>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-sm text-zinc-400">None detected</p>
+                )}
+              </div>
 
-              {breakdown.special_requirements.length > 0 && (
-                <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
-                  <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
-                    Other requirements
-                  </p>
+              <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
+                <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+                  Other requirements
+                </p>
+                {breakdown.special_requirements.length > 0 ? (
                   <ul className="space-y-1.5">
                     {breakdown.special_requirements.map((req) => (
                       <li key={req} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
@@ -283,8 +285,10 @@ export default function DeepResearch() {
                       </li>
                     ))}
                   </ul>
-                </div>
-              )}
+                ) : (
+                  <p className="text-sm text-zinc-400">None detected</p>
+                )}
+              </div>
             </div>
           </div>
 
