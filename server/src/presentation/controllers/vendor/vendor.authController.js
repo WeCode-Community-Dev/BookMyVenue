@@ -17,12 +17,14 @@ export class VendorAuthController {
         verifyVendorRegisterOtp,
         resendVendorOtpUsecase,
         vendorRefreshTokenUsecase,
+        vendorForgotPasswordUsecase,
     ) {
         this._registerVendorUseCase = registerVendorUseCase;
         this._loginVendorUseCase = loginVendorUseCase;
         this._verifyVendorRegisterOtp = verifyVendorRegisterOtp;
         this._resendVendorOtp = resendVendorOtpUsecase;
         this._refreshTokenUsecase = vendorRefreshTokenUsecase;
+        this._forgotPasswordUsecase = vendorForgotPasswordUsecase;
     }
 
     register = asyncHandler(async (req, res) => {
@@ -51,5 +53,10 @@ export class VendorAuthController {
         const { accessToken, refreshToken } = await this._refreshTokenUseCase.execute(token);
         res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
         return sendSuccess(res, statusCode.OK, authMessages.success.TOKEN_REFRESHED, { accessToken });
+    });
+
+    forgotPassword = asyncHandler(async (req, res) => {
+        await this._forgotPasswordUseCase.execute({email: req.body.email});
+        return sendSuccess(res, statusCode.OK, authMessages.success.FORGOT_PASSWORD);
     });
 }
