@@ -30,4 +30,7 @@ router.post(ROUTES.OWNER.AUTH.LOGOUT, iVendorAuthController.logout)
 //admin
 router.post(ROUTES.ADMIN.AUTH.LOGIN, validate(loginSchema, 'body'), iAdminAuthController.login)
 router.post(ROUTES.ADMIN.AUTH.LOGOUT, iAdminAuthController.logout)
+router.post(ROUTES.ADMIN.AUTH.REFRESH, iAdminAuthController.refreshToken)
+
+
 export default router

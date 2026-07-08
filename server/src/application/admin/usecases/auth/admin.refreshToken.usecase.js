@@ -1,9 +1,9 @@
 import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.js";
 import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
 
-export class VendorRefreshTokenUseCase {
-    constructor(vendorRepository, tokenService, hashService) {
-        this._vendorRepository = vendorRepository;
+export class AdminRefreshTokenUseCase {
+    constructor(adminRepository, tokenService, hashService) {
+        this._adminRepository = adminRepository;
         this._tokenService = tokenService;
         this._hashService = hashService
     }
@@ -15,17 +15,17 @@ export class VendorRefreshTokenUseCase {
 
         const {id, role} = this._tokenService.verifyRefreshToken(refreshToken);
 
-        const vendor = await this._vendorRepository.findById(id);
+        const admin = await this._adminRepository.findById(id);
 
-        if (!vendor) {
+        if (!admin) {
             throw new UnauthorizedError(authMessages.error.REFRESH_TOKEN_REVOKED);
         }
 
-        const payload = { vendorId: vendor.id, role: role };
+        const payload = { adminId: admin.id, role: role };
         const newAccessToken = this._tokenService.generateAccessToken(payload);
         const newRefreshToken = this._tokenService.generateRefreshToken(payload);
         const hashedRefreshToken = await this._hashService.hashToken(newRefreshToken)
-        await this._vendorRepository.updateRefreshToken(vendor.id, hashedRefreshToken);
+        await this._adminRepository.updateRefreshToken(admin.id, hashedRefreshToken);
 
         return { accessToken: newAccessToken, refreshToken: newRefreshToken };
     }

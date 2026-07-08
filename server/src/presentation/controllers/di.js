@@ -88,6 +88,7 @@ import { LoginAdminUsecase } from '../../application/admin/usecases/auth/admin.l
 import { AdminRepository } from '../../infrastructure/repositories/admin.repository.js'
 import { AdminAuthController } from './admin/admin.authController.js'
 import { AdminLogoutUseCase } from '../../application/admin/usecases/auth/admin.logOut.usecase.js'
+import { AdminRefreshTokenUseCase } from '../../application/admin/usecases/auth/admin.refreshToken.usecase.js'
 
 //repository
 const iVenueRepository = new VenueRepository();
@@ -115,6 +116,11 @@ const iAdminLogoutUsecase = new AdminLogoutUseCase (
     iAdminRepository,
     iHashService,
     iTokenService
+)
+const iAdminRefreshToken = new AdminRefreshTokenUseCase (
+    iAdminRepository,
+    iTokenService,
+    iHashService
 )
 // --- admin user usecases ---
 const iAdminGetAllUsersUsecase = new AdminGetAllUsersUsecase(iUserRepository)
@@ -397,4 +403,5 @@ export const iVendorAuthController = new VendorAuthController (
 export const iAdminAuthController = new AdminAuthController (
     iAdminLoginUsecase,
     iAdminLogoutUsecase,
+    iAdminRefreshToken,
 )
