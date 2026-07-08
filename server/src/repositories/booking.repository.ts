@@ -284,3 +284,14 @@ export const updateRefundBookingStatus = async (
   );
   return doc
 }
+
+export const findFailedRefundBookings = async () => {
+  const docs = await Booking.find({
+    bookingStatus: BookingStatus.CANCELLED,
+    cancellationType: CancellationType.USER,
+    refundStatus: RefundStatus.FAILED,
+    refundAmount: { $gt: 0 },
+  }).select('_id refundStatus refundAmount user');
+
+  return docs;
+}

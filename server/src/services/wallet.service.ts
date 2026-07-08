@@ -14,3 +14,19 @@ export const getOrCreateUserWallet = async (
 
   return { wallet, transactions };
 };
+
+export const getPaginatedWalletTransactions = async (
+  userId: string,
+  options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    type?: string;
+    status?: string;
+    source?: string;
+    sort?: string;
+  }
+) => {
+  const wallet = await walletRepository.getOrCreateByUserId(userId);
+  return await walletRepository.getPaginatedTransactions(wallet._id.toString(), options);
+};

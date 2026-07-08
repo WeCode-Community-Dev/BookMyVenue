@@ -336,6 +336,13 @@ const UserNavbar = () => {
               >
                 Wallet
               </Link>
+              <Link
+                to="/account/payment-history"
+                className="flex items-center justify-center py-2.5 rounded-xl text-[12px] font-medium border border-border text-foreground/90 hover:bg-muted/30 transition-all duration-300 col-span-3 mt-1"
+                onClick={() => setMobileOpen(false)}
+              >
+                Payment History
+              </Link>
             </div>
 
             {/* Logout CTA */}
