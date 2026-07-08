@@ -1,11 +1,9 @@
 from django.db import models
 from account.models import User
-from locations.models import City
 
 # Create your models here.
 class Venue(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    City = models.ForeignKey(City,on_delete=models.CASCADE)
     name = models.CharField(max_length=225)
     address = models.TextField()
 
