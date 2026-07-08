@@ -26,20 +26,43 @@ class VendorRepositoryImpl extends IVendorRepository {
 
         const filter = {}
 
-        if (query.search) {
-            filter.$or = [
-                {
-                    name: {
-                        $regex: query.search,
-                        $options: "i"
-                    }
-                }
-            ]
-        }
+            // Search
+    if (query.search) {
+        filter.$or = [
+            {
+                fullName: {
+                    $regex: query.search,
+                    $options: "i",
+                },
+            },
+            {
+                email: {
+                    $regex: query.search,
+                    $options: "i",
+                },
+            },
+            {
+                companyName: {
+                    $regex: query.search,
+                    $options: "i",
+                },
+            },
+        ];
+    }
 
-        if (query.status) {
-            filter.approvalStatus = query.status
-        }
+    // Approval Status
+    if (query.status) {
+        filter.approvalStatus = query.status;
+    }
+
+    // Block / Unblock Filter
+    if (query.isBlocked !== undefined) {
+        filter.isBlocked =
+            query.isBlocked === true ||
+            query.isBlocked === "true";
+    }
+            console.log("Query:", query);
+            console.log("Filter:", filter);
 
         const skip =
             query.limit * (query.page - 1)

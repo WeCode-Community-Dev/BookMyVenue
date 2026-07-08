@@ -19,12 +19,14 @@ export class AdminVendorController {
     }
 
     getAllVendors = asyncHandler(async (req, res) => {
-        const { page, limit, search, status } = req.validatedQuery
+        console.log("validatedQuery:", req.validatedQuery);
+        const { page, limit, search, status,isBlocked } = req.validatedQuery
 
         const { data, totalCount, totalPages } =
             await this._adminGetAllVendorsUsecase.execute(
                 search,
                 status,
+                isBlocked,
                 page,
                 limit
             )
