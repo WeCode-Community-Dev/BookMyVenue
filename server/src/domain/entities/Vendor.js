@@ -14,6 +14,8 @@ export class VendorEntity {
         role,
         // businessName,
         isVerified = false,
+        createdAt,
+        updatedAt,
         isBlocked = false,
         isDeleted = false,
         refreshToken = [],
@@ -32,6 +34,8 @@ export class VendorEntity {
         this.role = role;
         // this.businessName = businessName;
         this.isVerified = isVerified;
+        this.createdAt = createdAt,
+        this.updatedAt =updatedAt,
         this.isBlocked = isBlocked;
         this.isDeleted = isDeleted;
         this.refreshToken = refreshToken;

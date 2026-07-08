@@ -24,7 +24,6 @@ class VendorRepositoryImpl extends IVendorRepository {
     async findAllFiltered(query = {}) {
         const filter = {};
 
-<<<<<<< HEAD
             // Search
     if (query.search) {
         filter.$or = [
@@ -62,15 +61,6 @@ class VendorRepositoryImpl extends IVendorRepository {
     }
             console.log("Query:", query);
             console.log("Filter:", filter);
-=======
-        if (query.search) {
-            filter.$or = [{ name: { $regex: query.search, $options: "i" } }];
-        }
-
-        if (query.status) {
-            filter.approvalStatus = query.status;
-        }
->>>>>>> develop
 
         const skip = query.limit * (query.page - 1);
         const totalCount = await VendorModel.countDocuments(filter);
