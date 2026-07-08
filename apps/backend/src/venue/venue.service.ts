@@ -1,6 +1,7 @@
+import { BadRequestException, Injectable } from '@nestjs/common';
+
 import { CloudinaryService } from 'src/providers/cloudinary/cloudinary.service';
 import { CreateVenueDto } from './dto/create-venue.dto';
-import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/providers/prisma/prisma.service';
 
 interface UploadedFile {
@@ -13,51 +14,32 @@ export class VenueService {
     private readonly prismaService: PrismaService,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
-  // async createVenue(
-  //   dto: CreateVenueDto,
-  //   files: UploadedFile[],
-  //   ownerId: string,
-  // ) {
-  //   const uploadedImages = await Promise.all(
-  //     files.map((file, index) =>
-  //       this.cloudinaryService.uploadImage(file, {
-  //         folder: 'venues',
-  //         publicId: `${ownerId}-${Date.now()}-${index}`,
-  //       }),
-  //     ),
-  //   );
-
-  //   const venueImages = uploadedImages.map((image, index) => ({
-  //     url: image.secure_url,
-  //     isPrimary: index === 0,
-  //     sortOrder: index,
-  //   }));
-
-  //   const venue = await this.prismaService.venue.create({
-  //     data: {
-  //       ownerId,
-  //       name: dto.name,
-  //       description: dto.description,
-  //       venueType: dto.venueType,
-  //       capacityMin: dto.capacityMin,
-  //       capacityMax: dto.capacityMax,
-  //       addressLine: dto.addressLine,
-  //       city: dto.city,
-  //       latitude: dto.latitude,
-  //       longitude: dto.longitude,
-  //     },
-  //   });
-
-  //   return {
-  //     venue,
-  //     venueImages,
-  //   };
-  // }
   async createVenue(
     dto: CreateVenueDto,
     files: UploadedFile[],
     ownerId: string,
   ) {
+    if (!files.length) {
+      throw new BadRequestException('At least one venue image is required.');
+    }
+
+    if (!dto.slotTemplates.length) {
+      throw new BadRequestException('At least one slot template is required.');
+    }
+
+    if (dto.capacityMin > dto.capacityMax) {
+      throw new BadRequestException(
+        'Minimum capacity cannot be greater than maximum capacity.',
+      );
+    }
+
+    if (!dto.categories.length) {
+      throw new BadRequestException('At least one event category is required.');
+    }
+
+    if (!dto.amenities.length) {
+      throw new BadRequestException('At least one amenity is required.');
+    }
     // Upload images to Cloudinary
     const uploadedImages = await Promise.all(
       files.map((file, index) =>
@@ -74,6 +56,9 @@ export class VenueService {
       isPrimary: index === 0,
       sortOrder: index,
     }));
+
+    console.log('DTO:', dto);
+    console.log('Slot Templates:', dto.slotTemplates);
 
     return await this.prismaService.$transaction(async (tx) => {
       // Create Venue
@@ -99,12 +84,30 @@ export class VenueService {
         })),
       });
 
-      await tx.venueAmenity.createMany({
-        data: dto.amenityIds.map((amenityId) => ({
-          venueId: venue.id,
-          amenityId,
-        })),
-      });
+      for (const amenityName of dto.amenities) {
+        const name = amenityName.trim();
+
+        let amenity = await tx.amenity.findUnique({
+          where: {
+            name,
+          },
+        });
+
+        if (!amenity) {
+          amenity = await tx.amenity.create({
+            data: {
+              name,
+            },
+          });
+        }
+
+        await tx.venueAmenity.create({
+          data: {
+            venueId: venue.id,
+            amenityId: amenity.id,
+          },
+        });
+      }
 
       await tx.venueImage.createMany({
         data: venueImages.map((image) => ({
@@ -116,6 +119,8 @@ export class VenueService {
       });
 
       for (const slot of dto.slotTemplates) {
+        console.log('DTO:', dto);
+        console.log('Slot Templates:', dto.slotTemplates);
         const createdSlot = await tx.venueSlotTemplate.create({
           data: {
             venueId: venue.id,
@@ -138,8 +143,7 @@ export class VenueService {
           })),
         });
       }
-
-      return await tx.venue.findUnique({
+      const createdVenue = await tx.venue.findUnique({
         where: {
           id: venue.id,
         },
@@ -158,6 +162,8 @@ export class VenueService {
           },
         },
       });
+
+      return createdVenue;
     });
   }
 }
