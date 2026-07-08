@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Plus } from "lucide-react";
 import ViewToggle from "./ViewToggle";
-import { VenueCategory } from "@/constatnts/Venue";
+import { VenueCategory } from "@/constants/Venue";
 
 const statusOptions = [
   { label: "All Status", value: "" },

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { VenueCategory } from "@/constatnts/Venue";
+import { VenueCategory } from "@/constants/Venue";
 
 const VenueDetailsForm = ({
   venueName,

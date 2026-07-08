@@ -9,7 +9,7 @@ import ChangePassword from "@/presentation/components/vendor/profile/ChangePassw
 import NotificationSettings from "@/presentation/components/vendor/profile/NotificationSettings";
 import ProfileActions from "@/presentation/components/vendor/profile/ProfileActions";
 import api from "@/lib/axios";
-import { API_ROUTES } from "@/constatnts/apiRoutes";
+import { API_ROUTES } from "@/constants/apiRoutes";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);

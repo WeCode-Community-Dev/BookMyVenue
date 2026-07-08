@@ -8,8 +8,8 @@ import AmenitiesForm from "@/presentation/components/vendor/addVenue/AmenitiesFo
 import PricingForm from "@/presentation/components/vendor/addVenue/PricingForm";
 import ReviewForm from "@/presentation/components/vendor/addVenue/ReviewForm";
 import api from "@/lib/axios";
-import { API_ROUTES } from "@/constatnts/apiRoutes";
-import { ROUTES } from "@/constatnts/routes";
+import { API_ROUTES } from "@/constants/apiRoutes";
+import { ROUTES } from "@/constants/routes";
 
 const EditVenue = () => {
   const { venueId } = useParams();

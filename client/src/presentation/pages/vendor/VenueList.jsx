@@ -6,8 +6,8 @@ import VenueHeader from "@/presentation/components/vendor/VenueHeader";
 import VenueFilters from "@/presentation/components/vendor/VenueFilters";
 import VenueGrid from "@/presentation/components/vendor/VenueGrid";
 import api from "@/lib/axios";
-import { API_ROUTES } from "@/constatnts/apiRoutes";
-import { ROUTES } from "@/constatnts/routes";
+import { API_ROUTES } from "@/constants/apiRoutes";
+import { ROUTES } from "@/constants/routes";
 
 const initialFilters = {
   search: "",

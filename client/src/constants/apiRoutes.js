@@ -57,5 +57,14 @@ export const API_ROUTES = {
       STATISTICS: "/admin/payments/statistics",
     },
   },
+    VENDOR: {
+    DASHBOARD: "/vendor/dashboard",
+    VENUES: "/vendor/venues",
+    VENUE_BY_ID: (venueId) => `/vendor/venue/${venueId}`,
+    PROFILE: "/vendor/profile",
+    BOOKINGS: "/vendor/bookings",
+
+  },
+
 
 }

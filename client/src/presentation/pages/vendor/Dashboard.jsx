@@ -9,7 +9,7 @@ import BookingTrends from '@/presentation/components/vendor/dashboard/BookingTre
 import RevenueChart from '@/presentation/components/vendor/dashboard/RevenueChart';
 import WelcomeBanner from '@/presentation/components/vendor/WelcomeBanner';
 import api from '@/lib/axios';
-import { API_ROUTES } from '@/constatnts/apiRoutes';
+import { API_ROUTES } from '@/constants/apiRoutes';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState({

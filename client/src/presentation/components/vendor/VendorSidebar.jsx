@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import SidebarProfileCard from "./SidebarProfileCard";
-import { ROUTES } from "@/constatnts/routes";
+import { ROUTES } from "@/constants/routes";
 
 
 import {

@@ -7,7 +7,7 @@ import BookingFilters from "@/presentation/components/vendor/booking/BookingFilt
 import BookingTable from "@/presentation/components/vendor/booking/BookingTable";
 import BookingPagination from "@/presentation/components/vendor/booking/BookingPagination";
 import api from "@/lib/axios";
-import { API_ROUTES } from "@/constatnts/apiRoutes";
+import { API_ROUTES } from "@/constants/apiRoutes";
 
 const Bookings = () => {
   const [bookings, setBookings] = useState([]);
