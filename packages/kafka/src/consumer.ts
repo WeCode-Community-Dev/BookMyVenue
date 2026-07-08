@@ -1,14 +1,14 @@
 import type { Kafka, Consumer, EachMessagePayload } from "kafkajs";
 
-interface KafkaConsumer {
+export interface KafkaConsumer {
     connect(): Promise<void>;
     subscribe(topics: TopicConfig[]): Promise<void>;
     disconnect(): Promise<void>;
 }
 
-type KafkaMessageHandler<T = unknown> = (message: T) => Promise<void>;
+export type KafkaMessageHandler<T = unknown> = (message: T) => Promise<void>;
 
-interface TopicConfig<T = unknown> {
+export interface TopicConfig<T = unknown> {
     topicName: string;
     topicHandler: KafkaMessageHandler<T>;
 }
