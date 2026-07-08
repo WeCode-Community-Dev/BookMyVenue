@@ -18,6 +18,7 @@ export class VendorAuthController {
         resendVendorOtpUsecase,
         vendorRefreshTokenUsecase,
         vendorForgotPasswordUsecase,
+        vendorResetPasswordUsecase,
     ) {
         this._registerVendorUseCase = registerVendorUseCase;
         this._loginVendorUseCase = loginVendorUseCase;
@@ -25,6 +26,7 @@ export class VendorAuthController {
         this._resendVendorOtp = resendVendorOtpUsecase;
         this._refreshTokenUsecase = vendorRefreshTokenUsecase;
         this._forgotPasswordUsecase = vendorForgotPasswordUsecase;
+        this._resetPasswordUseCase = vendorResetPasswordUsecase;
     }
 
     register = asyncHandler(async (req, res) => {
@@ -58,5 +60,11 @@ export class VendorAuthController {
     forgotPassword = asyncHandler(async (req, res) => {
         await this._forgotPasswordUseCase.execute({email: req.body.email});
         return sendSuccess(res, statusCode.OK, authMessages.success.FORGOT_PASSWORD);
+    });
+
+    resetPassword = asyncHandler(async (req, res) => {
+        const { email, resetToken, newPassword } = req.body;
+        await this._resetPasswordUseCase.execute(email, resetToken, newPassword);
+        return sendSuccess(res, statusCode.OK, authMessages.success.RESET_PASSWORD);
     });
 }
