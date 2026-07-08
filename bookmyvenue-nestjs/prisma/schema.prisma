@@ -27,6 +27,18 @@ enum BookingStatus {
   FAILED
 }
 
+enum PaymentProvider {
+  RAZORPAY
+}
+
+enum PaymentStatus {
+  CREATED
+  CAPTURED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
@@ -97,6 +109,8 @@ model Booking {
   totalPrice         Float
   bookedStartTime    DateTime
   bookedEndTime      DateTime
+  expiresAt          DateTime?
+  confirmedAt        DateTime?
   cancellationReason String?
   cancelledAt        DateTime?
   userId             String
@@ -107,9 +121,39 @@ model Booking {
   user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   venue              Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
   slot               VenueSlot     @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  payments           Payment[]
 
   @@index([userId, createdAt])
   @@index([venueId, createdAt])
   @@index([slotId])
   @@index([status])
+}
+
+model Payment {
+  id                String          @id @default(uuid())
+  bookingId         String
+  provider          PaymentProvider @default(RAZORPAY)
+  status            PaymentStatus   @default(CREATED)
+  amount            Int
+  currency          String          @default("INR")
+  receipt           String          @unique
+  razorpayOrderId   String          @unique
+  razorpayPaymentId String?         @unique
+  razorpaySignature String?
+  failureReason     String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  booking           Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId, createdAt])
+  @@index([status])
+}
+
+model PaymentWebhookEvent {
+  id        String          @id @default(uuid())
+  provider  PaymentProvider @default(RAZORPAY)
+  eventId   String          @unique
+  eventType String
+  payload   Json
+  createdAt DateTime        @default(now())
 }
