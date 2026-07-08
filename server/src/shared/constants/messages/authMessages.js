@@ -11,6 +11,7 @@ export const authMessages = {
         ADMIN_LOGIN: 'Admin login successful',
     },
     error: {
+        ADMIN_NOT_FOUND: 'Admin not found',
         USER_NOT_FOUND: 'User not found',
         VENDOR_NOT_FOUND: 'Vendor not found',
         USER_NOT_FOUND_WITH_EMAIL: 'User not found with this email',

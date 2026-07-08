@@ -23,7 +23,7 @@ export class IAdminRepository {
         throw new Error('Method not implemented');
     }
 
-    async findByEmail(email, includePassword = false) {
+    async findByEmail(email) {
         throw new Error('Method not implemented');
     }
 }

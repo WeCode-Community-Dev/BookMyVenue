@@ -84,6 +84,9 @@ import { VendorRefreshTokenUseCase } from '../../application/vendor/usecases/aut
 import VendorForgotPasswordUseCase from '../../application/vendor/usecases/auth/vendor.forgotPassword.usecase.js'
 import { VendorResetPasswordUseCase } from '../../application/vendor/usecases/auth/vendor.resetPassword.usecase.js'
 import { VendorLogoutUseCase } from '../../application/vendor/usecases/auth/vendor.logout.usecase.js'
+import { LoginAdminUsecase } from '../../application/admin/usecases/auth/admin.login.usecase.js'
+import { AdminRepository } from '../../infrastructure/repositories/admin.repository.js.js'
+import { AdminAuthController } from './admin/admin.authController.js'
 
 //repository
 const iVenueRepository = new VenueRepository();
@@ -91,6 +94,7 @@ const iUserRepository = new UserRepository();
 const iVendorRepository = new VendorRepository();
 const iPaymentRepository = new PaymentRepository();
 const bookingRepository = new BookingRepositoryImpl();
+const iAdminRepository = new AdminRepository()
 
 // --- services ---
 const iCloudinaryService = new CloudinaryService()
@@ -100,6 +104,12 @@ const iOtpService = new OtpService()
 const iOtpStoreService = new OtpStoreService(redisClient)
 export const iTokenService = new TokenService()
 
+// --- admin auth usecase---
+const iAdminLoginUsecase = new LoginAdminUsecase (
+    iAdminRepository,
+    iHashService,
+    iTokenService
+)
 // --- admin user usecases ---
 const iAdminGetAllUsersUsecase = new AdminGetAllUsersUsecase(iUserRepository)
 const iAdminUpdateUserStatusUsecase = new AdminUpdateUserStatusUsecase(iUserRepository)
@@ -376,4 +386,8 @@ export const iVendorAuthController = new VendorAuthController (
     iVendorForgotPassword,
     iVendorResetPassword,
     iVendorLogout,
+)
+
+export const iAdminAuthController = new AdminAuthController (
+    iAdminLoginUsecase,
 )

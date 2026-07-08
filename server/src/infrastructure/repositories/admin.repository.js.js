@@ -20,17 +20,11 @@ export class AdminRepository extends IAdminRepository {
         return AdminMapper.mapToEntity(document);
     }
 
-    async findByEmail(email, includePassword = false) {
-        let query = AdminModel.findOne({
+    async findByEmail(email) {
+        let document = AdminModel.findOne({
             email,
             isDeleted: false,
         });
-
-        if (includePassword) {
-            query = query.select("+password");
-        }
-
-        const document = await query;
 
         if (!document) return null;
 

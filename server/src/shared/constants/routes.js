@@ -30,7 +30,12 @@ export const ROUTES = {
             GET_ALL:'/payments',
             GET_BY_ID:'/payments/:paymentId',
             GET_STATISTICS:'/payments/statistics',
-        }
+        },
+        AUTH: {
+            LOGIN: "/vendor/login",
+            REFRESH: '/vendor/refresh',
+            LOGOUT: '/vendor/logout'
+        },
 
     },
     OWNER: {
