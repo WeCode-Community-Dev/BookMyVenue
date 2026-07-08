@@ -284,6 +284,10 @@ export function makeHttpStorageProvider(config: HttpStorageConfig): StorageProvi
         throw new Error(`Delete failed with status ${res.status}`);
       }
     },
+
+    async getObject() {
+      throw new Error("getObject is a server-side operation and not available on HTTP clients.");
+    },
   };
 }
 
@@ -368,7 +372,7 @@ export function makeHttpBookingsRepo(config: {
       venue_id: string;
       start_time: string;
       end_time: string;
-    }): Promise<Array<Pick<Booking, "id" | "status" | "expires_at">>> {
+    }): Promise<Array<Pick<Booking, "id" | "status" | "expires_at" | "start_time" | "end_time">>> {
       throw new Error("Method not implemented on mobile HTTP client");
     },
 

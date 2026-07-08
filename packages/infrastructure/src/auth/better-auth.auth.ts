@@ -42,14 +42,14 @@ export interface BetterAuthClient {
   getSession: () => Promise<{
     data?: {
       session: { token: string; expiresAt: string | Date };
-      user: { id: string; email: string; name?: string; [k: string]: unknown };
+      user: { id: string; email: string; name?: string;[k: string]: unknown };
     } | null;
     error?: { message: string } | null;
   }>;
   useSession: () => {
     data: {
       session: { token: string; expiresAt: string | Date } | null;
-      user: { id: string; email: string; name?: string; [k: string]: unknown } | null;
+      user: { id: string; email: string; name?: string;[k: string]: unknown } | null;
     } | null;
     isPending: boolean;
     error: unknown;
@@ -77,7 +77,9 @@ function toSession(data: any): AuthSession | null {
       metadata: {
         first_name: data.user.firstName ?? data.user.name?.split(" ")[0] ?? null,
         last_name: data.user.lastName ?? data.user.name?.split(" ").slice(1).join(" ") ?? null,
-        ...(data.user.role ? { role: data.user.role } : {}),
+        role: data.user.role ?? null,
+        isAdmin: data.user.isAdmin ?? false,
+        isHost: data.user.isHost ?? false,
       },
     },
   };
@@ -156,9 +158,11 @@ export function makeBetterAuthProvider(client: BetterAuthClient): AuthProvider {
 
     async getSession() {
       const result = await client.getSession();
+      console.log({ result })
       if (result.error || !result.data) return null;
       const session = toSession(result.data);
       currentSession = session;
+      console.log({ session })
       return session;
     },
 
@@ -193,7 +197,7 @@ export function makeBetterAuthProvider(client: BetterAuthClient): AuthProvider {
       // For standalone token verification, we'd need the server auth instance.
       throw new Error(
         "verifyAccessToken is not used with Better Auth. " +
-          "Use the auth middleware's getSession instead.",
+        "Use the auth middleware's getSession instead.",
       );
     },
   };

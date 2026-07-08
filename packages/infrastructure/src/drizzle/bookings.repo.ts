@@ -94,6 +94,8 @@ export function makeBookingsRepo(deps: { adminDb: any; userDb?: any }): Bookings
           id: bookings.id,
           status: bookings.status,
           expiresAt: bookings.expiresAt,
+          startTime: bookings.startTime,
+          endTime: bookings.endTime,
         })
         .from(bookings)
         .where(
@@ -109,6 +111,8 @@ export function makeBookingsRepo(deps: { adminDb: any; userDb?: any }): Bookings
         id: r.id,
         status: r.status as BookingStatus,
         expires_at: r.expiresAt ?? null,
+        start_time: r.startTime,
+        end_time: r.endTime,
       }));
     },
 

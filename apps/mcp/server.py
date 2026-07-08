@@ -8,7 +8,6 @@ Exposes a single `get_venues` tool backed by the Lovable app's public
 Run locally (streamable HTTP transport, the one ChatGPT expects):
 
     pip install -r requirements.txt
-    VENUES_API_BASE="https://project--bf1a39b6-3c54-479a-8f7d-173e73cb3c8f.lovable.app" \
         python server.py
 
 Then register `http://localhost:8000/mcp` as a connector in ChatGPT
@@ -23,17 +22,23 @@ from typing import Any
 
 import httpx
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import TextResourceContents
 
 API_BASE = os.environ.get(
     "VENUES_API_BASE",
-    "https://project--bf1a39b6-3c54-479a-8f7d-173e73cb3c8f.lovable.app",
+    "",
 ).rstrip("/")
 
 WIDGET_URI = "ui://widget/venues-list.html"
 WIDGET_HTML = (Path(__file__).parent / "widget.html").read_text(encoding="utf-8")
 
-mcp = FastMCP("venues-mcp")
+mcp = FastMCP(
+    "venues-mcp",
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=False,
+    ),
+)
 
 
 # ---------- UI widget resource (OpenAI Apps SDK convention) ----------
@@ -55,11 +60,11 @@ def venues_widget() -> str:
         "venue type (wedding | conference | party | celebration | other), "
         "or minimum capacity."
     ),
-    annotations={
-        # Tells ChatGPT to render the widget above with this tool's output.
-        "openai/outputTemplate": WIDGET_URI,
-        "openai/toolInvocation/invoking": "Looking up venues…",
-        "openai/toolInvocation/invoked": "Found matching venues.",
+    meta={
+        "ui": {
+            "resourceUri": WIDGET_URI,
+        },
+        "ui/resourceUri": WIDGET_URI,
     },
 )
 async def get_venues(

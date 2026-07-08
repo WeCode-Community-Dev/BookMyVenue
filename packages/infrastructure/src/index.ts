@@ -7,10 +7,14 @@ export { makeBetterAuthProvider } from "./auth/better-auth.auth";
 export type { BetterAuthClient } from "./auth/better-auth.auth";
 
 // Storage adapters
-export { makeS3StorageProvider } from "./storage/s3.storage";
-export type { S3StorageConfig } from "./storage/s3.storage";
-export { makeR2StorageProvider } from "./storage/r2.storage";
-export type { R2StorageConfig } from "./storage/r2.storage";
+export { makeR2BindingStorageProvider } from "./storage/r2.storage";
+export type {
+  R2BindingStorageConfig,
+  R2BucketLike,
+  R2ObjectBodyLike,
+} from "./storage/r2.storage";
+export { makeR2InvoiceStorage } from "./storage/r2-invoice.storage";
+export type { R2InvoiceStorageConfig } from "./storage/r2-invoice.storage";
 
 // DB factories
 export { makeDrizzleD1Factory } from "./db/drizzle-d1-db";

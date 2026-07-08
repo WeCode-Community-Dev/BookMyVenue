@@ -12,7 +12,8 @@
     "./coupons": "./src/coupons.ts",
     "./reviews": "./src/reviews.ts",
     "./admin": "./src/admin.ts",
-    "./invoices": "./src/invoices.ts"
+    "./invoices": "./src/invoices.ts",
+    "./timeslots": "./src/timeslots.ts"
   },
   "dependencies": {
     "@repo/contracts": "*",

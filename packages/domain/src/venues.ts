@@ -30,6 +30,8 @@ export interface VenueAddress {
   rules: string;
   cancellation_policy: string;
   min_booking_hours: number;
+  disabled_from?: string;
+  disabled_to?: string;
 }
 
 export interface Venue {

@@ -1,54 +1,110 @@
 /**
- * SAMPLE adapter — Cloudflare R2 implementation of StorageProvider.
+ * Cloudflare R2 implementation of StorageProvider.
  *
- * R2 is S3-compatible, so this re-uses the AWS SDK pointed at R2's endpoint.
- * In a Cloudflare Worker you can alternatively bind the bucket directly via
- * `env.MY_BUCKET.put(...)`; that variant is shown commented below.
- *
- * To activate:
- *   1. `bun add @aws-sdk/client-s3 @aws-sdk/s3-request-presigner`
- *   2. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY
- *   3. Swap the provider in the composition root
+ * Uses native R2Bucket bindings available in Cloudflare Workers.
+ * This is the preferred adapter when running on Workers.
  */
 
-import type { SignedUrl, StorageProvider, UploadResult } from "@repo/contracts";
+import type { SignedUrl, StorageObject, StorageProvider, UploadResult } from "@repo/contracts";
 
-export interface R2StorageConfig {
-  accountId: string;
-  accessKeyId: string;
-  secretAccessKey: string;
-  /** Public r2.dev URL or custom domain for `getPublicUrl`. */
-  publicBaseUrl?: string;
+// ────────────────────────────────────────────────────────────
+// Native R2 Bucket binding approach (Workers runtime)
+// ────────────────────────────────────────────────────────────
+
+/**
+ * R2Bucket-like interface. We declare a minimal subset so the infrastructure
+ * package doesn't depend on `@cloudflare/workers-types` directly.
+ */
+export interface R2BucketLike {
+  put(
+    key: string,
+    value: ArrayBuffer | ReadableStream | string | Blob | null,
+    options?: { httpMetadata?: { contentType?: string } },
+  ): Promise<unknown>;
+  get(key: string): Promise<R2ObjectBodyLike | null>;
+  delete(keys: string | string[]): Promise<void>;
 }
 
-export function makeR2StorageProvider(cfg: R2StorageConfig): StorageProvider {
-  // TODO: import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectsCommand }
-  //       from "@aws-sdk/client-s3";
-  // TODO: import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-  // const s3 = new S3Client({
-  //   region: "auto",
-  //   endpoint: `https://${cfg.accountId}.r2.cloudflarestorage.com`,
-  //   credentials: { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey },
-  // });
+export interface R2ObjectBodyLike {
+  body: ReadableStream;
+  httpEtag: string;
+  writeHttpMetadata(headers: Headers): void;
+}
+
+export interface R2BindingStorageConfig {
+  /** Map of logical bucket names → R2 bucket bindings. */
+  buckets: Record<string, R2BucketLike>;
+  /**
+   * Base path prefix used by `getPublicUrl`.
+   * Defaults to "/api/storage/public".
+   */
+  publicUrlPrefix?: string;
+}
+
+export function makeR2BindingStorageProvider(cfg: R2BindingStorageConfig): StorageProvider {
+  function resolveBucket(name: string): R2BucketLike {
+    const bucket = cfg.buckets[name];
+    if (!bucket) {
+      throw new Error(`R2BindingStorage: no bucket binding for "${name}"`);
+    }
+    return bucket;
+  }
+
+  const prefix = (cfg.publicUrlPrefix ?? "/api/storage/public").replace(/\/$/, "");
 
   return {
-    getPublicUrl(_bucket, path) {
-      const base = cfg.publicBaseUrl ?? "";
-      return `${base.replace(/\/$/, "")}/${path}`;
+    getPublicUrl(bucket, path) {
+      return `${prefix}/${bucket}/${path}`;
     },
-    async createSignedUploadUrl(_bucket, _path): Promise<SignedUrl> {
-      throw new Error("R2: createSignedUploadUrl not implemented (sample)");
+
+    async createSignedUploadUrl(_bucket, _path) {
+      throw new Error(
+        "R2BindingStorage: createSignedUploadUrl is not supported. Use upload() instead.",
+      );
     },
-    async createSignedDownloadUrl(_bucket, _path, _expiresIn = 3600): Promise<SignedUrl> {
-      throw new Error("R2: createSignedDownloadUrl not implemented (sample)");
+
+    async createSignedDownloadUrl(bucket, path, expiresIn = 3600) {
+      // With direct bindings there are no pre-signed URLs.
+      // Return a server-side proxy path that the API route can serve.
+      return {
+        url: `/api/storage/private/${bucket}/${path}`,
+        method: "GET" as const,
+        expiresIn,
+      };
     },
-    async upload(_bucket, _path): Promise<UploadResult> {
-      // Worker binding alternative:
-      //   await env.MY_BUCKET.put(_path, _file, { httpMetadata: { contentType } });
-      throw new Error("R2: upload not implemented (sample)");
+
+    async getObject(bucket, path) {
+      const r2 = resolveBucket(bucket);
+      const obj = await r2.get(path);
+      if (!obj) return null;
+      return {
+        body: obj.body,
+        httpEtag: obj.httpEtag,
+        writeHttpMetadata: (headers: Headers) => obj.writeHttpMetadata(headers),
+      };
     },
-    async delete(_bucket, _paths) {
-      throw new Error("R2: delete not implemented (sample)");
+
+    async upload(bucket, path, file, opts) {
+      const r2 = resolveBucket(bucket);
+      const arrayBuffer =
+        file instanceof ArrayBuffer
+          ? file
+          : file instanceof Blob
+            ? await file.arrayBuffer()
+            : new Uint8Array(file as Uint8Array).buffer as ArrayBuffer;
+
+      await r2.put(path, arrayBuffer, {
+        httpMetadata: {
+          contentType: opts?.contentType ?? "application/octet-stream",
+        },
+      });
+
+      return { path };
+    },
+
+    async delete(bucket, paths) {
+      const r2 = resolveBucket(bucket);
+      await Promise.all(paths.map((p) => r2.delete(p)));
     },
   };
 }

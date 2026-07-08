@@ -12,6 +12,14 @@ export interface UploadResult {
   path: string;
 }
 
+/** Returned by `getObject` — contains the raw body stream and HTTP metadata. */
+export interface StorageObject {
+  body: ReadableStream;
+  httpEtag: string;
+  /** Writes provider-specific HTTP metadata (content-type, etc.) onto the given Headers. */
+  writeHttpMetadata(headers: Headers): void;
+}
+
 export interface StorageProvider {
   /** Public URL for objects in a public bucket. */
   getPublicUrl(bucket: string, path: string): string;
@@ -25,6 +33,9 @@ export interface StorageProvider {
 
   /** Pre-signed URL for downloading a private object. */
   createSignedDownloadUrl(bucket: string, path: string, expiresIn?: number): Promise<SignedUrl>;
+
+  /** Retrieve an object from storage. Returns null if not found. */
+  getObject(bucket: string, path: string): Promise<StorageObject | null>;
 
   /** Server-side direct upload (e.g. from a webhook handler). */
   upload(

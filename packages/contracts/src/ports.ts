@@ -79,7 +79,7 @@ export interface BookingsRepo {
     venue_id: string;
     start_time: string;
     end_time: string;
-  }): Promise<Array<Pick<Booking, "id" | "status" | "expires_at">>>;
+  }): Promise<Array<Pick<Booking, "id" | "status" | "expires_at" | "start_time" | "end_time">>>;
   create(input: Omit<Booking, "id" | "version">): Promise<Booking>;
   findById(id: string): Promise<Booking | null>;
   updateStatus(args: {

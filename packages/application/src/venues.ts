@@ -27,6 +27,8 @@ export const VenueAddressSchema = z.object({
   rules: z.string().max(2000).optional().default(""),
   cancellation_policy: z.string().max(2000).optional().default(""),
   min_booking_hours: z.number().int().min(1).max(72).optional().default(1),
+  disabled_from: z.string().max(5).optional(),
+  disabled_to: z.string().max(5).optional(),
 });
 
 export const VenueInputSchema = z.object({

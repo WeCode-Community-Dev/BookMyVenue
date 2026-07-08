@@ -11,7 +11,8 @@
     "./bookings": "./src/bookings.ts",
     "./coupons": "./src/coupons.ts",
     "./reviews": "./src/reviews.ts",
-    "./invoices": "./src/invoices.ts"
+    "./invoices": "./src/invoices.ts",
+    "./timeslots": "./src/timeslots.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
