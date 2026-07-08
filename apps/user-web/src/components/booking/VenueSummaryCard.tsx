@@ -11,11 +11,11 @@ export function VenueSummaryCard({ venue }: Props) {
   const venueType = venue.category?.label ?? venue.category?.slug ?? ''
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm dark:border-ink-800 dark:bg-ink-900">
       {coverPhoto ? (
         <img src={coverPhoto} alt={venue.name} className="h-56 w-full object-cover" />
       ) : (
-        <div className="flex h-56 w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-50">
+        <div className="flex h-56 w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-50 dark:from-ink-800 dark:to-ink-900">
           <svg
             className="h-9 w-9 text-zinc-300"
             fill="none"
@@ -39,7 +39,7 @@ export function VenueSummaryCard({ venue }: Props) {
               Venue
             </div>
 
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900">{venue.name}</h2>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{venue.name}</h2>
 
             <div className="mt-2 flex items-center gap-2 text-zinc-500">
               <svg
@@ -80,8 +80,8 @@ export function VenueSummaryCard({ venue }: Props) {
           </div>
 
           {venue.description && (
-            <div className="border-t border-zinc-100 pt-5">
-              <p className="text-sm leading-relaxed text-zinc-600">{venue.description}</p>
+            <div className="border-t border-zinc-100 pt-5 dark:border-ink-800">
+              <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{venue.description}</p>
             </div>
           )}
         </div>
@@ -97,9 +97,9 @@ type InfoCardProps = {
 
 function InfoCard({ label, value }: InfoCardProps) {
   return (
-    <div className="rounded-xl border border-zinc-100 p-4">
+    <div className="rounded-xl border border-zinc-100 p-4 dark:border-ink-800">
       <div className="text-xs font-medium uppercase tracking-wide text-zinc-400">{label}</div>
-      <div className="mt-2 text-sm font-medium text-zinc-900">{value}</div>
+      <div className="mt-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">{value}</div>
     </div>
   )
 }

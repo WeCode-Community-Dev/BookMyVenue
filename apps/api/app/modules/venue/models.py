@@ -366,3 +366,16 @@ class VenueCancellationPolicy(Base):
         CheckConstraint("(tier_2_hours IS NULL) = (tier_2_refund_pct IS NULL)", name="tier_2_paired"),
         CheckConstraint("(tier_3_hours IS NULL) = (tier_3_refund_pct IS NULL)", name="tier_3_paired"),
     )
+
+
+class VenueLike(Base):
+    __tablename__ = "venue_likes"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False)
+    venue_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("venues.id", ondelete="CASCADE"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    __table_args__ = (
+        Index("uq_venue_likes_user_venue", "user_id", "venue_id", unique=True),
+    )

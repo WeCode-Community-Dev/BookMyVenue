@@ -20,6 +20,8 @@ import { AppNavbar } from '../components/shared/AppNavbar'
 import { VenueCard } from '../components/home/VenueCard'
 import { StageProgress, type ResearchStage } from '../components/deepResearch/StageProgress'
 import { MatchBadge } from '../components/deepResearch/MatchCitation'
+import { ExternalVenueCard } from '../components/deepResearch/ExternalVenueCard'
+import type { ExternalLeadPublic } from '@venue404/api-client'
 
 const EXAMPLE_PROMPTS = [
   'Wedding hall in Bangalore for 300 guests, under 5 lakhs',
@@ -41,6 +43,11 @@ export default function DeepResearch() {
   const [stage, setStage] = useState<ResearchStage>('understanding')
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
+  // External discovery state — simple: idle | locating | loading | completed | failed
+  const [extStatus, setExtStatus] = useState<'idle' | 'locating' | 'loading' | 'completed' | 'failed'>('idle')
+  const [extLeads, setExtLeads] = useState<ExternalLeadPublic[]>([])
+  const [extError, setExtError] = useState<string | null>(null)
+
   useEffect(() => {
     return () => {
       timers.current.forEach(clearTimeout)
@@ -60,7 +67,51 @@ export default function DeepResearch() {
     timers.current.forEach(clearTimeout)
     timers.current = []
     setStage('understanding')
+    
+    // reset external state
+    setExtStatus('idle')
+    setExtLeads([])
+    setExtError(null)
+
     searchMutation.mutate(query.trim())
+  }
+
+  function handleTriggerExternal() {
+    const queryId = searchMutation.data?.query_id
+    if (!queryId) return
+
+    if (!navigator.geolocation) {
+      setExtStatus('failed')
+      setExtError('Geolocation is not supported by your browser.')
+      return
+    }
+
+    setExtStatus('locating')
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        setExtStatus('loading')
+        try {
+          const endpoints = deepResearchEndpoints(client)
+          const leads = await endpoints.triggerExternal(
+            queryId,
+            pos.coords.latitude,
+            pos.coords.longitude,
+          )
+          setExtLeads(leads)
+          setExtStatus('completed')
+        } catch (err) {
+          console.error(err)
+          setExtStatus('failed')
+          setExtError('External search failed. Please try again.')
+        }
+      },
+      (err) => {
+        console.error(err)
+        setExtStatus('failed')
+        setExtError('Could not get your location. We need it to find venues near you.')
+      },
+      { timeout: 10000 },
+    )
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -76,35 +127,35 @@ export default function DeepResearch() {
   const showResults = stage === 'done' && !!breakdown
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-ink-950">
       <AppNavbar />
 
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0b1c19] via-[#0f2920] to-[#163326] py-16 sm:py-20">
+      <section className="relative flex min-h-[calc(100dvh-60px)] items-center overflow-hidden bg-gradient-to-br from-brand-light via-white to-white py-16 sm:py-20 dark:bg-ink-950 dark:from-ink-950 dark:via-ink-950 dark:to-ink-950">
         <div
-          className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-brand-secondary/20 blur-3xl"
+          className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-brand-secondary/30 blur-3xl dark:bg-brand-secondary/20"
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-brand/20 blur-3xl"
+          className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-brand/30 blur-3xl dark:bg-brand/20"
           aria-hidden="true"
         />
 
-        <div className="relative mx-auto max-w-2xl px-6 text-center">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand-secondary/30 bg-white/5 px-3.5 py-1.5 text-xs font-semibold text-brand-secondary backdrop-blur-sm">
+        <div className="relative mx-auto w-full max-w-2xl px-6 text-center">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-3.5 py-1.5 text-xs font-semibold text-brand backdrop-blur-sm dark:border-brand-secondary/30 dark:bg-white/5 dark:text-brand-secondary">
             <Sparkles className="h-3.5 w-3.5" />
             Deep Research
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-[2.75rem]">
+          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl lg:text-[2.75rem] dark:text-white">
             Describe the venue you need.
           </h1>
-          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-zinc-400 sm:text-base">
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-zinc-500 sm:text-base dark:text-zinc-400">
             We'll search our marketplace first — and go further if you need us to. Not listed
             anywhere else? We'll find it.
           </p>
 
           <form
             onSubmit={handleSubmit}
-            className="group mx-auto mt-9 rounded-2xl border border-white/10 bg-white p-3 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] transition-shadow duration-300 focus-within:shadow-[0_20px_60px_-10px_rgba(64,138,113,0.35)]"
+            className="group mx-auto mt-9 rounded-2xl border border-zinc-200 bg-white p-3 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] transition-shadow duration-300 focus-within:shadow-[0_20px_60px_-10px_rgba(64,138,113,0.25)] dark:border-white/10 dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] dark:focus-within:shadow-[0_20px_60px_-10px_rgba(64,138,113,0.35)]"
           >
             <textarea
               value={query}
@@ -117,7 +168,7 @@ export default function DeepResearch() {
               }}
               placeholder="e.g. Wedding hall in Bangalore for 300 guests, under 5 lakhs..."
               rows={3}
-              className="w-full resize-none rounded-xl border-0 px-4 py-3 text-sm text-zinc-900 shadow-none focus:shadow-none"
+              className="w-full resize-none rounded-xl border-0 bg-transparent px-4 py-3 text-sm text-zinc-900 shadow-none focus:shadow-none"
             />
             <div className="flex flex-col gap-3 px-1 pb-1 pt-1 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap gap-2">
@@ -151,11 +202,11 @@ export default function DeepResearch() {
           )}
 
           {searchMutation.isError && (
-            <div className="page-enter mt-8 flex items-start gap-3 rounded-2xl border border-red-400/20 bg-red-500/10 p-5 text-left">
-              <AlertTriangle className="h-5 w-5 shrink-0 text-red-400" />
+            <div className="page-enter mt-8 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 text-left dark:border-red-400/20 dark:bg-red-500/10">
+              <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
               <div>
-                <p className="text-sm font-semibold text-red-300">Something went wrong</p>
-                <p className="mt-0.5 text-xs text-red-300/70">
+                <p className="text-sm font-semibold text-red-700 dark:text-red-300">Something went wrong</p>
+                <p className="mt-0.5 text-xs text-red-600/80 dark:text-red-300/70">
                   We couldn't understand that request. Please try again.
                 </p>
               </div>
@@ -167,13 +218,13 @@ export default function DeepResearch() {
       {showResults && breakdown && (
         <section className="mx-auto max-w-5xl px-6 py-12">
           <div className="mx-auto max-w-2xl">
-            <div className="card-enter rounded-2xl border border-zinc-100 bg-white p-7 shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-zinc-100">
+            <div className="card-enter rounded-2xl border border-zinc-100 bg-white p-7 shadow-[0_1px_3px_rgba(0,0,0,0.05)] ring-1 ring-zinc-100 dark:border-ink-800 dark:bg-ink-900 dark:ring-ink-800">
               <div className="mb-6 flex items-center gap-2.5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand/10 text-brand">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand/10 text-brand dark:bg-brand/15 dark:text-brand-secondary">
                   <ShieldCheck className="h-4 w-4" />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-zinc-900">Here's what we understood</p>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Here's what we understood</p>
                   <p className="text-xs text-zinc-400">Matched against our verified catalog below</p>
                 </div>
               </div>
@@ -192,7 +243,7 @@ export default function DeepResearch() {
               </div>
 
               {breakdown.required_amenities.length > 0 && (
-                <div className="mt-5 border-t border-zinc-100 pt-5">
+                <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
                   <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
                     Required amenities
                   </p>
@@ -200,7 +251,7 @@ export default function DeepResearch() {
                     {breakdown.required_amenities.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full border border-brand/15 bg-brand/5 px-3 py-1 text-xs font-medium capitalize text-brand"
+                        className="rounded-full border border-brand/15 bg-brand/5 px-3 py-1 text-xs font-medium capitalize text-brand dark:border-brand/25 dark:bg-brand/10 dark:text-brand-secondary"
                       >
                         {tag.replace(/_/g, ' ')}
                       </span>
@@ -210,13 +261,13 @@ export default function DeepResearch() {
               )}
 
               {breakdown.special_requirements.length > 0 && (
-                <div className="mt-5 border-t border-zinc-100 pt-5">
+                <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
                   <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
                     Other requirements
                   </p>
                   <ul className="space-y-1.5">
                     {breakdown.special_requirements.map((req) => (
-                      <li key={req} className="flex items-start gap-2 text-sm text-zinc-700">
+                      <li key={req} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
                         <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-zinc-400" />
                         {req}
                       </li>
@@ -230,7 +281,7 @@ export default function DeepResearch() {
           {/* ── Internal catalog results ─────────────────────────────── */}
           <div className="mt-10">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-zinc-900">
+              <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
                 {internalVenues.length > 0
                   ? `${internalTotal} venue${internalTotal === 1 ? '' : 's'} in our catalog`
                   : 'Nothing matched in our catalog'}
@@ -247,42 +298,78 @@ export default function DeepResearch() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 py-16 text-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-300">
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 py-16 text-center dark:border-ink-700">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-300 dark:bg-ink-800">
                   <SearchX className="h-5 w-5" />
                 </span>
-                <p className="text-sm font-semibold text-zinc-900">No venues matched yet</p>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No venues matched yet</p>
                 <p className="max-w-xs text-sm text-zinc-400">
                   Try widening your search, or let us look beyond our marketplace.
                 </p>
               </div>
             )}
 
-            {/* Phase 2 (external discovery) is a teammate's in-progress
-                endpoint — POST /api/deep-research/external {query_id}. Wired
-                as a disabled placeholder here so the UI is ready the moment
-                it ships. */}
-            <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 text-center">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-400 ring-1 ring-zinc-100">
-                <Globe2 className="h-4 w-4" />
-              </span>
-              <p className="text-sm font-semibold text-zinc-900">Still not finding the right fit?</p>
-              <p className="max-w-sm text-xs leading-relaxed text-zinc-400">
-                We can search beyond our marketplace and get back to you with venues that aren't
-                listed anywhere else yet.
-              </p>
-              <button
-                type="button"
-                disabled
-                title="Coming soon"
-                className="mt-2 inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-400 opacity-70"
-              >
-                Search externally
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-zinc-400">
-                  Soon
+            {/* ── External discovery results ─────────────────────────────── */}
+            {extStatus === 'completed' && extLeads.length > 0 ? (
+              <div className="mt-12 border-t border-zinc-100 pt-10 dark:border-ink-800">
+                <div className="mb-6 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                      Discovered externally
+                    </h2>
+                    <p className="mt-1 text-sm text-zinc-500">
+                      We searched beyond our catalog based on your location.
+                    </p>
+                  </div>
+                  <span className="flex items-center gap-1.5 rounded-full border border-orange-200/60 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 dark:border-orange-900/50 dark:bg-orange-950/30 dark:text-orange-400">
+                    <Globe2 className="h-3.5 w-3.5" />
+                    Web Results
+                  </span>
+                </div>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {extLeads.map((lead) => (
+                    <ExternalVenueCard key={lead.id} lead={lead} />
+                  ))}
+                </div>
+              </div>
+            ) : extStatus === 'completed' && extLeads.length === 0 ? (
+              <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 py-10 text-center dark:border-ink-700">
+                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 dark:bg-ink-800">
+                  <SearchX className="h-5 w-5" />
                 </span>
-              </button>
-            </div>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No external venues found</p>
+                <p className="max-w-xs text-xs text-zinc-400">
+                  We searched near you but couldn't find any unlisted venues matching your criteria.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-8 flex flex-col items-center gap-2 rounded-2xl border border-zinc-100 bg-zinc-50/60 p-6 text-center transition-all dark:border-ink-800 dark:bg-ink-900/40">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-zinc-400 ring-1 ring-zinc-100 dark:bg-ink-800 dark:ring-ink-700">
+                  <Globe2 className={`h-4 w-4 ${['locating', 'loading'].includes(extStatus) ? 'animate-pulse text-brand dark:text-brand-secondary' : ''}`} />
+                </span>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  {extStatus === 'locating' ? 'Getting your location...'
+                    : extStatus === 'loading' ? 'Searching externally...'
+                    : 'Still not finding the right fit?'}
+                </p>
+                <p className="max-w-sm text-xs leading-relaxed text-zinc-400">
+                  {extError || "We can search beyond our marketplace and find venues that aren't listed anywhere else yet."}
+                </p>
+                {extStatus === 'idle' || extStatus === 'failed' ? (
+                  <button
+                    type="button"
+                    onClick={handleTriggerExternal}
+                    className="mt-2 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm ring-1 ring-inset ring-zinc-300 hover:bg-zinc-50 transition-all hover:text-zinc-900 dark:bg-ink-800 dark:text-zinc-300 dark:ring-ink-700 dark:hover:bg-ink-700 dark:hover:text-zinc-100"
+                  >
+                    Search externally
+                  </button>
+                ) : (
+                  <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-brand dark:text-brand-secondary animate-pulse">
+                    Searching the web — this usually takes ~5 seconds...
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -300,13 +387,13 @@ function Field({
   value: string | null
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-zinc-100 bg-zinc-50/60 p-3.5">
-      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-zinc-400 ring-1 ring-zinc-100">
+    <div className="flex items-start gap-3 rounded-xl border border-zinc-100 bg-zinc-50/60 p-3.5 dark:border-ink-800 dark:bg-ink-900/40">
+      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-zinc-400 ring-1 ring-zinc-100 dark:bg-ink-800 dark:ring-ink-700">
         <Icon className="h-3.5 w-3.5" />
       </span>
       <div className="min-w-0">
         <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">{label}</p>
-        <p className="mt-0.5 truncate text-sm font-medium text-zinc-900">{value ?? '—'}</p>
+        <p className="mt-0.5 truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{value ?? '—'}</p>
       </div>
     </div>
   )

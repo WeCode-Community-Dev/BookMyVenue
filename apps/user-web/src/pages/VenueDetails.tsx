@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { createClient, venueEndpoints } from '@venue404/api-client'
+import { useLikes } from '../lib/useLikes'
+import { useAuth } from '../lib/AuthContext'
+import { useLocation } from 'react-router-dom'
 import { toUtcIso } from '../utils'
 
 import { AppNavbar }                from '../components/shared/AppNavbar'
@@ -18,7 +21,7 @@ import { VenueThingsToKnow }        from '../components/venue/VenueThingsToKnow'
 import type { VenueResponse, AvailabilityResponse, PricingQuote, BookingType } from '../types'
 
 function Divider() {
-  return <div className="my-10 border-t border-zinc-100" />
+  return <div className="my-10 border-t border-zinc-100 dark:border-ink-800" />
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -26,24 +29,24 @@ function Divider() {
 function VenueDetailSkeleton() {
   return (
     <div className="animate-pulse space-y-8">
-      <div className="h-[500px] w-full rounded-2xl bg-zinc-100" />
+      <div className="h-[500px] w-full rounded-2xl bg-zinc-100 dark:bg-ink-800" />
       <div className="flex flex-col gap-10 lg:flex-row lg:gap-16">
         <div className="flex-1 space-y-6">
-          <div className="h-9 w-2/3 rounded-xl bg-zinc-100" />
-          <div className="h-4 w-1/3 rounded bg-zinc-100" />
-          <div className="h-px w-full bg-zinc-100" />
+          <div className="h-9 w-2/3 rounded-xl bg-zinc-100 dark:bg-ink-800" />
+          <div className="h-4 w-1/3 rounded bg-zinc-100 dark:bg-ink-800" />
+          <div className="h-px w-full bg-zinc-100 dark:bg-ink-800" />
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-start gap-4 py-4 border-b border-zinc-50">
-              <div className="h-6 w-6 rounded bg-zinc-100" />
+            <div key={i} className="flex items-start gap-4 py-4 border-b border-zinc-50 dark:border-ink-800">
+              <div className="h-6 w-6 rounded bg-zinc-100 dark:bg-ink-800" />
               <div className="flex-1 space-y-2">
-                <div className="h-3.5 w-2/3 rounded bg-zinc-100" />
-                <div className="h-3 w-1/2 rounded bg-zinc-100" />
+                <div className="h-3.5 w-2/3 rounded bg-zinc-100 dark:bg-ink-800" />
+                <div className="h-3 w-1/2 rounded bg-zinc-100 dark:bg-ink-800" />
               </div>
             </div>
           ))}
         </div>
         <div className="w-full lg:w-[400px] shrink-0">
-          <div className="h-[480px] rounded-2xl bg-zinc-100" />
+          <div className="h-[480px] rounded-2xl bg-zinc-100 dark:bg-ink-800" />
         </div>
       </div>
     </div>
@@ -55,14 +58,14 @@ function VenueDetailSkeleton() {
 function VenueNotFound({ onBack }: { onBack: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-32 text-center">
-      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-zinc-100">
+      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-ink-800">
         <svg className="h-9 w-9 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
       </div>
-      <h2 className="text-xl font-semibold text-zinc-900">Venue not found</h2>
+      <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Venue not found</h2>
       <p className="mt-2 max-w-sm text-sm text-zinc-500">This venue may have been removed or is not yet published.</p>
-      <button onClick={onBack} className="mt-8 inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors">
+      <button onClick={onBack} className="mt-8 inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300">
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
@@ -276,23 +279,71 @@ export default function VenueDetails() {
   })
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-ink-950">
       <AppNavbar />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pb-24 pt-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to results
-        </button>
+        <div className="mb-6 flex items-center justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors dark:hover:text-zinc-100"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to results
+          </button>
+          
+          {venue && <VenueActions venueId={venue.id} />}
+        </div>
 
         {isLoading && <VenueDetailSkeleton />}
         {(isError || (!isLoading && !venue)) && <VenueNotFound onBack={() => navigate('/')} />}
         {venue && <VenueContent venue={venue} />}
       </main>
+    </div>
+  )
+}
+
+// ─── Venue Actions ────────────────────────────────────────────────────────────
+
+function VenueActions({ venueId }: { venueId: string }) {
+  const { isLiked, toggleLike } = useLikes()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  
+  const liked = isLiked(venueId)
+  
+  const handleLike = () => {
+    if (!user) {
+      navigate('/login', { state: { from: location.pathname } })
+      return
+    }
+    toggleLike(venueId)
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <button className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline dark:hover:text-zinc-100">
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+        </svg>
+        Share
+      </button>
+      <button 
+        onClick={handleLike}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline dark:hover:text-zinc-100"
+      >
+        <svg
+          className={`h-4 w-4 transition-colors ${liked ? 'text-red-500' : ''}`}
+          fill={liked ? 'currentColor' : 'none'} 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={liked ? 1 : 2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+        {liked ? 'Saved' : 'Save'}
+      </button>
     </div>
   )
 }
@@ -402,7 +453,7 @@ function VenueContent({ venue }: { venue: VenueResponse }) {
                 'Cancellation terms per policy below',
               ].map((text) => (
                 <div key={text} className="flex items-start gap-2.5 text-xs text-zinc-400">
-                  <span className="font-semibold text-brand">OK</span>
+                  <span className="font-semibold text-brand dark:text-brand-secondary">OK</span>
                   <span>{text}</span>
                 </div>
               ))}

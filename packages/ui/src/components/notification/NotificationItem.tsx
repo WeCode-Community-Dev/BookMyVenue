@@ -129,29 +129,29 @@ function BellIcon({ className }: { className?: string }) {
 const NOTIFICATION_CONFIG: Record<string, IconConfig> = {
   payment_confirmed: {
     icon: CheckCircleIcon,
-    iconBg: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
+    iconBg: 'bg-emerald-50 dark:bg-emerald-950/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
-  balance_paid: { icon: CheckCircleIcon, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
-  request_received: { icon: InboxIcon, iconBg: 'bg-zinc-100', iconColor: 'text-zinc-500' },
-  request_accepted: { icon: ThumbUpIcon, iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
-  hold_expired: { icon: ClockIcon, iconBg: 'bg-zinc-100', iconColor: 'text-zinc-400' },
+  balance_paid: { icon: CheckCircleIcon, iconBg: 'bg-emerald-50 dark:bg-emerald-950/30', iconColor: 'text-emerald-600 dark:text-emerald-400' },
+  request_received: { icon: InboxIcon, iconBg: 'bg-zinc-100 dark:bg-ink-800', iconColor: 'text-zinc-500 dark:text-zinc-400' },
+  request_accepted: { icon: ThumbUpIcon, iconBg: 'bg-amber-50 dark:bg-amber-950/30', iconColor: 'text-amber-600 dark:text-amber-400' },
+  hold_expired: { icon: ClockIcon, iconBg: 'bg-zinc-100 dark:bg-ink-800', iconColor: 'text-zinc-400' },
   balance_payment_overdue: {
     icon: AlertTriangleIcon,
-    iconBg: 'bg-red-50',
-    iconColor: 'text-red-600',
+    iconBg: 'bg-red-50 dark:bg-red-950/30',
+    iconColor: 'text-red-600 dark:text-red-400',
   },
   balance_deadline_extended: {
     icon: CalendarIcon,
-    iconBg: 'bg-blue-50',
-    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-50 dark:bg-blue-950/30',
+    iconColor: 'text-blue-600 dark:text-blue-400',
   },
-  booking_unavailable: { icon: XCircleIcon, iconBg: 'bg-red-50', iconColor: 'text-red-600' },
+  booking_unavailable: { icon: XCircleIcon, iconBg: 'bg-red-50 dark:bg-red-950/30', iconColor: 'text-red-600 dark:text-red-400' },
 }
 
 const DEFAULT_CONFIG: IconConfig = {
   icon: BellIcon,
-  iconBg: 'bg-zinc-100',
+  iconBg: 'bg-zinc-100 dark:bg-ink-800',
   iconColor: 'text-zinc-400',
 }
 
@@ -194,7 +194,9 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
       onClick={() => onOpen(notification)}
       className={cn(
         'press group flex w-full items-start gap-3.5 px-5 py-4 text-left transition-colors',
-        unread ? 'bg-emerald-50/40 hover:bg-emerald-50/70' : 'hover:bg-zinc-50'
+        unread
+          ? 'bg-emerald-50/40 hover:bg-emerald-50/70 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30'
+          : 'hover:bg-zinc-50 dark:hover:bg-ink-800'
       )}
     >
       <div
@@ -214,7 +216,7 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
           <span
             className={cn(
               'truncate text-sm',
-              unread ? 'font-semibold text-zinc-900' : 'font-medium text-zinc-700'
+              unread ? 'font-semibold text-zinc-900 dark:text-zinc-100' : 'font-medium text-zinc-700 dark:text-zinc-300'
             )}
           >
             {notification.title}
@@ -228,7 +230,7 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
 
       {navigable && (
         <svg
-          className="mt-2.5 h-4 w-4 shrink-0 text-zinc-300 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-400"
+          className="mt-2.5 h-4 w-4 shrink-0 text-zinc-300 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-400 dark:text-zinc-600 dark:group-hover:text-zinc-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

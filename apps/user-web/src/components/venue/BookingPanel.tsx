@@ -226,27 +226,27 @@ export function BookingPanel({ venue }: Props) {
   const advanceLabel = quote ? formatPrice(quote.advance_due_paise) : null
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white shadow-lg overflow-hidden">
+    <div className="brand-glow rounded-2xl border border-zinc-200 bg-white shadow-lg overflow-hidden dark:border-ink-700 dark:bg-ink-900">
       {/* ── Panel header: price + rating ─────────────────────────────── */}
-      <div className="px-6 pt-6 pb-5 border-b border-zinc-100">
+      <div className="px-6 pt-6 pb-5 border-b border-zinc-100 dark:border-ink-800">
         <div className="flex items-start justify-between gap-4">
           <div>
             {venue.pricing_mode === 'flat' && venue.starting_price_paise != null ? (
               <div className="flex items-baseline gap-2">
-                <p className="text-[26px] font-bold tracking-tight text-zinc-900 leading-none">
+                <p className="text-[26px] font-bold tracking-tight text-zinc-900 leading-none dark:text-zinc-100">
                   {formatPrice(venue.starting_price_paise)}
                 </p>
                 <p className="text-sm text-zinc-400">/ day</p>
               </div>
             ) : venue.pricing_mode === 'hourly' && venue.hourly_rate_paise != null ? (
               <div className="flex items-baseline gap-2">
-                <p className="text-[26px] font-bold tracking-tight text-zinc-900 leading-none">
+                <p className="text-[26px] font-bold tracking-tight text-zinc-900 leading-none dark:text-zinc-100">
                   {formatPrice(venue.hourly_rate_paise)}
                 </p>
                 <p className="text-sm text-zinc-400">/ hr</p>
               </div>
             ) : (
-              <p className="text-base font-semibold text-zinc-900">Price on request</p>
+              <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Price on request</p>
             )}
             {/* Rating placeholder */}
             <div className="mt-2 flex items-center gap-1.5">
@@ -270,14 +270,14 @@ export function BookingPanel({ venue }: Props) {
         {showBookingTypeSelector && (
           <div className="mt-5">
             {/* Tab-style booking type selector */}
-            <div className="flex rounded-xl border border-zinc-200 overflow-hidden">
+            <div className="flex rounded-xl border border-zinc-200 overflow-hidden dark:border-ink-700">
               <button
                 type="button"
                 onClick={() => handleBookingTypeChange('full_day')}
                 className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
                   bookingType === 'full_day'
-                    ? 'bg-zinc-900 text-white'
-                    : 'bg-white text-zinc-500 hover:bg-zinc-50'
+                    ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                    : 'bg-white text-zinc-500 hover:bg-zinc-50 dark:bg-ink-900 dark:hover:bg-ink-800'
                 }`}
               >
                 Full Day
@@ -285,10 +285,10 @@ export function BookingPanel({ venue }: Props) {
               <button
                 type="button"
                 onClick={() => handleBookingTypeChange('time_slot')}
-                className={`flex-1 py-2.5 text-sm font-medium transition-colors border-l border-zinc-200 ${
+                className={`flex-1 py-2.5 text-sm font-medium transition-colors border-l border-zinc-200 dark:border-ink-700 ${
                   bookingType === 'time_slot'
-                    ? 'bg-zinc-900 text-white'
-                    : 'bg-white text-zinc-500 hover:bg-zinc-50'
+                    ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                    : 'bg-white text-zinc-500 hover:bg-zinc-50 dark:bg-ink-900 dark:hover:bg-ink-800'
                 }`}
               >
                 Time Slot
@@ -298,7 +298,7 @@ export function BookingPanel({ venue }: Props) {
         )}
 
         {summaryDate && (
-          <div className="mt-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4">
+          <div className="mt-4 rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-ink-800 dark:bg-ink-900/60">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-zinc-500">Booking Type</span>
@@ -367,10 +367,10 @@ export function BookingPanel({ venue }: Props) {
             </p>
             {availLoading && (
               <div className="space-y-2.5">
-                <div className="h-4 w-28 bg-zinc-100 rounded animate-pulse" />
+                <div className="h-4 w-28 bg-zinc-100 dark:bg-ink-800 rounded animate-pulse" />
                 <div className="grid grid-cols-3 gap-2">
                   {Array.from({ length: 9 }).map((_, i) => (
-                    <div key={i} className="h-10 bg-zinc-100 rounded-xl animate-pulse" />
+                    <div key={i} className="h-10 bg-zinc-100 dark:bg-ink-800 rounded-xl animate-pulse" />
                   ))}
                 </div>
               </div>
@@ -406,7 +406,7 @@ export function BookingPanel({ venue }: Props) {
             </p>
             {quoteLoading && <QuoteBreakdown source="quote" quote={{} as PricingQuote} loading />}
             {quoteError && (
-              <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">
+              <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
                 Could not calculate price. Please try again.
               </div>
             )}
@@ -416,7 +416,7 @@ export function BookingPanel({ venue }: Props) {
 
         {/* Slot error */}
         {slotError && (
-          <div className="flex items-start gap-2 rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">
+          <div className="flex items-start gap-2 rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
             <svg
               className="h-4 w-4 mt-0.5 shrink-0"
               fill="none"
@@ -440,14 +440,14 @@ export function BookingPanel({ venue }: Props) {
         {!selectedDate ? (
           <button
             disabled
-            className="w-full rounded-xl bg-zinc-100 py-3.5 text-sm font-semibold text-zinc-400 cursor-not-allowed"
+            className="w-full rounded-xl bg-zinc-100 py-3.5 text-sm font-semibold text-zinc-400 cursor-not-allowed dark:bg-ink-800"
           >
             Select a date to continue
           </button>
         ) : bookingType === 'time_slot' && (!selectedStart || !selectedEnd) ? (
           <button
             disabled
-            className="w-full rounded-xl bg-zinc-100 py-3.5 text-sm font-semibold text-zinc-400 cursor-not-allowed"
+            className="w-full rounded-xl bg-zinc-100 py-3.5 text-sm font-semibold text-zinc-400 cursor-not-allowed dark:bg-ink-800"
           >
             Select a time to continue
           </button>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
 import { createClient, bookingEndpoints } from '@venue404/api-client'
@@ -12,6 +12,7 @@ import type { BookingOut } from '../types'
 
 import BookingCard from '../components/booking/BookingCard'
 import BookingStatusBadge from '../components/booking/BookingStatusBadge'
+import { UserReservations } from '../components/booking/UserReservations'
 
 import { formatDate } from '../utils'
 
@@ -29,7 +30,7 @@ const CANCELLED_STATUSES = [
 
 function FeaturedBookingHero({ booking }: { booking: BookingOut }) {
   return (
-    <div className="mb-10 overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm">
+    <div className="mb-10 overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm dark:border-ink-700 dark:bg-ink-900">
       <div className="grid lg:grid-cols-2">
         <div className="aspect-[16/9] lg:aspect-auto">
           {booking.venue_cover_photo_url ? (
@@ -39,7 +40,7 @@ function FeaturedBookingHero({ booking }: { booking: BookingOut }) {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="h-full w-full bg-zinc-100" />
+            <div className="h-full w-full bg-zinc-100 dark:bg-ink-800" />
           )}
         </div>
 
@@ -48,7 +49,7 @@ function FeaturedBookingHero({ booking }: { booking: BookingOut }) {
             <BookingStatusBadge status={booking.status} />
           </div>
 
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900">{booking.venue_name}</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{booking.venue_name}</h2>
 
           <p className="mt-2 text-zinc-500">{booking.venue_city}</p>
 
@@ -56,13 +57,13 @@ function FeaturedBookingHero({ booking }: { booking: BookingOut }) {
             <div>
               <p className="text-xs uppercase tracking-wide text-zinc-400">Event Date</p>
 
-              <p className="mt-1 font-medium text-zinc-900">{formatDate(booking.starts_at)}</p>
+              <p className="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{formatDate(booking.starts_at)}</p>
             </div>
 
             <div>
               <p className="text-xs uppercase tracking-wide text-zinc-400">Booking Value</p>
 
-              <p className="mt-1 font-medium text-zinc-900">{booking.display.quoted_price}</p>
+              <p className="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{booking.display.quoted_price}</p>
             </div>
           </div>
 
@@ -71,7 +72,7 @@ function FeaturedBookingHero({ booking }: { booking: BookingOut }) {
             (booking.status === 'confirmed' &&
               booking.payment_status === 'advance_paid' &&
               booking.balance_due_paise > 0)) && (
-            <div className="mt-6 inline-flex w-fit rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand">
+            <div className="mt-6 inline-flex w-fit rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand dark:bg-brand/15 dark:text-brand-secondary">
               Action Required
             </div>
           )}
@@ -101,20 +102,25 @@ function TabButton({
       onClick={onClick}
       className={`
         relative pb-4 text-sm font-medium transition-colors
-        ${active ? 'text-zinc-900' : 'text-zinc-500 hover:text-zinc-900'}
+        ${active ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'}
       `}
     >
       {children}
 
       <span className="ml-2 text-zinc-400">{count}</span>
 
-      {active && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-900" />}
+      {active && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-900 dark:bg-zinc-100" />}
     </button>
   )
 }
 
 export default function MyBookings() {
   const client = createClient()
+  const location = useLocation()
+
+  const [masterTab, setMasterTab] = useState<'bookings' | 'reservations'>(
+    location.state?.tab === 'reservations' ? 'reservations' : 'bookings'
+  )
 
   const [activeTab, setActiveTab] = useState<BookingTab>('upcoming')
 
@@ -171,7 +177,7 @@ export default function MyBookings() {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white dark:bg-ink-950">
         <AppNavbar />
 
         <div className="mx-auto max-w-6xl px-4 py-8">
@@ -186,12 +192,12 @@ export default function MyBookings() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50 dark:bg-ink-950">
       <AppNavbar />
 
       <div className="mx-auto max-w-6xl px-4 py-8">
         <div className="mb-10">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900">My Bookings</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">My Bookings</h1>
 
           <p className="mt-2 max-w-2xl text-zinc-500">
             Manage reservations, complete payments and track upcoming events.
@@ -199,8 +205,50 @@ export default function MyBookings() {
         </div>
 
         {featuredBooking && <FeaturedBookingHero booking={featuredBooking} />}
+        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+              My Bookings
+            </h1>
+            <p className="mt-2 max-w-2xl text-zinc-500">
+              Manage reservations, complete payments, and track upcoming events.
+            </p>
+          </div>
+          
+          {/* Master View Switcher */}
+          <div className="flex h-10 shrink-0 items-center rounded-xl bg-zinc-200/50 p-1 dark:bg-ink-800">
+            <button
+              onClick={() => setMasterTab('bookings')}
+              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${
+                masterTab === 'bookings'
+                  ? 'bg-white text-zinc-900 shadow-sm dark:bg-ink-900 dark:text-zinc-100'
+                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
+            >
+              Platform Bookings
+            </button>
+            <button
+              onClick={() => setMasterTab('reservations')}
+              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${
+                masterTab === 'reservations'
+                  ? 'bg-white text-zinc-900 shadow-sm dark:bg-ink-900 dark:text-zinc-100'
+                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
+            >
+              Venue Requests
+            </button>
+          </div>
+        </div>
 
-        <div className="mb-8 border-b border-zinc-200">
+        {masterTab === 'reservations' ? (
+          <UserReservations />
+        ) : (
+          <>
+            {featuredBooking && (
+              <FeaturedBookingHero booking={featuredBooking} />
+            )}
+
+        <div className="mb-8 border-b border-zinc-200 dark:border-ink-700">
           <div className="flex gap-8 overflow-x-auto">
             <TabButton
               active={activeTab === 'upcoming'}
@@ -247,6 +295,8 @@ export default function MyBookings() {
               <BookingCard key={booking.id} booking={booking} />
             ))}
           </div>
+        )}
+          </>
         )}
       </div>
     </div>

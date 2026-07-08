@@ -23,10 +23,10 @@ function getInitials(name: string) {
 
 function Highlight({ icon, title, sub }: { icon: ReactNode; title: string; sub: string }) {
   return (
-    <div className="flex items-start gap-4 py-5 border-b border-zinc-100 last:border-0">
+    <div className="flex items-start gap-4 py-5 border-b border-zinc-100 last:border-0 dark:border-ink-800">
       <div className="mt-0.5 shrink-0 text-zinc-500">{icon}</div>
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-zinc-900">{title}</p>
+        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</p>
         <p className="mt-0.5 text-sm text-zinc-500 leading-snug">{sub}</p>
       </div>
     </div>
@@ -109,7 +109,7 @@ export function VenueInfo({ venue }: Props) {
   return (
     <div>
       {/* ── Title ────────────────────────────────────────────── */}
-      <h1 className="text-[28px] font-semibold tracking-tight text-zinc-900 sm:text-[32px] leading-snug">
+      <h1 className="text-[28px] font-semibold tracking-tight text-zinc-900 sm:text-[32px] leading-snug dark:text-zinc-100">
         {venue.name}
       </h1>
 
@@ -147,7 +147,7 @@ export function VenueInfo({ venue }: Props) {
       </div>
 
       {/* ── Divider ──────────────────────────────────────────── */}
-      <div className="my-6 border-t border-zinc-100" />
+      <div className="my-6 border-t border-zinc-100 dark:border-ink-800" />
 
       {/* ── Hosted by ────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
@@ -156,7 +156,7 @@ export function VenueInfo({ venue }: Props) {
             {getInitials(venue.name)}
           </div>
           <div>
-            <p className="text-base font-semibold text-zinc-900">Hosted by {venue.name}</p>
+            <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Hosted by {venue.name}</p>
             <p className="text-xs text-zinc-500">
               Member since {new Date(venue.created_at).getFullYear()}
               {' · '}Responds within {venue.owner_action_window_hours}h
@@ -164,8 +164,8 @@ export function VenueInfo({ venue }: Props) {
           </div>
         </div>
         {/* Verified badge */}
-        <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-600">
-          <svg className="h-3.5 w-3.5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300">
+          <svg className="h-3.5 w-3.5 text-brand dark:text-brand-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
           Verified venue
@@ -173,7 +173,7 @@ export function VenueInfo({ venue }: Props) {
       </div>
 
       {/* ── Divider ──────────────────────────────────────────── */}
-      <div className="my-6 border-t border-zinc-100" />
+      <div className="my-6 border-t border-zinc-100 dark:border-ink-800" />
 
       {/* ── Highlights ───────────────────────────────────────── */}
       <div>
@@ -191,18 +191,18 @@ export function VenueInfo({ venue }: Props) {
       </div>
 
       {/* ── Divider ──────────────────────────────────────────── */}
-      <div className="my-6 border-t border-zinc-100" />
+      <div className="my-6 border-t border-zinc-100 dark:border-ink-800" />
 
       {/* ── About this place ─────────────────────────────────── */}
       <div>
-        <h2 className="mb-4 text-xl font-semibold text-zinc-900">About this place</h2>
+        <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-100">About this place</h2>
         {desc ? (
           <>
-            <p className="text-base leading-relaxed text-zinc-600 whitespace-pre-line">{preview}</p>
+            <p className="text-base leading-relaxed text-zinc-600 whitespace-pre-line dark:text-zinc-400">{preview}</p>
             {isLong && (
               <button
                 onClick={() => setDescExpanded(v => !v)}
-                className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-zinc-900 underline underline-offset-2 hover:text-brand"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-zinc-900 underline underline-offset-2 hover:text-brand dark:text-zinc-100"
               >
                 {descExpanded ? 'Show less' : 'Show more'}
                 <svg className={`h-3.5 w-3.5 transition-transform ${descExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -212,8 +212,8 @@ export function VenueInfo({ venue }: Props) {
             )}
           </>
         ) : (
-          <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-6 py-10 text-center">
-            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100">
+          <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-6 py-10 text-center dark:border-ink-700 dark:bg-ink-900">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-ink-800">
               <svg className="h-5 w-5 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>

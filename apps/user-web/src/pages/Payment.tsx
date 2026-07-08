@@ -16,9 +16,9 @@ type PaymentType = 'advance' | 'balance' | 'full'
 // ─── Booking summary sidebar ──────────────────────────────────────────────────
 function BookingSummaryCard({ booking }: { booking: BookingOut }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm dark:border-ink-800 dark:bg-ink-900">
       {/* Cover image */}
-      <div className="relative h-48 bg-zinc-100">
+      <div className="relative h-48 bg-zinc-100 dark:bg-ink-800">
         {booking.venue_cover_photo_url ? (
           <img
             src={booking.venue_cover_photo_url}
@@ -45,7 +45,7 @@ function BookingSummaryCard({ booking }: { booking: BookingOut }) {
       </div>
 
       <div className="p-5">
-        <h3 className="text-sm font-semibold leading-snug text-zinc-900">{booking.venue_name}</h3>
+        <h3 className="text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">{booking.venue_name}</h3>
 
         {/* Date / time / guests */}
         <div className="mt-4 space-y-2">
@@ -101,7 +101,7 @@ function BookingSummaryCard({ booking }: { booking: BookingOut }) {
           </div>
         </div>
 
-        <div className="my-5 border-t border-zinc-100" />
+        <div className="my-5 border-t border-zinc-100 dark:border-ink-800" />
 
         <QuoteBreakdown
           source="booking"
@@ -119,12 +119,12 @@ function PaymentSkeleton() {
     <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
       <div className="flex flex-col lg:flex-row gap-10 xl:gap-14">
         <div className="flex-1 min-w-0 space-y-5">
-          <div className="h-8 w-48 animate-pulse rounded-xl bg-zinc-100" />
-          <div className="h-4 w-72 animate-pulse rounded-lg bg-zinc-100" />
-          <div className="h-64 animate-pulse rounded-2xl bg-zinc-100" />
+          <div className="h-8 w-48 animate-pulse rounded-xl bg-zinc-100 dark:bg-ink-800" />
+          <div className="h-4 w-72 animate-pulse rounded-lg bg-zinc-100 dark:bg-ink-800" />
+          <div className="h-64 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
         </div>
         <div className="w-full lg:w-[380px] shrink-0">
-          <div className="h-96 animate-pulse rounded-2xl bg-zinc-100" />
+          <div className="h-96 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
         </div>
       </div>
     </div>
@@ -135,7 +135,7 @@ function PaymentSkeleton() {
 function IntentLoadingRow() {
   return (
     <div className="flex items-center justify-center gap-2.5 py-8 text-sm text-zinc-400">
-      <span className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-500" />
+      <span className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-200 dark:border-ink-700 border-t-zinc-500" />
       Loading secure payment…
     </div>
   )
@@ -146,7 +146,7 @@ function IntentErrorRow({ onRetry }: { onRetry: () => void }) {
     <div className="space-y-4">
       <div
         role="alert"
-        className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700"
+        className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400"
       >
         <svg
           className="mt-0.5 h-4 w-4 shrink-0"
@@ -165,7 +165,7 @@ function IntentErrorRow({ onRetry }: { onRetry: () => void }) {
       </div>
       <button
         onClick={onRetry}
-        className="w-full rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 transition-colors"
+        className="w-full rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 transition-colors dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
       >
         Try again
       </button>
@@ -177,7 +177,7 @@ function IntentErrorRow({ onRetry }: { onRetry: () => void }) {
 function BookingNotFound({ onBack }: { onBack: () => void }) {
   return (
     <div className="mx-auto max-w-xl px-4 py-24 text-center">
-      <div className="mx-auto mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-100">
+      <div className="mx-auto mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-ink-800">
         <svg
           className="h-7 w-7 text-zinc-300"
           fill="none"
@@ -192,7 +192,7 @@ function BookingNotFound({ onBack }: { onBack: () => void }) {
           />
         </svg>
       </div>
-      <h2 className="text-xl font-semibold text-zinc-900">Booking not found</h2>
+      <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Booking not found</h2>
       <p className="mt-2 text-sm text-zinc-400">The booking may have been removed.</p>
       <button
         onClick={onBack}
@@ -265,9 +265,9 @@ export default function Payment() {
   // ── Loading ──────────────────────────────────────────────────────────────
   if (bookingQuery.isLoading) {
     return (
-      <div className="min-h-screen bg-zinc-50/60">
+      <div className="min-h-screen bg-zinc-50/60 dark:bg-ink-950">
         {/* Minimal payment navbar */}
-        <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white/95 backdrop-blur-sm">
+        <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white/95 backdrop-blur-sm dark:border-ink-800 dark:bg-ink-950/95">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3.5">
             <Link to="/">
               <Logo />
@@ -294,8 +294,8 @@ export default function Payment() {
   // ── Error / not found ────────────────────────────────────────────────────
   if (bookingQuery.isError || !booking) {
     return (
-      <div className="min-h-screen bg-zinc-50/60">
-        <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white/95 backdrop-blur-sm">
+      <div className="min-h-screen bg-zinc-50/60 dark:bg-ink-950">
+        <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white/95 backdrop-blur-sm dark:border-ink-800 dark:bg-ink-950/95">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3.5">
             <Link to="/">
               <Logo />
@@ -353,7 +353,7 @@ const amountDuePaise =
           </div>
           <button
             onClick={() => navigate(-1)}
-            className="text-sm text-zinc-500 hover:text-zinc-800 transition-colors"
+            className="text-sm text-zinc-500 hover:text-zinc-800 transition-colors dark:hover:text-zinc-200"
           >
             ← Back
           </button>
@@ -367,16 +367,16 @@ const amountDuePaise =
           <div className="min-w-0 flex-1 space-y-6">
             {/* Heading */}
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">{heading}</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{heading}</h1>
               <p className="mt-1.5 text-sm text-zinc-500">{subheading}</p>
             </div>
 
             {/* Amount + form card */}
-            <div className="space-y-5 rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
+            <div className="space-y-5 rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900">
               {/* Amount row */}
-              <div className="flex items-center justify-between pb-5 border-b border-zinc-100">
+              <div className="flex items-center justify-between pb-5 border-b border-zinc-100 dark:border-ink-800">
                 <span className="text-sm font-medium text-zinc-500">Amount due</span>
-                <span className="text-2xl font-bold tracking-tight text-zinc-900">{payLabel}</span>
+                <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{payLabel}</span>
               </div>
 
               {intentQuery.isLoading && <IntentLoadingRow />}

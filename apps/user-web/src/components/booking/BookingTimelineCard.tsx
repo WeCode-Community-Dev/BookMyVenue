@@ -40,16 +40,16 @@ function TimelineNotice({
   const palette =
     tone === 'success'
       ? {
-          border: 'border-emerald-100',
-          bg: 'bg-emerald-50',
-          title: 'text-emerald-800',
-          body: 'text-emerald-700',
+          border: 'border-emerald-100 dark:border-emerald-900/50',
+          bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+          title: 'text-emerald-800 dark:text-emerald-300',
+          body: 'text-emerald-700 dark:text-emerald-400',
         }
       : {
-          border: 'border-red-100',
-          bg: 'bg-red-50',
-          title: 'text-red-800',
-          body: 'text-red-700',
+          border: 'border-red-100 dark:border-red-900/50',
+          bg: 'bg-red-50 dark:bg-red-950/30',
+          title: 'text-red-800 dark:text-red-300',
+          body: 'text-red-700 dark:text-red-400',
         }
 
   return (
@@ -121,7 +121,7 @@ export function BookingTimelineCard({ booking }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900">
       <div className="space-y-8">
         <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
           Booking Timeline
@@ -139,8 +139,8 @@ export function BookingTimelineCard({ booking }: Props) {
                   <div
                     className={[
                       'h-4 w-4 rounded-full transition-all',
-                      isCompleted ? 'bg-brand' : 'bg-zinc-200',
-                      isCurrent ? 'ring-4 ring-brand-light' : '',
+                      isCompleted ? 'bg-brand' : 'bg-zinc-200 dark:bg-ink-700',
+                      isCurrent ? 'ring-4 ring-brand-light dark:ring-brand/20' : '',
                     ].join(' ')}
                   />
 
@@ -148,7 +148,7 @@ export function BookingTimelineCard({ booking }: Props) {
                     <div
                       className={[
                         'min-h-[48px] w-px flex-1',
-                        isCompleted ? 'bg-brand-muted' : 'bg-zinc-200',
+                        isCompleted ? 'bg-brand-muted' : 'bg-zinc-200 dark:bg-ink-700',
                       ].join(' ')}
                     />
                   )}
@@ -158,7 +158,7 @@ export function BookingTimelineCard({ booking }: Props) {
                   <div
                     className={[
                       'font-medium',
-                      isCompleted ? 'text-zinc-900' : 'text-zinc-500',
+                      isCompleted ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500',
                     ].join(' ')}
                   >
                     {step.label}

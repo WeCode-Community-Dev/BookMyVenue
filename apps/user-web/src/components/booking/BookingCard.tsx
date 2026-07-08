@@ -32,7 +32,7 @@ export default function MyBookingCard({ booking }: Props) {
         : 'View Booking'
 
   return (
-    <Card className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition-all hover:shadow-md">
+    <Card className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition-all hover:shadow-md dark:border-ink-800 dark:bg-ink-900">
       <div className="flex flex-col md:flex-row">
         {/* Image */}
         <div className="relative shrink-0 md:w-[320px]">
@@ -43,7 +43,7 @@ export default function MyBookingCard({ booking }: Props) {
               className="h-64 w-full object-cover md:h-full"
             />
           ) : (
-            <div className="flex h-64 w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-50 md:h-full">
+            <div className="flex h-64 w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-50 md:h-full dark:from-ink-800 dark:to-ink-900">
               <svg
                 className="h-9 w-9 text-zinc-300"
                 fill="none"
@@ -73,7 +73,7 @@ export default function MyBookingCard({ booking }: Props) {
             <div>
               <BookingStatusBadge status={booking.status} />
 
-              <h3 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900">
+              <h3 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 {booking.venue_name}
               </h3>
 
@@ -81,26 +81,26 @@ export default function MyBookingCard({ booking }: Props) {
             </div>
 
             <div className="text-left lg:text-right">
-              <div className="text-2xl font-bold text-zinc-900">{booking.display.quoted_price}</div>
+              <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{booking.display.quoted_price}</div>
               <div className="text-xs text-zinc-400">Total booking value</div>
             </div>
           </div>
 
-          <div className="my-6 border-t border-zinc-100" />
+          <div className="my-6 border-t border-zinc-100 dark:border-ink-800" />
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <div className="text-xs font-medium uppercase tracking-wide text-zinc-400">
                 Event Date
               </div>
-              <div className="mt-1 text-sm font-medium text-zinc-900">
+              <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 {formatDate(booking.starts_at)}
               </div>
             </div>
 
             <div>
               <div className="text-xs font-medium uppercase tracking-wide text-zinc-400">Time</div>
-              <div className="mt-1 text-sm text-zinc-900">
+              <div className="mt-1 text-sm text-zinc-900 dark:text-zinc-100">
                 {formatTime(booking.starts_at)} - {formatTime(booking.ends_at)}
               </div>
             </div>
@@ -109,7 +109,7 @@ export default function MyBookingCard({ booking }: Props) {
               <div className="text-xs font-medium uppercase tracking-wide text-zinc-400">
                 Booking Type
               </div>
-              <div className="mt-1 text-sm text-zinc-900">
+              <div className="mt-1 text-sm text-zinc-900 dark:text-zinc-100">
                 {booking.booking_type === 'full_day' ? 'Full Day' : 'Time Slot'}
               </div>
             </div>
@@ -118,14 +118,14 @@ export default function MyBookingCard({ booking }: Props) {
               <div className="text-xs font-medium uppercase tracking-wide text-zinc-400">
                 Guests
               </div>
-              <div className="mt-1 text-sm text-zinc-900">{booking.guest_count} Guests</div>
+              <div className="mt-1 text-sm text-zinc-900 dark:text-zinc-100">{booking.guest_count} Guests</div>
             </div>
           </div>
 
           {(requiresInstantPayment || requiresAdvance || requiresBalance) && (
-            <div className="mt-6 rounded-xl border border-brand-light-strong bg-brand-light p-4">
-              <div className="text-sm font-semibold text-brand">Payment Required</div>
-              <div className="mt-1 text-sm text-brand">
+            <div className="mt-6 rounded-xl border border-brand-light-strong bg-brand-light p-4 dark:border-brand/30 dark:bg-brand/15">
+              <div className="text-sm font-semibold text-brand dark:text-brand-secondary">Payment Required</div>
+              <div className="mt-1 text-sm text-brand dark:text-brand-secondary">
                 {requiresInstantPayment
                   ? 'Payment is required to secure this instant booking.'
                   : requiresAdvance

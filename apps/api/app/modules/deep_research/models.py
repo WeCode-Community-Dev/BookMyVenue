@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, Text, func, BigInteger, Date, Enum, Float
-from sqlalchemy.dialects.postgresql import JSONB, UUID, JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, Text, func, BigInteger, Date, Enum
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 from datetime import date as date_type
 
@@ -18,11 +18,18 @@ class ExternalLeadStatus(str, enum.Enum):
 
 
 class LeadReservationStatus(str, enum.Enum):
-    REQUESTED = "requested"
-    ADMIN_CONTACTED = "admin_contacted"
-    OWNER_CONFIRMED = "owner_confirmed"
-    DECLINED = "declined"
-    EXPIRED = "expired"
+    NEW = "new"
+    CONTACTED = "contacted"
+    OWNER_INTERESTED = "owner_interested"
+    OWNER_INVITED = "owner_invited"
+    OWNER_ONBOARDED = "owner_onboarded"
+    VENUE_DRAFT_CREATED = "venue_draft_created"
+    VENUE_PENDING_APPROVAL = "venue_pending_approval"
+    VENUE_APPROVED = "venue_approved"
+    BOOKING_CREATED = "booking_created"
+    CLOSED = "closed"
+    CANCELLED = "cancelled"
+    REJECTED = "rejected"
 
 
 
@@ -83,6 +90,8 @@ class ExternalVenueLead(Base):
     name: Mapped[str] = mapped_column(Text, nullable=False)
     city: Mapped[str | None] = mapped_column(Text, nullable=True)
     category_guess: Mapped[str | None] = mapped_column(Text, nullable=True)
+    formatted_address: Mapped[str | None] = mapped_column(Text, nullable=True)
+    cover_photo_url: Mapped[str | None] = mapped_column(Text, nullable=True)  # Cloudinary URL, cached forever
     raw_contact_info: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)  # admin-only
     status: Mapped[ExternalLeadStatus] = mapped_column(
         Enum(ExternalLeadStatus, name="external_lead_status"), nullable=False, default=ExternalLeadStatus.DISCOVERED
@@ -98,11 +107,15 @@ class LeadReservation(Base):
     lead_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("external_venue_leads.id", ondelete="CASCADE"), nullable=False)
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("profiles.id"), nullable=False)
     status: Mapped[LeadReservationStatus] = mapped_column(
-        Enum(LeadReservationStatus, name="lead_reservation_status"), nullable=False, default=LeadReservationStatus.REQUESTED
+        Enum(LeadReservationStatus, name="lead_reservation_status", values_callable=lambda obj: [e.value for e in obj]), nullable=False, default=LeadReservationStatus.NEW
     )
     platform_fee_paise: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
     event_date: Mapped[date_type | None] = mapped_column(Date, nullable=True)
+    guest_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    phone: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    lead: Mapped["ExternalVenueLead"] = relationship("ExternalVenueLead")
 

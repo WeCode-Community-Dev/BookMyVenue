@@ -1,18 +1,21 @@
 import { formatPrice } from '../../utils'
 import type { SearchResult } from '../../types'
+import { useLikes } from '../../lib/useLikes'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../../lib/AuthContext'
 
 type Props = { venue: SearchResult; onClick: () => void }
 
 export function VenueCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)] animate-pulse">
-      <div className="aspect-[4/3] bg-zinc-100" />
+    <div className="overflow-hidden rounded-2xl bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)] animate-pulse dark:bg-ink-900">
+      <div className="aspect-[4/3] bg-zinc-100 dark:bg-ink-800" />
       <div className="p-4 space-y-2.5">
-        <div className="h-4 w-3/4 rounded bg-zinc-100" />
-        <div className="h-3 w-1/2 rounded bg-zinc-100" />
-        <div className="h-3 w-2/5 rounded bg-zinc-100" />
-        <div className="h-3 w-full rounded bg-zinc-100" />
-        <div className="h-3 w-4/5 rounded bg-zinc-100" />
+        <div className="h-4 w-3/4 rounded bg-zinc-100 dark:bg-ink-800" />
+        <div className="h-3 w-1/2 rounded bg-zinc-100 dark:bg-ink-800" />
+        <div className="h-3 w-2/5 rounded bg-zinc-100 dark:bg-ink-800" />
+        <div className="h-3 w-full rounded bg-zinc-100 dark:bg-ink-800" />
+        <div className="h-3 w-4/5 rounded bg-zinc-100 dark:bg-ink-800" />
       </div>
     </div>
   )
@@ -39,6 +42,21 @@ export function VenueCard({ venue, onClick }: Props) {
       ? `From ${formatPrice(venue.starting_price_paise)}${unitSuffix}`
       : null
 
+  const { isLiked, toggleLike } = useLikes()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const liked = isLiked(venue.id)
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!user) {
+      navigate('/login', { state: { from: location.pathname } })
+      return
+    }
+    toggleLike(venue.id)
+  }
+
   return (
     <article
       onClick={onClick}
@@ -53,7 +71,7 @@ export function VenueCard({ venue, onClick }: Props) {
       className="group cursor-pointer overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 rounded-2xl"
     >
       {/* ── Image ── */}
-      <div className="relative aspect-[8/5] overflow-hidden rounded-2xl bg-zinc-100">
+      <div className="relative aspect-[8/5] overflow-hidden rounded-2xl bg-zinc-100 dark:bg-ink-800">
         {venue.cover_photo_url ? (
           <img
             src={venue.cover_photo_url}
@@ -64,7 +82,7 @@ export function VenueCard({ venue, onClick }: Props) {
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-zinc-100 to-zinc-50">
+          <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-zinc-100 to-zinc-50 dark:from-zinc-800 dark:to-zinc-900">
             <svg
               className="h-9 w-9 text-zinc-300"
               fill="none"
@@ -93,20 +111,20 @@ export function VenueCard({ venue, onClick }: Props) {
         )}
 
         <button
-          onClick={(e) => e.stopPropagation()}
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-110"
-          aria-label="Save venue"
+          onClick={handleLike}
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-110 dark:bg-ink-900/90 dark:hover:bg-ink-900"
+          aria-label={liked ? 'Unsave venue' : 'Save venue'}
         >
           <svg
-            className="h-4 w-4 text-zinc-400 transition-colors hover:text-red-400"
-            fill="none"
+            className={`h-4 w-4 transition-colors ${liked ? 'text-red-500' : 'text-zinc-400 hover:text-red-400'}`}
+            fill={liked ? 'currentColor' : 'none'}
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={1.75}
+              strokeWidth={liked ? 1 : 1.75}
               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
             />
           </svg>
@@ -115,7 +133,7 @@ export function VenueCard({ venue, onClick }: Props) {
 
       {/* ── Info ── */}
       <div className="py-3 px-1">
-        <h5 className="truncate font-medium text-zinc-900 leading-snug transition-colors group-hover:text-brand">
+        <h5 className="truncate font-medium text-zinc-900 leading-snug dark:text-zinc-100">
           {venue.name}
         </h5>
 
@@ -124,7 +142,7 @@ export function VenueCard({ venue, onClick }: Props) {
           {venue.capacity != null && <> &middot; Up to {venue.capacity.toLocaleString()} guests</>}
         </p>
 
-        {priceLabel && <p className="mt-1.5 text-sm font-semibold text-zinc-900">{priceLabel}</p>}
+        {priceLabel && <p className="mt-1.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{priceLabel}</p>}
 
         <p className="mt-1.5 text-[.8rem] text-zinc-400 line-clamp-2">
           A {typeLabel.toLowerCase()} venue in {venue.city}. Available for events, conferences, and

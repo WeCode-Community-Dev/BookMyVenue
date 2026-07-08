@@ -12,7 +12,7 @@ function getInitials(name: string) {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="text-center">
-      <p className="text-2xl font-bold text-zinc-900">{value}</p>
+      <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{value}</p>
       <p className="mt-0.5 text-xs text-zinc-500">{label}</p>
     </div>
   )
@@ -26,11 +26,11 @@ export function VenueMeetHost({ venue }: Props) {
 
   return (
     <div>
-      <h2 className="mb-6 text-xl font-semibold text-zinc-900">Meet your host</h2>
+      <h2 className="mb-6 text-xl font-semibold text-zinc-900 dark:text-zinc-100">Meet your host</h2>
 
       <div className="flex flex-col gap-6 sm:flex-row">
         {/* Host card */}
-        <div className="flex-1 rounded-2xl border border-zinc-100 bg-zinc-50 p-6">
+        <div className="flex-1 rounded-2xl border border-zinc-100 bg-zinc-50 p-6 dark:border-ink-800 dark:bg-ink-900">
           <div className="flex items-start gap-4">
             {/* Avatar */}
             <div className="relative shrink-0">
@@ -46,7 +46,7 @@ export function VenueMeetHost({ venue }: Props) {
             </div>
 
             <div>
-              <p className="text-lg font-bold text-zinc-900">{venue.name}</p>
+              <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">{venue.name}</p>
               <p className="text-sm text-zinc-500">Host · Member since {memberYear}</p>
               <div className="mt-2 flex items-center gap-1.5">
                 <div className="flex items-center gap-0.5">
@@ -62,7 +62,7 @@ export function VenueMeetHost({ venue }: Props) {
           </div>
 
           {/* Stats */}
-          <div className="mt-6 grid grid-cols-3 gap-4 border-t border-zinc-200 pt-6">
+          <div className="mt-6 grid grid-cols-3 gap-4 border-t border-zinc-200 pt-6 dark:border-ink-700">
             <Stat value="0" label="Reviews" />
             <Stat value={String(new Date().getFullYear() - memberYear || 1)} label="Year hosting" />
             <Stat value="Verified" label="ID status" />
@@ -72,19 +72,19 @@ export function VenueMeetHost({ venue }: Props) {
         {/* Info panel */}
         <div className="flex-1 space-y-5">
           <div>
-            <p className="text-sm font-semibold text-zinc-900">Response rate</p>
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Response rate</p>
             <p className="text-sm text-zinc-500">Not yet rated · new host</p>
           </div>
           <div>
-            <p className="text-sm font-semibold text-zinc-900">Response time</p>
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Response time</p>
             <p className="text-sm text-zinc-500">{responseStr}</p>
           </div>
           <div>
-            <p className="text-sm font-semibold text-zinc-900">Languages</p>
+            <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Languages</p>
             <p className="text-sm text-zinc-500">Contact the host for details</p>
           </div>
 
-          <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4">
+          <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-4 dark:border-ink-800 dark:bg-ink-900">
             <div className="flex gap-2.5">
               <svg className="h-4 w-4 shrink-0 mt-0.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

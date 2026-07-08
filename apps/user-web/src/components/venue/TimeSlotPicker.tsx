@@ -233,13 +233,13 @@ export function TimeSlotPicker({
 
           let cls = 'px-3 py-2.5 rounded-xl text-sm font-medium text-center transition-all border '
           if (isStart || isEnd) {
-            cls += 'bg-zinc-900 text-white border-zinc-900 shadow-sm'
+            cls += 'bg-zinc-900 text-white border-zinc-900 shadow-sm dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100'
           } else if (isInRange) {
-            cls += 'bg-blue-50 text-blue-700 border-blue-200'
+            cls += 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900'
           } else if (isDisabled) {
-            cls += 'bg-zinc-50 text-zinc-300 border-zinc-100 cursor-not-allowed'
+            cls += 'bg-zinc-50 text-zinc-300 border-zinc-100 cursor-not-allowed dark:bg-ink-900 dark:text-zinc-700 dark:border-ink-800'
           } else {
-            cls += 'hover:bg-blue-50 hover:border-blue-200 border-zinc-200 active:bg-blue-100'
+            cls += 'hover:bg-blue-50 hover:border-blue-200 border-zinc-200 active:bg-blue-100 dark:border-ink-700 dark:text-zinc-300 dark:hover:bg-blue-950/40 dark:hover:border-blue-900'
           }
 
           return (
