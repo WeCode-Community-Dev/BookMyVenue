@@ -338,8 +338,25 @@ function ReservationCard({
   markInterestedPending, createBookingPending,
 }: CardProps) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
-      <div className="flex items-start justify-between gap-3">
+    <div
+      className={[
+        'relative rounded-xl border bg-white p-4 shadow-sm transition-shadow hover:shadow-md',
+        r.status === 'booking_created'
+          ? 'border-emerald-200 ring-1 ring-emerald-100'
+          : 'border-zinc-200',
+      ].join(' ')}
+    >
+      {r.status === 'booking_created' && (
+        <div className="pointer-events-none absolute -top-3 left-1/2 z-10 -translate-x-1/2">
+          <div className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1 text-[11px] font-semibold text-white shadow-md shadow-emerald-500/30 ring-2 ring-white">
+            <span aria-hidden="true">🎉</span>
+            Owner onboarded & booking Initiated
+            <span aria-hidden="true">🎊</span>
+          </div>
+        </div>
+      )}
+
+      <div className={['flex items-start justify-between gap-3', r.status === 'booking_created' ? 'mt-1.5' : ''].join(' ')}>
         <div className="min-w-0">
           <h3 className="truncate text-sm font-semibold text-zinc-900">{r.lead_name}</h3>
           <p className="mt-0.5 flex items-center gap-1 text-xs text-zinc-400">
@@ -394,7 +411,7 @@ function ReservationCard({
           onClick={onViewDetails}
           className="ml-auto text-xs text-zinc-400 hover:text-zinc-700 underline underline-offset-2"
         >
-          View details
+          Complete details
         </button>
       </div>
     </div>
