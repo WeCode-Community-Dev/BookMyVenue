@@ -1,5 +1,5 @@
-import { createConsumer, createKafkaClient, createProducer } from "@bookmyvenue/kafka";
-import sendMail from "./utils/mailer";
+import { createConsumer, createKafkaClient } from "@bookmyvenue/kafka";
+// import sendMail from "./utils/mailer";
 import { handleBookingCreated } from "./utils/handlers/booking.handler";
 import { handleVenueVerificationUpdated } from "./utils/handlers/venueVerification.handler";
 import { handleUserCreated } from "./utils/handlers/user.handler";
@@ -7,7 +7,7 @@ import type { KafkaTopicMap } from "@bookmyvenue/types";
 
 const kafkaClient = createKafkaClient("email-service");
 
-export const producer = createProducer(kafkaClient);
+//  const producer: Producer = createProducer(kafkaClient);
 export const consumer = createConsumer<KafkaTopicMap>(kafkaClient, "email-service");
 
 const start = async () => {
