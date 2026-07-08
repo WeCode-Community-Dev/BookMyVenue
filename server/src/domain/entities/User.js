@@ -14,6 +14,7 @@ export class UserEntity {
             url: ""
         },
         isBlocked = false,
+        isDeleted = false,
         wishlist = [],
         createdAt,
         updatedAt,
@@ -44,5 +45,6 @@ export class UserEntity {
         this.pendingEmail = pendingEmail;
         this.otpCode = otpCode;
         this.otpExpiresAt = otpExpiresAt;
+        this.isDeleted = isDeleted;
     }
 }

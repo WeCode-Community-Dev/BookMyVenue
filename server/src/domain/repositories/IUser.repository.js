@@ -38,9 +38,9 @@ export class IUserRepository {
         throw new Error('Method not implemented');
     }
 
-    async findByPhone(phone) {
-        throw new Error("Method not implemented");
-    }
+    // async findByPhone(phone) {
+    //     throw new Error("Method not implemented");
+    // }
 
     async findByRefreshToken(refreshToken) {
         throw new Error('Method not implemented');

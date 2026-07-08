@@ -36,11 +36,12 @@ const userSchema = new mongoose.Schema({
     },
     otpCode: {
         type: String,
+        default: null,
         select: false
     },
     otpExpiresAt: {
         type: Date,
-        select: false
+        default: null
     },
     isBlocked: {
         type: Boolean,
@@ -59,12 +60,37 @@ const userSchema = new mongoose.Schema({
     },
     resetTokenExpiry: {
         type: Date,
-    }
-
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    profileImage: {
+        publicId: {
+            type: String,
+            default: ""
+        },
+        url: {
+            type: String,
+            default: ""
+        }
+    },
+    pedingEmail: {
+        type: String,
+        default: null
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    wishlist: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Venue",
+    }]
 },
-    {
+{
         timestamps: true
-    })
+})
 
 
 export const UserModel = mongoose.model("User", userSchema)

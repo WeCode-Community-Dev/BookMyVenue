@@ -10,32 +10,22 @@ const REFRESH_COOKIE_OPTIONS = {
 };
 
 export class VendorAuthController {
-    constructor(registerVendorUseCase, loginVendorUseCase) {
+    constructor(
+        registerVendorUseCase, 
+        loginVendorUseCase
+    ) {
         this._registerVendorUseCase = registerVendorUseCase;
         this._loginVendorUseCase = loginVendorUseCase;
     }
 
     register = asyncHandler(async (req, res) => {
-        const vendor = await this._registerVendorUseCase.execute(req.body);
-        return sendSuccess(res, statusCode.CREATED, "Vendor registered successfully", vendor);
+        const vendor = await this._registerVendorUseCase.execute({...req.body});
+        return sendSuccess(res, statusCode.CREATED, '', vendor);
     });
 
     login = asyncHandler(async (req, res) => {
-        const { email, password } = req.body;
-        const { accessToken, refreshToken, vendor } = await this._loginVendorUseCase.execute(email, password);
-
+        const { accessToken, refreshToken, vendor } = await this._loginVendorUseCase.execute({...req.body});
         res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
-
-        return sendSuccess(res, statusCode.OK, "Vendor login successful", {
-            accessToken,
-            vendor: {
-                id: vendor.id,
-                fullName: vendor.fullName,
-                email: vendor.email,
-                phone: vendor.phone,
-                role: vendor.role,
-                businessName: vendor.businessName
-            }
-        });
+        return sendSuccess(res, statusCode.OK, '', { accessToken, vendor });
     });
 }

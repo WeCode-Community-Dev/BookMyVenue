@@ -75,7 +75,9 @@ import { UserUpdateAccountStatusUsecase } from '../../application/user/usecases/
 import { UserAccountController } from './user/user.accountController.js'
 import { PaymentRepository } from "../../infrastructure/repositories/payment.repository.js";
 import { UserGetTopVenuesUsecase } from '../../application/user/usecases/venue/user.getTopVenue.usacase.js'
-
+import { VendorAuthController } from './vendor/vendor.authController.js'
+import { RegisterVendorUsecase } from '../../application/vendor/usecases/auth/vendor.registerVendor.useCase.js'
+import { LoginVendorUsecase } from '../../application/vendor/usecases/auth/vendor.loginVendor.useCase.js'
 
 //repository
 const iVenueRepository = new VenueRepository();
@@ -120,7 +122,7 @@ const iAdminGetAllPaymentUsecase = new AdminGetAllPaymentsUsecase(iPaymentReposi
 const iAdminGetPaymentByIdUsecase = new AdminGetPaymentByIdUsecase(iPaymentRepository)
 const iAdminPaymentStatisticsUsecase = new AdminGetPaymentStatisticsUsecase(iPaymentRepository)
 
-//auth usecases
+//user auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(
     iUserRepository,
     iHashService,
@@ -166,6 +168,18 @@ const iUserResetPasswordUseCase = new UserResetPasswordUseCase(
 )
 
 // --- vendor usecases ---
+const iRegsiterVendor = new RegisterVendorUsecase(
+    iVendorRepository,
+    iHashService,
+    iOtpService,
+    iOtpStoreService,
+    iMailService
+)
+const iLoginVendor = new LoginVendorUsecase (
+    iVendorRepository,
+    iHashService,
+    iTokenService
+)
 const iCreateVenueUsecase = new VendorCreateVenueUsecase(iVenueRepository)
 const iUpdateVenueUsecase = new VendorEditVenueUsecase(iVenueRepository, iCloudinaryService)
 const iVendorVenueGetById = new VendorGetVenueByIdUsecase(iVenueRepository)
@@ -315,3 +329,8 @@ export const iUserAuthController = new UserAuthController(
 export const iVendorDashboardController = new VendorDashboardController(
   getDashboardStatsUsecase
 );
+
+export const iVendorAuthController = new VendorAuthController (
+    iRegsiterVendor,
+    iLoginVendor
+)

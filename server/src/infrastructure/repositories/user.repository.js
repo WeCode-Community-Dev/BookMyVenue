@@ -120,16 +120,16 @@ export class UserRepository extends IUserRepository {
         return UserMapper.mapToEntity(document);
     }
 
-    async findByPhone(phone) {
-        const document = await UserModel.findOne({
-            phone,
-            isDeleted: { $ne: true }
-        });
+    // async findByPhone(phone) {
+    //     const document = await UserModel.findOne({
+    //         phone,
+    //         isDeleted: { $ne: true }
+    //     });
 
-        if (!document) return null;
+    //     if (!document) return null;
 
-        return UserMapper.mapToEntity(document);
-    }
+    //     return UserMapper.mapToEntity(document);
+    // }
 
     async update(id, user) {
         const data = UserMapper.mapToPersistence(user);
@@ -144,7 +144,7 @@ export class UserRepository extends IUserRepository {
 
         return UserMapper.mapToEntity(document);
     }
-
+    //--
     async findByRefreshToken(refreshToken) {
         const document = await UserModel.findOne({
             refreshToken,
@@ -159,7 +159,7 @@ export class UserRepository extends IUserRepository {
     async updateRefreshToken(userId, refreshToken) {
         const document = await UserModel.findByIdAndUpdate(
             userId,
-            { refreshToken },
+            { $push: { refreshToken } },
             { new: true }
         );
 
@@ -202,4 +202,154 @@ export class UserRepository extends IUserRepository {
 
         return UserMapper.mapToEntity(document);
     }
+
+
+    async saveEmailChangeOtp(userId, pendingEmail, otpCode, otpExpiresAt) {
+        const document = await UserModel.findByIdAndUpdate(
+            userId,
+            {
+                pendingEmail,
+                otpCode,
+                otpExpiresAt
+            },
+            { new: true }
+        );
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
+
+    async updateEmailAfterVerification(userId) {
+
+        const user = await UserModel.findById(userId);
+        if (!user) return null;
+
+        const document = await UserModel.findByIdAndUpdate(
+            userId,
+            {
+                email: user.pendingEmail,
+                pendingEmail: null,
+                otpCode: null,
+                otpExpiresAt: null
+            },
+            { new: true }
+        );
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
+
+    async findByIdWithOtp(userId) {
+
+        const document = await UserModel.findById(userId)
+            .select("+otpCode");
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
+
+    async addToWishlist(userId, venueId) {
+
+        const user = await UserModel.findById(userId);
+
+        if (!user) return null;
+
+        const alreadyExists = user.wishlist.some(
+            id => id.toString() === venueId
+        );
+
+        if (alreadyExists) {
+            return { alreadyExists: true };
+        }
+
+        user.wishlist.push(venueId);
+
+        await user.save();
+
+        return UserMapper.mapToEntity(user);
+    }
+
+    async getWishlist(userId) {
+
+        const document = await UserModel.findById(userId)
+            .populate("wishlist");
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
+
+    async removeWishlist(userId, venueId) {
+
+        const user = await UserModel.findById(userId);
+
+        if (!user) return null;
+
+        const exists = user.wishlist.some(
+            id => id.toString() === venueId
+        );
+
+        if (!exists) {
+            return { notFound: true };
+        }
+
+        user.wishlist.pull(venueId);
+
+        await user.save();
+
+        return UserMapper.mapToEntity(user);
+    }
+
+    async updateAccountStatus(userId, isActive) {
+
+        const document = await UserModel.findByIdAndUpdate(
+            userId,
+            { isActive },
+            { new: true }
+        );
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
+    
+    async updateProfileImage(userId, profileImage) {
+
+        const document = await UserModel.findByIdAndUpdate(
+            userId,
+            {
+                profileImage: {
+                    publicId: profileImage.publicId,
+                    url: profileImage.url
+                }
+            },
+            { new: true }
+        );
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
+
+    async removeProfileImage(userId) {
+
+        const document = await UserModel.findByIdAndUpdate(
+            userId,
+            {
+                profileImage: {
+                    publicId: "",
+                    url: ""
+                }
+            },
+            { new: true }
+        );
+
+        if (!document) return null;
+
+        return UserMapper.mapToEntity(document);
+    }
+
 }

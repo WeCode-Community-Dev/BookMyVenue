@@ -27,7 +27,7 @@ export class MailService {
     //     throw new Error("Method not implemented");
     // }
 
-    async verifiyRegisterOtp(email, name, otp) {
+    async SendVerifiyRegisterOtp(email, name, otp) {
         throw new Error("Method not implemented")
     }
 }

@@ -7,7 +7,7 @@ const vendorSchema = new mongoose.Schema(
         fullName: { type: String, required: true },
         email: { type: String, required: true, unique: true },
         phone: { type: String, required: true, unique: true },
-        businessName: { type: String, required: false },
+        // businessName: { type: String, required: false },
         password: { type: String, required: true, select: false },
         profileImage: {
             publicId: { type: String, default: "" },
@@ -28,6 +28,7 @@ const vendorSchema = new mongoose.Schema(
         },
         isBlocked: { type: Boolean, default: false },
         isDeleted: { type: Boolean, default: false },
+        isVerified: { type: Boolean, default: false},
         refreshToken: {
             type: [String],
             default: [],

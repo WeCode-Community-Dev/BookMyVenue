@@ -100,10 +100,8 @@ class VendorRepositoryImpl extends IVendorRepository {
         return doc ? VendorMapper.mapToEntity(doc) : null;
     }
 
-    async findByEmail(email, includePassword = false) {
-        const query = VendorModel.findOne({ email, isDeleted: false });
-        if (includePassword) query.select("+password");
-        const doc = await query;
+    async findByEmail(email) {
+        const doc = VendorModel.findOne({ email, isDeleted: false });
         return doc ? VendorMapper.mapToEntity(doc) : null;
     }
 
@@ -121,7 +119,7 @@ class VendorRepositoryImpl extends IVendorRepository {
     async updateRefreshToken(vendorId, refreshToken) {
         const doc = await VendorModel.findByIdAndUpdate(
             vendorId,
-            { refreshToken },
+            { $push: {refreshToken} },
             { new: true }
         );
         if (!doc) return null;

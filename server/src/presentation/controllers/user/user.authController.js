@@ -38,9 +38,6 @@ export class UserAuthController {
 
     login = asyncHandler(async (req, res) => {
         const { accessToken, refreshToken, user } = await this._loginUserUseCase.execute({...req.body});
-        console.log("access:", accessToken)
-        console.log("refresh:", refreshToken)
-        console.log("user:", user)
         res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
         return sendSuccess(res, statusCode.OK, authMessages.success.LOGIN, { accessToken, user });
     });

@@ -12,7 +12,7 @@ export class VendorEntity {
         address = { addressLine1: "", city: "", state: "", pincode: "" },
         bio = "",
         role,
-        businessName,
+        // businessName,
         isVerified = false,
         isBlocked = false,
         isDeleted = false,
@@ -30,7 +30,7 @@ export class VendorEntity {
         this.address = address;
         this.bio = bio;
         this.role = role;
-        this.businessName = businessName;
+        // this.businessName = businessName;
         this.isVerified = isVerified;
         this.isBlocked = isBlocked;
         this.isDeleted = isDeleted;

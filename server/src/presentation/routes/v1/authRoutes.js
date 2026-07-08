@@ -1,5 +1,5 @@
 import Express from 'express'
-import { iUserAuthController } from '../../controllers/di.js'
+import { iUserAuthController, iVendorAuthController } from '../../controllers/di.js'
 import { validate } from '../../middlewares/validator.js'
 import { registerSchema, verifyOtpSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, resendOtpSchema} from '../../validators/auth.validator.js'
 import { ROUTES } from '../../../shared/constants/routes.js'
@@ -16,7 +16,9 @@ router.post(ROUTES.USER.AUTH.LOGOUT, iUserAuthController.logout)
 router.post(ROUTES.USER.AUTH.FORGOT_PASSWORD, validate(forgotPasswordSchema, 'body'), iUserAuthController.forgotPassword)
 router.post(ROUTES.USER.AUTH.RESET_PASSWORD, validate(resetPasswordSchema, 'body'), iUserAuthController.resetPassword)
 
-
+//vendor
+router.post(ROUTES.OWNER.AUTH.REGISTER, validate(registerSchema, 'body'), iVendorAuthController.register)
+router.post(ROUTES.OWNER.AUTH.LOGIN, validate(loginSchema, 'body'), iVendorAuthController.login)
 
 
 export default router

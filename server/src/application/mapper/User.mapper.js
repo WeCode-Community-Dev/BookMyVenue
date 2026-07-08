@@ -23,6 +23,7 @@ export class UserMapper {
       isVerified: doc.isVerified,
       profileImage: doc.profileImage,
       pendingEmail: doc.pendingEmail,
+      isDeleted: doc.isDeleted,
       wishlist: doc.wishlist?.map(item =>
         item?._id
           ? VenueMapper.mapToEntity(item)
@@ -51,6 +52,7 @@ export class UserMapper {
             isVerified: entity.isVerified,
             profileImage: entity.profileImage,
             pendingEmail: entity.pendingEmail,
+            isDeleted: entity.isDeleted,
             wishlist: entity.wishlist?.map(item =>
                     item.id ? item.id : item
                 ) || [],
