@@ -11,12 +11,17 @@ export const API_ROUTES = {
           VERIFY_EMAIL_CHANGE_OTP: "/user/profile/email/verify-otp",
           RESEND_EMAIL_CHANGE_OTP: "/user/profile/email/resend-otp",
         },
-        ACCOUNT: {
-          ACCOUNT_SETTINGS: "user/account/status",
+        CHANGE_PASSWORD: {
+          CHANGE_PASSWORD: "user/changepassword",
         },
         WISHLIST: {
-          WISHLIST: "/user/wishlist",
+          GET: "/user/wishlist",
+          ADD: (venueId) => `/user/wishlist/${venueId}`,
+          REMOVE: (venueId) => `/user/wishlist/${venueId}`,
         },
+        BOOKINGS: {
+          BOOKINGS: "user/bookings"
+        }
     },
    ADMIN: {
     USER: {

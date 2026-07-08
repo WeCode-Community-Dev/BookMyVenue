@@ -11,16 +11,16 @@ export class VendorDeleteVenueUsecase {
         // this._ownerRepository = ownerRepository
     }
 
-    async execute(ownerId, venueId) {
-        // const owner = await this._ownerRepository.findById(ownerId)
+    async execute(vendorId, venueId) {
+        // const owner = await this._ownerRepository.findById(vendorId)
         // if(!owner){
-        //     throw new AppError(authMessages.error.OWNER_NOT_FOUND, statusCode.NOT_FOUND)
+        //     throw new AppError(authMessages.error.VENDOR_NOT_FOUND, statusCode.NOT_FOUND)
         // }
         const venue = await this._venueRepository.findById(venueId)
         if(!venue){
             throw new NotFoundError(VenueMessages.error.VENUE_NOT_FOUND)
         }
-        if(venue.ownerId !== ownerId){
+        if(venue.vendorId !== vendorId){
             throw new ForbiddenError(VenueMessages.error.FORBIDDEN)
         }
 

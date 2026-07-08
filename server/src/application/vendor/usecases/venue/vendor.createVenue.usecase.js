@@ -46,7 +46,7 @@ export class VendorCreateVenueUsecase {
         // if(owner.role !== 'OWNER'){
         //     throw new AppError(VenueMessages.error.CANNOT_ADD_VENUE, statusCode.BAD_REQUEST)
         // }
-        const existing = await this._venueRepository.findByOwnerAndName(vendorId, name)
+        const existing = await this._venueRepository.findByVendorAndName(vendorId, name)
         if(existing){
             throw new ConflictError(VenueMessages.error.ALREADY_EXISTING)
         }
