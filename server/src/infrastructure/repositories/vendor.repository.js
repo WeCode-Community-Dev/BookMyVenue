@@ -62,7 +62,7 @@ class VendorRepositoryImpl extends IVendorRepository {
 
         return VendorMapper.mapToEntity(document);
     }
-    
+
     async approveVendor(vendorId) {
         const updatedVendor = await VendorModel.findByIdAndUpdate(
             vendorId,
@@ -140,6 +140,14 @@ class VendorRepositoryImpl extends IVendorRepository {
         );
         if (!doc) return null;
         return VendorMapper.mapToEntity(doc);
+    }
+
+    async clearRefreshToken(token) {
+        await VendorModel.findByOneAndUpdate(
+            {refreshToken: token},
+            { $pull: {refreshToken: token } },
+            { new: true }
+        );
     }
 }
 

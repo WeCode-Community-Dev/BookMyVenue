@@ -60,4 +60,8 @@ export class IVendorRepository {
     async updateRefreshToken(vendorId, refreshToken) {
         throw new Error('Method not implemented');
     }
+
+    async clearRefreshToken(token) {
+        throw new Error("Method not implemented")
+    }
 }

@@ -83,6 +83,7 @@ import VendorrResendOtpUseCase from '../../application/vendor/usecases/auth/vend
 import { VendorRefreshTokenUseCase } from '../../application/vendor/usecases/auth/vendor.refreshToken.usecase.js'
 import VendorForgotPasswordUseCase from '../../application/vendor/usecases/auth/vendor.forgotPassword.usecase.js'
 import { VendorResetPasswordUseCase } from '../../application/vendor/usecases/auth/vendor.resetPassword.usecase.js'
+import { VendorLogoutUseCase } from '../../application/vendor/usecases/auth/vendor.logout.usecase.js'
 
 //repository
 const iVenueRepository = new VenueRepository();
@@ -210,6 +211,11 @@ const iVendorForgotPassword = new VendorForgotPasswordUseCase (
 const iVendorResetPassword = new VendorResetPasswordUseCase (
     iVendorRepository,
     iHashService
+)
+const iVendorLogout = new VendorLogoutUseCase (
+    iVendorRepository,
+    iHashService,
+    iTokenService
 )
 const iCreateVenueUsecase = new VendorCreateVenueUsecase(iVenueRepository)
 const iUpdateVenueUsecase = new VendorEditVenueUsecase(iVenueRepository, iCloudinaryService)
@@ -369,4 +375,5 @@ export const iVendorAuthController = new VendorAuthController (
     iVendorRefreshToken,
     iVendorForgotPassword,
     iVendorResetPassword,
+    iVendorLogout,
 )
