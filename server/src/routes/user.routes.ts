@@ -4,6 +4,7 @@ import { authMiddleware } from '@/middlewares/auth.middleware';
 import { authorizeRoles } from '@/middlewares/role.middleware';
 import { getProfile, updateProfile, getUserBookings } from '@/controllers/user.controller';
 import { getUserWallet } from '@/controllers/wallet.controller';
+import { getPaymentHistory } from '@/controllers/paymentHistory.controller';
 import { upload } from '@/middlewares/upload.middleware';
 
 const router = Router();
@@ -24,6 +25,7 @@ router.put(
 );
 router.get('/bookings', getUserBookings);
 router.get('/wallet', getUserWallet);
+router.get('/payment-history', getPaymentHistory);
 
 // Public routes
 

@@ -282,8 +282,19 @@ export const updateRefundBookingStatus = async (
     { refundStatus: RefundStatus.PROCESSING },
     { session, new: true }
   );
-  return doc;
-};
+  return doc
+}
+
+export const findFailedRefundBookings = async () => {
+  const docs = await Booking.find({
+    bookingStatus: BookingStatus.CANCELLED,
+    cancellationType: CancellationType.USER,
+    refundStatus: RefundStatus.FAILED,
+    refundAmount: { $gt: 0 },
+  }).select('_id refundStatus refundAmount user');
+
+  return docs;
+}
 
 export const findBookingsByVenueIds = async (
   venueIds: mongoose.Types.ObjectId[] | string[],
