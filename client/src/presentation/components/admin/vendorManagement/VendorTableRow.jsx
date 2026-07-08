@@ -22,7 +22,7 @@ const VendorTableRow = ({
     onBlock,
     onUnblock,
 }) => {
-console.log("vendor44",vendor)
+    console.log("vendor44", vendor)
     const isBlocked = vendor.isBlocked;
 
     const approvalStatus = vendor.approvalStatus;
@@ -107,10 +107,18 @@ console.log("vendor44",vendor)
 
             <TableCell>
 
-                <Badge variant={badgeVariant}>
-
+                <Badge
+                    className={
+                        isBlocked
+                            ? "bg-red-600 text-white"
+                            : approvalStatus === "APPROVED"
+                                ? "bg-green-600 text-white"
+                                : approvalStatus === "REJECTED"
+                                    ? "bg-red-100 text-red-700 border border-red-300"
+                                    : "bg-yellow-100 text-yellow-700 border border-yellow-300"
+                    }
+                >
                     {displayStatus}
-
                 </Badge>
 
             </TableCell>
@@ -143,7 +151,7 @@ console.log("vendor44",vendor)
 
                             <>
                                 <Button
-                                    variant="default"
+                                    className="bg-green-600 hover:bg-green-700 text-white"
                                     size="sm"
                                     onClick={() => onApprove(vendor)}
                                 >
@@ -155,7 +163,7 @@ console.log("vendor44",vendor)
                                 </Button>
 
                                 <Button
-                                    variant="destructive"
+                                    className="bg-red-600 hover:bg-red-700 text-white"
                                     size="sm"
                                     onClick={() => onReject(vendor)}
                                 >
@@ -198,7 +206,7 @@ console.log("vendor44",vendor)
                         isBlocked && (
 
                             <Button
-                                variant="default"
+                                 className="bg-green-600 hover:bg-green-700 text-white"
                                 size="sm"
                                 onClick={() => onUnblock(vendor)}
                             >

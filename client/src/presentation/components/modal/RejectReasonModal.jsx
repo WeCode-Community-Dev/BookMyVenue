@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { rejectReasonSchema } from "@/lib/validation/adminVendorValidation";
 
 const RejectReasonModal = ({
     isOpen,
@@ -8,22 +9,38 @@ const RejectReasonModal = ({
 }) => {
 
     const [reason, setReason] = useState("");
+    const [error, setError] = useState("");
 
     useEffect(() => {
         if (!isOpen) {
             setReason("");
+            setError("");
         }
     }, [isOpen]);
 
     if (!isOpen) return null;
 
+    /* const handleReject = () => {
+ 
+         if (!reason.trim()) {
+             alert("Please enter rejection reason.");
+             return;
+         }
+ 
+         onSubmit(reason);
+     };*/
     const handleReject = () => {
 
-        if (!reason.trim()) {
-            alert("Please enter rejection reason.");
+        const result = rejectReasonSchema.safeParse({
+            reason,
+        });
+
+        if (!result.success) {
+            setError(result.error.issues[0].message);
             return;
         }
 
+        setError("");
         onSubmit(reason);
     };
 
@@ -39,12 +56,20 @@ const RejectReasonModal = ({
                 <textarea
                     rows={5}
                     value={reason}
-                    onChange={(e) =>
-                        setReason(e.target.value)
-                    }
+                    onChange={(e) => {
+                        setReason(e.target.value);
+                        if (error) setError("");
+                    }}
                     placeholder="Enter rejection reason..."
-                    className="w-full border rounded-lg p-3 resize-none focus:outline-none"
+                    className={`w-full rounded-lg p-3 resize-none focus:outline-none border ${error ? "border-red-500" : "border-gray-300"
+                        }`}
                 />
+                {error && (
+                    <p className="text-sm text-red-500 mt-2">
+                        {error}
+                    </p>
+                )}
+
 
                 <div className="flex justify-end gap-3 mt-5">
 
