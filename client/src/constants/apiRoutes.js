@@ -3,6 +3,24 @@ export const API_ROUTES = {
         VENUE:{
           VENUES: '/user/venues',
           TOP_VENUES: '/user/top-venues'
+        },
+        PROFILE: {
+          PROFILE: "/user/profile",
+          PROFILE_IMAGE: "/user/profile/image",
+          REQUEST_EMAIL_CHANGE_OTP: "/user/profile/email/request-otp",
+          VERIFY_EMAIL_CHANGE_OTP: "/user/profile/email/verify-otp",
+          RESEND_EMAIL_CHANGE_OTP: "/user/profile/email/resend-otp",
+        },
+        CHANGE_PASSWORD: {
+          CHANGE_PASSWORD: "user/changepassword",
+        },
+        WISHLIST: {
+          GET: "/user/wishlist",
+          ADD: (venueId) => `/user/wishlist/${venueId}`,
+          REMOVE: (venueId) => `/user/wishlist/${venueId}`,
+        },
+        BOOKINGS: {
+          BOOKINGS: "user/bookings"
         }
     },
    ADMIN: {

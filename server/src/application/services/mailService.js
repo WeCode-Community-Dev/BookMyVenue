@@ -8,18 +8,26 @@ export class MailService {
         throw new Error("Method not implemented");
     }
 
-     async sendVenueApprovalMail(venue){
+    async sendVenueApprovalMail(venue) {
         throw new Error("Method not implemented");
     }
 
-    async sendVenueRejectionMail(venue, reason){
-        throw new Error("Method not implemented");
-    }
-    async sendEmailChangeOtp(email, otp) {
+    async sendVenueRejectionMail(venue, reason) {
         throw new Error("Method not implemented");
     }
 
-    async resendEmailChangeOtp(email, otp) {
+    async sendForgotPasswordMail(user, resetLink) {
         throw new Error("Method not implemented");
+    }
+    async sendEmailChangeOtp(email, name, otp) {
+        throw new Error("Method not implemented");
+    }
+
+    // async resendEmailChangeOtp(email, otp) {
+    //     throw new Error("Method not implemented");
+    // }
+
+    async SendVerifiyRegisterOtp(email, name, otp) {
+        throw new Error("Method not implemented")
     }
 }

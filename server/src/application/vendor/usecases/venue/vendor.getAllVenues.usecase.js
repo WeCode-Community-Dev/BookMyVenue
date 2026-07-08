@@ -8,12 +8,12 @@ export class VendorGetAllVenuesUsecase {
         // this._ownerRepository = ownerRepository
     }
 
-    async execute(ownerId, page, limit, category, status, search) {
-        // const owner = await this._ownerRepository.findById(ownerId)
+    async execute(vendorId, page, limit, category, status, search) {
+        // const owner = await this._ownerRepository.findById(vendorId)
         // if(!owner){
-        //     throw new AppError(authMessages.error.OWNER_NOT_FOUND, statusCode.NOT_FOUND)
+        //     throw new AppError(authMessages.error.VENDOR_NOT_FOUND, statusCode.NOT_FOUND)
         // }
-        const { data, totalPages, totalCount } = await this._venueRepository.findAllFiltered({ownerId, search, category, status, page, limit})
+        const { data, totalPages, totalCount } = await this._venueRepository.findAllFiltered({vendorId, search, category, status, page, limit})
 
         return {
             data,

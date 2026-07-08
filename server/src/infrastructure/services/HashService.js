@@ -1,14 +1,19 @@
 import bcrypt from "bcryptjs";
-import IHashService from "../../domain/interfaces/IHashService.js";
+import crypto from 'crypto'
+import { IHashService } from '../../application/services/hashService.js'
 
-class HashService extends IHashService {
-    async hash(data, saltRounds = 10) {
-        return await bcrypt.hash(data, saltRounds);
+export class HashService extends IHashService {
+    async hash(password) {
+        const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS)
+        return await bcrypt.hash(password, saltRounds);
     }
 
-    async compare(data, hashed) {
-        return await bcrypt.compare(data, hashed);
+    async compare(password, hashedPassword) {
+        return await bcrypt.compare(password, hashedPassword);
+    }
+
+    hashToken(token) {
+        return crypto.createHash('sha256').update(token).digest("hex")
     }
 }
 
-export default new HashService();
