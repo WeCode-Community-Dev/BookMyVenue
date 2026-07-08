@@ -1,4 +1,4 @@
-class AdminEntity {
+export class AdminEntity {
     constructor({
         id,
         fullName,
@@ -8,7 +8,6 @@ class AdminEntity {
         isDeleted = false,
         createdAt,
         updatedAt,
-        isActive = true,
     }) {
         this.id = id;
         this.fullName = fullName;
@@ -18,8 +17,6 @@ class AdminEntity {
         this.isDeleted = isDeleted;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.isActive = isActive;
     }
 }
 
-export default AdminEntity;

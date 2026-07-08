@@ -1,6 +1,7 @@
 import { AdminMapper } from "../../application/mapper/Admin.mapper.js";
-import { IAdminRepository } from "../../domain/repositories/IAdminRepository.js";
-import { AdminModel } from "../database/Admin.model.js";
+import { IAdminRepository } from "../../domain/repositories/IAdmin.repository.js";
+import AdminModel from "../database/models/Admin.model.js";
+
 
 export class AdminRepository extends IAdminRepository {
 
@@ -73,5 +74,23 @@ export class AdminRepository extends IAdminRepository {
 
     async delete(id) {
         return await AdminModel.findByIdAndDelete(id);
+    }
+
+    async updateRefreshToken(adminId, refreshToken) {
+        const doc = await AdminModel.findByIdAndUpdate(
+            adminId,
+            { $push: {refreshToken} },
+            { new: true }
+        );
+        if (!doc) return null;
+        return AdminMapper.mapToEntity(doc);
+    }
+
+    async clearRefreshToken(token) {
+        await AdminModel.findByOneAndUpdate(
+            {refreshToken: token},
+            { $pull: {refreshToken: token } },
+            { new: true }
+        );
     }
 }

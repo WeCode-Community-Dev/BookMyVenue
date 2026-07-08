@@ -26,4 +26,12 @@ export class IAdminRepository {
     async findByEmail(email) {
         throw new Error('Method not implemented');
     }
+
+    async updateRefreshToken(adminId, refreshToken){
+        throw new Error("Method not implemented")
+    }
+
+    async clearRefreshToken(token){
+        throw new Error("Method not implemented")
+    }
 }

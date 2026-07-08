@@ -85,8 +85,9 @@ import VendorForgotPasswordUseCase from '../../application/vendor/usecases/auth/
 import { VendorResetPasswordUseCase } from '../../application/vendor/usecases/auth/vendor.resetPassword.usecase.js'
 import { VendorLogoutUseCase } from '../../application/vendor/usecases/auth/vendor.logout.usecase.js'
 import { LoginAdminUsecase } from '../../application/admin/usecases/auth/admin.login.usecase.js'
-import { AdminRepository } from '../../infrastructure/repositories/admin.repository.js.js'
+import { AdminRepository } from '../../infrastructure/repositories/admin.repository.js'
 import { AdminAuthController } from './admin/admin.authController.js'
+import { AdminLogoutUseCase } from '../../application/admin/usecases/auth/admin.logOut.usecase.js'
 
 //repository
 const iVenueRepository = new VenueRepository();
@@ -106,6 +107,11 @@ export const iTokenService = new TokenService()
 
 // --- admin auth usecase---
 const iAdminLoginUsecase = new LoginAdminUsecase (
+    iAdminRepository,
+    iHashService,
+    iTokenService
+)
+const iAdminLogoutUsecase = new AdminLogoutUseCase (
     iAdminRepository,
     iHashService,
     iTokenService
@@ -390,4 +396,5 @@ export const iVendorAuthController = new VendorAuthController (
 
 export const iAdminAuthController = new AdminAuthController (
     iAdminLoginUsecase,
+    iAdminLogoutUsecase,
 )

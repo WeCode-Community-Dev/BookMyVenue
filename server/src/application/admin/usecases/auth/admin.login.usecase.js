@@ -14,7 +14,7 @@ export class LoginAdminUsecase {
     }
 
     async execute({email, password}) {
-        const admin = await this._vendorRepository.findByEmail(email);
+        const admin = await this._adminRepository.findByEmail(email);
 
         if (!admin) {
             throw new UnauthorizedError(authMessages.error.ADMIN_NOT_FOUND);
@@ -28,7 +28,7 @@ export class LoginAdminUsecase {
         const accessToken = this._tokenService.generateAccessToken({id: admin.id, email: admin.email, role: UserRole.ADMIN});
         const refreshToken = this._tokenService.generateRefreshToken({id: admin.id, role: UserRole.ADMIN})
         const hashedToken = await this._hashService.hashToken(refreshToken)
-        await this._vendorRepository.updateRefreshToken(admin.id, hashedToken)
+        await this._adminRepository.updateRefreshToken(admin.id, hashedToken)
 
         return { 
             accessToken, 
