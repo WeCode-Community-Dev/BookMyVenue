@@ -2,6 +2,7 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Clock3,
+  Settings2,
   LogOut,
 } from "lucide-react";
 import { useAuth } from "../../context/authContext.js";
@@ -16,6 +17,11 @@ const navItems = [
     label: "Venue Approvals",
     icon: Clock3,
     path: "/admin/venues/pending",
+  },
+  {
+    label: "Venue Options",
+    icon: Settings2,
+    path: "/admin/venue-options",
   },
 ];
 

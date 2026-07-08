@@ -16,7 +16,7 @@ import {
   VenueOwnerSettings,
 } from "./pages/VenueOwnerPage/VenueOwnerPage.js";
 import { AdminLayout } from './pages/AdminPage/AdminLayout.jsx';
-import { AdminLogin,AdminHome,AdminVenueApprovals, AdminVenueDetails } from './pages/AdminPage/AdminPages.js';
+import { AdminLogin,AdminHome,AdminVenueApprovals, AdminVenueDetails, AdminVenueOptions } from './pages/AdminPage/AdminPages.js';
 
 function App() {
   return (
@@ -56,6 +56,7 @@ function App() {
             <Route path='/admin/home' element={<AdminHome />} />
             <Route path='/admin/venues/pending' element={<AdminVenueApprovals />} />
             <Route path='/admin/venues/:id' element={<AdminVenueDetails />} />
+            <Route path='/admin/venue-options' element={<AdminVenueOptions />} />
           </Route>
         </Route>
       </Routes>
