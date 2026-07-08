@@ -2,7 +2,8 @@ const Amenities = require("../../models/amenity");
 
 // DELETE /admin/amenities/:id
 // Soft delete: marks deletedAt + isActive false rather than removing the doc,
-// so venues that already reference this amenity's identifier don't break.
+// so venues that already reference this amenity (by _id) don't end up with a
+// dangling ref.
 async function deleteAmenity(req, res) {
    try {
       const { id } = req.params;

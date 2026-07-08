@@ -2,9 +2,9 @@ const Categories = require("../../models/category");
 const slugify = require("../../utils/slugify");
 
 // POST /admin/categories   body: { name }
-// identifier is derived from name and never exposed for manual editing —
-// venues reference categories by identifier, so keeping it machine-generated
-// avoids typo'd/duplicate slugs.
+// identifier is derived from name (never accepted from the request) and acts as
+// a normalized dedup key: it collapses casing/spacing/punctuation so "Banquet
+// Hall" and "banquet hall" resolve to the same slug and can't both be created.
 async function createCategory(req, res) {
    try {
       const { name } = req.body;
