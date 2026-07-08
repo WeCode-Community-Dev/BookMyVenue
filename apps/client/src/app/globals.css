@@ -139,6 +139,13 @@
 
   html {
     font-size: var(--font-size);
+    scroll-behavior: smooth;
+  }
+
+  /* Offset anchored sections for the sticky navbar (h-16 = 4rem) */
+  :target,
+  [id] {
+    scroll-margin-top: 5rem;
   }
 
   h1 {
