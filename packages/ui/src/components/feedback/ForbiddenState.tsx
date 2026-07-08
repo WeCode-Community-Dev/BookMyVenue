@@ -16,14 +16,14 @@ export function ForbiddenState({
   return (
     <div
       className={cn(
-        'flex min-h-[100dvh] flex-col items-center justify-center bg-zinc-50 px-4',
+        'flex min-h-[100dvh] flex-col items-center justify-center bg-zinc-50 dark:bg-ink-800 px-4',
         className,
       )}
     >
       {/* Icon */}
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-200 bg-white shadow-sm">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 shadow-sm">
         <svg
-          className="h-6 w-6 text-zinc-400"
+          className="h-6 w-6 text-zinc-400 dark:text-zinc-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -39,11 +39,11 @@ export function ForbiddenState({
       </div>
 
       <div className="mt-5 text-center">
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-zinc-400">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
           403 Forbidden
         </p>
-        <h1 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900">{title}</h1>
-        <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-zinc-500">{message}</p>
+        <h1 className="mt-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{title}</h1>
+        <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">{message}</p>
       </div>
 
       {action && <div className="mt-7">{action}</div>}

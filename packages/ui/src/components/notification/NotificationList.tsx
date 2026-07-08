@@ -24,7 +24,7 @@ export function NotificationList({
   emptyLabel = 'No notifications yet',
 }: NotificationListProps) {
   if (notifications.length === 0) {
-    return <p className="px-3 py-6 text-center text-sm text-zinc-400">{emptyLabel}</p>
+    return <p className="px-3 py-6 text-center text-sm text-zinc-400 dark:text-zinc-500">{emptyLabel}</p>
   }
 
   const groups = new Map<string, NotificationView[]>()
@@ -38,7 +38,7 @@ export function NotificationList({
     <div className="divide-y divide-zinc-100 dark:divide-ink-800">
       {GROUP_ORDER.filter((g) => groups.has(g)).map((group) => (
         <div key={group}>
-          <div className="bg-zinc-50/60 px-5 py-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-400 dark:bg-ink-900/60">
+          <div className="bg-zinc-50/60 px-5 py-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500 dark:bg-ink-900/60">
             {group}
           </div>
           <div className="divide-y divide-zinc-100 dark:divide-ink-800">

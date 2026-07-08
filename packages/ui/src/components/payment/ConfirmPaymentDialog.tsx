@@ -19,7 +19,7 @@ export function ConfirmPaymentDialog({
     <Modal open={open} onClose={onClose}>
       <div className="space-y-4 p-2">
         <h2 className="text-lg font-semibold">Pay token advance</h2>
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">
           You're about to pay a token advance of{' '}
           <strong>{formatPaise(amountPaise, currency.toUpperCase())}</strong>
           {venueName ? ` to confirm ${venueName}` : ''}. This confirms your booking and blocks the slot.

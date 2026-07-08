@@ -52,14 +52,14 @@ export function DurationInput({ label, name, value, defaultValue, onChange, requ
 
   return (
     <div className="space-y-1">
-      <label className="flex items-center text-sm font-medium text-zinc-700 mb-1">
+      <label className="flex items-center text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
         {info && <InfoTooltip content={info} />}
       </label>
       <input type="hidden" name={name} value={totalMinutes} required={required} />
       <div className="grid grid-cols-2 gap-2">
-        <div className="flex items-center border border-zinc-200 rounded-md focus-within:ring-2 focus-within:ring-brand/20 focus-within:border-brand bg-white px-3 h-10 w-full transition-shadow overflow-hidden">
+        <div className="flex items-center border border-zinc-200 dark:border-ink-800 rounded-md focus-within:ring-2 focus-within:ring-brand/20 focus-within:border-brand bg-white dark:bg-ink-900 px-3 h-10 w-full transition-shadow overflow-hidden">
           <input 
             type="number" 
             min="0" 
@@ -68,9 +68,9 @@ export function DurationInput({ label, name, value, defaultValue, onChange, requ
             value={hours}
             onChange={handleHoursChange}
           />
-          <span className="text-zinc-500 text-sm ml-2 select-none font-medium border-l border-zinc-100 pl-3 h-full flex items-center bg-zinc-50/50">hrs</span>
+          <span className="text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 text-sm ml-2 select-none font-medium border-l border-zinc-100 dark:border-ink-800 pl-3 h-full flex items-center bg-zinc-50/50">hrs</span>
         </div>
-        <div className="flex items-center border border-zinc-200 rounded-md focus-within:ring-2 focus-within:ring-brand/20 focus-within:border-brand bg-white px-3 h-10 w-full transition-shadow overflow-hidden">
+        <div className="flex items-center border border-zinc-200 dark:border-ink-800 rounded-md focus-within:ring-2 focus-within:ring-brand/20 focus-within:border-brand bg-white dark:bg-ink-900 px-3 h-10 w-full transition-shadow overflow-hidden">
           <input 
             type="number" 
             min="0" 
@@ -80,10 +80,10 @@ export function DurationInput({ label, name, value, defaultValue, onChange, requ
             value={minutes}
             onChange={handleMinutesChange}
           />
-          <span className="text-zinc-500 text-sm ml-2 select-none font-medium border-l border-zinc-100 pl-3 h-full flex items-center bg-zinc-50/50">mins</span>
+          <span className="text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 text-sm ml-2 select-none font-medium border-l border-zinc-100 dark:border-ink-800 pl-3 h-full flex items-center bg-zinc-50/50">mins</span>
         </div>
       </div>
-      {helperText && <p className="text-xs text-zinc-500 mt-1">{helperText}</p>}
+      {helperText && <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">{helperText}</p>}
     </div>
   )
 }

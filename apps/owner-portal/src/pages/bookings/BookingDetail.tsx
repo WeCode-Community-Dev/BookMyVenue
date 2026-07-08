@@ -48,7 +48,7 @@ function MonthGrid({
   return (
     <div>
       <div className="grid grid-cols-7 mb-2">
-        {DAY_LABELS.map(l => <div key={l} className="text-center text-xs font-medium text-zinc-400 py-1">{l}</div>)}
+        {DAY_LABELS.map(l => <div key={l} className="text-center text-xs font-medium text-zinc-400 dark:text-zinc-500 py-1">{l}</div>)}
       </div>
       <div className="grid grid-cols-7 gap-y-1">
         {grid.map((dateStr, i) => {
@@ -60,8 +60,8 @@ function MonthGrid({
 
           let btnClass = "h-9 w-9 mx-auto rounded-full text-sm font-medium transition-colors flex items-center justify-center "
           if (isSelected) btnClass += "bg-zinc-900 text-white shadow-sm"
-          else if (isDisabled) btnClass += "text-zinc-300 cursor-not-allowed line-through"
-          else btnClass += "text-zinc-700 hover:bg-zinc-100 cursor-pointer"
+          else if (isDisabled) btnClass += "text-zinc-300 dark:text-zinc-600 cursor-not-allowed line-through"
+          else btnClass += "text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 hover:bg-zinc-100 dark:hover:bg-ink-800 dark:bg-ink-800 cursor-pointer"
 
           return (
             <div key={dateStr} className="text-center py-0.5">
@@ -114,7 +114,7 @@ function DoubleMonthCalendar({
   const canGoPrev = viewDate > minViewDate
 
   return (
-    <div className="select-none bg-white p-2 sm:p-4 w-full">
+    <div className="select-none bg-white dark:bg-ink-900 p-2 sm:p-4 w-full">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
         {/* Month 1 */}
         <div>
@@ -123,11 +123,11 @@ function DoubleMonthCalendar({
               type="button"
               onClick={() => setViewDate(addMonthsLocal(viewDate, -1))}
               disabled={!canGoPrev}
-              className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-full disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 hover:bg-zinc-100 dark:hover:bg-ink-800 dark:bg-ink-800 rounded-full disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <div className="text-sm font-semibold text-zinc-900">{label1}</div>
+            <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label1}</div>
             <div className="w-8 h-8" />
           </div>
           <MonthGrid year={year1} month={month1} selectedDate={value} minDate={minDate} maxDate={maxDate} onSelect={onChange} />
@@ -137,11 +137,11 @@ function DoubleMonthCalendar({
         <div>
           <div className="flex items-center justify-between mb-4">
             <div className="w-8 h-8" />
-            <div className="text-sm font-semibold text-zinc-900">{label2}</div>
+            <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label2}</div>
             <button 
               type="button"
               onClick={() => setViewDate(addMonthsLocal(viewDate, 1))}
-              className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-full transition-colors"
+              className="p-1.5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 hover:bg-zinc-100 dark:hover:bg-ink-800 dark:bg-ink-800 rounded-full transition-colors"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </button>
@@ -150,11 +150,11 @@ function DoubleMonthCalendar({
         </div>
       </div>
       
-      <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-start gap-5">
-         <span className="flex items-center gap-1.5 text-xs font-medium text-zinc-400">
+      <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-ink-800 flex items-center justify-start gap-5">
+         <span className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 dark:text-zinc-500">
            <span className="h-3.5 w-3.5 rounded-full bg-zinc-900"></span> Selected
          </span>
-         <span className="flex items-center gap-1.5 text-xs font-medium text-zinc-400">
+         <span className="flex items-center gap-1.5 text-xs font-medium text-zinc-400 dark:text-zinc-500">
            <span className="h-3.5 w-3.5 rounded-full bg-zinc-200"></span> Unavailable
          </span>
       </div>
@@ -219,7 +219,7 @@ export default function BookingDetail() {
     return (
       <div className="w-full min-h-[101vh] space-y-8 pb-12 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         {/* Header Skeleton */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 border-b border-zinc-200 pb-6">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 border-b border-zinc-200 dark:border-ink-800 pb-6">
           <div className="flex items-start gap-4 w-full md:w-1/2">
             <Skeleton className="h-10 w-10 rounded-full shrink-0" />
             <div className="space-y-3 w-full">
@@ -276,7 +276,7 @@ export default function BookingDetail() {
   }
 
   if (!booking) {
-    return <div className="text-center py-20 text-zinc-500">Booking not found.</div>
+    return <div className="text-center py-20 text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Booking not found.</div>
   }
 
   return (
@@ -284,13 +284,13 @@ export default function BookingDetail() {
       {/* Header & Actions Layout */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mt-8 mb-6">
         <div className="flex items-start sm:items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 bg-white border border-zinc-200 shadow-sm hover:bg-zinc-50 rounded-full transition-colors text-zinc-600 shrink-0">
+          <button onClick={() => navigate(-1)} className="p-2 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 shadow-sm hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800 rounded-full transition-colors text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <h1 className="text-2xl font-bold text-zinc-900 tracking-tight leading-none">
-                Booking <span className="text-zinc-500 font-medium">#{booking.id.split('-')[0]}</span>
+              <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none">
+                Booking <span className="text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-medium">#{booking.id.split('-')[0]}</span>
               </h1>
               <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
                 <StatusBadge 
@@ -305,8 +305,8 @@ export default function BookingDetail() {
                 <PaymentStatusBadge status={booking.payment_status} />
               </div>
             </div>
-            <p className="text-sm text-zinc-500 mt-2 sm:mt-1.5">
-              For <span className="font-medium text-zinc-900">{booking.venue_name}</span> • Created on {new Date(booking.created_at || Date.now()).toLocaleDateString()}
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-2 sm:mt-1.5">
+              For <span className="font-medium text-zinc-900 dark:text-zinc-100">{booking.venue_name}</span> • Created on {new Date(booking.created_at || Date.now()).toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -325,10 +325,10 @@ export default function BookingDetail() {
           )}
           {booking.status === 'confirmed' && booking.balance_overdue_at && (new Date() >= new Date(booking.balance_overdue_at)) && booking.payment_status !== 'paid' && (
             <div className="flex items-center gap-3">
-              <Button variant="secondary" className="text-zinc-600 border-zinc-200 hover:bg-zinc-100 bg-white" onClick={() => setExtendModalOpen(true)} disabled={actionLoading}>
+              <Button variant="secondary" className="text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 border-zinc-200 dark:border-ink-800 hover:bg-zinc-100 dark:hover:bg-ink-800 dark:bg-ink-800 bg-white dark:bg-ink-900" onClick={() => setExtendModalOpen(true)} disabled={actionLoading}>
                 <Calendar className="h-4 w-4 mr-2" /> Extend Deadline
               </Button>
-              <Button variant="secondary" className="text-rose-600 border-rose-200 hover:bg-rose-50 bg-white shadow-sm" onClick={() => { setCancelType(null); setCancelModalOpen(true); }} disabled={actionLoading}>
+              <Button variant="secondary" className="text-rose-600 border-rose-200 hover:bg-rose-50 bg-white dark:bg-ink-900 shadow-sm" onClick={() => { setCancelType(null); setCancelModalOpen(true); }} disabled={actionLoading}>
                 <X className="h-4 w-4 mr-2" /> Cancel Overdue Booking
               </Button>
             </div>
@@ -358,7 +358,7 @@ export default function BookingDetail() {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="border-b border-zinc-200 mt-4 mb-8">
+      <div className="border-b border-zinc-200 dark:border-ink-800 mt-4 mb-8">
         <nav className="-mb-px flex w-full overflow-x-auto no-scrollbar" aria-label="Tabs">
           {[
             { id: 'overview', label: 'Overview', icon: Info },
@@ -374,7 +374,7 @@ export default function BookingDetail() {
                 className={`flex-1 min-w-fit flex items-center justify-center gap-2 whitespace-nowrap pt-2 pb-3 px-2 border-b-2 font-medium text-sm transition-all ${
                   tab === t.id 
                     ? 'border-brand-500 text-brand-600' 
-                    : 'border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300'
+                    : 'border-transparent text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -392,25 +392,25 @@ export default function BookingDetail() {
             <div className="space-y-6">
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-4">
-                <Card className="p-5 flex flex-col justify-center border-zinc-200 shadow-sm rounded-xl">
-                  <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Booking Type</div>
-                  <div className="text-sm font-bold text-zinc-900 capitalize">{booking.booking_type?.replace('_', ' ')}</div>
+                <Card className="p-5 flex flex-col justify-center border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Booking Type</div>
+                  <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 capitalize">{booking.booking_type?.replace('_', ' ')}</div>
                 </Card>
-                <Card className="p-5 flex flex-col justify-center border-zinc-200 shadow-sm rounded-xl">
-                  <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Event Type</div>
-                  <div className="text-sm font-bold text-zinc-900">{booking.event_type || 'Not specified'}</div>
+                <Card className="p-5 flex flex-col justify-center border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Event Type</div>
+                  <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{booking.event_type || 'Not specified'}</div>
                 </Card>
-                <Card className="p-5 flex flex-col justify-center border-zinc-200 shadow-sm rounded-xl">
-                  <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Guest Count</div>
-                  <div className="text-sm font-bold text-zinc-900">{booking.guest_count} guests</div>
+                <Card className="p-5 flex flex-col justify-center border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Guest Count</div>
+                  <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{booking.guest_count} guests</div>
                 </Card>
               </div>
 
               {/* Timeline Card */}
-              <Card className="p-0 overflow-hidden border-zinc-200 shadow-sm rounded-xl">
+              <Card className="p-0 overflow-hidden border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
                 {(() => {
                   if (!booking.starts_at || !booking.ends_at) return (
-                    <div className="p-8 text-center text-zinc-500 text-sm">Event times are not available.</div>
+                    <div className="p-8 text-center text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 text-sm">Event times are not available.</div>
                   );
 
                   const eventStart = new Date(booking.starts_at);
@@ -443,12 +443,12 @@ export default function BookingDetail() {
 
                   return (
                     <div className="flex flex-col">
-                      <div className="p-6 bg-zinc-50/50 border-b border-zinc-100 flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-zinc-900 font-bold">
-                          <Calendar className="h-5 w-5 text-zinc-700" />
+                      <div className="p-6 bg-zinc-50/50 border-b border-zinc-100 dark:border-ink-800 flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-zinc-900 dark:text-zinc-100 font-bold">
+                          <Calendar className="h-5 w-5 text-zinc-700 dark:text-zinc-300 dark:text-zinc-600" />
                           {formatDate(eventStart)} {!isSameDay && ` - ${formatDate(eventEnd)}`}
                         </div>
-                        <div className="text-xs font-bold text-zinc-600 bg-white border border-zinc-200 px-3 py-1.5 rounded-lg shadow-sm">
+                        <div className="text-xs font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 px-3 py-1.5 rounded-lg shadow-sm">
                           Total: {formatDuration(setupMins + eventDurationMins + teardownMins)}
                         </div>
                       </div>
@@ -461,10 +461,10 @@ export default function BookingDetail() {
                               <div className="absolute left-0 mt-1.5 w-3 h-3 rounded-full border-2 border-white bg-amber-400 z-10 shadow-sm ring-1 ring-zinc-200" />
                               <div className="w-full pl-8 flex justify-between items-start gap-4">
                                 <div>
-                                  <div className="text-sm font-bold text-zinc-900">Setup</div>
-                                  <div className="text-xs text-zinc-500 mt-1">{formatDuration(setupMins)} buffer</div>
+                                  <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Setup</div>
+                                  <div className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">{formatDuration(setupMins)} buffer</div>
                                 </div>
-                                <div className="text-sm text-zinc-600 font-semibold text-right">{formatNodeTime(opStart)}</div>
+                                <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 font-semibold text-right">{formatNodeTime(opStart)}</div>
                               </div>
                             </div>
                           )}
@@ -473,19 +473,19 @@ export default function BookingDetail() {
                           <div className="relative flex items-start group z-10">
                             <div className="absolute left-0 -ml-[1px] mt-8 w-3.5 h-3.5 rounded-full border-[3px] border-white bg-zinc-800 shadow-sm ring-1 ring-zinc-300" />
                             <div className="w-full pl-8">
-                               <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm transition-all hover:border-zinc-300">
+                               <div className="bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 rounded-xl p-5 shadow-sm transition-all hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700">
                                   <div className="flex justify-between items-center mb-5">
-                                    <div className="font-bold text-zinc-900 text-base">Main Event</div>
-                                    <div className="text-xs font-bold text-zinc-700 bg-zinc-100 px-2.5 py-1 rounded-md">{formatDuration(eventDurationMins)} duration</div>
+                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-base">Main Event</div>
+                                    <div className="text-xs font-bold text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 bg-zinc-100 dark:bg-ink-800 px-2.5 py-1 rounded-md">{formatDuration(eventDurationMins)} duration</div>
                                   </div>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                      <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Starts</div>
-                                      <div className="text-sm font-bold text-zinc-900 mt-1.5">{formatNodeTime(eventStart)}</div>
+                                      <div className="text-[10px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest">Starts</div>
+                                      <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mt-1.5">{formatNodeTime(eventStart)}</div>
                                     </div>
                                     <div>
-                                      <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Ends</div>
-                                      <div className="text-sm font-bold text-zinc-900 mt-1.5">{formatNodeTime(eventEnd)}</div>
+                                      <div className="text-[10px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest">Ends</div>
+                                      <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mt-1.5">{formatNodeTime(eventEnd)}</div>
                                     </div>
                                   </div>
                                 </div>
@@ -498,10 +498,10 @@ export default function BookingDetail() {
                               <div className="absolute left-0 mt-1.5 w-3 h-3 rounded-full border-2 border-white bg-amber-400 z-10 shadow-sm ring-1 ring-zinc-200" />
                               <div className="w-full pl-8 flex justify-between items-start gap-4">
                                 <div>
-                                  <div className="text-sm font-bold text-zinc-900">Teardown</div>
-                                  <div className="text-xs text-zinc-500 mt-1">{formatDuration(teardownMins)} buffer</div>
+                                  <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Teardown</div>
+                                  <div className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">{formatDuration(teardownMins)} buffer</div>
                                 </div>
-                                <div className="text-sm text-zinc-600 font-semibold text-right">{formatNodeTime(opEnd)}</div>
+                                <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 font-semibold text-right">{formatNodeTime(opEnd)}</div>
                               </div>
                             </div>
                           )}
@@ -517,17 +517,17 @@ export default function BookingDetail() {
             <div className="space-y-6">
               {/* Venue Snapshot */}
               <div className="flex flex-col">
-                <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-3 pl-1">Venue Snapshot</h3>
-                <Card className="p-0 overflow-hidden border-zinc-200 shadow-sm rounded-xl">
+                <h3 className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-3 pl-1">Venue Snapshot</h3>
+                <Card className="p-0 overflow-hidden border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
                   {booking.venue_cover_photo_url && (
-                    <div className="h-32 w-full bg-zinc-100 relative">
+                    <div className="h-32 w-full bg-zinc-100 dark:bg-ink-800 relative">
                       <img src={booking.venue_cover_photo_url} alt="Venue" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                     </div>
                   )}
                   <div className="p-5">
-                    <div className="text-base font-bold text-zinc-900">{booking.venue_name}</div>
-                    <div className="text-sm text-zinc-500 flex items-center mt-1.5 font-medium">
+                    <div className="text-base font-bold text-zinc-900 dark:text-zinc-100">{booking.venue_name}</div>
+                    <div className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 flex items-center mt-1.5 font-medium">
                       <MapPin className="h-3.5 w-3.5 mr-1" /> {booking.venue_city || 'City not specified'}
                     </div>
                     <Link to={`/venues/${booking.venue_id}/overview`} className="text-sm text-brand-600 hover:text-brand-700 font-semibold mt-4 inline-block">
@@ -539,18 +539,18 @@ export default function BookingDetail() {
 
               {/* Customer Profile */}
               <div className="flex flex-col">
-                <h3 className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest mb-3 pl-1">Customer Profile</h3>
-                <Card className="p-5 overflow-hidden border-zinc-200 shadow-sm rounded-xl">
+                <h3 className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-3 pl-1">Customer Profile</h3>
+                <Card className="p-5 overflow-hidden border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 bg-zinc-100 text-zinc-600 rounded-full flex items-center justify-center shrink-0 border border-zinc-200 shadow-sm">
+                    <div className="h-12 w-12 bg-zinc-100 dark:bg-ink-800 text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 rounded-full flex items-center justify-center shrink-0 border border-zinc-200 dark:border-ink-800 shadow-sm">
                       <User className="h-6 w-6" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-base font-bold text-zinc-900 truncate">{booking.user_full_name}</div>
-                      {booking.user_email && <div className="text-sm text-zinc-500 mt-0.5 truncate">{booking.user_email}</div>}
-                      {booking.user_phone && <div className="text-sm text-zinc-500 mt-0.5">{booking.user_phone}</div>}
+                      <div className="text-base font-bold text-zinc-900 dark:text-zinc-100 truncate">{booking.user_full_name}</div>
+                      {booking.user_email && <div className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5 truncate">{booking.user_email}</div>}
+                      {booking.user_phone && <div className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5">{booking.user_phone}</div>}
                       {(!booking.user_email && !booking.user_phone) && (
-                        <div className="text-xs text-zinc-400 mt-1 font-mono bg-zinc-50 px-2 py-0.5 rounded border border-zinc-100 inline-block">ID: {booking.user_id}</div>
+                        <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-1 font-mono bg-zinc-50 dark:bg-ink-800 px-2 py-0.5 rounded border border-zinc-100 dark:border-ink-800 inline-block">ID: {booking.user_id}</div>
                       )}
                     </div>
                   </div>
@@ -662,25 +662,25 @@ export default function BookingDetail() {
 
                   {/* Payout number */}
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">
+                    <p className="text-xs font-bold uppercase tracking-[0.15em] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mb-1.5">
                       {finalPayout !== null ? 'Final Owner Payout' : 'Projected Owner Payout'}
                     </p>
                     <p className="text-4xl md:text-5xl font-black text-white tracking-tight">
                       {finalPayout !== null ? fmt(finalPayout) : fmt(ownerPayoutProjected)}
                     </p>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3">
-                      <span className="text-sm text-zinc-400">Quoted {fmt(totalDue)}</span>
-                      <span className="text-zinc-700 text-xs">|</span>
-                      <span className="text-sm text-zinc-400">Commission {commissionPct}%</span>
+                      <span className="text-sm text-zinc-400 dark:text-zinc-500">Quoted {fmt(totalDue)}</span>
+                      <span className="text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 text-xs">|</span>
+                      <span className="text-sm text-zinc-400 dark:text-zinc-500">Commission {commissionPct}%</span>
                       {amountPaid > 0 && (
                         <>
-                          <span className="text-zinc-700 text-xs">|</span>
-                          <span className="text-sm text-zinc-300 font-medium">Collected {fmt(amountPaid)}</span>
+                          <span className="text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 text-xs">|</span>
+                          <span className="text-sm text-zinc-300 dark:text-zinc-600 font-medium">Collected {fmt(amountPaid)}</span>
                         </>
                       )}
                       {refundAmount > 0 && (
                         <>
-                          <span className="text-zinc-700 text-xs">|</span>
+                          <span className="text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 text-xs">|</span>
                           <span className="text-sm text-rose-400 font-medium">Refunded {fmt(refundAmount)}</span>
                         </>
                       )}
@@ -706,9 +706,9 @@ export default function BookingDetail() {
                       isFullyPaid
                         ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                         : isForfeitCancelled
-                        ? 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400'
+                        ? 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400 dark:text-zinc-500'
                         : isTerminated
-                        ? 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400'
+                        ? 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400 dark:text-zinc-500'
                         : isOverdue
                         ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
                         : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
@@ -727,9 +727,9 @@ export default function BookingDetail() {
                 {/* Progress bar (only on active bookings) */}
                 {!isTerminated && !isCompleted && (
                   <div className="px-8 md:px-10 pb-6">
-                    <div className="flex justify-between text-xs text-zinc-500 mb-1.5">
+                    <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mb-1.5">
                       <span>Payment Progress</span>
-                      <span className="font-bold text-zinc-400">
+                      <span className="font-bold text-zinc-400 dark:text-zinc-500">
                         {Math.round((amountPaid / (totalDue || 1)) * 100)}% collected
                       </span>
                     </div>
@@ -750,15 +750,15 @@ export default function BookingDetail() {
                     ? 'bg-amber-50 border-amber-200'
                     : refundAmount > 0
                     ? 'bg-rose-50 border-rose-200'
-                    : 'bg-zinc-50 border-zinc-200'
+                    : 'bg-zinc-50 dark:bg-ink-800 border-zinc-200 dark:border-ink-800'
                 }`}>
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
-                    isForfeitCancelled ? 'bg-amber-100 text-amber-700' : refundAmount > 0 ? 'bg-rose-100 text-rose-600' : 'bg-zinc-200 text-zinc-600'
+                    isForfeitCancelled ? 'bg-amber-100 text-amber-700' : refundAmount > 0 ? 'bg-rose-100 text-rose-600' : 'bg-zinc-200 text-zinc-600 dark:text-zinc-400 dark:text-zinc-500'
                   }`}>
                     {isForfeitCancelled ? <Lock className="w-4 h-4" /> : refundAmount > 0 ? <AlertTriangle className="w-4 h-4" /> : <X className="w-4 h-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`font-bold text-sm ${isForfeitCancelled ? 'text-amber-900' : refundAmount > 0 ? 'text-rose-900' : 'text-zinc-800'}`}>
+                    <p className={`font-bold text-sm ${isForfeitCancelled ? 'text-amber-900' : refundAmount > 0 ? 'text-rose-900' : 'text-zinc-800 dark:text-zinc-200'}`}>
                       {isForfeitCancelled && 'Balance Overdue — Deposit Forfeited'}
                       {isUserCancelled && refundAmount > 0 && 'User Cancelled — Refund Issued'}
                       {isUserCancelled && refundAmount === 0 && 'User Cancelled — No Refund'}
@@ -766,14 +766,14 @@ export default function BookingDetail() {
                       {(s === 'hold_expired' || s === 'request_expired') && 'Booking Expired'}
                       {s === 'conflict_cancelled' && 'Cancelled — Conflict'}
                     </p>
-                    <p className={`text-sm mt-0.5 leading-relaxed ${isForfeitCancelled ? 'text-amber-800/80' : refundAmount > 0 ? 'text-rose-700/80' : 'text-zinc-500'}`}>
+                    <p className={`text-sm mt-0.5 leading-relaxed ${isForfeitCancelled ? 'text-amber-800/80' : refundAmount > 0 ? 'text-rose-700/80' : 'text-zinc-500 dark:text-zinc-400 dark:text-zinc-500'}`}>
                       {isForfeitCancelled && `Customer missed the balance payment deadline. Advance of ${fmt(advanceDue)} is forfeited. Your net share after ${commissionPct}% commission: ${fmt(forfeitOwnerRetains)}.`}
                       {isUserCancelled && refundAmount > 0 && `${fmt(refundAmount)} was refunded to the customer based on your cancellation policy. You retain ${fmt(amountPaid - refundAmount)} minus platform commission.`}
                       {isUserCancelled && refundAmount === 0 && `No refund was issued to the customer based on your cancellation policy. You retain the full collected amount.`}
                       {isAdminCancelled && 'This booking was cancelled by a platform administrator.'}
                     </p>
                     {booking.cancelled_at && (
-                      <p className="text-xs text-zinc-400 mt-1.5">
+                      <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1.5">
                         Cancelled {new Date(booking.cancelled_at).toLocaleString()}
                       </p>
                     )}
@@ -803,7 +803,7 @@ export default function BookingDetail() {
                       <div className="mt-3 pt-3 border-t border-rose-200">
                         <Button
                           variant="secondary"
-                          className="bg-white text-rose-700 border-rose-200 hover:bg-rose-100 font-semibold shadow-sm text-sm"
+                          className="bg-white dark:bg-ink-900 text-rose-700 border-rose-200 hover:bg-rose-100 font-semibold shadow-sm text-sm"
                           onClick={() => setExtendModalOpen(true)}
                         >
                           Extend Deadline
@@ -819,41 +819,41 @@ export default function BookingDetail() {
 
                 {/* Receipt card */}
                 <div className="lg:col-span-2">
-                  <Card className="p-0 overflow-hidden border-zinc-200 shadow-sm rounded-xl h-full">
-                    <div className="px-5 py-4 border-b border-zinc-100 bg-zinc-50 flex items-center gap-2">
-                      <Receipt className="w-4 h-4 text-zinc-400" />
-                      <h3 className="font-bold text-sm text-zinc-700">Price Breakdown</h3>
+                  <Card className="p-0 overflow-hidden border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl h-full">
+                    <div className="px-5 py-4 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50 dark:bg-ink-800 flex items-center gap-2">
+                      <Receipt className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+                      <h3 className="font-bold text-sm text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Price Breakdown</h3>
                     </div>
                     <div className="p-5 space-y-0">
                       {[
-                        { label: 'Quoted Price', value: fmt(totalDue), color: 'text-zinc-800' },
-                        { label: `Advance (${booking.advance_pct}%)`, value: fmt(advanceDue), color: 'text-zinc-600' },
-                        { label: `Balance (${100 - booking.advance_pct}%)`, value: fmt(balanceDue), color: 'text-zinc-600' },
+                        { label: 'Quoted Price', value: fmt(totalDue), color: 'text-zinc-800 dark:text-zinc-200' },
+                        { label: `Advance (${booking.advance_pct}%)`, value: fmt(advanceDue), color: 'text-zinc-600 dark:text-zinc-400 dark:text-zinc-500' },
+                        { label: `Balance (${100 - booking.advance_pct}%)`, value: fmt(balanceDue), color: 'text-zinc-600 dark:text-zinc-400 dark:text-zinc-500' },
                       ].map(row => (
-                        <div key={row.label} className="flex justify-between items-center py-2.5 border-b border-zinc-100">
-                          <span className="text-sm text-zinc-500">{row.label}</span>
+                        <div key={row.label} className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-ink-800">
+                          <span className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">{row.label}</span>
                           <span className={`text-sm font-semibold ${row.color}`}>{row.value}</span>
                         </div>
                       ))}
-                      <div className="flex justify-between items-center py-2.5 border-b border-zinc-100">
-                        <span className="text-sm text-zinc-500">Platform Fee ({commissionPct}%)</span>
+                      <div className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-ink-800">
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Platform Fee ({commissionPct}%)</span>
                         <span className="text-sm font-semibold text-rose-600">-{fmt(actualPlatformFee)}</span>
                       </div>
                       <div className="flex justify-between items-center pt-3 pb-1">
-                        <span className="font-bold text-zinc-900 text-sm">
+                        <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
                           {finalPayout !== null ? 'Final Payout' : 'Projected Payout'}
                         </span>
                         <span className="font-black text-emerald-600 text-base">{fmt(finalPayout !== null ? finalPayout : ownerPayoutProjected)}</span>
                       </div>
                       {amountPaid > 0 && amountPaid < totalDue && (
-                        <div className="mt-2 pt-3 border-t border-dashed border-zinc-200 space-y-1.5">
+                        <div className="mt-2 pt-3 border-t border-dashed border-zinc-200 dark:border-ink-800 space-y-1.5">
                           <div className="flex justify-between">
-                            <span className="text-xs text-zinc-400">Collected so far</span>
-                            <span className="text-xs text-zinc-600 font-medium">{fmt(amountPaid)}</span>
+                            <span className="text-xs text-zinc-400 dark:text-zinc-500">Collected so far</span>
+                            <span className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 font-medium">{fmt(amountPaid)}</span>
                           </div>
                           {refundAmount > 0 && (
                             <div className="flex justify-between">
-                              <span className="text-xs text-zinc-400">Refunded to customer</span>
+                              <span className="text-xs text-zinc-400 dark:text-zinc-500">Refunded to customer</span>
                               <span className="text-xs text-rose-500 font-medium">-{fmt(refundAmount)}</span>
                             </div>
                           )}
@@ -865,13 +865,13 @@ export default function BookingDetail() {
 
                 {/* Milestones */}
                 <div className="lg:col-span-3 space-y-3">
-                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">Payment Milestones</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Payment Milestones</p>
 
                   {/* Advance */}
                   <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
                     isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
                       ? 'border-emerald-100'
-                      : 'border-zinc-200'
+                      : 'border-zinc-200 dark:border-ink-800'
                   }`}>
                     <div className="p-4 flex items-center gap-4">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
@@ -886,16 +886,16 @@ export default function BookingDetail() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-zinc-900 text-sm">Advance Deposit</h4>
-                          <span className="text-[10px] font-bold bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded uppercase">{booking.advance_pct}%</span>
+                          <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Advance Deposit</h4>
+                          <span className="text-[10px] font-bold bg-zinc-100 dark:bg-ink-800 text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 px-1.5 py-0.5 rounded uppercase">{booking.advance_pct}%</span>
                         </div>
                         {booking.stripe_advance_payment_intent_id
-                          ? <p className="text-xs text-zinc-400 font-mono mt-0.5 truncate">Ref: {booking.stripe_advance_payment_intent_id}</p>
-                          : <p className="text-xs text-zinc-400 mt-0.5">Required to confirm booking</p>
+                          ? <p className="text-xs text-zinc-400 dark:text-zinc-500 font-mono mt-0.5 truncate">Ref: {booking.stripe_advance_payment_intent_id}</p>
+                          : <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Required to confirm booking</p>
                         }
                       </div>
                       <div className="text-right shrink-0">
-                        <div className="font-black text-zinc-900 text-base">{fmt(advanceDue)}</div>
+                        <div className="font-black text-zinc-900 dark:text-zinc-100 text-base">{fmt(advanceDue)}</div>
                         {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
                           ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
                           : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
@@ -908,36 +908,36 @@ export default function BookingDetail() {
                   <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
                     isBalancePaid ? 'border-emerald-100'
                     : isOverdue ? 'border-rose-200'
-                    : isForfeitCancelled || isTerminated ? 'border-zinc-100 opacity-70'
-                    : 'border-zinc-200'
+                    : isForfeitCancelled || isTerminated ? 'border-zinc-100 dark:border-ink-800 opacity-70'
+                    : 'border-zinc-200 dark:border-ink-800'
                   }`}>
                     <div className="p-4 flex items-center gap-4">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                         isBalancePaid ? 'bg-emerald-100 text-emerald-600'
                         : isOverdue ? 'bg-rose-100 text-rose-600'
-                        : 'bg-zinc-100 text-zinc-400'
+                        : 'bg-zinc-100 dark:bg-ink-800 text-zinc-400 dark:text-zinc-500'
                       }`}>
                         {isBalancePaid ? <CheckCircle2 className="w-5 h-5" /> : isOverdue ? <AlertTriangle className="w-5 h-5" /> : <CalendarDays className="w-5 h-5" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-zinc-900 text-sm">Balance Due</h4>
-                          <span className="text-[10px] font-bold bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded uppercase">{100 - booking.advance_pct}%</span>
+                          <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Balance Due</h4>
+                          <span className="text-[10px] font-bold bg-zinc-100 dark:bg-ink-800 text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 px-1.5 py-0.5 rounded uppercase">{100 - booking.advance_pct}%</span>
                         </div>
                         {booking.stripe_balance_payment_intent_id
-                          ? <p className="text-xs text-zinc-400 font-mono mt-0.5 truncate">Ref: {booking.stripe_balance_payment_intent_id}</p>
+                          ? <p className="text-xs text-zinc-400 dark:text-zinc-500 font-mono mt-0.5 truncate">Ref: {booking.stripe_balance_payment_intent_id}</p>
                           : booking.balance_due_date
-                          ? <p className={`text-xs mt-0.5 font-medium ${isOverdue ? 'text-rose-600' : 'text-zinc-500'}`}>
+                          ? <p className={`text-xs mt-0.5 font-medium ${isOverdue ? 'text-rose-600' : 'text-zinc-500 dark:text-zinc-400 dark:text-zinc-500'}`}>
                               Due {new Date(booking.balance_due_date).toLocaleDateString()}{isOverdue && ' — OVERDUE'}
                             </p>
-                          : <p className="text-xs text-zinc-400 mt-0.5">Paid before event</p>
+                          : <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">Paid before event</p>
                         }
                       </div>
                       <div className="text-right shrink-0">
-                        <div className="font-black text-zinc-900 text-base">{fmt(balanceDue)}</div>
+                        <div className="font-black text-zinc-900 dark:text-zinc-100 text-base">{fmt(balanceDue)}</div>
                         {isBalancePaid ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
-                        : isForfeitCancelled ? <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Forfeited</span>
-                        : isTerminated ? <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Waived</span>
+                        : isForfeitCancelled ? <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Forfeited</span>
+                        : isTerminated ? <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">Waived</span>
                         : isOverdue ? <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wide">Overdue</span>
                         : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
                         }
@@ -953,9 +953,9 @@ export default function BookingDetail() {
         {tab === 'timeline' && (
 
           <div className="max-w-2xl mx-auto">
-            <div className="rounded-lg border border-zinc-100 bg-white p-6 shadow-sm">
+            <div className="rounded-lg border border-zinc-100 dark:border-ink-800 bg-white dark:bg-ink-900 p-6 shadow-sm">
               <div className="space-y-8">
-                <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                   Booking Timeline
                 </div>
 
@@ -1010,12 +1010,12 @@ export default function BookingDetail() {
                             <div
                               className={[
                                 'font-medium',
-                                isCompleted ? 'text-zinc-900' : 'text-zinc-500',
+                                isCompleted ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400 dark:text-zinc-500',
                               ].join(' ')}
                             >
                               {step.label}
                             </div>
-                            <div className="mt-1 text-sm text-zinc-500">{step.desc}</div>
+                            <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">{step.desc}</div>
                           </div>
                         </div>
                       )
@@ -1030,9 +1030,9 @@ export default function BookingDetail() {
                   </div>
                 )}
                 {booking.expired_at && (
-                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 mt-6">
-                    <div className="text-sm font-medium text-zinc-700">Booking Expired</div>
-                    <div className="mt-1 text-xs text-zinc-500">Expired on {new Date(booking.expired_at).toLocaleString()} due to inactivity or non-payment.</div>
+                  <div className="rounded-xl border border-zinc-200 dark:border-ink-800 bg-zinc-50 dark:bg-ink-800 px-4 py-3 mt-6">
+                    <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Booking Expired</div>
+                    <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Expired on {new Date(booking.expired_at).toLocaleString()} due to inactivity or non-payment.</div>
                   </div>
                 )}
               </div>
@@ -1043,29 +1043,29 @@ export default function BookingDetail() {
         {tab === 'notes' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
             {/* User Notes */}
-            <Card className="p-6 h-full flex flex-col relative overflow-hidden border-zinc-200 shadow-sm rounded-xl">
+            <Card className="p-6 h-full flex flex-col relative overflow-hidden border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
               <div className="absolute top-0 left-0 w-1 h-full bg-zinc-300"></div>
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 bg-zinc-100 text-zinc-600 rounded-lg shadow-inner border border-zinc-200/50">
+                <div className="p-2.5 bg-zinc-100 dark:bg-ink-800 text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 rounded-lg shadow-inner border border-zinc-200/50">
                   <MessageSquare className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-zinc-900 text-base">Customer Request</h3>
-                  <p className="text-xs text-zinc-500 font-medium mt-0.5">Notes provided during booking</p>
+                  <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-base">Customer Request</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-medium mt-0.5">Notes provided during booking</p>
                 </div>
               </div>
               <div className="flex-1 flex flex-col">
                 {booking.user_notes ? (
-                  <div className="flex-1 bg-zinc-50/50 rounded-lg p-5 text-zinc-700 text-sm whitespace-pre-wrap border border-zinc-100 leading-relaxed relative group transition-colors hover:bg-zinc-50">
+                  <div className="flex-1 bg-zinc-50/50 rounded-lg p-5 text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 text-sm whitespace-pre-wrap border border-zinc-100 dark:border-ink-800 leading-relaxed relative group transition-colors hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800">
                     <span className="absolute -left-1 -top-3 text-5xl text-zinc-200 leading-none select-none font-serif opacity-50 group-hover:opacity-80 transition-opacity">"</span>
                     <div className="relative z-10 pt-1">
                       {booking.user_notes}
                     </div>
                   </div>
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 py-10 border-2 border-dashed border-zinc-100 rounded-lg bg-zinc-50/30">
+                  <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 py-10 border-2 border-dashed border-zinc-100 dark:border-ink-800 rounded-lg bg-zinc-50/30">
                     <MessageSquare className="h-8 w-8 mb-3 opacity-20" />
-                    <span className="text-sm font-medium text-zinc-500">No specific requests</span>
+                    <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">No specific requests</span>
                     <span className="text-xs mt-1">The customer did not leave any notes.</span>
                   </div>
                 )}
@@ -1086,7 +1086,7 @@ export default function BookingDetail() {
                   </div>
                 </div>
                 {!isEditingNotes && (
-                  <Button variant="secondary" className="h-8 px-3.5 text-xs font-semibold bg-white text-amber-700 border-amber-200 hover:bg-amber-100 hover:border-amber-300 transition-colors shadow-sm" onClick={() => {
+                  <Button variant="secondary" className="h-8 px-3.5 text-xs font-semibold bg-white dark:bg-ink-900 text-amber-700 border-amber-200 hover:bg-amber-100 hover:border-amber-300 transition-colors shadow-sm" onClick={() => {
                     setDraftNotes(booking.owner_notes || '')
                     setIsEditingNotes(true)
                   }}>
@@ -1107,7 +1107,7 @@ export default function BookingDetail() {
                       autoFocus
                     />
                     <div className="flex justify-end gap-2 pt-1">
-                      <Button variant="secondary" className="h-9 px-4 text-xs font-semibold bg-white border-amber-200 text-amber-700 hover:bg-amber-50" onClick={() => setIsEditingNotes(false)} disabled={actionLoading}>Cancel</Button>
+                      <Button variant="secondary" className="h-9 px-4 text-xs font-semibold bg-white dark:bg-ink-900 border-amber-200 text-amber-700 hover:bg-amber-50" onClick={() => setIsEditingNotes(false)} disabled={actionLoading}>Cancel</Button>
                       <Button variant="primary" className="h-9 px-4 text-xs font-semibold bg-amber-600 hover:bg-amber-700 border-none text-white shadow-sm" onClick={() => handleAction('updateOwnerNotes', { notes: draftNotes })} disabled={actionLoading}>Save Internal Notes</Button>
                     </div>
                   </div>
@@ -1141,20 +1141,20 @@ export default function BookingDetail() {
               <X className="h-6 w-6" />
             </div>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900">Reject Booking Request</h2>
-              <p className="text-sm text-zinc-500 mt-1.5 leading-relaxed">Please provide a reason for rejecting this booking. The user will be notified.</p>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Reject Booking Request</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1.5 leading-relaxed">Please provide a reason for rejecting this booking. The user will be notified.</p>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-zinc-700">Reason for rejection <span className="text-rose-500">*</span></label>
+              <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Reason for rejection <span className="text-rose-500">*</span></label>
               <textarea 
-                className="w-full border border-zinc-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all shadow-inner bg-zinc-50/50 resize-none"
+                className="w-full border border-zinc-200 dark:border-ink-800 rounded-xl p-4 text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all shadow-inner bg-zinc-50/50 resize-none"
                 rows={4}
                 placeholder="e.g. Venue is under maintenance, dates unavailable..."
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
               />
             </div>
-            <div className="flex justify-end gap-3 pt-6 mt-8 border-t border-zinc-100">
+            <div className="flex justify-end gap-3 pt-6 mt-8 border-t border-zinc-100 dark:border-ink-800">
                <Button variant="secondary" onClick={() => setRejectModalOpen(false)}>Cancel</Button>
                <Button variant="primary" className="bg-rose-600 hover:bg-rose-700 text-white border-none shadow-sm" onClick={() => handleAction('reject', { reason: rejectReason })}>Reject Request</Button>
             </div>
@@ -1174,11 +1174,11 @@ export default function BookingDetail() {
               <Calendar className="h-6 w-6" />
             </div>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900">Extend Balance Deadline</h2>
-              <p className="text-sm text-zinc-500 mt-1.5 leading-relaxed">Select a new due date for the balance payment. This gives the customer more time to pay.</p>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Extend Balance Deadline</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1.5 leading-relaxed">Select a new due date for the balance payment. This gives the customer more time to pay.</p>
             </div>
             
-            <div className="bg-zinc-50/50 p-2 rounded-lg border border-zinc-100">
+            <div className="bg-zinc-50/50 p-2 rounded-lg border border-zinc-100 dark:border-ink-800">
               <DoubleMonthCalendar 
                 value={newDeadlineDate}
                 minDate={new Date().toISOString().split('T')[0]}
@@ -1187,7 +1187,7 @@ export default function BookingDetail() {
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-6 mt-8 border-t border-zinc-100">
+            <div className="flex justify-end gap-3 pt-6 mt-8 border-t border-zinc-100 dark:border-ink-800">
                <Button variant="secondary" onClick={() => setExtendModalOpen(false)}>Cancel</Button>
                <Button variant="primary" className="bg-amber-600 hover:bg-amber-700 text-white border-none shadow-sm" onClick={() => {
                  if (newDeadlineDate) {
@@ -1208,12 +1208,12 @@ export default function BookingDetail() {
           className="max-w-xl"
         >
           <div className="p-8">
-            <div className="w-12 h-12 bg-zinc-100 text-zinc-600 rounded-full flex items-center justify-center mb-5 border border-zinc-200/50 shadow-sm">
+            <div className="w-12 h-12 bg-zinc-100 dark:bg-ink-800 text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 rounded-full flex items-center justify-center mb-5 border border-zinc-200/50 shadow-sm">
               <AlertTriangle className="h-6 w-6" />
             </div>
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-zinc-900">Cancel Booking</h2>
-              <p className="text-sm text-zinc-500 mt-1.5 leading-relaxed">Choose how you want to process this cancellation. This action cannot be undone.</p>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Cancel Booking</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1.5 leading-relaxed">Choose how you want to process this cancellation. This action cannot be undone.</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1223,18 +1223,18 @@ export default function BookingDetail() {
                 className={`text-left p-5 rounded-lg border-2 transition-all ${
                   cancelType === 'forfeit' 
                     ? 'border-brand-500 bg-brand-50/50 shadow-sm' 
-                    : 'border-zinc-200 bg-zinc-50/30 hover:border-brand-200 hover:bg-zinc-50'
+                    : 'border-zinc-200 dark:border-ink-800 bg-zinc-50/30 hover:border-brand-200 hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-bold text-zinc-900">Standard Cancel</span>
+                  <span className="font-bold text-zinc-900 dark:text-zinc-100">Standard Cancel</span>
                   {cancelType === 'forfeit' && (
                     <div className="w-5 h-5 bg-brand-500 rounded-full flex items-center justify-center">
                       <Check className="h-3.5 w-3.5 text-white" />
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-zinc-500 leading-relaxed font-medium">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 leading-relaxed font-medium">
                   The customer forfeits their deposit (0% refund). You retain the full collected advance amount, minus the standard platform commission.
                 </p>
               </button>
@@ -1245,24 +1245,24 @@ export default function BookingDetail() {
                 className={`text-left p-5 rounded-lg border-2 transition-all ${
                   cancelType === 'goodwill' 
                     ? 'border-rose-500 bg-rose-50/50 shadow-sm' 
-                    : 'border-zinc-200 bg-zinc-50/30 hover:border-rose-200 hover:bg-zinc-50'
+                    : 'border-zinc-200 dark:border-ink-800 bg-zinc-50/30 hover:border-rose-200 hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-bold text-zinc-900">Goodwill Cancel</span>
+                  <span className="font-bold text-zinc-900 dark:text-zinc-100">Goodwill Cancel</span>
                   {cancelType === 'goodwill' && (
                     <div className="w-5 h-5 bg-rose-500 rounded-full flex items-center justify-center">
                       <Check className="h-3.5 w-3.5 text-white" />
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-zinc-500 leading-relaxed font-medium">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 leading-relaxed font-medium">
                   Calculates a refund based on your venue's "Overdue Advance Refund (%)" policy. Platform commission applies to any amount you retain.
                 </p>
               </button>
             </div>
 
-            <div className="flex justify-end gap-3 pt-6 mt-8 border-t border-zinc-100">
+            <div className="flex justify-end gap-3 pt-6 mt-8 border-t border-zinc-100 dark:border-ink-800">
                <Button variant="secondary" onClick={() => setCancelModalOpen(false)}>Cancel</Button>
                <Button 
                  variant="primary" 

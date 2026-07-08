@@ -40,7 +40,7 @@ export function AppSidebar({
           <button 
             type="button" 
             onClick={onMobileClose} 
-            className="lg:hidden text-zinc-400 hover:text-white transition-colors"
+            className="lg:hidden text-zinc-400 dark:text-zinc-500 hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -50,7 +50,7 @@ export function AppSidebar({
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Main navigation">
         {/* Optional nav group label */}
-        <p className="mb-1.5 px-2.5 text-[10.5px] font-semibold uppercase tracking-widest text-zinc-600">
+        <p className="mb-1.5 px-2.5 text-[10.5px] font-semibold uppercase tracking-widest text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">
           Management
         </p>
         <ul className="space-y-0.5">

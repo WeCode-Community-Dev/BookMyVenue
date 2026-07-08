@@ -338,20 +338,15 @@ export default function VenueEdit() {
           }))
         }
         await venueEndpoints(client).bulkUpdateVenuePhotos(venueId, payload)
-        setVenue({ ...venue, photos: localPhotos })
       } else if (editSection === 'amenities') {
         await venueEndpoints(client).updateVenueAmenities(venueId, { amenity_ids: selectedAmenities })
-        
-        await refetchVenue()
       } else if (editSection === 'blocked-dates') {
         // Blocked dates are managed immediately via inline actions. No overarching save needed.
       } else {
         await venueEndpoints(client).updateVenue(venueId, updates)
-        await refetchVenue()
       }
       
-      // Navigate back to overview after success if not in edit mode
-      // Wait, we just exit edit mode on success instead of navigating away
+      await refetchVenue()
       setIsEditing(false)
     } catch (err) {
       console.error("Failed to update venue", err)
@@ -390,7 +385,7 @@ export default function VenueEdit() {
   }
 
   if (!venue) {
-    return <div className="text-center py-12 text-zinc-500">Venue not found.</div>
+    return <div className="text-center py-12 text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Venue not found.</div>
   }
 
   const portalTarget = typeof document !== 'undefined' ? document.getElementById('topbar-portal-target') : null;
@@ -398,7 +393,7 @@ export default function VenueEdit() {
   return (
     <div className="max-w-4xl mx-auto pb-12 space-y-6 pt-6">
       {portalTarget && createPortal(
-        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-1.5 bg-white border border-zinc-200 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50">
+        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:text-zinc-100 transition-colors flex items-center gap-1.5 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800">
           <ArrowLeft className="h-4 w-4" />
           Back to Overview
         </Link>,
@@ -408,10 +403,10 @@ export default function VenueEdit() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="">
-          <div className="flex items-center justify-between p-6 border-b border-zinc-100 bg-zinc-50/50 rounded-t-xl">
+          <div className="flex items-center justify-between p-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 rounded-t-xl">
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900">{titleMap[editSection] || 'Venue'}</h2>
-              <p className="text-sm text-zinc-500">Update your venue settings below.</p>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{titleMap[editSection] || 'Venue'}</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Update your venue settings below.</p>
             </div>
             <div className="flex items-center gap-3">
               {!isEditing ? (
@@ -438,7 +433,7 @@ export default function VenueEdit() {
               <Input label="Venue Name" name="name" defaultValue={venue.name} required />
               
               <div className="space-y-1">
-                <label className="text-sm font-medium text-zinc-700">Venue Category<span className="text-red-500 ml-1">*</span></label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Venue Category<span className="text-red-500 ml-1">*</span></label>
                 <Select
                   name="category_id"
                   value={venue.category?.id || ''}
@@ -450,12 +445,12 @@ export default function VenueEdit() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">Description</label>
                 <textarea 
                   name="description"
                   rows={4}
                   defaultValue={venue.description || ''}
-                  className="w-full px-3 py-2 rounded-md border border-zinc-200"
+                  className="w-full px-3 py-2 rounded-md border border-zinc-200 dark:border-ink-800"
                 />
               </div>
 
@@ -464,8 +459,8 @@ export default function VenueEdit() {
                   <Input label="Max Capacity" name="max_capacity" type="number" min={1} defaultValue={venue.max_capacity} required />
                 </div>
 
-              <div className="space-y-4 pt-4 border-t border-zinc-100">
-                <h4 className="font-medium text-zinc-900">Location</h4>
+              <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-ink-800">
+                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Location</h4>
                 <Input label="Address Line 1" name="address_line1" value={venue.address_line1 || ''} onChange={e => setVenue(prev => prev ? { ...prev, address_line1: e.target.value } : null)} required />
                 <Input label="Address Line 2" name="address_line2" value={venue.address_line2 || ''} onChange={e => setVenue(prev => prev ? { ...prev, address_line2: e.target.value } : null)} />
                 <div className="grid grid-cols-2 gap-4">
@@ -480,7 +475,7 @@ export default function VenueEdit() {
                   <Input label="Postal Code" name="postal_code" value={venue.postal_code || ''} onChange={e => setVenue(prev => prev ? { ...prev, postal_code: e.target.value } : null)} />
                 </div>
                 <div className="pt-2">
-                  <label className="block text-sm font-medium text-zinc-700 mb-1">Pinpoint Location on Map</label>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">Pinpoint Location on Map</label>
                   <LocationPickerMap
                     latitude={venue.latitude ? parseFloat(venue.latitude) : null}
                     longitude={venue.longitude ? parseFloat(venue.longitude) : null}
@@ -500,7 +495,7 @@ export default function VenueEdit() {
                       })
                     }}
                   />
-                  <p className="text-xs text-zinc-500 mt-1">Click on the map to set the exact coordinates of your venue.</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Click on the map to set the exact coordinates of your venue.</p>
                 </div>
               </div>
             </div>
@@ -509,9 +504,9 @@ export default function VenueEdit() {
           {editSection === 'booking-settings' && (
             <div className="space-y-6">
               <div className="space-y-4">
-                <h4 className="font-medium text-zinc-900">Allowed Booking Types</h4>
+                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Allowed Booking Types</h4>
                 <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">
                     <input 
                       type="checkbox" 
                       name="allow_full_day" 
@@ -521,7 +516,7 @@ export default function VenueEdit() {
                     />
                     Full Day
                   </label>
-                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">
                     <input 
                       type="checkbox" 
                       name="allow_time_slot" 
@@ -534,8 +529,8 @@ export default function VenueEdit() {
                 </div>
               </div>
 
-              <div className="space-y-4 pt-6 border-t border-zinc-100">
-                <h4 className="font-medium text-zinc-900">Booking Limits & Buffers</h4>
+              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Booking Limits & Buffers</h4>
                 <div className="space-y-6 max-w-3xl">
                   <div className="grid md:grid-cols-2 gap-12">
                     <DurationInput label="Min Booking Duration" name="min_booking_duration_minutes" defaultValue={venue.min_booking_duration_minutes} required info="The shortest allowed duration for a time-slot booking." />
@@ -553,8 +548,8 @@ export default function VenueEdit() {
                 </div>
               </div>
 
-              <div className="space-y-4 pt-6 border-t border-zinc-100">
-                <h4 className="font-medium text-zinc-900">Approval Window</h4>
+              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Approval Window</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} defaultValue={venue.owner_action_window_hours} required helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
                 </div>
@@ -565,7 +560,7 @@ export default function VenueEdit() {
           {editSection === 'pricing' && (
             <div className="space-y-6">
               <div className="space-y-4">
-                <h4 className="font-medium text-zinc-900">Pricing</h4>
+                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Pricing</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className={!allowFullDay ? 'opacity-50 pointer-events-none' : ''}>
                     <Input label="Base Price (₹) (Full Day)" name="base_price" type="number" min={0} defaultValue={(venue.starting_price_paise || 0) / 100} disabled={!allowFullDay} required={allowFullDay} info="The total price for a full day booking." />
@@ -574,16 +569,16 @@ export default function VenueEdit() {
                     <Input label="Hourly Rate (₹) (Time Slot)" name="hourly_rate" type="number" min={0} defaultValue={(venue.hourly_rate_paise || 0) / 100} disabled={!allowTimeSlot} required={allowTimeSlot} info="The price per hour for short time-slot bookings." />
                   </div>
                 </div>
-                <p className="text-sm text-zinc-500 italic mt-2">Prices will only be applied if the corresponding booking type is enabled in Booking Settings.</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 italic mt-2">Prices will only be applied if the corresponding booking type is enabled in Booking Settings.</p>
               </div>
 
-              <div className="space-y-4 pt-6 border-t border-zinc-100">
-                <h4 className="font-medium text-zinc-900">Payment Terms</h4>
+              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Payment Terms</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <Input label="Token Advance (%)" name="advance_pct" type="number" step="0.01" min={0.01} max={100} defaultValue={venue.advance_pct} required info="The percentage of the total booking cost required upfront to secure the reservation." />
                   <Input label="Balance Due (Days before event)" name="balance_due" type="number" min={1} defaultValue={venue.balance_due_days_before_event} required info="The number of days prior to the event date when the remaining balance must be paid in full." />
                 </div>
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100 dark:border-ink-800">
                   <Input label="Min Price Bound (%)" name="min_price_pct" type="number" min={0.01} max={100} step="0.01" required defaultValue={venue.min_price_pct || 50} info="The minimum allowed price percentage relative to the base price for pricing rules." />
                   <Input label="Max Price Bound (%)" name="max_price_pct" type="number" min={100} max={500} step="0.01" required defaultValue={venue.max_price_pct || 200} info="The maximum allowed price percentage relative to the base price for pricing rules." />
                 </div>
@@ -641,13 +636,13 @@ export default function VenueEdit() {
               </div>
 
               {(!localPhotos || localPhotos.length === 0) ? (
-                <div className="text-center py-12 border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50">
-                  <p className="text-sm text-zinc-500">No photos uploaded yet.</p>
+                <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-ink-800 rounded-xl bg-zinc-50 dark:bg-ink-800">
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">No photos uploaded yet.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {localPhotos.map((photo, index) => (
-                    <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-zinc-200/60 aspect-video bg-zinc-100 flex flex-col shadow-sm hover:shadow-md transition-all duration-300 ring-1 ring-zinc-900/5">
+                    <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-zinc-200/60 aspect-video bg-zinc-100 dark:bg-ink-800 flex flex-col shadow-sm hover:shadow-md transition-all duration-300 ring-1 ring-zinc-900/5">
                       <img src={photo.image_url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Venue" />
                       
                       {/* Subtle top gradient for badge contrast */}
@@ -669,7 +664,7 @@ export default function VenueEdit() {
                           {/* Center "Make Cover" Button */}
                           {index !== 0 && (
                             <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[1px]">
-                              <button type="button" onClick={() => makeCover(index)} className="bg-white text-zinc-900 text-sm font-semibold px-4 py-2 rounded-full shadow-lg hover:bg-brand hover:text-white hover:scale-105 transition-all duration-200 flex items-center gap-2">
+                              <button type="button" onClick={() => makeCover(index)} className="bg-white dark:bg-ink-900 text-zinc-900 dark:text-zinc-100 text-sm font-semibold px-4 py-2 rounded-full shadow-lg hover:bg-brand hover:text-white hover:scale-105 transition-all duration-200 flex items-center gap-2">
                                 <Icons.Image className="w-4 h-4" />
                                 Make Cover
                               </button>
@@ -737,12 +732,12 @@ export default function VenueEdit() {
 
           {editSection === 'amenities' && (
             <div className="space-y-4">
-              <h4 className="font-medium text-zinc-900">Select Amenities</h4>
+              <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Select Amenities</h4>
               {platformAmenities.length === 0 ? (
-                <p className="text-sm text-zinc-500">Loading amenities...</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Loading amenities...</p>
               ) : !isEditing && selectedAmenities.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50">
-                  <p className="text-sm text-zinc-500">No amenities selected.</p>
+                <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-ink-800 rounded-xl bg-zinc-50 dark:bg-ink-800">
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">No amenities selected.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -756,7 +751,7 @@ export default function VenueEdit() {
                       <label 
                         key={amenity.id} 
                         className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                          isSelected ? 'border-brand bg-brand/5' : 'border-zinc-200 hover:bg-zinc-50'
+                          isSelected ? 'border-brand bg-brand/5' : 'border-zinc-200 dark:border-ink-800 hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800'
                         }`}
                       >
                         <input 
@@ -771,8 +766,8 @@ export default function VenueEdit() {
                           }}
                           className="rounded text-brand focus:ring-brand sr-only" 
                         />
-                        <Icon className={`h-5 w-5 ${isSelected ? 'text-brand' : 'text-zinc-400'}`} />
-                        <span className={`text-sm font-medium ${isSelected ? 'text-brand-hover' : 'text-zinc-700'}`}>
+                        <Icon className={`h-5 w-5 ${isSelected ? 'text-brand' : 'text-zinc-400 dark:text-zinc-500'}`} />
+                        <span className={`text-sm font-medium ${isSelected ? 'text-brand-hover' : 'text-zinc-700 dark:text-zinc-300 dark:text-zinc-600'}`}>
                           {amenity.name}
                         </span>
                       </label>
@@ -786,34 +781,34 @@ export default function VenueEdit() {
           {editSection === 'policies' && (
             <div className="space-y-6">
               <div className="flex items-center mb-6">
-                <h4 className="font-medium text-zinc-900">Refund Tiers</h4>
+                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Refund Tiers</h4>
                 <InfoTooltip content="Define your cancellation refund tiers. The hours must be in descending order (e.g. 168 hours = 7 days, 72 hours = 3 days)." />
               </div>
 
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 p-4 rounded-lg border border-zinc-200">
+                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 dark:bg-ink-800 p-4 rounded-lg border border-zinc-200 dark:border-ink-800">
                   <HoursToDaysInput label="Tier 1: Cancel before (Hours)" name="tier_1_hours" type="number" min={1} defaultValue={venue.cancellation_policy?.tier_1_hours || ''} placeholder="e.g. 168" />
                   <Input label="Refund %" name="tier_1_refund_pct" type="number" step="0.01" min="0" max="100" defaultValue={venue.cancellation_policy?.tier_1_refund_pct || ''} placeholder="e.g. 100" />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 p-4 rounded-lg border border-zinc-200">
+                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 dark:bg-ink-800 p-4 rounded-lg border border-zinc-200 dark:border-ink-800">
                   <HoursToDaysInput label="Tier 2: Cancel before (Hours)" name="tier_2_hours" type="number" min={1} defaultValue={venue.cancellation_policy?.tier_2_hours || ''} placeholder="e.g. 72" />
                   <Input label="Refund %" name="tier_2_refund_pct" type="number" step="0.01" min="0" max="100" defaultValue={venue.cancellation_policy?.tier_2_refund_pct || ''} placeholder="e.g. 50" />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 p-4 rounded-lg border border-zinc-200">
+                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 dark:bg-ink-800 p-4 rounded-lg border border-zinc-200 dark:border-ink-800">
                   <HoursToDaysInput label="Tier 3: Cancel before (Hours) (Optional)" name="tier_3_hours" type="number" min={1} defaultValue={venue.cancellation_policy?.tier_3_hours || ''} placeholder="e.g. 24" />
                   <Input label="Refund % (Optional)" name="tier_3_refund_pct" type="number" step="0.01" min="0" max="100" defaultValue={venue.cancellation_policy?.tier_3_refund_pct || ''} placeholder="e.g. 25" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-zinc-100">
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
                 <Input label="No Show Refund (%)" name="no_show_refund_pct" type="number" step="0.01" min="0" max="100" required defaultValue={venue.cancellation_policy?.no_show_refund_pct || '0'} info="The percentage of the booking cost refunded to the customer if they fail to show up for their reservation without prior cancellation." />
                 <Input label="Overdue Advance Refund (%)" name="overdue_advance_refund_pct" type="number" step="0.01" min="0" max="100" required defaultValue={venue.overdue_advance_refund_pct || '0'} info="Refund given if you (the owner) fail to accept/reject a booking request in time." />
               </div>
 
-              <div className="pt-4 border-t border-zinc-100">
-                <label className="flex items-center text-sm font-medium text-zinc-700 mb-1">
+              <div className="pt-4 border-t border-zinc-100 dark:border-ink-800">
+                <label className="flex items-center text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">
                   Additional Policy Notes (Optional)
                   <InfoTooltip content="Any extra rules, exceptions, or specific conditions regarding cancellations and refunds (e.g., weather policies, rescheduling rules)." />
                 </label>
@@ -821,7 +816,7 @@ export default function VenueEdit() {
                   name="notes"
                   defaultValue={venue.cancellation_policy?.notes || ''}
                   rows={3}
-                  className="w-full px-3 py-2 rounded-md border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
+                  className="w-full px-3 py-2 rounded-md border border-zinc-200 dark:border-ink-800 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                   placeholder="e.g. In case of severe weather, full refunds are provided regardless of the cancellation window."
                 />
               </div>
@@ -831,12 +826,12 @@ export default function VenueEdit() {
           {editSection === 'operating-hours' && (
             <div className="space-y-6">
               <div className="space-y-6">
-                <h4 className="font-medium text-zinc-900">Base Schedule</h4>
+                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Base Schedule</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <TimeSelect label="Opening Time" name="open_time" value={venue.open_time || ''} onChange={e => setVenue(prev => prev ? { ...prev, open_time: e.target.value } : null)} required />
                   <TimeSelect label="Closing Time" name="close_time" value={venue.close_time || ''} onChange={e => setVenue(prev => prev ? { ...prev, close_time: e.target.value } : null)} required />
                 </div>
-                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">
                   <input type="checkbox" name="spans_next_day" defaultChecked={venue.spans_next_day} className="rounded text-brand focus:ring-brand" />
                   Operating hours span into the next day (e.g., closes after midnight)
                 </label>

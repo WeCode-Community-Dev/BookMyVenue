@@ -12,7 +12,7 @@ export function AppTopbar({ title, subtitle, onMenuToggle, actions, className }:
   return (
     <header
       className={cn(
-        'flex h-[60px] shrink-0 items-center gap-3 border-b border-zinc-200 bg-white px-4 lg:px-6',
+        'flex h-[60px] shrink-0 items-center gap-3 border-b border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 px-4 lg:px-6 dark:border-ink-800 dark:bg-ink-950/95',
         className,
       )}
     >
@@ -21,7 +21,7 @@ export function AppTopbar({ title, subtitle, onMenuToggle, actions, className }:
         <button
           type="button"
           onClick={onMenuToggle}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 lg:hidden"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 transition-colors hover:bg-zinc-100 dark:hover:bg-ink-800 dark:bg-ink-800 dark:text-zinc-400 dark:text-zinc-500 dark:hover:bg-ink-800 lg:hidden"
           aria-label="Open navigation"
         >
           <svg className="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -31,9 +31,9 @@ export function AppTopbar({ title, subtitle, onMenuToggle, actions, className }:
       )}
 
       <div className="min-w-0 flex-1">
-        <h1 className="text-[15px] font-semibold tracking-tight text-zinc-900 truncate">{title}</h1>
+        <h1 className="text-[15px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">{title}</h1>
         {subtitle && (
-          <p className="text-xs text-zinc-400 truncate">{subtitle}</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 truncate">{subtitle}</p>
         )}
       </div>
 

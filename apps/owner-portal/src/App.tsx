@@ -18,13 +18,7 @@ export default function App() {
       <Toaster 
         position="top-center" 
         toastOptions={{
-          style: {
-            background: '#fff',
-            color: '#18181b',
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-            borderRadius: '0.5rem',
-            border: '1px solid #e4e4e7',
-          }
+          className: '!bg-white dark:!bg-ink-900 !text-zinc-900 dark:!text-zinc-100 !border !border-zinc-200 dark:!border-ink-800',
         }} 
       />
       <RouterProvider router={router} />
