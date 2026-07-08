@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { District, VenueCategory } from "@bookmyvenue/database";
 import { Sparkles, Loader2, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { DISTRICTS, VENUE_CATEGORIES } from "@bookmyvenue/types";
@@ -12,7 +13,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 const PAGE_LIMIT = 50;
 const ALL = "all";
 
-export default function VenuesPage() {
+function VenuesPageContent() {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -202,5 +203,13 @@ export default function VenuesPage() {
                 )}
             </div>
         </section>
+    );
+}
+
+export default function VenuesPage() {
+    return (
+        <Suspense>
+            <VenuesPageContent />
+        </Suspense>
     );
 }

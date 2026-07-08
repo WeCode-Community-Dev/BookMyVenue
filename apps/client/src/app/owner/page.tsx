@@ -1,6 +1,6 @@
 "use client";
 
-import {  useState } from "react";
+import {  Suspense, useState } from "react";
 import { Building2, CalendarCheck, CheckCircle2, IndianRupee, Plus } from "lucide-react";
 import StatCards from "@/components/owner/StatCards";
 import NavTabs from "@/components/owner/NavTabs";
@@ -16,9 +16,7 @@ function isTab(value: string | null): value is Tab {
     return value !== null && TABS.includes(value as Tab);
 }
 
-export default function OwnerDashboard() {
-
-
+function OwnerDashboardContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -110,5 +108,13 @@ export default function OwnerDashboard() {
                 {activeTab === "venues" && <VenuesTab />}
             </div>
         </div>
+    );
+}
+
+export default function OwnerDashboard() {
+    return (
+        <Suspense>
+            <OwnerDashboardContent />
+        </Suspense>
     );
 }
