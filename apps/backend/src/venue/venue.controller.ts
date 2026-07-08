@@ -14,16 +14,17 @@ import { VenueService } from './venue.service';
 import { CreateVenueDto } from './dto/create-venue.dto';
 
 import type { AuthRequest } from 'src/types/auth.request.interface';
-
-@Controller('venues')
+interface UploadedFile {
+  buffer: Buffer;
+}
+@Controller('venue')
 export class VenueController {
   constructor(private readonly venueService: VenueService) {}
-
-  @Post()
+  @Post('add')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('images', 10))
   createVenue(
-    @UploadedFiles() files: any[],
+    @UploadedFiles() files: UploadedFile[],
     @Body() dto: CreateVenueDto,
     @Request() req: AuthRequest,
   ) {
