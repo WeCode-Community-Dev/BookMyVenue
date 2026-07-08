@@ -236,8 +236,8 @@ export default function Payment() {
 
   const isFullDue =
     booking != null &&
-    ((booking.status === 'payment_pending' && booking.payment_required) ||
-      (booking.status === 'owner_accepted' && booking.advance_pct === 100))
+    booking.payment_options?.full != null &&
+    (booking.status === 'payment_pending' || booking.status === 'owner_accepted')
 
   const isPaymentDue =
     paymentType === 'balance'
@@ -309,12 +309,12 @@ export default function Payment() {
     )
   }
 
-  const isFullPayment = paymentType === 'full' || booking.advance_pct === 100
-  const amountDuePaise =
+const isFullPayment = paymentType === 'full'
+const amountDuePaise =
     paymentType === 'balance'
       ? booking.balance_due_paise
       : paymentType === 'full'
-        ? booking.quoted_price_paise
+        ? booking.payment_options?.full?.amount_paise ?? booking.balance_due_paise + booking.advance_due_paise
         : booking.advance_due_paise
   const payLabel = formatPrice(amountDuePaise)
 
