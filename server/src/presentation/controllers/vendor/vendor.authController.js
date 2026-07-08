@@ -16,11 +16,13 @@ export class VendorAuthController {
         loginVendorUseCase,
         verifyVendorRegisterOtp,
         resendVendorOtpUsecase,
+        vendorRefreshTokenUsecase,
     ) {
         this._registerVendorUseCase = registerVendorUseCase;
         this._loginVendorUseCase = loginVendorUseCase;
         this._verifyVendorRegisterOtp = verifyVendorRegisterOtp;
         this._resendVendorOtp = resendVendorOtpUsecase;
+        this._refreshTokenUsecase = vendorRefreshTokenUsecase;
     }
 
     register = asyncHandler(async (req, res) => {
@@ -42,5 +44,12 @@ export class VendorAuthController {
     resendOtp = asyncHandler(async (req, res) => {
         await this.this._resendVendorOtp.execute({email: req.body.email});
         return sendSuccess(res, statusCode.OK, authMessages.success.OTP_RESENT);
+    });
+
+    refreshToken = asyncHandler(async (req, res) => {
+        const token = req.cookies?.refreshToken;
+        const { accessToken, refreshToken } = await this._refreshTokenUseCase.execute(token);
+        res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
+        return sendSuccess(res, statusCode.OK, authMessages.success.TOKEN_REFRESHED, { accessToken });
     });
 }
