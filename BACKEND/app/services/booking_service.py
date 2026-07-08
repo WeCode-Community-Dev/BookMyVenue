@@ -7,6 +7,8 @@ from app.model.venue import Venue
 from app.model.user import User
 from typing import Optional
 from sqlalchemy.orm import joinedload
+from datetime import datetime
+
 
 def create_booking(
     db: Session,
@@ -72,6 +74,32 @@ def get_booking(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error retrieving bookings: {e}"
         )
+
+def get_already_booked_slots(
+    db: Session,
+    user_id: int = None,
+) -> List[Booking]:
+    try:
+
+        today = datetime.now().date()
+
+        query = db.query(Booking).filter(
+            Booking.status.in_(["confirmed", "offline"]),
+            Booking.booking_date >= today
+        )
+        
+        if user_id is not None:
+            query = query.filter(Booking.user_id == user_id)
+
+        bookings = query.all()
+        return bookings
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving already booked slots: {e}"
+        )
+
 
 def get_all_booking_across_venues(
     db: Session,

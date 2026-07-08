@@ -19,7 +19,7 @@ async def get_my_earnings(
     db: Session = Depends(get_db)
 ):
     """
-    Get all bookings for the current user.
+    Get total earnings for the current user.
     """ 
     try:
         return get_earnings(
