@@ -7,8 +7,13 @@ import {
     Patch,
     Post,
     Req,
+    UploadedFile,
+    UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { Role } from '@prisma/client';
 import { AuthenticatedRequest } from '../auth/types/authenticated-request.type';
 import { Public } from '../../shared/decorators/public.decorator';
@@ -22,6 +27,42 @@ import { VenueService } from './venue.service';
 @Controller('venues')
 export class VenueController {
     constructor(private readonly venueService: VenueService) { }
+
+    @ApiBearerAuth()
+    @Roles(Role.OWNER)
+    @Post('upload')
+    @UseInterceptors(
+        FileInterceptor('image', {
+            storage: diskStorage({
+                destination: './uploads',
+                filename: (req, file, callback) => {
+                    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                    const ext = extname(file.originalname);
+                    callback(null, `venue-${uniqueSuffix}${ext}`);
+                },
+            }),
+        }),
+    )
+    @ApiConsumes('multipart/form-data')
+    @ApiOperation({ summary: 'Upload a venue image' })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                image: { type: 'string', format: 'binary' },
+            },
+        },
+    })
+    async uploadFile(
+        @UploadedFile() file: Express.Multer.File, 
+        @Req() req: AuthenticatedRequest & import('express').Request
+    ) {
+        const serverUrl = `${req.protocol}://${req.get('host')}`;
+        return {
+            success: true,
+            imageUrl: `${serverUrl}/uploads/${file.filename}`,
+        };
+    }
 
     @ApiBearerAuth()
     @Roles(Role.OWNER)

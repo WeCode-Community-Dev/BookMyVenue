@@ -14,9 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.bookmyvenue.data.NetworkClient
 import com.example.bookmyvenue.data.ResendOtpRequest
 import com.example.bookmyvenue.data.VerifyOtpRequest
@@ -31,6 +33,8 @@ fun OtpScreen(email: String, onVerificationSuccess: () -> Unit) {
     var isLoading by remember { mutableStateOf(false) }
     val maxOtpLength = 6
 
+    val brandColorRed = Color(0xFFE51E26)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -38,12 +42,10 @@ fun OtpScreen(email: String, onVerificationSuccess: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Verify Your Email", style = MaterialTheme.typography.headlineLarge)
+        Text("Verify Your Email", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "An OTP has been sent to $email",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
 
@@ -75,7 +77,7 @@ fun OtpScreen(email: String, onVerificationSuccess: () -> Unit) {
                         else -> ""
                     }
                     val isFocused = index == otpCode.length
-                    val borderColor = if (isFocused) MaterialTheme.colorScheme.primary else Color.LightGray
+                    val borderColor = if (isFocused) brandColorRed else Color.LightGray
                     val borderWidth = if (isFocused) 2.dp else 1.dp
 
                     Box(
@@ -87,9 +89,10 @@ fun OtpScreen(email: String, onVerificationSuccess: () -> Unit) {
                     ) {
                         Text(
                             text = char,
-                            style = MaterialTheme.typography.titleLarge,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = Color(0xFF1E293B)
                         )
                     }
                 }
@@ -107,14 +110,23 @@ fun OtpScreen(email: String, onVerificationSuccess: () -> Unit) {
 
                         isLoading = false
                         if (response.isSuccessful && response.body()?.success == true) {
-                            Toast.makeText(context, "A fresh signup OTP has been sent!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "A fresh signup OTP has been sent!",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         } else {
-                            val errorMsg = response.body()?.message ?: "Failed to resend OTP. Please try again."
+                            val errorMsg = response.body()?.message
+                                ?: "Failed to resend OTP. Please try again."
                             Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
                         }
                     } catch (e: Exception) {
                         isLoading = false
-                        Toast.makeText(context, "Network Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            context,
+                            "Network Error: ${e.localizedMessage}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             },
@@ -122,8 +134,7 @@ fun OtpScreen(email: String, onVerificationSuccess: () -> Unit) {
         ) {
             Text(
                 text = "Didn't receive the code? Resend OTP",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = brandColorRed
             )
         }
 
@@ -132,7 +143,11 @@ fun OtpScreen(email: String, onVerificationSuccess: () -> Unit) {
         Button(
             onClick = {
                 if (otpCode.length < maxOtpLength) {
-                    Toast.makeText(context, "Please enter the full 6-digit code", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        "Please enter the full 6-digit code",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     return@Button
                 }
 
@@ -144,7 +159,11 @@ fun OtpScreen(email: String, onVerificationSuccess: () -> Unit) {
 
                         isLoading = false
                         if (response.isSuccessful) {
-                            Toast.makeText(context, "Account verified successfully!", Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                context,
+                                "Account verified successfully!",
+                                Toast.LENGTH_LONG
+                            ).show()
                             onVerificationSuccess()
                         } else {
                             val errorMsg = response.body()?.message ?: "Invalid OTP code"
@@ -152,17 +171,28 @@ fun OtpScreen(email: String, onVerificationSuccess: () -> Unit) {
                         }
                     } catch (e: Exception) {
                         isLoading = false
-                        Toast.makeText(context, "Network Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            context,
+                            "Network Error: ${e.localizedMessage}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = brandColorRed),
             enabled = !isLoading
         ) {
             if (isLoading) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
             } else {
-                Text("Verify")
+                Text("Verify", fontSize = 16.sp, color = Color.White)
             }
         }
     }

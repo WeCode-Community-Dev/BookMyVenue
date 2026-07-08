@@ -83,6 +83,16 @@ export class UpdateVenueDto {
   imageUrls?: string[];
 
   @ApiPropertyOptional({
+    example: ['WiFi', 'Air Conditioning', 'Sound System', 'Parking'],
+    description: 'Updated list of amenities available at the venue',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ArrayMaxSize(20)
+  amenities?: string[];
+
+  @ApiPropertyOptional({
     example: '550e8400-e29b-41d4-a716-446655440111',
     description: 'Updated listed category ID for this venue',
   })

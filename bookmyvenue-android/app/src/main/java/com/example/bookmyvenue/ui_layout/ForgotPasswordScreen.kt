@@ -1,4 +1,5 @@
 package com.example.bookmyvenue.ui_layout
+
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,10 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.bookmyvenue.data.*
 import kotlinx.coroutines.launch
 
@@ -32,6 +35,8 @@ fun ForgotPasswordScreen(onNavigateBackToLogin: () -> Unit) {
     var confirmPassword by remember { mutableStateOf("") }
     val maxOtpLength = 6
 
+    val brandColorRed = Color(0xFFE51E26)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -40,7 +45,7 @@ fun ForgotPasswordScreen(onNavigateBackToLogin: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (currentStep == 1) {
-            Text("Reset Password", style = MaterialTheme.typography.headlineLarge)
+            Text("Reset Password", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
             Spacer(modifier = Modifier.height(8.dp))
             Text("Enter your registered email address to receive a validation code.", textAlign = TextAlign.Center)
 
@@ -50,6 +55,7 @@ fun ForgotPasswordScreen(onNavigateBackToLogin: () -> Unit) {
                 onValueChange = { email = it },
                 label = { Text("Email Address") },
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
                 enabled = !isLoading
             )
 
@@ -82,14 +88,17 @@ fun ForgotPasswordScreen(onNavigateBackToLogin: () -> Unit) {
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = brandColorRed),
                 enabled = !isLoading
             ) {
-                if (isLoading) CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
-                else Text("Send OTP")
+                if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                else Text("Send OTP", fontWeight = FontWeight.Bold)
             }
         }
+
         if (currentStep == 2) {
-            Text("Verify Code", style = MaterialTheme.typography.headlineLarge)
+            Text("Verify Code", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
             Spacer(modifier = Modifier.height(8.dp))
             Text("Type the 6-digit verification code sent to:\n$email", textAlign = TextAlign.Center)
 
@@ -115,12 +124,12 @@ fun ForgotPasswordScreen(onNavigateBackToLogin: () -> Unit) {
                                 .background(Color.White, RoundedCornerShape(8.dp))
                                 .border(
                                     width = if (isFocused) 2.dp else 1.dp,
-                                    color = if (isFocused) MaterialTheme.colorScheme.primary else Color.LightGray,
+                                    color = if (isFocused) brandColorRed else Color.LightGray,
                                     shape = RoundedCornerShape(8.dp)
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = char, style = MaterialTheme.typography.titleLarge)
+                            Text(text = char, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -150,7 +159,7 @@ fun ForgotPasswordScreen(onNavigateBackToLogin: () -> Unit) {
                 },
                 enabled = !isLoading
             ) {
-                Text("Didn't receive the code? Resend OTP", style = MaterialTheme.typography.bodyMedium)
+                Text("Didn't receive the code? Resend OTP", color = brandColorRed)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -182,16 +191,19 @@ fun ForgotPasswordScreen(onNavigateBackToLogin: () -> Unit) {
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = brandColorRed),
                 enabled = !isLoading
             ) {
-                if (isLoading) CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
-                else Text("Verify Code")
+                if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                else Text("Verify Code", fontWeight = FontWeight.Bold)
             }
         }
+
         if (currentStep == 3) {
-            Text("New Credentials", style = MaterialTheme.typography.headlineLarge)
+            Text("New Credentials", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Establish a strong security password configuration layout.", textAlign = TextAlign.Center)
+            Text("Establish a strong security password configuration.", textAlign = TextAlign.Center)
 
             Spacer(modifier = Modifier.height(32.dp))
             OutlinedTextField(
@@ -200,6 +212,7 @@ fun ForgotPasswordScreen(onNavigateBackToLogin: () -> Unit) {
                 label = { Text("New Password") },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
                 enabled = !isLoading
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -209,6 +222,7 @@ fun ForgotPasswordScreen(onNavigateBackToLogin: () -> Unit) {
                 label = { Text("Confirm Password") },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
                 enabled = !isLoading
             )
 
@@ -249,16 +263,18 @@ fun ForgotPasswordScreen(onNavigateBackToLogin: () -> Unit) {
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = brandColorRed),
                 enabled = !isLoading
             ) {
-                if (isLoading) CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
-                else Text("Update Password")
+                if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                else Text("Update Password", fontWeight = FontWeight.Bold)
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
         TextButton(onClick = onNavigateBackToLogin, enabled = !isLoading) {
-            Text("Back to Login")
+            Text("Back to Login", color = Color(0xFF64748B))
         }
     }
 }

@@ -1,6 +1,9 @@
 package com.example.bookmyvenue.data
+
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 interface AuthApiService {
@@ -25,7 +28,11 @@ interface AuthApiService {
     @POST("api/auth/reset-password")
     suspend fun resetPassword(@Body request: ResetPasswordRequest): Response<GenericResponse>
 
+    @GET("api/auth/me")
+    suspend fun getUserProfile(
+        @Header("Authorization") bearerToken: String
+    ): Response<UserProfileResponse>
+
     @POST("api/auth/logout")
     suspend fun logoutUser(): Response<AuthResponse>
-
 }

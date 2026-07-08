@@ -26,6 +26,7 @@ export class VenueService {
         pricePerHour: dto.pricePerHour,
         capacity: dto.capacity,
         imageUrls: dto.imageUrls?.map((url) => url.trim()) ?? [],
+        amenities: dto.amenities?.map((item) => item.trim()) ?? [],
         ownerId,
         categoryId: dto.categoryId,
         isListed: false,
@@ -95,6 +96,9 @@ export class VenueService {
     if (dto.capacity !== undefined) data.capacity = dto.capacity;
     if (dto.imageUrls !== undefined) {
       data.imageUrls = { set: dto.imageUrls.map((url) => url.trim()) };
+    }
+    if (dto.amenities !== undefined) {
+      data.amenities = { set: dto.amenities.map((item) => item.trim()) }; 
     }
     if (dto.categoryId !== undefined) {
       data.category = { connect: { id: dto.categoryId } };

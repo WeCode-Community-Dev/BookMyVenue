@@ -68,18 +68,28 @@ export class CreateVenueDto {
   @Min(1)
   capacity!: number;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: [
       'https://example.com/images/emerald-1.jpg',
       'https://example.com/images/emerald-2.jpg',
     ],
-    description: 'Optional list of public image URLs for the venue',
+    description: 'List of public uploaded image URLs for the venue cover slide',
+  })
+  @IsArray()
+  @IsNotEmpty()
+  @ArrayMaxSize(10)
+  @IsUrl({}, { each: true })
+  imageUrls!: string[];
+
+  @ApiPropertyOptional({
+    example: ['WiFi', 'Air Conditioning', 'Sound System', 'Parking'],
+    description: 'Optional list of amenities available at the venue',
   })
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(10)
-  @IsUrl({}, { each: true })
-  imageUrls?: string[];
+  @IsString({ each: true })
+  @ArrayMaxSize(20)
+  amenities?: string[];
 
   @ApiProperty({
     example: '550e8400-e29b-41d4-a716-446655440000',
