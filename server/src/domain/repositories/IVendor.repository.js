@@ -15,6 +15,10 @@ export class IVendorRepository {
         throw new Error('Method not implemented');
     }
 
+    async verifyOtp(vendorId) {
+        throw new Error('Method not implemented');
+    }
+
     async approveVendor(vendorId){
         throw new Error('Method not implemented');
     }

@@ -78,6 +78,7 @@ import { UserGetTopVenuesUsecase } from '../../application/user/usecases/venue/u
 import { VendorAuthController } from './vendor/vendor.authController.js'
 import { RegisterVendorUsecase } from '../../application/vendor/usecases/auth/vendor.registerVendor.useCase.js'
 import { LoginVendorUsecase } from '../../application/vendor/usecases/auth/vendor.loginVendor.useCase.js'
+import { VendorVerifyOtpUseCase } from '../../application/vendor/usecases/auth/vendor.verifyOtp.usecase.js'
 
 //repository
 const iVenueRepository = new VenueRepository();
@@ -179,6 +180,11 @@ const iLoginVendor = new LoginVendorUsecase (
     iVendorRepository,
     iHashService,
     iTokenService
+)
+const iVerifyVendorOtp = new VendorVerifyOtpUseCase (
+    iVendorRepository,
+    iOtpService,
+    iOtpStoreService
 )
 const iCreateVenueUsecase = new VendorCreateVenueUsecase(iVenueRepository)
 const iUpdateVenueUsecase = new VendorEditVenueUsecase(iVenueRepository, iCloudinaryService)
@@ -332,5 +338,6 @@ export const iVendorDashboardController = new VendorDashboardController(
 
 export const iVendorAuthController = new VendorAuthController (
     iRegsiterVendor,
-    iLoginVendor
+    iLoginVendor,
+    iVerifyVendorOtp
 )

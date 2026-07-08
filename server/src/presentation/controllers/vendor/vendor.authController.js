@@ -1,6 +1,7 @@
 import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 import { sendSuccess } from "../../../shared/utils/apiResponse.js";
 import { statusCode } from "../../../shared/constants/enums/statusCode.js";
+import { authMessages } from "../../../shared/constants/messages/authMessages.js";
 
 const REFRESH_COOKIE_OPTIONS = {
     httpOnly: true,
@@ -12,15 +13,22 @@ const REFRESH_COOKIE_OPTIONS = {
 export class VendorAuthController {
     constructor(
         registerVendorUseCase, 
-        loginVendorUseCase
+        loginVendorUseCase,
+        verifyVendorRegisterOtp,
     ) {
         this._registerVendorUseCase = registerVendorUseCase;
         this._loginVendorUseCase = loginVendorUseCase;
+        this._verifyVendorRegisterOtp = verifyVendorRegisterOtp
     }
 
     register = asyncHandler(async (req, res) => {
-        const vendor = await this._registerVendorUseCase.execute({...req.body});
-        return sendSuccess(res, statusCode.CREATED, '', vendor);
+        await this._registerVendorUseCase.execute({...req.body});
+        return sendSuccess(res, statusCode.CREATED, '');
+    });
+
+    verifyOtp = asyncHandler(async (req, res) => {
+        await this._verifyVendorRegisterOtp.execute({...req.body});
+        return sendSuccess(res, statusCode.OK, authMessages.success.OTP_VERIFIED);
     });
 
     login = asyncHandler(async (req, res) => {

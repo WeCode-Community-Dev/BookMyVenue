@@ -47,6 +47,22 @@ class VendorRepositoryImpl extends IVendorRepository {
         };
     }
 
+    async verifyOtp(vendorId) {
+        const document = await VendorModel.findByIdAndUpdate(
+            vendorId,
+            {
+                isVerified: true,
+            },
+            {
+                new: true
+            }
+        );
+
+        if (!document) return null;
+
+        return VendorMapper.mapToEntity(document);
+    }
+    
     async approveVendor(vendorId) {
         const updatedVendor = await VendorModel.findByIdAndUpdate(
             vendorId,
