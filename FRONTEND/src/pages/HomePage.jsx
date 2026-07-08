@@ -1,18 +1,28 @@
 import NavBar from "../components/Navbar";
 import Filters from "../components/Filters";
 import VenueGrid from "../components/VenueGrid";
+import { useState } from "react";
 
 export default function HomePage() {
+    const [searchParams, setSearchParams] = useState({
+        q: '',
+        location: '',
+        min_price: null,
+        max_price: null,
+        wifi: null,
+        parking: null,
+        ac: null
+    });
     
     return (
         <>
             <NavBar />
             <div className="Hero-Section relative flex flex-col w-full h-screen bg-[#f4f4f2] bg-cover bg-center flex items-center justify-center">
                 <HeroContent />
-                <Searchbar />
-                <Filters />
+                <Searchbar setSearchParams={setSearchParams} />
+                <Filters setSearchParams={setSearchParams} searchParams={searchParams} />
             </div>
-            <VenueGrid />
+            <VenueGrid searchParams={searchParams} />
         </>
     );
 }
@@ -42,15 +52,29 @@ function HeroContent() {
     );
 }
 
-function Searchbar() {
+function Searchbar({ setSearchParams }) {
+
+    const [localInput, setLocalInput] = useState("");
+
+    const handleSearch = () => {
+        setSearchParams(prev => ({
+            ...prev,
+            q: localInput
+        }));
+    }; 
+
     return (
         <div className="SEARCH-BAR z-50 flex w-[92%] md:w-full max-w-2xl mx-auto mt-4 md:mt-6">
             <input 
+                value={localInput}
+                onChange={(e) => setLocalInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 type="text" 
                 placeholder="Search for venues and Venue Types..." 
                 className="w-full bg-[#eeeeee] h-12 md:h-16 shadow-2xl md:text-center text-sm md:text-lg px-3 md:px-4 rounded-l-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#AEAC9B] focus:border-transparent" 
             />
             <button 
+                onClick={handleSearch}
                 className="px-4 md:px-6 h-12 md:h-16 shrink-0 bg-[#f56d5e] text-white text-sm md:text-base font-medium rounded-r-full shadow-xl hover:bg-[#BF5842] hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
             >
                 Search

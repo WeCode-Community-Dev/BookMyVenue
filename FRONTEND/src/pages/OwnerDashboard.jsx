@@ -141,70 +141,79 @@ const RecentBookings = ({allBookings}) => (
     </div>
     
     <div className="space-y-4">
-      {allBookings.map(booking => (
-        <div key={booking.id} className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-4 w-full md:w-auto md:min-w-[180px]">
-            {/* <img src={booking.guestAvatar} alt={booking.guestName}  /> */}
-            <div className="flex flex-col items-start">
-              <div className='flex gap-1 mb-1' >
-                < User size={16} className="rounded-full object-cover shadow-sm border border-gray-50" />
-                <p className="font-bold text-gray-900 text-sm ">{booking.user.name}</p>
-              </div>
-              <div className='flex gap-1 mb-1' >
-                < Mail size={16} color="#3e517f" />
-                <p className="text-xs font-semibold text-gray-500 whitespace-nowrap">{booking.user.email}</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
-            {/* <img src={booking.venueImage} alt="Venue" className="w-14 h-10 rounded-lg object-cover shrink-0" /> */}
-            <div className="flex flex-col min-w-0 gap-1">
-              <p className="text-sm font-bold text-gray-800 mb-0.5 truncate">{booking.venue.venue_name}</p>
-              <p className="text-xs font-semibold text-gray-500 whitespace-nowrap">{booking.venue.venue_description}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
-            <div className="flex flex-col min-w-0 gap-1">
-              <div className='flex gap-1' >
-                <Calendar size={16} color="#3e517f" />
-                <p className="text-xs font-bold text-gray-800 mb-0.5 truncate">{booking.booking_date}</p>
-              </div>
-              <div className='flex gap-1' >
-                <MapPin size={16} color="#3e517f" />
-                <p className="text-xs font-semibold text-gray-500 whitespace-nowrap">{booking.venue.location}</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
-            <div className="flex flex-col min-w-0 gap-1">
-              <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col' >Paid Amount</h2>
-              <div className='flex gap-1' >
-                <p className="text-xs font-bold text-gray-800 mb-0.5 truncate">1000rs</p>
-              </div>
-            </div>
-          </div>
-          {booking.start_time !== "" || booking.end_time !== "" 
-              ? <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-none border-gray-50 pt-4 md:pt-0 shrink-0">
-                  <div>
-                    <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col' >Start Time</h2>
-                    <p className="font-black text-gray-900 text-sm whitespace-nowrap">{booking.start_time}</p>
-                  </div>
-                  <div>
-                    <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col' >End Time</h2>
-                    <p className="font-black text-gray-900 text-sm whitespace-nowrap"> {booking.end_time}</p>
-                  </div>
+      {allBookings.map((item) => {
+        const booking = item.booking;
+        const venuePrice = item.venue_price;
+
+        return (
+          <div key={booking.id} className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm hover:shadow-md transition-shadow">
+            
+            <div className="flex items-center gap-4 w-full md:w-auto md:min-w-[180px]">
+              <div className="flex flex-col items-start">
+                <div className='flex gap-1 mb-1' >
+                  < User size={16} className="rounded-full object-cover shadow-sm border border-gray-50" />
+                  <p className="font-bold text-gray-900 text-sm ">{booking.user.name}</p>
                 </div>
-              : <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-none border-gray-50 pt-4 md:pt-0 shrink-0">
-                  <div>
-                    <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col' >Venue Type</h2>
-                    <p className="font-black text-gray-900 text-sm whitespace-nowrap">Day</p>
-                  </div>
-                  <div className='ml-12' ></div>
+                <div className='flex gap-1 mb-1' >
+                  < Mail size={16} color="#3e517f" />
+                  <p className="text-xs font-semibold text-gray-500 whitespace-nowrap">{booking.user.email}</p>
                 </div>
-          }
-          
-        </div>
-      ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
+              <div className="flex flex-col min-w-0 gap-1">
+                <p className="text-sm font-bold text-gray-800 mb-0.5 truncate">{booking.venue.venue_name}</p>
+                <p className="text-xs font-semibold text-gray-500 whitespace-nowrap truncate">{booking.venue.venue_description}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
+              <div className="flex flex-col min-w-0 gap-1">
+                <div className='flex gap-1' >
+                  <Calendar size={16} color="#3e517f" />
+                  <p className="text-xs font-bold text-gray-800 mb-0.5 truncate">{booking.booking_date}</p>
+                </div>
+                <div className='flex gap-1' >
+                  <MapPin size={16} color="#3e517f" />
+                  <p className="text-xs font-semibold text-gray-500 whitespace-nowrap truncate ">{booking.venue.location}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
+              <div className="flex flex-col min-w-0 gap-1">
+                <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col'>Paid Amount</h2>
+                <div className='flex gap-1' >
+                  {/* 3. Render the dynamic venue_price here! */}
+                  <p className="text-sm font-bold text-gray-900 mb-0.5 truncate">₹{venuePrice}</p>
+                </div>
+              </div>
+            </div>
+
+            {booking.start_time !== "" || booking.end_time !== "" 
+                ? <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-none border-gray-50 pt-4 md:pt-0 shrink-0">
+                    <div>
+                      <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col' >Start Time</h2>
+                      <p className="font-black text-gray-900 text-sm whitespace-nowrap">{booking.start_time}</p>
+                    </div>
+                    <div>
+                      <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col' >End Time</h2>
+                      <p className="font-black text-gray-900 text-sm whitespace-nowrap"> {booking.end_time}</p>
+                    </div>
+                  </div>
+                : <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-none border-gray-50 pt-4 md:pt-0 shrink-0">
+                    <div>
+                      <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col' >Venue Type</h2>
+                      <p className="font-black text-gray-900 text-sm whitespace-nowrap">Day</p>
+                    </div>
+                    <div className='ml-12' ></div>
+                  </div>
+            }
+            
+          </div>
+        );
+      })}
     </div>
   </div>
 );
@@ -239,7 +248,7 @@ const ListedProperties = ({handleToggleAvailability, userVenues, setSelectedVenu
               </div>
             </div>
             <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-50">
-              <p className="text-sm text-gray-500 font-semibold">₹{venue.price}</p>
+              <p className="text-sm text-gray-500 font-semibold">₹{venue.price}<span className={" text-xs text-[#ff485e] py-1"} >/{userVenues.booking_types === "hourly" ? "hour" : "day"}</span> </p>
               <ToggleSwitch isActive={venue.is_available}
                venue={venue}
                onToggle={handleToggleAvailability}  
@@ -292,7 +301,6 @@ export default function OwnerDashboard() {
       }
 
       const response = await apiService.updateVenueAvailability(payload, venue.id)
-      console.log(response);
 
       setUserVenues(prevVenues => prevVenues.map(v => 
         v.id === venue.id ? {...v, is_available: ToggledAvailability} : v
@@ -321,6 +329,7 @@ export default function OwnerDashboard() {
         } else {
           setUserVenues([]);
         }
+        console.log(allBookings);
         
       } catch (error) {
         console.log(error);

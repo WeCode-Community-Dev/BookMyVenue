@@ -1,4 +1,4 @@
-import { AsteriskWaves } from "@mynaui/icons-react";
+import { AsteriskWaves, Search } from "@mynaui/icons-react";
 import axiosInstance from "./axiosInstance";
 import axios from "axios";
 
@@ -97,6 +97,12 @@ const apiService = {
     },
     UserMyBooking: async () => {
         const response = await axiosInstance.get(`/booking/my-bookings`);
+        return response.data;
+    },
+    SearchVenues: async (searchParams) => {
+        const response = await axiosInstance.get(`/venues/search`, {
+            params: searchParams
+        })
         return response.data;
     },
 
