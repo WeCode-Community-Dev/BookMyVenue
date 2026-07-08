@@ -11,16 +11,17 @@ const LogoutBtn = ({isMobile, handleNavigation, name}) => {
 
   return(
     <button 
-          onClick={() => {handleNavigation("/auth"), handleCookies()}} 
-          className={
-            isMobile
-              ? "SIGNUP w-11/12 max-w-xs px-4 py-3 mt-2 bg-[#f56d5e] text-white text-lg rounded-full hover:bg-[#BF5842] active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
-              : "SIGNUP ml-3 px-4 py-2 bg-[#f56d5e] text-white text-base rounded-full hover:bg-[#BF5842] hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
-          }
-        >
-            {name === "Sign Up" ? "Sign Up" : "Sign Out"}
-      </button>
-)}
+        onClick={() => {handleNavigation("/auth"), handleCookies()}} 
+        className={
+          isMobile
+            ? "SIGNUP w-11/12 max-w-xs px-4 py-3 mt-2 bg-[#f56d5e] text-white text-lg rounded-full hover:bg-[#BF5842] active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
+            : "SIGNUP ml-3 px-4 py-2 bg-[#f56d5e] text-white text-base rounded-full hover:bg-[#BF5842] hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
+        }
+      >
+          {name === "Sign Up" ? name : "Sign Out"}
+    </button>
+  )
+}
 
 function ActionButton({ role, isMobile, onClick }) {
   const navigate = useNavigate();
@@ -92,7 +93,7 @@ function ActionButton({ role, isMobile, onClick }) {
       </div>
     )
   } else {
-    < LogoutBtn isMobile={isMobile} handleNavigation={handleNavigation} name={"Sign Up"} />
+    return < LogoutBtn isMobile={isMobile} handleNavigation={handleNavigation} name={"Sign Up"} />
   }
 }
 
@@ -120,7 +121,7 @@ function NavBar() {
         </div>
 
         {/* Desktop Nav Links (Hidden on Mobile) */}
-        <div className="NAVLINKS hidden md:flex gap-8 text-sm pl-20">
+        <div className="NAVLINKS hidden md:flex gap-8 text-sm">
           <div className="group relative">
             <Link to="/" className={`font-medium transition-all duration-300 ease-in-out ${
               isActive('/') ? 'text-[#2a5660]' : 'group-hover:text-[#2a5660]'}`}>

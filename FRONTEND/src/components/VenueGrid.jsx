@@ -84,8 +84,8 @@ function VenueCard({ venue }) {
                     {/* Capacity Row */}
                     <div className="flex items-center gap-2 text-gray-500">
                         <Users className="shrink-0 text-[#2a5660]" size={16} stroke={2.5} />
-                        <p className={`font-semibold text-gray-600 ${detailSize}`}>
-                            Up to {venue_capacity} Guests
+                        <p className={`font-medium ${detailSize}`}>
+                            {venue_capacity} Guests
                         </p>
                     </div>
 
@@ -103,8 +103,8 @@ function VenueCard({ venue }) {
     );
 }
 
-export default function VenueGrid() {
-    const { venues, isLoading, error } = useVenueGrid();
+export default function VenueGrid({ searchParams }) {
+    const { venues, isLoading, error } = useVenueGrid(searchParams);
     const Data = Array.isArray(venues) ? venues : []; 
 
     if (error) {
