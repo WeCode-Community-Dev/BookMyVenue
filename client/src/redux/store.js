@@ -1,18 +1,18 @@
 import { configureStore } from "@reduxjs/toolkit";
-import userVenueSlice from './slices/UserVenueSlice'
 
+import userVenueSlice from "./slices/UserVenueSlice";
 import UserProfileSlice from "./slices/UserProfileSlice";
-
-import adminUserSlice from './slices/AdminUserSlice'
-
+import adminUserSlice from "./slices/AdminUserSlice";
+import UserWishlistSlice from "./slices/UserWishlistSlice";
 
 export const store = configureStore({
-    reducer: {
-        userVenue: userVenueSlice,
+  reducer: {
+    userVenue: userVenueSlice,
 
-        userProfile: UserProfileSlice,
+    userProfile: UserProfileSlice,
 
-        adminUser: adminUserSlice
+    userWishlist: UserWishlistSlice,
 
-    }
-})
+    adminUser: adminUserSlice,
+  },
+});
