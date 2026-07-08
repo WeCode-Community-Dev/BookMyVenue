@@ -8,25 +8,16 @@ import time
 from datetime import date
 from uuid import UUID
 
+from app.core import redis as redis_client
 from app.core.config import settings
 from app.core.exceptions import RateLimitError
 
 
-def _redis_client():
-    from upstash_redis import Redis
-
-    return Redis(url=settings.upstash_redis_url, token=settings.upstash_redis_token)
-
-
-def _configured() -> bool:
-    return bool(settings.upstash_redis_url and settings.upstash_redis_token)
-
-
 def _check(key: str, limit: int, ttl_seconds: int, detail: str) -> None:
-    if not _configured():
+    if not redis_client.is_configured():
         return
     try:
-        client = _redis_client()
+        client = redis_client.get_redis()
         count = client.incr(key)
         if count == 1:
             client.expire(key, ttl_seconds)

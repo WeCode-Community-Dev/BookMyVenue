@@ -1,5 +1,6 @@
 import logging
 
+from app.core import redis as redis_client
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.modules.search.indexer import process_job, retryable_job_ids
@@ -8,16 +9,11 @@ logger = logging.getLogger(__name__)
 
 
 def _dequeue_from_upstash(limit: int) -> list[str]:
-    if not settings.upstash_redis_url or not settings.upstash_redis_token:
+    if not redis_client.is_configured():
         return []
 
     try:
-        from upstash_redis import Redis
-
-        redis = Redis(
-            url=settings.upstash_redis_url,
-            token=settings.upstash_redis_token,
-        )
+        redis = redis_client.get_redis()
 
         job_ids = []
 

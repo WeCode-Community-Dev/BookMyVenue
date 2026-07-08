@@ -7,6 +7,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
+from app.core import redis as redis_client
 from app.core.config import settings
 from app.infrastructure.embeddings.jina import embed_passage, embed_query
 from app.modules.search import search_metadata_cache
@@ -19,12 +20,6 @@ logger = logging.getLogger(__name__)
 # Attempt 0 → immediate, 1 → 5 min, 2 → 15 min, 3 → 1 hr, 4 → 6 hr
 _BACKOFF_SECONDS = [0, 300, 900, 3600, 21600]
 MAX_RETRIES = len(_BACKOFF_SECONDS)  # was a hardcoded `5` in two places below
-
-
-def _redis_client():
-    from upstash_redis import Redis
-
-    return Redis(url=settings.upstash_redis_url, token=settings.upstash_redis_token)
 
 
 def enqueue_job(db: Session, entity_id: UUID, operation: str) -> None:
@@ -49,8 +44,8 @@ def enqueue_job(db: Session, entity_id: UUID, operation: str) -> None:
     job_id = str(job.id)
 
     try:
-        if settings.upstash_redis_url and settings.upstash_redis_token:
-            _redis_client().lpush(settings.upstash_search_queue_key, job_id)
+        if redis_client.is_configured():
+            redis_client.get_redis().lpush(settings.upstash_search_queue_key, job_id)
     except Exception:
         # Redis push failure is non-fatal — the APScheduler worker will poll the DB.
         pass

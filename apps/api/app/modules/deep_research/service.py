@@ -182,14 +182,25 @@ async def run_external_discovery(
     else:
         use_lat, use_lng = latitude, longitude
 
-    # ── 3. Google Places call (async) ─────────────────────────────────────────
-    raw_results = await external_source.text_search(
-        query=query_text,
-        latitude=use_lat,
-        longitude=use_lng,
-        radius_meters=DEFAULT_RADIUS_METERS,
-        max_results=10,  # fetch extra to allow for dedup filtering
-    )
+    # ── 3. Google Places call (async), cached on normalized query text ────────
+    # Location bias only changes result ordering, not which cache bucket a
+    # repeat query lands in — acceptable since the query text is what users
+    # actually repeat (Places listings for a query barely move over a few
+    # hours anyway). See query_cache.py for the caching rationale.
+    from app.modules.deep_research import query_cache
+
+    raw_results = query_cache.get_external_results(query_text)
+    if raw_results is not None:
+        logger.info("deep_research.external_discovery: cache hit for query_text=%r", query_text)
+    else:
+        raw_results = await external_source.text_search(
+            query=query_text,
+            latitude=use_lat,
+            longitude=use_lng,
+            radius_meters=DEFAULT_RADIUS_METERS,
+            max_results=10,  # fetch extra to allow for dedup filtering
+        )
+        query_cache.set_external_results(query_text, raw_results)
 
     # ── 4. Deduplicate against internal venues ────────────────────────────────
     valid_raws: list[dict] = []
