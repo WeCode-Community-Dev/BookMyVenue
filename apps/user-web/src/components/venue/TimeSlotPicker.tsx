@@ -15,14 +15,24 @@ type Props = {
   selectedEnd: string | null
   onSelect: (start: string, end: string | null) => void
   onClear: () => void
-  /** Minute-of-day values (0-1439) priced above the venue's base rate for this date. */
   peakMinutes?: Set<number>
 }
 
 function toMinutes(timeStr: string): number {
-  const t = timeStr.length <= 8 ? timeStr : timeStr.slice(11, 19)
-  const [h, m] = t.split(':').map(Number)
-  return (h * 60 + m) % 1440
+  if (!timeStr) return 0
+  try {
+    const date = new Date(timeStr)
+    if (isNaN(date.getTime())) {
+      const [h, m] = timeStr.split(':').map(Number)
+      return ((h || 0) * 60 + (m || 0)) % 1440
+    }
+    const IST_OFFSET_MIN = 330 // UTC+5:30
+    const utcMinutes = date.getUTCHours() * 60 + date.getUTCMinutes()
+    return (utcMinutes + IST_OFFSET_MIN + 1440) % 1440
+  } catch (e) {
+    console.error('toMinutes failed for:', timeStr)
+    return 0
+  }
 }
 
 function minutesToISO(date: string, minutes: number): string {
@@ -50,29 +60,39 @@ export function TimeSlotPicker({
   selectedEnd,
   onSelect,
   onClear,
-  peakMinutes,
+  peakMinutes = new Set(),
 }: Props) {
   const { operating_window, blocked_slots = [] } = availability
   const { slot_interval_minutes, min_booking_duration_minutes, max_booking_duration_minutes } =
     venueConfig
 
-  // Unified list of all possible time points (start + potential ends)
+  const openMin = useMemo(
+    () => toMinutes(operating_window.opens_at || '00:00'),
+    [operating_window.opens_at]
+  )
+  const closeMin = useMemo(
+    () => toMinutes(operating_window.closes_at || '23:59'),
+    [operating_window.closes_at]
+  )
+
   const allTimePoints = useMemo<number[]>(() => {
-    if (!operating_window.is_available || !operating_window.opens_at || !operating_window.closes_at)
-      return []
-    const openMin = toMinutes(operating_window.opens_at)
-    const closeMin = toMinutes(operating_window.closes_at)
+    if (!operating_window.is_available) return []
     const points: number[] = []
     for (let m = openMin; m <= closeMin; m += slot_interval_minutes) {
       points.push(m)
     }
     return points
-  }, [operating_window, slot_interval_minutes])
+  }, [openMin, closeMin, slot_interval_minutes, operating_window.is_available])
 
-  const blockedRanges = useMemo(
-    () => blocked_slots.map((s) => ({ start: toMinutes(s.starts_at), end: toMinutes(s.ends_at) })),
-    [blocked_slots]
-  )
+  const blockedRanges = useMemo(() => {
+    const ranges = blocked_slots.map((slot) => ({
+      start: toMinutes(slot.starts_at),
+      end: toMinutes(slot.ends_at),
+    }))
+    console.log('🔒 Final Blocked Ranges:', ranges)
+    console.log('Operating Window:', openMin, 'to', closeMin)
+    return ranges
+  }, [blocked_slots, openMin, closeMin])
 
   const isRangeBlocked = useCallback(
     (startMin: number, endMin: number): boolean => {
@@ -83,7 +103,6 @@ export function TimeSlotPicker({
 
   const selectedStartMin = selectedStart ? toMinutes(selectedStart) : null
   const selectedEndMin = selectedEnd ? toMinutes(selectedEnd) : null
-  const closeMin = operating_window.closes_at ? toMinutes(operating_window.closes_at) : 0
 
   const validEndSlots = useMemo<Set<number>>(() => {
     if (selectedStartMin == null) return new Set()
@@ -103,30 +122,33 @@ export function TimeSlotPicker({
     isRangeBlocked,
   ])
 
-const handleSlotClick = useCallback(
-  (minutes: number) => {
-    if (selectedStartMin == null) {
-      onSelect(minutesToISO(date, minutes), null)
-      return
-    }
-    if (minutes <= selectedStartMin) {
-      // FIX: don't let a blocked slot become the new start via restart
-      if (isRangeBlocked(minutes, minutes + min_booking_duration_minutes)) return
-      onSelect(minutesToISO(date, minutes), null)
-      return
-    }
-    if (validEndSlots.has(minutes)) {
-      onSelect(minutesToISO(date, selectedStartMin), minutesToISO(date, minutes))
-    }
-  },
-  [selectedStartMin, validEndSlots, date, onSelect, isRangeBlocked, min_booking_duration_minutes]
-)
+  const handleSlotClick = useCallback(
+    (minutes: number) => {
+      if (selectedStartMin == null) {
+        if (isRangeBlocked(minutes, minutes + min_booking_duration_minutes)) return
+        onSelect(minutesToISO(date, minutes), null)
+        return
+      }
+
+      if (minutes <= selectedStartMin) {
+        if (isRangeBlocked(minutes, minutes + min_booking_duration_minutes)) return
+        onSelect(minutesToISO(date, minutes), null)
+        return
+      }
+
+      if (validEndSlots.has(minutes)) {
+        onSelect(minutesToISO(date, selectedStartMin), minutesToISO(date, minutes))
+      }
+    },
+    [selectedStartMin, validEndSlots, date, onSelect, isRangeBlocked, min_booking_duration_minutes]
+  )
 
   if (!operating_window.is_available) {
     return (
       <p className="text-sm text-zinc-400 italic text-center py-4">Venue is closed on this date.</p>
     )
   }
+
   if (allTimePoints.length === 0) {
     return (
       <p className="text-sm text-zinc-400 italic text-center py-4">
@@ -135,7 +157,7 @@ const handleSlotClick = useCallback(
     )
   }
 
-  const isSelectingEnd = selectedStartMin != null && selectedEndMin == null
+  const isSelectingEnd = selectedStartMin !== null && selectedEndMin === null
 
   return (
     <div>
@@ -143,7 +165,7 @@ const handleSlotClick = useCallback(
         <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">
           {isSelectingEnd ? 'Select end time' : 'Select start time'}
         </p>
-        {selectedStartMin != null && (
+        {selectedStartMin !== null && (
           <button
             onClick={onClear}
             className="text-xs text-brand hover:text-brand-hover transition-colors"
@@ -153,13 +175,13 @@ const handleSlotClick = useCallback(
         )}
       </div>
 
-      {isSelectingEnd && (
+      {isSelectingEnd && selectedStart && (
         <div className="mb-3 rounded-lg bg-brand-light px-3 py-2 text-xs text-brand">
-          Start: <strong>{formatTime(selectedStart!)}</strong> — Tap a valid end time
+          Start: <strong>{formatTime(selectedStart)}</strong> — Tap a valid end time
         </div>
       )}
 
-      {selectedStartMin != null && selectedEndMin != null && (
+      {selectedStart && selectedEnd && (
         <div className="mb-3 flex items-center gap-2 text-xs text-zinc-500 bg-brand-light rounded-lg px-3 py-2">
           <svg
             className="h-3.5 w-3.5 text-brand-secondary"
@@ -175,9 +197,9 @@ const handleSlotClick = useCallback(
             />
           </svg>
           <span>
-            {formatTime(selectedStart!)} – {formatTime(selectedEnd!)} ·{' '}
+            {formatTime(selectedStart)} – {formatTime(selectedEnd)} ·{' '}
             <strong className="text-brand">
-              {durationLabel(selectedStartMin, selectedEndMin)}
+              {durationLabel(selectedStartMin!, selectedEndMin!)}
             </strong>
           </span>
         </div>
@@ -189,17 +211,16 @@ const handleSlotClick = useCallback(
           const isStart = selectedStartMin === minutes
           const isEnd = selectedEndMin === minutes
           const isInRange =
-            selectedStartMin != null &&
-            selectedEndMin != null &&
+            selectedStartMin !== null &&
+            selectedEndMin !== null &&
             minutes > selectedStartMin &&
             minutes < selectedEndMin
 
           let isDisabled = false
-          if (selectedStartMin == null) {
+          if (selectedStartMin === null) {
             isDisabled = isRangeBlocked(minutes, minutes + min_booking_duration_minutes)
-          } else if (selectedEndMin == null) {
+          } else if (selectedEndMin === null) {
             if (minutes <= selectedStartMin) {
-              // FIX: restarting the selection still needs the blocked check
               isDisabled = isRangeBlocked(minutes, minutes + min_booking_duration_minutes)
             } else {
               isDisabled = !validEndSlots.has(minutes)
@@ -207,6 +228,8 @@ const handleSlotClick = useCallback(
           } else {
             isDisabled = true
           }
+
+          const isPeak = peakMinutes.has(minutes) && !isDisabled
 
           let cls = 'px-3 py-2.5 rounded-xl text-sm font-medium text-center transition-all border '
           if (isStart || isEnd) {
@@ -219,18 +242,16 @@ const handleSlotClick = useCallback(
             cls += 'hover:bg-blue-50 hover:border-blue-200 border-zinc-200 active:bg-blue-100'
           }
 
-          const isPeak = peakMinutes?.has(minutes) ?? false
-
           return (
             <button
               key={slotISO}
               onClick={() => !isDisabled && handleSlotClick(minutes)}
               disabled={isDisabled}
               className={`relative ${cls}`}
-              title={isPeak ? 'Peak pricing applies to this slot' : undefined}
+              title={isPeak ? 'Peak pricing applies' : undefined}
             >
               {formatTime(slotISO)}
-              {isPeak && !isDisabled && !isStart && !isEnd && (
+              {isPeak && !isStart && !isEnd && (
                 <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-amber-500" />
               )}
             </button>
@@ -238,7 +259,7 @@ const handleSlotClick = useCallback(
         })}
       </div>
 
-      {peakMinutes && peakMinutes.size > 0 && (
+      {peakMinutes.size > 0 && (
         <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-700">
           <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
           Peak pricing applies to marked slots

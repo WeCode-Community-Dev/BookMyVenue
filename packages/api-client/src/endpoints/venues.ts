@@ -61,12 +61,16 @@ export const venueEndpoints = (client: ReturnType<typeof createClient>) => ({
     const qs = new URLSearchParams(params).toString()
     return client.get<PricingPreview>(`/api/venues/${id}/pricing-preview?${qs}`)
   },
-  getCalendar: (id: string, params: { start_date: string; end_date: string }) => {
+  getCalendar: (id: string, params: { start_date: string; end_date: string; booking_type: string }) => {
     const qs = new URLSearchParams(params).toString()
     return client.get<CalendarResponse>(`/api/availability/venues/${id}/calendar?${qs}`)
   },
-  getDateAvailability: (id: string, booking_date: string) =>
-    client.get<AvailabilityResponse>(`/api/availability/venues/${id}/date/${booking_date}`),
+  getDateAvailability: (id: string, params: { booking_date: string; booking_type: string }) => {
+    const qs = new URLSearchParams({ booking_type: params.booking_type }).toString()
+    return client.get<AvailabilityResponse>(
+      `/api/availability/venues/${id}/date/${params.booking_date}?${qs}`
+    )
+  },
   getQuote: (id: string, params: { starts_at: string; ends_at: string; booking_type: string }) => {
     const qs = new URLSearchParams(params).toString()
     return client.get<PricingQuote>(`/api/availability/venues/${id}/quote?${qs}`)

@@ -124,8 +124,12 @@ function useVenueBooking(venue: VenueResponse) {
   }, [bookingType, startDate, endDate, venue.open_time, venue.close_time])
 
   const availQuery = useQuery<AvailabilityResponse>({
-    queryKey: ['availability-date', venue.id, startDate],
-    queryFn: () => venueEndpoints(client).getDateAvailability(venue.id, toUtcIso(startDate)!),
+    queryKey: ['availability-date', venue.id, startDate, bookingType],
+    queryFn: () =>
+      venueEndpoints(client).getDateAvailability(venue.id, {
+        booking_date: toUtcIso(startDate)!,
+        booking_type: bookingType,
+      }),
     enabled: bookingType === 'time_slot' && !!startDate,
     staleTime: 2 * 60 * 1000,
   })
