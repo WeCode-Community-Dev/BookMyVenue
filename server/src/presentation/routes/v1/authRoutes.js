@@ -1,11 +1,24 @@
 import Express from 'express'
-import { iAuthController } from '../../controllers/di.js'
-
+import { iUserAuthController, iVendorAuthController } from '../../controllers/di.js'
+import { validate } from '../../middlewares/validator.js'
+import { registerSchema, verifyOtpSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, resendOtpSchema} from '../../validators/auth.validator.js'
+import { ROUTES } from '../../../shared/constants/routes.js'
 const router = Express.Router()
 
-router.post('/register', iAuthController.register)
-router.post('/login', iAuthController.login)
-router.post('/refresh-token', iAuthController.refreshToken)
-router.post('/logout', iAuthController.logout)
+
+//user
+router.post(ROUTES.USER.AUTH.REGISTER, validate(registerSchema, 'body'), iUserAuthController.register)
+router.post(ROUTES.USER.AUTH.VERIFY_OTP, validate(verifyOtpSchema, 'body'), iUserAuthController.verifyOtp)
+router.post(ROUTES.USER.AUTH.RESEND_OTP, validate(resendOtpSchema, 'body'), iUserAuthController.resendOtp)
+router.post(ROUTES.USER.AUTH.LOGIN, validate(loginSchema, 'body'), iUserAuthController.login)
+router.post(ROUTES.USER.AUTH.REFRESH, iUserAuthController.refreshToken)
+router.post(ROUTES.USER.AUTH.LOGOUT, iUserAuthController.logout)
+router.post(ROUTES.USER.AUTH.FORGOT_PASSWORD, validate(forgotPasswordSchema, 'body'), iUserAuthController.forgotPassword)
+router.post(ROUTES.USER.AUTH.RESET_PASSWORD, validate(resetPasswordSchema, 'body'), iUserAuthController.resetPassword)
+
+//vendor
+router.post(ROUTES.OWNER.AUTH.REGISTER, validate(registerSchema, 'body'), iVendorAuthController.register)
+router.post(ROUTES.OWNER.AUTH.LOGIN, validate(loginSchema, 'body'), iVendorAuthController.login)
+
 
 export default router

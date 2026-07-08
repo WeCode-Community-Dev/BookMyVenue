@@ -1,4 +1,4 @@
-export const emailChangeOtpTemplate = (fullName, otpCode) => `
+export const VerifyRegisterotpTemplate = (fullName, otpCode) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,41 +19,27 @@ export const emailChangeOtpTemplate = (fullName, otpCode) => `
 <body>
     <div class="container">
         <div class="header">
-            <h1>📧 Email Change Verification</h1>
+            <h1>🎉 Welcome to BookMyVenue</h1>
         </div>
-
         <div class="content">
             <p>Hi <strong>${fullName}</strong>,</p>
-
-            <p>
-                We received a request to change the email address associated with your
-                <strong>BookMyVenue</strong> account.
-            </p>
-
-            <p>
-                Please verify this request by entering the OTP below:
-            </p>
+            <p>Thank you for signing up! To complete your registration, please verify your email address using the OTP code below:</p>
 
             <div class="otp-box">
                 <div class="otp-code">${otpCode}</div>
                 <div class="timer">⏱️ Expires in 10 minutes</div>
             </div>
 
-            <p><strong>How to verify:</strong></p>
-            <p>
-                1. Copy the OTP above<br>
-                2. Enter it in the email verification screen<br>
-                3. Confirm your new email address
-            </p>
+            <p><strong>How to use:</strong></p>
+            <p>1. Copy the code above<br>2. Enter it in the verification field<br>3. Complete your registration</p>
 
             <div class="warning">
-                ⚠️ If you did not request to change your email address, please ignore this email. Your account will remain unchanged.
+                ⚠️ Do not share this code with anyone. We will never ask for this code.
             </div>
         </div>
-
         <div class="footer">
             <p>© 2024 BookMyVenue. All rights reserved.</p>
-            <p>This OTP is valid only for verifying your email change request.</p>
+            <p>If you didn't sign up for this account, please ignore this email.</p>
         </div>
     </div>
 </body>

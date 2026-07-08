@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { BookingModel } from "../database/models/BookingModel.js";
 import { UserModel } from "../database/models/User.model.js";
 import VendorModel from "../database/models/Vendor.model.js";
-import { VenueModel } from "../database/Venue.model.js";
+import { VenueModel } from "../database/models/Venue.model.js";
 import { BookingMapper } from "../../application/mapper/Booking.mapper.js";
 import { BookingStatus } from "../../domain/enums/Booking.enum.js";
 import { Types } from "mongoose";

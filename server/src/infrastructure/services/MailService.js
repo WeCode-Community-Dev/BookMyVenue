@@ -4,7 +4,19 @@ import { vendorApprovalTemplate } from "../emailTemplates/admin.vendorApprovalTe
 import { vendorRejectionTemplate } from "../emailTemplates/admin.vendorRejectionTemplate.js";
 import { adminVenueApprovalTemplate } from "../emailTemplates/admin.venueApprovalTemplate.js";
 import { adminVenueRejectionTemplate } from "../emailTemplates/admin.venueRejectionTemplate.js";
+import { forgotPasswordTemplate } from "../emailTemplates/forgotPasswordTemplate.js";
+import { VerifyRegisterotpTemplate } from "../emailTemplates/verifyRegisterOtpTemplate.js";
 import { emailChangeOtpTemplate } from "../emailTemplates/user.emailChangeOtpTemplate.js";
+
+// General-purpose send function used by auth use cases
+// export const sendMail = async (to, subject, html) => {
+//     await transporter.sendMail({
+//         from: process.env.EMAIL_USER,
+//         to,
+//         subject,
+//         html
+//     });
+// };
 
 export class MailServiceImpl extends MailService {
 
@@ -46,36 +58,11 @@ export class MailServiceImpl extends MailService {
 
     async sendVenueApprovalMail(venue){
 
-    const { subject, html } =
-        adminVenueApprovalTemplate({
-
-            venueName: venue.name,
-            vendorName: venue.vendorId.fullName
-
-        });
-
-    await transporter.sendMail({
-
-        from: process.env.EMAIL_USER,
-
-        to: venue.vendorId.email,
-
-        subject,
-
-        html
-
-    });
-
-    }
-
-    async sendVenueRejectionMail(venue, reason) {
-
         const { subject, html } =
-            adminVenueRejectionTemplate({
+            adminVenueApprovalTemplate({
 
                 venueName: venue.name,
-                vendorName: venue.vendorId.fullName,
-                reason
+                vendorName: venue.vendorId.fullName
 
             });
 
@@ -91,33 +78,56 @@ export class MailServiceImpl extends MailService {
 
         });
 
+    }
+
+    async sendVenueRejectionMail(venue, reason) {
+
+        const { subject, html } =
+            adminVenueRejectionTemplate({
+                venueName: venue.name,
+                vendorName: venue.vendorId.fullName,
+                reason
+            });
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: venue.vendorId.email,
+            subject,
+            html
+        });
+
         console.log("Venue rejection mail sent.");
-
     }
-    async sendEmailChangeOtp(email, otp) {
 
-        const { subject, html } =
-            emailChangeOtpTemplate({ otp });
+    async sendForgotPasswordMail(user, resetLink) {
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: 'Reset Your BookMyVenue Password',
+            html: forgotPasswordTemplate(user.fullName, resetLink)
+        });
 
+        console.log("Forgot password mail sent.");
+    }
+
+    async sendVerifiyRegisterOtp(email, name, otpCode) {
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
-            subject,
-            html
+            subject: 'Your BookMyVenue OTP Code - Verify Your Email',
+            html: VerifyRegisterotpTemplate(name, otpCode)
         });
+
+        console.log("OTP mail sent.");
     }
 
-    async resendEmailChangeOtp(email, otp) {
-
-        const { subject, html } =
-            emailChangeOtpTemplate({ otp });
-
+    async sendEmailChangeOtp(email,name, otp) {
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
-            subject,
-            html
-        });
+            subject: 'Your Email change OTP',
+            html: emailChangeOtpTemplate(name, otp)
+        })
     }
 
 }
