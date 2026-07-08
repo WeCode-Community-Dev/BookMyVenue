@@ -124,6 +124,7 @@ export type UserBooking = {
     }[];
 };
 
+
 export interface BookingCreatedEvent {
     bookingId: number;
     eventDate: string;

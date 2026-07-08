@@ -1,15 +1,7 @@
+import { VenueVerificationUpdatedEvent } from "@bookmyvenue/types";
 import sendMail from "../mailer";
 
-interface VenueVerificationUpdatedEvent {
-    venueId: number;
-    venueName: string;
-    status: "APPROVED" | "REJECTED";
-    reason: string | null;
-    owner: {
-        email: string;
-        name: string;
-    };
-}
+
 
 export const handleVenueVerificationUpdated = async (event: VenueVerificationUpdatedEvent): Promise<void> => {
     const { venueName, status, reason, owner } = event;
