@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Search, Users, Eye } from "lucide-react";
-import { UserRole } from "../data";
 import { fetchOwners, fetchCustomers } from "../../app/actions/user";
 import type { Owner, Customer } from "../../app/actions/user";
 import {
@@ -23,6 +22,9 @@ import {
 } from "../ui/pagination";
 
 const PAGE_SIZE = 10;
+
+type UserRole = "Owner" | "Customer";
+
 
 type Row = Owner | Customer;
 

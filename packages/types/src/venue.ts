@@ -134,3 +134,15 @@ export interface GetVenuesQuery {
     page?: number;
     limit?: number;
 }
+
+
+export interface VenueVerificationUpdatedEvent {
+    venueId: number;
+    venueName: string;
+    status: "APPROVED" | "REJECTED";
+    reason: string | null;
+    owner: {
+        email: string;
+        name: string;
+    };
+}

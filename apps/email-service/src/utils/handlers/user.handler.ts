@@ -1,11 +1,5 @@
+import { UserCreatedEvent } from "@bookmyvenue/types";
 import sendMail from "../mailer";
-
-interface UserCreatedEvent {
-    userId: string;
-    email: string;
-    name: string;
-    role: "USER" | "OWNER";
-}
 
 export const handleUserCreated = async (event: UserCreatedEvent): Promise<void> => {
     const { email, name, role } = event;
