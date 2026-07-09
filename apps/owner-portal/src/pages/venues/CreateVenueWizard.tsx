@@ -310,6 +310,7 @@ export default function CreateVenueWizard() {
         } else if (venueId) {
           await venueEndpoints(client).updateVenue(venueId, payload)
           if (payload.cancellation_policy) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await venueEndpoints(client).updateCancellationPolicy(venueId, payload.cancellation_policy as any)
           }
           if (payload.amenity_ids) {
@@ -325,6 +326,7 @@ export default function CreateVenueWizard() {
 
         // Upload photos if we are on the Photos step
         if (currentStep === 1 && photos.length > 0 && activeVenueId) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const successfullyUploaded: any[] = []
           for (const file of photos) {
             try {
@@ -437,6 +439,7 @@ export default function CreateVenueWizard() {
       if (venueId) {
         await venueEndpoints(client).updateVenue(venueId, payload)
         if (payload.cancellation_policy) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await venueEndpoints(client).updateCancellationPolicy(venueId, payload.cancellation_policy as any)
         }
         if (payload.amenity_ids) {
