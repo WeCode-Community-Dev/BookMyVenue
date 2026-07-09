@@ -1,0 +1,23 @@
+{
+  "name": "@repo/domain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./venues": "./src/venues.ts",
+    "./bookings": "./src/bookings.ts",
+    "./coupons": "./src/coupons.ts",
+    "./reviews": "./src/reviews.ts",
+    "./invoices": "./src/invoices.ts",
+    "./timeslots": "./src/timeslots.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Book My Venue",
+    "slug": "book-my-venue",
+    "scheme": "bookmyvenue",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": { "supportsTablet": true, "bundleIdentifier": "com.bookmyvenue.app" },
+    "android": { "package": "com.bookmyvenue.app" },
+    "plugins": ["expo-router"],
+    "experiments": { "typedRoutes": true }
+  }
+}
