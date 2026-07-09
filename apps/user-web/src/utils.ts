@@ -98,3 +98,31 @@ export function formatDateRangeTz(
     : `${startFormatted} — ${endFormatted}`
 }
 
+/**
+ * Formats a date as a short relative-time string, e.g. "3 hours ago",
+ * "2 days ago", "just now". Mirrors date-fns' formatDistanceToNow(date,
+ * { addSuffix: true }) closely enough for review timestamps, with no
+ * external dependency.
+ */
+export function formatRelativeTime(date: string | Date): string {
+  const target = typeof date === 'string' ? new Date(date) : date
+  const now = new Date()
+
+  let diffMs = now.getTime() - target.getTime()
+  const suffix = diffMs >= 0 ? 'ago' : 'from now'
+  diffMs = Math.abs(diffMs)
+
+  const seconds = Math.round(diffMs / 1000)
+  const minutes = Math.round(seconds / 60)
+  const hours = Math.round(minutes / 60)
+  const days = Math.round(hours / 24)
+  const months = Math.round(days / 30)
+  const years = Math.round(days / 365)
+
+  if (seconds < 45) return 'just now'
+  if (minutes < 45) return `${minutes} minute${minutes === 1 ? '' : 's'} ${suffix}`
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ${suffix}`
+  if (days < 30) return `${days} day${days === 1 ? '' : 's'} ${suffix}`
+  if (months < 12) return `${months} month${months === 1 ? '' : 's'} ${suffix}`
+  return `${years} year${years === 1 ? '' : 's'} ${suffix}`
+}

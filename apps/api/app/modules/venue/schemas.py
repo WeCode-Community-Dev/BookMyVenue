@@ -239,6 +239,8 @@ class VenueResponse(BaseModel):
     amenities: list[AmenityResponse] = Field(default_factory=list)
     cancellation_policy: Optional[CancellationPolicyResponse] = None
     is_liked: bool = False
+    average_rating: Optional[float] = None
+    review_count: int = 0
 
     model_config = {"from_attributes": True}
 

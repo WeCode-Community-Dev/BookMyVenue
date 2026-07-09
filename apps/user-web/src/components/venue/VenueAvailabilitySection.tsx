@@ -133,6 +133,7 @@ export function VenueAvailabilitySection({
       {/* ── Double-month calendar ─────────────────────────── */}
       <AvailabilityCalendarDouble
         venueId={venue.id}
+        bookingType={bookingType}
         startDate={startDate}
         endDate={endDate}
         onRangeChange={onRangeChange}

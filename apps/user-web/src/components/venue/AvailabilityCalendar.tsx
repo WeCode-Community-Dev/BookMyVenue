@@ -235,6 +235,7 @@ export function AvailabilityCalendar({ venueId, selectedDate, onDateSelect }: Si
       venueEndpoints(createClient()).getCalendar(venueId, {
         start_date: toDateString(viewDate),
         end_date: toDateString(new Date(year, month + 1, 0)),
+        booking_type: 'full_day',
       }),
     staleTime: 5 * 60 * 1000,
   })
@@ -298,20 +299,26 @@ export function AvailabilityCalendar({ venueId, selectedDate, onDateSelect }: Si
 
 type DoubleProps = {
   venueId: string
+  bookingType: string
   startDate: string | null
   endDate: string | null
   onRangeChange: (start: string | null, end: string | null) => void
   onClear: () => void
 }
 
-function fetchMonth(venueId: string, year: number, month: number) {
+function fetchMonth(venueId: string, year: number, month: number, bookingType: string) {
   const start = toDateString(new Date(year, month, 1))
   const end = toDateString(new Date(year, month + 1, 0))
-  return venueEndpoints(createClient()).getCalendar(venueId, { start_date: start, end_date: end })
+  return venueEndpoints(createClient()).getCalendar(venueId, {
+    start_date: start,
+    end_date: end,
+    booking_type: bookingType,
+  })
 }
 
 export function AvailabilityCalendarDouble({
   venueId,
+  bookingType,
   startDate,
   endDate,
   onRangeChange,
@@ -335,13 +342,13 @@ export function AvailabilityCalendarDouble({
     month2 = next.getMonth()
 
   const q1 = useQuery({
-    queryKey: ['calendar', venueId, year1, month1],
-    queryFn: () => fetchMonth(venueId, year1, month1),
+    queryKey: ['calendar', venueId, year1, month1, bookingType],
+    queryFn: () => fetchMonth(venueId, year1, month1, bookingType),
     staleTime: 5 * 60 * 1000,
   })
   const q2 = useQuery({
-    queryKey: ['calendar', venueId, year2, month2],
-    queryFn: () => fetchMonth(venueId, year2, month2),
+    queryKey: ['calendar', venueId, year2, month2, bookingType],
+    queryFn: () => fetchMonth(venueId, year2, month2, bookingType),
     staleTime: 5 * 60 * 1000,
   })
 

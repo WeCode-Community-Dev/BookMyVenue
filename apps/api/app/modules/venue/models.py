@@ -175,6 +175,10 @@ class Venue(Base):
         back_populates="venue",
     )
 
+    reviews: Mapped[list["VenueReview"]] = relationship(
+        back_populates="venue",
+    )
+
     pricing_rules: Mapped[list["VenuePricingRule"]] = relationship(
         back_populates="venue",
         cascade="all, delete-orphan",
