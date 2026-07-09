@@ -577,6 +577,10 @@ def submit_venue(db: Session, venue_id: UUID, owner_id: UUID) -> Venue:
         )
 
     venue.status = VenueStatus.pending_approval
+
+    from app.modules.deep_research.service import sync_reservation_status_for_venue
+    sync_reservation_status_for_venue(db, venue_id, VenueStatus.pending_approval)
+
     db.commit()
     db.refresh(venue)
     return venue

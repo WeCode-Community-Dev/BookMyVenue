@@ -115,7 +115,28 @@ export function StripePaymentForm(props: Props) {
       stripe={stripePromise}
       options={{
         clientSecret: props.clientSecret,
-        appearance: { theme: resolved === 'dark' ? 'night' : 'stripe' },
+        appearance:
+          resolved === 'dark'
+            ? {
+                theme: 'night',
+                variables: {
+                  colorPrimary: '#408A71', // brand-secondary
+                  colorBackground: '#1b302b', // ink-800 — one step lighter than the ink-900 card it sits in
+                  colorText: '#f4f4f5', // zinc-100
+                  colorTextSecondary: '#a1a1aa', // zinc-400
+                  colorTextPlaceholder: '#71717a', // zinc-500
+                  colorDanger: '#f87171', // red-400
+                  borderRadius: '8px',
+                },
+                rules: {
+                  '.Input': { border: '1px solid #325146' }, // ink-600, visible against ink-800 fill
+                  '.Input:focus': { border: '1px solid #408A71', boxShadow: '0 0 0 1px #408A71' },
+                  '.Tab': { border: '1px solid #325146', backgroundColor: '#1b302b' },
+                  '.Tab:hover': { backgroundColor: '#253f38' },
+                  '.Tab--selected': { border: '1px solid #408A71', backgroundColor: '#152623' },
+                },
+              }
+            : { theme: 'stripe' },
       }}
     >
       <InnerCheckoutForm {...props} />

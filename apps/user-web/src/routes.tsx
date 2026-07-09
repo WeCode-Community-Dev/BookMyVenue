@@ -8,6 +8,8 @@ import Login from './pages/Login'
 import LoginSuccess from './pages/LoginSuccess'
 import Register from './pages/Register'
 import RegisterSuccess from './pages/RegisterSuccess'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Checkout from './pages/Checkout'
 import BookingDetails from './pages/BookingDetails'
 import Payment from './pages/Payment'
@@ -26,6 +28,8 @@ export const router = createBrowserRouter([
   { path: '/login/success', element: <LoginSuccess /> },
   { path: '/register', element: <Register /> },
   { path: '/register/success', element: <RegisterSuccess /> },
+  { path: '/forgot-password', element: <ForgotPassword /> },
+  { path: '/reset-password', element: <ResetPassword /> },
 
   // protected routes — require any authenticated user
   {

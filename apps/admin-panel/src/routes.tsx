@@ -14,6 +14,7 @@ import Amenities from './pages/Amenities'
 import Categories from './pages/Categories'
 import AuditLog from './pages/AuditLog'
 import DeepResearchInsights from './pages/DeepResearchInsights'
+import ExternalReservations from './pages/ExternalReservations'
 
 export const router = createBrowserRouter([
   // Auth
@@ -80,6 +81,10 @@ export const router = createBrowserRouter([
   {
     path: '/deep-research-insights',
     element: <ProtectedRoute><DeepResearchInsights /></ProtectedRoute>,
+  },
+  {
+    path: '/external-reservations',
+    element: <ProtectedRoute><ExternalReservations /></ProtectedRoute>,
   },
   {
     path: '/settings',
