@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Get,
+  Param,
   Post,
   UploadedFiles,
   UseGuards,
@@ -56,5 +58,15 @@ export class VenueController {
     };
 
     return this.venueService.createVenue(dto, files, req.user.id);
+  }
+
+  @Get('all')
+  getAllVenues() {
+    return this.venueService.getAllVenues();
+  }
+
+  @Get(':id')
+  getVenueById(@Param('id') id: string) {
+    return this.venueService.getVenueById(id);
   }
 }
