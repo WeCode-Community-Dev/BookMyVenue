@@ -43,6 +43,8 @@ model User {
   venues    Venue[]
   wishlists Wishlist[]
 
+  refreshToken String?
+
   @@index([role])
 }
 
