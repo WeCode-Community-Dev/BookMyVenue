@@ -74,7 +74,7 @@ def upload_pdf_to_cloudinary(pdf_bytes: bytes, booking_id: uuid.UUID) -> str:
         pdf_bytes,
         folder="venue404/invoices",
         public_id=f"invoice_{booking_id}.pdf",
-        resource_type="raw",
+        resource_type="auto",
         overwrite=True,
     )
     return result["secure_url"]

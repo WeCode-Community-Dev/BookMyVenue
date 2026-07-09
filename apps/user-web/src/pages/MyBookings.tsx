@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
 import { createClient, bookingEndpoints } from '@venue404/api-client'
@@ -11,10 +11,10 @@ import { AppNavbar } from '../components/shared/AppNavbar'
 import type { BookingOut } from '../types'
 
 import BookingCard from '../components/booking/BookingCard'
-import BookingStatusBadge from '../components/booking/BookingStatusBadge'
+
 import { UserReservations } from '../components/booking/UserReservations'
 
-import { formatDate } from '../utils'
+
 
 type BookingTab = 'upcoming' | 'pending' | 'past' | 'cancelled'
 
@@ -28,63 +28,6 @@ const CANCELLED_STATUSES = [
   'balance_overdue_cancelled',
 ]
 
-function FeaturedBookingHero({ booking }: { booking: BookingOut }) {
-  return (
-    <div className="mb-10 overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm dark:border-ink-700 dark:bg-ink-900">
-      <div className="grid lg:grid-cols-2">
-        <div className="aspect-[16/9] lg:aspect-auto">
-          {booking.venue_cover_photo_url ? (
-            <img
-              src={booking.venue_cover_photo_url}
-              alt={booking.venue_name}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="h-full w-full bg-zinc-100 dark:bg-ink-800" />
-          )}
-        </div>
-
-        <div className="flex flex-col justify-center p-8 lg:p-10">
-          <div className="mb-4">
-            <BookingStatusBadge status={booking.status} />
-          </div>
-
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{booking.venue_name}</h2>
-
-          <p className="mt-2 text-zinc-500">{booking.venue_city}</p>
-
-          <div className="mt-8 grid grid-cols-2 gap-6">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-zinc-400">Event Date</p>
-
-              <p className="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{formatDate(booking.starts_at)}</p>
-            </div>
-
-            <div>
-              <p className="text-xs uppercase tracking-wide text-zinc-400">Booking Value</p>
-
-              <p className="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{booking.display.quoted_price}</p>
-            </div>
-          </div>
-
-          {(booking.status === 'owner_accepted' ||
-            booking.status === 'payment_pending' ||
-            (booking.status === 'confirmed' &&
-              booking.payment_status === 'advance_paid' &&
-              booking.balance_due_paise > 0)) && (
-              <div className="mt-6 inline-flex w-fit rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand dark:bg-brand/15 dark:text-brand-secondary">
-                Action Required
-              </div>
-            )}
-
-          <Link to={`/bookings/${booking.id}`} className="mt-8">
-            <Button>View Booking</Button>
-          </Link>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function TabButton({
   active,
@@ -150,7 +93,6 @@ export default function MyBookings() {
     CANCELLED_STATUSES.includes(booking.status)
   )
 
-  const featuredBooking = upcomingBookings[0]
 
   const filteredBookings = useMemo(() => {
     switch (activeTab) {

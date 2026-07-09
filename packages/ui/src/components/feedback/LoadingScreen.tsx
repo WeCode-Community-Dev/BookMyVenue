@@ -19,7 +19,7 @@ export function LoadingScreen({ message = 'Loading', fullScreen = true, classNam
     >
       {/* Fast spinner = perceived performance improvement */}
       <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-200 dark:border-ink-700 border-t-brand" />
-      <p className="text-xs font-medium text-zinc-400">{message}</p>
+      <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500">{message}</p>
     </div>
   )
 }

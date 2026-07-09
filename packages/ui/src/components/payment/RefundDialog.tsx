@@ -20,12 +20,12 @@ export function RefundDialog({
     <Modal open={open} onClose={onClose}>
       <div className="space-y-4 p-2">
         <h2 className="text-lg font-semibold">Refund booking</h2>
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">
           This will refund <strong>{formatPaise(amountPaise, currency.toUpperCase())}</strong> to the
           guest and cancel the booking.
         </p>
         <textarea
-          className="w-full rounded-md border border-zinc-200 p-2 text-sm"
+          className="w-full rounded-md border border-zinc-200 dark:border-ink-800 p-2 text-sm"
           placeholder="Reason (optional)"
           value={reason}
           onChange={(e) => setReason(e.target.value)}

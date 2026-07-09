@@ -486,6 +486,7 @@ def create_venue(db: Session, owner_id: UUID, body: CreateVenueRequest) -> Venue
         close_time=body.close_time,
         spans_next_day=body.spans_next_day,
         allowed_booking_types=[bt.value for bt in body.allowed_booking_types],
+        booking_mode=body.booking_mode.value,
         min_booking_duration_minutes=body.min_booking_duration_minutes,
         max_booking_duration_minutes=body.max_booking_duration_minutes,
         slot_interval_minutes=body.slot_interval_minutes,

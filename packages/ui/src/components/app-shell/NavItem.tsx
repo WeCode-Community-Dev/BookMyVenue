@@ -25,7 +25,7 @@ export function NavItem({ label, href, icon, active, onClick }: NavItemProps) {
         'group relative flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors duration-150',
         active
           ? 'bg-zinc-800 text-white'
-          : 'text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100',
+          : 'text-zinc-400 dark:text-zinc-500 hover:bg-zinc-800/60 hover:text-zinc-100',
       )}
       aria-current={active ? 'page' : undefined}
     >
@@ -41,7 +41,7 @@ export function NavItem({ label, href, icon, active, onClick }: NavItemProps) {
         <span
           className={cn(
             'flex h-[18px] w-[18px] shrink-0 items-center justify-center',
-            active ? 'text-brand-secondary' : 'text-zinc-500 group-hover:text-zinc-300',
+            active ? 'text-brand-secondary' : 'text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-300 dark:text-zinc-600',
           )}
         >
           {icon}

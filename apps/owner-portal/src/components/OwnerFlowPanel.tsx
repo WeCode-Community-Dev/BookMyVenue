@@ -28,7 +28,7 @@ export function OwnerFlowPanel() {
 
       {/* Brand tag */}
       <div className="relative shrink-0">
-        <span className="text-xs font-medium uppercase tracking-widest text-zinc-500">
+        <span className="text-xs font-medium uppercase tracking-widest text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">
           Venue404 · Owner Portal
         </span>
       </div>
@@ -38,7 +38,7 @@ export function OwnerFlowPanel() {
         <h2 className="text-[1.6rem] font-bold leading-snug tracking-tight text-white">
           Your venue.<br />Your dashboard.
         </h2>
-        <p className="mt-1.5 text-sm text-zinc-400">
+        <p className="mt-1.5 text-sm text-zinc-400 dark:text-zinc-500">
           Everything you need to run and grow your space
         </p>
       </div>
@@ -85,7 +85,7 @@ export function OwnerFlowPanel() {
               </svg>
             </div>
             <p className="mt-4 text-base font-bold text-white">List &amp; Manage Venues</p>
-            <p className="mt-1 text-xs leading-relaxed text-zinc-400">
+            <p className="mt-1 text-xs leading-relaxed text-zinc-400 dark:text-zinc-500">
               Publish your space, set availability, and control every detail
             </p>
           </div>
@@ -115,7 +115,7 @@ export function OwnerFlowPanel() {
             </svg>
           </div>
           <div>
-            <p className="text-xs font-semibold text-zinc-300">Accept Bookings</p>
+            <p className="text-xs font-semibold text-zinc-300 dark:text-zinc-600">Accept Bookings</p>
             <p className="mt-0.5 text-2xl font-black text-white">Live</p>
           </div>
         </div>
@@ -138,7 +138,7 @@ export function OwnerFlowPanel() {
             </svg>
           </div>
           <div>
-            <p className="text-xs font-semibold text-zinc-300">Track Revenue</p>
+            <p className="text-xs font-semibold text-zinc-300 dark:text-zinc-600">Track Revenue</p>
             <p className="mt-0.5 text-2xl font-black text-white">₹∞</p>
           </div>
         </div>
@@ -162,7 +162,7 @@ export function OwnerFlowPanel() {
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold text-white">Get Discovered</p>
-            <p className="text-xs text-zinc-400">Reach customers actively searching for your type of space</p>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500">Reach customers actively searching for your type of space</p>
           </div>
           <div className="text-right">
             <span className="text-2xl font-black text-white">10k+</span>
@@ -173,11 +173,11 @@ export function OwnerFlowPanel() {
 
       {/* Bottom */}
       <div className="relative shrink-0 flex items-center gap-4">
-        <p className="text-xs text-zinc-600">Admin-reviewed access</p>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Admin-reviewed access</p>
         <span className="h-3 w-px bg-zinc-800" aria-hidden="true" />
-        <p className="text-xs text-zinc-600">Secure payouts</p>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Secure payouts</p>
         <span className="h-3 w-px bg-zinc-800" aria-hidden="true" />
-        <p className="text-xs text-zinc-600">Full booking control</p>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Full booking control</p>
       </div>
     </div>
   )

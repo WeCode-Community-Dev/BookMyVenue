@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 
 BookingTypeValue = Literal["full_day", "time_slot"]
@@ -90,6 +90,14 @@ class BookingOut(BaseModel):
     auto_confirmed_at: datetime | None = None
     confirmed_by: str | None = None
     invoice_url: str | None = None
+
+    @computed_field
+    @property
+    def final_owner_payout_paise(self) -> int:
+        if self.status in ("user_cancelled", "owner_cancelled", "rejected"):
+            net = (self.amount_paid_paise or 0) - (self.refund_amount_paise or 0) - (self.platform_fee_paise or 0)
+            return max(0, net)
+        return self.owner_payout_paise or 0
 
 
 class CancellationDisplay(BaseModel):

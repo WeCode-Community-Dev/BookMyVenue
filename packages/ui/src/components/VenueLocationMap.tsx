@@ -43,7 +43,7 @@ export function VenueLocationMap({
   return (
     <div
       style={{ height }}
-      className="relative w-full overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100 z-0"
+      className="relative w-full overflow-hidden rounded-2xl border border-zinc-200 dark:border-ink-800 bg-zinc-100 dark:bg-ink-800 z-0"
     >
       {ready && (
         <MapContainer
@@ -79,9 +79,9 @@ export function VenueLocationMap({
       {/* Label card, overlaid the same way the placeholder did */}
       {(label || sublabel) && (
         <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 z-[400]">
-          <div className="pointer-events-auto rounded-xl bg-white px-4 py-2 shadow text-center">
-            {label && <p className="text-sm font-semibold text-zinc-900">{label}</p>}
-            {sublabel && <p className="text-xs text-zinc-500">{sublabel}</p>}
+          <div className="pointer-events-auto rounded-xl bg-white dark:bg-ink-900 px-4 py-2 shadow text-center">
+            {label && <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label}</p>}
+            {sublabel && <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">{sublabel}</p>}
           </div>
         </div>
       )}

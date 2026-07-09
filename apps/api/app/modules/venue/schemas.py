@@ -279,6 +279,7 @@ class CreateVenueRequest(BaseModel):
 
     
     allowed_booking_types: list[BookingType] = Field(default_factory=lambda: [BookingType.full_day, BookingType.time_slot])
+    booking_mode: BookingMode = BookingMode.MANUAL
     min_booking_duration_minutes: int = Field(default=60, gt=0)
     max_booking_duration_minutes: int = Field(default=1440, gt=0)
     slot_interval_minutes: int = Field(default=30, gt=0)
@@ -386,6 +387,7 @@ class UpdateVenueRequest(BaseModel):
     spans_next_day: Optional[bool] = None
 
     allowed_booking_types: Optional[list[BookingType]] = None
+    booking_mode: Optional[BookingMode] = None
     min_booking_duration_minutes: Optional[int] = Field(default=None, gt=0)
     max_booking_duration_minutes: Optional[int] = Field(default=None, gt=0)
     slot_interval_minutes: Optional[int] = Field(default=None, gt=0)

@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
-import { AppShell, Logo, type NavItemConfig, Button } from '@venue404/ui'
+import { AppShell, Logo, type NavItemConfig, Button, ThemeToggle } from '@venue404/ui'
 import {
   LayoutDashboard, Building2, CalendarDays, Wallet, Plus
 } from 'lucide-react'
@@ -30,13 +30,19 @@ export function OwnerLayout({ pageTitle, pageSubtitle, children }: OwnerLayoutPr
 
   let displayTitle = pageTitle
   let displaySubtitle = pageSubtitle
-  let topbarActions: React.ReactNode = <div id="topbar-portal-target" className="flex items-center gap-3 h-full w-full justify-end"></div>
+  let topbarActions: React.ReactNode = (
+    <div className="flex items-center gap-3 h-full w-full justify-end">
+      <ThemeToggle className="mr-1" />
+      <div id="topbar-portal-target" className="flex items-center gap-3"></div>
+    </div>
+  )
 
   if (location.pathname === '/venues' || location.pathname === '/venues/') {
     displayTitle = 'My Venues'
     displaySubtitle = 'Manage your listed properties and their settings.'
     topbarActions = (
       <div className="flex items-center gap-3">
+        <ThemeToggle className="mr-1" />
         <Button variant="primary" onClick={() => navigate('/venues/new')} className="gap-2 h-9 px-4 text-sm font-medium bg-[#2d6a4f] hover:bg-[#1b4332] border-none text-white shadow-sm rounded-md flex items-center">
           <Plus className="h-4 w-4" /> Add New Venue
         </Button>

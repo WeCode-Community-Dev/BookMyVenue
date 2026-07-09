@@ -30,7 +30,7 @@ export function AuthStatusPanel({ title, description, features, tagline = 'Venue
 
       {/* Top: brand name */}
       <div className="relative">
-        <span className="text-xs font-medium tracking-widest text-zinc-500 uppercase">
+        <span className="text-xs font-medium tracking-widest text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 uppercase">
           {tagline}
         </span>
       </div>
@@ -40,7 +40,7 @@ export function AuthStatusPanel({ title, description, features, tagline = 'Venue
         <h2 className="text-3xl font-semibold leading-snug tracking-tight text-white">
           {title}
         </h2>
-        <p className="max-w-xs text-sm leading-relaxed text-zinc-400">{description}</p>
+        <p className="max-w-xs text-sm leading-relaxed text-zinc-400 dark:text-zinc-500">{description}</p>
 
         {features && features.length > 0 && (
           <div className="mt-8 grid grid-cols-2 gap-2.5 pt-2">
@@ -52,7 +52,7 @@ export function AuthStatusPanel({ title, description, features, tagline = 'Venue
                 {f.icon && (
                   <span className="shrink-0 text-brand-secondary">{f.icon}</span>
                 )}
-                <span className="text-sm font-medium text-zinc-300">{f.label}</span>
+                <span className="text-sm font-medium text-zinc-300 dark:text-zinc-600">{f.label}</span>
               </div>
             ))}
           </div>
@@ -61,7 +61,7 @@ export function AuthStatusPanel({ title, description, features, tagline = 'Venue
 
       {/* Bottom: fine print */}
       <div className="relative">
-        <p className="text-xs text-zinc-600">{footnote}</p>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">{footnote}</p>
       </div>
     </div>
   )

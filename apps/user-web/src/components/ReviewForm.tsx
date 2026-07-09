@@ -21,7 +21,6 @@ interface ReviewFormProps {
 }
 
 export function ReviewForm({
-  venueId,
   onSubmit,
   onCancel,
   initialReview,

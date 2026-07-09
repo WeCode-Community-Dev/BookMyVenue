@@ -34,7 +34,7 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <div className={cn('min-h-[100dvh] bg-zinc-50', className)}>
+    <div className={cn('min-h-[100dvh] bg-zinc-50 dark:bg-ink-950', className)}>
       <AppSidebar
         navItems={navItems}
         activePath={activePath}
