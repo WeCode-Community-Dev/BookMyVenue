@@ -185,7 +185,7 @@ export default function UserBookings() {
                     {/* Date & Time */}
                     <div className="flex flex-col md:flex-row gap-4 md:gap-8 flex-1 w-full border-t lg:border-none border-gray-50 pt-4 lg:pt-0">
                         <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date</p>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date(YYYY-MM-DD)</p>
                             <div className='flex items-center gap-1.5'>
                                 <Calendar size={18} className="text-[#3e517f]" />
                                 <span className="font-bold text-gray-900">{booking.booking_date}</span>

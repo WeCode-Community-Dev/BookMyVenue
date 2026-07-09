@@ -18,16 +18,11 @@ function Filters() {
             icon: <MapPin size={20}/>, 
             options: ["Downtown", "Suburbs", "City Center", "Beachfront"] 
         },
-        // { 
-        //     name: "Venue Type", 
-        //     icon: <Kanban size={20}/>, 
-        //     options: ["Indoor", "Outdoor", "Rooftop", "Barn"] 
-        // },
-        // { 
-        //     name: "Budget", 
-        //     icon: <Dollar size={20}/>, 
-        //     options: ["$ (Under $500)", "$$ ($500 - $1k)", "$$$ ($1k - $5k)", "$$$$ ($5k+)"] 
-        // },
+        { 
+            name: "Budget", 
+            icon: <Dollar size={20}/>, 
+            options: ["$ (Under $500)", "$$ ($500 - $1k)", "$$$ ($1k - $5k)", "$$$$ ($5k+)"] 
+        },
         { 
             name: "Amenities", 
             icon: <Speaker size={20}/>, 

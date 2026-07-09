@@ -19,6 +19,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 import toast, {Toaster} from 'react-hot-toast';
+import Loading from '../components/Loading';
 
 const ImageGalleryModal = ({ isOpen, onClose, images }) => {
 
@@ -109,10 +110,7 @@ export default function SpaceListing() {
 
     if(isLoading){
         return (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] text-[#2b5155]">
-                <SpinnerOne className="w-10 h-10 animate-spin mb-4" />
-                <p className="font-semibold text-lg">Loading, Please Wait!</p>
-            </div>
+            < Loading LoadingText="Loading. Please wait!" />
         )
     }
 

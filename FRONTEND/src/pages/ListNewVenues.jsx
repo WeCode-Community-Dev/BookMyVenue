@@ -50,7 +50,7 @@ export default function ListNewVenue() {
         venue_name: "",
         venue_description: "",
         location: "",
-        capacity: 0,
+        capacity: "",
     })
 
     const [amenitiesFormData, setAmenitiesFormData] = useState({
@@ -68,7 +68,7 @@ export default function ListNewVenue() {
         closing_time: "",
         minimum_hours: 0,
         gap_between_bookings: 0,
-        venue_price: 0
+        venue_price: ""
     })
 
     // for step 3
@@ -101,7 +101,7 @@ export default function ListNewVenue() {
 
         // Convert to number if it's a number field, otherwise keep as string
         const numberFields = ['capacity', 'venue_price', 'minimum_hours', 'gap_between_bookings'];
-        const parsedValue = numberFields.includes(name) ? Number(value) : value;
+        const parsedValue = numberFields.includes(name) ? (value === "" ? "" : Number(value)) : value;
 
         if (name in basicFormData) {
             setBasicFormData(prev => ({ ...prev, [name]: parsedValue }));
@@ -151,11 +151,18 @@ export default function ListNewVenue() {
             }
             
             // API call successful!
-            return true; 
+            return true;
             
         } catch (error) {
-            console.error(error.response?.data || error)
-            toast.error("Something went wrong! Please try Again!");
+            const availabilityFormCheck = availabilityFormData.open_time === "" || availabilityFormData.closing_time === "" || availabilityFormData.venue_price === "";
+            if(currentStep === 3 && imageselected.length === 0){
+                toast.error("Please Upload atleast one image!")
+            } else if(currentStep === 4 && availabilityFormCheck){
+                toast.error("Please Fill Complete Form Details!")
+            } else {
+                console.error(error.response?.data?.detail || error)
+                toast.error("Something went wrong! Please try Again!");
+            }
             
             // API call failed!
             return false; 
@@ -474,7 +481,7 @@ export default function ListNewVenue() {
 
                                 <div className="grid grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-900 mb-2">Opening Time</label>
+                                        <label className="block text-sm font-bold text-gray-900 mb-2">Opening Time*</label>
                                         <input type="time" 
                                             className="w-full p-3 rounded-lg border border-gray-300 outline-none" 
                                             onChange={handleChange}
@@ -483,7 +490,7 @@ export default function ListNewVenue() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-900 mb-2">Closing Time</label>
+                                        <label className="block text-sm font-bold text-gray-900 mb-2">Closing Time*</label>
                                         <input type="time" 
                                             className="w-full p-3 rounded-lg border border-gray-300 outline-none" 
                                             onChange={handleChange}

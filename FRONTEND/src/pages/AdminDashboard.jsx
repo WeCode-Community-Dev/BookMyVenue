@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Cookies from "js-cookie"
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../assets/Logo.png'
-import { Layout, Building } from '@mynaui/icons-react';
+import { Layout, Building, SlashCircle, X } from '@mynaui/icons-react';
 import apiService from '../services/apiService';
 import toast, {Toaster} from 'react-hot-toast';
 
@@ -48,13 +48,19 @@ export default function AdminDashboard() {
   const [allVenues, setAllVenues] = useState([])
   const [pendingVenues, SetPendingVenues] = useState([])
 
+  const [selectedVenueForRejection, setSelectedVenueForRejection] = useState();
+
   const [allUsers, setAllUsers] = useState([])
+
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
 
   const fetchPendingVenues = async () => {
     try {
       const response = await apiService.GetAllVenuesForAdmin()
       const safeResponse = Array.isArray(response) ? response : []
       setAllVenues(safeResponse);
+      console.log(safeResponse);
       
       const unapproved = safeResponse.filter(venue => venue.is_approved === false);
       SetPendingVenues(unapproved);
@@ -82,13 +88,25 @@ export default function AdminDashboard() {
     
     getAllUsersList()
     fetchPendingVenues()
-  }, [])  
+  }, [])
+
+  const openRejectionModal = () => {
+    setIsRejectModalOpen(true);
+    setRejectReason("");
+  }
+
+  const executeRejection = () => {
+    handleApproval("rejected", selectedVenueForRejection.id)
+    console.log("Sending Rejection Reason");
+    setIsRejectModalOpen(false);
+    setRejectReason("");
+  }
   
   const handleApproval = async (button, venue_id) => {
     try {
       const payload = {
         "status": button,
-        "reason": "Admin's reason!"
+        "reason": rejectReason
       }
 
       const response = await apiService.updateAdminVenueApproval(payload, venue_id)
@@ -287,7 +305,7 @@ export default function AdminDashboard() {
                                 <button onClick={() => handleApproval("approved", venue.id)} className="bg-[#2a5660] cursor-pointer hover:bg-[#1f4048] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm">
                                   Approve
                                 </button>
-                                <button onClick={() => handleApproval("rejected", venue.id)} className="bg-white cursor-pointer border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+                                <button onClick={() => {openRejectionModal(), setSelectedVenueForRejection(venue)}} className="bg-white cursor-pointer border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
                                   Reject
                                 </button>
                               </div>
@@ -303,6 +321,53 @@ export default function AdminDashboard() {
                 </div>
               : <div></div>
             }
+
+            {/* Rejection MODAL */}
+            {isRejectModalOpen && (
+              <div className="fixed inset-0 z-50 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+                  <div className="bg-white rounded-2xl max-w-md w-full shadow-xl overflow-hidden transform transition-all">
+                      
+                      <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+                          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                              <SlashCircle className="text-red-500" size={20} />
+                              Reject Booking
+                          </h3>
+                          <button 
+                              onClick={() => {setIsRejectModalOpen(false)}}
+                              className="text-gray-400 hover:text-gray-700 transition-colors"
+                          >
+                              <X size={20} />
+                          </button>
+                      </div>
+      
+                      <div className="p-6">
+                          <label className="block text-sm font-bold text-gray-900 mb-2">Reason for Rejection <span className="text-red-500">*</span></label>
+                          <textarea 
+                              rows={3}
+                              value={rejectReason}
+                              onChange={(e) => setRejectReason(e.target.value)}
+                              placeholder="Please briefly explain why you are rejecting..."
+                              className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all bg-gray-50 resize-none"
+                          />
+                      </div>
+      
+                      <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
+                          <button
+                              onClick={() => setIsRejectModalOpen(false)}
+                              className="px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-200 font-semibold text-sm transition-colors"
+                          >
+                              Cancel
+                          </button>
+                          <button
+                              onClick={() => executeRejection()}
+                              className="px-5 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-semibold text-sm shadow-sm transition-colors"
+                          >
+                              Confirm Rejection
+                          </button>
+                      </div>
+                  </div>
+              </div>
+            )}
             
             {/* 3. ALL VENUES SHOWCASE SECTION */}
             <div>

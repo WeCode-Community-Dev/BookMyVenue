@@ -2,6 +2,7 @@ import NavBar from "../components/Navbar";
 import Filters from "../components/Filters";
 import VenueGrid from "../components/VenueGrid";
 import { useState } from "react";
+import DotField from './DotField';
 
 export default function HomePage() {
     const [searchParams, setSearchParams] = useState({
@@ -30,7 +31,23 @@ export default function HomePage() {
 function HeroContent() {
     return (
         <div className="Hero-Content w-full overflow-hidden flex flex-col items-center justify-center text-center text-[#2a5660] px-4 md:px-8">
-            <video
+            <div style={{ width: '100%', height: '600px', position: 'relative' }}>
+                <DotField
+                    dotRadius={1.5}
+                    dotSpacing={13}
+                    bulgeStrength={9}
+                    glowRadius={50}
+                    sparkle={false}
+                    waveAmplitude={3}
+                    cursorRadius={150}
+                    cursorForce={0.07}
+                    bulgeOnly
+                    gradientFrom="#A855F7"
+                    gradientTo="#B497CF"
+                    glowColor="#120F17"
+                />
+            </div>
+            {/* <video
                 className="absolute inset-0 w-full h-full object-cover z-0 [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]"
                 autoPlay
                 loop
@@ -39,7 +56,7 @@ function HeroContent() {
                 poster="/poster.png"
             >
                 <source src="/NewHeroVid1.webm" type="video/webm" />
-            </video>
+            </video> */}
             <div className=" z-10 mx-auto">
                 <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4">
                     Find the Perfect Venue for Your Event.

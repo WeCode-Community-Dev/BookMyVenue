@@ -144,10 +144,15 @@ const RecentBookings = ({allBookings}) => (
       {allBookings.map((item) => {
         const booking = item.booking;
         const venuePrice = item.venue_price;
+        console.log(booking)
 
         return (
-          <div key={booking.id} className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm hover:shadow-md transition-shadow">
+          <div key={booking.id} className="relative bg-white border border-gray-100 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm hover:shadow-md transition-shadow">
             
+            <div className={`STATUS absolute backdrop-blur-sm rounded-2xl -left-1 -top-2 ${booking.status === "cancelled" ? "bg-[#ff535e]/90" : "bg-[#56bd7b]"}  text-white px-2 p-1 font-semibold text-xs`} >
+              Status: {booking.status}
+            </div>
+
             <div className="flex items-center gap-4 w-full md:w-auto md:min-w-[180px]">
               <div className="flex flex-col items-start">
                 <div className='flex gap-1 mb-1' >
@@ -313,30 +318,31 @@ export default function OwnerDashboard() {
     }
   }
 
-  useEffect(() => {
-    const fetchVenues = async () => {
-      try {
-        const response = await apiService.GetOwnerVenues(Cookies.get('userId'));
+  const fetchVenues = async () => {
+    try {
+      const response = await apiService.GetOwnerVenues(Cookies.get('userId'));
 
-        const revenueResponse = await apiService.GetOwnerRevenue();
-        setOwnerRevenue(revenueResponse.total_earnings);
+      const revenueResponse = await apiService.GetOwnerRevenue();      
+      setOwnerRevenue(revenueResponse.total_earnings);
 
-        const allBookings = await apiService.GetAllBookingForOwner();
-        setAllBookings(Array.isArray(allBookings) ? allBookings : []);
-        
-        if(Array.isArray(response)){
-          setUserVenues(response)
-        } else {
-          setUserVenues([]);
-        }
-        console.log(allBookings);
-        
-      } catch (error) {
-        console.log(error);
+      const allBookings = await apiService.GetAllBookingForOwner();
+      setAllBookings(Array.isArray(allBookings) ? allBookings : []);
+      
+      if(Array.isArray(response)){
+        setUserVenues(response)
+      } else {
         setUserVenues([]);
-        setAllBookings([]);
       }
+      console.log(allBookings);
+      
+    } catch (error) {
+      console.log(error);
+      setUserVenues([]);
+      setAllBookings([]);
     }
+  }
+
+  useEffect(() => {
     fetchVenues()
   },[])
 
@@ -373,7 +379,7 @@ export default function OwnerDashboard() {
           <TopHeader />
           <StatsOverview venue={userVenues} ownerRevenue={ownerRevenue} />
           <RecentBookings allBookings={allBookings} />
-          < EditVenueModal isOpen={isEditOpen} venueData={selectedVenue} onClose={onClose}  />
+          < EditVenueModal isOpen={isEditOpen} venueData={selectedVenue} onClose={onClose} fetchVenues={fetchVenues} />
           <ListedProperties handleToggleAvailability={handleToggleAvailability}
             userVenues={userVenues} setSelectedVenue={setSelectedVenue} setIsEditOpen={setIsEditOpen}
           />

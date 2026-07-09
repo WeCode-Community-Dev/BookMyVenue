@@ -9,13 +9,24 @@ const LogoutBtn = ({isMobile, handleNavigation, name}) => {
     Cookies.set('authToken', null, {expires: 30, secure: true, sameSite: 'Lax'})
   } 
 
+  // Check if this is the Sign Up button or the Sign Out button
+  const isSignUp = name === "Sign Up";
+
   return(
     <button 
         onClick={() => {handleNavigation("/auth"), handleCookies()}} 
         className={
           isMobile
-            ? "SIGNUP w-11/12 max-w-xs px-4 py-3 mt-2 bg-[#f56d5e] text-white text-lg rounded-full hover:bg-[#BF5842] active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
-            : "SIGNUP ml-3 px-4 py-2 bg-[#f56d5e] text-white text-base rounded-full hover:bg-[#BF5842] hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
+            ? `w-11/12 max-w-xs px-4 py-3 mt-2 rounded-full font-medium transition-all duration-300 ease-in-out active:scale-95 ${
+                isSignUp 
+                  ? "bg-[#f56d5e] text-white shadow-md hover:bg-[#BF5842]"
+                  : "bg-transparent text-gray-600 border border-gray-200 hover:bg-gray-50"
+              }`
+            : `px-5 py-2 rounded-full cursor-pointer font-medium transition-all duration-300 ease-in-out active:scale-95 ${
+                isSignUp 
+                  ? "bg-[#f56d5e]  text-white shadow-md hover:bg-[#BF5842] hover:scale-105" 
+                  : "bg-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+              }`
         }
       >
           {name === "Sign Up" ? name : "Sign Out"}
@@ -26,7 +37,6 @@ const LogoutBtn = ({isMobile, handleNavigation, name}) => {
 function ActionButton({ role, isMobile, onClick }) {
   const navigate = useNavigate();
 
-  // Helper to handle navigation and close the mobile drawer concurrently
   const handleNavigation = (path) => {
     if (onClick) onClick(); 
     navigate(path);
@@ -34,66 +44,46 @@ function ActionButton({ role, isMobile, onClick }) {
 
   if (role === "owner" || role === "admin") {
     return (
-      <div className="flex" >
+      <div className="flex items-center gap-3" >
         <button
           onClick={() => handleNavigation(role === "owner" ? "/host/dashboard" : "/admin/dashboard")}
           className={
             isMobile
-              // Updated mobile classes to match Sign Up styling
               ? "w-11/12 max-w-xs flex items-center justify-center gap-2 px-4 py-3 mt-2 bg-[#f56d5e] text-white text-lg font-medium rounded-full shadow-md hover:shadow-lg hover:bg-[#BF5842] active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
-              // Updated desktop classes to match Sign Up styling
               : "flex items-center justify-center gap-2 px-5 py-2 bg-[#f56d5e] text-white text-base font-medium rounded-full shadow-md hover:shadow-lg hover:bg-[#BF5842] hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
           }
         >
           Dashboard
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            className="h-5 w-5" 
-            viewBox="0 0 20 20" 
-            fill="currentColor"
-          >
-            <path 
-              fillRule="evenodd" 
-              d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" 
-              clipRule="evenodd" 
-            />
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
           </svg>
         </button>
-        < LogoutBtn isMobile={isMobile} handleNavigation={handleNavigation} />
+        <LogoutBtn isMobile={isMobile} handleNavigation={handleNavigation} name="Sign Out" />
       </div>
     )
   } else if (role === "user") {
     return (
-      <div className="flex" >
+      <div className="flex items-center gap-3" >
         <button
           onClick={() => handleNavigation("/user/dashboard")}
           className={
             isMobile
-              //  mobile
-              ? "w-11/12 max-w-xs flex items-center justify-center gap-2 px-4 py-3 mt-2 bg-[#f2f2f1] text-black text-lg font-medium rounded-full shadow-md hover:shadow-lg hover:bg-[#BF5842] hover:text-white active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
-              // desktop 
-              : "flex items-center justify-center gap-2 px-5 py-2 bg-[#f2f2f1] text-black text-base font-medium rounded-full shadow-md hover:shadow-lg hover:bg-[#BF5842] hover:text-white hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
+              ? "w-11/12 max-w-xs flex items-center justify-center gap-2 px-4 py-3 mt-2 bg-[#2a5660] text-white text-lg font-medium rounded-full shadow-md hover:shadow-lg hover:bg-[#1d3f47] active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
+              // Switched User Dashboard to your primary Teal color for better contrast
+              : "flex items-center justify-center gap-2 px-5 py-2 bg-[#2a5660] text-white text-base font-medium rounded-full shadow-md hover:shadow-lg hover:bg-[#1d3f47] hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300 ease-in-out"
           }
         >
-          See your Bookings
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            className="h-5 w-5" 
-            viewBox="0 0 20 20" 
-            fill="currentColor"
-          >
-            <path 
-              fillRule="evenodd" 
-              d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" 
-              clipRule="evenodd" 
-            />
+          My Bookings
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
           </svg>
         </button>
-         < LogoutBtn isMobile={isMobile} handleNavigation={handleNavigation} />
+         <LogoutBtn isMobile={isMobile} handleNavigation={handleNavigation} name="Sign Out" />
       </div>
     )
   } else {
-    return < LogoutBtn isMobile={isMobile} handleNavigation={handleNavigation} name={"Sign Up"} />
+    // Passes "Sign Up" so it renders as a solid primary button
+    return <LogoutBtn isMobile={isMobile} handleNavigation={handleNavigation} name="Sign Up" />
   }
 }
 
@@ -121,7 +111,7 @@ function NavBar() {
         </div>
 
         {/* Desktop Nav Links (Hidden on Mobile) */}
-        <div className="NAVLINKS hidden md:flex gap-8 text-sm">
+        <div className={`NAVLINKS hidden md:flex gap-8 text-sm ${Cookies.get('userRole') !== "" || null ? "pl-30" : "" }`}>
           <div className="group relative">
             <Link to="/" className={`font-medium transition-all duration-300 ease-in-out ${
               isActive('/') ? 'text-[#2a5660]' : 'group-hover:text-[#2a5660]'}`}>
