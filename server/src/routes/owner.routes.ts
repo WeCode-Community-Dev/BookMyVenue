@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { ownerDashboardController } from '@/controllers/dashboard.controller';
 import * as venueController from '@/controllers/venue.controller';
 import * as bookingController from '@/controllers/booking.controller';
+import * as settlementController from '@/controllers/settlement.controller';
 
 import { authMiddleware } from '@/middlewares/auth.middleware';
 import { authorizeRoles, requireOwnerVerification } from '@/middlewares/role.middleware';
@@ -79,5 +80,9 @@ router.patch(
   requireOwnerVerification,
   bookingController.updateOwnerBookingStatus
 );
+
+// Settlements / Revenue
+router.get('/settlements', settlementController.getOwnerSettlements);
+router.get('/settlements/stats', settlementController.getOwnerRevenueStats);
 
 export default router;

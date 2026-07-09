@@ -5,6 +5,10 @@ import Venue from '@/models/venue.model';
 import Category from '@/models/category.model';
 import Owner from '@/models/owner.model';
 import Availability from '@/models/availability.model';
+import Settlement from '@/models/settlement.model';
+import Booking from '@/models/booking.model';
+import { BookingStatus } from '@/constants/booking';
+import { SettlementStatus } from '@/constants/settlement';
 
 function formatTimeAgo(date: Date): string {
   const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
@@ -20,16 +24,31 @@ function formatTimeAgo(date: Date): string {
 // OWNER DASHBOARD SERVICE
 export async function ownerDashboardService(ownerId: string): Promise<OwnerDashboard> {
   const approvedVenues = await getApprovedVenues(ownerId);
-  console.log('active venues', approvedVenues);
+
+  // Get owner's venue IDs
+  const venues = await Venue.find({ ownerId, isDeleted: { $ne: true } }).select('_id');
+  const venueIds = venues.map((v) => v._id);
+
+  // Real revenue from settled settlements
+  const [revenueResult] = await Settlement.aggregate([
+    { $match: { ownerId: ownerId, status: SettlementStatus.SETTLED } },
+    { $group: { _id: null, totalRevenue: { $sum: '$ownerEarnings' }, count: { $sum: 1 } } },
+  ]);
+  const totalRevenue = revenueResult?.totalRevenue || 0;
+
+  // Real completed booking count
+  const totalBookings = await Booking.countDocuments({
+    venue: { $in: venueIds },
+    bookingStatus: BookingStatus.COMPLETED,
+  });
 
   return {
     statCardData: [
-      { title: 'Total Revenue', value: 0 },
-      { title: 'Total Bookings', value: 0 },
+      { title: 'Total Revenue', value: totalRevenue },
+      { title: 'Total Bookings', value: totalBookings },
       { title: 'Active Venues', value: approvedVenues },
       { title: 'Avg Rating', value: 0 },
     ],
-
     revenueChartData: [],
     revenueDistributionData: [],
     upcomingBookings: [],

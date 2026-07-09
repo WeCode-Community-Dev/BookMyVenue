@@ -8,6 +8,7 @@ import {
   LogOut,
   X,
   Boxes,
+  Banknote,
 } from 'lucide-react';
 import { useUIStore } from '@/store/ui.store';
 import { useLogout } from '@/features/auth/hooks/useLogout';
@@ -17,6 +18,7 @@ const adminNavLinks = [
   { name: 'Manage Users', href: '/admin/users', icon: Users },
   { name: 'Categories', href: '/admin/categories', icon: Boxes },
   { name: 'Manage Venues', href: '/admin/venues', icon: Building2 },
+  { name: 'Settlements', href: '/admin/settlements', icon: Banknote },
   { name: 'Bookings Overview', href: '/admin/bookings', icon: CalendarDays },
   { name: 'Profile Settings', href: '/admin/profile', icon: User },
 ];
