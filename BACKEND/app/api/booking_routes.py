@@ -36,9 +36,9 @@ async def get_my_bookings(
 
 
 
-@router.get("/already-booked")
+@router.get("/already-booked/{venue_id}")
 async def get_already_booked(
-    current_user: dict = Depends(get_current_user),
+    venue_id: int = Path(..., description="Venue ID"),
     db: Session = Depends(get_db)
 ):
     """
@@ -47,7 +47,7 @@ async def get_already_booked(
     try:
         return get_already_booked_slots(
             db,
-            user_id=current_user["sub"],
+            venue_id=venue_id
         ) 
 
     except Exception as e:

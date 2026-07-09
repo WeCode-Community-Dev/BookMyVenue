@@ -77,7 +77,7 @@ def get_booking(
 
 def get_already_booked_slots(
     db: Session,
-    user_id: int = None,
+    venue_id: int = None
 ) -> List[Booking]:
     try:
 
@@ -88,8 +88,8 @@ def get_already_booked_slots(
             Booking.booking_date >= today
         )
         
-        if user_id is not None:
-            query = query.filter(Booking.user_id == user_id)
+        if venue_id is not None:
+            query = query.filter(Booking.venue_id == venue_id)
 
         bookings = query.all()
         return bookings
