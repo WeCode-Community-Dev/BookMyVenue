@@ -22,7 +22,7 @@ export class AdminRepository extends IAdminRepository {
     }
 
     async findByEmail(email) {
-        let document = AdminModel.findOne({
+        let document = await AdminModel.findOne({
             email,
             isDeleted: false,
         });

@@ -239,12 +239,31 @@ const iVendorLogout = new VendorLogoutUseCase (
     iHashService,
     iTokenService
 )
-const iCreateVenueUsecase = new VendorCreateVenueUsecase(iVenueRepository)
-const iUpdateVenueUsecase = new VendorEditVenueUsecase(iVenueRepository, iCloudinaryService)
-const iVendorVenueGetById = new VendorGetVenueByIdUsecase(iVenueRepository)
-const iVendorGetAllVenues = new VendorGetAllVenuesUsecase(iVenueRepository)
-const iVendorDeleteVenue = new VendorDeleteVenueUsecase(iVenueRepository)
-const iUpdatevenueStatus = new VendorUpdateVenueStatusUsecase(iVenueRepository)
+const iCreateVenueUsecase = new VendorCreateVenueUsecase(
+    iVenueRepository,
+    iVendorRepository
+)
+const iUpdateVenueUsecase = new VendorEditVenueUsecase(
+    iVenueRepository, 
+    iCloudinaryService,
+    iVendorRepository
+)
+const iVendorVenueGetById = new VendorGetVenueByIdUsecase(
+    iVenueRepository,
+    iVendorRepository
+)
+const iVendorGetAllVenues = new VendorGetAllVenuesUsecase(
+    iVenueRepository,
+    iVendorRepository
+)
+const iVendorDeleteVenue = new VendorDeleteVenueUsecase(
+    iVenueRepository,
+    iVendorRepository
+)
+const iUpdatevenueStatus = new VendorUpdateVenueStatusUsecase(
+    iVenueRepository,
+    iVendorRepository
+)
 const iGetVendorProfileUsecase = new GetVendorProfileUsecase(iVendorRepository)
 const iUpdateVendorProfileUsecase = new VendorUpdateProfileUsecase(iVendorRepository)
 const getVendorBookingsUsecase = new GetVendorBookingsUsecase(bookingRepository)

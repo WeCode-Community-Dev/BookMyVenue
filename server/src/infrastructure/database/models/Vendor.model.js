@@ -8,7 +8,7 @@ const vendorSchema = new mongoose.Schema(
         email: { type: String, required: true, unique: true },
         phone: { type: String, required: true, unique: true },
         // businessName: { type: String, required: false },
-        password: { type: String, required: true, select: false },
+        password: { type: String, required: true, },
         profileImage: {
             publicId: { type: String, default: "" },
             url: { type: String, default: "" }
@@ -39,7 +39,13 @@ const vendorSchema = new mongoose.Schema(
             enum: Object.values(VendorApprovalStatus),
             default: VendorApprovalStatus.PENDING
         },
-        rejectionReason: { type: String, default: "" }
+        rejectionReason: { type: String, default: "" },
+        resetToken: {
+            type: String,
+        },
+        resetTokenExpiry: {
+            type: Date,
+        },
     },
     { timestamps: true }
 );

@@ -24,8 +24,10 @@ export class RegisterVendorUsecase {
         phone,
         password
     }) {
+        // console.log("email: ", email)
         const existing = await this._vendorRepository.findByEmail(email);
 
+        // console.log('from vendor usecase: ', existing)
         if (existing) {
             throw new ConflictError(authMessages.error.EMAIL_ALREADY_EXISTS);
         }

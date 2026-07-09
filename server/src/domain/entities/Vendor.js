@@ -13,6 +13,8 @@ export class VendorEntity {
         bio = "",
         role,
         // businessName,
+        resetToken,
+        resetTokenExpiry,
         isVerified = false,
         isBlocked = false,
         isDeleted = false,
@@ -32,6 +34,8 @@ export class VendorEntity {
         this.role = role;
         // this.businessName = businessName;
         this.isVerified = isVerified;
+        this.resetToken = resetToken;
+        this.resetTokenExpiry = resetTokenExpiry;
         this.isBlocked = isBlocked;
         this.isDeleted = isDeleted;
         this.refreshToken = refreshToken;

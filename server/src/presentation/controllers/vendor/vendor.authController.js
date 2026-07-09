@@ -48,7 +48,7 @@ export class VendorAuthController {
     });
 
     resendOtp = asyncHandler(async (req, res) => {
-        await this.this._resendVendorOtp.execute({email: req.body.email});
+        await this._resendVendorOtp.execute({email: req.body.email});
         return sendSuccess(res, statusCode.OK, authMessages.success.OTP_RESENT);
     });
 
@@ -60,7 +60,7 @@ export class VendorAuthController {
     });
 
     forgotPassword = asyncHandler(async (req, res) => {
-        await this._forgotPasswordUseCase.execute({email: req.body.email});
+        await this._forgotPasswordUsecase.execute({email: req.body.email});
         return sendSuccess(res, statusCode.OK, authMessages.success.FORGOT_PASSWORD);
     });
 

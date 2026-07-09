@@ -117,8 +117,15 @@ class VendorRepositoryImpl extends IVendorRepository {
     }
 
     async findByEmail(email) {
-        const doc = VendorModel.findOne({ email, isDeleted: false });
-        return doc ? VendorMapper.mapToEntity(doc) : null;
+        const doc = await VendorModel.findOne({ 
+            email, 
+            isDeleted: {$ne: true}
+        });
+        if(!doc){
+            return null
+        }
+
+        return VendorMapper.mapToEntity(doc)
     }
 
     async findByPhone(phone) {

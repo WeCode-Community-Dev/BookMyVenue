@@ -6,6 +6,7 @@ export class AdminEntity {
         password = null,
         role,
         isDeleted = false,
+        refreshToken = [],
         createdAt,
         updatedAt,
     }) {
@@ -14,6 +15,7 @@ export class AdminEntity {
         this.email = email;
         this.password = password;
         this.role = role;
+        this.refreshToken = refreshToken;
         this.isDeleted = isDeleted;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;

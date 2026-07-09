@@ -32,9 +32,9 @@ export const ROUTES = {
             GET_STATISTICS:'/payments/statistics',
         },
         AUTH: {
-            LOGIN: "/vendor/login",
-            REFRESH: '/vendor/refresh',
-            LOGOUT: '/vendor/logout'
+            LOGIN: "/admin/login",
+            REFRESH: '/admin/refresh',
+            LOGOUT: '/admin/logout'
         },
 
     },
