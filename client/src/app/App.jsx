@@ -96,12 +96,12 @@ function App() {
             />
 
             <Route
-              path="users"
+              path={ROUTES.ADMIN.USERS}
               element={<UserManagement />}
             />
 
             <Route
-              path="vendors"
+              path={ROUTES.ADMIN.VENDORS}
               element={<VendorManagement />}
             />
 

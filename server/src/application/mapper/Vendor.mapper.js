@@ -43,6 +43,8 @@ export class VendorMapper {
             role: entity.role,
             isDeleted: entity.isDeleted,
             refreshToken: entity.refreshToken,
+            createdAt:entity.createdAt,
+            updatedAt:entity.updatedAt,
             isBlocked:entity.isBlocked,
             approvalStatus:entity.approvalStatus,
             rejectionReason:entity.rejectionReason,
