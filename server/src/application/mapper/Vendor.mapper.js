@@ -49,6 +49,8 @@ export class VendorMapper {
             refreshToken: entity.refreshToken,
             resetToken: entity.resetToken,
             resetTokenExpiry: entity.resetTokenExpiry,
+            createdAt:entity.createdAt,
+            updatedAt:entity.updatedAt,
             isBlocked:entity.isBlocked,
             approvalStatus:entity.approvalStatus,
             rejectionReason:entity.rejectionReason,

@@ -24,8 +24,8 @@ export const ROUTES = {
     ADMIN: {
         ROOT: "/admin", 
         DASHBOARD: "/admin/dashboard",
-        USERS: "/admin/users",
-        VENDORS: "/admin/vendors",
+        USERS: "users",
+        VENDORS: "vendors",
         VENUES: "/admin/venues",
         BOOKINGS: "/admin/bookings",
         PAYMENTS: "/admin/payments",

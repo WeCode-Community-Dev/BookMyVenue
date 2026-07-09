@@ -76,7 +76,7 @@ const ViewUserModal = ({
                   : "default"
               }
             >
-              {user.isBlocked?"Bblocked":"Active"}
+              {user.isBlocked?"Blocked":"Active"}
             </Badge>
           </div>
 
