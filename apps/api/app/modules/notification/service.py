@@ -19,7 +19,10 @@ from app.modules.notification.templates import render_notification
 logger = logging.getLogger(__name__)
 
 
-def notify(db: Session, user_id, type: str, context: dict | None = None, booking_id=None) -> InAppNotification:
+def notify(
+    db: Session, user_id, type: str, context: dict | None = None, booking_id=None,
+    skip_email: bool = False,
+) -> InAppNotification:
     """Create an in-app notification and queue its email for after-commit send.
 
     Always writes the in-app row inside the caller's transaction. The email is
@@ -27,14 +30,19 @@ def notify(db: Session, user_id, type: str, context: dict | None = None, booking
     listener), so no network I/O happens while the caller still holds DB row
     locks, and a rollback sends nothing. Email delivery is best-effort and never
     affects the transaction. The caller owns the commit.
+
+    skip_email=True writes the in-app row but queues no email — used when a
+    fuller email (e.g. booking-confirmed + invoice, see
+    app.modules.booking.invoice) will be sent later by an async job instead.
     """
     title, body, html = render_notification(type, context, booking_id)
     row = InAppNotification(user_id=user_id, booking_id=booking_id, type=type, title=title, body=body)
     db.add(row)
     db.flush()
 
-    pending = db.info.setdefault("_pending_emails", [])
-    pending.append({"user_id": str(user_id), "subject": title, "html": html, "notification_id": row.id})
+    if not skip_email:
+        pending = db.info.setdefault("_pending_emails", [])
+        pending.append({"user_id": str(user_id), "subject": title, "html": html, "notification_id": row.id})
     return row
 
 

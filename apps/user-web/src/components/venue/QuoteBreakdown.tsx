@@ -108,7 +108,7 @@ export function QuoteBreakdown(props: Props) {
   const { display, balanceDueDate } = props
 
   return (
-    <div className="rounded-2xl border border-zinc-100 bg-white px-4 py-1 shadow-sm">
+    <div className="rounded-2xl border border-zinc-100 bg-white px-4 py-1 shadow-sm dark:border-ink-800 dark:bg-ink-900">
       <Row label="Total price" value={display.quoted_price} bold />
       <Row label="Advance paid" value={display.advance_due} />
       <Row label="Balance due" value={display.balance_due} />
@@ -119,7 +119,7 @@ export function QuoteBreakdown(props: Props) {
         </div>
       )}
 
-      <div className="mt-1 border-t border-zinc-100 pt-1">
+      <div className="mt-1 border-t border-zinc-100 pt-1 dark:border-ink-800">
         <Row label="Platform fee" value={display.platform_fee} muted />
         <Row label="Owner receives" value={display.owner_payout} muted />
       </div>

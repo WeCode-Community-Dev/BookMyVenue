@@ -4,11 +4,13 @@ name: Background Jobs
 # token-guarded POST /api/internal/run-jobs endpoint. The in-process scheduler
 # stays off (ENABLE_JOBS=false) so the free Render service can sleep.
 #
-#   hourly   (0 * * * *)   -> hold_expiry, payment_reminders
-#   6-hourly (0 */6 * * *) -> request_expiry, overdue_flag, overdue_autocancel
-#   daily    (0 0 * * *)   -> completion
+#   15-min   (*/15 * * * *) -> invoice_generator, payment_pending_expiry
+#   hourly   (0 * * * *)    -> hold_expiry, payment_reminders, search_indexer
+#   6-hourly (0 */6 * * *)  -> request_expiry, overdue_flag, overdue_autocancel
+#   daily    (0 0 * * *)    -> completion
 on:
   schedule:
+    - cron: "*/15 * * * *"
     - cron: "0 * * * *"
     - cron: "0 */6 * * *"
     - cron: "0 0 * * *"
@@ -17,7 +19,7 @@ on:
       jobs:
         description: "Comma-separated job names to run"
         required: true
-        default: "hold_expiry,payment_reminders,request_expiry,overdue_flag,overdue_autocancel,completion,search_indexer"
+        default: "hold_expiry,payment_reminders,request_expiry,overdue_flag,overdue_autocancel,completion,search_indexer,invoice_generator,payment_pending_expiry"
 
 jobs:
   run:
@@ -27,10 +29,11 @@ jobs:
         id: select
         run: |
           case "${{ github.event.schedule }}" in
-            "0 * * * *")   JOBS="hold_expiry,payment_reminders,search_indexer" ;;
-            "0 */6 * * *") JOBS="request_expiry,overdue_flag,overdue_autocancel" ;;
-            "0 0 * * *")   JOBS="completion" ;;
-            *)             JOBS="${{ github.event.inputs.jobs }}" ;;
+            "*/15 * * * *") JOBS="invoice_generator,payment_pending_expiry" ;;
+            "0 * * * *")    JOBS="hold_expiry,payment_reminders,search_indexer" ;;
+            "0 */6 * * *")  JOBS="request_expiry,overdue_flag,overdue_autocancel" ;;
+            "0 0 * * *")    JOBS="completion" ;;
+            *)              JOBS="${{ github.event.inputs.jobs }}" ;;
           esac
           echo "jobs=$JOBS" >> "$GITHUB_OUTPUT"
           echo "Running jobs: $JOBS"

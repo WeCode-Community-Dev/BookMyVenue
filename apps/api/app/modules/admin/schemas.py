@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 from pydantic import BaseModel, Field
 from typing import Literal, Optional
 
@@ -271,6 +271,7 @@ class AdminVenueListResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+    stats: AdminVenueStats
 
 
 # ── Deep Research observability ────────────────────────────────────────────────
@@ -317,3 +318,77 @@ class DeepResearchStatsResponse(BaseModel):
     total_queries: int
     avg_result_count: float
     avg_match_score_overall: Optional[float] = None
+
+
+# ─── External reservation admin workflow ──────────────────────────────────────
+# Converts a customer's external-venue reservation into an onboarded owner +
+# venue + normal Venue404 booking. See docs/Venue404_External_Reservation_Onboarding_PRD.md
+
+class ExternalReservationSummary(BaseModel):
+    id: uuid.UUID
+    status: str
+    lead_name: str
+    lead_city: Optional[str] = None
+    lead_formatted_address: Optional[str] = None
+    lead_category_guess: Optional[str] = None
+    lead_cover_photo_url: Optional[str] = None
+    lead_phone: Optional[str] = None
+    lead_website: Optional[str] = None
+    lead_rating: Optional[float] = None
+    lead_google_maps_uri: Optional[str] = None
+    customer_name: Optional[str] = None
+    customer_email: Optional[str] = None
+    customer_phone: Optional[str] = None
+    customer_notes: Optional[str] = None
+    category_id: Optional[uuid.UUID] = None
+    category_label: Optional[str] = None
+    guest_count: Optional[int] = None
+    event_date: Optional[str] = None
+    owner_id: Optional[uuid.UUID] = None
+    venue_id: Optional[uuid.UUID] = None
+    booking_id: Optional[uuid.UUID] = None
+    contact_method: Optional[str] = None
+    contact_notes: Optional[str] = None
+    follow_up_date: Optional[str] = None
+    owner_invited_at: Optional[datetime] = None
+    booking_created_at: Optional[datetime] = None
+    created_at: datetime
+
+
+class ExternalReservationListResponse(BaseModel):
+    items: list[ExternalReservationSummary]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class ContactOwnerRequest(BaseModel):
+    contact_method: str = Field(..., min_length=1, max_length=100)
+    notes: str = ""
+    follow_up_date: Optional[date] = None
+
+
+class MarkInterestedRequest(BaseModel):
+    reason: str = ""
+
+
+class InviteOwnerRequest(BaseModel):
+    venue_name: str = Field(..., min_length=1, max_length=200)
+    owner_name: Optional[str] = None
+    email: str
+    phone: Optional[str] = None
+    # Fallback only — normally the reservation already has one, picked by the
+    # customer at reservation time. Lets an admin fill it in for older
+    # reservations created before that field existed.
+    category_id: Optional[uuid.UUID] = None
+
+
+class InviteOwnerResponse(BaseModel):
+    # Always populated so the admin can share it manually (WhatsApp, etc.) if
+    # email delivery to the owner failed or isn't configured yet.
+    action_link: str
+
+
+class ReservationActionRequest(BaseModel):
+    reason: str = ""

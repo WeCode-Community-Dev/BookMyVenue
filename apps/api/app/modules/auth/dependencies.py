@@ -11,6 +11,12 @@ from app.modules.profile.models import Profile, UserRole, UserRoleAssignment, Pr
 _auth_provider = SupabaseAuthProvider()
 
 
+def get_auth_provider():
+    """Provider-agnostic accessor — business modules must go through this
+    instead of importing SupabaseAuthProvider directly."""
+    return _auth_provider
+
+
 @dataclass
 class AuthContext:
     user_id: UUID

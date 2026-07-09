@@ -44,6 +44,30 @@ def reapply_owner(user_id, db: Session) -> None:
     db.commit()
 
 
+def request_password_reset(email: str, redirect_to: str) -> None:
+    """Public, unauthenticated — never reveals whether `email` is registered.
+    Generates a Supabase recovery link but sends the email ourselves (Resend),
+    since Supabase's own email sending needs a verified domain we don't have.
+    """
+    from urllib.parse import urlparse
+
+    from app.core.config import settings
+    from app.core.email import send_email
+    from app.modules.auth.dependencies import get_auth_provider
+    from app.modules.notification.templates import render_password_reset_email
+
+    origin = f"{urlparse(redirect_to).scheme}://{urlparse(redirect_to).netloc}"
+    if origin not in settings.cors_origins_list:
+        return  # not one of our frontends — silently no-op, same as "email not found"
+
+    link = get_auth_provider().create_recovery_link(email, redirect_to=redirect_to)
+    if link is None:
+        return  # no account for this email — don't leak that
+
+    subject, html = render_password_reset_email(link)
+    send_email(email, subject, html)
+
+
 def get_me(current_user) -> AuthMeResponse:
     return AuthMeResponse(
         id=current_user.user_id,

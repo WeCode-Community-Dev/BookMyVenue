@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, Text, func, BigInteger, Date, Enum
+from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, Text, func, BigInteger, Date, Enum, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
@@ -116,6 +116,26 @@ class LeadReservation(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    # ─── Admin conversion workflow (external reservation → onboarded venue) ──
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("profiles.id"), nullable=True)
+    venue_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("venues.id"), nullable=True)
+    booking_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("bookings.id"), nullable=True)
+    # Picked by the customer at reservation time (dropdown of real venue_categories) so
+    # the admin's later invite-owner step has a real FK instead of guessing one.
+    category_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("venue_categories.id"), nullable=True)
+    contact_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    follow_up_date: Mapped[date_type | None] = mapped_column(Date, nullable=True)
+    contact_method: Mapped[str | None] = mapped_column(Text, nullable=True)
+    owner_invited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    booking_created_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        # sync_reservation_status_for_venue() (venue/service.py submit_venue,
+        # admin/service.py approve_venue) looks this up on every venue
+        # submit/approve on the platform, not just ones from this workflow.
+        Index("ix_lead_reservations_venue_id", "venue_id", postgresql_where=text("venue_id IS NOT NULL")),
+    )
 
     lead: Mapped["ExternalVenueLead"] = relationship("ExternalVenueLead")
 

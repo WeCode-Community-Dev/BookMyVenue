@@ -244,11 +244,19 @@ def confirm_payment(db: Session, payment_intent_id: str) -> None:
         _conflict_cancel(db, competitor, venue)
 
     venue_name = venue.name if venue else "your venue"
+    # skip_email=True: the customer gets one combined "confirmed + invoice"
+    # email from app.modules.booking.invoice once the async job generates the
+    # PDF, instead of this immediate email plus a second one later. The
+    # in-app notification still fires immediately either way.
     notifications.notify(db, booking.user_id, "payment_confirmed",
-                         context={"venue_name": venue_name}, booking_id=booking.id)
+                         context={"venue_name": venue_name}, booking_id=booking.id,
+                         skip_email=True)
     if venue:
         notifications.notify(db, venue.owner_id, "payment_confirmed",
                              context={"venue_name": venue_name}, booking_id=booking.id)
+
+    from app.modules.booking.invoice import enqueue as enqueue_invoice
+    enqueue_invoice(db, booking.id)
 
 
 def confirm_balance_payment(db: Session, payment: Payment, booking: Booking) -> None:

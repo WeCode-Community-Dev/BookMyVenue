@@ -16,4 +16,6 @@ export const authEndpoints = (client: ReturnType<typeof createClient>) => ({
   me: () => client.get<AuthUser>('/api/auth/me'),
   registerOwner: () => client.post<void>('/api/auth/register-owner', {}),
   reapplyOwner: () => client.post<void>('/api/auth/reapply-owner', {}),
+  forgotPassword: (email: string, redirectTo: string) =>
+    client.post<void>('/api/auth/forgot-password', { email, redirect_to: redirectTo }),
 })

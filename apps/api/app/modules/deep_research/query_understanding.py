@@ -17,6 +17,7 @@ import json
 import logging
 
 from app.infrastructure.llm import groq
+from app.modules.deep_research import query_cache
 from app.modules.deep_research.prompts import QUERY_UNDERSTANDING_SYSTEM_PROMPT
 from app.modules.deep_research.schemas import QueryUnderstanding
 
@@ -27,6 +28,9 @@ def understand_query(query: str) -> QueryUnderstanding:
     """Call Groq to break the raw query into structured signals, log the
     breakdown, and return it.
 
+    Checks the Upstash cache first (many users type the same/near-same
+    query) — a hit skips the Groq call entirely. See query_cache.py.
+
     Degrades to a raw-query-only breakdown (rather than raising) on any
     failure — missing/invalid GROQ_API_KEY, Groq outage, timeout, or an
     unparseable response — so a Groq problem takes down query understanding
@@ -34,6 +38,11 @@ def understand_query(query: str) -> QueryUnderstanding:
     still runs on the raw query in that case; it just misses the structured
     city/capacity/amenity signals for this one search.
     """
+    cached = query_cache.get_understanding(query)
+    if cached is not None:
+        logger.info("deep_research.query_understanding: cache hit for query=%r", query)
+        return cached
+
     try:
         raw_content = groq.chat_completion(
             messages=[
@@ -43,6 +52,7 @@ def understand_query(query: str) -> QueryUnderstanding:
         )
         parsed = json.loads(raw_content)
         breakdown = QueryUnderstanding(**parsed)
+        query_cache.set_understanding(query, breakdown)
     except (json.JSONDecodeError, TypeError, ValueError):
         logger.warning(
             "deep_research.query_understanding: could not parse Groq response as JSON: %r",

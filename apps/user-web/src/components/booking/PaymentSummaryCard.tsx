@@ -1,3 +1,5 @@
+import { FileText } from 'lucide-react'
+
 import type { BookingOut } from '../../types'
 
 import { formatPrice } from '../../utils'
@@ -54,6 +56,28 @@ export function PaymentSummaryCard({ booking }: Props) {
             {booking.payment_status.replace(/_/g, ' ')}
           </div>
         </div>
+
+        {/* Invoice */}
+        {booking.status === 'confirmed' && (
+          <div className="border-t border-zinc-100 pt-5 dark:border-ink-800">
+            {booking.invoice_url ? (
+              <a
+                href={booking.invoice_url}
+                target="_blank"
+                rel="noreferrer"
+                className="press flex items-center justify-center gap-2 rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-ink-700 dark:text-zinc-200 dark:hover:bg-ink-800"
+              >
+                <FileText className="h-4 w-4" />
+                Download invoice
+              </a>
+            ) : (
+              <div className="flex items-center justify-center gap-2 rounded-xl bg-zinc-50 px-4 py-3 text-sm text-zinc-400 dark:bg-ink-800">
+                <FileText className="h-4 w-4" />
+                Invoice is being generated…
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Balance Due Date */}
         {booking.balance_due_date && (

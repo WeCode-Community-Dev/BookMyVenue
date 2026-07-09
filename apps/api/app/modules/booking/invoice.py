@@ -1,0 +1,171 @@
+"""Async invoice generation for confirmed bookings — orchestration only.
+
+Kept fully independent from booking/service.py and payment/service.py:
+confirm_payment only calls enqueue() (a cheap row insert), never anything
+below that touches reportlab/Cloudinary/email — that work happens later,
+off the request, in app/jobs/invoice_generator.py. This keeps
+payment.service.confirm_payment's row-locked transaction short (see the
+row locking note in that file / CLAUDE.md's payment safety rules).
+
+Queue shape mirrors app.modules.search.indexer: a durable DB row (so
+nothing is lost if Upstash is unreachable) plus a best-effort Upstash push
+for near-immediate pickup, with the same backoff-on-failure retry policy.
+
+PDF rendering + Cloudinary upload live in invoice_pdf.py (a different
+concern — content generation, no DB/queue awareness). The BookingInvoice
+model lives in booking/models.py, alongside every other booking table.
+"""
+import logging
+import uuid
+from datetime import datetime, timezone
+
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from app.core import job_queue
+from app.core import redis as redis_client
+from app.core.config import settings
+from app.modules.booking.models import BookingInvoice
+
+logger = logging.getLogger(__name__)
+
+MAX_RETRIES = len(job_queue.DEFAULT_BACKOFF_SECONDS)
+
+
+# ─── Enqueue (called synchronously from confirm_payment) ──────────────────
+
+def enqueue(db: Session, booking_id: uuid.UUID) -> None:
+    """Insert a pending invoice job and try to push to Upstash (fire-and-forget).
+
+    Safe to call from inside confirm_payment's locked transaction — this is
+    just a row insert, no PDF/network work happens here. If a job already
+    exists for this booking (unique constraint), that's a no-op.
+    """
+    invoice = BookingInvoice(booking_id=booking_id)
+    db.add(invoice)
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        return
+
+    try:
+        if redis_client.is_configured():
+            redis_client.get_redis().lpush(settings.upstash_invoice_queue_key, str(invoice.id))
+    except Exception:
+        # Redis push failure is non-fatal — the scheduler worker will poll the DB.
+        pass
+
+
+# ─── Job processing (called from app/jobs/invoice_generator.py) ───────────
+
+def process(db: Session, invoice_id: uuid.UUID | str) -> None:
+    """Process a single invoice job end-to-end: generate PDF, upload, email."""
+    from sqlalchemy.orm import joinedload
+
+    from app.modules.booking.invoice_pdf import generate_pdf, upload_pdf_to_cloudinary
+    from app.modules.booking.models import Booking
+
+    invoice_id = uuid.UUID(str(invoice_id))
+    invoice = db.get(BookingInvoice, invoice_id)
+    if not invoice or invoice.status not in ("pending", "failed"):
+        return
+
+    # Claim the row before doing any work, same as search/indexer.py's
+    # process_job — otherwise a Redis pop and a DB poll landing on the same
+    # still-"pending" row in the same window could both process it,
+    # generating the PDF and sending the email twice.
+    invoice.status = "processing"
+    db.commit()
+
+    try:
+        booking = (
+            db.query(Booking)
+            .options(joinedload(Booking.venue), joinedload(Booking.user), joinedload(Booking.slot))
+            .filter(Booking.id == invoice.booking_id)
+            .first()
+        )
+        if not booking:
+            raise ValueError(f"Booking {invoice.booking_id} not found")
+
+        pdf_bytes = generate_pdf(booking)
+        pdf_url = upload_pdf_to_cloudinary(pdf_bytes, booking.id)
+
+        invoice.pdf_url = pdf_url
+        invoice.status = "generated"
+        db.commit()
+        logger.info("invoice: generated for booking %s -> %s", booking.id, pdf_url)
+
+        _send_invoice_email(db, booking, pdf_url)
+
+    except Exception as exc:
+        db.rollback()
+        invoice = db.get(BookingInvoice, invoice_id)
+        if invoice:
+            invoice.attempts += 1
+            invoice.error_message = str(exc)
+            invoice.status = "failed"
+            db.commit()
+        logger.error("invoice: job %s failed (%s)", invoice_id, exc)
+
+
+def _send_invoice_email(db: Session, booking, pdf_url: str) -> None:
+    """The single 'booking confirmed' email to the customer — held back by
+    confirm_payment (notify(..., skip_email=True)) specifically so it can be
+    sent once, combined with the invoice, instead of as two separate emails.
+    """
+    customer = booking.user
+    if not customer or not customer.email:
+        return
+
+    from app.core.email import send_email
+    from app.modules.notification.models import InAppNotification
+    from app.modules.notification.templates import render_booking_invoice_email
+
+    venue_name = booking.venue.name if booking.venue else "your venue"
+    subject, html = render_booking_invoice_email(customer.full_name, venue_name, pdf_url)
+    if not send_email(customer.email, subject, html):
+        return
+
+    # Best-effort bookkeeping: stamp sent_at on the in-app notification that
+    # confirm_payment wrote without an email, so it doesn't look un-sent.
+    row = (
+        db.query(InAppNotification)
+        .filter(
+            InAppNotification.booking_id == booking.id,
+            InAppNotification.user_id == booking.user_id,
+            InAppNotification.type == "payment_confirmed",
+            InAppNotification.sent_at.is_(None),
+        )
+        .first()
+    )
+    if row:
+        row.sent_at = datetime.now(timezone.utc)
+        db.commit()
+
+
+def retryable_invoice_ids(db: Session, limit: int = 10) -> list[str]:
+    """Return invoice job IDs eligible for processing: pending or failed-with-backoff-elapsed."""
+    pending = (
+        db.query(BookingInvoice)
+        .filter(BookingInvoice.status == "pending")
+        .order_by(BookingInvoice.created_at.asc())
+        .limit(limit)
+        .all()
+    )
+    results = list(pending)
+
+    if len(results) < limit:
+        failed = (
+            db.query(BookingInvoice)
+            .filter(BookingInvoice.status == "failed", BookingInvoice.attempts < MAX_RETRIES)
+            .order_by(BookingInvoice.created_at.asc())
+            .all()
+        )
+        for inv in failed:
+            if len(results) >= limit:
+                break
+            if job_queue.is_backoff_eligible(inv.created_at, inv.attempts):
+                results.append(inv)
+
+    return [str(i.id) for i in results]

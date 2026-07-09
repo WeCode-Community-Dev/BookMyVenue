@@ -333,9 +333,9 @@ const amountDuePaise =
         : 'Pay the advance to confirm your slot. The balance is due closer to the date.'
 
   return (
-    <div className="min-h-screen bg-zinc-50/60">
+    <div className="min-h-screen bg-zinc-50/60 dark:bg-ink-950">
       {/* ── Minimal payment navbar ──────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white/95 backdrop-blur-sm dark:border-ink-800 dark:bg-ink-950/95">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 py-3.5">
           <Link to="/">
             <Logo />

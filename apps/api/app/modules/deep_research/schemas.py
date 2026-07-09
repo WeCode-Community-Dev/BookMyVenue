@@ -52,6 +52,7 @@ class ExternalLeadPublic(BaseModel):
 
 
 class ReserveLeadRequest(BaseModel):
+    category_id: UUID
     event_date: Optional[str] = None
     guest_count: Optional[int] = None
     phone: Optional[str] = None

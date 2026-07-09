@@ -76,9 +76,9 @@ function getStatusDetails(status: string) {
 
 function ReservationCard({ reservation: res }: { reservation: UserReservationResponse }) {
   const statusInfo = getStatusDetails(res.status)
-  
+
   return (
-    <div className="flex flex-col md:flex-row gap-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-ink-700 dark:bg-ink-900">
+    <div className="flex flex-col md:flex-row gap-6 rounded-3xl border border-zinc-200 bg-white p-6 transition-all dark:border-ink-700 dark:bg-ink-900">
       {/* Image */}
       <div className="h-48 w-full md:w-64 shrink-0 overflow-hidden rounded-2xl bg-zinc-100 dark:bg-ink-800">
         {res.lead.cover_photo_url ? (
@@ -138,7 +138,7 @@ function ReservationCard({ reservation: res }: { reservation: UserReservationRes
             <span className={statusInfo.stage >= 4 ? 'text-zinc-900 dark:text-zinc-100' : ''}>Ready</span>
           </div>
           <div className="relative h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-ink-800">
-            <div 
+            <div
               className={`absolute left-0 top-0 h-full rounded-full transition-all duration-1000 ${statusInfo.stage === 0 ? 'bg-red-500 w-full' : 'bg-brand'}`}
               style={{ width: statusInfo.stage === 0 ? '100%' : `${(statusInfo.stage / 4) * 100}%` }}
             />

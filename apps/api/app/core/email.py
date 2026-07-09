@@ -10,6 +10,7 @@ Returns True if an email was actually dispatched, False if it was a dev no-op.
 import logging
 import smtplib
 from email.message import EmailMessage
+from email.utils import formatdate, make_msgid
 
 from app.core.config import settings
 
@@ -51,6 +52,8 @@ def _send_via_smtp(to: str, subject: str, html: str) -> bool:
     msg["From"] = settings.email_from
     msg["To"] = to
     msg["Subject"] = subject
+    msg["Date"] = formatdate(localtime=True)
+    msg["Message-ID"] = make_msgid(domain=settings.smtp_host)
     msg.set_content("This email requires an HTML-capable client.")
     msg.add_alternative(html, subtype="html")
 

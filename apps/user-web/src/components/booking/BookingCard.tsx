@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { Button, Card } from '@venue404/ui'
 
@@ -152,6 +152,6 @@ export default function MyBookingCard({ booking }: Props) {
           </div>
         </div>
       </div>
-    </Card>
+    </Card >
   )
 }

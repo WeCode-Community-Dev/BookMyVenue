@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Logo, ThemeToggle } from '@venue404/ui'
 import { useAuth } from '../../lib/AuthContext'
+import { useAuthModal } from '../../lib/AuthModalContext'
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/)
@@ -100,6 +101,7 @@ function UserMenu({ displayName, onSignOut }: { displayName: string; onSignOut: 
 
 export function AppNavbar() {
   const { user, signOut } = useAuth()
+  const { openLogin, openRegister } = useAuthModal()
   const displayName = user?.profile?.full_name ?? user?.email ?? ''
 
   return (
@@ -126,18 +128,20 @@ export function AppNavbar() {
             </>
           ) : (
             <>
-              <Link
-                to="/login"
+              <button
+                type="button"
+                onClick={openLogin}
                 className="rounded-lg px-3.5 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-ink-800 dark:hover:text-zinc-100"
               >
                 Sign in
-              </Link>
-              <Link
-                to="/register"
+              </button>
+              <button
+                type="button"
+                onClick={openRegister}
                 className="ml-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-hover active:scale-[0.97]"
               >
                 Get started
-              </Link>
+              </button>
             </>
           )}
         </nav>
