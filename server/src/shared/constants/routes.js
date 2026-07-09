@@ -30,7 +30,12 @@ export const ROUTES = {
             GET_ALL:'/payments',
             GET_BY_ID:'/payments/:paymentId',
             GET_STATISTICS:'/payments/statistics',
-        }
+        },
+        AUTH: {
+            LOGIN: "/admin/login",
+            REFRESH: '/admin/refresh',
+            LOGOUT: '/admin/logout'
+        },
 
     },
     OWNER: {
@@ -42,8 +47,10 @@ export const ROUTES = {
             RESEND_OTP: "/vendor/resendotp",
             FORGOT_PASSWORD: '/vendor/forgotpassword',
             RESET_PASSWORD: '/vendor/resetpassword',
-            VERIFY_EMAIL: "/vendor/verifyemail",
-            VERIFY_OTP_RESET: '/vendor/verifyotpforforgotpassword',
+            // VERIFY_EMAIL: "/vendor/verifyemail",
+            // VERIFY_OTP_RESET: '/vendor/verifyotpforforgotpassword',
+            REFRESH: '/vendor/refresh',
+            LOGOUT: '/vendor/logout'
         },
         VENUE: {
             CREATE: '/venue',

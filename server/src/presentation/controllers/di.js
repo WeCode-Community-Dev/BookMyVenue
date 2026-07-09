@@ -78,6 +78,17 @@ import { UserGetTopVenuesUsecase } from '../../application/user/usecases/venue/u
 import { VendorAuthController } from './vendor/vendor.authController.js'
 import { RegisterVendorUsecase } from '../../application/vendor/usecases/auth/vendor.registerVendor.useCase.js'
 import { LoginVendorUsecase } from '../../application/vendor/usecases/auth/vendor.loginVendor.useCase.js'
+import { VendorVerifyOtpUseCase } from '../../application/vendor/usecases/auth/vendor.verifyOtp.usecase.js'
+import VendorrResendOtpUseCase from '../../application/vendor/usecases/auth/vendor.resendOtp.usecase.js'
+import { VendorRefreshTokenUseCase } from '../../application/vendor/usecases/auth/vendor.refreshToken.usecase.js'
+import VendorForgotPasswordUseCase from '../../application/vendor/usecases/auth/vendor.forgotPassword.usecase.js'
+import { VendorResetPasswordUseCase } from '../../application/vendor/usecases/auth/vendor.resetPassword.usecase.js'
+import { VendorLogoutUseCase } from '../../application/vendor/usecases/auth/vendor.logout.usecase.js'
+import { LoginAdminUsecase } from '../../application/admin/usecases/auth/admin.login.usecase.js'
+import { AdminRepository } from '../../infrastructure/repositories/admin.repository.js'
+import { AdminAuthController } from './admin/admin.authController.js'
+import { AdminLogoutUseCase } from '../../application/admin/usecases/auth/admin.logOut.usecase.js'
+import { AdminRefreshTokenUseCase } from '../../application/admin/usecases/auth/admin.refreshToken.usecase.js'
 
 //repository
 const iVenueRepository = new VenueRepository();
@@ -85,6 +96,7 @@ const iUserRepository = new UserRepository();
 const iVendorRepository = new VendorRepository();
 const iPaymentRepository = new PaymentRepository();
 const bookingRepository = new BookingRepositoryImpl();
+const iAdminRepository = new AdminRepository()
 
 // --- services ---
 const iCloudinaryService = new CloudinaryService()
@@ -94,6 +106,22 @@ const iOtpService = new OtpService()
 const iOtpStoreService = new OtpStoreService(redisClient)
 export const iTokenService = new TokenService()
 
+// --- admin auth usecase---
+const iAdminLoginUsecase = new LoginAdminUsecase (
+    iAdminRepository,
+    iHashService,
+    iTokenService
+)
+const iAdminLogoutUsecase = new AdminLogoutUseCase (
+    iAdminRepository,
+    iHashService,
+    iTokenService
+)
+const iAdminRefreshToken = new AdminRefreshTokenUseCase (
+    iAdminRepository,
+    iTokenService,
+    iHashService
+)
 // --- admin user usecases ---
 const iAdminGetAllUsersUsecase = new AdminGetAllUsersUsecase(iUserRepository)
 const iAdminUpdateUserStatusUsecase = new AdminUpdateUserStatusUsecase(iUserRepository)
@@ -180,12 +208,62 @@ const iLoginVendor = new LoginVendorUsecase (
     iHashService,
     iTokenService
 )
-const iCreateVenueUsecase = new VendorCreateVenueUsecase(iVenueRepository)
-const iUpdateVenueUsecase = new VendorEditVenueUsecase(iVenueRepository, iCloudinaryService)
-const iVendorVenueGetById = new VendorGetVenueByIdUsecase(iVenueRepository)
-const iVendorGetAllVenues = new VendorGetAllVenuesUsecase(iVenueRepository)
-const iVendorDeleteVenue = new VendorDeleteVenueUsecase(iVenueRepository)
-const iUpdatevenueStatus = new VendorUpdateVenueStatusUsecase(iVenueRepository)
+const iVerifyVendorOtp = new VendorVerifyOtpUseCase (
+    iVendorRepository,
+    iOtpService,
+    iOtpStoreService
+)
+const iResendVendorOtp = new VendorrResendOtpUseCase (
+    iVendorRepository,
+    iOtpService,
+    iOtpStoreService,
+    iMailService
+)
+const iVendorRefreshToken = new VendorRefreshTokenUseCase(
+    iVendorRepository,
+    iTokenService,
+    iHashService
+)
+const iVendorForgotPassword = new VendorForgotPasswordUseCase (
+    iVendorRepository,
+    iTokenService,
+    iMailService,
+    iHashService
+)
+const iVendorResetPassword = new VendorResetPasswordUseCase (
+    iVendorRepository,
+    iHashService
+)
+const iVendorLogout = new VendorLogoutUseCase (
+    iVendorRepository,
+    iHashService,
+    iTokenService
+)
+const iCreateVenueUsecase = new VendorCreateVenueUsecase(
+    iVenueRepository,
+    iVendorRepository
+)
+const iUpdateVenueUsecase = new VendorEditVenueUsecase(
+    iVenueRepository, 
+    iCloudinaryService,
+    iVendorRepository
+)
+const iVendorVenueGetById = new VendorGetVenueByIdUsecase(
+    iVenueRepository,
+    iVendorRepository
+)
+const iVendorGetAllVenues = new VendorGetAllVenuesUsecase(
+    iVenueRepository,
+    iVendorRepository
+)
+const iVendorDeleteVenue = new VendorDeleteVenueUsecase(
+    iVenueRepository,
+    iVendorRepository
+)
+const iUpdatevenueStatus = new VendorUpdateVenueStatusUsecase(
+    iVenueRepository,
+    iVendorRepository
+)
 const iGetVendorProfileUsecase = new GetVendorProfileUsecase(iVendorRepository)
 const iUpdateVendorProfileUsecase = new VendorUpdateProfileUsecase(iVendorRepository)
 const getVendorBookingsUsecase = new GetVendorBookingsUsecase(bookingRepository)
@@ -332,5 +410,17 @@ export const iVendorDashboardController = new VendorDashboardController(
 
 export const iVendorAuthController = new VendorAuthController (
     iRegsiterVendor,
-    iLoginVendor
+    iLoginVendor,
+    iVerifyVendorOtp,
+    iResendVendorOtp,
+    iVendorRefreshToken,
+    iVendorForgotPassword,
+    iVendorResetPassword,
+    iVendorLogout,
+)
+
+export const iAdminAuthController = new AdminAuthController (
+    iAdminLoginUsecase,
+    iAdminLogoutUsecase,
+    iAdminRefreshToken,
 )

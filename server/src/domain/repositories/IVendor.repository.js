@@ -15,6 +15,10 @@ export class IVendorRepository {
         throw new Error('Method not implemented');
     }
 
+    async verifyOtp(vendorId) {
+        throw new Error('Method not implemented');
+    }
+
     async approveVendor(vendorId){
         throw new Error('Method not implemented');
     }
@@ -55,5 +59,9 @@ export class IVendorRepository {
 
     async updateRefreshToken(vendorId, refreshToken) {
         throw new Error('Method not implemented');
+    }
+
+    async clearRefreshToken(token) {
+        throw new Error("Method not implemented")
     }
 }

@@ -24,8 +24,9 @@ export class LoginVendorUsecase {
         if (!isMatch) {
             throw new UnauthorizedError(authMessages.error.INVALID_CREDENTIALS);
         }
+        console.log("login user: ", vendor)
 
-        if(!vendor.isOtpVerified){
+        if(!vendor.isVerified){
             throw new UnauthorizedError(authMessages.error.OTP_VERIFICATION_REQUIRED)
         }
 

@@ -10,7 +10,8 @@ export class AdminMapper {
             password: doc.password,
             role: doc.role,
             isDeleted: doc.isDeleted,
-            isActive: doc.isActive,
+            refreshToken: doc.refreshToken,
+            // isActive: doc.isActive,
             createdAt: doc.createdAt,
             updatedAt: doc.updatedAt,
         });
@@ -23,7 +24,8 @@ export class AdminMapper {
             password: entity.password,
             role: entity.role,
             isDeleted: entity.isDeleted,
-            isActive: entity.isActive,
+            refreshToken: entity.refreshToken
+            // isActive: entity.isActive,
         };
     }
 }
