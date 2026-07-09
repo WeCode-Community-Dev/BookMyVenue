@@ -1,4 +1,15 @@
 import 'dotenv/config'
+import { cleanEnv, port, str } from 'envalid'
+
+
+cleanEnv(process.env, {
+    PORT: port(),
+    BASE_URL: str(),
+    RAZORPAY_KEY_ID: str(),
+    RAZORPAY_SECRET: str(),
+    NOVU_SECRET_KEY: str(),
+    DATABASE_URL: str()
+})
 
 
 export const APP_CONFIG = {
@@ -12,4 +23,8 @@ export const PAYMENT_CONFIG = {
 
 export const NOTIFICATION_CONFIG = {
     NOVU_SECRET_KEY: process.env.NOVU_SECRET_KEY!
+}
+
+export const DB_CONFIG = {
+    DATABASE_URL: process.env.DATABASE_URL!
 }

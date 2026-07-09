@@ -34,6 +34,7 @@
     "argon2": "^0.44.0",
     "audit": "^0.0.6",
     "dotenv": "^17.4.2",
+    "envalid": "^8.2.0",
     "fix": "^0.0.6",
     "jsonwebtoken": "^9.0.3",
     "razorpay": "^2.9.6",
