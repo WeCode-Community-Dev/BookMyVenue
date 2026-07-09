@@ -38,7 +38,7 @@ export function useLikes() {
       queryClient.setQueryData<string[]>(['likes', user?.id], newLikes)
       return { previousLikes }
     },
-    onError: (err, venueId, context) => {
+    onError: (_err, _venueId, context) => {
       if (context?.previousLikes) {
         queryClient.setQueryData(['likes', user?.id], context.previousLikes)
       }

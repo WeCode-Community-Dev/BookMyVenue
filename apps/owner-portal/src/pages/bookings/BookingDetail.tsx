@@ -619,7 +619,7 @@ export default function BookingDetail() {
           // The true "Final Owner Payout" — only set when booking is definitively settled
           // null = still in progress (show projected)
           const finalPayout: number | null = (isTerminated || isCompleted)
-            ? (booking.final_owner_payout_paise || 0)
+            ? (booking.owner_payout_paise || 0)
             : null;  // still active — show projected
 
           // The actual platform fee charged is always the full platform fee (deducted upfront)
@@ -752,7 +752,7 @@ export default function BookingDetail() {
                       {s === 'conflict_cancelled' && 'Cancelled — Conflict'}
                     </p>
                     <p className={`text-sm mt-0.5 leading-relaxed ${isForfeitCancelled ? 'text-amber-800/80' : refundAmount > 0 ? 'text-rose-700/80' : 'text-zinc-500 dark:text-zinc-400 dark:text-zinc-500'}`}>
-                      {isForfeitCancelled && `Customer missed the balance payment deadline. Advance of ${fmt(advanceDue)} is forfeited. Your net share after ${commissionPct}% commission: ${fmt(forfeitOwnerRetains)}.`}
+                      {isForfeitCancelled && `Customer missed the balance payment deadline. Advance of ${fmt(advanceDue)} is forfeited. Your net share after ${commissionPct}% commission: ${fmt(ownerPayoutProjected)}.`}
                       {isUserCancelled && refundAmount > 0 && `${fmt(refundAmount)} was refunded to the customer based on your cancellation policy. You retain ${fmt(amountPaid - refundAmount)} minus platform commission.`}
                       {isUserCancelled && refundAmount === 0 && `No refund was issued to the customer based on your cancellation policy. You retain the full collected amount.`}
                       {isAdminCancelled && 'This booking was cancelled by a platform administrator.'}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
-import { Card, SectionHeader, Button, Input, Skeleton, Modal, DatePicker, Select, InfoTooltip } from '@venue404/ui'
+import { Card, Button, Input, Skeleton, Modal, DatePicker, Select, InfoTooltip } from '@venue404/ui'
 import { Loader2, Save, Trash2, Pencil, ArrowLeft, Tag, Sparkles, Settings, List } from 'lucide-react'
 import { TimeSelect } from '../../components/TimeSelect'
 import { createClient, venueEndpoints } from '@venue404/api-client'

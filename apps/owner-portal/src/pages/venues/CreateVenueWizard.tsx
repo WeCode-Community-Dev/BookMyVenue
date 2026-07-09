@@ -325,7 +325,7 @@ export default function CreateVenueWizard() {
 
         // Upload photos if we are on the Photos step
         if (currentStep === 1 && photos.length > 0 && activeVenueId) {
-          const successfullyUploaded = []
+          const successfullyUploaded: any[] = []
           for (const file of photos) {
             try {
               const fd = new FormData()

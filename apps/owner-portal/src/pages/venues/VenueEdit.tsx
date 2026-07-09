@@ -441,7 +441,7 @@ export default function VenueEdit() {
                 <Select
                   name="category_id"
                   value={venue.category?.id || ''}
-                  onChange={(val) => setVenue(prev => prev ? { ...prev, category: { id: val, name: '', label: '' } } : null)}
+                  onChange={(val) => setVenue(prev => prev ? { ...prev, category: { id: val, name: '', label: '' } as any } : null)}
                   options={venueCategories.map(cat => ({ label: `${cat.icon ? `${cat.icon} ` : ''}${cat.label}`, value: cat.id }))}
                   placeholder={venueCategories.length === 0 ? 'Loading categories...' : 'Select a category...'}
                   disabled={venueCategories.length === 0}
