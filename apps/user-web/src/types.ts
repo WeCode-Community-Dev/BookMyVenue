@@ -108,6 +108,8 @@ export type VenueResponse = {
   photos?: VenuePhoto[]
   amenities?: Amenity[]
   cancellation_policy?: CancellationPolicy | null
+  average_rating?: number | null
+  review_count?: number
 }
 
 export type OperatingWindow = {
@@ -273,4 +275,39 @@ export type NotificationResponse = {
   body: string
   read_at: string | null
   created_at: string
+}
+
+export type Review = {
+  id: string
+  venue_id: string
+  booking_id: string
+  user_id: string
+  rating: number
+  title: string | null
+  comment: string
+  is_hidden: boolean
+  created_at: string
+  updated_at: string
+  user_name: string | null
+  user_email: string | null
+  hidden_reason: string | null
+  hidden_by: string | null
+  hidden_at: string | null
+}
+
+export type ReviewListResponse = {
+  items: Review[]
+  total: number
+  page: number
+  per_page: number
+}
+
+export type EligibleBookingsResponse = {
+  booking_ids: string[]
+}
+
+export type ReviewSummary = {
+  average_rating: number
+  total_reviews: number
+  rating_distribution: Record<string, number>
 }

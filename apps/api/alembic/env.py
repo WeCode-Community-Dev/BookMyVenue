@@ -13,6 +13,7 @@ import app.modules.payment.models  # noqa: F401
 import app.modules.notification.models  # noqa: F401
 import app.modules.search.models  # noqa: F401
 import app.modules.deep_research.models  # noqa: F401
+import app.modules.review.models  # noqa: F401
 
 config = context.config
 

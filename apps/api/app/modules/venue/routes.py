@@ -4,7 +4,12 @@ from fastapi import APIRouter, Depends, Query, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.modules.auth.dependencies import require_owner, require_auth, get_current_user_optional, AuthContext
+from app.modules.auth.dependencies import (
+    require_owner,
+    require_auth,
+    get_current_user_optional,
+    AuthContext,
+)
 from app.modules.venue.schemas import (
     VenueResponse,
     VenueListResponse,
@@ -38,13 +43,10 @@ from app.shared.utils import parse_timezone_datetime
 router = APIRouter()
 
 
+#  Owner routes
 
-#  Owner routes 
 
-@router.get(
-    "/my/venues",
-    response_model=list[VenueListResponse]
-)
+@router.get("/my/venues", response_model=list[VenueListResponse])
 def list_my_venues(
     auth: AuthContext = Depends(require_owner),
     db: Session = Depends(get_db),
@@ -59,7 +61,8 @@ def get_my_venue(
     auth: AuthContext = Depends(require_owner),
     db: Session = Depends(get_db),
 ):
-    return service.get_owner_venue(db, venue_id=venue_id, owner_id=auth.user_id)
+    venue = service.get_owner_venue(db, venue_id=venue_id, owner_id=auth.user_id)
+    return service._enrich_venue_with_ratings(db, venue)
 
 
 @router.get("/my/venues/{venue_id}/stats", response_model=VenueStatsResponse)
@@ -68,7 +71,9 @@ def get_my_venue_stats(
     auth: AuthContext = Depends(require_owner),
     db: Session = Depends(get_db),
 ):
-    return service.get_venue_stats_this_month(db, venue_id=venue_id, owner_id=auth.user_id)
+    return service.get_venue_stats_this_month(
+        db, venue_id=venue_id, owner_id=auth.user_id
+    )
 
 
 @router.post("/", response_model=VenueResponse, status_code=201)
@@ -77,7 +82,7 @@ def create_venue(
     auth: AuthContext = Depends(require_owner),
     db: Session = Depends(get_db),
 ):
-   
+
     return service.create_venue(db, owner_id=auth.user_id, body=body)
 
 
@@ -88,7 +93,7 @@ def update_venue(
     auth: AuthContext = Depends(require_owner),
     db: Session = Depends(get_db),
 ):
-    
+
     return service.update_venue(db, venue_id=venue_id, owner_id=auth.user_id, body=body)
 
 
@@ -119,10 +124,16 @@ def bulk_update_availability(
     auth: AuthContext = Depends(require_owner),
     db: Session = Depends(get_db),
 ):
-    return service.bulk_update_availability(db, venue_id, auth.user_id, body.availabilities)
+    return service.bulk_update_availability(
+        db, venue_id, auth.user_id, body.availabilities
+    )
 
 
-@router.post("/{venue_id}/blocked-dates", response_model=VenueBlockedDateResponse, status_code=201)
+@router.post(
+    "/{venue_id}/blocked-dates",
+    response_model=VenueBlockedDateResponse,
+    status_code=201,
+)
 def create_blocked_date(
     venue_id: UUID,
     body: CreateBlockedDateRequest,
@@ -132,7 +143,11 @@ def create_blocked_date(
     return service.create_blocked_date(db, venue_id, auth.user_id, body)
 
 
-@router.delete("/{venue_id}/blocked-dates/{blocked_id}", response_model=DeleteResponse, status_code=200)
+@router.delete(
+    "/{venue_id}/blocked-dates/{blocked_id}",
+    response_model=DeleteResponse,
+    status_code=200,
+)
 def delete_blocked_date(
     venue_id: UUID,
     blocked_id: UUID,
@@ -152,7 +167,11 @@ def list_pricing_rules(
     return service.list_pricing_rules(db, venue_id, auth.user_id)
 
 
-@router.post("/{venue_id}/pricing-rules", response_model=VenuePricingRuleResponse, status_code=201)
+@router.post(
+    "/{venue_id}/pricing-rules",
+    response_model=VenuePricingRuleResponse,
+    status_code=201,
+)
 def create_pricing_rule(
     venue_id: UUID,
     body: CreatePricingRuleRequest,
@@ -162,7 +181,9 @@ def create_pricing_rule(
     return service.create_pricing_rule(db, venue_id, auth.user_id, body)
 
 
-@router.patch("/{venue_id}/pricing-rules/{rule_id}", response_model=VenuePricingRuleResponse)
+@router.patch(
+    "/{venue_id}/pricing-rules/{rule_id}", response_model=VenuePricingRuleResponse
+)
 def update_pricing_rule(
     venue_id: UUID,
     rule_id: UUID,
@@ -173,7 +194,11 @@ def update_pricing_rule(
     return service.update_pricing_rule(db, venue_id, rule_id, auth.user_id, body)
 
 
-@router.delete("/{venue_id}/pricing-rules/{rule_id}", response_model=DeleteResponse, status_code=200)
+@router.delete(
+    "/{venue_id}/pricing-rules/{rule_id}",
+    response_model=DeleteResponse,
+    status_code=200,
+)
 def delete_pricing_rule(
     venue_id: UUID,
     rule_id: UUID,
@@ -195,10 +220,14 @@ def get_owner_pricing_preview(
 ):
     starts_dt = parse_timezone_datetime(starts_at, "starts_at")
     ends_dt = parse_timezone_datetime(ends_at, "ends_at")
-    return service.get_owner_pricing_preview(db, venue_id, auth.user_id, starts_dt, ends_dt, booking_type)
+    return service.get_owner_pricing_preview(
+        db, venue_id, auth.user_id, starts_dt, ends_dt, booking_type
+    )
 
 
-@router.put("/{venue_id}/cancellation-policy", response_model=CancellationPolicyResponse)
+@router.put(
+    "/{venue_id}/cancellation-policy", response_model=CancellationPolicyResponse
+)
 def put_venue_cancellation_policy(
     venue_id: UUID,
     body: UpdateCancellationPolicyRequest,
@@ -227,7 +256,7 @@ async def add_venue_photo(
 ):
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
-    
+
     file_bytes = await file.read()
     return service.add_venue_photo(db, venue_id, auth.user_id, file_bytes)
 
@@ -242,7 +271,9 @@ def bulk_update_venue_photos(
     return service.bulk_update_venue_photos(db, venue_id, auth.user_id, body)
 
 
-@router.delete("/{venue_id}/photos/{photo_id}", response_model=DeleteResponse, status_code=200)
+@router.delete(
+    "/{venue_id}/photos/{photo_id}", response_model=DeleteResponse, status_code=200
+)
 def delete_venue_photo(
     venue_id: UUID,
     photo_id: UUID,
@@ -276,12 +307,8 @@ def list_pending_venue_bookings(
     )
 
 
-
-
-
-
-
 # User routes
+
 
 @router.get("/likes", response_model=list[UUID])
 def get_liked_venue_ids(
@@ -301,8 +328,8 @@ def toggle_venue_like(
     return {"is_liked": is_liked}
 
 
-
 # Public routes
+
 
 @router.get("/categories", response_model=list[VenueCategoryResponse])
 def get_venue_categories(db: Session = Depends(get_db)):
@@ -321,7 +348,8 @@ def get_venue(
     db: Session = Depends(get_db),
 ):
 
-    return service.get_venue(db, identifier, user_id=auth.user_id if auth else None)
+    venue = service.get_venue(db, identifier, user_id=auth.user_id if auth else None)
+    return service._enrich_venue_with_ratings(db, venue)
 
 
 @router.get("/{venue_id}/pricing", response_model=PricingPreviewResponse)
@@ -345,7 +373,9 @@ def get_venue_availability(
     return service.get_venue_availability(db, venue_id)
 
 
-@router.get("/{venue_id}/blocked-dates", response_model=list[PublicVenueBlockedDateResponse])
+@router.get(
+    "/{venue_id}/blocked-dates", response_model=list[PublicVenueBlockedDateResponse]
+)
 def get_venue_blocked_dates(
     venue_id: UUID,
     db: Session = Depends(get_db),
@@ -353,7 +383,9 @@ def get_venue_blocked_dates(
     return service.get_venue_blocked_dates(db, venue_id)
 
 
-@router.get("/{venue_id}/cancellation-policy", response_model=CancellationPolicyResponse)
+@router.get(
+    "/{venue_id}/cancellation-policy", response_model=CancellationPolicyResponse
+)
 def get_venue_cancellation_policy(
     venue_id: UUID,
     db: Session = Depends(get_db),

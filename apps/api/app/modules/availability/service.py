@@ -375,7 +375,7 @@ def validate_booking_request(
         venue.post_buffer_minutes,
     )
 
-    if is_date_blocked(venue, effective_starts_at, effective_ends_at):
+    if is_date_blocked(venue, starts_at, ends_at):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Venue blocked for selected period",
@@ -384,8 +384,8 @@ def validate_booking_request(
     conflict_exists = is_slot_blocked(
         db=db,
         venue_id=venue.id,
-        effective_starts_at=effective_starts_at,
-        effective_ends_at=effective_ends_at,
+        effective_starts_at=starts_at,
+        effective_ends_at=ends_at,
     )
 
     if conflict_exists:
@@ -405,23 +405,23 @@ def get_availability_for_date(
     db: Session,
     venue_id,
     booking_date: date,
+    booking_type: str = "time_slot",
 ) -> AvailabilityResponse:
+    venue = _get_active_venue_or_404(db, venue_id)
 
-    venue = _get_active_venue_or_404(
-        db,
-        venue_id,
-    )
+    operating_window = resolve_operating_window(venue, booking_date)
 
-    operating_window = resolve_operating_window(
-        venue,
-        booking_date,
-    )
+    if not operating_window.is_available:
+        return AvailabilityResponse(
+            date=booking_date,
+            operating_window=operating_window,
+            blocked_slots=[],
+        )
 
-    if operating_window.is_available:
-        window_start, window_end = expand_full_day_slot(venue, booking_date)
-    else:
-        window_start, window_end = _local_day_bounds(venue, booking_date)
-    blocked_slots = (
+    window_start, window_end = expand_full_day_slot(venue, booking_date)
+
+    # Get blocking slots for the day
+    blocked_slots_db = (
         db.query(BookingSlot)
         .filter(
             BookingSlot.venue_id == venue.id,
@@ -433,15 +433,30 @@ def get_availability_for_date(
         .all()
     )
 
+    if booking_type == "full_day":
+        # Full day is blocked if there's ANY existing booking
+        if blocked_slots_db:
+            return AvailabilityResponse(
+                date=booking_date,
+                operating_window=operating_window,
+                blocked_slots=[
+                    BlockedRange(starts_at=window_start, ends_at=window_end)
+                ],
+            )
+        else:
+            return AvailabilityResponse(
+                date=booking_date,
+                operating_window=operating_window,
+                blocked_slots=[],
+            )
+
+    # TIME SLOT: Allow multiple slots per day (partial availability)
     return AvailabilityResponse(
         date=booking_date,
         operating_window=operating_window,
         blocked_slots=[
-            BlockedRange(
-                starts_at=slot.starts_at,
-                ends_at=slot.ends_at,
-            )
-            for slot in blocked_slots
+            BlockedRange(starts_at=slot.effective_starts_at, ends_at=slot.effective_ends_at)
+            for slot in blocked_slots_db
         ],
     )
 
@@ -451,6 +466,7 @@ def _build_calendar_for_venue(
     venue,
     start_date: date,
     end_date: date,
+    booking_type: str = "time_slot",
     include_owner_details: bool = False,
 ) -> CalendarResponse:
     if end_date < start_date:
@@ -465,6 +481,7 @@ def _build_calendar_for_venue(
             detail="Calendar range cannot exceed 370 days",
         )
 
+    # Load data for the entire range
     range_start, _ = _local_day_bounds(venue, start_date)
     _, range_end = _local_day_bounds(venue, end_date)
     range_start -= timedelta(minutes=venue.pre_buffer_minutes)
@@ -514,10 +531,7 @@ def _build_calendar_for_venue(
     days: list[CalendarDay] = []
 
     for calendar_date in _date_range(start_date, end_date):
-        operating_window = resolve_operating_window(
-            venue,
-            calendar_date,
-        )
+        operating_window = resolve_operating_window(venue, calendar_date)
 
         if operating_window.is_available:
             window_start, window_end = expand_full_day_slot(venue, calendar_date)
@@ -531,7 +545,8 @@ def _build_calendar_for_venue(
             venue.post_buffer_minutes,
         )
 
-        day_blocks = [
+        # Day-specific blocks
+        day_venue_blocks = [
             block
             for block in venue_blocks
             if _has_overlap(
@@ -541,6 +556,7 @@ def _build_calendar_for_venue(
                 effective_window_end,
             )
         ]
+
         day_blocking_slots = [
             slot
             for slot in blocking_slots
@@ -559,7 +575,7 @@ def _build_calendar_for_venue(
                 source="venue_block",
                 reason=block.reason,
             )
-            for block in day_blocks
+            for block in day_venue_blocks
         ]
         blocked_ranges.extend(
             CalendarBlockedRange(
@@ -571,6 +587,7 @@ def _build_calendar_for_venue(
         )
         blocked_ranges.sort(key=lambda item: item.starts_at)
 
+        # Owner bookings for this day
         day_bookings = []
         if include_owner_details:
             day_bookings = [
@@ -597,39 +614,45 @@ def _build_calendar_for_venue(
                 )
             ]
 
-        venue_block_ranges = [(block.starts_at, block.ends_at) for block in day_blocks]
-        blocking_ranges = venue_block_ranges + [
-            (slot.starts_at, slot.ends_at) for slot in day_blocking_slots
-        ]
-
-        has_conflict = bool(day_blocks or day_blocking_slots)
+        has_conflict = bool(day_venue_blocks or day_blocking_slots)
         is_future_window = window_end > now
         supports_full_day = "full_day" in venue.allowed_booking_types
-        available_for_full_day = (
-            operating_window.is_available
-            and supports_full_day
-            and is_future_window
-            and not has_conflict
-        )
 
+        # Simplified status logic
         if not operating_window.is_available:
             day_status = "closed"
-        elif _covers_range(venue_block_ranges, window_start, window_end):
+        elif _covers_range(
+            [(b.starts_at, b.ends_at) for b in day_venue_blocks],
+            window_start,
+            window_end,
+        ):
             day_status = "blocked"
-        elif _covers_range(blocking_ranges, window_start, window_end):
+        elif has_conflict and booking_type == "full_day":
             day_status = "fully_booked"
         elif has_conflict:
             day_status = "partially_booked"
         else:
             day_status = "available"
 
+        # Bookable logic
+        is_bookable = False
+        if is_future_window and operating_window.is_available:
+            if booking_type == "full_day":
+                is_bookable = not has_conflict and supports_full_day
+            else:  # time_slot
+                is_bookable = not _covers_range(
+                    [(s.starts_at, s.ends_at) for s in day_blocking_slots],
+                    window_start,
+                    window_end,
+                )
+
         days.append(
             CalendarDay(
                 date=calendar_date,
                 operating_window=operating_window,
                 status=day_status,
-                is_bookable=day_status in ("available", "partially_booked") and is_future_window,
-                available_for_full_day=available_for_full_day,
+                is_bookable=is_bookable,
+                available_for_full_day=is_bookable and booking_type == "full_day",
                 blocked_ranges=blocked_ranges,
                 bookings=day_bookings,
             )
@@ -649,6 +672,7 @@ def get_calendar(
     venue_id: UUID,
     start_date: date,
     end_date: date,
+    booking_type: str = "time_slot",
 ) -> CalendarResponse:
     venue = _get_active_venue_or_404(
         db,
@@ -660,6 +684,7 @@ def get_calendar(
         venue=venue,
         start_date=start_date,
         end_date=end_date,
+        booking_type=booking_type,
     )
 
 

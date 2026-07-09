@@ -20,12 +20,14 @@ router = APIRouter()
 def availability_for_date_query(
     venue_id: str,
     availability_date: date = Query(..., alias="date"),
+    booking_type: BookingType = Query(...),
     db: Session = Depends(get_db),
 ):
     return service.get_availability_for_date(
         db=db,
         venue_id=venue_id,
         booking_date=availability_date,
+        booking_type=booking_type.value,
     )
 
 
@@ -37,6 +39,7 @@ def calendar(
     venue_id: UUID,
     start_date: date = Query(...),
     end_date: date = Query(...),
+    booking_type: BookingType = Query(...),
     db: Session = Depends(get_db),
 ):
     return service.get_calendar(
@@ -44,6 +47,7 @@ def calendar(
         venue_id=venue_id,
         start_date=start_date,
         end_date=end_date,
+        booking_type=booking_type.value,
     )
 
 
@@ -75,12 +79,14 @@ def owner_calendar(
 def availability_for_date(
     venue_id: str,
     booking_date: date,
+    booking_type: BookingType = Query(...),
     db: Session = Depends(get_db),
 ):
     return service.get_availability_for_date(
         db=db,
         venue_id=venue_id,
         booking_date=booking_date,
+        booking_type=booking_type.value,
     )
 
 
