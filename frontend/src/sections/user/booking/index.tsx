@@ -376,7 +376,8 @@ export function BookingView() {
 
                                 {createBookingMutation.isError && (
                                     <Alert severity="error" sx={{ borderRadius: 2.5 }}>
-                                        Booking failed. Please try again.
+                                        {/* Booking failed. Please try again. */}
+                                        {createBookingMutation.error.message}
                                     </Alert>
                                 )}
                             </Stack>
