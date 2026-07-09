@@ -462,3 +462,24 @@ class BookingStatusHistory(Base):
         foreign_keys=[changed_by],
         primaryjoin="BookingStatusHistory.changed_by == Profile.id",
     )
+
+
+class BookingInvoice(Base):
+    """Async-generated invoice PDF for a confirmed booking — see
+    app.modules.booking.invoice for the generation/queueing logic that
+    populates this table."""
+
+    __tablename__ = "booking_invoices"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    booking_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("bookings.id"), nullable=False, unique=True,
+    )
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="pending")  # pending|generated|failed
+    pdf_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now(),
+    )

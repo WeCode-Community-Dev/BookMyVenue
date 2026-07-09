@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { createClient, deepResearchEndpoints } from '@venue404/api-client'
+import { useQuery } from '@tanstack/react-query'
+import { createClient, deepResearchEndpoints, venueEndpoints } from '@venue404/api-client'
 import type { ExternalLeadPublic } from '@venue404/api-client'
 import { Info } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -10,12 +11,20 @@ export function ExternalVenueCard({ lead }: Props) {
   const navigate = useNavigate()
   const [status, setStatus] = useState<'idle' | 'reserving' | 'requested' | 'error'>('idle')
   const [isModalOpen, setIsModalOpen] = useState(false)
-  
+
   // Form State
+  const [categoryId, setCategoryId] = useState('')
   const [eventDate, setEventDate] = useState('')
   const [guestCount, setGuestCount] = useState('')
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['venue-categories'],
+    queryFn: () => venueEndpoints(createClient()).getVenueCategories(),
+    enabled: isModalOpen,
+    staleTime: 5 * 60 * 1000,
+  })
 
   async function handleReserve(e: React.FormEvent) {
     e.preventDefault()
@@ -25,10 +34,11 @@ export function ExternalVenueCard({ lead }: Props) {
       const client = createClient()
       const endpoints = deepResearchEndpoints(client)
       await endpoints.reserveLead(
-        lead.id, 
-        eventDate || undefined, 
-        guestCount ? parseInt(guestCount, 10) : undefined, 
-        phone || undefined, 
+        lead.id,
+        categoryId,
+        eventDate || undefined,
+        guestCount ? parseInt(guestCount, 10) : undefined,
+        phone || undefined,
         notes || undefined
       )
       setStatus('requested')
@@ -114,6 +124,21 @@ export function ExternalVenueCard({ lead }: Props) {
             </div>
             
             <form onSubmit={handleReserve} className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">Venue Category</label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all dark:border-ink-700 dark:bg-ink-800 dark:text-zinc-100"
+                  required
+                >
+                  <option value="" disabled>Select a category</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className="mb-1 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">Event Date</label>
                 <input 

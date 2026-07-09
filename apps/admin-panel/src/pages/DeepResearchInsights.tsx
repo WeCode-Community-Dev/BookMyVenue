@@ -321,25 +321,37 @@ function QueryDetailModal({ queryId, onClose }: { queryId: string; onClose: () =
                     <DetailField icon={Wallet} label="Budget" value={breakdown.budget_hint} />
                     <DetailField icon={CalendarDays} label="Date" value={breakdown.date_hint} />
                   </div>
-                  {(breakdown.required_amenities?.length ?? 0) > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {breakdown.required_amenities!.map((tag) => (
-                        <span key={tag} className="rounded-full border border-brand/15 bg-brand/5 px-2.5 py-1 text-xs font-medium capitalize text-brand">
-                          {tag.replace(/_/g, ' ')}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {(breakdown.special_requirements?.length ?? 0) > 0 && (
-                    <ul className="mt-3 space-y-1">
-                      {breakdown.special_requirements!.map((req) => (
-                        <li key={req} className="flex items-start gap-2 text-sm text-zinc-700">
-                          <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-zinc-400" />
-                          {req}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+
+                  <div className="mt-3 rounded-xl border border-zinc-100 bg-zinc-50/60 p-3.5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Required amenities</p>
+                    {(breakdown.required_amenities?.length ?? 0) > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {breakdown.required_amenities!.map((tag) => (
+                          <span key={tag} className="rounded-full border border-brand/15 bg-brand/5 px-2.5 py-1 text-xs font-medium capitalize text-brand">
+                            {tag.replace(/_/g, ' ')}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-1 text-sm text-zinc-400">None detected</p>
+                    )}
+                  </div>
+
+                  <div className="mt-3 rounded-xl border border-zinc-100 bg-zinc-50/60 p-3.5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Special requirements</p>
+                    {(breakdown.special_requirements?.length ?? 0) > 0 ? (
+                      <ul className="mt-2 space-y-1">
+                        {breakdown.special_requirements!.map((req) => (
+                          <li key={req} className="flex items-start gap-2 text-sm text-zinc-700">
+                            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-zinc-400" />
+                            {req}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-1 text-sm text-zinc-400">None detected</p>
+                    )}
+                  </div>
                 </div>
               )}
 

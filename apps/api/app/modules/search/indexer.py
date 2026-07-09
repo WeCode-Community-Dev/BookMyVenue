@@ -1,12 +1,14 @@
 import logging
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from uuid import UUID
 
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
+from app.core import job_queue
+from app.core import redis as redis_client
 from app.core.config import settings
 from app.infrastructure.embeddings.jina import embed_passage, embed_query
 from app.modules.search import search_metadata_cache
@@ -19,12 +21,6 @@ logger = logging.getLogger(__name__)
 # Attempt 0 → immediate, 1 → 5 min, 2 → 15 min, 3 → 1 hr, 4 → 6 hr
 _BACKOFF_SECONDS = [0, 300, 900, 3600, 21600]
 MAX_RETRIES = len(_BACKOFF_SECONDS)  # was a hardcoded `5` in two places below
-
-
-def _redis_client():
-    from upstash_redis import Redis
-
-    return Redis(url=settings.upstash_redis_url, token=settings.upstash_redis_token)
 
 
 def enqueue_job(db: Session, entity_id: UUID, operation: str) -> None:
@@ -49,8 +45,8 @@ def enqueue_job(db: Session, entity_id: UUID, operation: str) -> None:
     job_id = str(job.id)
 
     try:
-        if settings.upstash_redis_url and settings.upstash_redis_token:
-            _redis_client().lpush(settings.upstash_search_queue_key, job_id)
+        if redis_client.is_configured():
+            redis_client.get_redis().lpush(settings.upstash_search_queue_key, job_id)
     except Exception:
         # Redis push failure is non-fatal — the APScheduler worker will poll the DB.
         pass
@@ -166,7 +162,6 @@ def process_job(db: Session, job_id: str) -> None:
 
 def retryable_job_ids(db: Session, limit: int = 10) -> list[str]:
     """Return job IDs eligible for processing: pending or failed-with-backoff-elapsed."""
-    now = datetime.now(timezone.utc)
     pending = (
         db.query(SearchIndexJob)
         .filter(SearchIndexJob.status == "pending")
@@ -190,11 +185,7 @@ def retryable_job_ids(db: Session, limit: int = 10) -> list[str]:
         for job in failed:
             if len(results) >= limit:
                 break
-            delay = _BACKOFF_SECONDS[min(job.retry_count, len(_BACKOFF_SECONDS) - 1)]
-            eligible_at = job.created_at.replace(tzinfo=timezone.utc) + timedelta(
-                seconds=delay
-            )
-            if now >= eligible_at:
+            if job_queue.is_backoff_eligible(job.created_at, job.retry_count, _BACKOFF_SECONDS):
                 results.append(job)
 
     return [str(j.id) for j in results]

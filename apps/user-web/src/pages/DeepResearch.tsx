@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { createClient, deepResearchEndpoints } from '@venue404/api-client'
+import { ApiError, createClient, deepResearchEndpoints } from '@venue404/api-client'
 import type { DeepResearchSearchResponse } from '@venue404/api-client'
 import {
   ArrowRight,
@@ -67,7 +67,7 @@ export default function DeepResearch() {
     timers.current.forEach(clearTimeout)
     timers.current = []
     setStage('understanding')
-    
+
     // reset external state
     setExtStatus('idle')
     setExtLeads([])
@@ -125,6 +125,10 @@ export default function DeepResearch() {
   const internalTotal = result?.internal_results.total ?? 0
   const isProcessing = searchMutation.isPending || (searchMutation.isSuccess && stage !== 'done')
   const showResults = stage === 'done' && !!breakdown
+  const rateLimitMessage =
+    searchMutation.error instanceof ApiError && searchMutation.error.status === 429
+      ? searchMutation.error.message
+      : null
 
   return (
     <div className="min-h-screen bg-white dark:bg-ink-950">
@@ -143,7 +147,7 @@ export default function DeepResearch() {
         <div className="relative mx-auto w-full max-w-2xl px-6 text-center">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-3.5 py-1.5 text-xs font-semibold text-brand backdrop-blur-sm dark:border-brand-secondary/30 dark:bg-white/5 dark:text-brand-secondary">
             <Sparkles className="h-3.5 w-3.5" />
-            Deep Research
+            Deep Research <span className="rounded-full bg-brand/10 px-2 py-0.5 text-brand-secondary">Beta with 4 daily searches</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl lg:text-[2.75rem] dark:text-white">
             Describe the venue you need.
@@ -186,7 +190,7 @@ export default function DeepResearch() {
               </div>
               <button
                 type="submit"
-                disabled={!query.trim() || isProcessing}
+                disabled={!query.trim() || isProcessing || !!rateLimitMessage}
                 className="press flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-brand-secondary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:shadow-brand/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
               >
                 Start Deep Research
@@ -195,13 +199,19 @@ export default function DeepResearch() {
             </div>
           </form>
 
+          {rateLimitMessage && (
+            <p className="mt-2.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+              {rateLimitMessage}
+            </p>
+          )}
+
           {isProcessing && (
             <div className="page-enter mt-8 text-left">
               <StageProgress current={stage} />
             </div>
           )}
 
-          {searchMutation.isError && (
+          {searchMutation.isError && !rateLimitMessage && (
             <div className="page-enter mt-8 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 text-left dark:border-red-400/20 dark:bg-red-500/10">
               <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
               <div>
@@ -242,11 +252,11 @@ export default function DeepResearch() {
                 <Field icon={CalendarDays} label="Date" value={breakdown.date_hint} />
               </div>
 
-              {breakdown.required_amenities.length > 0 && (
-                <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
-                  <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
-                    Required amenities
-                  </p>
+              <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
+                <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+                  Required amenities
+                </p>
+                {breakdown.required_amenities.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {breakdown.required_amenities.map((tag) => (
                       <span
@@ -257,14 +267,16 @@ export default function DeepResearch() {
                       </span>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-sm text-zinc-400">None detected</p>
+                )}
+              </div>
 
-              {breakdown.special_requirements.length > 0 && (
-                <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
-                  <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
-                    Other requirements
-                  </p>
+              <div className="mt-5 border-t border-zinc-100 pt-5 dark:border-ink-800">
+                <p className="mb-2.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+                  Other requirements
+                </p>
+                {breakdown.special_requirements.length > 0 ? (
                   <ul className="space-y-1.5">
                     {breakdown.special_requirements.map((req) => (
                       <li key={req} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
@@ -273,8 +285,10 @@ export default function DeepResearch() {
                       </li>
                     ))}
                   </ul>
-                </div>
-              )}
+                ) : (
+                  <p className="text-sm text-zinc-400">None detected</p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -334,7 +348,7 @@ export default function DeepResearch() {
               </div>
             ) : extStatus === 'completed' && extLeads.length === 0 ? (
               <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-zinc-200 py-10 text-center dark:border-ink-700">
-                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 dark:bg-ink-800">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 dark:bg-ink-800">
                   <SearchX className="h-5 w-5" />
                 </span>
                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No external venues found</p>
@@ -350,7 +364,7 @@ export default function DeepResearch() {
                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   {extStatus === 'locating' ? 'Getting your location...'
                     : extStatus === 'loading' ? 'Searching externally...'
-                    : 'Still not finding the right fit?'}
+                      : 'Still not finding the right fit?'}
                 </p>
                 <p className="max-w-sm text-xs leading-relaxed text-zinc-400">
                   {extError || "We can search beyond our marketplace and find venues that aren't listed anywhere else yet."}

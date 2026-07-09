@@ -31,9 +31,15 @@ from app.modules.admin.schemas import (
     DeepResearchQueryDetail,
     DeepResearchQueryListResponse,
     DeepResearchStatsResponse,
+    ExternalReservationListResponse,
+    ContactOwnerRequest,
+    MarkInterestedRequest,
+    InviteOwnerRequest,
+    InviteOwnerResponse,
 )
 from app.modules.auth.dependencies import require_admin, AuthContext
 from app.modules.admin import service
+from app.modules.deep_research import service as reservation_service
 
 router = APIRouter()
 
@@ -179,7 +185,7 @@ def reject_owner(
 def list_actions(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    target_type: str | None = Query(None, pattern="^(user|venue|booking|amenity)$"),
+    target_type: str | None = Query(None, pattern="^(user|venue|booking|amenity|external_reservation)$"),
     action_type: str | None = Query(None),
     # Legacy convenience: limit=N returns N items on page 1 (used by dashboard)
     limit: int | None = Query(None, ge=1, le=100),
@@ -357,3 +363,64 @@ def get_deep_research_query(
     db: Session = Depends(get_db),
 ):
     return service.get_deep_research_query(db, query_id)
+
+
+# ─── External reservation admin workflow ───────────────────────────────────────
+# See docs/Venue404_External_Reservation_Onboarding_PRD.md
+
+@router.get("/external-reservations", response_model=ExternalReservationListResponse)
+def list_external_reservations(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    status: str | None = Query(None),
+    _: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return reservation_service.list_external_reservations(db, status=status, page=page, page_size=page_size)
+
+
+@router.patch("/external-reservations/{reservation_id}/contact", status_code=204)
+def contact_external_reservation(
+    reservation_id: UUID,
+    body: ContactOwnerRequest,
+    auth: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    reservation_service.contact_reservation(
+        db, admin_id=auth.user_id, reservation_id=reservation_id,
+        contact_method=body.contact_method, notes=body.notes, follow_up_date=body.follow_up_date,
+    )
+
+
+@router.patch("/external-reservations/{reservation_id}/mark-interested", status_code=204)
+def mark_external_reservation_interested(
+    reservation_id: UUID,
+    body: MarkInterestedRequest,
+    auth: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    reservation_service.mark_owner_interested(db, admin_id=auth.user_id, reservation_id=reservation_id, reason=body.reason)
+
+
+@router.post("/external-reservations/{reservation_id}/invite-owner", response_model=InviteOwnerResponse)
+def invite_owner_for_external_reservation(
+    reservation_id: UUID,
+    body: InviteOwnerRequest,
+    auth: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    _reservation, action_link = reservation_service.invite_owner_for_reservation(
+        db, admin_id=auth.user_id, reservation_id=reservation_id,
+        venue_name=body.venue_name, owner_name=body.owner_name, email=body.email, phone=body.phone,
+        category_id=body.category_id,
+    )
+    return InviteOwnerResponse(action_link=action_link)
+
+
+@router.post("/external-reservations/{reservation_id}/create-booking", status_code=204)
+def create_booking_for_external_reservation(
+    reservation_id: UUID,
+    auth: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    reservation_service.create_booking_for_reservation(db, admin_id=auth.user_id, reservation_id=reservation_id)

@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     # Used to build deep links inside notification emails
     frontend_base_url: str = "https://venue404-user-web-git-main-venue123.vercel.app"
 
+    # Used to build the Supabase invite redirect for admin-invited venue owners
+    owner_portal_base_url: str = "https://venue404-owner-portal-git-main-venue123.vercel.app"
+
     # Comma-separated list of allowed browser origins for CORS. Defaults to the
     # local dev ports; in production set this to the deployed Vercel app URLs.
     cors_origins: str = ("https://venue404-owner-portal-git-main-venue123.vercel.app,https://venue404-user-web-git-main-venue123.vercel.app,https://venue404-admin-panel-git-main-venue123.vercel.app,http://localhost:5397,http://localhost:5398,http://localhost:5399"
@@ -53,6 +56,7 @@ class Settings(BaseSettings):
     upstash_redis_url: str = ""
     upstash_redis_token: str = ""
     upstash_search_queue_key: str = "search_index_jobs"
+    upstash_invoice_queue_key: str = "booking_invoice_jobs"
 
     # Jina AI — used to generate venue embeddings for semantic search.
     jina_api_key: str = ""
@@ -77,6 +81,13 @@ class Settings(BaseSettings):
 
     # Google Places API Key
     google_places_api_key: str = ""
+
+    # Deep Research rate limiting — protects the Groq / Google Places /
+    # Cloudinary calls behind /search and /external from burst abuse and
+    # caps the per-user daily cost. Backed by Upstash Redis; if Upstash isn't
+    # configured, limiting is skipped (fails open, matching indexer.py).
+    deep_research_rate_limit_per_minute: int = 5
+    deep_research_daily_limit: int = 4
 
     log_level: str = "INFO"  # DEBUG / INFO / WARNING / ERROR
 

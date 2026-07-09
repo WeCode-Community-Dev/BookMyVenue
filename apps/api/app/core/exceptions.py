@@ -24,3 +24,8 @@ class ConflictError(HTTPException):
 class BadRequestError(HTTPException):
     def __init__(self, detail: str = "Bad request"):
         super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
+
+
+class RateLimitError(HTTPException):
+    def __init__(self, detail: str = "Too many requests"):
+        super().__init__(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=detail)

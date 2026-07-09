@@ -89,6 +89,7 @@ class BookingOut(BaseModel):
     payment_expires_at: datetime | None = None
     auto_confirmed_at: datetime | None = None
     confirmed_by: str | None = None
+    invoice_url: str | None = None
 
 
 class CancellationDisplay(BaseModel):

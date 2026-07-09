@@ -4,7 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { createClient, venueEndpoints } from '@venue404/api-client'
 import { useLikes } from '../lib/useLikes'
 import { useAuth } from '../lib/AuthContext'
-import { useLocation } from 'react-router-dom'
+import { useAuthModal } from '../lib/AuthModalContext'
 import { toUtcIso } from '../utils'
 
 import { AppNavbar }                from '../components/shared/AppNavbar'
@@ -80,6 +80,8 @@ function VenueNotFound({ onBack }: { onBack: () => void }) {
 function useVenueBooking(venue: VenueResponse) {
   const navigate = useNavigate()
   const client = createClient()
+  const { user } = useAuth()
+  const { openLogin } = useAuthModal()
 
   const isTimeSlotVenue = venue.allowed_booking_types.includes('time_slot')
   const isFullDayVenue = venue.allowed_booking_types.includes('full_day')
@@ -230,6 +232,10 @@ function useVenueBooking(venue: VenueResponse) {
   }
 
   const handleBook = () => {
+    if (!user) {
+      openLogin()
+      return
+    }
     setSlotError(null)
     validateMutation.mutate()
   }
@@ -305,14 +311,13 @@ export default function VenueDetails() {
 function VenueActions({ venueId }: { venueId: string }) {
   const { isLiked, toggleLike } = useLikes()
   const { user } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  
+  const { openLogin } = useAuthModal()
+
   const liked = isLiked(venueId)
-  
+
   const handleLike = () => {
     if (!user) {
-      navigate('/login', { state: { from: location.pathname } })
+      openLogin()
       return
     }
     toggleLike(venueId)

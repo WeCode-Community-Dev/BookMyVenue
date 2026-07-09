@@ -293,6 +293,17 @@ def approve_venue(
         admin_id=admin_id, action_type="venue_approved",
         target_type="venue", target_id=venue_id, reason=reason or None,
     ))
+
+    from app.modules.deep_research.service import sync_reservation_status_for_venue
+    sync_reservation_status_for_venue(db, venue_id, VenueStatus.approved)
+
+    from app.modules.notification import service as notifications
+    from app.modules.notification.types import NotificationType
+    notifications.notify(
+        db, venue.owner_id, NotificationType.VENUE_APPROVED,
+        context={"venue_name": venue.name},
+    )
+
     db.commit()
 
     from app.modules.search.indexer import enqueue_job
@@ -314,6 +325,14 @@ def reject_venue(
         admin_id=admin_id, action_type="venue_rejected",
         target_type="venue", target_id=venue_id, reason=reason or None,
     ))
+
+    from app.modules.notification import service as notifications
+    from app.modules.notification.types import NotificationType
+    notifications.notify(
+        db, venue.owner_id, NotificationType.VENUE_REJECTED,
+        context={"venue_name": venue.name, "reason": reason or "No reason provided."},
+    )
+
     db.commit()
 
 
@@ -337,6 +356,14 @@ def suspend_venue(
         admin_id=admin_id, action_type="venue_suspended",
         target_type="venue", target_id=venue_id, reason=reason,
     ))
+
+    from app.modules.notification import service as notifications
+    from app.modules.notification.types import NotificationType
+    notifications.notify(
+        db, venue.owner_id, NotificationType.VENUE_SUSPENDED,
+        context={"venue_name": venue.name, "reason": reason},
+    )
+
     db.commit()
 
 
@@ -355,6 +382,14 @@ def reactivate_venue(
         admin_id=admin_id, action_type="venue_reactivated",
         target_type="venue", target_id=venue_id, reason=reason or None,
     ))
+
+    from app.modules.notification import service as notifications
+    from app.modules.notification.types import NotificationType
+    notifications.notify(
+        db, venue.owner_id, NotificationType.VENUE_REACTIVATED,
+        context={"venue_name": venue.name},
+    )
+
     db.commit()
 
     from app.modules.search.indexer import enqueue_job
@@ -387,6 +422,18 @@ def approve_owner(
     ))
     db.commit()
 
+    # Best-effort — email delivery must never undo the approval above, which
+    # already succeeded and is committed by this point.
+    if profile.email:
+        try:
+            from app.core.email import send_email
+            from app.modules.notification.templates import render_owner_approved_email
+
+            subject, html = render_owner_approved_email(profile.full_name)
+            send_email(profile.email, subject, html)
+        except Exception:
+            logger.warning("Could not email owner-approved notice to %s", profile.email, exc_info=True)
+
 
 def reject_owner(
     db: Session,
@@ -414,6 +461,18 @@ def reject_owner(
     ))
     db.commit()
 
+    # Best-effort — email delivery must never undo the rejection above, which
+    # already succeeded and is committed by this point.
+    if profile.email:
+        try:
+            from app.core.email import send_email
+            from app.modules.notification.templates import render_owner_rejected_email
+
+            subject, html = render_owner_rejected_email(profile.full_name, reason)
+            send_email(profile.email, subject, html)
+        except Exception:
+            logger.warning("Could not email owner-rejected notice to %s", profile.email, exc_info=True)
+
 
 def _build_user_dict(
     profile: Profile,
@@ -436,7 +495,7 @@ def get_owner_stats(db: Session) -> dict:
     owner_subq = (
         db.query(UserRoleAssignment.user_id)
         .filter(UserRoleAssignment.role == UserRole.venue_owner)
-        .subquery()
+        .scalar_subquery()
     )
     base = db.query(Profile).filter(
         Profile.deleted_at.is_(None),
@@ -482,7 +541,7 @@ def list_users(
         role_subq = (
             db.query(UserRoleAssignment.user_id)
             .filter(UserRoleAssignment.role == UserRole(role))
-            .subquery()
+            .scalar_subquery()
         )
         filtered = filtered.filter(Profile.id.in_(role_subq))
 
@@ -587,6 +646,14 @@ def suspend_user(
         target_id=user_id,
         reason=reason,
     ))
+
+    from app.modules.notification import service as notifications
+    from app.modules.notification.types import NotificationType
+    notifications.notify(
+        db, user_id, NotificationType.USER_SUSPENDED,
+        context={"reason": reason},
+    )
+
     db.commit()
 
 
@@ -615,6 +682,11 @@ def reactivate_user(
         target_id=user_id,
         reason=reason,
     ))
+
+    from app.modules.notification import service as notifications
+    from app.modules.notification.types import NotificationType
+    notifications.notify(db, user_id, NotificationType.USER_REACTIVATED)
+
     db.commit()
 
 

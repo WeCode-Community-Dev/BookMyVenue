@@ -162,6 +162,20 @@ def _booking_out(booking: Booking) -> BookingOut:
             if pending_payment:
                 client_secret = pending_payment.stripe_client_secret
 
+    invoice_url = None
+    if booking.status == BookingStatus.confirmed:
+        from sqlalchemy.orm import object_session
+        session = object_session(booking)
+        if session:
+            from app.modules.booking.models import BookingInvoice
+            invoice = (
+                session.query(BookingInvoice)
+                .filter(BookingInvoice.booking_id == booking.id, BookingInvoice.status == "generated")
+                .first()
+            )
+            if invoice:
+                invoice_url = invoice.pdf_url
+
     return BookingOut(
         id=booking.id,
         venue_id=booking.venue_id,
@@ -216,6 +230,7 @@ def _booking_out(booking: Booking) -> BookingOut:
         payment_expires_at=booking.payment_expires_at,
         auto_confirmed_at=booking.auto_confirmed_at,
         confirmed_by=booking.confirmed_by,
+        invoice_url=invoice_url,
     )
 
 
