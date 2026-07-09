@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as categoryController from '@/controllers/category.controller';
 import * as userController from '@/controllers/user.controller';
 import * as adminVenueController from '@/controllers/admin-venue.controller';
+import * as settlementController from '@/controllers/settlement.controller';
 import * as dashboardController from '@/controllers/dashboard.controller';
 import { upload } from '@/middlewares/upload.middleware';
 import { authMiddleware } from '@/middlewares/auth.middleware';
@@ -58,5 +59,13 @@ router
   .route('/venues/:id/reject')
   .all(validateObjectId('id'))
   .patch(validateInputs(rejectVenueSchema), adminVenueController.rejectVenue);
+
+// Settlements
+router.get('/settlements', settlementController.getPendingSettlements);
+router.post(
+  '/settlements/:bookingId/release',
+  validateObjectId('bookingId'),
+  settlementController.releaseSettlement
+);
 
 export default router;

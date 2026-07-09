@@ -11,6 +11,7 @@ import VenueAvailabilityPage from '@/features/venues/pages/VenueAvailabilityPage
 import UserProfile from '@/features/profile/pages/UserProfile';
 import OwnerBookingsList from '@/features/bookings/pages/OwnerBookingsList';
 import OwnerBookingDetails from '@/features/bookings/pages/OwnerBookingDetails';
+import OwnerRevenue from '@/features/bookings/pages/OwnerRevenue';
 
 export const ownerRoutes = {
   path: '/owner',
@@ -50,6 +51,10 @@ export const ownerRoutes = {
     {
       path: 'bookings/:id',
       element: <OwnerBookingDetails />,
+    },
+    {
+      path: 'revenue',
+      element: <OwnerRevenue />,
     },
     {
       path: 'profile',

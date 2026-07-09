@@ -7,6 +7,7 @@ import {
   CancellationType,
   RefundStatus,
 } from '@/constants/booking';
+import { SettlementStatus } from '@/constants/settlement';
 import { CreateBookingPayload } from '@/types/booking.types';
 import { AppError } from '@/utils/AppError';
 import { getAvailabilityByVenueId } from '@/repositories/availability.repository';
@@ -613,14 +614,17 @@ export const updateOwnerBookingStatusService = async (
   const updates: Record<string, any> = {};
   const now = new Date();
 
+  console.log('the booking status from frontend :',bookingStatus);
+
   if (bookingStatus) {
     const validBookingStatuses = Object.values(BookingStatus);
-    if (!validBookingStatuses.includes(bookingStatus as any)) {
+    console.log("the valid booking status in backend ",validBookingStatuses)
+    if (!validBookingStatuses.includes(bookingStatus.toUpperCase() as any)) {
       throw new AppError('Invalid booking status value', HTTP_STATUS.BAD_REQUEST);
     }
 
     // 1. Transition to confirmed
-    if (bookingStatus === BookingStatus.CONFIRMED) {
+    if (bookingStatus.toUpperCase() === BookingStatus.CONFIRMED) {
       if (currentStatus !== BookingStatus.RESERVED) {
         throw new AppError('Only reserved bookings can be manually confirmed', HTTP_STATUS.BAD_REQUEST);
       }
@@ -632,7 +636,7 @@ export const updateOwnerBookingStatusService = async (
     }
 
     // 2. Transition to completed
-    if (bookingStatus === BookingStatus.COMPLETED) {
+    if (bookingStatus.toUpperCase() === BookingStatus.COMPLETED) {
       if (currentStatus !== BookingStatus.CONFIRMED) {
         throw new AppError('Only confirmed bookings can be marked as completed', HTTP_STATUS.BAD_REQUEST);
       }
@@ -642,10 +646,11 @@ export const updateOwnerBookingStatusService = async (
       updates.bookingStatus = BookingStatus.COMPLETED;
       updates.paymentStatus = PaymentStatus.PAID;
       updates.amountPaid = booking.totalAmount;
+      updates.settlementStatus = SettlementStatus.PENDING;
     }
 
     // 3. Transition to cancelled (Disabled for Owners)
-    if (bookingStatus === BookingStatus.CANCELLED) {
+    if (bookingStatus.toUpperCase() === BookingStatus.CANCELLED) {
       throw new AppError('Owners are not permitted to cancel bookings', HTTP_STATUS.BAD_REQUEST);
     }
   }

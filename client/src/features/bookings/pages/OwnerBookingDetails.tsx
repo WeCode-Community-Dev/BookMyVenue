@@ -176,6 +176,54 @@ export default function OwnerBookingDetails() {
         </div>
       </div>
 
+      {/* Settlement Status Banner */}
+      {bookingStatusStr === 'completed' && booking.settlementStatus && (
+        <div
+          className={`flex items-start gap-3 rounded-2xl border p-4 ${
+            booking.settlementStatus === 'SETTLED'
+              ? 'border-success/20 bg-success/5'
+              : booking.settlementStatus === 'FAILED'
+                ? 'border-error/20 bg-error/5'
+                : 'border-warning/20 bg-warning/5'
+          }`}
+        >
+          {booking.settlementStatus === 'SETTLED' ? (
+            <CheckCircle size={18} className="text-success shrink-0 mt-0.5" />
+          ) : (
+            <AlertCircle
+              size={18}
+              className={`shrink-0 mt-0.5 ${booking.settlementStatus === 'FAILED' ? 'text-error' : 'text-warning'}`}
+            />
+          )}
+          <p className="text-sm text-foreground/80">
+            {booking.settlementStatus === 'PENDING' && (
+              <>
+                <span className="font-bold text-warning">Settlement Processing:</span> Your
+                payment is being processed and will be credited to your account within 24 hours.
+              </>
+            )}
+            {booking.settlementStatus === 'PROCESSING' && (
+              <>
+                <span className="font-bold text-warning">Settlement In Progress:</span> Your
+                settlement is currently being processed.
+              </>
+            )}
+            {booking.settlementStatus === 'SETTLED' && (
+              <>
+                <span className="font-bold text-success">Settlement Completed:</span> Your
+                earnings for this booking have been successfully settled.
+              </>
+            )}
+            {booking.settlementStatus === 'FAILED' && (
+              <>
+                <span className="font-bold text-error">Settlement Failed:</span> There was an
+                issue processing your settlement. Please contact support.
+              </>
+            )}
+          </p>
+        </div>
+      )}
+
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Itinerary and Client Info (Cols 1-7) */}
