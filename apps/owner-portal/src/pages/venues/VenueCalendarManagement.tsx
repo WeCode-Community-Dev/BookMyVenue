@@ -365,7 +365,7 @@ export default function VenueCalendarManagement() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
                 {/* Start Range */}
-                <div className="space-y-5 p-5 bg-gradient-to-br from-zinc-50 to-white rounded-xl border border-zinc-100 dark:border-ink-800 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+                <div className="space-y-5 p-5 bg-gradient-to-br from-zinc-50 to-white dark:from-ink-800 dark:to-ink-900 rounded-xl border border-zinc-100 dark:border-ink-800 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
                   <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-ink-800 pb-4">
                     <span className="w-7 h-7 rounded-full bg-brand/10 flex items-center justify-center text-sm font-bold text-brand">1</span>
                     <h5 className="font-semibold text-zinc-900 dark:text-zinc-100">Start Range</h5>
@@ -377,7 +377,7 @@ export default function VenueCalendarManagement() {
                 </div>
 
                 {/* End Range */}
-                <div className="space-y-5 p-5 bg-gradient-to-br from-zinc-50 to-white rounded-xl border border-zinc-100 dark:border-ink-800 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+                <div className="space-y-5 p-5 bg-gradient-to-br from-zinc-50 to-white dark:from-ink-800 dark:to-ink-900 rounded-xl border border-zinc-100 dark:border-ink-800 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
                   <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-ink-800 pb-4">
                     <span className="w-7 h-7 rounded-full bg-brand/10 flex items-center justify-center text-sm font-bold text-brand">2</span>
                     <h5 className="font-semibold text-zinc-900 dark:text-zinc-100">End Range</h5>

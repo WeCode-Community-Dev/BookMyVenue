@@ -8,6 +8,8 @@ import { useQuery } from '@tanstack/react-query'
 import { StateSelect } from '../../components/StateSelect'
 import { DurationInput } from '../../components/DurationInput'
 import { TimeSelect } from '../../components/TimeSelect'
+import toast from 'react-hot-toast'
+import { confirmAction } from '../../lib/confirm'
 
 const STEPS = [
   'Basic Details',
@@ -321,16 +323,18 @@ export default function CreateVenueWizard() {
 
         // Upload photos if we are on the Photos step
         if (currentStep === 1 && photos.length > 0 && activeVenueId) {
+          const successfullyUploaded = []
           for (const file of photos) {
             try {
               const fd = new FormData()
               fd.append('file', file)
               const newPhoto = await venueEndpoints(client).addVenuePhoto(activeVenueId, fd)
-              setExistingPhotos(prev => [...prev, newPhoto])
+              successfullyUploaded.push(newPhoto)
             } catch (err) {
               console.error('Failed to upload a photo', err)
             }
           }
+          setExistingPhotos(prev => [...prev, ...successfullyUploaded])
           // Clear local photos array so we don't upload them again
           setPhotos([])
         }
@@ -608,6 +612,27 @@ export default function CreateVenueWizard() {
                   {existingPhotos.map((photo) => (
                     <div key={photo.id} className="relative group rounded-lg overflow-hidden border border-zinc-200 dark:border-ink-800 aspect-video bg-zinc-100 dark:bg-ink-800">
                       <img src={photo.image_url} className="w-full h-full object-cover" alt="Venue Photo" />
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (venueId) {
+                            const confirmed = await confirmAction('Are you sure you want to delete this photo?')
+                            if (confirmed) {
+                              try {
+                                const client = createClient()
+                                await venueEndpoints(client).deleteVenuePhoto(venueId, photo.id)
+                                setExistingPhotos(prev => prev.filter(p => p.id !== photo.id))
+                              } catch (err) {
+                                console.error('Failed to delete photo', err)
+                                toast.error('Failed to delete photo')
+                              }
+                            }
+                          }
+                        }}
+                        className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -725,8 +750,8 @@ export default function CreateVenueWizard() {
               <Input label="Refund % (Optional)" name="tier_3_refund_pct" type="number" step="0.01" min={0} max={100} value={formData.tier_3_refund_pct} onChange={handleChange} placeholder="e.g. 25" />
             </div>
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100 dark:border-ink-800">
-              <Input label="No Show Refund (%)" name="no_show_refund_pct" type="number" step="0.01" min={0} max={100} required value={formData.no_show_refund_pct} onChange={handleChange} info="The percentage of the booking cost refunded to the customer if they fail to show up for their reservation without prior cancellation." />
-              <Input label="Overdue Advance Refund (%)" name="overdue_advance_refund_pct" type="number" step="0.01" min={0} max={100} required value={formData.overdue_advance_refund_pct} onChange={handleChange} info="Refund given if you (the owner) fail to accept/reject a booking request in time." />
+              <Input label="No Show Refund (%)" name="no_show_refund_pct" type="number" step="0.01" min={0} max={100} required value={formData.no_show_refund_pct} onChange={handleChange} info="The percentage of the collected amount (excluding platform fees) refunded if the customer cancels late or fails to show up." />
+              <Input label="Overdue Advance Refund (%)" name="overdue_advance_refund_pct" type="number" step="0.01" min={0} max={100} required value={formData.overdue_advance_refund_pct} onChange={handleChange} info="The percentage of the advance deposit refunded to the customer if you choose to issue a Goodwill Cancellation when they fail to pay their balance on time." />
             </div>
             <div className="pt-4 border-t border-zinc-100 dark:border-ink-800">
               <label className="flex items-center text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">

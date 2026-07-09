@@ -578,10 +578,6 @@ export default function VenueEdit() {
                   <Input label="Token Advance (%)" name="advance_pct" type="number" step="0.01" min={0.01} max={100} defaultValue={venue.advance_pct} required info="The percentage of the total booking cost required upfront to secure the reservation." />
                   <Input label="Balance Due (Days before event)" name="balance_due" type="number" min={1} defaultValue={venue.balance_due_days_before_event} required info="The number of days prior to the event date when the remaining balance must be paid in full." />
                 </div>
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100 dark:border-ink-800">
-                  <Input label="Min Price Bound (%)" name="min_price_pct" type="number" min={0.01} max={100} step="0.01" required defaultValue={venue.min_price_pct || 50} info="The minimum allowed price percentage relative to the base price for pricing rules." />
-                  <Input label="Max Price Bound (%)" name="max_price_pct" type="number" min={100} max={500} step="0.01" required defaultValue={venue.max_price_pct || 200} info="The maximum allowed price percentage relative to the base price for pricing rules." />
-                </div>
               </div>
             </div>
           )}
@@ -803,8 +799,8 @@ export default function VenueEdit() {
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
-                <Input label="No Show Refund (%)" name="no_show_refund_pct" type="number" step="0.01" min="0" max="100" required defaultValue={venue.cancellation_policy?.no_show_refund_pct || '0'} info="The percentage of the booking cost refunded to the customer if they fail to show up for their reservation without prior cancellation." />
-                <Input label="Overdue Advance Refund (%)" name="overdue_advance_refund_pct" type="number" step="0.01" min="0" max="100" required defaultValue={venue.overdue_advance_refund_pct || '0'} info="Refund given if you (the owner) fail to accept/reject a booking request in time." />
+                <Input label="No Show Refund (%)" name="no_show_refund_pct" type="number" step="0.01" min="0" max="100" required defaultValue={venue.cancellation_policy?.no_show_refund_pct || '0'} info="The percentage of the collected amount (excluding platform fees) refunded if the customer cancels late or fails to show up." />
+                <Input label="Overdue Advance Refund (%)" name="overdue_advance_refund_pct" type="number" step="0.01" min="0" max="100" required defaultValue={venue.overdue_advance_refund_pct || '0'} info="The percentage of the advance deposit refunded to the customer if you choose to issue a Goodwill Cancellation when they fail to pay their balance on time." />
               </div>
 
               <div className="pt-4 border-t border-zinc-100 dark:border-ink-800">

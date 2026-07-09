@@ -531,7 +531,7 @@ export default function BookingDetail() {
                       <MapPin className="h-3.5 w-3.5 mr-1" /> {booking.venue_city || 'City not specified'}
                     </div>
                     <Link to={`/venues/${booking.venue_id}/overview`} className="text-sm text-brand-600 hover:text-brand-700 font-semibold mt-4 inline-block">
-                      View Venue Details â†’
+                      View Venue Details &rarr;
                     </Link>
                   </div>
                 </Card>
@@ -616,29 +616,14 @@ export default function BookingDetail() {
           const isTerminated = isForfeitCancelled || isUserCancelled || isAdminCancelled ||
             s === 'hold_expired' || s === 'request_expired' || s === 'conflict_cancelled';
 
-          // For a FORFEIT: owner retains the advance minus commission
-          const forfeitOwnerRetains = isForfeitCancelled
-            ? Math.floor(advanceDue * (1 - commissionPct / 100))
-            : 0;
+          // The true "Final Owner Payout" — only set when booking is definitively settled
+          // null = still in progress (show projected)
+          const finalPayout: number | null = (isTerminated || isCompleted)
+            ? (booking.final_owner_payout_paise || 0)
+            : null;  // still active — show projected
 
-          // For GOODWILL / USER CANCEL: actual retained = (paid - refunded) after commission
-          const actualOwnerNet = isTerminated && !isForfeitCancelled
-            ? Math.floor((amountPaid - refundAmount) * (1 - commissionPct / 100))
-            : 0;
-
-          // The true "Final Owner Payout" after cancellation
-          const finalPayout = isForfeitCancelled
-            ? forfeitOwnerRetains
-            : isTerminated
-            ? actualOwnerNet
-            : (booking.owner_payout_paise || 0);
-
-          // Calculate the actual platform fee charged based on what was retained
-          const actualPlatformFee = isForfeitCancelled
-            ? Math.floor(advanceDue * (commissionPct / 100))
-            : isTerminated
-            ? Math.floor((amountPaid - refundAmount) * (commissionPct / 100))
-            : platformFee;
+          // The actual platform fee charged is always the full platform fee (deducted upfront)
+          const actualPlatformFee = platformFee;
           // Overdue state
           const isOverdue = booking.balance_overdue_at
             ? new Date() >= new Date(booking.balance_overdue_at)
@@ -839,6 +824,12 @@ export default function BookingDetail() {
                         <span className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Platform Fee ({commissionPct}%)</span>
                         <span className="text-sm font-semibold text-rose-600">-{fmt(actualPlatformFee)}</span>
                       </div>
+                      {refundAmount > 0 && (
+                        <div className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-ink-800">
+                          <span className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Refund Issued</span>
+                          <span className="text-sm font-semibold text-rose-600">-{fmt(refundAmount)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center pt-3 pb-1">
                         <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
                           {finalPayout !== null ? 'Final Payout' : 'Projected Payout'}
@@ -1257,7 +1248,7 @@ export default function BookingDetail() {
                   )}
                 </div>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 leading-relaxed font-medium">
-                  Calculates a refund based on your venue's "Overdue Advance Refund (%)" policy. Platform commission applies to any amount you retain.
+                  Calculates a refund based on your venue's "Overdue Advance Refund (%)" policy. Note: The full platform fee was already collected upfront and is non-refundable.
                 </p>
               </button>
             </div>
