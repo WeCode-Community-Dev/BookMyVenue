@@ -1,12 +1,13 @@
 import logging
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from uuid import UUID
 
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
+from app.core import job_queue
 from app.core import redis as redis_client
 from app.core.config import settings
 from app.infrastructure.embeddings.jina import embed_passage, embed_query
@@ -161,7 +162,6 @@ def process_job(db: Session, job_id: str) -> None:
 
 def retryable_job_ids(db: Session, limit: int = 10) -> list[str]:
     """Return job IDs eligible for processing: pending or failed-with-backoff-elapsed."""
-    now = datetime.now(timezone.utc)
     pending = (
         db.query(SearchIndexJob)
         .filter(SearchIndexJob.status == "pending")
@@ -185,11 +185,7 @@ def retryable_job_ids(db: Session, limit: int = 10) -> list[str]:
         for job in failed:
             if len(results) >= limit:
                 break
-            delay = _BACKOFF_SECONDS[min(job.retry_count, len(_BACKOFF_SECONDS) - 1)]
-            eligible_at = job.created_at.replace(tzinfo=timezone.utc) + timedelta(
-                seconds=delay
-            )
-            if now >= eligible_at:
+            if job_queue.is_backoff_eligible(job.created_at, job.retry_count, _BACKOFF_SECONDS):
                 results.append(job)
 
     return [str(j.id) for j in results]

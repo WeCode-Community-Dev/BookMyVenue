@@ -235,6 +235,7 @@ export type BookingOut = {
   display: BookingDisplay
   payment_required?: boolean
   payment_expires_at?: string | null
+  invoice_url?: string | null
   payment_options?: {
     full: {
       label: string

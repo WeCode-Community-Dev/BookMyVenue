@@ -257,6 +257,25 @@ def render_password_reset_email(action_link: str) -> tuple[str, str]:
     return subject, html
 
 
+def render_booking_invoice_email(customer_name: str | None, venue_name: str, pdf_url: str) -> tuple[str, str]:
+    """The customer's single booking-confirmed email — deliberately held back
+    by confirm_payment (notify(..., skip_email=True)) and sent from here once
+    the invoice PDF exists, so the customer gets one email with the invoice
+    attached rather than a confirmation email followed by a separate one.
+    """
+    subject = f"Booking confirmed — your Venue404 invoice for {venue_name}"
+    html = _email_layout(
+        title="Your booking is confirmed",
+        body_html=(
+            f"<p>{customer_name or 'Hi'}, your booking for <strong>{venue_name}</strong> is "
+            "confirmed. We look forward to your event!</p>"
+        ),
+        cta_text="Download your invoice",
+        cta_url=pdf_url,
+    )
+    return subject, html
+
+
 def render_owner_approved_email(owner_name: str | None) -> tuple[str, str]:
     subject = "You're approved as a Venue404 owner"
     html = _email_layout(

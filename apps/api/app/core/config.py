@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     upstash_redis_url: str = ""
     upstash_redis_token: str = ""
     upstash_search_queue_key: str = "search_index_jobs"
+    upstash_invoice_queue_key: str = "booking_invoice_jobs"
 
     # Jina AI — used to generate venue embeddings for semantic search.
     jina_api_key: str = ""

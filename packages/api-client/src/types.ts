@@ -1872,6 +1872,8 @@ export interface components {
             /** Owner Action Deadline */
             owner_action_deadline?: string | null;
             display: components["schemas"]["BookingDisplay"];
+            /** Invoice Url */
+            invoice_url?: string | null;
         };
         /** BookingRequestIn */
         BookingRequestIn: {

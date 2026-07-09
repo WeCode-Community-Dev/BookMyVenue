@@ -1,6 +1,6 @@
 import logging
 
-from app.core import redis as redis_client
+from app.core import job_queue
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.modules.search.indexer import process_job, retryable_job_ids
@@ -8,33 +8,11 @@ from app.modules.search.indexer import process_job, retryable_job_ids
 logger = logging.getLogger(__name__)
 
 
-def _dequeue_from_upstash(limit: int) -> list[str]:
-    if not redis_client.is_configured():
-        return []
-
-    try:
-        redis = redis_client.get_redis()
-
-        job_ids = []
-
-        for _ in range(limit):
-            job_id = redis.rpop(settings.upstash_search_queue_key)
-            if not job_id:
-                break
-            job_ids.append(job_id)
-
-        return job_ids
-
-    except Exception as exc:
-        logger.warning("Redis unavailable: %s", exc)
-        return []
-
-
 def run() -> int:
     db = SessionLocal()
 
     try:
-        job_ids = _dequeue_from_upstash(limit=10)
+        job_ids = job_queue.dequeue_from_redis(settings.upstash_search_queue_key, limit=10)
         source = "Redis"
 
         if not job_ids:
