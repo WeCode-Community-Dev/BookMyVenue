@@ -223,7 +223,11 @@ export default function VenueEdit() {
       updates.slot_interval_minutes = parseInt(formData.get('slot_interval_minutes') as string, 10)
       updates.pre_buffer_minutes = parseInt(formData.get('pre_buffer_minutes') as string, 10)
       updates.post_buffer_minutes = parseInt(formData.get('post_buffer_minutes') as string, 10)
-      updates.owner_action_window_hours = parseInt(formData.get('owner_action_window_hours') as string, 10)
+      
+      const ownerActionStr = formData.get('owner_action_window_hours') as string | null
+      updates.owner_action_window_hours = ownerActionStr ? parseInt(ownerActionStr, 10) : (venue.owner_action_window_hours || 48)
+      
+      updates.booking_mode = formData.get('booking_mode') as string
     } else if (editSection === 'pricing') {
       const basePrice = formData.get('base_price') as string
       const hourlyRate = formData.get('hourly_rate') as string
@@ -549,9 +553,29 @@ export default function VenueEdit() {
               </div>
 
               <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Booking Mode</h4>
+                <div className="flex gap-6 mt-2">
+                  <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
+                    <input type="radio" name="booking_mode" value="MANUAL" checked={venue.booking_mode !== 'INSTANT'} onChange={() => setVenue(prev => prev ? { ...prev, booking_mode: 'MANUAL' } : null)} className="mt-1 text-brand focus:ring-brand w-4 h-4" />
+                    <div>
+                      <span className="block text-sm font-bold text-zinc-900 dark:text-zinc-100">Request to Book (Manual)</span>
+                      <span className="block text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">You must manually review and Accept/Reject each booking request.</span>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
+                    <input type="radio" name="booking_mode" value="INSTANT" checked={venue.booking_mode === 'INSTANT'} onChange={() => setVenue(prev => prev ? { ...prev, booking_mode: 'INSTANT' } : null)} className="mt-1 text-brand focus:ring-brand w-4 h-4" />
+                    <div>
+                      <span className="block text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">Instant Booking <span className="px-1.5 py-0.5 bg-brand-100 text-brand-700 text-[10px] uppercase rounded font-bold tracking-wider">Recommended</span></span>
+                      <span className="block text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Customers can instantly secure dates. No manual approval required.</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Approval Window</h4>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} defaultValue={venue.owner_action_window_hours} required helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
+                  <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} defaultValue={venue.owner_action_window_hours} required={venue.booking_mode !== 'INSTANT'} disabled={venue.booking_mode === 'INSTANT'} helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
                 </div>
               </div>
             </div>

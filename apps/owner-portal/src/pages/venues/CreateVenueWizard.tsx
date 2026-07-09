@@ -75,6 +75,7 @@ export default function CreateVenueWizard() {
     overdue_advance_refund_pct: 0,
     min_price_pct: 50,
     max_price_pct: 200,
+    booking_mode: 'MANUAL',
     tier_1_hours: '168', // 7 days
     tier_1_refund_pct: '100',
     tier_2_hours: '72', // 3 days
@@ -143,6 +144,7 @@ export default function CreateVenueWizard() {
         overdue_advance_refund_pct: data.overdue_advance_refund_pct ? parseFloat(data.overdue_advance_refund_pct) : 0,
         min_price_pct: data.min_price_pct ? parseFloat(String(data.min_price_pct)) : 50,
         max_price_pct: data.max_price_pct ? parseFloat(String(data.max_price_pct)) : 200,
+        booking_mode: data.booking_mode || 'MANUAL',
         
         tier_1_hours: data.cancellation_policy?.tier_1_hours?.toString() || '',
         tier_1_refund_pct: data.cancellation_policy?.tier_1_refund_pct?.toString() || '',
@@ -392,7 +394,8 @@ export default function CreateVenueWizard() {
       owner_action_window_hours: parseInt(formData.owner_action_window_hours.toString(), 10),
       overdue_advance_refund_pct: parseFloat(formData.overdue_advance_refund_pct.toString()),
       min_price_pct: parseFloat(formData.min_price_pct.toString()),
-      max_price_pct: parseFloat(formData.max_price_pct.toString())
+      max_price_pct: parseFloat(formData.max_price_pct.toString()),
+      booking_mode: formData.booking_mode
     }
 
     if (selectedAmenities.length > 0) {
@@ -711,8 +714,28 @@ export default function CreateVenueWizard() {
             </div>
 
             <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+              <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Booking Mode</h4>
+              <div className="flex gap-6 mt-2">
+                <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
+                  <input type="radio" name="booking_mode" value="MANUAL" checked={formData.booking_mode === 'MANUAL'} onChange={handleChange} className="mt-1 text-brand focus:ring-brand w-4 h-4" />
+                  <div>
+                    <span className="block text-sm font-bold text-zinc-900 dark:text-zinc-100">Request to Book (Manual)</span>
+                    <span className="block text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">You must manually review and Accept/Reject each booking request.</span>
+                  </div>
+                </label>
+                <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
+                  <input type="radio" name="booking_mode" value="INSTANT" checked={formData.booking_mode === 'INSTANT'} onChange={handleChange} className="mt-1 text-brand focus:ring-brand w-4 h-4" />
+                  <div>
+                    <span className="block text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">Instant Booking <span className="px-1.5 py-0.5 bg-brand-100 text-brand-700 text-[10px] uppercase rounded font-bold tracking-wider">Recommended</span></span>
+                    <span className="block text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Customers can instantly secure dates. No manual approval required.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
               <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Approval Settings</h4>
-              <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} required value={formData.owner_action_window_hours} onChange={handleChange} helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
+              <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} required={formData.booking_mode === 'MANUAL'} disabled={formData.booking_mode === 'INSTANT'} value={formData.owner_action_window_hours} onChange={handleChange} helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
             </div>
           </div>
         )}
