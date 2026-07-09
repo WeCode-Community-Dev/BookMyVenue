@@ -290,11 +290,19 @@ def confirm_balance_payment(db: Session, payment: Payment, booking: Booking) -> 
     ))
 
     venue_name = venue.name if venue else "your venue"
+    # skip_email=True: the customer gets one combined "balance paid + updated
+    # invoice" email from app.modules.booking.invoice once the async job
+    # regenerates the PDF, instead of this immediate email plus a second one
+    # later. The in-app notification still fires immediately either way.
     notifications.notify(db, booking.user_id, "balance_paid",
-                         context={"venue_name": venue_name}, booking_id=booking.id)
+                         context={"venue_name": venue_name}, booking_id=booking.id,
+                         skip_email=True)
     if venue:
         notifications.notify(db, venue.owner_id, "balance_paid",
                              context={"venue_name": venue_name}, booking_id=booking.id)
+
+    from app.modules.booking.invoice import enqueue as enqueue_invoice
+    enqueue_invoice(db, booking.id)
 
 
 def fail_payment(db: Session, payment_intent_id: str) -> None:

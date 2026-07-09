@@ -257,19 +257,38 @@ def render_password_reset_email(action_link: str) -> tuple[str, str]:
     return subject, html
 
 
-def render_booking_invoice_email(customer_name: str | None, venue_name: str, pdf_url: str) -> tuple[str, str]:
-    """The customer's single booking-confirmed email — deliberately held back
-    by confirm_payment (notify(..., skip_email=True)) and sent from here once
-    the invoice PDF exists, so the customer gets one email with the invoice
-    attached rather than a confirmation email followed by a separate one.
+def render_booking_invoice_email(
+    customer_name: str | None, venue_name: str, pdf_url: str, fully_paid: bool = False,
+) -> tuple[str, str]:
+    """The customer's combined confirmation/payment email — deliberately held
+    back by confirm_payment / confirm_balance_payment (notify(...,
+    skip_email=True)) and sent from here once the (re)generated invoice PDF
+    exists, so the customer gets one email with the invoice attached rather
+    than a status email followed by a separate invoice email.
+
+    fully_paid=True is the balance-settlement case: the invoice was
+    regenerated to reflect the booking going from advance_paid to
+    fully_paid, so the copy reflects "fully paid" rather than "confirmed".
     """
-    subject = f"Booking confirmed — your Venue404 invoice for {venue_name}"
-    html = _email_layout(
-        title="Your booking is confirmed",
-        body_html=(
+    if fully_paid:
+        subject = f"Balance paid — your updated Venue404 invoice for {venue_name}"
+        title = "Your booking is fully paid"
+        body_html = (
+            f"<p>{customer_name or 'Hi'}, we've received your balance payment for "
+            f"<strong>{venue_name}</strong> — your booking is now fully paid. "
+            "Here's your updated invoice.</p>"
+        )
+    else:
+        subject = f"Booking confirmed — your Venue404 invoice for {venue_name}"
+        title = "Your booking is confirmed"
+        body_html = (
             f"<p>{customer_name or 'Hi'}, your booking for <strong>{venue_name}</strong> is "
             "confirmed. We look forward to your event!</p>"
-        ),
+        )
+
+    html = _email_layout(
+        title=title,
+        body_html=body_html,
         cta_text="Download your invoice",
         cta_url=pdf_url,
     )

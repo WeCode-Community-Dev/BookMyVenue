@@ -38,8 +38,13 @@ def enqueue(db: Session, booking_id: uuid.UUID) -> None:
     """Insert a pending invoice job and try to push to Upstash (fire-and-forget).
 
     Safe to call from inside confirm_payment's locked transaction — this is
-    just a row insert, no PDF/network work happens here. If a job already
-    exists for this booking (unique constraint), that's a no-op.
+    just a row insert/update, no PDF/network work happens here.
+
+    Callable more than once per booking (unique constraint on booking_id) —
+    e.g. once at advance confirmation, again when the balance is paid off so
+    the invoice reflects the fully-paid state. A re-call resets an existing
+    row back to "pending" (clearing any prior pdf_url/error) rather than
+    being a no-op, so process() regenerates it.
     """
     invoice = BookingInvoice(booking_id=booking_id)
     db.add(invoice)
@@ -47,7 +52,12 @@ def enqueue(db: Session, booking_id: uuid.UUID) -> None:
         db.flush()
     except IntegrityError:
         db.rollback()
-        return
+        invoice = db.query(BookingInvoice).filter(BookingInvoice.booking_id == booking_id).first()
+        if not invoice or invoice.status in ("pending", "processing"):
+            return  # already queued/in flight — nothing to do
+        invoice.status = "pending"
+        invoice.error_message = None
+        db.flush()
 
     try:
         if redis_client.is_configured():
@@ -110,9 +120,15 @@ def process(db: Session, invoice_id: uuid.UUID | str) -> None:
 
 
 def _send_invoice_email(db: Session, booking, pdf_url: str) -> None:
-    """The single 'booking confirmed' email to the customer — held back by
-    confirm_payment (notify(..., skip_email=True)) specifically so it can be
-    sent once, combined with the invoice, instead of as two separate emails.
+    """The single combined status+invoice email to the customer — held back
+    by confirm_payment / confirm_balance_payment (notify(..., skip_email=True))
+    specifically so it can be sent once per trigger, combined with the
+    invoice, instead of as two separate emails.
+
+    Whether this is the initial confirmation or a balance-settlement
+    regeneration is read off the booking's current payment_status (fully
+    committed by the time this runs) rather than passed in — process() is
+    triggered generically by an invoice_id, it doesn't know why.
     """
     customer = booking.user
     if not customer or not customer.email:
@@ -122,21 +138,26 @@ def _send_invoice_email(db: Session, booking, pdf_url: str) -> None:
     from app.modules.notification.models import InAppNotification
     from app.modules.notification.templates import render_booking_invoice_email
 
+    fully_paid = booking.payment_status.value == "fully_paid" if booking.payment_status else False
+    source_type = "balance_paid" if fully_paid else "payment_confirmed"
+
     venue_name = booking.venue.name if booking.venue else "your venue"
-    subject, html = render_booking_invoice_email(customer.full_name, venue_name, pdf_url)
+    subject, html = render_booking_invoice_email(customer.full_name, venue_name, pdf_url, fully_paid=fully_paid)
     if not send_email(customer.email, subject, html):
         return
 
     # Best-effort bookkeeping: stamp sent_at on the in-app notification that
-    # confirm_payment wrote without an email, so it doesn't look un-sent.
+    # confirm_payment/confirm_balance_payment wrote without an email, so it
+    # doesn't look un-sent.
     row = (
         db.query(InAppNotification)
         .filter(
             InAppNotification.booking_id == booking.id,
             InAppNotification.user_id == booking.user_id,
-            InAppNotification.type == "payment_confirmed",
+            InAppNotification.type == source_type,
             InAppNotification.sent_at.is_(None),
         )
+        .order_by(InAppNotification.created_at.desc())
         .first()
     )
     if row:
