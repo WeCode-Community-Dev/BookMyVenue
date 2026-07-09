@@ -166,4 +166,54 @@ export class VenueService {
       return createdVenue;
     });
   }
+
+  async getAllVenues() {
+    return await this.prismaService.venue.findMany({
+      include: {
+        categories: true,
+        amenities: {
+          include: {
+            amenity: true,
+          },
+        },
+        images: true,
+        slotTemplates: {
+          include: {
+            pricingTiers: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async getVenueById(id: string) {
+    const venue = await this.prismaService.venue.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        categories: true,
+        amenities: {
+          include: {
+            amenity: true,
+          },
+        },
+        images: true,
+        slotTemplates: {
+          include: {
+            pricingTiers: true,
+          },
+        },
+      },
+    });
+
+    if (!venue) {
+      throw new BadRequestException('Venue not found.');
+    }
+
+    return venue;
+  }
 }
