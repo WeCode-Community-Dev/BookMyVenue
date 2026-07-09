@@ -3,5 +3,5 @@ dist
 dist-ssr
 *.local
 .DS_Store
-DESIGN_DECISIONS.md
+
 
