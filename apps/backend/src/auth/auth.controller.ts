@@ -5,7 +5,6 @@ import {
   Post,
   Req,
   Res,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import { RequestOtpDto } from './dto/request-otp.dto';
@@ -32,11 +31,18 @@ export class AuthController {
 
     const result = await this.authService.verifyOtp(dto);
 
-    res.cookie('access_token', result.token, {
+    res.cookie('access_token', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.cookie('refresh_token', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     return {
@@ -48,7 +54,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('myprofile')
-  getMyProfile(@Request() req: AuthRequest) {
+  getMyProfile(@Req() req: AuthRequest) {
     return this.authService.getMyProfile(req.user);
   }
 
@@ -65,17 +71,49 @@ export class AuthController {
   ) {
     const result = await this.authService.googleLogin(req.user);
 
-  res.cookie('access_token', result.token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  });
+    res.cookie('access_token', result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie('refresh_token', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
 
-  return {
-    message: result.message,
-    user: result.user,
-  };
+    return {
+      message: result.message,
+      user: result.user,
+    };
   }
+
+  @Post('refresh')
+  async refresh(
+    @Req() req,
+    @Res({ passthrough: true }) res: Response,
+)   {
+  
+    const accessToken =
+      await this.authService.refresh(
+        req.cookies.refresh_token,
+      );
+    
+    
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000,
+    });
+  
+    return {
+      message: 'Access token refreshed',
+    };
 }
+}
+
