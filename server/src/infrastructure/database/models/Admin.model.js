@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-import UserRole from "../../../domain/enums/userRole.js";
+import { UserRole } from "../../../domain/enums/UserRole.enum.js";
+
 
 const adminSchema = new mongoose.Schema(
     {
@@ -15,7 +16,10 @@ const adminSchema = new mongoose.Schema(
         password: {
             type: String,
             required: true,
-            select: false
+        },
+        refreshToken: {
+            type: [String],
+            default: []
         },
         role: {
             type: String,

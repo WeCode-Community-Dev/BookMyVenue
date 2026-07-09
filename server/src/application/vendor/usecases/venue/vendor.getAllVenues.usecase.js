@@ -1,18 +1,20 @@
+import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.js"
+import { authMessages } from "../../../../shared/constants/messages/authMessages.js"
 
 export class VendorGetAllVenuesUsecase {
     constructor (
         venueRepository,
-        // ownerRepository
+        vendorRepository
     ) {
         this._venueRepository = venueRepository
-        // this._ownerRepository = ownerRepository
+        this._vendorRepository = vendorRepository
     }
 
     async execute(vendorId, page, limit, category, status, search) {
-        // const owner = await this._ownerRepository.findById(vendorId)
-        // if(!owner){
-        //     throw new AppError(authMessages.error.VENDOR_NOT_FOUND, statusCode.NOT_FOUND)
-        // }
+        const vendor = await this._vendorRepository.findById(vendorId)
+        if(!vendor){
+            throw new UnauthorizedError(authMessages.error.VENDOR_NOT_FOUND)
+        }
         const { data, totalPages, totalCount } = await this._venueRepository.findAllFiltered({vendorId, search, category, status, page, limit})
 
         return {

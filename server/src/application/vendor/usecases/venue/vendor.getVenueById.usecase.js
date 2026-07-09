@@ -1,21 +1,23 @@
 import { VenueMessages } from '../../../../shared/constants/messages/venueMessages.js'
 import { NotFoundError } from '../../../../domain/errors/NotFoundError.js'
+import { UnauthorizedError } from '../../../../domain/errors/UnauthorizedError.js'
+import { authMessages } from '../../../../shared/constants/messages/authMessages.js'
 
 
 export class VendorGetVenueByIdUsecase {
     constructor (
         venueRepository,
-        // ownerRepository
+        vendorRepository
     ) {
         this._venueRepository = venueRepository
-        // this._ownerRepository = ownerRepository
+        this._vendorRepository = vendorRepository
     }
 
     async execute(vendorId, venueId) {
-        // const owner = await this._ownerRepository.findById(vendorId)
-        // if(!owner){
-        //     throw new AppError(authMessages.error.VENDOR_NOT_FOUND, statusCode.NOT_FOUND)
-        // }
+        const vendor = await this._vendorRepository.findById(vendorId)
+        if(!vendor){
+            throw new UnauthorizedError(authMessages.error.VENDOR_NOT_FOUND)
+        }
 
         const venue = await this._venueRepository.findById(venueId)
         if(!venue){

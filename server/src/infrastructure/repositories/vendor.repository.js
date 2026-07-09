@@ -24,13 +24,43 @@ class VendorRepositoryImpl extends IVendorRepository {
     async findAllFiltered(query = {}) {
         const filter = {};
 
-        if (query.search) {
-            filter.$or = [{ name: { $regex: query.search, $options: "i" } }];
-        }
+            // Search
+    if (query.search) {
+        filter.$or = [
+            {
+                fullName: {
+                    $regex: query.search,
+                    $options: "i",
+                },
+            },
+            {
+                email: {
+                    $regex: query.search,
+                    $options: "i",
+                },
+            },
+            {
+                companyName: {
+                    $regex: query.search,
+                    $options: "i",
+                },
+            },
+        ];
+    }
 
-        if (query.status) {
-            filter.approvalStatus = query.status;
-        }
+    // Approval Status
+    if (query.status) {
+        filter.approvalStatus = query.status;
+    }
+
+    // Block / Unblock Filter
+    if (query.isBlocked !== undefined) {
+        filter.isBlocked =
+            query.isBlocked === true ||
+            query.isBlocked === "true";
+    }
+            console.log("Query:", query);
+            console.log("Filter:", filter);
 
         const skip = query.limit * (query.page - 1);
         const totalCount = await VendorModel.countDocuments(filter);
@@ -45,6 +75,22 @@ class VendorRepositoryImpl extends IVendorRepository {
             totalCount,
             totalPages
         };
+    }
+
+    async verifyOtp(vendorId) {
+        const document = await VendorModel.findByIdAndUpdate(
+            vendorId,
+            {
+                isVerified: true,
+            },
+            {
+                new: true
+            }
+        );
+
+        if (!document) return null;
+
+        return VendorMapper.mapToEntity(document);
     }
 
     async approveVendor(vendorId) {
@@ -101,8 +147,15 @@ class VendorRepositoryImpl extends IVendorRepository {
     }
 
     async findByEmail(email) {
-        const doc = VendorModel.findOne({ email, isDeleted: false });
-        return doc ? VendorMapper.mapToEntity(doc) : null;
+        const doc = await VendorModel.findOne({ 
+            email, 
+            isDeleted: {$ne: true}
+        });
+        if(!doc){
+            return null
+        }
+
+        return VendorMapper.mapToEntity(doc)
     }
 
     async findByPhone(phone) {
@@ -124,6 +177,14 @@ class VendorRepositoryImpl extends IVendorRepository {
         );
         if (!doc) return null;
         return VendorMapper.mapToEntity(doc);
+    }
+
+    async clearRefreshToken(token) {
+        await VendorModel.findByOneAndUpdate(
+            {refreshToken: token},
+            { $pull: {refreshToken: token } },
+            { new: true }
+        );
     }
 }
 

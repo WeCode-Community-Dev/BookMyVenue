@@ -2,23 +2,25 @@ import { VenueMessages } from '../../../../shared/constants/messages/venueMessag
 import { ConflictError } from '../../../../domain/errors/ConflictError.js'
 import { NotFoundError } from '../../../../domain/errors/NotFoundError.js'
 import { ForbiddenError } from '../../../../domain/errors/forbidden.error.js'
+import { UnauthorizedError } from '../../../../domain/errors/UnauthorizedError.js'
+import { authMessages } from '../../../../shared/constants/messages/authMessages.js'
 
 
 
 export class VendorUpdateVenueStatusUsecase {
     constructor (
         venueRepository,
-        // ownerRepository
+        vendorRepository
     ) {
         this._venueRepository = venueRepository
-        // this._ownerRepository = ownerRepository
+        this._vendorRepository = vendorRepository
     }
 
     async execute({vendorId, venueId, status}) {
-        // const owner = await this._ownerRepository.findById(vendorId)
-        // if(!owner){
-        //     throw new AppError(authMessages.error.VENDOR_NOT_FOUND, statusCode.NOT_FOUND)
-        // }
+        const vendor = await this._vendorRepository.findById(vendorId)
+        if(!vendor){
+            throw new UnauthorizedError(authMessages.error.VENDOR_NOT_FOUND)
+        }
         const venue = await this._venueRepository.findById(venueId)
         if(!venue){
             throw new NotFoundError(VenueMessages.error.VENUE_NOT_FOUND)
