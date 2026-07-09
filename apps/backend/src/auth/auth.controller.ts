@@ -93,27 +93,27 @@ export class AuthController {
   }
 
   @Post('refresh')
-async refresh(
-  @Req() req,
-  @Res({ passthrough: true }) res: Response,
-) {
-
-  const accessToken =
-    await this.authService.refresh(
-      req.cookies.refresh_token,
-    );
-
-
-  res.cookie('access_token', accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 15 * 60 * 1000,
-  });
-
-  return {
-    message: 'Access token refreshed',
-  };
+  async refresh(
+    @Req() req,
+    @Res({ passthrough: true }) res: Response,
+)   {
+  
+    const accessToken =
+      await this.authService.refresh(
+        req.cookies.refresh_token,
+      );
+    
+    
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000,
+    });
+  
+    return {
+      message: 'Access token refreshed',
+    };
 }
 }
 
