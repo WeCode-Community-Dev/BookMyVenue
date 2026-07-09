@@ -5,6 +5,7 @@ import { createClient, venueEndpoints } from '@venue404/api-client'
 import { useLikes } from '../lib/useLikes'
 import { useAuth } from '../lib/AuthContext'
 import { useAuthModal } from '../lib/AuthModalContext'
+import { useEligibleBookings } from '../hooks/useReviews'
 import { toUtcIso } from '../utils'
 
 import { AppNavbar }                from '../components/shared/AppNavbar'
@@ -357,6 +358,7 @@ function VenueActions({ venueId }: { venueId: string }) {
 
 function VenueContent({ venue }: { venue: VenueResponse }) {
   const b = useVenueBooking(venue)
+  const { eligibleBookingIds } = useEligibleBookings(venue.id)
   const isInstantBooking = venue.booking_mode === 'INSTANT'
 
     const [, setScrollTrigger] = useState(0)
@@ -376,7 +378,7 @@ function VenueContent({ venue }: { venue: VenueResponse }) {
       {/* ── Two-column body
           KEY: NO `items-start` here. Default flex is `items-stretch`, which
           makes the right column div as tall as the left column. That lets
-          the inner `sticky` element scroll properly through the full page. ── */}
+          the inner `sticky` element scroll through the whole page. ── */}
       <div className="mt-10 flex flex-col gap-10 lg:flex-row lg:gap-16 xl:gap-20">
         {/* ════ LEFT ══════════════════════════════════════════ */}
         <div className="flex-1 min-w-0">
@@ -406,7 +408,7 @@ function VenueContent({ venue }: { venue: VenueResponse }) {
           </div>
           <Divider />
 
-          <VenueReviews />
+          <VenueReviews venueId={venue.id} userEligibleBookingIds={eligibleBookingIds} />
           <Divider />
 
           <VenueWhereYoullBe venue={venue} />
