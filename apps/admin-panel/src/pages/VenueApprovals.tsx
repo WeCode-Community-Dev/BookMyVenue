@@ -610,6 +610,7 @@ function VenueCard({ venue, onApprove, onReject, onSuspend, onReactivate }: Venu
             <img
               src={venue.cover_photo_url}
               alt={venue.name}
+              loading="lazy"
               className="h-full w-full object-cover"
               onError={() => setImgError(true)}
             />

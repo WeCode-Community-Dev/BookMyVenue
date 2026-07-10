@@ -1,23 +1,25 @@
+import { lazy } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import Landing from './pages/Landing'
-import Search from './pages/Search'
-import VenueDetails from './pages/VenueDetails'
-import MyBookings from './pages/MyBookings'
-import Login from './pages/Login'
-import LoginSuccess from './pages/LoginSuccess'
-import Register from './pages/Register'
-import RegisterSuccess from './pages/RegisterSuccess'
-import ForgotPassword from './pages/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
-import Checkout from './pages/Checkout'
-import BookingDetails from './pages/BookingDetails'
-import Payment from './pages/Payment'
-import Profile from './pages/Profile'
-import Notifications from './pages/Notifications'
-import PaymentResult from './pages/PaymentResult'
-import DeepResearch from './pages/DeepResearch'
-import SavedVenues from './pages/SavedVenues'
+
+const Landing = lazy(() => import('./pages/Landing'))
+const Search = lazy(() => import('./pages/Search'))
+const VenueDetails = lazy(() => import('./pages/VenueDetails'))
+const MyBookings = lazy(() => import('./pages/MyBookings'))
+const Login = lazy(() => import('./pages/Login'))
+const LoginSuccess = lazy(() => import('./pages/LoginSuccess'))
+const Register = lazy(() => import('./pages/Register'))
+const RegisterSuccess = lazy(() => import('./pages/RegisterSuccess'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
+const Checkout = lazy(() => import('./pages/Checkout'))
+const BookingDetails = lazy(() => import('./pages/BookingDetails'))
+const Payment = lazy(() => import('./pages/Payment'))
+const Profile = lazy(() => import('./pages/Profile'))
+const Notifications = lazy(() => import('./pages/Notifications'))
+const PaymentResult = lazy(() => import('./pages/PaymentResult'))
+const DeepResearch = lazy(() => import('./pages/DeepResearch'))
+const SavedVenues = lazy(() => import('./pages/SavedVenues'))
 
 export const router = createBrowserRouter([
   // public routes
@@ -108,4 +110,3 @@ export const router = createBrowserRouter([
   // 403 fallback
   { path: '/403', element: <div>Access denied.</div> },
 ])
-

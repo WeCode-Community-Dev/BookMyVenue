@@ -535,7 +535,7 @@ function ReservationDetailModal({ reservation: r, onClose }: { reservation: Exte
               <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">External venue (unregistered)</p>
               <div className="flex items-center gap-3">
                 {r.lead_cover_photo_url ? (
-                  <img src={r.lead_cover_photo_url} alt={r.lead_name} className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+                  <img src={r.lead_cover_photo_url} alt={r.lead_name} loading="lazy" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
                 ) : (
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-zinc-200 text-zinc-500">
                     <MapPin className="h-5 w-5" />

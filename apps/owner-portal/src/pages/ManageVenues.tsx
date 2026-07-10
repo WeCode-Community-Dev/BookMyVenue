@@ -145,6 +145,7 @@ export default function ManageVenues() {
                     <img
                       src={coverPhoto}
                       alt={venue.name}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500 ease-out"
                     />
                   ) : (

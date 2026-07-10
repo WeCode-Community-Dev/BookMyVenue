@@ -113,7 +113,7 @@ function BookingSummaryCard({ state, guestCount }: { state: CheckoutState; guest
       {/* Venue image (unchanged) */}
       <div className="relative h-48 bg-zinc-100 dark:bg-ink-800">
         {venueCoverImage ? (
-          <img src={venueCoverImage} alt={venueName} className="h-full w-full object-cover" />
+          <img src={venueCoverImage} alt={venueName} loading="lazy" className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <svg
