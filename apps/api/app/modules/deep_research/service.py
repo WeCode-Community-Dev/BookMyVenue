@@ -11,6 +11,7 @@ concurrent (asyncio.gather), so total wait time ≈ 1× upload rather than N×.
 import asyncio
 import logging
 import math
+from datetime import UTC
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -96,6 +97,7 @@ async def _upload_photo_to_cloudinary(
     """
     import cloudinary
     import cloudinary.uploader
+
     from app.core.config import settings
 
     if not photos:
@@ -145,10 +147,11 @@ async def run_external_discovery(
     6. Returns the list of ExternalLeadPublic immediately.
     """
     import cloudinary
+    from sqlalchemy import func
+
     from app.core.config import settings
     from app.modules.deep_research.external_source import external_source
     from app.modules.venue.models import Venue
-    from sqlalchemy import func
 
     # ── 1. Audit row ──────────────────────────────────────────────────────────
     ctx = ExternalDiscoveryRequest(
@@ -169,9 +172,9 @@ async def run_external_discovery(
         if query_row.understanding_json
         else QueryUnderstanding(intent="", city=query_row.city_filter)
     )
-    # For external discovery, we must include the city in the text query 
+    # For external discovery, we must include the city in the text query
     # since Google Places uses it alongside the location bias.
-    query_text = build_internal_search_query(query_row.query_text, breakdown)
+    query_text = query_row.query_text
     if breakdown.city and breakdown.city.lower() not in query_text.lower():
         query_text = f"{query_text} in {breakdown.city}"
 
@@ -304,6 +307,7 @@ def reserve_lead(
     notes=None,
 ) -> LeadReservation:
     import httpx
+
     from app.core.config import settings
     from app.modules.deep_research.external_source import DETAILS_FIELD_MASK, PLACES_DETAILS_URL
 
@@ -413,6 +417,7 @@ def list_external_reservations(
     db: Session, status: str | None, page: int, page_size: int
 ) -> dict:
     from sqlalchemy.orm import joinedload
+
     from app.modules.profile.models import Profile
 
     query = (
@@ -547,7 +552,7 @@ def invite_owner_for_reservation(
     phone: str | None,
     category_id: UUID | None = None,
 ) -> tuple[LeadReservation, str]:
-    from datetime import datetime, time, timezone
+    from datetime import datetime, time
 
     from app.core.exceptions import ConflictError
     from app.modules.admin.models import AdminAction
@@ -612,7 +617,7 @@ def invite_owner_for_reservation(
 
     reservation.owner_id = provider_user.id
     reservation.venue_id = venue.id
-    reservation.owner_invited_at = datetime.now(timezone.utc)
+    reservation.owner_invited_at = datetime.now(UTC)
     reservation.status = LeadReservationStatus.OWNER_INVITED
 
     db.add(AdminAction(
@@ -638,7 +643,7 @@ def invite_owner_for_reservation(
 
 
 def create_booking_for_reservation(db: Session, *, admin_id: UUID, reservation_id: UUID):
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
     from zoneinfo import ZoneInfo
 
     from app.core.exceptions import ConflictError
@@ -689,7 +694,7 @@ def create_booking_for_reservation(db: Session, *, admin_id: UUID, reservation_i
     )
 
     reservation.booking_id = booking.id
-    reservation.booking_created_at = datetime.now(timezone.utc)
+    reservation.booking_created_at = datetime.now(UTC)
     reservation.status = LeadReservationStatus.BOOKING_CREATED
 
     db.add(AdminAction(
