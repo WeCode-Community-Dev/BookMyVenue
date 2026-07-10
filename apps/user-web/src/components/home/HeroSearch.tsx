@@ -199,7 +199,7 @@ function HeroFull({
             onSubmit={onSubmit}
             className="mx-auto mt-9 flex h-14 max-w-2xl items-stretch overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl shadow-zinc-200/60 transition-shadow focus-within:border-brand/40 focus-within:shadow-brand/10 dark:border-ink-700 dark:bg-ink-900 dark:shadow-none"
           >
-            <div className="flex items-center gap-3 px-5 py-3.5 sm:flex-1 sm:py-0">
+            <div className="flex flex-1 items-center gap-3 px-5 py-3.5 sm:py-0">
               <svg
                 className="h-4 w-4 shrink-0 text-zinc-400"
                 fill="none"
