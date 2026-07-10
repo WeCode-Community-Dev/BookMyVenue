@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="loginForm">
+        <input type="email" id="email">
+        <input type="password" id="password">
+        <button type="submit">Login</button>
+    </form>
+
+    <script>
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const response = await fetch("/api/v1/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: document.getElementById("email").value,
+                password: document.getElementById("password").value
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            localStorage.setItem("role", data.data)
+
+            redirectByRole(data.data)
+        }
+        else {
+            alert(data.message)
+        }
+
+        function redirectByRole(role) {
+            if (role === "admin") {
+                window.location.href = "/admin"
+            }
+            else if (role == "owner") {
+                window.location.href = "/owner"
+            } 
+            else {
+                window.location.href = "/user"
+            }
+        }
+    });
+    </script>
+</body>
+</html>

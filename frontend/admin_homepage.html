@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        const role = localStorage.getItem("role")
+
+        if (role !== "admin") {
+            window.location.href = "/login"
+        }
+    </script>
+    <title>Admin Home Page</title>
+</head>
+<body>
+    <h1>Admin Home Page</h1>
+    <table border="1">
+        <tr>
+            <td><a href="/admin/viewPendingVenuesPage">View Pending Venues</a></td>
+        </tr>
+        <tr>
+            <td><a href="/admin/viewApprovedVenues">View Approved Venues</a></td>
+        </tr>
+        <tr>
+            <td><a href="/admin/viewRejectedVenues">View Rejected Venues</a></td>
+        </tr>
+    </table>
+</body>
+</html>

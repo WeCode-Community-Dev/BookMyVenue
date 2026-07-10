@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        const role = localStorage.getItem("role")
+
+        if (role !== "owner") {
+            window.location.href = "/login"
+        }
+    </script>
+    <title>Venue Owner Home</title>
+</head>
+<body>
+    <h1>Venue Owner Home</h1>
+    <table border="1">
+        <tr>
+            <th><a href="/addVenue">Add Venue</a></th>
+        </tr>
+        <tr>
+            <th><a href="/viewApprovedVenues">View Approved Venues</a></th>
+        </tr>
+        <tr>
+            <th><a href="/viewRejectedVenues">View Rejected Venues</a></th>
+        </tr>
+        <tr>
+            <th><a href="/viewPendingVenues">View Pending Venues</a></th>
+        </tr>
+    </table>
+</body>
+</html>

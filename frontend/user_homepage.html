@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        const role = localStorage.getItem("role")
+
+        if (role !== "user") {
+            window.location.href = "/login"
+        }
+    </script>
+    <title>User Home</title>
+</head>
+<body>
+    <h1>User Home</h1>
+    <table border="1">
+        <tr>
+            <td><a href="/user/viewVenues">View Venues</a></td>
+        </tr>
+        <tr>
+            <td><a href="/user/viewBookedVenues">View Booked Venues</a></td>
+        </tr>
+    </table>
+</body>
+</html>

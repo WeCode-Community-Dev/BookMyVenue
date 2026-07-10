@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS venue_amenities CASCADE;
+DROP TABLE IF EXISTS amenities CASCADE;

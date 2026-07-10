@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS venues;
+DROP TYPE IF EXISTS venue_status;
