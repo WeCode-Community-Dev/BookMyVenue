@@ -6,9 +6,10 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from './providers/prisma/prisma.module';
 import { RedisModule } from './providers/redis/redis.module';
 import { VenueModule } from './venue/venue.module';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule, MailModule, AuthModule, VenueModule],
+  imports: [PrismaModule, RedisModule, MailModule, AuthModule, VenueModule, BookingModule],
   controllers: [AppController],
   providers: [AppService],
 })

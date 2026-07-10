@@ -16,10 +16,9 @@ import type { GoogleAuthRequest } from 'src/types/google-auth.request.interface'
 import { AuthGuard } from '@nestjs/passport';
 import type { Response } from 'express';
 
-
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('otp/request')
   requestOtp(@Body() dto: RequestOtpDto) {
@@ -27,8 +26,10 @@ export class AuthController {
   }
 
   @Post('otp/verify')
-  async verifyOtp(@Body() dto: VerifyOtpDto, @Res({ passthrough: true }) res: Response) {
-
+  async verifyOtp(
+    @Body() dto: VerifyOtpDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const result = await this.authService.verifyOtp(dto);
 
     res.cookie('access_token', result.accessToken, {
@@ -49,7 +50,6 @@ export class AuthController {
       message: result.message,
       user: result.user,
     };
-
   }
 
   @UseGuards(JwtAuthGuard)
@@ -66,8 +66,9 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleCallback(@Req() req: GoogleAuthRequest,
-    @Res({ passthrough: true }) res: Response
+  async googleCallback(
+    @Req() req: GoogleAuthRequest,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.googleLogin(req.user);
 
@@ -85,7 +86,6 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-
     return {
       message: result.message,
       user: result.user,
@@ -93,27 +93,20 @@ export class AuthController {
   }
 
   @Post('refresh')
-  async refresh(
-    @Req() req,
-    @Res({ passthrough: true }) res: Response,
-)   {
-  
-    const accessToken =
-      await this.authService.refresh(
-        req.cookies.refresh_token,
-      );
-    
-    
+  async refresh(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const accessToken = await this.authService.refresh(
+      req.cookies.refresh_token,
+    );
+
     res.cookie('access_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 15 * 60 * 1000,
     });
-  
+
     return {
       message: 'Access token refreshed',
     };
+  }
 }
-}
-
