@@ -11,6 +11,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
+    Index,
     Integer,
     Numeric,
     String,
@@ -75,6 +76,8 @@ class Booking(Base):
             "advance_due_paise + balance_due_paise = quoted_price_paise",
             name="ck_bookings_price_split",
         ),
+        Index("idx_bookings_venue_id", "venue_id"),
+        Index("idx_bookings_user_id", "user_id"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(

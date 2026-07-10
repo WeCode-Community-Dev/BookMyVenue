@@ -250,6 +250,7 @@ class Venue(Base):
             "is_active",
             postgresql_where=text("deleted_at IS NULL"),
         ),
+        Index("idx_venues_owner_id", "owner_id"),
     )
 
     bookings = relationship(

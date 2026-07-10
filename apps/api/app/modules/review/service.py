@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import desc
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.exceptions import APIException
 from app.modules.booking.models import Booking, BookingStatus
@@ -179,6 +179,7 @@ class ReviewService:
         """
         query = (
             db.query(VenueReview)
+            .options(joinedload(VenueReview.author))
             .filter(
                 VenueReview.venue_id == venue_id,
                 VenueReview.deleted_at.is_(None),
@@ -223,14 +224,18 @@ class ReviewService:
             .all()
         )
 
-        # Filter out bookings that already have reviews
-        booking_ids = []
-        for (booking_id,) in eligible_bookings:
-            has_review = db.query(VenueReview).filter(
-                VenueReview.booking_id == booking_id
-            ).first()
-            if not has_review:
-                booking_ids.append(str(booking_id))
+        # Filter out bookings that already have reviews (single batched query)
+        candidate_ids = [booking_id for (booking_id,) in eligible_bookings]
+        reviewed_ids = set()
+        if candidate_ids:
+            reviewed_ids = {
+                row.booking_id
+                for row in db.query(VenueReview.booking_id).filter(
+                    VenueReview.booking_id.in_(candidate_ids)
+                )
+            }
+
+        booking_ids = [str(bid) for bid in candidate_ids if bid not in reviewed_ids]
 
         return EligibleBookingsResponse(booking_ids=booking_ids)
 
@@ -252,7 +257,7 @@ class ReviewService:
         """
         List all reviews with optional filters (admin only).
         """
-        query = db.query(VenueReview)
+        query = db.query(VenueReview).options(joinedload(VenueReview.author))
 
         if venue_id:
             query = query.filter(VenueReview.venue_id == venue_id)

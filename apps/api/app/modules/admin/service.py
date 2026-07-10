@@ -8,7 +8,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import case, cast, func, text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, contains_eager, joinedload
 
 from app.core.config import settings
 from app.core.database import SessionLocal
@@ -1352,6 +1352,7 @@ def list_admin_bookings(
         db.query(Booking)
         .join(Venue, Venue.id == Booking.venue_id)
         .join(Profile, Profile.id == Booking.user_id)
+        .options(contains_eager(Booking.venue), contains_eager(Booking.user))
         .filter(Booking.deleted_at.is_(None))
     )
 
