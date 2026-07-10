@@ -8,11 +8,13 @@ Business rules under test (from CLAUDE.md):
 - Only one confirmed booking can exist per slot
 - After acceptance, NEW requests for the same slot are rejected (slot is blocking)
 """
+
 from app.modules.booking.models import Booking, BookingStatus
 from app.modules.booking.state_machine import can_transition
 from tests.conftest import create_booking, seed_approved_venue, seed_user
 
 # ── State machine (unit) ──────────────────────────────────────────────────────
+
 
 def test_requested_can_transition_to_conflict_cancelled():
     assert can_transition(BookingStatus.requested, BookingStatus.conflict_cancelled) is True
@@ -29,6 +31,7 @@ def test_hold_expired_is_terminal():
 
 
 # ── Multiple requests for same slot (integration) ─────────────────────────────
+
 
 def test_two_customers_can_request_same_slot(client, db, category_id):
     owner_id, _ = seed_user(db, "venue_owner")

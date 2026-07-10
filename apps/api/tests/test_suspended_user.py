@@ -4,6 +4,7 @@ Suspended user access tests.
 Business rule: a suspended user must be denied access to every protected route
 even when they hold a valid JWT.
 """
+
 from uuid import uuid4
 
 from app.modules.profile.models import ProfileStatus, UserRole, UserRoleAssignment

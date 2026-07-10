@@ -31,6 +31,7 @@ from app.modules.venue.models import Venue, VenueCategory, VenueStatus  # noqa: 
 
 # ── Session-scoped: seed one category for the whole run ──────────────────────
 
+
 @pytest.fixture(scope="session")
 def category_id() -> UUID:
     db = SessionLocal()
@@ -48,6 +49,7 @@ def category_id() -> UUID:
 
 # ── Function-scoped: fresh DB state per test ─────────────────────────────────
 
+
 @pytest.fixture
 def db() -> Session:
     session = SessionLocal()
@@ -64,6 +66,7 @@ def client() -> TestClient:
 
 
 # ── Helpers (plain functions, not fixtures) ───────────────────────────────────
+
 
 def make_token(user_id: UUID, email: str) -> str:
     now = int(time.time())
@@ -151,35 +154,37 @@ def create_booking(client, token: str, venue_id: UUID, booking_date: date | None
 def seed_approved_venue(db: Session, owner_id: UUID, category_id: UUID) -> UUID:
     """Insert a fully approved, active venue ready to accept bookings."""
     venue_id = uuid4()
-    db.add(Venue(
-        id=venue_id,
-        owner_id=owner_id,
-        category_id=category_id,
-        name="Test Venue",
-        slug=f"test-venue-{venue_id.hex[:6]}",
-        address_line1="123 Test St",
-        city="Mumbai",
-        state="Maharashtra",
-        country="India",
-        timezone="Asia/Kolkata",
-        max_capacity=100,
-        open_time=dt_time(9, 0),
-        close_time=dt_time(21, 0),
-        allowed_booking_types=["full_day"],
-        min_booking_duration_minutes=60,
-        max_booking_duration_minutes=1440,
-        slot_interval_minutes=30,
-        pre_buffer_minutes=0,
-        post_buffer_minutes=0,
-        pricing_mode="flat",
-        starting_price_paise=1_000_000,
-        platform_commission_pct=10,
-        advance_pct=30,
-        balance_due_days_before_event=7,
-        owner_action_window_hours=48,
-        overdue_advance_refund_pct=0,
-        status=VenueStatus.approved,
-        is_active=True,
-    ))
+    db.add(
+        Venue(
+            id=venue_id,
+            owner_id=owner_id,
+            category_id=category_id,
+            name="Test Venue",
+            slug=f"test-venue-{venue_id.hex[:6]}",
+            address_line1="123 Test St",
+            city="Mumbai",
+            state="Maharashtra",
+            country="India",
+            timezone="Asia/Kolkata",
+            max_capacity=100,
+            open_time=dt_time(9, 0),
+            close_time=dt_time(21, 0),
+            allowed_booking_types=["full_day"],
+            min_booking_duration_minutes=60,
+            max_booking_duration_minutes=1440,
+            slot_interval_minutes=30,
+            pre_buffer_minutes=0,
+            post_buffer_minutes=0,
+            pricing_mode="flat",
+            starting_price_paise=1_000_000,
+            platform_commission_pct=10,
+            advance_pct=30,
+            balance_due_days_before_event=7,
+            owner_action_window_hours=48,
+            overdue_advance_refund_pct=0,
+            status=VenueStatus.approved,
+            is_active=True,
+        )
+    )
     db.commit()
     return venue_id

@@ -57,9 +57,7 @@ class ReviewService:
             )
 
         # Check if booking already has a review
-        existing_review = (
-            db.query(VenueReview).filter(VenueReview.booking_id == booking.id).first()
-        )
+        existing_review = db.query(VenueReview).filter(VenueReview.booking_id == booking.id).first()
         if existing_review:
             raise APIException(
                 status_code=422,
@@ -103,9 +101,7 @@ class ReviewService:
             raise APIException(status_code=404, detail="Review not found.")
 
         if review.user_id != user_id:
-            raise APIException(
-                status_code=403, detail="You can only edit your own reviews."
-            )
+            raise APIException(status_code=403, detail="You can only edit your own reviews.")
 
         # Update allowed fields
         if payload.rating is not None:
@@ -139,9 +135,7 @@ class ReviewService:
             raise APIException(status_code=404, detail="Review not found.")
 
         if review.user_id != user_id:
-            raise APIException(
-                status_code=403, detail="You can only delete your own reviews."
-            )
+            raise APIException(status_code=403, detail="You can only delete your own reviews.")
 
         review.deleted_at = datetime.utcnow()
         db.flush()
@@ -272,12 +266,7 @@ class ReviewService:
 
         total = query.count()
         offset = (page - 1) * per_page
-        reviews = (
-            query.order_by(desc(VenueReview.created_at))
-            .offset(offset)
-            .limit(per_page)
-            .all()
-        )
+        reviews = query.order_by(desc(VenueReview.created_at)).offset(offset).limit(per_page).all()
 
         return ReviewListResponse(
             items=[ReviewService._to_response(db, r) for r in reviews],

@@ -205,21 +205,28 @@ async def run_external_discovery(
 
     # ── 4. Deduplicate against internal venues ────────────────────────────────
     from rapidfuzz import fuzz
-    from app.modules.venue.models import Venue
 
     def haversine_distance_meters(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         R = 6371000
         phi1, phi2 = math.radians(lat1), math.radians(lat2)
         dphi, dlam = math.radians(lat2 - lat1), math.radians(lon2 - lon1)
-        a = math.sin(dphi / 2.0)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2.0)**2
+        a = math.sin(dphi / 2.0) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2.0) ** 2
         return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
     internal_query = db.query(Venue)
-    
+
     # Fast database-level bounding box filter to prevent loading thousands of venues into memory
-    valid_ext_lats = [r["location"]["latitude"] for r in raw_results if r.get("location", {}).get("latitude") is not None]
-    valid_ext_lngs = [r["location"]["longitude"] for r in raw_results if r.get("location", {}).get("longitude") is not None]
-    
+    valid_ext_lats = [
+        r["location"]["latitude"]
+        for r in raw_results
+        if r.get("location", {}).get("latitude") is not None
+    ]
+    valid_ext_lngs = [
+        r["location"]["longitude"]
+        for r in raw_results
+        if r.get("location", {}).get("longitude") is not None
+    ]
+
     if valid_ext_lats and valid_ext_lngs:
         # +/- 0.005 degrees is roughly a ~500m buffer box
         min_lat, max_lat = min(valid_ext_lats) - 0.005, max(valid_ext_lats) + 0.005
@@ -231,8 +238,10 @@ async def run_external_discovery(
             Venue.longitude <= max_lng,
         )
     elif query_row.city_filter:
-        internal_query = internal_query.filter(func.lower(Venue.city) == query_row.city_filter.lower())
-        
+        internal_query = internal_query.filter(
+            func.lower(Venue.city) == query_row.city_filter.lower()
+        )
+
     internal_venues = internal_query.all()
 
     valid_raws: list[dict] = []
@@ -245,18 +254,31 @@ async def run_external_discovery(
         is_duplicate = False
         if ext_name:
             for iv in internal_venues:
-                if iv.latitude is None or iv.longitude is None or ext_lat is None or ext_lng is None:
+                if (
+                    iv.latitude is None
+                    or iv.longitude is None
+                    or ext_lat is None
+                    or ext_lng is None
+                ):
                     # Fallback to exact name match if no coordinates
                     if iv.name.lower() == ext_name.lower():
                         is_duplicate = True
                         break
                     continue
-                
-                dist = haversine_distance_meters(ext_lat, ext_lng, float(iv.latitude), float(iv.longitude))
+
+                dist = haversine_distance_meters(
+                    ext_lat, ext_lng, float(iv.latitude), float(iv.longitude)
+                )
                 score = fuzz.token_set_ratio(ext_name.lower(), iv.name.lower())
-                
+
                 if dist < 200 and score > 80:
-                    logger.info("Deduped external venue %r against internal %r (dist=%.1fm, score=%.1f)", ext_name, iv.name, dist, score)
+                    logger.info(
+                        "Deduped external venue %r against internal %r (dist=%.1fm, score=%.1f)",
+                        ext_name,
+                        iv.name,
+                        dist,
+                        score,
+                    )
                     is_duplicate = True
                     break
 

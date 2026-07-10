@@ -43,14 +43,23 @@ def run() -> int:
             b.completed_at = now
             if b.slot:
                 b.slot.is_blocking = False
-            db.add(BookingStatusHistory(
-                booking_id=b.id, old_status=BookingStatus.confirmed,
-                new_status=BookingStatus.completed, reason="booking_completion_job",
-            ))
+            db.add(
+                BookingStatusHistory(
+                    booking_id=b.id,
+                    old_status=BookingStatus.confirmed,
+                    new_status=BookingStatus.completed,
+                    reason="booking_completion_job",
+                )
+            )
             venue = db.get(Venue, b.venue_id)
             venue_name = venue.name if venue else "your venue"
-            notifications.notify(db, b.user_id, "booking_completed",
-                                 context={"venue_name": venue_name}, booking_id=b.id)
+            notifications.notify(
+                db,
+                b.user_id,
+                "booking_completed",
+                context={"venue_name": venue_name},
+                booking_id=b.id,
+            )
             completed += 1
         logger.info("booking_completion: completed %d booking(s)", completed)
         return completed

@@ -11,6 +11,7 @@ doesn't need this; the standalone entrypoints do. Keep this list complete: a
 missing module resurfaces as `InvalidRequestError: ... failed to locate a name`
 the moment a mapper with a cross-module relationship is configured.
 """
+
 import app.modules.admin.models  # noqa: F401
 import app.modules.booking.models  # noqa: F401
 import app.modules.deep_research.models  # noqa: F401

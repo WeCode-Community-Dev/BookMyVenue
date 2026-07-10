@@ -9,6 +9,7 @@ balance capture (payment succeeded, booking fully_paid, the balance ledger
 entry) that confirm_balance_payment had just written. The SAVEPOINT fix
 (begin_nested) must contain the rollback to the invoice insert alone.
 """
+
 import uuid
 
 from app.modules.booking.models import (

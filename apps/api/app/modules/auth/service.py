@@ -6,17 +6,25 @@ from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRol
 
 
 def register_owner(user_id, db: Session) -> None:
-    profile = db.query(Profile).filter(
-        Profile.id == user_id,
-        Profile.deleted_at.is_(None),
-    ).first()
+    profile = (
+        db.query(Profile)
+        .filter(
+            Profile.id == user_id,
+            Profile.deleted_at.is_(None),
+        )
+        .first()
+    )
     if not profile:
         raise ForbiddenError("Account not found")
 
-    has_owner_role = db.query(UserRoleAssignment).filter(
-        UserRoleAssignment.user_id == user_id,
-        UserRoleAssignment.role == "venue_owner",
-    ).first()
+    has_owner_role = (
+        db.query(UserRoleAssignment)
+        .filter(
+            UserRoleAssignment.user_id == user_id,
+            UserRoleAssignment.role == "venue_owner",
+        )
+        .first()
+    )
 
     if has_owner_role and profile.status == ProfileStatus.pending:
         return  # idempotent — already registered as owner
@@ -32,10 +40,14 @@ def register_owner(user_id, db: Session) -> None:
 
 
 def reapply_owner(user_id, db: Session) -> None:
-    profile = db.query(Profile).filter(
-        Profile.id == user_id,
-        Profile.deleted_at.is_(None),
-    ).first()
+    profile = (
+        db.query(Profile)
+        .filter(
+            Profile.id == user_id,
+            Profile.deleted_at.is_(None),
+        )
+        .first()
+    )
     if not profile:
         raise ForbiddenError("Account not found")
     if profile.status != ProfileStatus.rejected:

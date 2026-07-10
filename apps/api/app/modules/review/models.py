@@ -62,9 +62,7 @@ class VenueReview(Base):
 
     hidden_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, index=True
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
@@ -72,9 +70,7 @@ class VenueReview(Base):
         onupdate=datetime.utcnow,
     )
 
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True, index=True
-    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
 
     # Relationships
     venue: Mapped["Venue"] = relationship(back_populates="reviews")

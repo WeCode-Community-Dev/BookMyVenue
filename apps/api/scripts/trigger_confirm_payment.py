@@ -22,11 +22,7 @@ def main():
         print("✅ confirm_payment executed successfully!")
 
         # Check result
-        booking = (
-            db.query(Booking)
-            .filter_by(id="bddb9e73-8931-483c-8fe4-00662144d4f6")
-            .first()
-        )
+        booking = db.query(Booking).filter_by(id="bddb9e73-8931-483c-8fe4-00662144d4f6").first()
         if booking:
             print(
                 f"📊 Final Status → Booking: {booking.status} | Payment: {booking.payment_status}"

@@ -8,12 +8,8 @@ class ReviewCreate(BaseModel):
     """Input schema for creating a review."""
 
     rating: int = Field(ge=1, le=5, description="Rating from 1 to 5")
-    title: str | None = Field(
-        None, max_length=255, description="Optional review title"
-    )
-    comment: str = Field(
-        min_length=1, max_length=5000, description="Required review comment"
-    )
+    title: str | None = Field(None, max_length=255, description="Optional review title")
+    comment: str = Field(min_length=1, max_length=5000, description="Required review comment")
 
 
 class ReviewUpdate(BaseModel):
@@ -77,6 +73,4 @@ class EligibleBookingsResponse(BaseModel):
 class AdminReviewActionRequest(BaseModel):
     """Input for admin actions (hide/restore)."""
 
-    hidden_reason: str | None = Field(
-        None, max_length=255, description="Reason for hiding review"
-    )
+    hidden_reason: str | None = Field(None, max_length=255, description="Reason for hiding review")

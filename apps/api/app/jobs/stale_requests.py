@@ -32,14 +32,23 @@ def run() -> int:
         for b in rows:
             b.status = BookingStatus.request_expired
             b.expired_at = now
-            db.add(BookingStatusHistory(
-                booking_id=b.id, old_status=BookingStatus.requested,
-                new_status=BookingStatus.request_expired, reason="stale_requests_job",
-            ))
+            db.add(
+                BookingStatusHistory(
+                    booking_id=b.id,
+                    old_status=BookingStatus.requested,
+                    new_status=BookingStatus.request_expired,
+                    reason="stale_requests_job",
+                )
+            )
             venue = db.get(Venue, b.venue_id)
             venue_name = venue.name if venue else "the venue"
-            notifications.notify(db, b.user_id, "request_expired",
-                                 context={"venue_name": venue_name}, booking_id=b.id)
+            notifications.notify(
+                db,
+                b.user_id,
+                "request_expired",
+                context={"venue_name": venue_name},
+                booking_id=b.id,
+            )
             expired += 1
         logger.info("stale_requests: expired %d request(s)", expired)
         return expired

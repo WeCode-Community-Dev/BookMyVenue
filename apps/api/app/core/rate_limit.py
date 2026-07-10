@@ -4,6 +4,7 @@ Fixed-window counters keyed per user/action/window. If Upstash isn't
 configured, checks fail open (no limiting) — matches the fallback pattern
 already used by the search indexer's job queue push.
 """
+
 import time
 from datetime import date
 from uuid import UUID

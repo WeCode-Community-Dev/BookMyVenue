@@ -26,9 +26,7 @@ def _is_retryable(exc: httpx.HTTPStatusError) -> bool:
     return status == 429 or status >= 500
 
 
-def chat_completion(
-    messages: list[dict[str, str]], temperature: float = 0.0
-) -> str:
+def chat_completion(messages: list[dict[str, str]], temperature: float = 0.0) -> str:
     """Send a chat-completions request to Groq, returning the assistant
     message content. Raises on non-retryable errors (bad key, bad request)
     and after exhausting retries on transient failures."""
@@ -77,7 +75,5 @@ def chat_completion(
             )
             time.sleep(delay)
 
-    logger.error(
-        "groq_chat_completion: all %s attempts failed (%s)", _MAX_RETRIES + 1, last_exc
-    )
+    logger.error("groq_chat_completion: all %s attempts failed (%s)", _MAX_RETRIES + 1, last_exc)
     raise last_exc

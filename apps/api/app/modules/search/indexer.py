@@ -90,9 +90,7 @@ def _build_search_document(venue: Venue) -> str:
 
 def _update_fts(db: Session, venue_id: UUID, document: str) -> None:
     db.execute(
-        text(
-            "UPDATE venues SET search_vector = to_tsvector('english', :doc) WHERE id = :id"
-        ),
+        text("UPDATE venues SET search_vector = to_tsvector('english', :doc) WHERE id = :id"),
         {"doc": document, "id": str(venue_id)},
     )
 
@@ -105,9 +103,7 @@ def generate_query_embedding(query: str) -> list[float]:
 
 def process_job(db: Session, job_id: str) -> None:
     """Process a single search index job end-to-end."""
-    job = (
-        db.query(SearchIndexJob).filter(SearchIndexJob.id == uuid.UUID(job_id)).first()
-    )
+    job = db.query(SearchIndexJob).filter(SearchIndexJob.id == uuid.UUID(job_id)).first()
     if not job:
         logger.warning("search_indexer: job %s not found", job_id)
         return
@@ -145,17 +141,11 @@ def process_job(db: Session, job_id: str) -> None:
 
     except Exception as exc:
         db.rollback()
-        job = (
-            db.query(SearchIndexJob)
-            .filter(SearchIndexJob.id == uuid.UUID(job_id))
-            .first()
-        )
+        job = db.query(SearchIndexJob).filter(SearchIndexJob.id == uuid.UUID(job_id)).first()
         if job:
             job.retry_count += 1
             job.error_message = str(exc)
-            job.status = (
-                "failed" if job.retry_count < MAX_RETRIES else "failed_permanently"
-            )
+            job.status = "failed" if job.retry_count < MAX_RETRIES else "failed_permanently"
             db.commit()
         logger.error("search_indexer: job %s failed (%s)", job_id, exc)
 

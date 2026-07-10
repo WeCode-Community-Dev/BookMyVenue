@@ -60,9 +60,7 @@ def understand_query(query: str) -> QueryUnderstanding:
         )
         breakdown = QueryUnderstanding(intent=query)
     except Exception:
-        logger.exception(
-            "deep_research.query_understanding: Groq call failed for query=%r", query
-        )
+        logger.exception("deep_research.query_understanding: Groq call failed for query=%r", query)
         breakdown = QueryUnderstanding(intent=query)
 
     logger.info(

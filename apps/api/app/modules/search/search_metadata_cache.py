@@ -40,9 +40,7 @@ def load_category_metadata(db: Session) -> None:
     global _boost_groups, _keywords, _loaded
 
     categories = db.query(VenueCategory).all()
-    boost_groups = {
-        c.slug: c.search_boost_group for c in categories if c.search_boost_group
-    }
+    boost_groups = {c.slug: c.search_boost_group for c in categories if c.search_boost_group}
     keywords = {c.slug: c.search_keywords for c in categories if c.search_keywords}
 
     with _lock:
@@ -101,7 +99,5 @@ def build_query_vocabulary(db: Session) -> list[str]:
             category_terms.append(c.label.lower())
 
     vocabulary = sorted({t.lower() for t in cities + category_terms if t})
-    logger.info(
-        "search_metadata_cache: built %d dynamic vocabulary terms", len(vocabulary)
-    )
+    logger.info("search_metadata_cache: built %d dynamic vocabulary terms", len(vocabulary))
     return vocabulary
