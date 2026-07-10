@@ -52,7 +52,15 @@ async def lifespan(_: FastAPI):
         job_scheduler.shutdown()
 
 
-app = FastAPI(title="Venue404 API", lifespan=lifespan)
+# Disable the interactive docs (/docs, /redoc) in production so the full API
+# surface isn't publicly listed; keep them in development.
+app = FastAPI(
+    title="Venue404 API",
+    lifespan=lifespan,
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
+    openapi_url=None if settings.is_production else "/openapi.json",
+)
 
 register_middleware(app)
 
