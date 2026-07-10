@@ -4,7 +4,7 @@ import { ArrowLeft, CalendarDays } from "lucide-react";
 import { getPublicVenueById } from "../../services/venueService";
 import { getVenueAvailability } from "../../services/availabilityService";
 import { createOrder, verifyPayment } from "../../services/paymentService";
-import useRazorpay from "../../hooks/useRazorpay";
+import useRazorpay, { PAYMENT_UNAVAILABLE_MESSAGE } from "../../hooks/useRazorpay";
 import { useAuth } from "../../context/AuthContext";
 import Loader from "../../components/common/Loader";
 import ErrorState from "../../components/common/ErrorState";
@@ -20,24 +20,9 @@ import VenueHostedBy from "../../components/venue-details/VenueHostedBy";
 import VenueSlotCard from "../../components/venue-details/VenueSlotCard";
 import MobileBookingBar from "../../components/venue-details/MobileBookingBar";
 import { getVenueImages } from "../../utils/venue";
-import {
-  buildBookingPayload,
-  validateBookingPayload,
-} from "../../utils/booking";
-import {
-  formatSlotDate,
-  formatSlotDateCompact,
-  toDateKey,
-} from "../../utils/formatDate";
-import {
-  clearBookingContext,
-  filterCustomerBookableSlots,
-  findSlotById,
-  getCustomerAvailabilityEmptyState,
-  isSlotStillBookable,
-  loadBookingContext,
-  saveBookingContext,
-} from "../../utils/customerSlots";
+import { buildBookingPayload, validateBookingPayload, } from "../../utils/booking";
+import { formatSlotDate, formatSlotDateCompact, toDateKey, } from "../../utils/formatDate";
+import { clearBookingContext, filterCustomerBookableSlots, findSlotById, getCustomerAvailabilityEmptyState, isSlotStillBookable, loadBookingContext, saveBookingContext, } from "../../utils/customerSlots";
 import { groupSlotsByDate } from "../../utils/predefinedSlots";
 
 const AlertBox = ({ variant, title, children }) => {
@@ -96,7 +81,7 @@ const VenueDetails = () => {
       setSlots([]);
       setSlotsError(
         err.response?.data?.message ||
-          "Unable to load availability. Please try again later."
+        "Unable to load availability. Please try again later."
       );
     }
   };
@@ -136,7 +121,7 @@ const VenueDetails = () => {
       setSlots([]);
       setError(
         err.response?.data?.message ||
-          "Unable to load venue details. Please try again."
+        "Unable to load venue details. Please try again."
       );
     } finally {
       setLoading(false);
@@ -235,9 +220,7 @@ const VenueDetails = () => {
     }
 
     if (!isRazorpayConfigured()) {
-      setPaymentError(
-        "Payment is temporarily unavailable. Razorpay is not configured (VITE_RAZORPAY_KEY_ID)."
-      );
+      setPaymentError(PAYMENT_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -280,8 +263,8 @@ const VenueDetails = () => {
     } catch (err) {
       setPaymentError(
         err.response?.data?.message ||
-          err.message ||
-          "Payment failed. Please try again."
+        err.message ||
+        "Payment failed. Please try again."
       );
     } finally {
       setIsPaying(false);
@@ -315,7 +298,7 @@ const VenueDetails = () => {
     <div className="space-y-3">
       {!isRazorpayConfigured() && (
         <AlertBox variant="error" title="Payment unavailable">
-          Razorpay is not configured (VITE_RAZORPAY_KEY_ID).
+          {PAYMENT_UNAVAILABLE_MESSAGE}
         </AlertBox>
       )}
 

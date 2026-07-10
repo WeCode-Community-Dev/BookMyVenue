@@ -1,9 +1,9 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Loader from "../common/Loader";
 
-const ProviderRoute = ({ children }) => {
-  const { user, loading, authReady, isProvider, isAdmin } = useAuth();
+const AdminRoute = () => {
+  const { user, loading, authReady, isAdmin } = useAuth();
   const location = useLocation();
 
   if (loading || !authReady) {
@@ -24,15 +24,11 @@ const ProviderRoute = ({ children }) => {
     );
   }
 
-  if (isAdmin) {
-    return <Navigate to="/admin/dashboard" replace />;
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
-  if (!isProvider) {
-    return <Navigate to="/profile" replace />;
-  }
-
-  return children;
+  return <Outlet />;
 };
 
-export default ProviderRoute;
+export default AdminRoute;

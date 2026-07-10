@@ -1,9 +1,4 @@
-import {
-  Building2,
-  FileSearch,
-  CalendarCheck,
-  CheckCircle2,
-} from "lucide-react";
+import {Building2,FileSearch,CalendarCheck,CheckCircle2} from "lucide-react";
 
 const steps = [
   {

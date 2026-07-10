@@ -7,10 +7,11 @@ const BookingFiltersBar = ({
   searchQuery,
   onSearchChange,
   searchPlaceholder = "Search by venue name",
+  filters = BOOKING_FILTERS,
 }) => (
   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <div className="flex flex-wrap gap-2">
-      {BOOKING_FILTERS.map((filter) => {
+      {filters.map((filter) => {
         const isActive = activeFilter === filter.id;
 
         return (

@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
   Building2,
-  Heart,
   IndianRupee,
   MapPin,
   Share2,
@@ -12,7 +10,7 @@ import {
 import { formatBookingPriceDisplay } from "../../utils/formatPrice";
 import { getVenueCityStateLabel } from "../../utils/venueLocation";
 import { shareVenue } from "../../utils/shareVenue";
-import { isVenueSaved, toggleSavedVenue } from "../../utils/savedVenues";
+import { getCategoryLabel } from "../../utils/venueFilters";
 
 const QuickFact = ({ icon: Icon, label, value }) => (
   <div className="flex min-w-0 items-center gap-2 rounded-lg border border-gray-100 bg-gray-50/80 px-2.5 py-2">
@@ -27,14 +25,6 @@ const QuickFact = ({ icon: Icon, label, value }) => (
 );
 
 const VenueQuickFacts = ({ venue }) => {
-  const [isSaved, setIsSaved] = useState(false);
-
-  useEffect(() => {
-    if (venue?._id) {
-      setIsSaved(isVenueSaved(venue._id));
-    }
-  }, [venue?._id]);
-
   if (!venue) return null;
 
   const priceLabel = formatBookingPriceDisplay(venue.price);
@@ -53,12 +43,6 @@ const VenueQuickFacts = ({ venue }) => {
     } catch {
       toast.error("Unable to share this venue");
     }
-  };
-
-  const handleSave = () => {
-    const saved = toggleSavedVenue(venue._id);
-    setIsSaved(saved);
-    toast.success(saved ? "Venue saved" : "Venue removed from saved");
   };
 
   return (
@@ -91,24 +75,6 @@ const VenueQuickFacts = ({ venue }) => {
             <Share2 className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline">Share</span>
           </button>
-
-          <button
-            type="button"
-            onClick={handleSave}
-            aria-pressed={isSaved}
-            className={[
-              "inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
-              isSaved
-                ? "border-red-200 bg-red-50 text-red-700"
-                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50",
-            ].join(" ")}
-          >
-            <Heart
-              className={`h-4 w-4 ${isSaved ? "fill-red-600 text-red-600" : ""}`}
-              aria-hidden="true"
-            />
-            <span className="hidden sm:inline">{isSaved ? "Saved" : "Save"}</span>
-          </button>
         </div>
       </div>
 
@@ -121,7 +87,7 @@ const VenueQuickFacts = ({ venue }) => {
         <QuickFact
           icon={Tag}
           label="Category"
-          value={venue.category || "General"}
+          value={getCategoryLabel(venue.category)}
         />
         <QuickFact
           icon={Building2}

@@ -8,6 +8,12 @@ export const BOOKING_FILTERS = [
   { id: "cancelled", label: "Cancelled" },
 ];
 
+export const CUSTOMER_BOOKING_FILTERS = [
+  { id: "all", label: "All" },
+  { id: "upcoming", label: "Upcoming" },
+  { id: "completed", label: "Completed" },
+];
+
 const parseTimeOnDate = (date, time) => {
   if (!date || !time) return null;
 

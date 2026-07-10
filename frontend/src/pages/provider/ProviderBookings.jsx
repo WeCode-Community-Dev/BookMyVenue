@@ -5,13 +5,8 @@ import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
 import BookingSummary from "../../components/bookings/BookingSummary";
 import BookingFiltersBar from "../../components/bookings/BookingFiltersBar";
-import ProviderBookingRow, {
-  ProviderBookingTableHeader,
-} from "../../components/provider/bookings/ProviderBookingRow";
-import {
-  filterProviderBookings,
-  getBookingStats,
-} from "../../utils/providerBookingFilters";
+import ProviderBookingRow, { ProviderBookingTableHeader, } from "../../components/provider/bookings/ProviderBookingRow";
+import { filterProviderBookings, getBookingStats, } from "../../utils/providerBookingFilters";
 
 const ProviderBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -37,7 +32,7 @@ const ProviderBookings = () => {
       setBookings([]);
       setError(
         err.response?.data?.message ||
-          "Unable to load bookings. Please try again."
+        "Unable to load bookings. Please try again."
       );
     } finally {
       setLoading(false);

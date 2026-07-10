@@ -9,5 +9,11 @@ export const resolveEffectiveRoles = (roleOverride, user) => {
 export const isUserProvider = (user) =>
   getUserRoles(user).includes("provider");
 
+export const isUserAdmin = (user) =>
+  getUserRoles(user).includes("admin");
+
 export const hasProviderRole = (roleOverride, user) =>
   resolveEffectiveRoles(roleOverride, user).includes("provider");
+
+export const hasAdminRole = (roleOverride, user) =>
+  resolveEffectiveRoles(roleOverride, user).includes("admin");

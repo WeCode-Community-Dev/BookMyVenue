@@ -1,8 +1,5 @@
 import { MapPin } from "lucide-react";
-import {
-  formatSlotLabel,
-  formatTimeRange,
-} from "../../utils/formatDate";
+import { formatSlotLabel,formatTimeRange,} from "../../utils/formatDate";
 import { formatPrice } from "../../utils/formatPrice";
 import { resolvePopulatedRef } from "../../utils/booking";
 import { getBookingDisplayStatus } from "../../utils/bookingFilters";

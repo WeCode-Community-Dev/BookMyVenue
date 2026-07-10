@@ -25,7 +25,6 @@ export const buildBookingPayload = (venue, selectedSlot) => {
     startTime: selectedSlot.startTime ?? null,
     endTime: selectedSlot.endTime ?? null,
     price,
-    pricingUnit: venue.pricingUnit ?? "",
   };
 };
 

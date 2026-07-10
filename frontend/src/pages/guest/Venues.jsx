@@ -6,12 +6,7 @@ import VenueGrid from "../../components/venues/VenueGrid";
 import Loader from "../../components/common/Loader";
 import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
-import {
-  DEFAULT_VENUE_FILTERS,
-  countActiveFilters,
-  extractCities,
-  filterAndSortVenues,
-} from "../../utils/venueFilters";
+import { DEFAULT_VENUE_FILTERS, countActiveFilters, extractCities, filterAndSortVenues, } from "../../utils/venueFilters";
 
 const Venues = () => {
   const [venues, setVenues] = useState([]);
@@ -36,7 +31,7 @@ const Venues = () => {
       setVenues([]);
       setError(
         err.response?.data?.message ||
-          "Unable to load venues. Please try again."
+        "Unable to load venues. Please try again."
       );
     } finally {
       setLoading(false);

@@ -81,6 +81,14 @@ const ProviderCTA = () => {
     ? "Go to Provider Dashboard"
     : "Host a Venue";
 
+  const heading = isProvider ? "Manage your venues" : "Are you a venue owner?";
+  const subheading = isProvider
+    ? "Access your Provider Dashboard"
+    : "List your venues";
+  const description = isProvider
+    ? "Update listings, manage availability, and track reservations across your venues from one place."
+    : "List your space on Book My Venue, manage availability, accept bookings, and track reservations from your provider dashboard, all in one place.";
+
   return (
     <>
       <section id="provider-cta" className="py-10 sm:py-12 lg:py-16">
@@ -88,17 +96,15 @@ const ProviderCTA = () => {
           <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-red-50/90 via-stone-50 to-white p-6 shadow-sm ring-1 ring-red-100/60 sm:rounded-3xl sm:p-8 lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-10 lg:p-10 xl:p-12">
             <div className="text-left">
               <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl lg:text-[2rem]">
-                Are you a venue owner?
+                {heading}
               </h2>
 
               <p className="mt-2 text-sm font-medium text-gray-500 sm:text-base">
-                List your venues
+                {subheading}
               </p>
 
               <p className="mt-4 max-w-lg text-sm leading-relaxed text-gray-600 sm:text-base">
-                List your space on Book My Venue, manage availability, accept
-                bookings, and track reservations from your provider dashboard, all
-                in one place.
+                {description}
               </p>
 
               {!loading && authReady && (

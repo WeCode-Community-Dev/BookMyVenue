@@ -1,23 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, Loader2, MapPin } from "lucide-react";
 import ChipInput from "./ChipInput";
-import VenueFormImagePreview, {
-  VenueFormImageUpload,
-} from "./VenueFormImagePreview";
-import {
-  geocodeVenueAddress,
-  GeocodeError,
-  GEOCODE_ERROR,
-  getGeocodeUserMessage,
-  hasRequiredGeocodeFields,
-} from "../../../utils/geocode";
-import {
-  MAX_VENUE_IMAGES,
-  scrollToFirstFormError,
-  stringifyListField,
-  validateImageSelection,
-  validateVenueCoreFields,
-} from "../../../utils/venueForm";
+import VenueFormImagePreview, {VenueFormImageUpload,} from "./VenueFormImagePreview";
+import {geocodeVenueAddress,GeocodeError,GEOCODE_ERROR,getGeocodeUserMessage,hasRequiredGeocodeFields,} from "../../../utils/geocode";
+import {MAX_VENUE_IMAGES,scrollToFirstFormError,stringifyListField,validateImageSelection,validateVenueCoreFields,} from "../../../utils/venueForm";
+import { VENUE_CATEGORY_OPTIONS } from "../../../utils/venueFilters";
 
 const LOCATION_FIELDS = new Set(["address", "city", "state", "pincode"]);
 const LOCATION_VERIFIED_MESSAGE = "Location verified successfully";
@@ -281,10 +268,7 @@ const VenueForm = ({
     return nextErrors;
   };
 
-  const errorSummary = useMemo(
-    () => Object.entries(errors).map(([key, message]) => ({ key, message })),
-    [errors]
-  );
+  
 
   const buildFormData = () => {
     const formData = new FormData();
@@ -293,7 +277,6 @@ const VenueForm = ({
     formData.append("category", form.category.trim());
     formData.append("capacity", String(Number(form.capacity)));
     formData.append("price", String(Number(form.price)));
-    formData.append("pricingUnit", form.pricingUnit);
     formData.append("address", form.address.trim());
 
     if (form.city.trim()) formData.append("city", form.city.trim());
@@ -335,19 +318,7 @@ const VenueForm = ({
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-6 sm:space-y-8">
-      {errorSummary.length > 0 && (
-        <div
-          role="alert"
-          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-        >
-          <p className="font-semibold">Please fix the following:</p>
-          <ul className="mt-2 list-disc space-y-1 pl-5">
-            {errorSummary.map(({ key, message }) => (
-              <li key={key}>{message}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      
 
       {submitError && (
         <div
@@ -416,23 +387,30 @@ const VenueForm = ({
               fieldKey="category"
               label="Category"
               required
-              hint="e.g. Wedding Hall, Conference Room"
+              hint="Select the type of events your venue hosts best"
               error={errors.category}
             >
               {({ id, describedBy, hasError }) => (
-                <input
+                <select
                   id={id}
-                  type="text"
                   name="category"
                   value={form.category}
                   onChange={handleChange}
                   disabled={submitting}
-                  placeholder="Wedding Hall"
                   required
                   aria-invalid={hasError}
                   aria-describedby={describedBy}
                   className={inputClass(hasError)}
-                />
+                >
+                  <option value="" disabled>
+                    Select category
+                  </option>
+                  {VENUE_CATEGORY_OPTIONS.map(({ value, label }) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               )}
             </FormField>
           </div>
@@ -517,14 +495,19 @@ const VenueForm = ({
           This is the amount charged for a booking slot.
         </p>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <FormField fieldKey="price" label="Price (₹)" required error={errors.price}>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <FormField
+            fieldKey="price"
+            label="Price per slot (₹)"
+            required
+            error={errors.price}
+          >
             {({ id, describedBy, hasError }) => (
               <input
                 id={id}
                 type="number"
                 name="price"
-                min="0"
+                min="1"
                 value={form.price}
                 onChange={handleChange}
                 disabled={submitting}
@@ -533,30 +516,6 @@ const VenueForm = ({
                 aria-describedby={describedBy}
                 className={inputClass(hasError)}
               />
-            )}
-          </FormField>
-
-          <FormField
-            fieldKey="pricingUnit"
-            label="Pricing unit"
-            required
-            error={errors.pricingUnit}
-          >
-            {({ id, describedBy, hasError }) => (
-              <select
-                id={id}
-                name="pricingUnit"
-                value={form.pricingUnit}
-                onChange={handleChange}
-                disabled={submitting}
-                required
-                aria-invalid={hasError}
-                aria-describedby={describedBy}
-                className={inputClass(hasError)}
-              >
-                <option value="perhour">Per hour</option>
-                <option value="perday">Per day</option>
-              </select>
             )}
           </FormField>
 

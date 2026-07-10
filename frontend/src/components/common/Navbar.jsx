@@ -1,14 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import {
-  Building2,
-  CalendarCheck,
-  Home,
-  LayoutDashboard,
-  Menu,
-  X,
-  User,
-} from "lucide-react";
+import { Building2, CalendarCheck, Home, LayoutDashboard, Menu, X, User, } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import BrandName from "./BrandName";
 

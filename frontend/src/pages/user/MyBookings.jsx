@@ -7,10 +7,7 @@ import BookingsEmptyState from "../../components/bookings/BookingsEmptyState";
 import Loader from "../../components/common/Loader";
 import EmptyState from "../../components/common/EmptyState";
 import ErrorState from "../../components/common/ErrorState";
-import {
-  filterBookings,
-  getBookingStats,
-} from "../../utils/bookingFilters";
+import { filterBookings, getBookingStats, CUSTOMER_BOOKING_FILTERS, } from "../../utils/bookingFilters";
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -36,7 +33,7 @@ const MyBookings = () => {
       setBookings([]);
       setError(
         err.response?.data?.message ||
-          "Unable to load bookings. Please try again."
+        "Unable to load bookings. Please try again."
       );
     } finally {
       setLoading(false);
@@ -71,7 +68,7 @@ const MyBookings = () => {
           My Bookings
         </h1>
         <p className="mt-1.5 text-sm text-gray-500 sm:text-base">
-          View and manage your venue reservations.
+          View your venue reservations.
         </p>
       </div>
 
@@ -85,13 +82,14 @@ const MyBookings = () => {
 
       {!loading && !error && bookings.length > 0 && (
         <div className="space-y-5 sm:space-y-6">
-          <BookingSummary stats={stats} />
+          <BookingSummary stats={stats} hideCancelled />
 
           <BookingFiltersBar
             activeFilter={activeFilter}
             onFilterChange={setActiveFilter}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            filters={CUSTOMER_BOOKING_FILTERS}
           />
 
           {filteredBookings.length === 0 ? (

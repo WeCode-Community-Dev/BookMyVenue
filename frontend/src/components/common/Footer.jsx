@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { MapPin } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import BrandName from "./BrandName";
 
@@ -105,22 +104,23 @@ const Footer = () => {
           <div className="lg:col-span-3">
             <h3 className={footerHeadingClass}>For venue owners</h3>
             <ul className="mt-4 space-y-3">
-              <li>
-                <Link
-                  to={{ pathname: "/", hash: "#provider-cta" }}
-                  onClick={scrollToProviderCta}
-                  className={footerLinkClass}
-                >
-                  List your venue
-                </Link>
-              </li>
-              {authSettled && isProvider && (
+              {authSettled && isProvider ? (
                 <li>
                   <Link
                     to="/provider/dashboard"
                     className={footerLinkClass}
                   >
                     Provider dashboard
+                  </Link>
+                </li>
+              ) : (
+                <li>
+                  <Link
+                    to={{ pathname: "/", hash: "#provider-cta" }}
+                    onClick={scrollToProviderCta}
+                    className={footerLinkClass}
+                  >
+                    List your venue
                   </Link>
                 </li>
               )}

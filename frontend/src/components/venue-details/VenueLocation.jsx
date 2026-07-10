@@ -66,7 +66,7 @@ const VenueLocation = ({ venue, className = "" }) => {
           className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-red-600/20 transition-colors hover:bg-red-700 sm:max-w-sm"
         >
           <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
-          <span className="truncate">View on Google Maps</span>
+          <span className="truncate">Location</span>
           <ExternalLink
             className="h-3.5 w-3.5 shrink-0 opacity-80"
             aria-hidden="true"

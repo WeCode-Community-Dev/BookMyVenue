@@ -104,7 +104,7 @@ const Register = () => {
       brandingImage={regTheme}
       brandingImagePosition="28% center"
       brandingAlign="center"
-      brandingTitle="Book venues. Host Venues."
+      brandingTitle="Book Venues. Host Venues."
       brandingSubtitle={
         <>
           Reserve the right space for every occasion, or list your venue, take

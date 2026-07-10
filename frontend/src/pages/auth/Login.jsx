@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import api from "../../services/axios";
 import toast from "react-hot-toast";
@@ -15,16 +15,15 @@ const authLinkClassSm =
   "text-sm font-medium text-red-600 underline-offset-2 transition-colors hover:text-red-700 hover:underline";
 
 const inputClass = (hasError) =>
-  `w-full rounded-lg border bg-white px-3.5 py-3 text-sm text-gray-900 placeholder:text-gray-400 shadow-sm transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-70 ${
-    hasError
-      ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-      : "border-gray-300 focus:border-red-500 focus:ring-red-100"
+  `w-full rounded-lg border bg-white px-3.5 py-3 text-sm text-gray-900 placeholder:text-gray-400 shadow-sm transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-70 ${hasError
+    ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+    : "border-gray-300 focus:border-red-500 focus:ring-red-100"
   }`;
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { refreshUser } = useAuth();
+  const { refreshUser, isAdmin, authReady, user } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -62,6 +61,12 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  useEffect(() => {
+    if (authReady && user && isAdmin) {
+      navigate("/admin/dashboard", { replace: true });
+    }
+  }, [authReady, user, isAdmin, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -77,11 +82,22 @@ const Login = () => {
 
         toast.success("Login successful");
 
-        const redirectTo =
+        const roles = data.user?.roles ?? [];
+        const fromPath =
           location.state?.from && typeof location.state.from === "string"
             ? location.state.from
-            : "/";
+            : null;
 
+        if (roles.includes("admin")) {
+          const adminRedirect =
+            fromPath && fromPath.startsWith("/admin")
+              ? fromPath
+              : "/admin/dashboard";
+          navigate(adminRedirect, { replace: true });
+          return;
+        }
+
+        const redirectTo = fromPath || "/";
         navigate(redirectTo, { replace: true });
       }
     } catch (error) {
@@ -105,9 +121,8 @@ const Login = () => {
         </>
       }
       brandingPoints={[
-        "Planning a celebration or running a venue? Pick up where you left off on",
-        "From wedding halls to meeting spaces, book your next event or run your venue on",
-      
+        "Planning a celebration or running a venue? Pick up where you left off on Book My Venue.",
+        "From wedding halls to meeting spaces, book your next event or run your venue on Book My Venue.",
       ]}
     >
       <div>

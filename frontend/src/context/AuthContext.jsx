@@ -115,6 +115,10 @@ export const AuthProvider = ({ children }) => {
     () => userRoles.includes("provider"),
     [userRoles]
   );
+  const isAdmin = useMemo(
+    () => userRoles.includes("admin"),
+    [userRoles]
+  );
   const authReady = !loading;
 
   const value = useMemo(
@@ -130,6 +134,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       isAuthenticated,
       isProvider,
+      isAdmin,
     }),
     [
       user,
@@ -143,6 +148,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       isAuthenticated,
       isProvider,
+      isAdmin,
     ]
   );
 

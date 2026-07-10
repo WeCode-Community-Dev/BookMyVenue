@@ -1,22 +1,62 @@
-export const VENUE_CATEGORIES = [
-  { value: "all", label: "All" },
+export const VENUE_CATEGORY_OPTIONS = [
   { value: "wedding", label: "Wedding" },
-  { value: "engagement", label: "Engagement" },
-  { value: "reception", label: "Reception" },
   { value: "corporate", label: "Corporate" },
-  { value: "conference", label: "Conference" },
-  { value: "meeting", label: "Meeting" },
   { value: "birthday", label: "Birthday" },
   { value: "party", label: "Party" },
+  { value: "function", label: "Function" },
   { value: "photoshoot", label: "Photoshoot" },
-  { value: "film", label: "Film Shoot" },
-  { value: "yoga", label: "Yoga" },
+  { value: "other", label: "Other" },
 ];
 
+export const VENUE_CATEGORIES = [
+  { value: "all", label: "All" },
+  ...VENUE_CATEGORY_OPTIONS,
+];
+
+const CATEGORY_LABEL_BY_VALUE = Object.fromEntries(
+  VENUE_CATEGORY_OPTIONS.map(({ value, label }) => [value, label])
+);
+
+const LEGACY_CATEGORY_SLUGS = {
+  meetings: "corporate",
+  meeting: "corporate",
+};
+
+export const normalizeCategorySlug = (value) => {
+  if (value == null || typeof value !== "string") return "";
+
+  const normalized = value.trim().toLowerCase();
+
+  if (!normalized) return "";
+
+  if (CATEGORY_LABEL_BY_VALUE[normalized]) {
+    return normalized;
+  }
+
+  return LEGACY_CATEGORY_SLUGS[normalized] || "";
+};
+
+export const getCategoryLabel = (value) => {
+  const slug = normalizeCategorySlug(value);
+
+  if (slug) {
+    return CATEGORY_LABEL_BY_VALUE[slug];
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+
+  return "General";
+};
+
+export const isValidCategorySlug = (value) =>
+  Boolean(normalizeCategorySlug(value));
+
 export const SORT_OPTIONS = [
-  { value: "newest", label: "Newest First" },
   { value: "price-asc", label: "Price Low to High" },
   { value: "price-desc", label: "Price High to Low" },
+  { value: "capacity-asc", label: "Capacity Low to High" },
   { value: "capacity-desc", label: "Capacity High to Low" },
 ];
 
@@ -24,20 +64,18 @@ export const DEFAULT_VENUE_FILTERS = {
   search: "",
   category: "all",
   city: "all",
-  venueType: "all",
-  pricingUnit: "all",
   minCapacity: "",
-  sort: "newest",
+  sort: "price-asc",
 };
 
 const matchesCategory = (venueCategory, filterCategory) => {
   if (filterCategory === "all") return true;
   if (!venueCategory) return false;
 
-  const normalized = venueCategory.toLowerCase();
-  const target = filterCategory.toLowerCase();
+  const venueSlug =
+    normalizeCategorySlug(venueCategory) || venueCategory.trim().toLowerCase();
 
-  return normalized === target || normalized.includes(target);
+  return venueSlug === filterCategory.toLowerCase();
 };
 
 const parseOptionalNumber = (value) => {
@@ -63,8 +101,6 @@ export const countActiveFilters = (filters) => {
   if (filters.search.trim()) count += 1;
   if (filters.category !== "all") count += 1;
   if (filters.city !== "all") count += 1;
-  if (filters.venueType !== "all") count += 1;
-  if (filters.pricingUnit !== "all") count += 1;
   if (filters.minCapacity !== "") count += 1;
 
   return count;
@@ -74,17 +110,15 @@ const sortVenues = (venues, sort) => {
   const sorted = [...venues];
 
   switch (sort) {
-    case "price-asc":
-      return sorted.sort((a, b) => Number(a.price) - Number(b.price));
     case "price-desc":
       return sorted.sort((a, b) => Number(b.price) - Number(a.price));
+    case "capacity-asc":
+      return sorted.sort((a, b) => Number(a.capacity) - Number(b.capacity));
     case "capacity-desc":
       return sorted.sort((a, b) => Number(b.capacity) - Number(a.capacity));
-    case "newest":
+    case "price-asc":
     default:
-      return sorted.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
+      return sorted.sort((a, b) => Number(a.price) - Number(b.price));
   }
 };
 
@@ -103,18 +137,6 @@ export const filterAndSortVenues = (venues, filters) => {
     if (filters.city !== "all") {
       const city = venue.city?.trim().toLowerCase() ?? "";
       if (city !== filters.city.toLowerCase()) return false;
-    }
-
-    if (filters.venueType !== "all") {
-      if ((venue.venueType ?? "").toLowerCase() !== filters.venueType) {
-        return false;
-      }
-    }
-
-    if (filters.pricingUnit !== "all") {
-      if ((venue.pricingUnit ?? "").toLowerCase() !== filters.pricingUnit) {
-        return false;
-      }
     }
 
     if (minCapacity != null) {

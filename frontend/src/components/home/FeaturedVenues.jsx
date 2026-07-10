@@ -47,7 +47,7 @@ const FeaturedVenues = () => {
     <div className="mx-auto w-full max-w-7xl px-6 py-12 sm:py-14 lg:py-16">
       <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-12">
         <p className="text-xs font-medium uppercase tracking-[0.28em] text-red-600/90">
-          Curated picks
+          Recent picks
         </p>
 
         <h2 className="mt-4 text-balance">

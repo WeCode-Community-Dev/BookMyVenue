@@ -2,6 +2,9 @@
 
 const RAZORPAY_SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
 
+export const PAYMENT_UNAVAILABLE_MESSAGE =
+  "Online payments are temporarily unavailable. Please try again later.";
+
 const razorpayKeyFromEnv = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 export const isRazorpayConfigured = () =>
@@ -11,9 +14,10 @@ const getRazorpayKeyId = () => {
   const key = razorpayKeyFromEnv?.trim();
 
   if (!key) {
-    throw new Error(
-      "Payment is temporarily unavailable. Razorpay is not configured (VITE_RAZORPAY_KEY_ID)."
+    console.warn(
+      "Razorpay is not configured. Set VITE_RAZORPAY_KEY_ID in frontend/.env"
     );
+    throw new Error(PAYMENT_UNAVAILABLE_MESSAGE);
   }
 
   return key;
@@ -56,9 +60,10 @@ const loadRazorpayScript = () => {
 const useRazorpay = () => {
   const openCheckout = async (order, options = {}) => {
     if (!isRazorpayConfigured()) {
-      throw new Error(
-        "Payment is temporarily unavailable. Razorpay is not configured (VITE_RAZORPAY_KEY_ID)."
+      console.warn(
+        "Razorpay is not configured. Set VITE_RAZORPAY_KEY_ID in frontend/.env"
       );
+      throw new Error(PAYMENT_UNAVAILABLE_MESSAGE);
     }
 
     if (!isValidOrder(order)) {

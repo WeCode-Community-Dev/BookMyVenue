@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { MapPin, Users } from "lucide-react";
 import { getVenueCoverUrl } from "../../utils/venue";
+import { getCategoryLabel } from "../../utils/venueFilters";
+import { formatBookingPriceDisplay } from "../../utils/formatPrice";
 
 const formatVenueLocation = (venue) => {
   const parts = [venue.city, venue.state].filter(Boolean);
@@ -14,6 +16,7 @@ const formatVenueLocation = (venue) => {
 
 const FeaturedVenueCard = ({ venue }) => {
   const coverUrl = getVenueCoverUrl(venue);
+  const priceLabel = formatBookingPriceDisplay(venue?.price);
 
   return (
     <Link
@@ -40,7 +43,7 @@ const FeaturedVenueCard = ({ venue }) => {
 
       {venue.category && (
         <span className="absolute left-2 top-2 z-10 max-w-[calc(100%-1rem)] truncate rounded-md bg-white/92 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-red-700 backdrop-blur-sm sm:text-xs">
-          {venue.category}
+          {getCategoryLabel(venue.category)}
         </span>
       )}
 
@@ -57,12 +60,16 @@ const FeaturedVenueCard = ({ venue }) => {
           {formatVenueLocation(venue)}
         </p>
 
+        <p className="mt-1 line-clamp-1 text-[11px] font-medium leading-relaxed text-white/90 sm:text-xs">
+          {priceLabel}
+        </p>
+
         <div className="mt-1 flex items-center gap-1 text-[11px] text-white/75 sm:text-xs">
           <Users
             className="h-3.5 w-3.5 shrink-0 text-white/70"
             aria-hidden="true"
           />
-          <span>{venue.capacity ?? "—"} guests</span>
+          <span>Up to {venue.capacity ?? "—"} guests</span>
         </div>
       </div>
     </Link>

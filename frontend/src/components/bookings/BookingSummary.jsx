@@ -27,9 +27,14 @@ const statConfig = [
   },
 ];
 
-const BookingSummary = ({ stats }) => (
+const BookingSummary = ({ stats, hideCancelled = false }) => {
+  const visibleStats = hideCancelled
+    ? statConfig.filter((item) => item.key !== "cancelled")
+    : statConfig;
+
+  return (
   <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-    {statConfig.map(({ key, label, icon: Icon, iconClass }) => (
+    {visibleStats.map(({ key, label, icon: Icon, iconClass }) => (
       <div
         key={key}
         className="rounded-xl border border-gray-200/80 bg-white p-3.5 ring-1 ring-gray-100/80 sm:p-4"
@@ -52,6 +57,7 @@ const BookingSummary = ({ stats }) => (
       </div>
     ))}
   </div>
-);
+  );
+};
 
 export default BookingSummary;

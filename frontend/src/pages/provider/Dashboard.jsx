@@ -5,18 +5,44 @@ import {
   CalendarCheck,
   CalendarClock,
   CheckCircle2,
+  IndianRupee,
   PlusCircle,
   ArrowRight,
+  BadgeCheck,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { getMyVenues } from "../../services/venueService";
 import { getProviderBookings } from "../../services/bookingService";
-import Loader from "../../components/common/Loader";
-import ErrorState from "../../components/common/ErrorState";
-import EmptyState from "../../components/common/EmptyState";
+import { getBookingStats } from "../../utils/providerBookingFilters";
+import { formatPrice } from "../../utils/formatPrice";
 import ProviderBookingRow, {
   ProviderBookingTableHeader,
 } from "../../components/provider/bookings/ProviderBookingRow";
-import { getBookingStats } from "../../utils/providerBookingFilters";
+import Loader from "../../components/common/Loader";
+import ErrorState from "../../components/common/ErrorState";
+import EmptyState from "../../components/common/EmptyState";
+
+const isConfirmedPaidBooking = (booking) =>
+  booking?.bookingStatus === "confirmed" && booking?.paymentStatus === "paid";
+
+const getConfirmedPaidRevenueStats = (bookings = []) => {
+  let confirmedBookings = 0;
+  let totalRevenue = 0;
+
+  bookings.forEach((booking) => {
+    if (!isConfirmedPaidBooking(booking)) return;
+
+    confirmedBookings += 1;
+
+    const amount = Number(booking.amount);
+    if (Number.isFinite(amount) && amount > 0) {
+      totalRevenue += amount;
+    }
+  });
+
+  return { confirmedBookings, totalRevenue };
+};
 
 const statConfig = [
   {
@@ -38,37 +64,75 @@ const statConfig = [
     iconClass: "bg-sky-50 text-sky-600",
   },
   {
+    key: "confirmedBookings",
+    label: "Confirmed bookings",
+    icon: BadgeCheck,
+    iconClass: "bg-violet-50 text-violet-600",
+  },
+  {
     key: "upcoming",
     label: "Upcoming",
     icon: CalendarClock,
     iconClass: "bg-amber-50 text-amber-600",
   },
+  {
+    key: "revenueCollected",
+    label: "Revenue collected",
+    icon: IndianRupee,
+    iconClass: "bg-emerald-50 text-emerald-600",
+  },
 ];
 
-const DashboardStatGrid = ({ stats }) => (
-  <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
-    {statConfig.map(({ key, label, icon: Icon, iconClass }) => (
-      <div
-        key={key}
-        className="rounded-lg border border-gray-200/80 bg-white px-3 py-2.5 ring-1 ring-gray-100/80 sm:px-4 sm:py-3"
-      >
-        <div className="flex items-center gap-2.5">
-          <span
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${iconClass}`}
-          >
-            <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-lg font-bold tabular-nums leading-none text-gray-900 sm:text-xl">
-              {stats[key] ?? 0}
-            </p>
-            <p className="mt-0.5 truncate text-[11px] font-medium text-gray-500 sm:text-xs">
-              {label}
-            </p>
+const DashboardStatGrid = ({
+  stats,
+  revenueVisible = false,
+  onToggleRevenueVisibility,
+}) => (
+  <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
+    {statConfig.map(({ key, label, icon: Icon, iconClass }) => {
+      const isRevenue = key === "revenueCollected";
+      const displayValue =
+        isRevenue && !revenueVisible ? "₹••••••" : (stats[key] ?? 0);
+
+      return (
+        <div
+          key={key}
+          className="rounded-lg border border-gray-200/80 bg-white px-3 py-2.5 ring-1 ring-gray-100/80 sm:px-4 sm:py-3"
+        >
+          <div className="flex items-center gap-2.5">
+            <span
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${iconClass}`}
+            >
+              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="truncate text-lg font-bold tabular-nums leading-none text-gray-900 sm:text-xl">
+                  {displayValue}
+                </p>
+                {isRevenue && onToggleRevenueVisibility && (
+                  <button
+                    type="button"
+                    onClick={onToggleRevenueVisibility}
+                    className="rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                    aria-label={revenueVisible ? "Hide revenue" : "Show revenue"}
+                  >
+                    {revenueVisible ? (
+                      <EyeOff className="h-4 w-4" aria-hidden="true" />
+                    ) : (
+                      <Eye className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
+                )}
+              </div>
+              <p className="mt-0.5 truncate text-[11px] font-medium text-gray-500 sm:text-xs">
+                {label}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    ))}
+      );
+    })}
   </div>
 );
 
@@ -118,6 +182,7 @@ const ProviderDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [bookingsError, setBookingsError] = useState("");
+  const [revenueVisible, setRevenueVisible] = useState(false);
 
   const fetchBookingsOnly = async () => {
     try {
@@ -137,7 +202,7 @@ const ProviderDashboard = () => {
       setBookings([]);
       setBookingsError(
         err.response?.data?.message ||
-          "Unable to load bookings. Please try again."
+        "Unable to load bookings. Please try again."
       );
     }
   };
@@ -174,7 +239,7 @@ const ProviderDashboard = () => {
       setBookings([]);
       setError(
         err.response?.data?.message ||
-          "Unable to load dashboard data. Please try again."
+        "Unable to load dashboard data. Please try again."
       );
     } finally {
       setLoading(false);
@@ -187,14 +252,21 @@ const ProviderDashboard = () => {
 
   const bookingStats = useMemo(() => getBookingStats(bookings), [bookings]);
 
+  const revenueStats = useMemo(
+    () => getConfirmedPaidRevenueStats(bookings),
+    [bookings]
+  );
+
   const dashboardStats = useMemo(
     () => ({
       totalVenues: venues.length,
       activeVenues: venues.filter((v) => v.isActive === true).length,
       totalBookings: bookingStats.total,
+      confirmedBookings: revenueStats.confirmedBookings,
       upcoming: bookingStats.upcoming,
+      revenueCollected: formatPrice(revenueStats.totalRevenue).amount,
     }),
-    [venues, bookingStats]
+    [venues, bookingStats, revenueStats]
   );
 
   const recentBookings = useMemo(
@@ -245,7 +317,13 @@ const ProviderDashboard = () => {
 
       {!loading && !error && hasVenues && (
         <div className="space-y-5">
-          <DashboardStatGrid stats={dashboardStats} />
+          <DashboardStatGrid
+            stats={dashboardStats}
+            revenueVisible={revenueVisible}
+            onToggleRevenueVisibility={() =>
+              setRevenueVisible((visible) => !visible)
+            }
+          />
 
           <QuickActions />
 

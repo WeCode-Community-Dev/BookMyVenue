@@ -1,3 +1,5 @@
+import { isValidCategorySlug, normalizeCategorySlug } from "./venueFilters";
+
 export const MAX_VENUE_IMAGES = 5;
 export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
@@ -7,7 +9,6 @@ export const VENUE_FORM_FIELD_ORDER = [
   "category",
   "images",
   "price",
-  "pricingUnit",
   "capacity",
   "address",
   "city",
@@ -23,7 +24,6 @@ export const EMPTY_VENUE_FORM = {
   category: "",
   capacity: "",
   price: "",
-  pricingUnit: "perhour",
   city: "",
   state: "",
   pincode: "",
@@ -58,10 +58,9 @@ export const normalizeStringArray = (value) => {
 export const mapVenueToFormValues = (venue) => ({
   title: venue?.title || "",
   description: venue?.description || "",
-  category: venue?.category || "",
+  category: normalizeCategorySlug(venue?.category),
   capacity: venue?.capacity != null ? String(venue.capacity) : "",
   price: venue?.price != null ? String(venue.price) : "",
-  pricingUnit: venue?.pricingUnit || "perhour",
   city: venue?.city || "",
   state: venue?.state || "",
   pincode: venue?.pincode || "",
@@ -129,9 +128,12 @@ export const validateVenueCoreFields = (form) => {
   if (!form?.title?.trim()) errors.title = "Title is required";
   if (!form?.description?.trim())
     errors.description = "Description is required";
-  if (!form?.category?.trim()) errors.category = "Category is required";
+  if (!form?.category?.trim()) {
+    errors.category = "Category is required";
+  } else if (!isValidCategorySlug(form.category)) {
+    errors.category = "Please select a valid category";
+  }
   if (!form?.address?.trim()) errors.address = "Address is required";
-  if (!form?.pricingUnit) errors.pricingUnit = "Pricing unit is required";
 
   if (!form?.capacity?.toString().trim()) {
     errors.capacity = "Capacity is required";
@@ -150,8 +152,8 @@ export const validateVenueCoreFields = (form) => {
     errors.price = "Price is required";
   } else {
     const price = Number(form.price);
-    if (!Number.isFinite(price) || price < 0) {
-      errors.price = "Enter a valid price (0 or more)";
+    if (!Number.isFinite(price) || price <= 0) {
+      errors.price = "Enter a valid price greater than 0";
     }
   }
 

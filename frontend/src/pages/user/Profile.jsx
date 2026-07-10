@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  BadgeCheck,
-  CircleCheck,
-  CircleX,
-  LogOut,
-  Mail,
-} from "lucide-react";
+import { BadgeCheck, CircleCheck, CircleX, LogOut, Mail, } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import { updateProfile, updateProfileImage } from "../../services/authService";
@@ -115,8 +109,8 @@ const Profile = () => {
       clearPreviewImage();
       toast.error(
         error.response?.data?.message ||
-          error.message ||
-          "Unable to upload profile image. Please try again."
+        error.message ||
+        "Unable to upload profile image. Please try again."
       );
     } finally {
       setIsUploadingImage(false);
@@ -174,8 +168,8 @@ const Profile = () => {
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
-          error.message ||
-          "Unable to update profile. Please try again."
+        error.message ||
+        "Unable to update profile. Please try again."
       );
     } finally {
       setIsSaving(false);

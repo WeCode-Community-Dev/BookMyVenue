@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import {
-  getProviderVenueById,
-  updateVenue,
-} from "../../services/venueService";
+import { getProviderVenueById, updateVenue, } from "../../services/venueService";
 import Loader from "../../components/common/Loader";
 import ErrorState from "../../components/common/ErrorState";
 import VenueForm from "../../components/provider/venue-form/VenueForm";
@@ -50,7 +47,7 @@ const EditVenue = () => {
     } catch (err) {
       setFetchError(
         err.response?.data?.message ||
-          "Unable to load venue. Please try again."
+        "Unable to load venue. Please try again."
       );
     } finally {
       setLoading(false);

@@ -3,29 +3,18 @@ import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
 import { getProviderVenueById } from "../../services/venueService";
-import {
-  activateAvailability,
-  createAvailability,
-  deactivateAvailability,
-  getVenueAvailability,
-} from "../../services/availabilityService";
+import { activateAvailability, createAvailability, deactivateAvailability, getVenueAvailability, } from "../../services/availabilityService";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorState from "../../components/common/ErrorState";
 import CreateAvailabilityCard from "../../components/provider/availability/CreateAvailabilityCard";
 import VenueAvailabilityHeader from "../../components/provider/availability/VenueAvailabilityHeader";
 import AvailabilityListGrouped from "../../components/provider/availability/AvailabilityListGrouped";
 import AvailabilitySkeleton from "../../components/provider/availability/AvailabilitySkeleton";
-import {
-  areAllSlotsExpiredForToday,
-  filterNonExpiredPresetIds,
-  getPredefinedSlotById,
-  getTodayDateInputValue,
-  groupSlotsByDate,
-  getProviderAvailabilityEmptyState,
-  getAvailabilityStats,
-  resolveSlotSelection,
-} from "../../utils/predefinedSlots";
 import AvailabilitySummary from "../../components/provider/availability/AvailabilitySummary";
+import {
+  areAllSlotsExpiredForToday, filterNonExpiredPresetIds, getPredefinedSlotById, getTodayDateInputValue,
+  groupSlotsByDate, getProviderAvailabilityEmptyState, getAvailabilityStats, resolveSlotSelection,
+} from "../../utils/predefinedSlots";
 
 const ManageAvailability = () => {
   const { id: venueId } = useParams();
@@ -71,7 +60,7 @@ const ManageAvailability = () => {
       setVenue(null);
       setError(
         err.response?.data?.message ||
-          "Unable to load venue details. Please try again."
+        "Unable to load venue details. Please try again."
       );
     } finally {
       setLoading(false);
@@ -97,7 +86,7 @@ const ManageAvailability = () => {
       setSlots([]);
       setSlotsError(
         err.response?.data?.message ||
-          "Unable to load availability. Please try again."
+        "Unable to load availability. Please try again."
       );
     } finally {
       setSlotsLoading(false);
@@ -222,7 +211,7 @@ const ManageAvailability = () => {
         const message =
           firstFailure.status === "rejected"
             ? firstFailure.reason?.response?.data?.message ||
-              firstFailure.reason?.message
+            firstFailure.reason?.message
             : firstFailure.value?.message;
         throw new Error(message || "Failed to add availability.");
       }
@@ -271,8 +260,8 @@ const ManageAvailability = () => {
     } catch (err) {
       toast.error(
         err.response?.data?.message ||
-          err.message ||
-          "Failed to activate slot."
+        err.message ||
+        "Failed to activate slot."
       );
     } finally {
       setProcessingSlotId(null);
@@ -306,8 +295,8 @@ const ManageAvailability = () => {
     } catch (err) {
       toast.error(
         err.response?.data?.message ||
-          err.message ||
-          "Failed to deactivate slot."
+        err.message ||
+        "Failed to deactivate slot."
       );
     } finally {
       setProcessingSlotId(null);

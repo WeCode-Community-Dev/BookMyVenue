@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import {
-  getMyVenues,
-  activateVenue,
-  deactivateVenue,
-} from "../../services/venueService";
+import { getMyVenues, activateVenue, deactivateVenue, } from "../../services/venueService";
 import Loader from "../../components/common/Loader";
 import ErrorState from "../../components/common/ErrorState";
 import EmptyState from "../../components/common/EmptyState";
@@ -48,11 +44,10 @@ const ProviderVenueCard = ({
             </h2>
 
             <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                venue.isActive
+              className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${venue.isActive
                   ? "bg-green-50 text-green-700"
                   : "bg-gray-100 text-gray-600"
-              }`}
+                }`}
             >
               {venue.isActive ? "Active" : "Inactive"}
             </span>
@@ -123,7 +118,7 @@ const MyVenues = () => {
       setVenues([]);
       setError(
         err.response?.data?.message ||
-          "Unable to load venues. Please try again."
+        "Unable to load venues. Please try again."
       );
     } finally {
       setLoading(false);
@@ -163,8 +158,8 @@ const MyVenues = () => {
     } catch (err) {
       toast.error(
         err.response?.data?.message ||
-          err.message ||
-          "Failed to update venue status."
+        err.message ||
+        "Failed to update venue status."
       );
     } finally {
       setTogglingVenueId(null);
