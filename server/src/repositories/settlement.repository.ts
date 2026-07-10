@@ -126,3 +126,19 @@ export const getOwnerRevenueStats = async (ownerId: string) => {
     pendingAmount: pendingStats?.pendingAmount || 0,
   };
 };
+
+export const findAdminSettlements = async (filter: any): Promise<ISettlement[]> => {
+  return Settlement.find(filter)
+    .populate({
+      path: 'bookingId',
+      select: 'bookingId user',
+      populate: { path: 'user', select: 'fullName' }
+    })
+    .populate('venueId', 'name')
+    .populate('ownerId', 'fullName')
+    .sort({ createdAt: -1 });
+};
+
+export const findAllSettlements = async (): Promise<ISettlement[]> => {
+  return Settlement.find();
+};
