@@ -19,6 +19,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
+from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -86,16 +87,33 @@ def process(db: Session, invoice_id: uuid.UUID | str) -> None:
     from app.modules.booking.models import Booking
 
     invoice_id = uuid.UUID(str(invoice_id))
-    invoice = db.get(BookingInvoice, invoice_id)
-    if not invoice or invoice.status not in ("pending", "failed"):
-        return
 
-    # Claim the row before doing any work, same as search/indexer.py's
-    # process_job — otherwise a Redis pop and a DB poll landing on the same
-    # still-"pending" row in the same window could both process it,
-    # generating the PDF and sending the email twice.
-    invoice.status = "processing"
+    # Atomically claim the row before doing any work: a single UPDATE that flips
+    # pending/failed -> processing. Only the worker whose UPDATE actually matches
+    # a row proceeds (rowcount == 1); everyone else bails. A Redis pop and a DB
+    # poll — or two overlapping job runs — can hand the same id to two workers,
+    # and the previous "db.get() + check status + set processing" was a
+    # check-then-act race (both could pass the check before either wrote
+    # processing), double-generating the PDF and double-sending the email. The
+    # compare-and-swap closes that window so exactly one worker wins.
+    claimed = db.execute(
+        update(BookingInvoice)
+        .where(
+            BookingInvoice.id == invoice_id,
+            BookingInvoice.status.in_(("pending", "failed")),
+        )
+        .values(status="processing")
+        # No session object holds this row yet (fresh per-id call) and we re-fetch
+        # right after the commit, so skip the in-Python WHERE evaluation.
+        .execution_options(synchronize_session=False)
+    ).rowcount
     db.commit()
+    if not claimed:
+        return  # already claimed by another worker, or not in a processable state
+
+    invoice = db.get(BookingInvoice, invoice_id)
+    if not invoice:
+        return
 
     try:
         booking = (
