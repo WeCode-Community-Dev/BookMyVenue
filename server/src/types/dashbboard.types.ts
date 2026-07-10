@@ -19,11 +19,28 @@ export interface StatCardItem {
 }
 
 export interface UpcomingBooking {
-  venue: string;
-  user: string;
-  capacity: number;
-  date: Date;
+  id: string;
+  venueName: string;
+  customer: string;
+  guests: number;
+  date: string;
   time: string;
+  status: 'pending' | 'confirmed' | 'cancelled';
+}
+
+export interface TopVenueItem {
+  id: string;
+  name: string;
+  revenue: number;
+  bookings: number;
+  occupancyRate: number;
+}
+
+export interface VenueHealthItem {
+  totalVenues: number;
+  activeVenues: number;
+  pendingVenues: number;
+  rejectedVenues: number;
 }
 
 export interface OwnerDashboard {
@@ -31,4 +48,6 @@ export interface OwnerDashboard {
   revenueDistributionData: RevenueDistributionItem[];
   statCardData: StatCardItem[];
   upcomingBookings: UpcomingBooking[];
+  venueHealthData: VenueHealthItem;
+  topPerformingData: TopVenueItem[];
 }
