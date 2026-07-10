@@ -9,6 +9,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import APIException
+from app.modules.admin.models import AdminAction
 from app.modules.booking.models import Booking, BookingStatus
 from app.modules.profile.models import Profile
 from app.modules.review.models import VenueReview
@@ -224,6 +225,16 @@ class TestReviewService:
         assert hidden.hidden_by == admin_user.id
         assert hidden.hidden_at is not None
 
+        action = (
+            db.query(AdminAction)
+            .filter(AdminAction.target_id == review.id, AdminAction.action_type == "review_hidden")
+            .first()
+        )
+        assert action is not None
+        assert action.admin_id == admin_user.id
+        assert action.target_type == "venue_review"
+        assert action.reason == "Offensive content"
+
     def test_restore_review_admin(self, db: Session, admin_user: Profile, review: VenueReview):
         """Admin can restore a hidden review."""
         # Hide first
@@ -237,6 +248,15 @@ class TestReviewService:
         assert restored.hidden_by is None
         assert restored.hidden_at is None
 
+        action = (
+            db.query(AdminAction)
+            .filter(AdminAction.target_id == review.id, AdminAction.action_type == "review_restored")
+            .first()
+        )
+        assert action is not None
+        assert action.admin_id == admin_user.id
+        assert action.target_type == "venue_review"
+
     def test_delete_review_admin_hard_delete(
         self, db: Session, admin_user: Profile, review: VenueReview
     ):
@@ -248,6 +268,16 @@ class TestReviewService:
         # Should not exist in DB
         remaining = db.query(VenueReview).filter(VenueReview.id == review_id).first()
         assert remaining is None
+
+        # Audit action is retained (append-only) even though the review is gone
+        action = (
+            db.query(AdminAction)
+            .filter(AdminAction.target_id == review_id, AdminAction.action_type == "review_deleted")
+            .first()
+        )
+        assert action is not None
+        assert action.admin_id == admin_user.id
+        assert action.target_type == "venue_review"
 
     def test_list_all_reviews_admin_filters(self, db: Session, venue: Venue, user_profile: Profile):
         """Admin can filter reviews by venue, user, rating, hidden status."""

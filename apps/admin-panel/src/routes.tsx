@@ -12,6 +12,7 @@ const Bookings = lazy(() => import('./pages/Bookings'))
 const Users = lazy(() => import('./pages/Users'))
 const VenueOwners = lazy(() => import('./pages/VenueOwners'))
 const VenueApprovals = lazy(() => import('./pages/VenueApprovals'))
+const Reviews = lazy(() => import('./pages/Reviews'))
 const Amenities = lazy(() => import('./pages/Amenities'))
 const Categories = lazy(() => import('./pages/Categories'))
 const AuditLog = lazy(() => import('./pages/AuditLog'))
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
   {
     path: '/venues/pending',
     element: <ProtectedRoute><VenueApprovals /></ProtectedRoute>,
+  },
+  {
+    path: '/reviews',
+    element: <ProtectedRoute><Reviews /></ProtectedRoute>,
   },
   {
     path: '/users',

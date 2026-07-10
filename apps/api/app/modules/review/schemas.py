@@ -38,6 +38,9 @@ class ReviewResponse(BaseModel):
     user_name: str | None = None
     user_email: str | None = None
 
+    # Venue info (denormalized)
+    venue_name: str | None = None
+
     # Hide info
     hidden_reason: str | None = None
     hidden_by: UUID | None = None
@@ -47,6 +50,15 @@ class ReviewResponse(BaseModel):
         from_attributes = True
 
 
+class ReviewStats(BaseModel):
+    """Aggregate counts for the admin reviews dashboard."""
+
+    total: int
+    visible: int
+    hidden: int
+    average_rating: float
+
+
 class ReviewListResponse(BaseModel):
     """Paginated list of reviews."""
 
@@ -54,6 +66,7 @@ class ReviewListResponse(BaseModel):
     total: int
     page: int
     per_page: int
+    stats: ReviewStats | None = None
 
 
 class ReviewSummaryResponse(BaseModel):

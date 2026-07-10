@@ -3,12 +3,13 @@ import { useAuth } from '../lib/AuthContext'
 import { AppShell, Logo, type NavItemConfig } from '@venue404/ui'
 import {
   LayoutDashboard, Building2, Users, UserCheck,
-  CalendarDays, ClipboardList, Settings, Sparkles, LayoutGrid, Search, PhoneCall,
+  CalendarDays, ClipboardList, Settings, Sparkles, LayoutGrid, Search, PhoneCall, Star,
 } from 'lucide-react'
 
 const NAV: NavItemConfig[] = [
   { label: 'Dashboard',       href: '/dashboard',      icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'Venue Approvals', href: '/venues/pending', icon: <Building2 className="h-4 w-4" /> },
+  { label: 'Reviews',         href: '/reviews',        icon: <Star className="h-4 w-4" /> },
   { label: 'Users',           href: '/users',          icon: <Users className="h-4 w-4" /> },
   { label: 'Venue Owners',    href: '/owners',         icon: <UserCheck className="h-4 w-4" /> },
   { label: 'Amenities',       href: '/amenities',      icon: <Sparkles className="h-4 w-4" /> },

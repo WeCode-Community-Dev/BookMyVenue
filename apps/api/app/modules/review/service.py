@@ -1,10 +1,11 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import desc
+from sqlalchemy import case, desc, func
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.exceptions import APIException
+from app.modules.admin.models import AdminAction
 from app.modules.booking.models import Booking, BookingStatus
 from app.modules.review.models import VenueReview
 from app.modules.review.schemas import (
@@ -12,6 +13,7 @@ from app.modules.review.schemas import (
     ReviewCreate,
     ReviewListResponse,
     ReviewResponse,
+    ReviewStats,
     ReviewSummaryResponse,
     ReviewUpdate,
 )
@@ -173,7 +175,7 @@ class ReviewService:
         """
         query = (
             db.query(VenueReview)
-            .options(joinedload(VenueReview.author))
+            .options(joinedload(VenueReview.author), joinedload(VenueReview.venue))
             .filter(
                 VenueReview.venue_id == venue_id,
                 VenueReview.deleted_at.is_(None),
@@ -251,7 +253,9 @@ class ReviewService:
         """
         List all reviews with optional filters (admin only).
         """
-        query = db.query(VenueReview).options(joinedload(VenueReview.author))
+        query = db.query(VenueReview).options(
+            joinedload(VenueReview.author), joinedload(VenueReview.venue)
+        )
 
         if venue_id:
             query = query.filter(VenueReview.venue_id == venue_id)
@@ -273,6 +277,31 @@ class ReviewService:
             total=total,
             page=page,
             per_page=per_page,
+            stats=ReviewService.get_review_stats(db),
+        )
+
+    @staticmethod
+    def get_review_stats(db: Session) -> ReviewStats:
+        """
+        Platform-wide review counts for the admin dashboard.
+        Always reflects all non-deleted reviews, regardless of active filters.
+        """
+        row = (
+            db.query(VenueReview)
+            .filter(VenueReview.deleted_at.is_(None))
+            .with_entities(
+                func.count(VenueReview.id).label("total"),
+                func.count(case((VenueReview.is_hidden.is_(False), 1))).label("visible"),
+                func.count(case((VenueReview.is_hidden.is_(True), 1))).label("hidden"),
+                func.coalesce(func.avg(VenueReview.rating), 0.0).label("average_rating"),
+            )
+            .one()
+        )
+        return ReviewStats(
+            total=row.total,
+            visible=row.visible,
+            hidden=row.hidden,
+            average_rating=round(float(row.average_rating), 2),
         )
 
     @staticmethod
@@ -294,6 +323,15 @@ class ReviewService:
         review.hidden_reason = reason
         review.hidden_by = admin_id
         review.hidden_at = datetime.utcnow()
+        db.add(
+            AdminAction(
+                admin_id=admin_id,
+                action_type="review_hidden",
+                target_type="venue_review",
+                target_id=review_id,
+                reason=reason,
+            )
+        )
         db.flush()
 
         return ReviewService._to_response(db, review)
@@ -319,6 +357,14 @@ class ReviewService:
         review.hidden_reason = None
         review.hidden_by = None
         review.hidden_at = None
+        db.add(
+            AdminAction(
+                admin_id=admin_id,
+                action_type="review_restored",
+                target_type="venue_review",
+                target_id=review_id,
+            )
+        )
         db.flush()
 
         return ReviewService._to_response(db, review)
@@ -337,6 +383,14 @@ class ReviewService:
         if not review:
             raise APIException(status_code=404, detail="Review not found.")
 
+        db.add(
+            AdminAction(
+                admin_id=admin_id,
+                action_type="review_deleted",
+                target_type="venue_review",
+                target_id=review_id,
+            )
+        )
         db.delete(review)
         db.flush()
 
@@ -391,8 +445,9 @@ class ReviewService:
         """
         Convert ORM model to response schema, loading related data.
         """
-        # Load author if not already loaded
+        # Load author/venue if not already loaded
         author = review.author
+        venue = review.venue
 
         return ReviewResponse(
             id=review.id,
@@ -407,6 +462,7 @@ class ReviewService:
             updated_at=review.updated_at,
             user_name=author.full_name if author else None,
             user_email=author.email if author else None,
+            venue_name=venue.name if venue else None,
             hidden_reason=review.hidden_reason,
             hidden_by=review.hidden_by,
             hidden_at=review.hidden_at,

@@ -13,9 +13,17 @@ export interface Review {
   updated_at: string
   user_name: string | null
   user_email: string | null
+  venue_name: string | null
   hidden_reason: string | null
   hidden_by: string | null
   hidden_at: string | null
+}
+
+export interface ReviewStats {
+  total: number
+  visible: number
+  hidden: number
+  average_rating: number
 }
 
 export interface ReviewListResponse {
@@ -23,6 +31,7 @@ export interface ReviewListResponse {
   total: number
   page: number
   per_page: number
+  stats: ReviewStats | null
 }
 
 export interface EligibleBookingsResponse {
