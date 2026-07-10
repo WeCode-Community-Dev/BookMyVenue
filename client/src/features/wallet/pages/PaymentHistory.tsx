@@ -13,7 +13,6 @@ export interface PaymentHistoryItem {
   amountPaid: number;
   refundAmount: number;
   paymentStatus: string;
-  refundStatus: string;
   bookingStatus: string;
 }
 
@@ -42,7 +41,6 @@ export default function PaymentHistory() {
         limit: limit.toString(),
         ...(searchValue && { search: searchValue }),
         ...(filterValues.paymentStatus && { paymentStatus: filterValues.paymentStatus }),
-        ...(filterValues.refundStatus && { refundStatus: filterValues.refundStatus }),
       });
 
       // Handle custom sorting format for backend
@@ -130,27 +128,18 @@ export default function PaymentHistory() {
       key: 'paymentStatus',
       header: 'Payment Status',
       render: (item) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.paymentStatus === 'COMPLETED' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-            item.paymentStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-              item.paymentStatus === 'PARTIAL' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-          }`}>
-          {item.paymentStatus.replace('_', ' ')}
-        </span>
-      ),
-    },
-    {
-      key: 'refundStatus',
-      header: 'Refund Status',
-      render: (item) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          item.refundStatus === 'PROCESSED' || item.refundStatus === 'COMPLETED'
+          item.paymentStatus === 'COMPLETED' || item.paymentStatus === 'PAID'
+            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+            : item.paymentStatus === 'REFUNDED'
             ? 'bg-primary/10 text-primary'
-            : item.refundStatus === 'PENDING'
+            : item.paymentStatus === 'PENDING'
             ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-            : 'bg-muted/20 text-muted'
+            : item.paymentStatus === 'PARTIAL'
+            ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400'
+            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
         }`}>
-          {item.refundStatus.replace(/_/g, ' ')}
+          {item.paymentStatus.replace(/_/g, ' ')}
         </span>
       ),
     },
@@ -164,17 +153,8 @@ export default function PaymentHistory() {
         { label: 'Completed', value: 'COMPLETED' },
         { label: 'Pending', value: 'PENDING' },
         { label: 'Partial', value: 'PARTIAL' },
+        { label: 'Refunded', value: 'REFUNDED' },
         { label: 'Failed', value: 'FAILED' },
-      ],
-    },
-    {
-      key: 'refundStatus',
-      label: 'Refund Status',
-      options: [
-        { label: 'Not Eligible', value: 'NOT_ELIGIBLE' },
-        { label: 'Pending', value: 'PENDING' },
-        { label: 'Processed', value: 'PROCESSED' },
-        { label: 'Completed', value: 'COMPLETED' },
       ],
     },
   ];

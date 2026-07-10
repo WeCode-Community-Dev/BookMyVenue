@@ -11,14 +11,13 @@ export const getPaymentHistory = async (req: Request, res: Response, next: NextF
       throw new AppError('Unauthorized access', HTTP_STATUS.UNAUTHORIZED);
     }
 
-    const { page, limit, search, paymentStatus, refundStatus, sort } = req.query;
+    const { page, limit, search, paymentStatus, sort } = req.query;
 
     const result = await paymentHistoryService.getPaymentHistory(userId, {
       page: page ? parseInt(page as string) : undefined,
       limit: limit ? parseInt(limit as string) : undefined,
       search: search as string,
       paymentStatus: paymentStatus as string,
-      refundStatus: refundStatus as string,
       sort: sort as string,
     });
 
