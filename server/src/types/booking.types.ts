@@ -1,7 +1,9 @@
 import { Document, Types } from 'mongoose';
 import { BookingStatus, BookingScenario, PaymentMethod, PaymentStatus } from '@/constants/booking';
+import { SettlementStatus } from '@/constants/settlement';
 
 export interface IBooking extends Document {
+  bookingId?: string;
   venue: Types.ObjectId;
   user: Types.ObjectId;
   startDateTime: Date;
@@ -23,6 +25,7 @@ export interface IBooking extends Document {
   autoCancellationDate: Date | null;
   isImmediatePaymentRequired: boolean;
   cancellationReason: string;
+  settlementStatus: SettlementStatus | null;
   createdAt: Date;
   updatedAt: Date;
 }

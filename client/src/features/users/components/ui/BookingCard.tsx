@@ -10,9 +10,10 @@ import { BookingPaymentInfo } from './BookingPaymentInfo';
 interface BookingCardProps {
   booking: Booking;
   onCancelSuccess: () => void;
+  role?: 'user' | 'owner';
 }
 
-const BookingCard = ({ booking, onCancelSuccess }: BookingCardProps) => {
+const BookingCard = ({ booking, onCancelSuccess, role = 'user' }: BookingCardProps) => {
   const [cancelling, setCancelling] = useState(false);
   const [payingBalance, setPayingBalance] = useState(false);
 
@@ -289,8 +290,17 @@ const BookingCard = ({ booking, onCancelSuccess }: BookingCardProps) => {
           {/* Venue & Date Details */}
           <BookingDetails booking={booking} />
 
+          {role === 'owner' && (
+            <div className="mt-4 p-3 bg-muted/25 border border-border/50 rounded-2xl text-xs space-y-1 text-foreground/85">
+              <p className="text-[10px] font-bold text-foreground/45 uppercase tracking-wide">Customer Details</p>
+              <p className="font-bold text-foreground">{booking.contactName}</p>
+              <p>{booking.contactEmail}</p>
+              <p>{booking.contactPhone}</p>
+            </div>
+          )}
+
           {/* Payment Info / Countdown banner */}
-          <BookingPaymentInfo booking={booking} />
+          {role !== 'owner' && <BookingPaymentInfo booking={booking} />}
         </div>
 
         {/* Pricing & Footer Actions */}
@@ -319,82 +329,92 @@ const BookingCard = ({ booking, onCancelSuccess }: BookingCardProps) => {
             )}
 
             <div className="flex items-center gap-2 flex-wrap">
-
-              {/* ── Case 1: PENDING booking (slot held, deposit never paid) ── */}
-              {/* Payment failed or modal was dismissed — only action is to free the slot */}
-              {booking.bookingStatus === 'pending' && booking.paymentStatus === 'pending' && (
-                <button
-                  onClick={handleDeleteBooking}
-                  disabled={cancelling}
-                  className="px-4 py-2 bg-error/10 border border-error/30 text-error hover:bg-error/20 text-xs font-semibold rounded-xl transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+              {role === 'owner' ? (
+                <Link
+                  to={`/owner/bookings/${booking.id}`}
+                  className="px-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-semibold rounded-xl transition-all shadow-sm hover:shadow cursor-pointer"
                 >
-                  {cancelling ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="w-3.5 h-3.5" />
-                      Delete Booking
-                    </>
-                  )}
-                </button>
-              )}
-
-              {/* ── Case 2: RESERVED booking with deposit paid (partial/overdue) ── */}
-              {/* User can view details, pay remaining balance via Razorpay, or cancel */}
-              {booking.bookingStatus === 'reserved' && (booking.paymentStatus === 'partial' || booking.paymentStatus === 'overdue') && (
+                  View Details
+                </Link>
+              ) : (
                 <>
-                  <Link
-                    to={`/account/bookings/${booking.id}`}
-                    className="px-3 py-2 border border-border/70 text-foreground/75 hover:bg-muted/10 text-[11px] font-semibold rounded-xl transition-all"
-                  >
-                    View Details
-                  </Link>
-                  <button
-                    onClick={handlePayBalance}
-                    disabled={payingBalance}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    {payingBalance ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="w-3.5 h-3.5" />
-                        Pay Balance
-                      </>
-                    )}
-                  </button>
-                </>
-              )}
+                  {/* ── Case 1: PENDING booking (slot held, deposit never paid) ── */}
+                  {/* Payment failed or modal was dismissed — only action is to free the slot */}
+                  {booking.bookingStatus === 'pending' && booking.paymentStatus === 'pending' && (
+                    <button
+                      onClick={handleDeleteBooking}
+                      disabled={cancelling}
+                      className="px-4 py-2 bg-error/10 border border-error/30 text-error hover:bg-error/20 text-xs font-semibold rounded-xl transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      {cancelling ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Deleting...
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-3.5 h-3.5" />
+                          Delete Booking
+                        </>
+                      )}
+                    </button>
+                  )}
 
-              {/* ── Case 3: Cancel button — shown whenever booking is within cancellation window ── */}
-              {isCancellable && (
-                <button
-                  onClick={() => setShowCancelModal(true)}
-                  disabled={cancelling}
-                  className="px-4 py-2 border border-error/30 text-error hover:bg-error/5 text-xs font-semibold rounded-xl transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
-                >
-                  {cancelling ? (
+                  {/* ── Case 2: RESERVED booking with deposit paid (partial/overdue) ── */}
+                  {/* User can view details, pay remaining balance via Razorpay, or cancel */}
+                  {booking.bookingStatus === 'reserved' && (booking.paymentStatus === 'partial' || booking.paymentStatus === 'overdue') && (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      Cancelling...
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="w-3.5 h-3.5" />
-                      Cancel Booking
+                      <Link
+                        to={`/account/bookings/${booking.id}`}
+                        className="px-3 py-2 border border-border/70 text-foreground/75 hover:bg-muted/10 text-[11px] font-semibold rounded-xl transition-all"
+                      >
+                        View Details
+                      </Link>
+                      <button
+                        onClick={handlePayBalance}
+                        disabled={payingBalance}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow hover:scale-[1.02] active:scale-[0.98]"
+                      >
+                        {payingBalance ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="w-3.5 h-3.5" />
+                            Pay Balance
+                          </>
+                        )}
+                      </button>
                     </>
                   )}
-                </button>
-              )}
 
-              {!isCancellable && booking.bookingStatus !== 'reserved' && booking.bookingStatus !== 'pending' && booking.amountPaid === 0 && (
-                <span className="text-[11px] font-medium text-foreground/40">Unpaid</span>
+                  {/* ── Case 3: Cancel button — shown whenever booking is within cancellation window ── */}
+                  {isCancellable && (
+                    <button
+                      onClick={() => setShowCancelModal(true)}
+                      disabled={cancelling}
+                      className="px-4 py-2 border border-error/30 text-error hover:bg-error/5 text-xs font-semibold rounded-xl transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      {cancelling ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Cancelling...
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-3.5 h-3.5" />
+                          Cancel Booking
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {!isCancellable && booking.bookingStatus !== 'reserved' && booking.bookingStatus !== 'pending' && booking.amountPaid === 0 && (
+                    <span className="text-[11px] font-medium text-foreground/40">Unpaid</span>
+                  )}
+                </>
               )}
             </div>
           </div>

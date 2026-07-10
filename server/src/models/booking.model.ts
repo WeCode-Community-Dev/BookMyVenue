@@ -1,8 +1,15 @@
 import mongoose, { Schema } from 'mongoose';
 import { BookingStatus, BookingScenario, PaymentMethod, PaymentStatus, CancellationType, RefundStatus } from '../constants/booking';
+import { SettlementStatus } from '../constants/settlement';
+import Counter from './counter.model';
 
 const bookingSchema = new Schema(
   {
+    bookingId: {
+      type: String,
+      unique: true,
+    },
+
     venue: {
       type: Schema.Types.ObjectId,
       ref: 'Venue',
@@ -146,10 +153,29 @@ const bookingSchema = new Schema(
       default: 0,
       min: 0,
     },
+
+    settlementStatus: {
+      type: String,
+      enum: [...Object.values(SettlementStatus), null],
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+bookingSchema.pre('save', async function () {
+  if (!this.isNew || (this as any).bookingId) return;
+  
+  const counter = await Counter.findByIdAndUpdate(
+    { _id: 'bookingId' },
+    { $inc: { seq: 1 } },
+    { returnDocument: 'after', upsert: true }
+  );
+  
+  const seqStr = String(counter.seq).padStart(5, '0');
+  (this as any).bookingId = `BK-${seqStr}`;
+});
 
 export default mongoose.model('Booking', bookingSchema);

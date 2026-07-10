@@ -7,6 +7,7 @@ import UsersList from '@/features/users/pages/UsersList';
 import UserDetails from '@/features/users/pages/UserDetails';
 import AdminVenuesList from '@/features/admin/pages/AdminVenuesList';
 import AdminVenueDetails from '@/features/admin/pages/AdminVenueDetails';
+import AdminSettlements from '@/features/admin/pages/AdminSettlements';
 import ProtectedRoute from '@/shared/components/ProtectedRoute';
 import AdminDashboard from '@/features/dashboard/pages/AdminDashboard';
 import UserProfile from '@/features/profile/pages/UserProfile';
@@ -52,6 +53,10 @@ export const adminRoutes = {
     {
       path: 'venues/:id',
       element: <AdminVenueDetails />,
+    },
+    {
+      path: 'settlements',
+      element: <AdminSettlements />,
     },
     {
       path: 'profile',

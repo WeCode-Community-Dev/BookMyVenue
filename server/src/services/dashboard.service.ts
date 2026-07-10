@@ -14,7 +14,10 @@ import Venue from '@/models/venue.model';
 import Category from '@/models/category.model';
 import Owner from '@/models/owner.model';
 import Availability from '@/models/availability.model';
-import mongoose from 'mongoose';
+import Settlement from '@/models/settlement.model';
+import Booking from '@/models/booking.model';
+import { BookingStatus } from '@/constants/booking';
+import { SettlementStatus } from '@/constants/settlement';
 
 function formatTimeAgo(date: Date): string {
   const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
@@ -29,151 +32,35 @@ function formatTimeAgo(date: Date): string {
 
 // OWNER DASHBOARD SERVICE
 export async function ownerDashboardService(ownerId: string): Promise<OwnerDashboard> {
-  const venueDocs = await getOwnerVenues(ownerId);
-  const venueIds = venueDocs.map(v => v._id);
+  const approvedVenues = await getApprovedVenues(ownerId);
 
-  if (venueIds.length === 0) {
-    return {
-      statCardData: [
-        { title: 'Total Revenue', value: '₹0' },
-        { title: 'Total Bookings', value: 0 },
-        { title: 'Active Venues', value: 0 },
-        { title: 'Avg Rating', value: '0.0' },
-      ],
-      revenueChartData: [],
-      revenueDistributionData: [],
-      upcomingBookings: [],
-      venueHealthData: {
-        totalVenues: 0,
-        activeVenues: 0,
-        pendingVenues: 0,
-        rejectedVenues: 0,
-      },
-      topPerformingData: [],
-    };
-  }
+  // Get owner's venue IDs
+  const venues = await Venue.find({ ownerId, isDeleted: { $ne: true } }).select('_id');
+  const venueIds = venues.map((v) => v._id);
 
-  // 1. Venue Health Data
-  let totalVenues = venueDocs.length;
-  let activeVenues = 0;
-  let pendingVenues = 0;
-  let rejectedVenues = 0;
+  // Real revenue from settled settlements
+  const [revenueResult] = await Settlement.aggregate([
+    { $match: { ownerId: ownerId, status: SettlementStatus.SETTLED } },
+    { $group: { _id: null, totalRevenue: { $sum: '$ownerEarnings' }, count: { $sum: 1 } } },
+  ]);
+  const totalRevenue = revenueResult?.totalRevenue || 0;
 
-  venueDocs.forEach(v => {
-    if (v.isActive && v.verificationStatus === 'approved') {
-      activeVenues++;
-    }
-    if (v.verificationStatus === 'pending') {
-      pendingVenues++;
-    }
-    if (v.verificationStatus === 'rejected') {
-      rejectedVenues++;
-    }
+  // Real completed booking count
+  const totalBookings = await Booking.countDocuments({
+    venue: { $in: venueIds },
+    bookingStatus: BookingStatus.COMPLETED,
   });
-
-  const venueHealthData = {
-    totalVenues,
-    activeVenues,
-    pendingVenues,
-    rejectedVenues,
-  };
-
-  // 2. Total Revenue & Bookings Aggregation
-  const { totalRevenue, totalBookings } = await getOwnerStats(venueIds);
-
-  const statCardData: any[] = [
-    { title: 'Total Revenue', value: `₹${totalRevenue.toLocaleString()}` },
-    { title: 'Total Bookings', value: totalBookings },
-    { title: 'Active Venues', value: activeVenues },
-    { title: 'Avg Rating', value: '0.0' },
-  ];
-
-  // 3. Monthly Revenue & Bookings Chart Data for Current Year
-  const currentYear = new Date().getFullYear();
-  const startOfYear = new Date(currentYear, 0, 1);
-  const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59);
-
-  const monthlyAgg = await getOwnerMonthlyChartData(venueIds, startOfYear, endOfYear);
-
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const revenueChartData = months.map((month, index) => {
-    const aggItem = monthlyAgg.find(item => item._id === index + 1);
-    return {
-      period: month,
-      revenue: aggItem?.revenue || 0,
-      bookings: aggItem?.bookings || 0
-    };
-  });
-
-  // 4. Category Performance (Pie Chart)
-  const categoryAgg = await getOwnerCategoryPerformance(venueIds);
-
-  const revenueDistributionData = categoryAgg.map(item => ({
-    category: item._id,
-    revenue: item.revenue || 0
-  }));
-
-  // 5. Upcoming Bookings
-  const upcomingBookingsRaw = await getOwnerUpcomingBookings(venueIds, 5);
-
-  const upcomingBookings = upcomingBookingsRaw.map(b => {
-    const start = new Date(b.startDateTime);
-    const end = new Date(b.endDateTime);
-    const dateStr = start.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-    const timeStr = `${start.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    })} - ${end.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    })}`;
-
-    return {
-      id: b._id.toString(),
-      venueName: (b.venue as any)?.name || 'Unknown Venue',
-      customer: (b.user as any)?.fullName || b.contactName || 'Guest',
-      guests: b.guests,
-      date: dateStr,
-      time: timeStr,
-      status: b.bookingStatus.toLowerCase() as any
-    };
-  });
-
-  // 6. Top Performing Venues
-  const topVenuesAgg = await getOwnerTopVenues(venueIds, 5);
-
-  const topPerformingData = await Promise.all(topVenuesAgg.map(async (item) => {
-    const venueDoc = venueDocs.find(v => v._id.toString() === item._id.toString());
-    
-    const last30DaysBookings = await getVenueBookingsInLast30Days(item._id);
-    const totalBookedHours = last30DaysBookings.reduce((sum, b) => {
-      const durationMs = new Date(b.endDateTime).getTime() - new Date(b.startDateTime).getTime();
-      return sum + (durationMs / (1000 * 60 * 60));
-    }, 0);
-    const occupancyRate = Math.min(100, Math.round((totalBookedHours / 300) * 100)) || 0;
-
-    return {
-      id: item._id.toString(),
-      name: venueDoc?.name || 'Unknown Venue',
-      bookings: item.bookings,
-      revenue: item.revenue,
-      occupancyRate
-    };
-  }));
 
   return {
-    statCardData,
-    revenueChartData,
-    revenueDistributionData,
-    upcomingBookings,
-    venueHealthData,
-    topPerformingData,
+    statCardData: [
+      { title: 'Total Revenue', value: totalRevenue },
+      { title: 'Total Bookings', value: totalBookings },
+      { title: 'Active Venues', value: approvedVenues },
+      { title: 'Avg Rating', value: 0 },
+    ],
+    revenueChartData: [],
+    revenueDistributionData: [],
+    upcomingBookings: [],
   };
 }
 

@@ -1,12 +1,11 @@
 import cron from 'node-cron';
-import Booking from '../models/booking.model';
-import { BookingStatus, CancellationType, RefundStatus } from '../constants/booking';
+import { RefundStatus } from '../constants/booking';
 import { processRefund } from '../services/refund.service';
 import logger from '../libs/logger';
+import { findFailedRefundBookings } from '@/repositories/booking.repository';
 
 /**
  * Retries refunds for bookings that are:
- * - PENDING  : processRefund() was never called (server crash after cancellation)
  * - FAILED   : processRefund() ran but hit an unexpected error
  *
  * PROCESSING is intentionally excluded — an active transaction may still be running.
@@ -16,20 +15,15 @@ export const startRefundRecoveryJob = () => {
     logger.info('Running Refund Recovery Job...');
 
     try {
-      const stuckBookings = await Booking.find({
-        bookingStatus: BookingStatus.CANCELLED,
-        cancellationType: CancellationType.USER,
-        refundStatus: { $in: [RefundStatus.FAILED] },
-        refundAmount: { $gt: 0 },
-      }).select('_id refundStatus refundAmount user');
+      const failedBookingRefunds = await findFailedRefundBookings();
 
-      if (stuckBookings.length === 0) {
+      if (failedBookingRefunds.length === 0) {
         return;
       }
 
-      logger.info(`Refund Recovery: Found ${stuckBookings.length} booking(s) to retry.`);
+      logger.info(`Refund Recovery: Found ${failedBookingRefunds.length} booking(s) to retry.`);
 
-      for (const booking of stuckBookings) {
+      for (const booking of failedBookingRefunds) {
         const bookingId = String(booking._id);
         try {
 

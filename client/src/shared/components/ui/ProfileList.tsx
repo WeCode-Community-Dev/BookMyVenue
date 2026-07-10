@@ -81,6 +81,14 @@ const ProfileList = ({ onClose }: ProfileListProps) => {
           My Wallet
         </Link>
         <Link
+          to="/account/payment-history"
+          onClick={onClose}
+          className="flex items-center gap-2.5 px-4 py-2 text-[12px] text-foreground/80 hover:bg-muted/30 hover:text-primary transition-all duration-150"
+        >
+          <Wallet size={14} className="text-foreground/50" />
+          Payment History
+        </Link>
+        <Link
           to="/favorites"
           onClick={onClose}
           className="flex items-center gap-2.5 px-4 py-2 text-[12px] text-foreground/80 hover:bg-muted/30 hover:text-primary transition-all duration-150"

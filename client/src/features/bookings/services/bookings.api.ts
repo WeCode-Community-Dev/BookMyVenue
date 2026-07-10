@@ -69,4 +69,28 @@ export const bookingsApi = {
       return null;
     }
   },
+
+  getOwnerBookings: async (page = 1, limit = 10, status?: string): Promise<any> => {
+    const params = new URLSearchParams();
+    params.append('page', String(page));
+    params.append('limit', String(limit));
+    if (status && status !== 'all') {
+      params.append('status', status);
+    }
+    const res = await apiClient.get(`/owners/bookings?${params.toString()}`);
+    return res.data;
+  },
+
+  getOwnerBookingById: async (bookingId: string): Promise<any> => {
+    const res = await apiClient.get(`/owners/bookings/${bookingId}`);
+    return res.data;
+  },
+
+  updateOwnerBookingStatus: async (
+    bookingId: string,
+    updates: { bookingStatus?: string; paymentStatus?: string }
+  ): Promise<any> => {
+    const res = await apiClient.patch(`/owners/bookings/${bookingId}/status`, updates);
+    return res.data;
+  },
 };

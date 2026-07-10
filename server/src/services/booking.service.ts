@@ -7,6 +7,7 @@ import {
   CancellationType,
   RefundStatus,
 } from '@/constants/booking';
+import { SettlementStatus } from '@/constants/settlement';
 import { CreateBookingPayload } from '@/types/booking.types';
 import { AppError } from '@/utils/AppError';
 import { getAvailabilityByVenueId } from '@/repositories/availability.repository';
@@ -17,6 +18,8 @@ import { verifyPaymentSignature } from './razorpay.service';
 import { processRefund } from './refund.service';
 import logger from '@/libs/logger';
 import mongoose from 'mongoose';
+import Venue from '@/models/venue.model';
+import Booking from '@/models/booking.model';
 
 // ── Helpers ───────────────────────────────────────────────────
 
@@ -509,4 +512,154 @@ export const getBookingByIdService = async (userId: string, bookingId: string) =
     throw new AppError('Unauthorized access to booking', HTTP_STATUS.UNAUTHORIZED);
   }
   return booking;
+};
+
+export const getOwnerBookingsService = async (
+  ownerId: string,
+  page: number,
+  limit: number,
+  status?: string
+) => {
+  // 1. Fetch all active venues owned by this owner
+  const venues = await Venue.find({ ownerId, isDeleted: { $ne: true } }).select('_id');
+  const venueIds = venues.map(v => v._id);
+
+  // 2. Fetch bookings for these venues
+  const result = await bookingRepo.findBookingsByVenueIds(venueIds, page, limit, status);
+
+  // 3. Process bookings to include helpful UI fields
+  const processedBookings = result.bookings.map(doc => {
+    const booking = doc.toObject ? doc.toObject() : doc;
+    const venueDoc = (booking.venue as any) ?? {};
+    const venueImages = venueDoc.images ?? [];
+
+    const rawPaymentStatus = booking.paymentStatus ?? '';
+    const paymentStatus =
+      rawPaymentStatus.toUpperCase() === PaymentStatus.DEPOSIT_PAID
+        ? 'partial'
+        : rawPaymentStatus.toLowerCase();
+
+    return {
+      ...booking,
+      id: String(booking._id),
+      bookingStatus: (booking.bookingStatus ?? '').toLowerCase(),
+      paymentStatus,
+      venue: {
+        id: String(venueDoc._id ?? venueDoc.id ?? ''),
+        name: venueDoc.name ?? '',
+        imageUrl: venueImages[0] ?? null,
+        location: venueDoc.address
+          ? [venueDoc.address.city, venueDoc.address.state].filter(Boolean).join(', ')
+          : '',
+      },
+    };
+  });
+
+  // 4. Calculate owner bookings stats
+  const [totalCount, confirmedCount, reservedCount, pendingCount] = await Promise.all([
+    Booking.countDocuments({ venue: { $in: venueIds } }),
+    Booking.countDocuments({ venue: { $in: venueIds }, bookingStatus: BookingStatus.CONFIRMED }),
+    Booking.countDocuments({ venue: { $in: venueIds }, bookingStatus: BookingStatus.RESERVED }),
+    Booking.countDocuments({ venue: { $in: venueIds }, bookingStatus: BookingStatus.PENDING }),
+  ]);
+
+  return {
+    bookings: processedBookings,
+    pagination: result.pagination,
+    stats: {
+      total: totalCount,
+      confirmed: confirmedCount,
+      pending: reservedCount + pendingCount,
+    },
+  };
+};
+
+export const getOwnerBookingByIdService = async (ownerId: string, bookingId: string) => {
+  const booking = await bookingRepo.findBookingById(bookingId);
+  if (!booking) {
+    throw new AppError('Booking not found', HTTP_STATUS.NOT_FOUND);
+  }
+
+  // Ensure owner owns the venue associated with this booking
+  const venue = await Venue.findById(booking.venue?._id || booking.venue);
+  if (!venue || venue.ownerId.toString() !== ownerId) {
+    throw new AppError('Unauthorized access to booking details', HTTP_STATUS.UNAUTHORIZED);
+  }
+
+  return booking;
+};
+
+export const updateOwnerBookingStatusService = async (
+  ownerId: string,
+  bookingId: string,
+  bookingStatus?: string
+) => {
+  const booking = await bookingRepo.findBookingById(bookingId);
+  if (!booking) {
+    throw new AppError('Booking not found', HTTP_STATUS.NOT_FOUND);
+  }
+
+  // Ensure owner owns the venue associated with this booking
+  const venue = await Venue.findById(booking.venue?._id || booking.venue);
+  if (!venue || venue.ownerId.toString() !== ownerId) {
+    throw new AppError('Unauthorized access to booking details', HTTP_STATUS.UNAUTHORIZED);
+  }
+
+  // Block updates on finalized bookings
+  const currentStatus = booking.bookingStatus;
+  if (currentStatus === BookingStatus.CANCELLED || currentStatus === BookingStatus.COMPLETED) {
+    throw new AppError('Cannot modify a finalized booking', HTTP_STATUS.BAD_REQUEST);
+  }
+
+  const updates: Record<string, any> = {};
+  const now = new Date();
+
+  console.log('the booking status from frontend :',bookingStatus);
+
+  if (bookingStatus) {
+    const validBookingStatuses = Object.values(BookingStatus);
+    console.log("the valid booking status in backend ",validBookingStatuses)
+    if (!validBookingStatuses.includes(bookingStatus.toUpperCase() as any)) {
+      throw new AppError('Invalid booking status value', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    // 1. Transition to confirmed
+    if (bookingStatus.toUpperCase() === BookingStatus.CONFIRMED) {
+      if (currentStatus !== BookingStatus.RESERVED) {
+        throw new AppError('Only reserved bookings can be manually confirmed', HTTP_STATUS.BAD_REQUEST);
+      }
+      updates.bookingStatus = BookingStatus.CONFIRMED;
+      // Auto-set paymentStatus to partial if it is still pending
+      if (booking.paymentStatus === PaymentStatus.PENDING) {
+        updates.paymentStatus = PaymentStatus.PARTIAL;
+      }
+    }
+
+    // 2. Transition to completed
+    if (bookingStatus.toUpperCase() === BookingStatus.COMPLETED) {
+      if (currentStatus !== BookingStatus.CONFIRMED) {
+        throw new AppError('Only confirmed bookings can be marked as completed', HTTP_STATUS.BAD_REQUEST);
+      }
+      if (now.getTime() < new Date(booking.endDateTime).getTime()) {
+        throw new AppError('Cannot complete a booking before the checkout time has passed', HTTP_STATUS.BAD_REQUEST);
+      }
+      updates.bookingStatus = BookingStatus.COMPLETED;
+      updates.paymentStatus = PaymentStatus.PAID;
+      updates.amountPaid = booking.totalAmount;
+      updates.settlementStatus = SettlementStatus.PENDING;
+    }
+
+    // 3. Transition to cancelled (Disabled for Owners)
+    if (bookingStatus.toUpperCase() === BookingStatus.CANCELLED) {
+      throw new AppError('Owners are not permitted to cancel bookings', HTTP_STATUS.BAD_REQUEST);
+    }
+  }
+
+  const updatedBooking = await Booking.findByIdAndUpdate(
+    bookingId,
+    { $set: updates },
+    { new: true }
+  ).populate('venue');
+
+  return updatedBooking;
 };
