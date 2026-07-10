@@ -1,5 +1,7 @@
 import venueModel from "../models/venueModel.js";
 import parsePagination from "../utils/parsePagination.js";
+import { buildSearchRegex } from "../utils/marketplaceUserFilter.js";
+import mongoose from "mongoose";
 
 const buildVenueFilter = (query) => {
     const filter = {};
@@ -12,16 +14,16 @@ const buildVenueFilter = (query) => {
         }
     }
 
-    if (query.city) {
-        filter.city = new RegExp(query.city.trim(), "i");
+    if (query.city?.trim()) {
+        filter.city = buildSearchRegex(query.city);
     }
 
     if (query.ownerId) {
         filter.ownerId = query.ownerId;
     }
 
-    if (query.search) {
-        const searchRegex = new RegExp(query.search.trim(), "i");
+    if (query.search?.trim()) {
+        const searchRegex = buildSearchRegex(query.search);
         filter.$or = [
             { title: searchRegex },
             { city: searchRegex },
@@ -60,7 +62,7 @@ const getVenues = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -68,6 +70,12 @@ const getVenues = async (req, res) => {
 const getVenueById = async (req, res) => {
     try {
         const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid venue ID",
+            });
+        }
 
         const venue = await venueModel
             .findById(id)
@@ -90,7 +98,7 @@ const getVenueById = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -98,6 +106,12 @@ const getVenueById = async (req, res) => {
 const activateVenue = async (req, res) => {
     try {
         const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid venue ID",
+            });
+        }
 
         const venue = await venueModel.findById(id);
 
@@ -121,7 +135,7 @@ const activateVenue = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -129,6 +143,12 @@ const activateVenue = async (req, res) => {
 const deactivateVenue = async (req, res) => {
     try {
         const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid venue ID",
+            });
+        }
 
         const venue = await venueModel.findById(id);
 
@@ -152,7 +172,7 @@ const deactivateVenue = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };

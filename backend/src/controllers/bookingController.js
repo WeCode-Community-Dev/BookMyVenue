@@ -27,7 +27,7 @@ const getMyBookings = async (req, res) => {
         console.error("Error fetching bookings:",error);
         return res.status(500).json({
             success:false,
-            message:error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -61,7 +61,7 @@ const getProviderBookings = async (req,res)=>{
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 }

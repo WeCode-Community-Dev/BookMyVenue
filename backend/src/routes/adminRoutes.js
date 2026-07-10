@@ -1,31 +1,12 @@
 import express from "express";
 import userAuthMiddleware from "../middleware/userAuthMiddleware.js";
 import authorizeRoles from "../middleware/authorizeRoles.js";
-import {
-    getDashboardStats,
-    getRecentActivity,
-} from "../controllers/adminDashboardController.js";
-import {
-    getUsers,
-    getUserById,
-    activateUser,
-    deactivateUser,
-} from "../controllers/adminUserController.js";
-import {
-    getVenues,
-    getVenueById,
-    activateVenue,
-    deactivateVenue,
-} from "../controllers/adminVenueController.js";
-import {
-    getBookings,
-    getBookingById,
-} from "../controllers/adminBookingController.js";
-import {
-    getPaymentOrders,
-    getPaymentHistory,
-    getAbandonedPayments,
-} from "../controllers/adminPaymentController.js";
+import { getDashboardStats, getRecentActivity} from "../controllers/adminDashboardController.js";
+import { getUsers,getUserById,activateUser,deactivateUser} from "../controllers/adminUserController.js";
+import { getVenues,getVenueById,activateVenue,deactivateVenue} from "../controllers/adminVenueController.js";
+import { getBookings,getBookingById} from "../controllers/adminBookingController.js";
+import { getPaymentOrders,getPaymentHistory,getAbandonedPayments} from "../controllers/adminPaymentController.js";
+
 
 const adminRouter = express.Router();
 

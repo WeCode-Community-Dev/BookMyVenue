@@ -1,5 +1,6 @@
 import bookingModel from "../models/bookingModel.js";
 import parsePagination from "../utils/parsePagination.js";
+import mongoose from "mongoose";
 
 const buildBookingFilter = (query) => {
     const filter = {};
@@ -53,7 +54,7 @@ const getBookings = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -61,6 +62,13 @@ const getBookings = async (req, res) => {
 const getBookingById = async (req, res) => {
     try {
         const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid booking ID",
+            });
+        }
 
         const booking = await bookingModel
             .findById(id)
@@ -85,7 +93,7 @@ const getBookingById = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };

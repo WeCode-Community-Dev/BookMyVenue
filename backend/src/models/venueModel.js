@@ -19,10 +19,19 @@ const venueSchema = new mongoose.Schema(
             required: true,
         },
 
-        category: {
-            type: String,
-            required: true,
-        },
+        category:{
+            type:String,
+            enum:[
+            "wedding",
+            "corporate",
+            "birthday",
+            "party",
+            "function",
+            "photoshoot",
+            "other"
+            ],
+            required:true
+           },
 
         images: [
             {

@@ -2,6 +2,7 @@ import userModel from "../models/userModel.js";
 import venueModel from "../models/venueModel.js";
 import bookingModel from "../models/bookingModel.js";
 import sanitizeUser from "../utils/sanitizeUser.js";
+import { MARKETPLACE_USER_FILTER, withMarketplaceUserFilter } from "../utils/marketplaceUserFilter.js";
 
 const RECENT_LIMIT = 5;
 
@@ -15,8 +16,8 @@ const getDashboardStats = async (req, res) => {
             confirmedPaidBookings,
             revenueResult,
         ] = await Promise.all([
-            userModel.countDocuments(),
-            userModel.countDocuments({ roles: "provider" }),
+            userModel.countDocuments(MARKETPLACE_USER_FILTER),
+            userModel.countDocuments(withMarketplaceUserFilter({ roles: "provider" })),
             venueModel.countDocuments(),
             venueModel.countDocuments({ isActive: true }),
             bookingModel.countDocuments({
@@ -58,7 +59,7 @@ const getDashboardStats = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -67,7 +68,7 @@ const getRecentActivity = async (req, res) => {
     try {
         const [users, venues, bookings] = await Promise.all([
             userModel
-                .find()
+                .find(MARKETPLACE_USER_FILTER)
                 .select("-password -otp -otpExpiresAt")
                 .sort({ createdAt: -1 })
                 .limit(RECENT_LIMIT),
@@ -98,7 +99,7 @@ const getRecentActivity = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };

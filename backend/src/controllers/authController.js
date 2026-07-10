@@ -73,6 +73,7 @@ const register = async (req, res) => {
         const { otp, expiresAt } = generateOtp();
 
 
+        await sendEmail(email, otp,);
         await userModel.create({
             name,
             email,
@@ -82,17 +83,16 @@ const register = async (req, res) => {
             otpExpiresAt: expiresAt,
         });
 
-        await sendEmail(email, otp,);
 
         return res.status(201).json({
             success: true,
-            message: "User registered successfully. Please check your email for the OTP.",
+            message: "Registration successful. Please check your email for the verification OTP.",
         });
     } catch (error) {
         console.error("Registration error:", error);
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Registration failed. Please try again.",
         });
     }
 
@@ -114,9 +114,9 @@ const verifyEmail = async (req, res) => {
         const user = await userModel.findOne({ email });
 
         if (!user) {
-            return res.status(404).json({
+            return res.status(401).json({
                 success: false,
-                message: "User not found"
+                message: "Invalid email or OTP"
             });
         }
 
@@ -304,7 +304,7 @@ const login = async (req, res) => {
 
 }
 
-
+//change password
 const forgotPassword = async (req, res) => {
 
     try {
@@ -417,7 +417,7 @@ const resetPassword = async (req, res) => {
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 const GENDER_VALUES = ["male", "female", "other"];
 
-//logged in user
+//logged in user 
 
 const getMe = async (req, res) => {
     try {
@@ -602,7 +602,7 @@ const updateMe = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Profile updated successfully",
+            message: "Profile updated",
             user: {
                 id: user._id,
                 name: user.name,
@@ -668,7 +668,7 @@ const updateProfileImage = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Profile image updated successfully",
+            message: "Profile image updated",
             user: {
                 id: user._id,
                 name: user.name,
@@ -711,7 +711,7 @@ const logout = (req, res) => {
         console.error("Logout error:", error);
         return res.status(500).json({
             success: false,
-            message: "Error occurred while logging out",
+            message: "Logout failed. Please try again.",
         });
     }
 }
@@ -737,7 +737,7 @@ const becomeProvider = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Provider role added successfully",
+            message: "Provider account created successfully",
             roles: user.roles,
         });
 

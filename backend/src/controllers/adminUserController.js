@@ -1,8 +1,17 @@
+import mongoose from "mongoose";
 import userModel from "../models/userModel.js";
 import venueModel from "../models/venueModel.js";
 import bookingModel from "../models/bookingModel.js";
 import parsePagination from "../utils/parsePagination.js";
 import sanitizeUser from "../utils/sanitizeUser.js";
+import {
+    withMarketplaceUserFilter,
+    isPlatformOperator,
+    buildSearchRegex,
+} from "../utils/marketplaceUserFilter.js";
+
+const OPERATOR_ACCOUNT_MESSAGE =
+    "Platform operator accounts cannot be managed here";
 
 const buildUserFilter = (query) => {
     const filter = {};
@@ -19,8 +28,8 @@ const buildUserFilter = (query) => {
         }
     }
 
-    if (query.search) {
-        const searchRegex = new RegExp(query.search.trim(), "i");
+    if (query.search?.trim()) {
+        const searchRegex = buildSearchRegex(query.search);
         filter.$or = [
             { name: searchRegex },
             { email: searchRegex },
@@ -28,7 +37,7 @@ const buildUserFilter = (query) => {
         ];
     }
 
-    return filter;
+    return withMarketplaceUserFilter(filter);
 };
 
 const getUsers = async (req, res) => {
@@ -59,7 +68,7 @@ const getUsers = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -67,9 +76,15 @@ const getUsers = async (req, res) => {
 const getUserById = async (req, res) => {
     try {
         const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid user ID",
+            });
+        }
 
         const user = await userModel
-            .findById(id)
+            .findOne(withMarketplaceUserFilter({ _id: id }))
             .select("-password -otp -otpExpiresAt");
 
         if (!user) {
@@ -98,7 +113,7 @@ const getUserById = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -106,13 +121,25 @@ const getUserById = async (req, res) => {
 const activateUser = async (req, res) => {
     try {
         const { id } = req.params;
-
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid user ID",
+            });
+        }
         const user = await userModel.findById(id);
 
         if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "User not found",
+            });
+        }
+
+        if (isPlatformOperator(user)) {
+            return res.status(400).json({
+                success: false,
+                message: OPERATOR_ACCOUNT_MESSAGE,
             });
         }
 
@@ -129,7 +156,7 @@ const activateUser = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -137,6 +164,12 @@ const activateUser = async (req, res) => {
 const deactivateUser = async (req, res) => {
     try {
         const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid user ID",
+            });
+        }
 
         if (req.user._id.toString() === id) {
             return res.status(400).json({
@@ -154,6 +187,13 @@ const deactivateUser = async (req, res) => {
             });
         }
 
+        if (isPlatformOperator(user)) {
+            return res.status(400).json({
+                success: false,
+                message: OPERATOR_ACCOUNT_MESSAGE,
+            });
+        }
+
         user.isActive = false;
         await user.save();
 
@@ -167,7 +207,7 @@ const deactivateUser = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };

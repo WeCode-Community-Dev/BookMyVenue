@@ -36,7 +36,7 @@ const getPaymentOrders = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -75,7 +75,7 @@ const getPaymentHistory = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -122,7 +122,7 @@ const getAbandonedPayments = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };

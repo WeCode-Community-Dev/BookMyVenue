@@ -47,7 +47,7 @@ const createOrder = async (req, res) => {
         if (!venue) {
             return res.status(404).json({
                 success: false,
-                message: "Venue no found",
+                message: "Venue not found",
             });
         }
 
@@ -128,7 +128,7 @@ const createOrder = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.error?.description || error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };
@@ -387,7 +387,7 @@ const verifyPayment = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later.",
         });
     }
 };

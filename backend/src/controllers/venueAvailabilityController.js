@@ -1,5 +1,10 @@
+import mongoose from "mongoose";
 import venueAvailabilityModel from "../models/venueAvailabilityModel.js";
 import venueModel from "../models/venueModel.js";
+import {
+    isValidSlotTime,
+    parseSlotTimeToMinutes,
+} from "../utils/parseSlotTime.js";
 
 const createAvailability = async (req, res) => {
     try {
@@ -13,6 +18,12 @@ const createAvailability = async (req, res) => {
             });
         }
 
+        if (!mongoose.Types.ObjectId.isValid(venueId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid venue ID",
+            });
+        }
 
         const venue = await venueModel.findById(venueId);
 
@@ -31,6 +42,14 @@ const createAvailability = async (req, res) => {
             });
         }
         const selectedDate = new Date(date);
+
+        if (Number.isNaN(selectedDate.getTime())) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid date",
+            });
+        }
+
         const today = new Date();
 
         today.setHours(0, 0, 0, 0);
@@ -42,7 +61,17 @@ const createAvailability = async (req, res) => {
                 message: "Cannot create availability for past dates",
             });
         }
-        if (startTime >= endTime) {
+        const startMinutes = parseSlotTimeToMinutes(startTime);
+        const endMinutes = parseSlotTimeToMinutes(endTime);
+
+        if (!isValidSlotTime(startTime) || !isValidSlotTime(endTime)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid time format",
+            });
+        }
+
+        if (startMinutes >= endMinutes) {
             return res.status(400).json({
                 success: false,
                 message: "End time must be after start time",
@@ -78,7 +107,7 @@ const createAvailability = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later."
         });
     }
 };
@@ -88,6 +117,13 @@ const getVenueAvailability = async (req, res) => {
     try {
 
         const { venueId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(venueId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid venue ID",
+            });
+        }
 
         const availability = await venueAvailabilityModel.find({ venueId, }).sort({
             date: 1,
@@ -108,7 +144,7 @@ const getVenueAvailability = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later."
         });
     }
 };
@@ -120,7 +156,12 @@ const deactivateAvailability = async (req, res) => {
 
 
         const { slotId } = req.params;
-
+        if (!mongoose.Types.ObjectId.isValid(slotId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid slot ID",
+            });
+        }
         const slot = await venueAvailabilityModel.findById(slotId);
 
         if (!slot) {
@@ -131,6 +172,13 @@ const deactivateAvailability = async (req, res) => {
         }
 
         const venue = await venueModel.findById(slot.venueId);
+
+        if (!venue) {
+            return res.status(404).json({
+                success: false,
+                message: "Venue not found",
+            });
+        }
 
         if (venue.ownerId.toString() !== req.user._id.toString()) {
             return res.status(403).json({
@@ -161,7 +209,7 @@ const deactivateAvailability = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later."
         });
     }
 };
@@ -171,17 +219,30 @@ const deactivateAvailability = async (req, res) => {
 const activateAvailability = async (req, res) => {
     try {
         const { slotId } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(slotId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid slot ID",
+            });
+        }
 
         const slot = await venueAvailabilityModel.findById(slotId);
 
         if (!slot) {
             return res.status(404).json({
                 success: false,
-                message: "slot not found",
+                message: "Slot not found",
             });
         }
 
         const venue = await venueModel.findById(slot.venueId);
+
+        if (!venue) {
+            return res.status(404).json({
+                success: false,
+                message: "Venue not found",
+            });
+        }
 
         if (venue.ownerId.toString() !== req.user._id.toString()) {
             return res.status(403).json({
@@ -203,7 +264,7 @@ const activateAvailability = async (req, res) => {
 
         return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Something went wrong. Please try again later."
         });
     }
 };

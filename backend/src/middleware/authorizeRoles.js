@@ -21,9 +21,11 @@ const authorizeRoles = (...allowedRoles) => {
 
             next();
         } catch (error) {
+            console.error("Role authorization error:", error);
+        
             return res.status(500).json({
                 success: false,
-                message: error.message,
+                message: "Something went wrong. Please try again later.",
             });
         }
     };

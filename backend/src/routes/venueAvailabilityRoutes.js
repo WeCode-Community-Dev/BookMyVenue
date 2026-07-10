@@ -6,7 +6,7 @@ import authorizeRoles from '../middleware/authorizeRoles.js';
 const router = express.Router();
 
 router.post("/create", userAuthMiddleware, authorizeRoles("provider"), createAvailability)
-router.get("/:venueId",getVenueAvailability) //why not auth? "later custumer can see available venue"
+router.get("/:venueId",getVenueAvailability) 
 router.patch("/deactivate/:slotId",userAuthMiddleware,authorizeRoles("provider"), deactivateAvailability);
 router.patch("/activate/:slotId",userAuthMiddleware,authorizeRoles("provider"),activateAvailability);
 export default router;
