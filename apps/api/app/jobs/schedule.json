@@ -1,0 +1,25 @@
+{
+  "_comment": "Single source of truth for background-job cron schedules. Read by app/modules/admin/service.py (admin Settings page) and .github/workflows/jobs.yml (the actual trigger, via jq). The cron strings here MUST match the `on.schedule` entries in that workflow file — GitHub Actions requires those to be literal, so they can't be generated from this file, only kept in sync with it.",
+  "schedules": [
+    {
+      "cron": "*/15 * * * *",
+      "label": "Every 15 minutes",
+      "jobs": ["invoice_generator", "payment_pending_expiry"]
+    },
+    {
+      "cron": "0 * * * *",
+      "label": "Hourly",
+      "jobs": ["hold_expiry", "payment_reminders", "search_indexer"]
+    },
+    {
+      "cron": "0 */6 * * *",
+      "label": "Every 6 hours",
+      "jobs": ["request_expiry", "overdue_flag", "overdue_autocancel"]
+    },
+    {
+      "cron": "0 0 * * *",
+      "label": "Daily",
+      "jobs": ["completion"]
+    }
+  ]
+}

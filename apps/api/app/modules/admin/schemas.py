@@ -10,6 +10,45 @@ class VenueApprovalRequest(BaseModel):
     reason: str = ""
 
 
+class JobInfo(BaseModel):
+    """Static catalog entry for a background job — no run history, just what/when."""
+
+    name: str
+    description: str
+    schedule: str
+    queue_type: str
+
+
+class PlatformSettingsResponse(BaseModel):
+    """
+    Read-only view of platform-wide booking/commission defaults, operational
+    config, and the background-job catalog. These are code-level constants,
+    not editable — surfaced here so admins can see the rules the platform
+    currently enforces.
+    """
+
+    # Booking & commission rules
+    default_platform_commission_pct: float
+    token_payment_hold_hours: int
+    instant_booking_payment_timeout_minutes: int
+    booking_request_expiry_days: int
+    max_deadline_extensions: int
+    payment_reminder_hours_before_expiry: int
+    balance_overdue_action_window_hours: int
+    deep_research_rate_limit_per_minute: int
+    deep_research_daily_limit: int
+
+    # Platform config
+    environment: str
+    currency: str
+    background_jobs_enabled: bool
+    job_runner_configured: bool
+    search_diagnostics_enabled: bool
+
+    # Background jobs (static catalog, no live run history)
+    jobs: list[JobInfo]
+
+
 class UserSummary(BaseModel):
     id: uuid.UUID
     full_name: str | None

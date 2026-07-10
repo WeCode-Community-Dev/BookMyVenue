@@ -7,12 +7,12 @@ const Login = lazy(() => import('./pages/Login'))
 const LoginSuccess = lazy(() => import('./pages/LoginSuccess'))
 const Forbidden = lazy(() => import('./pages/Forbidden'))
 const NotFound = lazy(() => import('./pages/NotFound'))
-const ComingSoon = lazy(() => import('./pages/ComingSoon'))
 const Bookings = lazy(() => import('./pages/Bookings'))
 const Users = lazy(() => import('./pages/Users'))
 const VenueOwners = lazy(() => import('./pages/VenueOwners'))
 const VenueApprovals = lazy(() => import('./pages/VenueApprovals'))
 const Reviews = lazy(() => import('./pages/Reviews'))
+const Settings = lazy(() => import('./pages/Settings'))
 const Amenities = lazy(() => import('./pages/Amenities'))
 const Categories = lazy(() => import('./pages/Categories'))
 const AuditLog = lazy(() => import('./pages/AuditLog'))
@@ -95,14 +95,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/settings',
-    element: (
-      <ProtectedRoute>
-        <ComingSoon
-          title="Admin Settings"
-          description="System configuration, notification settings, and platform-wide preferences. Coming soon."
-        />
-      </ProtectedRoute>
-    ),
+    element: <ProtectedRoute><Settings /></ProtectedRoute>,
   },
 
   // Catch-all → 404

@@ -32,6 +32,7 @@ from app.modules.admin.schemas import (
     MarkInterestedRequest,
     OwnerApprovalRequest,
     OwnerStatsResponse,
+    PlatformSettingsResponse,
     ReactivateUserRequest,
     SuspendUserRequest,
     UserListResponse,
@@ -43,6 +44,13 @@ from app.modules.auth.dependencies import AuthContext, require_admin
 from app.modules.deep_research import service as reservation_service
 
 router = APIRouter()
+
+
+@router.get("/settings", response_model=PlatformSettingsResponse)
+def get_platform_settings(
+    _: AuthContext = Depends(require_admin),
+):
+    return service.get_platform_settings()
 
 
 @router.get("/venues/stats", response_model=VenueStatsResponse)

@@ -4,10 +4,10 @@ name: Background Jobs
 # token-guarded POST /api/internal/run-jobs endpoint. The in-process scheduler
 # stays off (ENABLE_JOBS=false) so the free Render service can sleep.
 #
-#   15-min   (*/15 * * * *) -> invoice_generator, payment_pending_expiry
-#   hourly   (0 * * * *)    -> hold_expiry, payment_reminders, search_indexer
-#   6-hourly (0 */6 * * *)  -> request_expiry, overdue_flag, overdue_autocancel
-#   daily    (0 0 * * *)    -> completion
+# The cron -> job-set mapping lives in apps/api/app/jobs/schedule.json (the
+# single source of truth, also read by the admin Settings page). The cron
+# strings below MUST match that file exactly — GitHub requires `on.schedule`
+# entries to be literal, so they can't be generated from it, only kept in sync.
 on:
   schedule:
     - cron: "*/15 * * * *"
@@ -25,16 +25,19 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Select job set
         id: select
         run: |
-          case "${{ github.event.schedule }}" in
-            "*/15 * * * *") JOBS="invoice_generator,payment_pending_expiry" ;;
-            "0 * * * *")    JOBS="hold_expiry,payment_reminders,search_indexer" ;;
-            "0 */6 * * *")  JOBS="request_expiry,overdue_flag,overdue_autocancel" ;;
-            "0 0 * * *")    JOBS="completion" ;;
-            *)              JOBS="${{ github.event.inputs.jobs }}" ;;
-          esac
+          if [ -n "${{ github.event.schedule }}" ]; then
+            JOBS=$(jq -r --arg cron "${{ github.event.schedule }}" \
+              '.schedules[] | select(.cron == $cron) | .jobs | join(",")' \
+              apps/api/app/jobs/schedule.json)
+          else
+            JOBS="${{ github.event.inputs.jobs }}"
+          fi
           echo "jobs=$JOBS" >> "$GITHUB_OUTPUT"
           echo "Running jobs: $JOBS"
 
