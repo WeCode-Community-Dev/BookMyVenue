@@ -52,33 +52,35 @@ export default function VenueCard({ venue }: VenueCardProps) {
           </div>
         </div>
         {/* Stats */}
-<div className="border-t border-border pt-4 space-y-3">
-  {/* Capacity */}
-  <div className="flex items-center gap-2 text-sm">
-    <Users size={16} className="text-muted shrink-0" />
-    <span className="font-medium">
-      {venue.capacity.toLocaleString()} Guests
-    </span>
-  </div>
+        <div className="border-t border-border pt-4 space-y-3">
+          {/* Capacity */}
+          <div className="flex items-center gap-2 text-sm">
+            <Users size={16} className="text-muted shrink-0" />
+            <span className="font-medium">
+              {venue.capacity.toLocaleString()} Guests
+            </span>
+          </div>
 
-  {/* Price & Time */}
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-2 text-primary">
-      <IndianRupee size={17} />
-      <span className="text-lg font-bold">
-        {venue.availability.pricePerHour}
-      </span>
-      <span className="text-sm text-muted">/ Hour</span>
-    </div>
+          {/* Price & Time */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-primary">
+              <IndianRupee size={17} />
+              <span className="text-lg font-bold">
+                {venue.availability?.pricePerHour ?? venue.pricing?.amount}
+              </span>
+              <span className="text-sm text-muted">/ Hour</span>
+            </div>
 
-    <div className="flex items-center gap-2 text-sm text-muted">
-      <Clock size={15} />
-      <span>
-        {venue.availability.openingTime} - {venue.availability.closingTime}
-      </span>
-    </div>
-  </div>
-</div>
+            {venue.availability && (
+              <div className="flex items-center gap-2 text-sm text-muted">
+                <Clock size={15} />
+                <span>
+                  {venue.availability.openingTime} - {venue.availability.closingTime}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
