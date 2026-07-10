@@ -38,6 +38,7 @@ interface Props {
 }
 
 export function PublicNavbar({ transparent = false }: Props) {
+
     const navigate = useNavigate();
     const { isAuthenticated, user, logout } = useAuth();
     const [mobileOpen, setMobileOpen] = useState(false);

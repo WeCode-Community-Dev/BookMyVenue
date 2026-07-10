@@ -1,3 +1,4 @@
+import './check-env'
 import 'src/global.css';
 
 import { useEffect } from 'react';
