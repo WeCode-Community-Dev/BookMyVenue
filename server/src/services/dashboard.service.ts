@@ -1,4 +1,13 @@
-import { getApprovedVenues } from '@/repositories/dashboard.repository';
+import {
+  getApprovedVenues,
+  getOwnerVenues,
+  getOwnerStats,
+  getOwnerMonthlyChartData,
+  getOwnerCategoryPerformance,
+  getOwnerUpcomingBookings,
+  getOwnerTopVenues,
+  getVenueBookingsInLast30Days,
+} from '@/repositories/dashboard.repository';
 import type { OwnerDashboard } from '@/types/dashbboard.types';
 import User from '@/models/user.model';
 import Venue from '@/models/venue.model';
