@@ -8,7 +8,8 @@ export class SearchService {
     type: string,
     query: string,
     latitude?: number,
-    longitude?: number
+    longitude?: number,
+    radius?: number
   ): Promise<SearchSuggestionDTO[]> {
     if (!query?.trim() && (latitude === undefined || longitude === undefined)) {
       return [];
@@ -18,7 +19,7 @@ export class SearchService {
       case 'venue': {
         let venues;
         if (latitude !== undefined && longitude !== undefined) {
-          venues = await this.searchRepository.findNearestVenues(longitude, latitude, query?.trim());
+          venues = await this.searchRepository.findNearestVenues(longitude, latitude, query?.trim(), radius);
         } else {
           venues = await this.searchRepository.searchVenues(query);
         }
@@ -27,6 +28,7 @@ export class SearchService {
           label: v.name,
           subtitle: v.address ? `${v.address.city}, ${v.address.state}` : '',
           type: 'venue',
+          image: v.images && v.images[0] ? v.images[0] : undefined,
         }));
       }
       default:

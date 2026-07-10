@@ -3,4 +3,5 @@ export interface SearchSuggestionDTO {
   label: string;
   subtitle?: string;
   type: string;
+  image?: string;
 }

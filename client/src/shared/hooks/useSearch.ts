@@ -5,14 +5,19 @@ import type { SearchSuggestion } from "../components/ui/Search/types";
 
 interface UseSearchProps {
     query: string;
-
+    latitude?: number;
+    longitude?: number;
     fetchSuggestions: (
-        query: string
+        query: string,
+        latitude?: number,
+        longitude?: number
     ) => Promise<SearchSuggestion[]>;
 }
 
 export function useSearch({
     query,
+    latitude,
+    longitude,
     fetchSuggestions
 }: UseSearchProps){
     const debouncedQuery = useDebounce(query,300);
@@ -22,7 +27,7 @@ export function useSearch({
     const [loading, setLoading] = useState(false);
 
     useEffect(()=>{
-        if(!debouncedQuery.trim()){
+        if(!debouncedQuery.trim() && (latitude === undefined || longitude === undefined)){
             setSuggestions([]);
             return ;
         }
@@ -30,7 +35,7 @@ export function useSearch({
         const search = async () => {
             try {
                 setLoading(true);
-                const results = await fetchSuggestions(debouncedQuery);
+                const results = await fetchSuggestions(debouncedQuery, latitude, longitude);
 
                 setSuggestions(results);
             } catch (error) {
@@ -41,7 +46,7 @@ export function useSearch({
             }
         }
         search();
-    }, [debouncedQuery, fetchSuggestions]);
+    }, [debouncedQuery, fetchSuggestions, latitude, longitude]);
 
     return {
         suggestions,

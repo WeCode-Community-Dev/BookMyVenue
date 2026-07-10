@@ -9,10 +9,11 @@ const searchService = new SearchService(searchRepository);
 
 export const getSuggestions = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { type, q, latitude, longitude } = req.query;
+    const { type, q, latitude, longitude, radius } = req.query;
     const lat = latitude ? parseFloat(latitude as string) : undefined;
     const lng = longitude ? parseFloat(longitude as string) : undefined;
-    const result = await searchService.getSuggestions(type as string, q as string, lat, lng);
+    const rad = radius ? parseFloat(radius as string) : undefined;
+    const result = await searchService.getSuggestions(type as string, q as string, lat, lng, rad);
     res.status(HTTP_STATUS.OK).json(result);
   } catch (error) {
     next(error);

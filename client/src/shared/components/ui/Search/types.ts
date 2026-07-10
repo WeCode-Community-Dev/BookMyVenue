@@ -5,6 +5,7 @@ export interface SearchSuggestion {
   label: string;
   subtitle?: string;
   icon?: ReactNode;
+  image?: string;
 }
 
 export interface SearchProps {
@@ -28,4 +29,6 @@ export interface SearchProps {
   buttonLabel?: string;
 
   icon?: ReactNode;
+
+  onLocationChange?: (latitude: number | null, longitude: number | null) => void;
 }

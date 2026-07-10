@@ -3,7 +3,7 @@ import heroImage1 from '@/features/public/assets/hero-venue.png';
 import heroImage2 from '@/features/public/assets/hero-venue-2.png';
 import heroImage3 from '@/features/public/assets/hero-venue-3.png';
 import heroImage4 from '@/features/public/assets/hero-venue-4.png';
-import { LocationEdit, Building2, MapPin, X } from 'lucide-react';
+import { LocationEdit, Building2, MapPin, X, Loader2 } from 'lucide-react';
 import Search from '@/shared/components/ui/Search/Search';
 import { useSearch } from '@/shared/hooks/useSearch';
 import { searchService } from '@/shared/services/search.service';
@@ -17,9 +17,13 @@ export default function HeroSection() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [query, setQuery] = useState('');
   const [selectedVenue, setSelectedVenue] = useState<SearchSuggestion | null>(null);
+  const [latitude, setLatitude] = useState<number | undefined>(undefined);
+  const [longitude, setLongitude] = useState<number | undefined>(undefined);
 
   const { suggestions, loading } = useSearch({
     query,
+    latitude,
+    longitude,
     fetchSuggestions:
       searchService.getVenueSuggestions
   });
@@ -83,6 +87,10 @@ export default function HeroSection() {
             setSelectedVenue(venue);
             setQuery(venue.label);
           }}
+          onLocationChange={(lat, lng) => {
+            setLatitude(lat ?? undefined);
+            setLongitude(lng ?? undefined);
+          }}
           icon={
             <LocationEdit className="text-zinc-500 w-5 h-5 cursor-pointer"/>
           } onSearch={ () => {
@@ -127,6 +135,64 @@ export default function HeroSection() {
                  <X className="w-4 h-4" />
                </button>
              </div>
+           </div>
+         )}
+
+         {/* Nearby Venues Grid (GPS Active, no text query, no selected venue) */}
+         {latitude !== undefined && longitude !== undefined && !query && !selectedVenue && (
+           <div className="mt-8 w-full max-w-3xl animate-in fade-in slide-in-from-top-4 duration-500">
+             <div className="flex items-center gap-2 mb-4">
+               <MapPin className="w-5 h-5 text-[#e21a47]" />
+               <h3 className="text-xl font-bold text-white">Nearby Venues (Within 20 km)</h3>
+             </div>
+
+             {loading ? (
+               <div className="flex justify-center py-8">
+                 <Loader2 className="w-8 h-8 text-[#e21a47] animate-spin" />
+               </div>
+             ) : suggestions.length === 0 ? (
+               <div className="bg-zinc-900/60 backdrop-blur-md border border-zinc-800/60 rounded-2xl p-6 text-center text-zinc-400">
+                 No venues found within 20 km of your location.
+               </div>
+             ) : (
+               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                 {suggestions.map((venue) => (
+                   <div
+                     key={venue.id}
+                     className="bg-zinc-900/60 backdrop-blur-md border border-zinc-800/60 rounded-2xl p-4 flex flex-col justify-between hover:border-zinc-700/60 hover:shadow-lg transition-all duration-300 group"
+                   >
+                     <div>
+                       <div className="w-full h-32 rounded-xl bg-zinc-950 overflow-hidden mb-3 relative">
+                         {venue.image ? (
+                           <img
+                             src={venue.image}
+                             alt={venue.label}
+                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                           />
+                         ) : (
+                           <div className="absolute inset-0 bg-gradient-to-br from-[#e21a47]/10 to-zinc-900 flex items-center justify-center">
+                             <Building2 className="w-10 h-10 text-zinc-700 group-hover:scale-115 transition-transform duration-300" />
+                           </div>
+                         )}
+                       </div>
+                       <h4 className="font-bold text-white group-hover:text-[#e21a47] transition-colors line-clamp-1">
+                         {venue.label}
+                       </h4>
+                       <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1.5 line-clamp-1">
+                         <MapPin className="w-3.5 h-3.5 text-[#e21a47]/70" />
+                         {venue.subtitle}
+                       </p>
+                     </div>
+                     <button
+                       onClick={() => navigate(`/venues/${venue.id}`)}
+                       className="mt-4 w-full py-2 bg-zinc-800/80 hover:bg-[#e21a47] text-white text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-md hover:shadow-[#e21a47]/20"
+                     >
+                       View Venue
+                     </button>
+                   </div>
+                 ))}
+               </div>
+             )}
            </div>
          )}
 
