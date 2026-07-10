@@ -14,6 +14,7 @@ Covers the happy-path status chain up through owner invitation (the deepest
 point reachable without a real Supabase project / payment stack):
   NEW -> CONTACTED -> OWNER_INTERESTED -> OWNER_INVITED
 """
+
 from uuid import uuid4
 
 import pytest
@@ -27,9 +28,9 @@ from app.modules.deep_research.models import (
     LeadReservation,
     LeadReservationStatus,
 )
-from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRoleAssignment
+from app.modules.profile.models import UserRole, UserRoleAssignment
 from app.modules.venue.models import Venue
-from tests.conftest import seed_user
+from tests.conftest import seed_auth_user, seed_user
 
 
 def _seed_reservation(db, category_id=None, guest_count=450):
@@ -51,7 +52,10 @@ def _seed_reservation(db, category_id=None, guest_count=450):
     db.flush()
 
     reservation = LeadReservation(
-        lead_id=lead.id, user_id=customer_id, category_id=category_id, guest_count=guest_count,
+        lead_id=lead.id,
+        user_id=customer_id,
+        category_id=category_id,
+        guest_count=guest_count,
     )
     db.add(reservation)
     db.commit()
@@ -61,11 +65,13 @@ def _seed_reservation(db, category_id=None, guest_count=450):
 
 def _mock_invite(monkeypatch, db, invited_user_id):
     def fake_create_invite_link(self, email, *, full_name=None, phone=None, redirect_to=None):
-        # Mirrors what the `handle_new_user` DB trigger does for a real invite.
-        db.add(Profile(id=invited_user_id, email=email, full_name=full_name, phone=phone, status=ProfileStatus.active))
-        db.add(UserRoleAssignment(user_id=invited_user_id, role=UserRole.customer))
+        # Inserting into auth.users fires the real on_auth_user_created
+        # trigger, which creates the profile + customer role itself.
+        seed_auth_user(db, invited_user_id, email, full_name=full_name, phone=phone)
         db.commit()
-        return ProviderUser(id=invited_user_id, email=email), "https://example.com/accept-invite?token=fake"
+        return ProviderUser(
+            id=invited_user_id, email=email
+        ), "https://example.com/accept-invite?token=fake"
 
     monkeypatch.setattr(
         "app.modules.auth.providers.supabase.SupabaseAuthProvider.create_invite_link",
@@ -79,8 +85,12 @@ def test_reservation_conversion_happy_path(db, category_id, monkeypatch):
 
     # ── Contact ────────────────────────────────────────────────────────────
     reservation_service.contact_reservation(
-        db, admin_id=admin_id, reservation_id=reservation.id,
-        contact_method="phone", notes="Owner open to onboarding", follow_up_date=None,
+        db,
+        admin_id=admin_id,
+        reservation_id=reservation.id,
+        contact_method="phone",
+        notes="Owner open to onboarding",
+        follow_up_date=None,
     )
     db.refresh(reservation)
     assert reservation.status == LeadReservationStatus.CONTACTED
@@ -96,9 +106,13 @@ def test_reservation_conversion_happy_path(db, category_id, monkeypatch):
     _mock_invite(monkeypatch, db, invited_user_id)
 
     _reservation, action_link = reservation_service.invite_owner_for_reservation(
-        db, admin_id=admin_id, reservation_id=reservation.id,
-        venue_name="Grand Palace Kochi", owner_name="Ravi Kumar",
-        email="ravi@example.com", phone="+911234567890",
+        db,
+        admin_id=admin_id,
+        reservation_id=reservation.id,
+        venue_name="Grand Palace Kochi",
+        owner_name="Ravi Kumar",
+        email="ravi@example.com",
+        phone="+911234567890",
     )
     assert action_link
     db.refresh(reservation)
@@ -112,13 +126,19 @@ def test_reservation_conversion_happy_path(db, category_id, monkeypatch):
     assert venue.name == "Grand Palace Kochi"
     assert venue.owner_id == invited_user_id
     assert venue.category_id == category_id
-    assert venue.max_capacity == 450  # reservation's guest_count, same as CreateVenueWizard would submit
+    assert (
+        venue.max_capacity == 450
+    )  # reservation's guest_count, same as CreateVenueWizard would submit
     assert venue.status.value == "draft"
 
-    owner_role = db.query(UserRoleAssignment).filter(
-        UserRoleAssignment.user_id == invited_user_id,
-        UserRoleAssignment.role == UserRole.venue_owner,
-    ).first()
+    owner_role = (
+        db.query(UserRoleAssignment)
+        .filter(
+            UserRoleAssignment.user_id == invited_user_id,
+            UserRoleAssignment.role == UserRole.venue_owner,
+        )
+        .first()
+    )
     assert owner_role is not None
 
     actions = db.query(AdminAction).filter(AdminAction.target_id == reservation.id).all()
@@ -137,15 +157,24 @@ def test_invite_owner_requires_a_category(db, category_id, monkeypatch):
     reservation, _ = _seed_reservation(db, category_id=None)
 
     reservation_service.contact_reservation(
-        db, admin_id=admin_id, reservation_id=reservation.id,
-        contact_method="phone", notes="", follow_up_date=None,
+        db,
+        admin_id=admin_id,
+        reservation_id=reservation.id,
+        contact_method="phone",
+        notes="",
+        follow_up_date=None,
     )
     reservation_service.mark_owner_interested(db, admin_id=admin_id, reservation_id=reservation.id)
 
     with pytest.raises(Exception):
         reservation_service.invite_owner_for_reservation(
-            db, admin_id=admin_id, reservation_id=reservation.id,
-            venue_name="X", owner_name=None, email="x@example.com", phone=None,
+            db,
+            admin_id=admin_id,
+            reservation_id=reservation.id,
+            venue_name="X",
+            owner_name=None,
+            email="x@example.com",
+            phone=None,
         )
 
     # Admin can still supply category_id explicitly as a fallback.
@@ -153,7 +182,12 @@ def test_invite_owner_requires_a_category(db, category_id, monkeypatch):
     _mock_invite(monkeypatch, db, invited_user_id)
 
     reservation_service.invite_owner_for_reservation(
-        db, admin_id=admin_id, reservation_id=reservation.id,
-        venue_name="X", owner_name=None, email="x@example.com", phone=None,
+        db,
+        admin_id=admin_id,
+        reservation_id=reservation.id,
+        venue_name="X",
+        owner_name=None,
+        email="x@example.com",
+        phone=None,
         category_id=category_id,
     )

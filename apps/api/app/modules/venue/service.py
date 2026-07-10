@@ -1,48 +1,48 @@
 import re
 import uuid
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal, ROUND_HALF_EVEN
+from datetime import UTC, datetime, timedelta
+from decimal import ROUND_HALF_EVEN, Decimal
 from uuid import UUID
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload, selectinload
 
-from app.core.exceptions import NotFoundError, ForbiddenError, ConflictError
+from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
+from app.core.storage import upload_image_to_cloudinary
+from app.modules.booking.models import Booking, BookingStatus, BookingType
+from app.modules.payment.models import LedgerEntry
+from app.modules.venue import pricing_engine
 from app.modules.venue.models import (
+    Amenity,
     Venue,
-    VenueCategory,
-    VenueStatus,
+    VenueAmenity,
     VenueAvailability,
     VenueBlockedDate,
     VenueCancellationPolicy,
-    VenueAmenity,
-    Amenity,
+    VenueCategory,
+    VenueLike,
     VenuePhoto,
     VenuePricingRule,
-    VenueLike,
+    VenueStatus,
 )
 from app.modules.venue.schemas import (
-    CreateVenueRequest,
-    UpdateVenueRequest,
-    PricingPreviewResponse,
-    PricingDisplay,
-    PricingBreakdownItem,
-    PricingQuote,
-    VenueAvailabilityUpdate,
-    CreateBlockedDateRequest,
-    UpdateCancellationPolicyRequest,
-    UpdateVenueAmenitiesRequest,
-    BulkUpdateVenuePhotosRequest,
-    VenuePricingRuleResponse,
-    CreatePricingRuleRequest,
-    UpdatePricingRuleRequest,
     MAX_ACTIVE_PRICING_RULES_PER_VENUE,
     MIN_VENUE_PHOTOS,
+    BulkUpdateVenuePhotosRequest,
+    CreateBlockedDateRequest,
+    CreatePricingRuleRequest,
+    CreateVenueRequest,
+    PricingBreakdownItem,
+    PricingDisplay,
+    PricingPreviewResponse,
+    PricingQuote,
+    UpdateCancellationPolicyRequest,
+    UpdatePricingRuleRequest,
+    UpdateVenueAmenitiesRequest,
+    UpdateVenueRequest,
+    VenueAvailabilityUpdate,
+    VenuePricingRuleResponse,
 )
-from app.modules.venue import pricing_engine
-from app.modules.booking.models import BookingType, Booking, BookingStatus
-from app.modules.payment.models import LedgerEntry
-from sqlalchemy import func
-from app.core.storage import upload_image_to_cloudinary, delete_image_from_cloudinary
 
 # Default platform commission
 
@@ -177,12 +177,7 @@ def get_venue_categories(db: Session) -> list[VenueCategory]:
 
 
 def get_platform_amenities(db: Session) -> list[Amenity]:
-    return (
-        db.query(Amenity)
-        .filter(Amenity.deleted_at.is_(None))
-        .order_by(Amenity.name.asc())
-        .all()
-    )
+    return db.query(Amenity).filter(Amenity.deleted_at.is_(None)).order_by(Amenity.name.asc()).all()
 
 
 def get_venue(db: Session, identifier: str, user_id: UUID | None = None) -> Venue:
@@ -323,18 +318,16 @@ def _compute_pricing_preview(
         if not has_matching_rules:
             duration_seconds = (ends_at - starts_at).total_seconds()
             duration_hours = Decimal(str(duration_seconds)) / Decimal("3600")
-            quoted_price_paise = _banker_round(
-                Decimal(str(hourly_rate)) * duration_hours
-            )
+            quoted_price_paise = _banker_round(Decimal(str(hourly_rate)) * duration_hours)
         else:
             interval_minutes = venue.slot_interval_minutes or 30
             quoted_price_paise = 0
             cursor = starts_at
             while cursor < ends_at:
                 segment_end = min(cursor + timedelta(minutes=interval_minutes), ends_at)
-                segment_hours = Decimal(
-                    str((segment_end - cursor).total_seconds())
-                ) / Decimal("3600")
+                segment_hours = Decimal(str((segment_end - cursor).total_seconds())) / Decimal(
+                    "3600"
+                )
                 segment_base = _banker_round(Decimal(str(hourly_rate)) * segment_hours)
                 unit = pricing_engine.price_unit(
                     active_rules,
@@ -374,9 +367,7 @@ def _compute_pricing_preview(
     owner_payout_paise = quoted_price_paise - platform_fee_paise
 
     advance_due_paise = _banker_round(
-        Decimal(str(quoted_price_paise))
-        * Decimal(str(venue.advance_pct))
-        / Decimal("100")
+        Decimal(str(quoted_price_paise)) * Decimal(str(venue.advance_pct)) / Decimal("100")
     )
 
     balance_due_paise = quoted_price_paise - advance_due_paise
@@ -536,13 +527,10 @@ def create_venue(db: Session, owner_id: UUID, body: CreateVenueRequest) -> Venue
             .all()
         )
         if len(valid_amenities) != len(set(body.amenity_ids)):
-            raise ConflictError(
-                "One or more amenity IDs provided do not exist in the platform."
-            )
+            raise ConflictError("One or more amenity IDs provided do not exist in the platform.")
 
         new_links = [
-            VenueAmenity(venue_id=venue.id, amenity_id=am_id)
-            for am_id in set(body.amenity_ids)
+            VenueAmenity(venue_id=venue.id, amenity_id=am_id) for am_id in set(body.amenity_ids)
         ]
         db.add_all(new_links)
 
@@ -572,7 +560,6 @@ def update_venue(
         _get_category_or_400(db, update_data["category_id"])
 
     for field, value in update_data.items():
-
         if hasattr(value, "value"):
             value = value.value
 
@@ -582,26 +569,19 @@ def update_venue(
 
     if venue.pricing_mode == "flat":
         if venue.starting_price_paise is None:
-            raise ConflictError(
-                "starting_price_paise is required when pricing_mode is 'flat'"
-            )
+            raise ConflictError("starting_price_paise is required when pricing_mode is 'flat'")
         if venue.hourly_rate_paise is not None:
-            raise ConflictError(
-                "hourly_rate_paise must be null when pricing_mode is 'flat'"
-            )
+            raise ConflictError("hourly_rate_paise must be null when pricing_mode is 'flat'")
     elif venue.pricing_mode == "hourly":
         if venue.hourly_rate_paise is None:
-            raise ConflictError(
-                "hourly_rate_paise is required when pricing_mode is 'hourly'"
-            )
+            raise ConflictError("hourly_rate_paise is required when pricing_mode is 'hourly'")
         if venue.starting_price_paise is not None:
-            raise ConflictError(
-                "starting_price_paise must be null when pricing_mode is 'hourly'"
-            )
+            raise ConflictError("starting_price_paise must be null when pricing_mode is 'hourly'")
     elif venue.pricing_mode == "mixed":
         if venue.starting_price_paise is None or venue.hourly_rate_paise is None:
             raise ConflictError(
-                "Both starting_price_paise and hourly_rate_paise are required when pricing_mode is 'mixed'"
+                "Both starting_price_paise and hourly_rate_paise are required "
+                "when pricing_mode is 'mixed'"
             )
 
     if venue.min_capacity is not None and venue.min_capacity > venue.max_capacity:
@@ -640,7 +620,7 @@ def delete_venue(db: Session, venue_id: UUID, owner_id: UUID) -> None:
             "Only draft, rejected, or suspended venues can be deleted."
         )
 
-    venue.deleted_at = datetime.now(timezone.utc)
+    venue.deleted_at = datetime.now(UTC)
     db.commit()
 
 
@@ -696,7 +676,7 @@ def bulk_update_availability(
     venue = _get_venue_or_404(db, venue_id)
     _assert_owner(venue, owner_id)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     db.query(VenueAvailability).filter(
         VenueAvailability.venue_id == venue_id, VenueAvailability.deleted_at.is_(None)
     ).update({"deleted_at": now}, synchronize_session=False)
@@ -723,7 +703,7 @@ def bulk_update_availability(
 
 def get_venue_blocked_dates(db: Session, venue_id: UUID) -> list[VenueBlockedDate]:
     _get_active_venue_or_404(db, venue_id)
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return (
         db.query(VenueBlockedDate)
         .filter(
@@ -759,9 +739,7 @@ def create_blocked_date(
     return new_block
 
 
-def delete_blocked_date(
-    db: Session, venue_id: UUID, blocked_id: UUID, owner_id: UUID
-) -> None:
+def delete_blocked_date(db: Session, venue_id: UUID, blocked_id: UUID, owner_id: UUID) -> None:
     venue = _get_venue_or_404(db, venue_id)
     _assert_owner(venue, owner_id)
 
@@ -778,7 +756,7 @@ def delete_blocked_date(
     if not blocked_date:
         raise NotFoundError("Blocked date not found")
 
-    blocked_date.deleted_at = datetime.now(timezone.utc)
+    blocked_date.deleted_at = datetime.now(UTC)
     db.commit()
 
 
@@ -795,9 +773,9 @@ def _rule_exceeds_bounds(rule: VenuePricingRule, venue: Venue) -> bool:
 
 
 def _rule_to_response(rule: VenuePricingRule, venue: Venue) -> VenuePricingRuleResponse:
-    return VenuePricingRuleResponse.model_validate(
-        rule, from_attributes=True
-    ).model_copy(update={"exceeds_bounds": _rule_exceeds_bounds(rule, venue)})
+    return VenuePricingRuleResponse.model_validate(rule, from_attributes=True).model_copy(
+        update={"exceeds_bounds": _rule_exceeds_bounds(rule, venue)}
+    )
 
 
 def _recompute_display_price_range(venue: Venue) -> None:
@@ -815,9 +793,7 @@ def _recompute_display_price_range(venue: Venue) -> None:
     active_multiplier_rules = [
         r
         for r in venue.pricing_rules
-        if r.is_active
-        and r.adjustment_type == "multiplier"
-        and r.multiplier is not None
+        if r.is_active and r.adjustment_type == "multiplier" and r.multiplier is not None
     ]
 
     if base is None or not active_multiplier_rules:
@@ -850,18 +826,14 @@ def list_pricing_rules(
 
     rules = (
         db.query(VenuePricingRule)
-        .filter(
-            VenuePricingRule.venue_id == venue_id, VenuePricingRule.deleted_at.is_(None)
-        )
+        .filter(VenuePricingRule.venue_id == venue_id, VenuePricingRule.deleted_at.is_(None))
         .order_by(VenuePricingRule.priority.desc(), VenuePricingRule.created_at.desc())
         .all()
     )
     return [_rule_to_response(r, venue) for r in rules]
 
 
-def _get_pricing_rule_or_404(
-    db: Session, venue_id: UUID, rule_id: UUID
-) -> VenuePricingRule:
+def _get_pricing_rule_or_404(db: Session, venue_id: UUID, rule_id: UUID) -> VenuePricingRule:
     rule = (
         db.query(VenuePricingRule)
         .filter(
@@ -897,7 +869,8 @@ def create_pricing_rule(
         )
         if active_count >= MAX_ACTIVE_PRICING_RULES_PER_VENUE:
             raise ConflictError(
-                f"Venue already has the maximum of {MAX_ACTIVE_PRICING_RULES_PER_VENUE} active pricing rules"
+                f"Venue already has the maximum of "
+                f"{MAX_ACTIVE_PRICING_RULES_PER_VENUE} active pricing rules"
             )
 
     rule = VenuePricingRule(
@@ -950,7 +923,8 @@ def update_pricing_rule(
         )
         if active_count >= MAX_ACTIVE_PRICING_RULES_PER_VENUE:
             raise ConflictError(
-                f"Venue already has the maximum of {MAX_ACTIVE_PRICING_RULES_PER_VENUE} active pricing rules"
+                f"Venue already has the maximum of "
+                f"{MAX_ACTIVE_PRICING_RULES_PER_VENUE} active pricing rules"
             )
 
     update_data = body.model_dump(exclude_unset=True)
@@ -961,26 +935,18 @@ def update_pricing_rule(
 
     if rule.adjustment_type == "multiplier":
         if rule.multiplier is None:
-            raise ConflictError(
-                "multiplier is required when adjustment_type is 'multiplier'"
-            )
+            raise ConflictError("multiplier is required when adjustment_type is 'multiplier'")
         if rule.amount_paise is not None:
-            raise ConflictError(
-                "amount_paise must be null when adjustment_type is 'multiplier'"
-            )
+            raise ConflictError("amount_paise must be null when adjustment_type is 'multiplier'")
     else:
         if rule.amount_paise is None:
             raise ConflictError(
                 "amount_paise is required when adjustment_type is 'fixed_delta' or 'override'"
             )
         if rule.multiplier is not None:
-            raise ConflictError(
-                "multiplier must be null when adjustment_type is not 'multiplier'"
-            )
+            raise ConflictError("multiplier must be null when adjustment_type is not 'multiplier'")
         if rule.adjustment_type == "override" and rule.amount_paise < 0:
-            raise ConflictError(
-                "amount_paise must be >= 0 when adjustment_type is 'override'"
-            )
+            raise ConflictError("amount_paise must be >= 0 when adjustment_type is 'override'")
 
     if (
         rule.start_date is not None
@@ -997,23 +963,19 @@ def update_pricing_rule(
     return _rule_to_response(rule, venue)
 
 
-def delete_pricing_rule(
-    db: Session, venue_id: UUID, rule_id: UUID, owner_id: UUID
-) -> None:
+def delete_pricing_rule(db: Session, venue_id: UUID, rule_id: UUID, owner_id: UUID) -> None:
     venue = _get_venue_or_404(db, venue_id)
     _assert_owner(venue, owner_id)
     rule = _get_pricing_rule_or_404(db, venue_id, rule_id)
 
-    rule.deleted_at = datetime.now(timezone.utc)
+    rule.deleted_at = datetime.now(UTC)
     db.flush()
     db.refresh(venue)
     _recompute_display_price_range(venue)
     db.commit()
 
 
-def get_venue_cancellation_policy(
-    db: Session, venue_id: UUID
-) -> VenueCancellationPolicy:
+def get_venue_cancellation_policy(db: Session, venue_id: UUID) -> VenueCancellationPolicy:
     _get_active_venue_or_404(db, venue_id)
     policy = (
         db.query(VenueCancellationPolicy)
@@ -1083,9 +1045,7 @@ def update_venue_amenities(
             .all()
         )
         if len(valid_amenities) != len(set(body.amenity_ids)):
-            raise ConflictError(
-                "One or more amenity IDs provided do not exist in the platform."
-            )
+            raise ConflictError("One or more amenity IDs provided do not exist in the platform.")
 
     db.query(VenueAmenity).filter(VenueAmenity.venue_id == venue_id).delete(
         synchronize_session=False
@@ -1160,9 +1120,7 @@ def bulk_update_venue_photos(
     existing_photo_map = {p.id: p for p in existing_photos}
 
     if len(photo_ids_in_request) != len(existing_photos):
-        raise ConflictError(
-            "The request must include all active photos for this venue."
-        )
+        raise ConflictError("The request must include all active photos for this venue.")
 
     for p_id in photo_ids_in_request:
         if p_id not in existing_photo_map:
@@ -1182,9 +1140,7 @@ def bulk_update_venue_photos(
     return sorted(existing_photos, key=lambda p: p.sort_order)
 
 
-def delete_venue_photo(
-    db: Session, venue_id: UUID, photo_id: UUID, owner_id: UUID
-) -> None:
+def delete_venue_photo(db: Session, venue_id: UUID, photo_id: UUID, owner_id: UUID) -> None:
     venue = _get_venue_or_404(db, venue_id)
     _assert_owner(venue, owner_id)
 
@@ -1201,7 +1157,7 @@ def delete_venue_photo(
     if not photo:
         raise NotFoundError("Photo not found")
 
-    photo.deleted_at = datetime.now(timezone.utc)
+    photo.deleted_at = datetime.now(UTC)
 
     if photo.is_cover:
         photo.is_cover = False
@@ -1279,8 +1235,8 @@ def get_venue_stats_this_month(db: Session, venue_id: UUID, owner_id: UUID) -> d
     if venue.owner_id != owner_id:
         raise ForbiddenError("Not your venue")
 
-    now = datetime.now(timezone.utc)
-    start_of_month = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+    now = datetime.now(UTC)
+    start_of_month = datetime(now.year, now.month, 1, tzinfo=UTC)
 
     from app.modules.booking.models import BookingSlot
 

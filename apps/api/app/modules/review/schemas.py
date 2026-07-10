@@ -1,6 +1,6 @@
 from datetime import datetime
 from uuid import UUID
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -8,7 +8,7 @@ class ReviewCreate(BaseModel):
     """Input schema for creating a review."""
 
     rating: int = Field(ge=1, le=5, description="Rating from 1 to 5")
-    title: Optional[str] = Field(
+    title: str | None = Field(
         None, max_length=255, description="Optional review title"
     )
     comment: str = Field(
@@ -19,9 +19,9 @@ class ReviewCreate(BaseModel):
 class ReviewUpdate(BaseModel):
     """Input schema for updating a review."""
 
-    rating: Optional[int] = Field(None, ge=1, le=5)
-    title: Optional[str] = Field(None, max_length=255)
-    comment: Optional[str] = Field(None, min_length=1, max_length=5000)
+    rating: int | None = Field(None, ge=1, le=5)
+    title: str | None = Field(None, max_length=255)
+    comment: str | None = Field(None, min_length=1, max_length=5000)
 
 
 class ReviewResponse(BaseModel):
@@ -32,20 +32,20 @@ class ReviewResponse(BaseModel):
     booking_id: UUID
     user_id: UUID
     rating: int
-    title: Optional[str]
+    title: str | None
     comment: str
     is_hidden: bool
     created_at: datetime
     updated_at: datetime
 
     # Author info (denormalized)
-    user_name: Optional[str] = None
-    user_email: Optional[str] = None
+    user_name: str | None = None
+    user_email: str | None = None
 
     # Hide info
-    hidden_reason: Optional[str] = None
-    hidden_by: Optional[UUID] = None
-    hidden_at: Optional[datetime] = None
+    hidden_reason: str | None = None
+    hidden_by: UUID | None = None
+    hidden_at: datetime | None = None
 
     class Config:
         from_attributes = True
@@ -77,6 +77,6 @@ class EligibleBookingsResponse(BaseModel):
 class AdminReviewActionRequest(BaseModel):
     """Input for admin actions (hide/restore)."""
 
-    hidden_reason: Optional[str] = Field(
+    hidden_reason: str | None = Field(
         None, max_length=255, description="Reason for hiding review"
     )

@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.modules.auth.dependencies import get_current_user, require_auth, AuthContext
-from app.modules.auth.schemas import AuthMeResponse, ForgotPasswordRequest
 from app.modules.auth import service
+from app.modules.auth.dependencies import AuthContext, get_current_user, require_auth
+from app.modules.auth.schemas import AuthMeResponse, ForgotPasswordRequest
 
 router = APIRouter()
 

@@ -1,14 +1,19 @@
+
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.modules.auth.dependencies import get_current_user, AuthContext
-from app.modules.payment.schemas import (
-    CreatePaymentRequest, PaymentIntentResponse, PaymentResponse,
-    RefundRequest, RefundResponse, OwnerLedgerStatsResponse, LedgerEntryResponse
-)
-from typing import Optional
+from app.modules.auth.dependencies import AuthContext, get_current_user
 from app.modules.payment import service, webhooks
+from app.modules.payment.schemas import (
+    CreatePaymentRequest,
+    LedgerEntryResponse,
+    OwnerLedgerStatsResponse,
+    PaymentIntentResponse,
+    PaymentResponse,
+    RefundRequest,
+    RefundResponse,
+)
 
 router = APIRouter()
 
@@ -23,7 +28,7 @@ def get_owner_stats(
 
 @router.get("/owner/ledger", response_model=list[LedgerEntryResponse])
 def get_owner_ledger(
-    entry_type: Optional[str] = None,
+    entry_type: str | None = None,
     user: AuthContext = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):

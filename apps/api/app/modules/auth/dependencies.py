@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from uuid import UUID
+
 from fastapi import Depends, Header
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.exceptions import UnauthorizedError, ForbiddenError
+from app.core.exceptions import ForbiddenError, UnauthorizedError
 from app.modules.auth.providers.supabase import SupabaseAuthProvider
-from app.modules.profile.models import Profile, UserRole, UserRoleAssignment, ProfileStatus
+from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRoleAssignment
 
 _auth_provider = SupabaseAuthProvider()
 

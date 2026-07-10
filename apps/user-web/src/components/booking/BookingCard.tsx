@@ -40,6 +40,7 @@ export default function MyBookingCard({ booking }: Props) {
             <img
               src={booking.venue_cover_photo_url}
               alt={booking.venue_name}
+              loading="lazy"
               className="h-64 w-full object-cover md:h-full"
             />
           ) : (

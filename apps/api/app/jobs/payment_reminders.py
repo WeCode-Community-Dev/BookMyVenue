@@ -1,11 +1,11 @@
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from app.core.database import with_session
 from app.modules.booking.models import Booking, BookingStatus
+from app.modules.notification import service as notifications
 from app.modules.notification.models import InAppNotification
 from app.modules.venue.models import Venue
-from app.modules.notification import service as notifications
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ def run() -> int:
     24-hour hold expires. Deduped via the in-app notification row so a user gets
     at most one reminder per booking even if the job runs repeatedly.
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     sent = 0
     with with_session() as db:
         rows = (

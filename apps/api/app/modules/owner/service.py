@@ -7,21 +7,21 @@ Returns a single aggregated response containing:
   - Monthly performance chart data (last 6 months)
   - Upcoming confirmed events (next 5)
 """
-from datetime import datetime, timezone, timedelta
+
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
-from calendar import month_abbr
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
-from sqlalchemy import func, case
 
-from app.modules.booking.models import Booking, BookingStatus, BookingSlot
-from app.modules.venue.models import Venue, VenueStatus
-from app.modules.payment.models import LedgerEntry
+from app.modules.booking.models import Booking, BookingSlot, BookingStatus
 from app.modules.owner.schemas import (
-    DashboardStats,
     ChartDataPoint,
+    DashboardStats,
     UpcomingEventOut,
 )
+from app.modules.payment.models import LedgerEntry
+from app.modules.venue.models import Venue, VenueStatus
 
 # Statuses considered "cancelled/terminal non-success"
 CANCELLED_STATUSES = [
@@ -43,11 +43,12 @@ def get_dashboard_stats(db: Session, owner_id: UUID) -> DashboardStats:
         db.query(func.count(Venue.id))
         .filter(
             Venue.owner_id == owner_id,
-            Venue.is_active == True,
+            Venue.is_active,
             Venue.status == VenueStatus.approved,
-            Venue.deleted_at.is_(None)
+            Venue.deleted_at.is_(None),
         )
-        .scalar() or 0
+        .scalar()
+        or 0
     )
 
     status_counts: dict[str, int] = {}
@@ -68,9 +69,7 @@ def get_dashboard_stats(db: Session, owner_id: UUID) -> DashboardStats:
     pending_requests = status_counts.get(BookingStatus.requested, 0)
     active_bookings = status_counts.get(BookingStatus.confirmed, 0)
     completed_bookings = status_counts.get(BookingStatus.completed, 0)
-    cancelled_bookings = sum(
-        status_counts.get(s, 0) for s in CANCELLED_STATUSES
-    )
+    cancelled_bookings = sum(status_counts.get(s, 0) for s in CANCELLED_STATUSES)
 
     # ------------------------------------------------------------------ #
     # 2. Financial stats — from ledger entries
@@ -122,26 +121,32 @@ def get_dashboard_stats(db: Session, owner_id: UUID) -> DashboardStats:
     return stats
 
 
-def get_dashboard_chart(db: Session, owner_id: UUID, time_range: str = "6M") -> list[ChartDataPoint]:
+def get_dashboard_chart(
+    db: Session, owner_id: UUID, time_range: str = "6M"
+) -> list[ChartDataPoint]:
     # ------------------------------------------------------------------ #
     # Chart data — dynamic time range
     # ------------------------------------------------------------------ #
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     is_daily = time_range in ("7D", "30D")
-    
+
     num_buckets = 6
-    if time_range == "7D": num_buckets = 7
-    elif time_range == "30D": num_buckets = 30
-    elif time_range == "3M": num_buckets = 3
-    elif time_range == "12M": num_buckets = 12
+    if time_range == "7D":
+        num_buckets = 7
+    elif time_range == "30D":
+        num_buckets = 30
+    elif time_range == "3M":
+        num_buckets = 3
+    elif time_range == "12M":
+        num_buckets = 12
 
     buckets: list[tuple[int, int, int]] = []
-    
+
     if is_daily:
         for delta in range(num_buckets - 1, -1, -1):
             t = now - timedelta(days=delta)
             buckets.append((t.year, t.month, t.day))
-        start_of_window = datetime(buckets[0][0], buckets[0][1], buckets[0][2], tzinfo=timezone.utc)
+        start_of_window = datetime(buckets[0][0], buckets[0][1], buckets[0][2], tzinfo=UTC)
     else:
         for delta in range(num_buckets - 1, -1, -1):
             y = now.year
@@ -150,7 +155,7 @@ def get_dashboard_chart(db: Session, owner_id: UUID, time_range: str = "6M") -> 
                 m += 12
                 y -= 1
             buckets.append((y, m, 1))
-        start_of_window = datetime(buckets[0][0], buckets[0][1], 1, tzinfo=timezone.utc)
+        start_of_window = datetime(buckets[0][0], buckets[0][1], 1, tzinfo=UTC)
 
     if is_daily:
         group_fields = [
@@ -177,8 +182,7 @@ def get_dashboard_chart(db: Session, owner_id: UUID, time_range: str = "6M") -> 
     )
 
     bucket_map: dict[tuple[int, int, int], dict[str, int]] = {
-        b: {"enquiries": 0, "completed": 0, "cancelled": 0}
-        for b in buckets
+        b: {"enquiries": 0, "completed": 0, "cancelled": 0} for b in buckets
     }
 
     for row in chart_bookings:
@@ -187,14 +191,14 @@ def get_dashboard_chart(db: Session, owner_id: UUID, time_range: str = "6M") -> 
         yr = int(row.yr)
         mo = int(row.mo)
         day = int(row.day) if is_daily else 1
-        
+
         key = (yr, mo, day)
         if key not in bucket_map:
             continue
-            
+
         # Every booking created is considered an enquiry, regardless of its final status
         bucket_map[key]["enquiries"] += cnt
-        
+
         if status_val == BookingStatus.completed:
             bucket_map[key]["completed"] += cnt
         elif status_val in CANCELLED_STATUSES:
@@ -204,7 +208,7 @@ def get_dashboard_chart(db: Session, owner_id: UUID, time_range: str = "6M") -> 
     for b in buckets:
         dt = datetime(b[0], b[1], b[2])
         month_label = dt.strftime("%d %b") if is_daily else dt.strftime("%b %y")
-        
+
         chart_data.append(
             ChartDataPoint(
                 month=month_label,
@@ -221,7 +225,7 @@ def get_upcoming_events(db: Session, owner_id: UUID) -> list[UpcomingEventOut]:
     # ------------------------------------------------------------------ #
     # Upcoming confirmed events — next 5
     # ------------------------------------------------------------------ #
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     upcoming_rows = (
         db.query(Booking, BookingSlot, Venue)
         .join(BookingSlot, BookingSlot.booking_id == Booking.id)

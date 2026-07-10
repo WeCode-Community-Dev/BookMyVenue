@@ -1,7 +1,4 @@
 from pydantic import BaseModel
-from typing import Generic, TypeVar, List
-
-T = TypeVar("T")
 
 
 class PaginationParams(BaseModel):
@@ -9,8 +6,8 @@ class PaginationParams(BaseModel):
     page_size: int = 20
 
 
-class Page(BaseModel, Generic[T]):
-    items: List[T]
+class Page[T](BaseModel):
+    items: list[T]
     total: int
     page: int
     page_size: int

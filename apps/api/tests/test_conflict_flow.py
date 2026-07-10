@@ -12,7 +12,6 @@ from app.modules.booking.models import Booking, BookingStatus
 from app.modules.booking.state_machine import can_transition
 from tests.conftest import create_booking, seed_approved_venue, seed_user
 
-
 # ── State machine (unit) ──────────────────────────────────────────────────────
 
 def test_requested_can_transition_to_conflict_cancelled():

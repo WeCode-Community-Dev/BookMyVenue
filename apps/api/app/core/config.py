@@ -6,9 +6,17 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_jwt_secret: str
     supabase_service_role_key: str
+    # "development" | "production". In production the interactive API docs
+    # (/docs, /redoc) are disabled so the endpoint surface isn't publicly listed.
+    environment: str = "development"
+
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
     stripe_currency: str = "inr"
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment.lower() == "production"
 
     # Email — Resend is primary, SMTP is the fallback transport
     resend_api_key: str = ""

@@ -25,6 +25,8 @@ class AvailabilityResponse(BaseModel):
 
 class ValidationResponse(BaseModel):
     valid: bool
+    starts_at: datetime
+    ends_at: datetime
     effective_starts_at: datetime
     effective_ends_at: datetime
 

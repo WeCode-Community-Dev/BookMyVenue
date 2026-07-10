@@ -664,7 +664,7 @@ export default function VenueEdit() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {localPhotos.map((photo, index) => (
                     <div key={photo.id} className="relative group rounded-xl overflow-hidden border border-zinc-200/60 aspect-video bg-zinc-100 dark:bg-ink-800 flex flex-col shadow-sm hover:shadow-md transition-all duration-300 ring-1 ring-zinc-900/5">
-                      <img src={photo.image_url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Venue" />
+                      <img src={photo.image_url} loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="Venue" />
                       
                       {/* Subtle top gradient for badge contrast */}
                       {index === 0 && (

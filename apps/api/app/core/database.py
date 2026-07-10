@@ -1,9 +1,21 @@
 from contextlib import contextmanager
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, Session
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+
 from app.core.config import settings
 
-engine = create_engine(settings.database_url)
+engine = create_engine(
+    settings.database_url,
+    # pool_pre_ping avoids handing out dead connections (common with managed
+    # Postgres that closes idle connections server-side, e.g. Supabase) —
+    # without it, the first query on a stale connection fails/stalls instead
+    # of transparently reconnecting.
+    pool_pre_ping=True,
+    # Recycle connections before Supabase's server-side idle timeout can
+    # close them out from under us.
+    pool_recycle=1800,
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

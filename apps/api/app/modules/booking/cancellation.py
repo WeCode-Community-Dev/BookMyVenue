@@ -6,20 +6,17 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.modules.payment import service as payment_service
-from app.modules.notification import service as notifications
-from app.modules.notification.types import NotificationType
 from app.modules.booking.helpers import (
-    _now,
+    TERMINAL_STATUSES,
+    _assert_booking_owner,
+    _assert_booking_user,
+    _booking_or_404,
+    _booking_out,
     _format_inr,
     _history,
-    _booking_or_404,
-    _assert_booking_user,
-    _assert_booking_owner,
-    _slot_for_update,
-    _booking_out,
     _load_policy,
-    TERMINAL_STATUSES,
+    _now,
+    _slot_for_update,
 )
 from app.modules.booking.models import (
     Booking,
@@ -27,10 +24,13 @@ from app.modules.booking.models import (
     PaymentStatus,
 )
 from app.modules.booking.schemas import (
+    BookingOut,
     CancellationDisplay,
     CancellationPreviewOut,
-    BookingOut,
 )
+from app.modules.notification import service as notifications
+from app.modules.notification.types import NotificationType
+from app.modules.payment import service as payment_service
 from app.modules.venue.models import VenueCancellationPolicy
 
 
@@ -108,10 +108,7 @@ def get_cancellation_preview(
             detail="Booking cannot be cancelled at this stage",
         )
 
-    if (
-        booking.status == BookingStatus.requested
-        or booking.status == BookingStatus.owner_accepted
-    ):
+    if booking.status == BookingStatus.requested or booking.status == BookingStatus.owner_accepted:
         # No refund for pre-payment
         return CancellationPreviewOut(
             refund_amount_paise=0,
@@ -156,11 +153,7 @@ def user_cancel_booking(db: Session, booking_id: UUID, user_id: UUID) -> Booking
         )
 
     old_status = booking.status
-    slot = (
-        _slot_for_update(db, booking.id)
-        if hasattr(booking, "slot") and booking.slot
-        else None
-    )
+    slot = _slot_for_update(db, booking.id) if hasattr(booking, "slot") and booking.slot else None
     if slot:
         slot.is_blocking = False
 
@@ -176,9 +169,7 @@ def user_cancel_booking(db: Session, booking_id: UUID, user_id: UUID) -> Booking
         if booking.stripe_advance_payment_intent_id:
             payment_service.cancel_payment_intent(booking.stripe_advance_payment_intent_id)
     else:  # confirmed
-        refund = _compute_refund(
-            booking, _load_policy(db, booking.venue_id), booking.cancelled_at
-        )
+        refund = _compute_refund(booking, _load_policy(db, booking.venue_id), booking.cancelled_at)
         if refund.refund_amount_paise > 0:
             payment_service.refund_for_cancellation(
                 db, booking, refund.refund_amount_paise, "user_cancellation"
@@ -213,8 +204,11 @@ def user_cancel_booking(db: Session, booking_id: UUID, user_id: UUID) -> Booking
 
     # Notifications (spec: notify owner)
     notifications.notify(
-        db, booking.venue.owner_id, NotificationType.BOOKING_CANCELED,
-        context={"venue_name": booking.venue.name}, booking_id=booking.id,
+        db,
+        booking.venue.owner_id,
+        NotificationType.BOOKING_CANCELED,
+        context={"venue_name": booking.venue.name},
+        booking_id=booking.id,
     )
     return _booking_out(booking)
 
@@ -223,7 +217,9 @@ def owner_cancel_forfeit(db: Session, booking_id: UUID, owner_id: UUID) -> Booki
     booking = _booking_or_404(db, booking_id, for_update=True)
     _assert_booking_owner(booking, owner_id)
     if booking.status != BookingStatus.confirmed or booking.balance_overdue_at is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Booking is not balance overdue")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Booking is not balance overdue"
+        )
 
     _slot_for_update(db, booking.id).is_blocking = False
     old_status = booking.status
@@ -232,18 +228,23 @@ def owner_cancel_forfeit(db: Session, booking_id: UUID, owner_id: UUID) -> Booki
     )
     booking.status = BookingStatus.balance_overdue_cancelled
     booking.cancelled_at = _now()
-    db.add(_history(
-        booking,
-        old_status,
-        BookingStatus.balance_overdue_cancelled,
-        changed_by=owner_id,
-        metadata={"owner_share_paise": owner_share, "refund_amount_paise": 0},
-    ))
+    db.add(
+        _history(
+            booking,
+            old_status,
+            BookingStatus.balance_overdue_cancelled,
+            changed_by=owner_id,
+            metadata={"owner_share_paise": owner_share, "refund_amount_paise": 0},
+        )
+    )
     db.flush()
     db.refresh(booking)
     notifications.notify(
-        db, booking.user_id, NotificationType.BOOKING_CANCELED,
-        context={"venue_name": booking.venue.name}, booking_id=booking.id,
+        db,
+        booking.user_id,
+        NotificationType.BOOKING_CANCELED,
+        context={"venue_name": booking.venue.name},
+        booking_id=booking.id,
     )
     return _booking_out(booking)
 
@@ -252,7 +253,9 @@ def owner_cancel_goodwill(db: Session, booking_id: UUID, owner_id: UUID) -> Book
     booking = _booking_or_404(db, booking_id, for_update=True)
     _assert_booking_owner(booking, owner_id)
     if booking.status != BookingStatus.confirmed or booking.balance_overdue_at is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Booking is not balance overdue")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Booking is not balance overdue"
+        )
 
     _slot_for_update(db, booking.id).is_blocking = False
     old_status = booking.status
@@ -265,19 +268,26 @@ def owner_cancel_goodwill(db: Session, booking_id: UUID, owner_id: UUID) -> Book
     booking.status = BookingStatus.user_cancelled
     booking.cancelled_at = _now()
     booking.refund_amount_paise = refund_amount
-    booking.payment_status = PaymentStatus.partially_refunded if refund_amount > 0 else booking.payment_status
-    db.add(_history(
-        booking,
-        old_status,
-        BookingStatus.user_cancelled,
-        changed_by=owner_id,
-        metadata={"refund_amount_paise": refund_amount, "goodwill": True},
-    ))
+    booking.payment_status = (
+        PaymentStatus.partially_refunded if refund_amount > 0 else booking.payment_status
+    )
+    db.add(
+        _history(
+            booking,
+            old_status,
+            BookingStatus.user_cancelled,
+            changed_by=owner_id,
+            metadata={"refund_amount_paise": refund_amount, "goodwill": True},
+        )
+    )
     db.flush()
     db.refresh(booking)
     notifications.notify(
-        db, booking.user_id, NotificationType.BOOKING_CANCELED,
-        context={"venue_name": booking.venue.name}, booking_id=booking.id,
+        db,
+        booking.user_id,
+        NotificationType.BOOKING_CANCELED,
+        context={"venue_name": booking.venue.name},
+        booking_id=booking.id,
     )
     return _booking_out(booking)
 
@@ -297,7 +307,11 @@ def admin_force_cancel(
         booking.slot.is_blocking = False
     booking.status = BookingStatus.admin_cancelled
     booking.cancelled_at = _now()
-    db.add(_history(booking, old_status, BookingStatus.admin_cancelled, changed_by=admin_id, reason=reason))
+    db.add(
+        _history(
+            booking, old_status, BookingStatus.admin_cancelled, changed_by=admin_id, reason=reason
+        )
+    )
     db.flush()
     db.refresh(booking)
     return _booking_out(booking)

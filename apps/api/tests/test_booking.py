@@ -1,17 +1,18 @@
-import pytest
+from datetime import UTC, date, datetime, timedelta
 from unittest.mock import MagicMock
-from datetime import datetime, timedelta, date, timezone
 from uuid import uuid4
+
+import pytest
 from fastapi import HTTPException
 
-from app.modules.booking.models import Booking, BookingStatus, PaymentStatus, BookingSlot
-from app.modules.booking.state_machine import can_transition
 from app.modules.booking.cancellation import _compute_refund
+from app.modules.booking.models import Booking, BookingSlot, BookingStatus, PaymentStatus
+from app.modules.booking.schemas import ExtendDeadlineIn
 from app.modules.booking.service import (
     owner_accept_booking,
     owner_extend_deadline,
 )
-from app.modules.booking.schemas import ExtendDeadlineIn
+from app.modules.booking.state_machine import can_transition
 from app.modules.venue.models import VenueCancellationPolicy
 
 
@@ -32,7 +33,7 @@ def test_refund_computation_no_policy():
     booking = Booking(
         amount_paid_paise=100000,  # INR 1000
         platform_fee_paise=10000,  # INR 100
-        slot=BookingSlot(starts_at=datetime.now(timezone.utc) + timedelta(days=2))
+        slot=BookingSlot(starts_at=datetime.now(UTC) + timedelta(days=2))
     )
     # Without policy, refund should default to 0.0% (and match no_show or None tier)
     result = _compute_refund(booking, None)
@@ -53,7 +54,7 @@ def test_refund_computation_policy_fee_refundable():
         platform_fee_refundable=True
     )
 
-    starts_at = datetime.now(timezone.utc) + timedelta(days=3)
+    starts_at = datetime.now(UTC) + timedelta(days=3)
     booking = Booking(
         amount_paid_paise=100000,  # INR 1000
         platform_fee_paise=10000,  # INR 100
@@ -61,7 +62,7 @@ def test_refund_computation_policy_fee_refundable():
     )
 
     # Case 1: > 48 hours notice (Tier 1 -> 100% refund)
-    result = _compute_refund(booking, policy, cancelled_at=datetime.now(timezone.utc))
+    result = _compute_refund(booking, policy, cancelled_at=datetime.now(UTC))
     assert result.refund_amount_paise == 100000
     assert result.refund_pct_applied == 100.0
     assert result.tier_matched == "tier_1"
@@ -89,7 +90,7 @@ def test_refund_computation_policy_fee_non_refundable():
         platform_fee_refundable=False
     )
 
-    starts_at = datetime.now(timezone.utc) + timedelta(days=3)
+    starts_at = datetime.now(UTC) + timedelta(days=3)
     booking = Booking(
         amount_paid_paise=100000,  # INR 1000
         platform_fee_paise=10000,  # INR 100
@@ -97,7 +98,7 @@ def test_refund_computation_policy_fee_non_refundable():
     )
 
     # Case 1: > 48 hours notice (Tier 1 -> 100% refund of owner share (900) = 900)
-    result = _compute_refund(booking, policy, cancelled_at=datetime.now(timezone.utc))
+    result = _compute_refund(booking, policy, cancelled_at=datetime.now(UTC))
     assert result.refund_amount_paise == 90000
     assert result.refund_pct_applied == 100.0
     assert result.tier_matched == "tier_1"
@@ -117,7 +118,7 @@ def test_owner_accept_booking_idempotency(monkeypatch):
     booking.status = BookingStatus.owner_accepted
     booking.venue.owner_id = uuid4()
 
-    db.query().filter().with_for_update().first.return_value = booking
+    db.query().options().filter().with_for_update().first.return_value = booking
 
     # _booking_out serializes a real Booking to a pydantic model; stub it so the
     # test focuses on the idempotency control flow, not response serialization.
@@ -136,14 +137,14 @@ def test_owner_extend_deadline_validation():
     booking = MagicMock()
     booking.status = BookingStatus.confirmed
     booking.payment_status = PaymentStatus.advance_paid
-    booking.balance_overdue_at = datetime.now(timezone.utc)
+    booking.balance_overdue_at = datetime.now(UTC)
     booking.deadline_extension_count = 0
     booking.venue.owner_id = uuid4()
 
     # Slot starts in the past relative to execution
-    booking.slot.starts_at = datetime.now(timezone.utc) - timedelta(hours=2)
+    booking.slot.starts_at = datetime.now(UTC) - timedelta(hours=2)
 
-    db.query().filter().with_for_update().first.return_value = booking
+    db.query().options().filter().with_for_update().first.return_value = booking
 
     # Extension on already started event should fail
     body = ExtendDeadlineIn(new_due_date=date.today() + timedelta(days=2))

@@ -1,28 +1,29 @@
+import { lazy } from 'react'
 import { createBrowserRouter, Outlet } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { OwnerLayout } from './components/OwnerLayout'
 
-import Dashboard from './pages/Dashboard'
-import ManageVenues from './pages/ManageVenues'
-import Bookings from './pages/Bookings'
-import Financials from './pages/Financials'
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const ManageVenues = lazy(() => import('./pages/ManageVenues'))
+const Bookings = lazy(() => import('./pages/Bookings'))
+const Financials = lazy(() => import('./pages/Financials'))
 
-import Login from './pages/Login'
-import Register from './pages/Register'
-import RegisterSuccess from './pages/RegisterSuccess'
-import LoginSuccess from './pages/LoginSuccess'
-import PendingApproval from './pages/PendingApproval'
-import Rejected from './pages/Rejected'
-import AcceptInvite from './pages/AcceptInvite'
-import ForgotPassword from './pages/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const RegisterSuccess = lazy(() => import('./pages/RegisterSuccess'))
+const LoginSuccess = lazy(() => import('./pages/LoginSuccess'))
+const PendingApproval = lazy(() => import('./pages/PendingApproval'))
+const Rejected = lazy(() => import('./pages/Rejected'))
+const AcceptInvite = lazy(() => import('./pages/AcceptInvite'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 
-import CreateVenueWizard from './pages/venues/CreateVenueWizard'
-import VenueOverview from './pages/venues/VenueOverview'
-import VenueEdit from './pages/venues/VenueEdit'
-import VenueCalendarManagement from './pages/venues/VenueCalendarManagement'
-import VenuePricingRules from './pages/venues/VenuePricingRules'
-import BookingDetail from './pages/bookings/BookingDetail'
+const CreateVenueWizard = lazy(() => import('./pages/venues/CreateVenueWizard'))
+const VenueOverview = lazy(() => import('./pages/venues/VenueOverview'))
+const VenueEdit = lazy(() => import('./pages/venues/VenueEdit'))
+const VenueCalendarManagement = lazy(() => import('./pages/venues/VenueCalendarManagement'))
+const VenuePricingRules = lazy(() => import('./pages/venues/VenuePricingRules'))
+const BookingDetail = lazy(() => import('./pages/bookings/BookingDetail'))
 
 // Placeholders for future pages
 const Placeholder = ({ title }: { title: string }) => (
@@ -55,7 +56,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Dashboard /> },
-      
+
       // Venues
       { path: 'venues', element: <ManageVenues /> },
       { path: 'venues/new', element: <CreateVenueWizard /> },

@@ -4,22 +4,22 @@ from datetime import date, timedelta
 from uuid import UUID
 
 from fastapi import HTTPException, status
+from sqlalchemy import and_, func, or_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, joinedload, selectinload
-from sqlalchemy import or_, and_, func
+from sqlalchemy.orm import Session, joinedload
 
 from app.modules.availability.service import validate_booking_request
-from app.modules.notification import service as notifications
-from app.modules.notification.types import NotificationType
+
+# Re-expose functions from cancellation module
 from app.modules.booking.helpers import (
-    _now,
-    _history,
-    _booking_or_404,
-    _assert_booking_owner,
-    _slot_for_update,
-    _booking_out,
     MAX_DEADLINE_EXTENSIONS,
     USER_PAYMENT_HOLD_HOURS,
+    _assert_booking_owner,
+    _booking_or_404,
+    _booking_out,
+    _history,
+    _now,
+    _slot_for_update,
 )
 from app.modules.booking.models import (
     Booking,
@@ -33,19 +33,11 @@ from app.modules.booking.schemas import (
     BookingRequestIn,
     ExtendDeadlineIn,
 )
-from app.modules.venue.models import Venue, VenueStatus
+from app.modules.notification import service as notifications
+from app.modules.notification.types import NotificationType
 from app.modules.profile.models import Profile
-from app.modules.venue.service import ( get_pricing_quote_for_slot,  _get_active_venue_or_404 )
-
-# Re-expose functions from cancellation module
-from app.modules.booking.cancellation import (
-    _compute_refund,
-    get_cancellation_preview,
-    user_cancel_booking,
-    owner_cancel_forfeit,
-    owner_cancel_goodwill,
-    admin_force_cancel,
-)
+from app.modules.venue.models import Venue
+from app.modules.venue.service import _get_active_venue_or_404, get_pricing_quote_for_slot
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +53,7 @@ def create_booking_request(
         payload.venue_id,
         for_update=True,
     )
-    
+
     validation = validate_booking_request(
         db=db,
         venue=venue,
@@ -71,8 +63,8 @@ def create_booking_request(
         booking_date=payload.booking_date,
         guest_count=payload.guest_count,
     )
-    starts_at = payload.starts_at
-    ends_at = payload.ends_at
+    starts_at = validation.starts_at
+    ends_at = validation.ends_at
 
     quote = get_pricing_quote_for_slot(
         db=db,
@@ -96,7 +88,7 @@ def create_booking_request(
             },
         )
 
-    is_instant = (venue.booking_mode == "INSTANT")
+    is_instant = venue.booking_mode == "INSTANT"
     initial_status = BookingStatus.payment_pending if is_instant else BookingStatus.requested
     payment_expires_at = _now() + timedelta(minutes=15) if is_instant else None
 
@@ -142,25 +134,34 @@ def create_booking_request(
 
     if is_instant:
         from app.modules.payment.service import create_payment_intent
+
         try:
             create_payment_intent(db, user_id, booking.id, payment_type="advance")
         except Exception as e:
-            logger.exception("Failed to create initial payment intent for instant booking %s", booking.id)
+            logger.exception(
+                "Failed to create initial payment intent for instant booking %s", booking.id
+            )
             db.rollback()
             if isinstance(e, HTTPException):
                 raise e
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to initialize payment for instant booking"
+                detail="Failed to initialize payment for instant booking",
             ) from e
     else:
         notifications.notify(
-            db, venue.owner_id, NotificationType.NEW_REQUEST_OWNER,
-            context={"venue_name": venue.name}, booking_id=booking.id,
+            db,
+            venue.owner_id,
+            NotificationType.NEW_REQUEST_OWNER,
+            context={"venue_name": venue.name},
+            booking_id=booking.id,
         )
         notifications.notify(
-            db, user_id, NotificationType.REQUEST_RECEIVED,
-            context={"venue_name": venue.name}, booking_id=booking.id,
+            db,
+            user_id,
+            NotificationType.REQUEST_RECEIVED,
+            context={"venue_name": venue.name},
+            booking_id=booking.id,
         )
 
     db.refresh(booking)
@@ -181,7 +182,7 @@ def list_user_bookings(db: Session, user_id: UUID) -> list[BookingOut]:
         .options(
             joinedload(Booking.slot),
             joinedload(Booking.user),
-            joinedload(Booking.venue).selectinload(Venue.photos)
+            joinedload(Booking.venue).selectinload(Venue.photos),
         )
         .filter(Booking.user_id == user_id, Booking.deleted_at.is_(None))
         .order_by(Booking.created_at.desc())
@@ -191,18 +192,18 @@ def list_user_bookings(db: Session, user_id: UUID) -> list[BookingOut]:
 
 
 def list_all_owner_bookings(
-    db: Session, 
+    db: Session,
     owner_id: UUID,
     tab: str | None = None,
     venue_id: str | None = None,
-    search: str | None = None
+    search: str | None = None,
 ) -> list[BookingOut]:
     query = (
         db.query(Booking)
         .options(
             joinedload(Booking.slot),
             joinedload(Booking.user),
-            joinedload(Booking.venue).selectinload(Venue.photos)
+            joinedload(Booking.venue).selectinload(Venue.photos),
         )
         .join(Venue, Booking.venue_id == Venue.id)
         .join(Profile, Booking.user_id == Profile.id)
@@ -215,10 +216,7 @@ def list_all_owner_bookings(
     if search:
         search_term = f"%{search}%"
         query = query.filter(
-            or_(
-                Venue.name.ilike(search_term),
-                Profile.full_name.ilike(search_term)
-            )
+            or_(Venue.name.ilike(search_term), Profile.full_name.ilike(search_term))
         )
 
     if tab and tab != "all":
@@ -232,29 +230,31 @@ def list_all_owner_bookings(
             query = query.filter(Booking.status == BookingStatus.completed)
         elif tab == "cancelled":
             query = query.filter(
-                Booking.status.in_([
-                    BookingStatus.conflict_cancelled,
-                    BookingStatus.user_cancelled,
-                    BookingStatus.admin_cancelled,
-                    BookingStatus.owner_rejected,
-                    BookingStatus.balance_overdue_cancelled,
-                    BookingStatus.hold_expired,
-                    BookingStatus.request_expired
-                ])
+                Booking.status.in_(
+                    [
+                        BookingStatus.conflict_cancelled,
+                        BookingStatus.user_cancelled,
+                        BookingStatus.admin_cancelled,
+                        BookingStatus.owner_rejected,
+                        BookingStatus.balance_overdue_cancelled,
+                        BookingStatus.hold_expired,
+                        BookingStatus.request_expired,
+                    ]
+                )
             )
         elif tab == "overdue":
             query = query.filter(
                 or_(
                     and_(
                         Booking.status == BookingStatus.confirmed,
-                        Booking.balance_overdue_at != None,
-                        Booking.balance_overdue_at < func.now()
+                        Booking.balance_overdue_at is not None,
+                        Booking.balance_overdue_at < func.now(),
                     ),
                     and_(
                         Booking.status == BookingStatus.owner_accepted,
-                        Booking.hold_expires_at != None,
-                        Booking.hold_expires_at < func.now()
-                    )
+                        Booking.hold_expires_at is not None,
+                        Booking.hold_expires_at < func.now(),
+                    ),
                 )
             )
 
@@ -269,16 +269,19 @@ def list_venue_bookings(
     pending_only: bool = False,
 ) -> list[BookingOut]:
     from app.modules.venue.service import _get_active_venue_or_404
+
     venue = _get_active_venue_or_404(db, venue_id)
     if venue.owner_id != owner_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Venue owner access denied")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Venue owner access denied"
+        )
 
     query = (
         db.query(Booking)
         .options(
             joinedload(Booking.slot),
             joinedload(Booking.user),
-            joinedload(Booking.venue).selectinload(Venue.photos)
+            joinedload(Booking.venue).selectinload(Venue.photos),
         )
         .filter(
             Booking.venue_id == venue_id,
@@ -315,7 +318,9 @@ def owner_accept_booking(db: Session, booking_id: UUID, owner_id: UUID) -> Booki
     except IntegrityError as exc:
         db.rollback()
         if "booking_slots_no_overlap" in str(exc.orig):
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Slot already blocked") from exc
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Slot already blocked"
+            ) from exc
         raise
 
     # The real advance PaymentIntent (and stripe_advance_payment_intent_id) is created
@@ -325,8 +330,11 @@ def owner_accept_booking(db: Session, booking_id: UUID, owner_id: UUID) -> Booki
     db.refresh(booking)
 
     notifications.notify(
-        db, booking.user_id, NotificationType.REQUEST_ACCEPTED,
-        context={"venue_name": booking.venue.name}, booking_id=booking.id,
+        db,
+        booking.user_id,
+        NotificationType.REQUEST_ACCEPTED,
+        context={"venue_name": booking.venue.name},
+        booking_id=booking.id,
     )
     return _booking_out(booking)
 
@@ -345,13 +353,20 @@ def owner_reject_booking(
     old_status = booking.status
     booking.status = BookingStatus.owner_rejected
     booking.owner_responded_at = _now()
-    db.add(_history(booking, old_status, BookingStatus.owner_rejected, changed_by=owner_id, reason=reason))
+    db.add(
+        _history(
+            booking, old_status, BookingStatus.owner_rejected, changed_by=owner_id, reason=reason
+        )
+    )
     db.flush()
     db.refresh(booking)
 
     notifications.notify(
-        db, booking.user_id, NotificationType.BOOKING_REJECTED,
-        context={"venue_name": booking.venue.name}, booking_id=booking.id,
+        db,
+        booking.user_id,
+        NotificationType.BOOKING_REJECTED,
+        context={"venue_name": booking.venue.name},
+        booking_id=booking.id,
     )
     return _booking_out(booking)
 
@@ -369,19 +384,32 @@ def owner_extend_deadline(
         or booking.payment_status != PaymentStatus.advance_paid
         or booking.balance_overdue_at is None
     ):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Booking is not balance overdue")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Booking is not balance overdue"
+        )
     if booking.deadline_extension_count >= MAX_DEADLINE_EXTENSIONS:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Deadline extension limit reached")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Deadline extension limit reached",
+        )
 
     # Ensure event has not already started
     if booking.slot.starts_at <= _now():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot extend deadline for a past or ongoing event")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot extend deadline for a past or ongoing event",
+        )
 
     # Ensure new due date is in the future and before the event date
     if body.new_due_date <= date.today():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="New due date must be in the future")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="New due date must be in the future"
+        )
     if body.new_due_date >= booking.slot.starts_at.date():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="New due date must be before the event date")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New due date must be before the event date",
+        )
 
     booking.balance_due_date = body.new_due_date
     booking.deadline_extension_count += 1
@@ -392,12 +420,18 @@ def owner_extend_deadline(
     db.flush()
     db.refresh(booking)
     notifications.notify(
-        db, booking.user_id, NotificationType.BALANCE_DEADLINE_EXTENDED,
-        context={"venue_name": booking.venue.name}, booking_id=booking.id,
+        db,
+        booking.user_id,
+        NotificationType.BALANCE_DEADLINE_EXTENDED,
+        context={"venue_name": booking.venue.name},
+        booking_id=booking.id,
     )
     return _booking_out(booking)
 
-def update_owner_notes(db: Session, booking_id: UUID, owner_id: UUID, notes: str | None) -> BookingOut:
+
+def update_owner_notes(
+    db: Session, booking_id: UUID, owner_id: UUID, notes: str | None
+) -> BookingOut:
     booking = _booking_or_404(db, booking_id, for_update=True)
     _assert_booking_owner(booking, owner_id)
     booking.owner_notes = notes

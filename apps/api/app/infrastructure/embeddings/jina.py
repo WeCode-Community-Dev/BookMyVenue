@@ -9,7 +9,7 @@ is Jina, or what the HTTP contract looks like.
 
 import logging
 import time
-from enum import Enum
+from enum import StrEnum
 
 import httpx
 import numpy as np
@@ -28,7 +28,7 @@ _RETRY_BACKOFF_SECONDS = [1, 3, 8]
 _MAX_BATCH_SIZE = 64
 
 
-class EmbeddingTask(str, Enum):
+class EmbeddingTask(StrEnum):
     """Jina task-type strings. Passage = documents being indexed, query = search input."""
 
     PASSAGE = "retrieval.passage"
