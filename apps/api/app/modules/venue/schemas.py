@@ -1,23 +1,24 @@
 from datetime import date, datetime, time
 from decimal import Decimal
-from enum import Enum
+from enum import StrEnum
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
-class BookingType(str, Enum):
+class BookingType(StrEnum):
     full_day = "full_day"
     time_slot = "time_slot"
 
 
-class PricingMode(str, Enum):
+class PricingMode(StrEnum):
     flat = "flat"
     hourly = "hourly"
     mixed = "mixed"
 
 
-class VenueStatus(str, Enum):
+class VenueStatus(StrEnum):
     draft = "draft"
     pending_approval = "pending_approval"
     approved = "approved"
@@ -25,10 +26,9 @@ class VenueStatus(str, Enum):
     suspended = "suspended"
 
 
-class BookingMode(str, Enum):
+class BookingMode(StrEnum):
     MANUAL = "MANUAL"
     INSTANT = "INSTANT"
-
 
 
 class VenueCategoryResponse(BaseModel):
@@ -75,6 +75,7 @@ class CancellationPolicyResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
 class UpdateCancellationPolicyRequest(BaseModel):
     tier_1_hours: int | None = Field(default=None, gt=0)
     tier_1_refund_pct: Decimal | None = Field(default=None, ge=0, le=100)
@@ -111,13 +112,9 @@ class UpdateVenuePhotoItem(BaseModel):
     sort_order: int
     is_cover: bool
 
+
 class BulkUpdateVenuePhotosRequest(BaseModel):
     photos: list[UpdateVenuePhotoItem]
-
-
-from typing import Any
-
-from pydantic import model_validator
 
 
 class VenueListResponse(BaseModel):
@@ -149,10 +146,10 @@ class VenueListResponse(BaseModel):
             "last_completed_step": data.last_completed_step,
         }
 
-        category = getattr(data, 'category', None)
+        category = getattr(data, "category", None)
         result["category_name"] = category.label if category else "Uncategorized"
 
-        photos = getattr(data, 'photos', [])
+        photos = getattr(data, "photos", [])
         if photos:
             cover = next((p for p in photos if p.is_cover), photos[0])
             result["cover_photo_url"] = cover.image_url
@@ -161,20 +158,20 @@ class VenueListResponse(BaseModel):
 
         return result
 
+
 class VenueStatsResponse(BaseModel):
     active_bookings: int
     revenue_this_month_paise: int
+
 
 class VenueResponse(BaseModel):
     id: UUID
     owner_id: UUID
 
-
     name: str
     slug: str | None = None
     description: str | None = None
     category: VenueCategoryResponse
-
 
     address_line1: str
     address_line2: str | None = None
@@ -186,33 +183,26 @@ class VenueResponse(BaseModel):
     longitude: Decimal | None = None
     timezone: str
 
-
     min_capacity: int | None = None
     max_capacity: int
-
 
     open_time: time
     close_time: time
     spans_next_day: bool
-
 
     allowed_booking_types: list[BookingType]
     min_booking_duration_minutes: int
     max_booking_duration_minutes: int
     slot_interval_minutes: int
 
-
     pre_buffer_minutes: int
     post_buffer_minutes: int
-
 
     pricing_mode: PricingMode
     starting_price_paise: int | None = None
     hourly_rate_paise: int | None = None
 
-
     platform_commission_pct: Decimal
-
 
     advance_pct: Decimal
     balance_due_days_before_event: int
@@ -224,17 +214,14 @@ class VenueResponse(BaseModel):
     display_price_min_paise: int | None = None
     display_price_max_paise: int | None = None
 
-
     status: VenueStatus
     booking_mode: BookingMode = BookingMode.MANUAL
     is_active: bool
-
 
     created_at: datetime
     updated_at: datetime
 
     last_completed_step: int
-
 
     photos: list[VenuePhotoResponse] = Field(default_factory=list)
     amenities: list[AmenityResponse] = Field(default_factory=list)
@@ -253,11 +240,9 @@ class DeleteResponse(BaseModel):
 
 
 class CreateVenueRequest(BaseModel):
-
     name: str
     description: str | None = None
     category_id: UUID
-
 
     address_line1: str
     address_line2: str | None = None
@@ -269,31 +254,27 @@ class CreateVenueRequest(BaseModel):
     longitude: Decimal | None = None
     timezone: str = "Asia/Kolkata"
 
-
     min_capacity: int | None = Field(default=None, gt=0)
     max_capacity: int = Field(gt=0)
-
 
     open_time: time
     close_time: time
     spans_next_day: bool = False
 
-
-    allowed_booking_types: list[BookingType] = Field(default_factory=lambda: [BookingType.full_day, BookingType.time_slot])
+    allowed_booking_types: list[BookingType] = Field(
+        default_factory=lambda: [BookingType.full_day, BookingType.time_slot]
+    )
     booking_mode: BookingMode = BookingMode.MANUAL
     min_booking_duration_minutes: int = Field(default=60, gt=0)
     max_booking_duration_minutes: int = Field(default=1440, gt=0)
     slot_interval_minutes: int = Field(default=30, gt=0)
 
-
     pre_buffer_minutes: int = Field(default=0, ge=0)
     post_buffer_minutes: int = Field(default=0, ge=0)
-
 
     pricing_mode: PricingMode = PricingMode.flat
     starting_price_paise: int | None = Field(default=None, ge=0)
     hourly_rate_paise: int | None = Field(default=None, ge=0)
-
 
     advance_pct: Decimal = Field(default=Decimal("30.00"), gt=0, le=100)
     balance_due_days_before_event: int = Field(default=7, gt=0)
@@ -323,7 +304,9 @@ class CreateVenueRequest(BaseModel):
 
         if has_full_day and has_time_slot:
             if self.pricing_mode != PricingMode.mixed:
-                raise ValueError("pricing_mode must be 'mixed' when both full_day and time_slot are allowed")
+                raise ValueError(
+                    "pricing_mode must be 'mixed' when both full_day and time_slot are allowed"
+                )
         elif has_full_day:
             if self.pricing_mode != PricingMode.flat:
                 raise ValueError("pricing_mode must be 'flat' when only full_day is allowed")
@@ -343,15 +326,13 @@ class CreateVenueRequest(BaseModel):
                 raise ValueError("starting_price_paise must be null when pricing_mode is 'hourly'")
         elif self.pricing_mode == PricingMode.mixed:
             if self.starting_price_paise is None or self.hourly_rate_paise is None:
-                raise ValueError("Both starting_price_paise and hourly_rate_paise are required when pricing_mode is 'mixed'")
+                raise ValueError(
+                    "Both starting_price_paise and hourly_rate_paise are required "
+                    "when pricing_mode is 'mixed'"
+                )
 
-
-        if (
-            self.min_capacity is not None
-            and self.min_capacity > self.max_capacity
-        ):
+        if self.min_capacity is not None and self.min_capacity > self.max_capacity:
             raise ValueError("min_capacity cannot exceed max_capacity")
-
 
         if self.min_booking_duration_minutes > self.max_booking_duration_minutes:
             raise ValueError(
@@ -427,7 +408,9 @@ class UpdateVenueRequest(BaseModel):
 
             if has_full_day and has_time_slot:
                 if self.pricing_mode != PricingMode.mixed:
-                    raise ValueError("pricing_mode must be 'mixed' when both full_day and time_slot are allowed")
+                    raise ValueError(
+                        "pricing_mode must be 'mixed' when both full_day and time_slot are allowed"
+                    )
             elif has_full_day:
                 if self.pricing_mode != PricingMode.flat:
                     raise ValueError("pricing_mode must be 'flat' when only full_day is allowed")
@@ -436,9 +419,9 @@ class UpdateVenueRequest(BaseModel):
                     raise ValueError("pricing_mode must be 'hourly' when only time_slot is allowed")
 
         if self.pricing_mode == PricingMode.flat and self.hourly_rate_paise is not None:
-             raise ValueError("hourly_rate_paise must be null when pricing_mode is 'flat'")
+            raise ValueError("hourly_rate_paise must be null when pricing_mode is 'flat'")
         if self.pricing_mode == PricingMode.hourly and self.starting_price_paise is not None:
-             raise ValueError("starting_price_paise must be null when pricing_mode is 'hourly'")
+            raise ValueError("starting_price_paise must be null when pricing_mode is 'hourly'")
 
         if (
             self.min_capacity is not None
@@ -504,6 +487,7 @@ class PricingPreviewResponse(BaseModel):
 
 # ─── Search Result (used by search module) ────────────────────────────────────
 
+
 class VenueSearchResult(BaseModel):
     id: UUID
     name: str
@@ -531,6 +515,7 @@ class VenueAvailabilityResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
 class VenueAvailabilityUpdate(BaseModel):
     day_of_week: int = Field(ge=0, le=6)
     is_available: bool
@@ -545,12 +530,15 @@ class VenueAvailabilityUpdate(BaseModel):
             if not self.spans_next_day and self.closes_at <= self.opens_at:
                 raise ValueError("closes_at must be after opens_at unless spans_next_day is true")
 
+
 class BulkUpdateAvailabilityRequest(BaseModel):
     availabilities: list[VenueAvailabilityUpdate]
 
     @field_validator("availabilities")
     @classmethod
-    def validate_unique_days(cls, v: list[VenueAvailabilityUpdate]) -> list[VenueAvailabilityUpdate]:
+    def validate_unique_days(
+        cls, v: list[VenueAvailabilityUpdate]
+    ) -> list[VenueAvailabilityUpdate]:
         days = [item.day_of_week for item in v]
         if len(days) != len(set(days)):
             raise ValueError("Duplicate day_of_week entries are not allowed")
@@ -577,6 +565,7 @@ class VenueBlockedDateResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
 class CreateBlockedDateRequest(BaseModel):
     starts_at: datetime
     ends_at: datetime
@@ -587,13 +576,13 @@ class CreateBlockedDateRequest(BaseModel):
             raise ValueError("ends_at must be strictly after starts_at")
 
 
-class PricingRuleAdjustmentType(str, Enum):
+class PricingRuleAdjustmentType(StrEnum):
     multiplier = "multiplier"
     fixed_delta = "fixed_delta"
     override = "override"
 
 
-class PricingRuleAppliesTo(str, Enum):
+class PricingRuleAppliesTo(StrEnum):
     full_day = "full_day"
     time_slot = "time_slot"
     both = "both"
@@ -648,7 +637,11 @@ class CreatePricingRuleRequest(BaseModel):
             if any(d < 0 or d > 6 for d in self.days_of_week):
                 raise ValueError("days_of_week values must be between 0 (Mon) and 6 (Sun)")
 
-        if self.start_date is not None and self.end_date is not None and self.start_date > self.end_date:
+        if (
+            self.start_date is not None
+            and self.end_date is not None
+            and self.start_date > self.end_date
+        ):
             raise ValueError("start_date cannot be after end_date")
 
         if self.adjustment_type == PricingRuleAdjustmentType.multiplier:
@@ -658,7 +651,9 @@ class CreatePricingRuleRequest(BaseModel):
                 raise ValueError("amount_paise must be null when adjustment_type is 'multiplier'")
         else:
             if self.amount_paise is None:
-                raise ValueError("amount_paise is required when adjustment_type is 'fixed_delta' or 'override'")
+                raise ValueError(
+                    "amount_paise is required when adjustment_type is 'fixed_delta' or 'override'"
+                )
             if self.multiplier is not None:
                 raise ValueError("multiplier must be null when adjustment_type is not 'multiplier'")
             if self.adjustment_type == PricingRuleAdjustmentType.override and self.amount_paise < 0:
@@ -686,7 +681,11 @@ class UpdatePricingRuleRequest(BaseModel):
             if any(d < 0 or d > 6 for d in self.days_of_week):
                 raise ValueError("days_of_week values must be between 0 (Mon) and 6 (Sun)")
 
-        if self.start_date is not None and self.end_date is not None and self.start_date > self.end_date:
+        if (
+            self.start_date is not None
+            and self.end_date is not None
+            and self.start_date > self.end_date
+        ):
             raise ValueError("start_date cannot be after end_date")
 
 

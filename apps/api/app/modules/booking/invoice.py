@@ -15,6 +15,7 @@ PDF rendering + Cloudinary upload live in invoice_pdf.py (a different
 concern — content generation, no DB/queue awareness). The BookingInvoice
 model lives in booking/models.py, alongside every other booking table.
 """
+
 import logging
 import uuid
 from datetime import UTC, datetime
@@ -34,6 +35,7 @@ MAX_RETRIES = len(job_queue.DEFAULT_BACKOFF_SECONDS)
 
 
 # ─── Enqueue (called synchronously from confirm_payment) ──────────────────
+
 
 def enqueue(db: Session, booking_id: uuid.UUID) -> None:
     """Insert a pending invoice job and try to push to Upstash (fire-and-forget).
@@ -78,6 +80,7 @@ def enqueue(db: Session, booking_id: uuid.UUID) -> None:
 
 
 # ─── Job processing (called from app/jobs/invoice_generator.py) ───────────
+
 
 def process(db: Session, invoice_id: uuid.UUID | str) -> None:
     """Process a single invoice job end-to-end: generate PDF, upload, email."""
@@ -169,7 +172,9 @@ def _send_invoice_email(db: Session, booking, pdf_url: str) -> None:
     source_type = "balance_paid" if fully_paid else "payment_confirmed"
 
     venue_name = booking.venue.name if booking.venue else "your venue"
-    subject, html = render_booking_invoice_email(customer.full_name, venue_name, pdf_url, fully_paid=fully_paid)
+    subject, html = render_booking_invoice_email(
+        customer.full_name, venue_name, pdf_url, fully_paid=fully_paid
+    )
     if not send_email(customer.email, subject, html):
         return
 

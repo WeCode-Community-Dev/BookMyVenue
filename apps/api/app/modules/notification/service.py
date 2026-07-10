@@ -19,7 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 def notify(
-    db: Session, user_id, type: str, context: dict | None = None, booking_id=None,
+    db: Session,
+    user_id,
+    type: str,
+    context: dict | None = None,
+    booking_id=None,
     skip_email: bool = False,
 ) -> InAppNotification:
     """Create an in-app notification and queue its email for after-commit send.
@@ -35,13 +39,17 @@ def notify(
     app.modules.booking.invoice) will be sent later by an async job instead.
     """
     title, body, html = render_notification(type, context, booking_id)
-    row = InAppNotification(user_id=user_id, booking_id=booking_id, type=type, title=title, body=body)
+    row = InAppNotification(
+        user_id=user_id, booking_id=booking_id, type=type, title=title, body=body
+    )
     db.add(row)
     db.flush()
 
     if not skip_email:
         pending = db.info.setdefault("_pending_emails", [])
-        pending.append({"user_id": str(user_id), "subject": title, "html": html, "notification_id": row.id})
+        pending.append(
+            {"user_id": str(user_id), "subject": title, "html": html, "notification_id": row.id}
+        )
     return row
 
 
@@ -60,7 +68,9 @@ def _send_pending_emails(session: Session) -> None:
             if email and send_email(email, item["subject"], item["html"]):
                 _mark_email_sent(item["notification_id"])
         except Exception:
-            logger.exception("Deferred notification email failed (notification=%s)", item.get("notification_id"))
+            logger.exception(
+                "Deferred notification email failed (notification=%s)", item.get("notification_id")
+            )
 
 
 def _mark_email_sent(notification_id) -> None:

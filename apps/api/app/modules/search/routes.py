@@ -17,7 +17,9 @@ def _params(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
 ) -> SearchParams:
-    return SearchParams(q=q, city=city, venue_type=venue_type, capacity=capacity, page=page, page_size=page_size)
+    return SearchParams(
+        q=q, city=city, venue_type=venue_type, capacity=capacity, page=page, page_size=page_size
+    )
 
 
 @router.get("/", response_model=Page[SearchResult])

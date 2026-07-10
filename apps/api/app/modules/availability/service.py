@@ -60,7 +60,9 @@ def _has_overlap(
     range_starts_at: datetime,
     range_ends_at: datetime,
 ) -> bool:
-    return _to_utc(starts_at) < _to_utc(range_ends_at) and _to_utc(ends_at) > _to_utc(range_starts_at)
+    return _to_utc(starts_at) < _to_utc(range_ends_at) and _to_utc(ends_at) > _to_utc(
+        range_starts_at
+    )
 
 
 def _covers_range(
@@ -155,7 +157,6 @@ def is_date_blocked(
     ends_at = _to_utc(ends_at)
 
     for blocked in getattr(venue, "blocked_dates", []):
-
         if blocked.deleted_at:
             continue
 
@@ -302,13 +303,12 @@ def validate_booking_request(
 
     # Duration limit - relaxed for full_day multi-day
     if booking_type == "full_day":
-        max_multi_day_minutes = (
-            getattr(venue, "max_multi_day_duration_days", 7) * 24 * 60
-        )
+        max_multi_day_days = getattr(venue, "max_multi_day_duration_days", 7)
+        max_multi_day_minutes = max_multi_day_days * 24 * 60
         if duration_minutes > max_multi_day_minutes:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Multi-day booking cannot exceed {getattr(venue, 'max_multi_day_duration_days', 7)} days",
+                detail=f"Multi-day booking cannot exceed {max_multi_day_days} days",
             )
     elif duration_minutes > venue.max_booking_duration_minutes:
         raise HTTPException(
@@ -329,7 +329,6 @@ def validate_booking_request(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Booking times must align with slot interval",
         )
-
 
     # === Multi-day Operating Window Validation ===
     current_date = local_starts_at.date()
@@ -436,9 +435,7 @@ def get_availability_for_date(
             return AvailabilityResponse(
                 date=booking_date,
                 operating_window=operating_window,
-                blocked_slots=[
-                    BlockedRange(starts_at=window_start, ends_at=window_end)
-                ],
+                blocked_slots=[BlockedRange(starts_at=window_start, ends_at=window_end)],
             )
         else:
             return AvailabilityResponse(

@@ -7,6 +7,7 @@ Returns a single aggregated response containing:
   - Monthly performance chart data (last 6 months)
   - Upcoming confirmed events (next 5)
 """
+
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
@@ -42,11 +43,12 @@ def get_dashboard_stats(db: Session, owner_id: UUID) -> DashboardStats:
         db.query(func.count(Venue.id))
         .filter(
             Venue.owner_id == owner_id,
-            Venue.is_active == True,
+            Venue.is_active,
             Venue.status == VenueStatus.approved,
-            Venue.deleted_at.is_(None)
+            Venue.deleted_at.is_(None),
         )
-        .scalar() or 0
+        .scalar()
+        or 0
     )
 
     status_counts: dict[str, int] = {}
@@ -67,9 +69,7 @@ def get_dashboard_stats(db: Session, owner_id: UUID) -> DashboardStats:
     pending_requests = status_counts.get(BookingStatus.requested, 0)
     active_bookings = status_counts.get(BookingStatus.confirmed, 0)
     completed_bookings = status_counts.get(BookingStatus.completed, 0)
-    cancelled_bookings = sum(
-        status_counts.get(s, 0) for s in CANCELLED_STATUSES
-    )
+    cancelled_bookings = sum(status_counts.get(s, 0) for s in CANCELLED_STATUSES)
 
     # ------------------------------------------------------------------ #
     # 2. Financial stats — from ledger entries
@@ -121,7 +121,9 @@ def get_dashboard_stats(db: Session, owner_id: UUID) -> DashboardStats:
     return stats
 
 
-def get_dashboard_chart(db: Session, owner_id: UUID, time_range: str = "6M") -> list[ChartDataPoint]:
+def get_dashboard_chart(
+    db: Session, owner_id: UUID, time_range: str = "6M"
+) -> list[ChartDataPoint]:
     # ------------------------------------------------------------------ #
     # Chart data — dynamic time range
     # ------------------------------------------------------------------ #
@@ -129,10 +131,14 @@ def get_dashboard_chart(db: Session, owner_id: UUID, time_range: str = "6M") -> 
     is_daily = time_range in ("7D", "30D")
 
     num_buckets = 6
-    if time_range == "7D": num_buckets = 7
-    elif time_range == "30D": num_buckets = 30
-    elif time_range == "3M": num_buckets = 3
-    elif time_range == "12M": num_buckets = 12
+    if time_range == "7D":
+        num_buckets = 7
+    elif time_range == "30D":
+        num_buckets = 30
+    elif time_range == "3M":
+        num_buckets = 3
+    elif time_range == "12M":
+        num_buckets = 12
 
     buckets: list[tuple[int, int, int]] = []
 
@@ -176,8 +182,7 @@ def get_dashboard_chart(db: Session, owner_id: UUID, time_range: str = "6M") -> 
     )
 
     bucket_map: dict[tuple[int, int, int], dict[str, int]] = {
-        b: {"enquiries": 0, "completed": 0, "cancelled": 0}
-        for b in buckets
+        b: {"enquiries": 0, "completed": 0, "cancelled": 0} for b in buckets
     }
 
     for row in chart_bookings:

@@ -3,6 +3,7 @@
 render_notification(type, context, booking_id) -> (title, body, html)
 `context` keys are best-effort; missing keys degrade gracefully.
 """
+
 from app.core.config import settings
 
 # type -> (title, body template). Body templates use str.format(**context).
@@ -77,7 +78,8 @@ _TEMPLATES: dict[str, tuple[str, str]] = {
     ),
     "venue_suspended": (
         "Venue suspended",
-        "Your venue {venue_name} has been suspended and is no longer visible to customers. Reason: {reason}",
+        "Your venue {venue_name} has been suspended and is no longer visible "
+        "to customers. Reason: {reason}",
     ),
     "venue_reactivated": (
         "Venue reactivated",
@@ -153,8 +155,10 @@ def _email_layout(
         <tr>
           <td style="padding:28px 40px 4px;" align="left">
             <a href="{cta_url}"
-               style="display:inline-block;background:{_BRAND};color:#ffffff;text-decoration:none;
-                      font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;
+               style="display:inline-block;background:{_BRAND};color:#ffffff;
+                      text-decoration:none;
+                      font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:14px;
+                      font-weight:600;
                       padding:12px 28px;border-radius:8px;">
               {cta_text}
             </a>
@@ -162,7 +166,8 @@ def _email_layout(
         </tr>
         """
 
-    footnote_html = f"""
+    footnote_html = (
+        f"""
         <tr>
           <td style="padding:20px 40px 0;">
             <p style="margin:0;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:12px;
@@ -171,23 +176,31 @@ def _email_layout(
             </p>
           </td>
         </tr>
-        """ if footnote else ""
+        """
+        if footnote
+        else ""
+    )
 
     return f"""\
 <!doctype html>
 <html>
   <body style="margin:0;padding:0;background:#f4f4f5;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="background:#f4f4f5;padding:32px 16px;">
       <tr>
         <td align="center">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
                  style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden;
                         box-shadow:0 1px 3px rgba(0,0,0,0.06);">
             <tr>
-              <td align="center" style="background:linear-gradient(135deg,{_BRAND},{_BRAND_SECONDARY});padding:28px 40px;">
-                <img src="{settings.frontend_base_url}/favicon.png" width="40" height="40" alt="Venue404"
+              <td align="center"
+                  style="background:linear-gradient(135deg,{_BRAND},{_BRAND_SECONDARY});
+                         padding:28px 40px;">
+                <img src="{settings.frontend_base_url}/favicon.png" width="40" height="40"
+                     alt="Venue404"
                      style="display:block;margin:0 auto 8px;border-radius:9px;" />
-                <span style="font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;color:#ffffff;">
+                <span style="font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:18px;
+                             font-weight:700;color:#ffffff;">
                   Venue<span style="color:#d7ece3;">404</span>
                 </span>
               </td>
@@ -211,7 +224,8 @@ def _email_layout(
             <tr>
               <td style="padding:32px 40px 28px;">
                 <hr style="border:none;border-top:1px solid #f0f0f1;margin:0 0 16px;" />
-                <p style="margin:0;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:12px;color:#a1a1aa;">
+                <p style="margin:0;font-family:Segoe UI,Helvetica,Arial,sans-serif;
+                          font-size:12px;color:#a1a1aa;">
                   Venue404 — venue discovery &amp; booking marketplace.<br />
                   This is an automated email — please don't reply directly to it.
                 </p>
@@ -230,7 +244,10 @@ def _email_layout(
 # Not tied to a booking_id or an in-app notification row like the templates
 # above, but kept in this file so all outbound email copy lives in one place.
 
-def render_owner_invite_email(owner_name: str | None, venue_name: str, action_link: str) -> tuple[str, str]:
+
+def render_owner_invite_email(
+    owner_name: str | None, venue_name: str, action_link: str
+) -> tuple[str, str]:
     subject = "You're invited to manage your venue on Venue404"
     html = _email_layout(
         title="You've been invited to Venue404",
@@ -252,13 +269,19 @@ def render_password_reset_email(action_link: str) -> tuple[str, str]:
         body_html="<p>We received a request to reset your Venue404 password.</p>",
         cta_text="Set a new password",
         cta_url=action_link,
-        footnote="If you didn't request this, you can safely ignore this email — your password won't change.",
+        footnote=(
+            "If you didn't request this, you can safely ignore this email — "
+            "your password won't change."
+        ),
     )
     return subject, html
 
 
 def render_booking_invoice_email(
-    customer_name: str | None, venue_name: str, pdf_url: str, fully_paid: bool = False,
+    customer_name: str | None,
+    venue_name: str,
+    pdf_url: str,
+    fully_paid: bool = False,
 ) -> tuple[str, str]:
     """The customer's combined confirmation/payment email — deliberately held
     back by confirm_payment / confirm_balance_payment (notify(...,

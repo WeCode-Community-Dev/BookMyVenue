@@ -39,6 +39,7 @@ DEFAULT_RADIUS_METERS = 15000
 
 # ─── Phase 1: Internal search ────────────────────────────────────────────────
 
+
 def run_search(
     db: Session, user_id: UUID, query: str, page: int, page_size: int
 ) -> DeepResearchSearchResponse:
@@ -87,9 +88,8 @@ def run_search(
 
 # ─── Phase 2: External discovery ─────────────────────────────────────────────
 
-async def _upload_photo_to_cloudinary(
-    source_ref: str, photos: list[dict]
-) -> str | None:
+
+async def _upload_photo_to_cloudinary(source_ref: str, photos: list[dict]) -> str | None:
     """
     Upload the first Google Places photo to Cloudinary.
     Returns the secure Cloudinary URL, or None if upload fails.
@@ -154,9 +154,7 @@ async def run_external_discovery(
     from app.modules.venue.models import Venue
 
     # ── 1. Audit row ──────────────────────────────────────────────────────────
-    ctx = ExternalDiscoveryRequest(
-        query_id=query_id, latitude=latitude, longitude=longitude
-    )
+    ctx = ExternalDiscoveryRequest(query_id=query_id, latitude=latitude, longitude=longitude)
     db.add(ctx)
     db.commit()
 
@@ -252,9 +250,7 @@ async def run_external_discovery(
             return cached.cover_photo_url
         return await _upload_photo_to_cloudinary(source_ref, raw.get("photos", []))
 
-    photo_urls: list[str | None] = await asyncio.gather(
-        *[resolve_photo(raw) for raw in valid_raws]
-    )
+    photo_urls: list[str | None] = await asyncio.gather(*[resolve_photo(raw) for raw in valid_raws])
 
     # ── 7. Persist leads and return ───────────────────────────────────────────
     public_leads: list[ExternalLeadPublic] = []
@@ -264,10 +260,7 @@ async def run_external_discovery(
             source="google_places",
             source_ref=raw["id"],
             name=raw.get("displayName", {}).get("text", "Unknown venue"),
-            city=(
-                raw.get("postalAddress", {}).get("locality")
-                or query_row.city_filter
-            ),
+            city=(raw.get("postalAddress", {}).get("locality") or query_row.city_filter),
             formatted_address=raw.get("formattedAddress"),
             cover_photo_url=cover_photo_url,
             raw_contact_info={},
@@ -282,6 +275,7 @@ async def run_external_discovery(
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
+
 def _to_public_lead(lead: ExternalVenueLead) -> ExternalLeadPublic:
     return ExternalLeadPublic(
         id=lead.id,
@@ -295,6 +289,7 @@ def _to_public_lead(lead: ExternalVenueLead) -> ExternalLeadPublic:
 
 
 # ─── Reservations ─────────────────────────────────────────────────────────────
+
 
 def reserve_lead(
     db: Session,
@@ -393,6 +388,7 @@ def get_user_reservations(db: Session, user_id: UUID) -> list[dict]:
 # Converts an external reservation into an onboarded owner + venue + normal
 # Venue404 booking. See docs/Venue404_External_Reservation_Onboarding_PRD.md
 
+
 def sync_reservation_status_for_venue(db: Session, venue_id: UUID, new_venue_status) -> None:
     """Advances the linked LeadReservation's status when its venue is
     submitted for review or approved. Called from venue/admin service code
@@ -413,9 +409,7 @@ def sync_reservation_status_for_venue(db: Session, venue_id: UUID, new_venue_sta
         reservation.status = target
 
 
-def list_external_reservations(
-    db: Session, status: str | None, page: int, page_size: int
-) -> dict:
+def list_external_reservations(db: Session, status: str | None, page: int, page_size: int) -> dict:
     from sqlalchemy.orm import joinedload
 
     from app.modules.profile.models import Profile
@@ -434,50 +428,56 @@ def list_external_reservations(
     from app.modules.venue.models import VenueCategory
 
     customer_ids = {r.user_id for r in reservations}
-    customers = {
-        p.id: p for p in db.query(Profile).filter(Profile.id.in_(customer_ids)).all()
-    } if customer_ids else {}
+    customers = (
+        {p.id: p for p in db.query(Profile).filter(Profile.id.in_(customer_ids)).all()}
+        if customer_ids
+        else {}
+    )
 
     category_ids = {r.category_id for r in reservations if r.category_id}
-    categories = {
-        c.id: c for c in db.query(VenueCategory).filter(VenueCategory.id.in_(category_ids)).all()
-    } if category_ids else {}
+    categories = (
+        {c.id: c for c in db.query(VenueCategory).filter(VenueCategory.id.in_(category_ids)).all()}
+        if category_ids
+        else {}
+    )
 
     items = []
     for r in reservations:
         customer = customers.get(r.user_id)
         category = categories.get(r.category_id) if r.category_id else None
         contact_info = r.lead.raw_contact_info or {}
-        items.append({
-            "id": r.id,
-            "status": r.status.value,
-            "lead_name": r.lead.name,
-            "lead_city": r.lead.city,
-            "lead_formatted_address": r.lead.formatted_address,
-            "lead_category_guess": r.lead.category_guess,
-            "lead_cover_photo_url": r.lead.cover_photo_url,
-            "lead_phone": contact_info.get("phone"),
-            "lead_website": contact_info.get("website"),
-            "lead_rating": contact_info.get("rating"),
-            "lead_google_maps_uri": contact_info.get("google_maps_uri"),
-            "customer_name": customer.full_name if customer else None,
-            "customer_email": customer.email if customer else None,
-            "customer_phone": r.phone,
-            "customer_notes": r.notes,
-            "category_id": r.category_id,
-            "category_label": category.label if category else None,
-            "guest_count": r.guest_count,
-            "event_date": r.event_date.isoformat() if r.event_date else None,
-            "owner_id": r.owner_id,
-            "venue_id": r.venue_id,
-            "booking_id": r.booking_id,
-            "contact_method": r.contact_method,
-            "contact_notes": r.contact_notes,
-            "follow_up_date": r.follow_up_date.isoformat() if r.follow_up_date else None,
-            "owner_invited_at": r.owner_invited_at,
-            "booking_created_at": r.booking_created_at,
-            "created_at": r.created_at,
-        })
+        items.append(
+            {
+                "id": r.id,
+                "status": r.status.value,
+                "lead_name": r.lead.name,
+                "lead_city": r.lead.city,
+                "lead_formatted_address": r.lead.formatted_address,
+                "lead_category_guess": r.lead.category_guess,
+                "lead_cover_photo_url": r.lead.cover_photo_url,
+                "lead_phone": contact_info.get("phone"),
+                "lead_website": contact_info.get("website"),
+                "lead_rating": contact_info.get("rating"),
+                "lead_google_maps_uri": contact_info.get("google_maps_uri"),
+                "customer_name": customer.full_name if customer else None,
+                "customer_email": customer.email if customer else None,
+                "customer_phone": r.phone,
+                "customer_notes": r.notes,
+                "category_id": r.category_id,
+                "category_label": category.label if category else None,
+                "guest_count": r.guest_count,
+                "event_date": r.event_date.isoformat() if r.event_date else None,
+                "owner_id": r.owner_id,
+                "venue_id": r.venue_id,
+                "booking_id": r.booking_id,
+                "contact_method": r.contact_method,
+                "contact_notes": r.contact_notes,
+                "follow_up_date": r.follow_up_date.isoformat() if r.follow_up_date else None,
+                "owner_invited_at": r.owner_invited_at,
+                "booking_created_at": r.booking_created_at,
+                "created_at": r.created_at,
+            }
+        )
 
     return {
         "items": items,
@@ -518,14 +518,21 @@ def contact_reservation(
     reservation.follow_up_date = follow_up_date
     reservation.status = LeadReservationStatus.CONTACTED
 
-    db.add(AdminAction(
-        admin_id=admin_id, action_type="external_reservation_contacted",
-        target_type="external_reservation", target_id=reservation_id, reason=notes or None,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="external_reservation_contacted",
+            target_type="external_reservation",
+            target_id=reservation_id,
+            reason=notes or None,
+        )
+    )
     db.commit()
 
 
-def mark_owner_interested(db: Session, *, admin_id: UUID, reservation_id: UUID, reason: str = "") -> None:
+def mark_owner_interested(
+    db: Session, *, admin_id: UUID, reservation_id: UUID, reason: str = ""
+) -> None:
     from app.core.exceptions import ConflictError
     from app.modules.admin.models import AdminAction
 
@@ -534,10 +541,15 @@ def mark_owner_interested(db: Session, *, admin_id: UUID, reservation_id: UUID, 
         raise ConflictError("Owner can only be marked interested after being contacted")
 
     reservation.status = LeadReservationStatus.OWNER_INTERESTED
-    db.add(AdminAction(
-        admin_id=admin_id, action_type="external_reservation_owner_interested",
-        target_type="external_reservation", target_id=reservation_id, reason=reason or None,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="external_reservation_owner_interested",
+            target_type="external_reservation",
+            target_id=reservation_id,
+            reason=reason or None,
+        )
+    )
     db.commit()
 
 
@@ -567,10 +579,14 @@ def invite_owner_for_reservation(
 
     resolved_category_id = category_id or reservation.category_id
     if resolved_category_id is None:
-        raise ConflictError("This reservation has no category — pass category_id to invite the owner")
+        raise ConflictError(
+            "This reservation has no category — pass category_id to invite the owner"
+        )
 
     provider_user, action_link = get_auth_provider().create_invite_link(
-        email, full_name=owner_name, phone=phone,
+        email,
+        full_name=owner_name,
+        phone=phone,
         redirect_to=f"{settings.owner_portal_base_url}/accept-invite",
     )
 
@@ -583,10 +599,14 @@ def invite_owner_for_reservation(
         profile.phone = phone
     profile.status = ProfileStatus.active
 
-    if not db.query(UserRoleAssignment).filter(
-        UserRoleAssignment.user_id == provider_user.id,
-        UserRoleAssignment.role == UserRole.venue_owner,
-    ).first():
+    if (
+        not db.query(UserRoleAssignment)
+        .filter(
+            UserRoleAssignment.user_id == provider_user.id,
+            UserRoleAssignment.role == UserRole.venue_owner,
+        )
+        .first()
+    ):
         db.add(UserRoleAssignment(user_id=provider_user.id, role=UserRole.venue_owner))
 
     # Same creation path (and same defaults) an owner uses through CreateVenueWizard —
@@ -620,11 +640,15 @@ def invite_owner_for_reservation(
     reservation.owner_invited_at = datetime.now(UTC)
     reservation.status = LeadReservationStatus.OWNER_INVITED
 
-    db.add(AdminAction(
-        admin_id=admin_id, action_type="external_reservation_owner_invited",
-        target_type="external_reservation", target_id=reservation_id,
-        reason=f"Invited {email} for venue '{venue_name}'",
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="external_reservation_owner_invited",
+            target_type="external_reservation",
+            target_id=reservation_id,
+            reason=f"Invited {email} for venue '{venue_name}'",
+        )
+    )
     db.commit()
     db.refresh(reservation)
 
@@ -637,7 +661,9 @@ def invite_owner_for_reservation(
         subject, html = render_owner_invite_email(owner_name, venue_name, action_link)
         send_email(email, subject, html)
     except Exception:
-        logger.warning("Could not email invite link to %s — admin must share it manually", email, exc_info=True)
+        logger.warning(
+            "Could not email invite link to %s — admin must share it manually", email, exc_info=True
+        )
 
     return reservation, action_link
 
@@ -663,9 +689,15 @@ def create_booking_for_reservation(db: Session, *, admin_id: UUID, reservation_i
         raise ConflictError("Reservation has no event date")
 
     venue = db.get(Venue, reservation.venue_id)
-    cover_photo = db.query(VenuePhoto).filter(
-        VenuePhoto.venue_id == venue.id, VenuePhoto.is_cover.is_(True), VenuePhoto.deleted_at.is_(None),
-    ).first()
+    cover_photo = (
+        db.query(VenuePhoto)
+        .filter(
+            VenuePhoto.venue_id == venue.id,
+            VenuePhoto.is_cover.is_(True),
+            VenuePhoto.deleted_at.is_(None),
+        )
+        .first()
+    )
 
     # No frontend step computes starts_at/ends_at for this flow (unlike the normal
     # booking form), so derive them the same way it would: event_date + the venue's
@@ -697,10 +729,14 @@ def create_booking_for_reservation(db: Session, *, admin_id: UUID, reservation_i
     reservation.booking_created_at = datetime.now(UTC)
     reservation.status = LeadReservationStatus.BOOKING_CREATED
 
-    db.add(AdminAction(
-        admin_id=admin_id, action_type="external_reservation_booking_created",
-        target_type="external_reservation", target_id=reservation_id,
-        reason=f"Booking {booking.id} created",
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="external_reservation_booking_created",
+            target_type="external_reservation",
+            target_id=reservation_id,
+            reason=f"Booking {booking.id} created",
+        )
+    )
     db.commit()
     return booking

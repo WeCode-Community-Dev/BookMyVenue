@@ -20,10 +20,15 @@ assert "supabase.co" not in _db_url, (
 assert any(h in _db_url for h in ("localhost", "127.0.0.1", "0.0.0.0")), (
     "Tests must use a local database. Set DATABASE_URL in apps/api/.env.test."
 )
-from app.core.database import SessionLocal
-from app.main import app
-from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRoleAssignment
-from app.modules.venue.models import Venue, VenueCategory, VenueStatus
+from app.core.database import SessionLocal  # noqa: E402 -- must follow the DB safety check above
+from app.main import app  # noqa: E402
+from app.modules.profile.models import (  # noqa: E402
+    Profile,
+    ProfileStatus,
+    UserRole,
+    UserRoleAssignment,
+)
+from app.modules.venue.models import Venue, VenueCategory, VenueStatus  # noqa: E402
 
 # ── Session-scoped: seed one category for the whole run ──────────────────────
 

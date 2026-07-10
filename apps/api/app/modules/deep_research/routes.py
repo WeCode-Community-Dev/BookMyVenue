@@ -43,9 +43,7 @@ async def trigger_external(
     then returns all discovered leads in one response. No jobs, no polling.
     """
     enforce_per_minute_limit(auth.user_id, "deep_research_external")
-    return await service.run_external_discovery(
-        db, body.query_id, body.latitude, body.longitude
-    )
+    return await service.run_external_discovery(db, body.query_id, body.latitude, body.longitude)
 
 
 @router.post("/leads/{lead_id}/reserve", response_model=ReserveLeadResponse)
@@ -56,7 +54,14 @@ def reserve(
     auth: AuthContext = Depends(require_auth),
 ):
     reservation = service.reserve_lead(
-        db, lead_id, auth.user_id, body.category_id, body.event_date, body.guest_count, body.phone, body.notes
+        db,
+        lead_id,
+        auth.user_id,
+        body.category_id,
+        body.event_date,
+        body.guest_count,
+        body.phone,
+        body.notes,
     )
     return ReserveLeadResponse(reservation_id=reservation.id, status=reservation.status.value)
 

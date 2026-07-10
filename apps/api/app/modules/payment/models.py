@@ -10,20 +10,20 @@ from app.core.database import Base
 from app.shared.models import TimestampMixin
 
 
-class PaymentAttemptStatus(str, enum.Enum):
+class PaymentAttemptStatus(enum.StrEnum):
     pending = "pending"
     succeeded = "succeeded"
     failed = "failed"
     refunded = "refunded"
 
 
-class RefundStatus(str, enum.Enum):
+class RefundStatus(enum.StrEnum):
     pending = "pending"
     succeeded = "succeeded"
     failed = "failed"
 
 
-class PayoutStatus(str, enum.Enum):
+class PayoutStatus(enum.StrEnum):
     requested = "requested"
     processing = "processing"
     paid = "paid"
@@ -32,6 +32,7 @@ class PayoutStatus(str, enum.Enum):
 
 class Payment(Base, TimestampMixin):
     """Read-model of a single Stripe charge attempt for a booking."""
+
     __tablename__ = "payments"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -79,6 +80,7 @@ class LedgerEntry(Base):
     """Append-only record of every money movement — the single source of truth.
     `payments` / `refunds` are convenience read-models over these events.
     """
+
     __tablename__ = "ledger_entries"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -94,9 +96,11 @@ class LedgerEntry(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="RESTRICT"), nullable=False
     )
-    entry_type: Mapped[str] = mapped_column(String, nullable=False)   # charge|refund|payout|platform_fee
+    entry_type: Mapped[str] = mapped_column(
+        String, nullable=False
+    )  # charge|refund|payout|platform_fee
     amount_paise: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    direction: Mapped[str] = mapped_column(String, nullable=False)    # credit|debit
+    direction: Mapped[str] = mapped_column(String, nullable=False)  # credit|debit
     stripe_pi_ref: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=func.now()
@@ -127,6 +131,7 @@ class StripeEvent(Base):
     """Webhook idempotency guard. PK is the Stripe event id, so a duplicate
     insert (replayed webhook) raises IntegrityError and the handler no-ops.
     """
+
     __tablename__ = "stripe_events"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)  # Stripe event id

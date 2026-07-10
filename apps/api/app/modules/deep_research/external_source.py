@@ -12,14 +12,14 @@ PLACES_DETAILS_URL = "https://places.googleapis.com/v1/places/{place_id}"
 
 
 TEXT_SEARCH_FIELD_MASK = (
-    "places.id,"                    # Essentials
-    "places.displayName,"           # Pro — venue name
-    "places.formattedAddress,"      # Pro — full address
-    "places.location,"              # Pro — lat/lng for map pin
-    "places.postalAddress,"         # Pro
-    "places.types,"                 # Pro — category tags
-    "places.photos,"                # Pro — photo reference (uploaded to Cloudinary once, cached forever)
-    "places.businessStatus,"        # Pro
+    "places.id,"  # Essentials
+    "places.displayName,"  # Pro — venue name
+    "places.formattedAddress,"  # Pro — full address
+    "places.location,"  # Pro — lat/lng for map pin
+    "places.postalAddress,"  # Pro
+    "places.types,"  # Pro — category tags
+    "places.photos,"  # Pro — photo reference (uploaded to Cloudinary once, cached forever)
+    "places.businessStatus,"  # Pro
 )
 
 DETAILS_FIELD_MASK = (

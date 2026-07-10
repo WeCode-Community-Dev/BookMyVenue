@@ -94,7 +94,11 @@ class BookingOut(BaseModel):
     @property
     def final_owner_payout_paise(self) -> int:
         if self.status in ("user_cancelled", "owner_cancelled", "rejected"):
-            net = (self.amount_paid_paise or 0) - (self.refund_amount_paise or 0) - (self.platform_fee_paise or 0)
+            net = (
+                (self.amount_paid_paise or 0)
+                - (self.refund_amount_paise or 0)
+                - (self.platform_fee_paise or 0)
+            )
             return max(0, net)
         return self.owner_payout_paise or 0
 
