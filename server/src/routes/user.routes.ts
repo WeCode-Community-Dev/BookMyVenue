@@ -5,10 +5,13 @@ import { authorizeRoles } from '@/middlewares/role.middleware';
 import { getProfile, updateProfile, getUserBookings } from '@/controllers/user.controller';
 import { getUserWallet } from '@/controllers/wallet.controller';
 import { upload } from '@/middlewares/upload.middleware';
+import { getSuggestions } from '@/controllers/search.controller';
 
 const router = Router();
 
 router.get('/home', getHomeData);
+router.get('/search', getSuggestions);
+
 // Protected user routes
 router.use(authMiddleware);
 

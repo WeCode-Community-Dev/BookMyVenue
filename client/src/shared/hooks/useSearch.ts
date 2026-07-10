@@ -41,7 +41,7 @@ export function useSearch({
             }
         }
         search();
-    }, [debouncedQuery,fetchSuggestions]);
+    }, [debouncedQuery, fetchSuggestions]);
 
     return {
         suggestions,

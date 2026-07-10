@@ -1,32 +1,21 @@
+import { apiClient } from '@/services/apiClient';
 import type { SearchSuggestion } from "../components/ui/Search/types";
 
 export const searchService = {
     async getVenueSuggestions(
         query: string
     ): Promise<SearchSuggestion[]> {
-
-         const venues: SearchSuggestion[] = [
-            {
-                id: "1",
-                label: "Royal Palace",
-                subtitle: "Kayamkulam"
-            },
-            {
-                id: "2",
-                label: "Grand Convention Hall",
-                subtitle: "Kochi"
-            },
-            {
-                id: "3",
-                label: "Green Valley Auditorium",
-                subtitle: "Alappuzha"
-            }
-        ];
-
-        return venues.filter((venue)=>
-            venue.label
-                .toLowerCase()
-                .includes(query.toLowerCase())
-        )
+        try {
+            const response = await apiClient.get('/users/search', {
+                params: {
+                    type: 'venue',
+                    q: query
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Failed to fetch suggestions', error);
+            return [];
+        }
     }
 }

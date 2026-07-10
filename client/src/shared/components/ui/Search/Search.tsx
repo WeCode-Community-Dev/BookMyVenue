@@ -15,7 +15,7 @@ const Search = ({
     onSuggestionSelect
 }: SearchProps)=> {
     return (
-<div className="relative">
+<div className="relative max-w-3xl">
 
  <div className="
     mt-10
@@ -29,7 +29,6 @@ const Search = ({
     flex-col
     md:flex-row
     gap-3
-    max-w-3xl
     shadow-xl
  ">
 
