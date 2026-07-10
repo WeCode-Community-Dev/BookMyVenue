@@ -77,40 +77,40 @@ export default function Financials() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Main Metric: Net Earnings */}
-        <Card className="lg:col-span-2 relative overflow-hidden p-6 border-zinc-200/60 shadow-sm bg-zinc-950 text-white">
+        <Card className="lg:col-span-2 relative overflow-hidden p-5 border-zinc-200/60 shadow-sm bg-zinc-950 text-white">
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
             <IndianRupee className="w-40 h-40" />
           </div>
-          <div className="flex items-center gap-3 mb-6 relative z-10">
-            <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 dark:text-zinc-600 shrink-0">
-              <IndianRupee className="h-5 w-5" />
+          <div className="flex items-center gap-3 mb-4 relative z-10">
+            <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 shrink-0">
+              <IndianRupee className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-zinc-400 dark:text-zinc-500 font-medium text-xs uppercase tracking-wider">Net Earnings</h3>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5">Total earnings after deductions</p>
+              <h3 className="text-zinc-400 font-medium text-[10px] uppercase tracking-wider">Net Earnings</h3>
+              <p className="text-[10px] text-zinc-500 mt-0.5">Total earnings after deductions</p>
             </div>
           </div>
-          <div className="text-4xl md:text-5xl font-light tracking-tight relative z-10 mb-4">
-            {loadingStats ? <Skeleton className="h-12 w-48 bg-zinc-800" /> : inr(stats.net_revenue_paise)}
+          <div className="text-3xl md:text-4xl font-light tracking-tight relative z-10 mb-2">
+            {loadingStats ? <Skeleton className="h-10 w-40 bg-zinc-800" /> : inr(stats.net_revenue_paise)}
           </div>
         </Card>
 
         {/* Gross Sales */}
-        <Card className="relative overflow-hidden p-6 border-zinc-200/60 shadow-sm flex flex-col">
+        <Card className="relative overflow-hidden p-5 border-zinc-200/60 shadow-sm flex flex-col">
           <div className="absolute -bottom-4 -right-4 p-4 opacity-[0.03] pointer-events-none text-zinc-900 dark:text-zinc-100">
             <ArrowUpRight className="w-32 h-32" />
           </div>
-          <div className="flex items-center gap-3 mb-6 relative z-10">
-            <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner shrink-0">
-              <ArrowUpRight className="h-5 w-5" />
+          <div className="flex items-center gap-3 mb-4 relative z-10">
+            <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner shrink-0">
+              <ArrowUpRight className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-medium text-xs uppercase tracking-wider">Gross Sales</h3>
-              <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">Total booking value</p>
+              <h3 className="text-zinc-500 dark:text-zinc-400 font-medium text-[10px] uppercase tracking-wider">Gross Sales</h3>
+              <p className="text-[10px] text-zinc-400 mt-0.5">Total booking value</p>
             </div>
           </div>
-          <div className="text-3xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight relative z-10">
-            {loadingStats ? <Skeleton className="h-8 w-32" /> : inr(stats.gross_volume_paise)}
+          <div className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight relative z-10">
+            {loadingStats ? <Skeleton className="h-7 w-28" /> : inr(stats.gross_volume_paise)}
           </div>
         </Card>
 

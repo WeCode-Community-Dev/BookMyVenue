@@ -116,8 +116,8 @@ export default function Dashboard() {
 
       {/* Header Strip */}
       <section>
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Good to see you, {userName}</h1>
-        <p className="mt-1 text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Here is what needs your attention today.</p>
+        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Good to see you, {userName}</h1>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Here is what needs your attention today.</p>
       </section>
 
       {error && (
@@ -160,11 +160,11 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Performance Chart */}
-        <Card className="lg:col-span-2 p-6 flex flex-col border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
-          <div className="flex items-center justify-between mb-8">
+        <Card className="lg:col-span-2 p-5 flex flex-col border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">Performance Trends</h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Performance Trends</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">
                 Last {timeRange === '7D' ? '7 days — daily' : timeRange === '30D' ? '30 days — daily' : timeRange === '3M' ? '3 months — monthly' : timeRange === '12M' ? '12 months — monthly' : '6 months — monthly'}
               </p>
             </div>
@@ -187,23 +187,23 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                <span className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Enquiries</span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Enquiries</span>
               </div>
-              <p className="font-semibold text-lg">{chartTotals.enquiries}</p>
+              <p className="font-semibold text-base">{chartTotals.enquiries}</p>
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                <span className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Completed</span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Completed</span>
               </div>
-              <p className="font-semibold text-lg">{chartTotals.completed}</p>
+              <p className="font-semibold text-base">{chartTotals.completed}</p>
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-                <span className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Cancelled</span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Cancelled</span>
               </div>
-              <p className="font-semibold text-lg">{chartTotals.cancelled}</p>
+              <p className="font-semibold text-base">{chartTotals.cancelled}</p>
             </div>
           </div>
 

@@ -396,11 +396,11 @@ export default function BookingDetail() {
                   <div className="text-[10px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Booking Type</div>
                   <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 capitalize">{booking.booking_type?.replace('_', ' ')}</div>
                 </Card>
-                <Card className="p-5 flex flex-col justify-center border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+                <Card className="p-4 flex flex-col justify-center border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
                   <div className="text-[10px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Event Type</div>
                   <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{booking.event_type || 'Not specified'}</div>
                 </Card>
-                <Card className="p-5 flex flex-col justify-center border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+                <Card className="p-4 flex flex-col justify-center border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
                   <div className="text-[10px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Guest Count</div>
                   <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{booking.guest_count} guests</div>
                 </Card>
@@ -443,7 +443,7 @@ export default function BookingDetail() {
 
                   return (
                     <div className="flex flex-col">
-                      <div className="p-6 bg-zinc-50/50 border-b border-zinc-100 dark:border-ink-800 flex items-center justify-between">
+                      <div className="p-5 bg-zinc-50/50 border-b border-zinc-100 dark:border-ink-800 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-zinc-900 dark:text-zinc-100 font-bold">
                           <Calendar className="h-5 w-5 text-zinc-700 dark:text-zinc-300 dark:text-zinc-600" />
                           {formatDate(eventStart)} {!isSameDay && ` - ${formatDate(eventEnd)}`}
@@ -453,7 +453,7 @@ export default function BookingDetail() {
                         </div>
                       </div>
 
-                      <div className="p-8 pb-12">
+                      <div className="p-5 pb-8">
                         <div className="relative space-y-8 before:absolute before:left-0 before:top-2 before:bottom-2 before:ml-[5px] before:w-px before:bg-zinc-200">
                           {/* Setup */}
                           {setupMins > 0 && (
@@ -473,9 +473,9 @@ export default function BookingDetail() {
                           <div className="relative flex items-start group z-10">
                             <div className="absolute left-0 -ml-[1px] mt-8 w-3.5 h-3.5 rounded-full border-[3px] border-white bg-zinc-800 shadow-sm ring-1 ring-zinc-300" />
                             <div className="w-full pl-8">
-                               <div className="bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 rounded-xl p-5 shadow-sm transition-all hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700">
-                                  <div className="flex justify-between items-center mb-5">
-                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-base">Main Event</div>
+                               <div className="bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 rounded-xl p-4 shadow-sm transition-all hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700">
+                                  <div className="flex justify-between items-center mb-4">
+                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Main Event</div>
                                     <div className="text-xs font-bold text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 bg-zinc-100 dark:bg-ink-800 px-2.5 py-1 rounded-md">{formatDuration(eventDurationMins)} duration</div>
                                   </div>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -525,9 +525,9 @@ export default function BookingDetail() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                     </div>
                   )}
-                  <div className="p-5">
-                    <div className="text-base font-bold text-zinc-900 dark:text-zinc-100">{booking.venue_name}</div>
-                    <div className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 flex items-center mt-1.5 font-medium">
+                  <div className="p-4">
+                    <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{booking.venue_name}</div>
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 flex items-center mt-1 font-medium">
                       <MapPin className="h-3.5 w-3.5 mr-1" /> {booking.venue_city || 'City not specified'}
                     </div>
                     <Link to={`/venues/${booking.venue_id}/overview`} className="text-sm text-brand-600 hover:text-brand-700 font-semibold mt-4 inline-block">
@@ -540,15 +540,15 @@ export default function BookingDetail() {
               {/* Customer Profile */}
               <div className="flex flex-col">
                 <h3 className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-3 pl-1">Customer Profile</h3>
-                <Card className="p-5 overflow-hidden border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+                <Card className="p-4 overflow-hidden border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 bg-zinc-100 dark:bg-ink-800 text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 rounded-full flex items-center justify-center shrink-0 border border-zinc-200 dark:border-ink-800 shadow-sm">
                       <User className="h-6 w-6" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-base font-bold text-zinc-900 dark:text-zinc-100 truncate">{booking.user_full_name}</div>
-                      {booking.user_email && <div className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5 truncate">{booking.user_email}</div>}
-                      {booking.user_phone && <div className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5">{booking.user_phone}</div>}
+                      <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{booking.user_full_name}</div>
+                      {booking.user_email && <div className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5 truncate">{booking.user_email}</div>}
+                      {booking.user_phone && <div className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5">{booking.user_phone}</div>}
                       {(!booking.user_email && !booking.user_phone) && (
                         <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-1 font-mono bg-zinc-50 dark:bg-ink-800 px-2 py-0.5 rounded border border-zinc-100 dark:border-ink-800 inline-block">ID: {booking.user_id}</div>
                       )}

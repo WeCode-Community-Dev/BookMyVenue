@@ -521,7 +521,7 @@ export default function CreateVenueWizard() {
 
       {/* Step Content */}
       <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-        <Card className="p-8">
+        <Card className="p-5">
           {currentStep === 0 && (
             <div className="space-y-6">
               <Input label="Venue Name" name="name" value={formData.name} onChange={handleChange} placeholder="e.g. Skyline Rooftop" required />
@@ -864,7 +864,7 @@ export default function CreateVenueWizard() {
 
         {currentStep === 7 && (
           <div className="space-y-6">
-            <div className="p-6 bg-brand-light text-brand-hover rounded-xl text-center border border-brand-muted/30">
+            <div className="p-5 bg-brand-light text-brand-hover rounded-xl text-center border border-brand-muted/30">
               <Icons.Check className="h-12 w-12 mx-auto text-brand mb-4" />
               <h3 className="text-xl font-semibold">Ready to Review!</h3>
               <p className="mt-2 text-sm max-w-sm mx-auto">Your initial setup is complete. Proceed to your venue workspace to review your details, add more photos, and submit it for admin approval when you are ready.</p>

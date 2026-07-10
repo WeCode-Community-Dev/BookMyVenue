@@ -368,7 +368,7 @@ export default function VenueEdit() {
           <Skeleton className="h-8 w-64 mb-2" />
           <Skeleton className="h-4 w-96" />
         </div>
-        <Card className="p-8 space-y-6">
+        <Card className="p-5 space-y-6">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-10 w-full rounded-md" />
           <div className="space-y-1">
@@ -407,7 +407,7 @@ export default function VenueEdit() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="">
-          <div className="flex items-center justify-between p-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
+          <div className="flex items-center justify-between p-5 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
             <div>
               <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{titleMap[editSection] || 'Venue'}</h2>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">Update your venue settings below.</p>
@@ -430,7 +430,7 @@ export default function VenueEdit() {
               )}
             </div>
           </div>
-          <div className={`p-8 ${!isEditing ? 'opacity-90 pointer-events-none' : ''}`}>
+          <div className={`p-5 ${!isEditing ? 'opacity-90 pointer-events-none' : ''}`}>
           
           {editSection === 'details' && (
             <div className="space-y-6">
@@ -579,7 +579,7 @@ export default function VenueEdit() {
 
               <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Booking Mode</h4>
-                <div className="flex gap-6 mt-2">
+                <div className="flex gap-5 mt-2">
                   <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
                     <input type="radio" name="booking_mode" value="MANUAL" checked={venue.booking_mode !== 'INSTANT'} onChange={() => setVenue(prev => prev ? { ...prev, booking_mode: 'MANUAL' } : null)} className="mt-1 text-brand focus:ring-brand w-4 h-4" />
                     <div>

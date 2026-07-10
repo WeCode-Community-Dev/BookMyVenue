@@ -41,7 +41,7 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        'rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-5 shadow-sm',
+        'rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-4 shadow-sm',
         onClick && 'cursor-pointer transition-shadow duration-150 hover:shadow-md press',
         className,
       )}
