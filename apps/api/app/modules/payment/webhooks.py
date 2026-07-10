@@ -3,6 +3,7 @@
 Flow: verify signature -> record the event in stripe_events (idempotency guard,
 duplicate = no-op) -> dispatch -> stamp processed_at / processing_error.
 """
+
 import json
 import logging
 from datetime import UTC, datetime

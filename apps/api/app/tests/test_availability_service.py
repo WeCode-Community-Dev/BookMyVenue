@@ -72,7 +72,10 @@ def test_pricing_quote_hourly(monkeypatch):
     # exercise the (DB-free) pricing math on our in-memory venue.
     monkeypatch.setattr(venue_service, "_get_active_venue_or_404", lambda db, venue_id: v)
     q = venue_service.get_pricing_quote(
-        db=_NoRulesDB(), venue_id=None, starts_at=starts, ends_at=ends,
+        db=_NoRulesDB(),
+        venue_id=None,
+        starts_at=starts,
+        ends_at=ends,
         booking_type=BookingType.time_slot,
     )
     # duration 2.5 hours * 10000 paise = 25000 paise

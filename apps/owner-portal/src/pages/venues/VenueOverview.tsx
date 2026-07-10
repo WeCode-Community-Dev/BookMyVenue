@@ -154,7 +154,7 @@ export default function VenueOverview() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div>
           <div className="flex flex-wrap items-center gap-3 mb-2">
-            <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">{venue.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">{venue.name}</h1>
             {venue.status === 'approved' && (
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 text-xs font-bold tracking-wide shadow-sm mt-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -196,16 +196,16 @@ export default function VenueOverview() {
       {venue.status === 'approved' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
           {/* Revenue Card */}
-          <div className="bg-white dark:bg-ink-900 rounded-2xl border border-zinc-200/80 dark:border-ink-800 p-5 shadow-sm hover:shadow-md transition-all duration-300 group">
+          <div className="bg-white dark:bg-ink-900 rounded-2xl border border-zinc-200/80 dark:border-ink-800 p-4 shadow-sm hover:shadow-md transition-all duration-300 group">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Monthly Revenue</p>
-                <h3 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">
+                <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Monthly Revenue</p>
+                <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
                   ₹{((stats?.revenue_this_month_paise || 0) / 100).toLocaleString('en-IN')}
                 </h3>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                <IndianRupee className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <IndianRupee className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded-md">
@@ -215,16 +215,16 @@ export default function VenueOverview() {
           </div>
 
           {/* Bookings Card */}
-          <div className="bg-white dark:bg-ink-900 rounded-2xl border border-zinc-200/80 dark:border-ink-800 p-5 shadow-sm hover:shadow-md transition-all duration-300 group">
+          <div className="bg-white dark:bg-ink-900 rounded-2xl border border-zinc-200/80 dark:border-ink-800 p-4 shadow-sm hover:shadow-md transition-all duration-300 group">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Active Bookings</p>
-                <h3 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">
+                <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Active Bookings</p>
+                <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
                   {stats?.active_bookings?.toString() || '0'}
                 </h3>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                <CalendarDays className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <CalendarDays className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-4 text-xs font-medium text-zinc-400 dark:text-zinc-500 px-1">
@@ -233,16 +233,16 @@ export default function VenueOverview() {
           </div>
 
           {/* Capacity Card */}
-          <div className="bg-white dark:bg-ink-900 rounded-2xl border border-zinc-200/80 dark:border-ink-800 p-5 shadow-sm hover:shadow-md transition-all duration-300 group">
+          <div className="bg-white dark:bg-ink-900 rounded-2xl border border-zinc-200/80 dark:border-ink-800 p-4 shadow-sm hover:shadow-md transition-all duration-300 group">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Max Capacity</p>
-                <h3 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">
+                <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Max Capacity</p>
+                <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
                   {venue.max_capacity?.toString() || '0'}
                 </h3>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-100 to-violet-50 text-violet-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                <Users className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-100 to-violet-50 text-violet-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <Users className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-4 text-xs font-medium text-zinc-400 dark:text-zinc-500 px-1">
@@ -254,11 +254,11 @@ export default function VenueOverview() {
 
       {/* Dynamic Pricing */}
       {venue.status === 'approved' && (
-        <Card className="p-6">
+        <Card className="p-5">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">Dynamic Pricing</h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Set weekend, peak-hour, and special-date percentage rules on top of your base price.</p>
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Dynamic Pricing</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Set weekend, peak-hour, and special-date percentage rules on top of your base price.</p>
             </div>
             <Link to={`/venues/${venueId}/pricing-rules`}>
               <Button variant="primary">
@@ -271,10 +271,10 @@ export default function VenueOverview() {
       )}
 
       {/* Management Modules Grid */}
-      <div className="bg-white dark:bg-ink-900 rounded-2xl border border-zinc-200/80 dark:border-ink-800 p-6 lg:p-8 shadow-sm">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Venue Modules</h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Configure all aspects of your venue's listing and operations.</p>
+      <div className="bg-white dark:bg-ink-900 rounded-2xl border border-zinc-200/80 dark:border-ink-800 p-5 shadow-sm">
+        <div className="mb-5">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Venue Modules</h2>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Configure all aspects of your venue's listing and operations.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -317,7 +317,7 @@ export default function VenueOverview() {
               desc: 'Notice periods, limits, and approvals.',
               icon: ShieldCheck,
               color: 'text-indigo-600',
-              bg: 'bg-indigo-50 group-hover:bg-indigo-100'
+              bg: 'bg-indigo-50 dark:bg-indigo-500/10 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20'
             },
             {
               id: 'pricing',
@@ -325,7 +325,7 @@ export default function VenueOverview() {
               desc: 'Set hourly rates, daily rates, deposits.',
               icon: Banknote,
               color: 'text-teal-600',
-              bg: 'bg-teal-50 group-hover:bg-teal-100'
+              bg: 'bg-teal-50 dark:bg-teal-500/10 group-hover:bg-teal-100 dark:group-hover:bg-teal-500/20'
             },
             {
               id: 'policies',
@@ -337,14 +337,14 @@ export default function VenueOverview() {
             }
           ].map(module => (
             <Link key={module.id} to={`/venues/${venueId}/edit/${module.id}`}>
-              <div className="group h-full p-5 rounded-xl border border-zinc-200/80 dark:border-ink-800 hover:border-zinc-300 dark:hover:border-ink-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-white dark:bg-ink-900 cursor-pointer relative overflow-hidden flex flex-col justify-between">
-                <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-300 ${module.bg} ${module.color}`}>
-                    <module.icon className="w-5 h-5" />
+              <div className="group h-full p-4 rounded-xl border border-zinc-200/80 dark:border-ink-800 hover:border-zinc-300 dark:hover:border-ink-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-white dark:bg-ink-900 cursor-pointer relative overflow-hidden flex flex-col justify-between">
+                <div className="flex items-start gap-3">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-300 ${module.bg} ${module.color}`}>
+                    <module.icon className="w-4 h-4" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-black dark:text-white transition-colors">{module.label}</h4>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1 leading-relaxed line-clamp-2">{module.desc}</p>
+                    <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-black dark:group-hover:text-white transition-colors">{module.label}</h4>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 leading-relaxed line-clamp-2">{module.desc}</p>
                   </div>
                 </div>
                 <div className="absolute right-4 bottom-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 text-zinc-400 dark:text-zinc-500">

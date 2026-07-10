@@ -30,6 +30,7 @@ class RateLimitError(HTTPException):
     def __init__(self, detail: str = "Too many requests"):
         super().__init__(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=detail)
 
+
 class APIException(HTTPException):
     def __init__(self, status_code: int = 500, detail: str = "Internal server error"):
         super().__init__(status_code=status_code, detail=detail)

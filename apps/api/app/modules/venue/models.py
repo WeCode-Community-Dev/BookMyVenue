@@ -187,16 +187,14 @@ class Venue(Base):
         back_populates="venue",
         cascade="all, delete-orphan",
         primaryjoin=(
-            "and_(Venue.id==VenueAvailability.venue_id, "
-            "VenueAvailability.deleted_at.is_(None))"
+            "and_(Venue.id==VenueAvailability.venue_id, VenueAvailability.deleted_at.is_(None))"
         ),
     )
     blocked_dates: Mapped[list["VenueBlockedDate"]] = relationship(
         back_populates="venue",
         cascade="all, delete-orphan",
         primaryjoin=(
-            "and_(Venue.id==VenueBlockedDate.venue_id, "
-            "VenueBlockedDate.deleted_at.is_(None))"
+            "and_(Venue.id==VenueBlockedDate.venue_id, VenueBlockedDate.deleted_at.is_(None))"
         ),
     )
     cancellation_policy: Mapped["VenueCancellationPolicy"] = relationship(

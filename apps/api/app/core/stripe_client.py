@@ -3,6 +3,7 @@
 Importing `stripe` from here guarantees the API key is set once, and gives tests
 a single place to monkeypatch the SDK.
 """
+
 import stripe
 
 from app.core.config import settings

@@ -38,6 +38,7 @@ def _create_rule(client, token: str, venue_id, **overrides) -> dict:
 
 # ── Owner CRUD ────────────────────────────────────────────────────────────────
 
+
 def test_create_pricing_rule_as_owner_returns_201(client, db, category_id):
     owner_id, token = seed_user(db, "venue_owner")
     venue_id = seed_approved_venue(db, owner_id, category_id)
@@ -127,6 +128,7 @@ def test_create_rule_exceeding_bounds_flags_exceeds_bounds(client, db, category_
 
 # ── Rule resolution via the public quote endpoint ──────────────────────────────
 
+
 def test_zero_rules_prices_identically_to_static(client, db, category_id):
     owner_id, token = seed_user(db, "venue_owner")
     venue_id = seed_approved_venue(db, owner_id, category_id)
@@ -204,6 +206,7 @@ def test_weekday_unaffected_by_weekend_rule(client, db, category_id):
 
 
 # ── Booking snapshot integration ───────────────────────────────────────────────
+
 
 def test_booking_snapshots_rule_adjusted_price_and_breakdown(client, db, category_id):
     owner_id, owner_token = seed_user(db, "venue_owner")

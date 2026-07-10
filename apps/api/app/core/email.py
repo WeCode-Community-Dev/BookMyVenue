@@ -7,6 +7,7 @@
 
 Returns True if an email was actually dispatched, False if it was a dev no-op.
 """
+
 import logging
 import smtplib
 from email.message import EmailMessage

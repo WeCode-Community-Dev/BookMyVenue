@@ -52,10 +52,14 @@ def get_current_user(
     token = _extract_bearer_token(authorization)
     provider_user = _auth_provider.verify_token(token)
 
-    profile = db.query(Profile).filter(
-        Profile.id == provider_user.id,
-        Profile.deleted_at.is_(None),
-    ).first()
+    profile = (
+        db.query(Profile)
+        .filter(
+            Profile.id == provider_user.id,
+            Profile.deleted_at.is_(None),
+        )
+        .first()
+    )
 
     if not profile:
         raise ForbiddenError("Account not found")
@@ -67,9 +71,9 @@ def get_current_user(
     if provider_user.email and profile.email != provider_user.email:
         profile.email = provider_user.email
 
-    role_rows = db.query(UserRoleAssignment).filter(
-        UserRoleAssignment.user_id == provider_user.id
-    ).all()
+    role_rows = (
+        db.query(UserRoleAssignment).filter(UserRoleAssignment.user_id == provider_user.id).all()
+    )
 
     roles = [r.role.value for r in role_rows]
 
@@ -118,6 +122,7 @@ def require_role(*roles: str):
         if not any(r in current_user.roles for r in roles):
             raise ForbiddenError("Insufficient permissions")
         return current_user
+
     return dependency
 
 
@@ -128,6 +133,7 @@ def require_any_role(roles: list[str]):
         if not any(r in current_user.roles for r in roles):
             raise ForbiddenError("Insufficient permissions")
         return current_user
+
     return dependency
 
 

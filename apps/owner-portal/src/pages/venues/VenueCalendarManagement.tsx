@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
 import { Button, Input, Skeleton, DatePicker } from '@venue404/ui'
-import { ArrowLeft, ArrowRight, Loader2, Save, Trash2, Clock, Ban } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Loader2, Save, Trash2, Clock, Ban, Calendar } from 'lucide-react'
 import { createClient, venueEndpoints } from '@venue404/api-client'
 import type { VenueAvailability as Availability, BlockedDate } from '@venue404/api-client'
 import { useQuery } from '@tanstack/react-query'
@@ -283,7 +283,7 @@ export default function VenueCalendarManagement() {
             </p>
           </div>
           <div className="bg-zinc-50 dark:bg-ink-800 rounded-xl border border-zinc-200 dark:border-ink-800 overflow-hidden">
-            <div className="grid grid-cols-12 gap-4 p-4 border-b border-zinc-200 dark:border-ink-800 bg-zinc-100/50 font-medium text-sm text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">
+            <div className="grid grid-cols-12 gap-4 p-4 border-b border-zinc-200 dark:border-ink-800 bg-zinc-100/50 dark:bg-ink-950/50 font-medium text-sm text-zinc-700 dark:text-zinc-300">
               <div className="col-span-3">Day</div>
               <div className="col-span-2 text-center">Available</div>
               <div className="col-span-3">Opening Time</div>
@@ -351,16 +351,21 @@ export default function VenueCalendarManagement() {
               Block out specific dates and times when your venue will be unavailable for booking (e.g., for maintenance, private events, or holidays). Blocked dates will override your standard weekly schedule.
             </p>
           </div>
-          <section>
-            <form onSubmit={handleAddBlockedDate} className="bg-white dark:bg-ink-900 p-6 md:p-8 rounded-2xl border border-zinc-200 dark:border-ink-800 shadow-sm space-y-8 relative">
+          <div className="relative">
+            <form onSubmit={handleAddBlockedDate} className="bg-white dark:bg-ink-900 p-5 rounded-2xl border border-zinc-200 dark:border-ink-800 shadow-sm space-y-6 relative">
               {/* Subtle background gradient blob */}
               <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
               </div>
 
-              <div className="relative">
-                <h4 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Add Blocked Date</h4>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Prevent bookings for specific time periods</p>
+              <div className="flex items-center gap-3 relative">
+                <div className="p-2 bg-brand/10 rounded-lg text-brand">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Add Blocked Date</h4>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5">Block off specific dates so no new bookings can be requested.</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
@@ -389,11 +394,11 @@ export default function VenueCalendarManagement() {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end relative">
-                <div className="md:col-span-9">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-end relative">
+                <div className="md:col-span-8">
                   <Input label="Reason (Optional)" name="reason" placeholder="e.g. Maintenance, Private Event, Renovation" />
                 </div>
-                <div className="md:col-span-3">
+                <div className="md:col-span-4">
                   <Button type="submit" variant="primary" disabled={addingBlock} className="w-full h-10 shadow-md hover:shadow-lg transition-shadow bg-zinc-900 hover:bg-zinc-800 text-white border-transparent">
                     {addingBlock ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Ban className="h-4 w-4 mr-2 opacity-70" />}
                     {addingBlock ? 'Adding...' : 'Block Date'}
@@ -401,16 +406,16 @@ export default function VenueCalendarManagement() {
                 </div>
               </div>
             </form>
-          </section>
+          </div>
 
           <section>
             <h4 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-6">Upcoming Blocked Dates</h4>
             {blockedDates.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 px-4 bg-zinc-50/50 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-ink-800">
+              <div className="flex flex-col items-center justify-center py-16 px-4 bg-zinc-50/50 dark:bg-ink-950/20 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-ink-800">
                 <div className="w-16 h-16 bg-white dark:bg-ink-900 rounded-full flex items-center justify-center shadow-sm mb-4 border border-zinc-100 dark:border-ink-800">
                   <Ban className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
                 </div>
-                <p className="text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 font-medium">No upcoming blocked dates.</p>
+                <p className="text-zinc-600 dark:text-zinc-400 font-medium">No upcoming blocked dates.</p>
                 <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1 max-w-sm text-center">Dates you block will appear here so you can easily unblock them later.</p>
               </div>
             ) : (

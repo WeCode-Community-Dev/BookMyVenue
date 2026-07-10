@@ -115,8 +115,9 @@ class AmenityDeleteResponse(BaseModel):
 
 # ─── Venue category admin schemas ─────────────────────────────────────────────
 
+
 class CategoryCreateRequest(BaseModel):
-    slug: str = Field(..., min_length=1, max_length=100, pattern=r'^[a-z0-9_]+$')
+    slug: str = Field(..., min_length=1, max_length=100, pattern=r"^[a-z0-9_]+$")
     label: str = Field(..., min_length=1, max_length=100)
     icon: str | None = None
     sort_order: int = Field(default=0, ge=0)
@@ -160,6 +161,7 @@ class CategoryBannerResponse(BaseModel):
 
 # ─── Booking admin schemas ─────────────────────────────────────────────────────
 
+
 class BookingStatsResponse(BaseModel):
     total: int
     requested: int
@@ -198,6 +200,7 @@ class AdminBookingListResponse(BaseModel):
 
 
 # ─── Venue admin schemas ───────────────────────────────────────────────────────
+
 
 class GrowthStatsResponse(BaseModel):
     labels: list[str]
@@ -324,6 +327,7 @@ class DeepResearchStatsResponse(BaseModel):
 # ─── External reservation admin workflow ──────────────────────────────────────
 # Converts a customer's external-venue reservation into an onboarded owner +
 # venue + normal Venue404 booking. See docs/Venue404_External_Reservation_Onboarding_PRD.md
+
 
 class ExternalReservationSummary(BaseModel):
     id: uuid.UUID

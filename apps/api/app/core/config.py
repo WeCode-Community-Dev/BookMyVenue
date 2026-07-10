@@ -34,8 +34,7 @@ class Settings(BaseSettings):
 
     # Comma-separated list of allowed browser origins for CORS. Defaults to the
     # local dev ports; in production set this to the deployed Vercel app URLs.
-    cors_origins: str = ("https://venue404-owner-portal-git-main-venue123.vercel.app,https://venue404-user-web-git-main-venue123.vercel.app,https://venue404-admin-panel-git-main-venue123.vercel.app,http://localhost:5397,http://localhost:5398,http://localhost:5399"
-    )
+    cors_origins: str = "https://venue404-owner-portal-git-main-venue123.vercel.app,https://venue404-user-web-git-main-venue123.vercel.app,https://venue404-admin-panel-git-main-venue123.vercel.app,http://localhost:5397,http://localhost:5398,http://localhost:5399"
 
     # Shared secret guarding the machine-to-machine job-runner endpoint. Empty
     # disables the endpoint (returns 503). Set to a long random value in prod.

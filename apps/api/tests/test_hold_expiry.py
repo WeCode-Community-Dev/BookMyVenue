@@ -6,6 +6,7 @@ Business rule (CLAUDE.md):
     accepted -> hold_expired
   The slot must be unblocked so the owner can accept another requester.
 """
+
 from datetime import UTC, datetime, timedelta
 
 from app.jobs.hold_expiry import run as run_hold_expiry

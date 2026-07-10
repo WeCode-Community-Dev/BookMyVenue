@@ -50,9 +50,13 @@ def run() -> int:
             venue = db.get(Venue, b.venue_id)
             venue_name = venue.name if venue else "your venue"
             hours_left = max(0, int((b.hold_expires_at - now).total_seconds() // 3600))
-            notifications.notify(db, b.user_id, "payment_reminder",
-                                 context={"venue_name": venue_name, "hours_left": hours_left},
-                                 booking_id=b.id)
+            notifications.notify(
+                db,
+                b.user_id,
+                "payment_reminder",
+                context={"venue_name": venue_name, "hours_left": hours_left},
+                booking_id=b.id,
+            )
             sent += 1
         logger.info("payment_reminders: sent %d reminder(s)", sent)
         return sent

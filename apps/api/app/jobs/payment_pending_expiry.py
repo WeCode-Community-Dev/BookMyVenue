@@ -33,13 +33,18 @@ def run() -> int:
             b.expired_at = now
             if b.slot:
                 b.slot.is_blocking = False
-            db.add(BookingStatusHistory(
-                booking_id=b.id, old_status=BookingStatus.payment_pending,
-                new_status=BookingStatus.hold_expired, reason="payment_pending_expiry_job",
-            ))
+            db.add(
+                BookingStatusHistory(
+                    booking_id=b.id,
+                    old_status=BookingStatus.payment_pending,
+                    new_status=BookingStatus.hold_expired,
+                    reason="payment_pending_expiry_job",
+                )
+            )
             venue = db.get(Venue, b.venue_id)
             venue_name = venue.name if venue else "your venue"
-            notifications.notify(db, b.user_id, "hold_expired",
-                                 context={"venue_name": venue_name}, booking_id=b.id)
+            notifications.notify(
+                db, b.user_id, "hold_expired", context={"venue_name": venue_name}, booking_id=b.id
+            )
         logger.info("payment_pending_expiry: expired %d booking(s)", len(rows))
         return len(rows)

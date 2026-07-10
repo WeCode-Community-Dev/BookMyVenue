@@ -396,11 +396,11 @@ export default function BookingDetail() {
                   <div className="text-[10px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Booking Type</div>
                   <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 capitalize">{booking.booking_type?.replace('_', ' ')}</div>
                 </Card>
-                <Card className="p-5 flex flex-col justify-center border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+                <Card className="p-4 flex flex-col justify-center border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
                   <div className="text-[10px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Event Type</div>
                   <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{booking.event_type || 'Not specified'}</div>
                 </Card>
-                <Card className="p-5 flex flex-col justify-center border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+                <Card className="p-4 flex flex-col justify-center border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
                   <div className="text-[10px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest mb-1.5">Guest Count</div>
                   <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{booking.guest_count} guests</div>
                 </Card>
@@ -443,7 +443,7 @@ export default function BookingDetail() {
 
                   return (
                     <div className="flex flex-col">
-                      <div className="p-6 bg-zinc-50/50 border-b border-zinc-100 dark:border-ink-800 flex items-center justify-between">
+                      <div className="p-5 bg-zinc-50/50 border-b border-zinc-100 dark:border-ink-800 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-zinc-900 dark:text-zinc-100 font-bold">
                           <Calendar className="h-5 w-5 text-zinc-700 dark:text-zinc-300 dark:text-zinc-600" />
                           {formatDate(eventStart)} {!isSameDay && ` - ${formatDate(eventEnd)}`}
@@ -453,7 +453,7 @@ export default function BookingDetail() {
                         </div>
                       </div>
 
-                      <div className="p-8 pb-12">
+                      <div className="p-5 pb-8">
                         <div className="relative space-y-8 before:absolute before:left-0 before:top-2 before:bottom-2 before:ml-[5px] before:w-px before:bg-zinc-200">
                           {/* Setup */}
                           {setupMins > 0 && (
@@ -473,9 +473,9 @@ export default function BookingDetail() {
                           <div className="relative flex items-start group z-10">
                             <div className="absolute left-0 -ml-[1px] mt-8 w-3.5 h-3.5 rounded-full border-[3px] border-white bg-zinc-800 shadow-sm ring-1 ring-zinc-300" />
                             <div className="w-full pl-8">
-                               <div className="bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 rounded-xl p-5 shadow-sm transition-all hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700">
-                                  <div className="flex justify-between items-center mb-5">
-                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-base">Main Event</div>
+                               <div className="bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 rounded-xl p-4 shadow-sm transition-all hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700">
+                                  <div className="flex justify-between items-center mb-4">
+                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Main Event</div>
                                     <div className="text-xs font-bold text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 bg-zinc-100 dark:bg-ink-800 px-2.5 py-1 rounded-md">{formatDuration(eventDurationMins)} duration</div>
                                   </div>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -525,9 +525,9 @@ export default function BookingDetail() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                     </div>
                   )}
-                  <div className="p-5">
-                    <div className="text-base font-bold text-zinc-900 dark:text-zinc-100">{booking.venue_name}</div>
-                    <div className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 flex items-center mt-1.5 font-medium">
+                  <div className="p-4">
+                    <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{booking.venue_name}</div>
+                    <div className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 flex items-center mt-1 font-medium">
                       <MapPin className="h-3.5 w-3.5 mr-1" /> {booking.venue_city || 'City not specified'}
                     </div>
                     <Link to={`/venues/${booking.venue_id}/overview`} className="text-sm text-brand-600 hover:text-brand-700 font-semibold mt-4 inline-block">
@@ -540,15 +540,15 @@ export default function BookingDetail() {
               {/* Customer Profile */}
               <div className="flex flex-col">
                 <h3 className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-3 pl-1">Customer Profile</h3>
-                <Card className="p-5 overflow-hidden border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+                <Card className="p-4 overflow-hidden border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 bg-zinc-100 dark:bg-ink-800 text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 rounded-full flex items-center justify-center shrink-0 border border-zinc-200 dark:border-ink-800 shadow-sm">
                       <User className="h-6 w-6" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-base font-bold text-zinc-900 dark:text-zinc-100 truncate">{booking.user_full_name}</div>
-                      {booking.user_email && <div className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5 truncate">{booking.user_email}</div>}
-                      {booking.user_phone && <div className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5">{booking.user_phone}</div>}
+                      <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{booking.user_full_name}</div>
+                      {booking.user_email && <div className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5 truncate">{booking.user_email}</div>}
+                      {booking.user_phone && <div className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5">{booking.user_phone}</div>}
                       {(!booking.user_email && !booking.user_phone) && (
                         <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-1 font-mono bg-zinc-50 dark:bg-ink-800 px-2 py-0.5 rounded border border-zinc-100 dark:border-ink-800 inline-block">ID: {booking.user_id}</div>
                       )}
@@ -1064,20 +1064,20 @@ export default function BookingDetail() {
             </Card>
 
             {/* Owner Internal Notes */}
-            <Card className="p-6 h-full flex flex-col relative overflow-hidden border-amber-200 bg-amber-50/30 shadow-sm rounded-xl">
-              <div className="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
+            <Card className="p-6 h-full flex flex-col relative overflow-hidden border-amber-200 dark:border-amber-900/30 bg-amber-50/30 dark:bg-amber-950/20 shadow-sm rounded-xl">
+              <div className="absolute top-0 left-0 w-1 h-full bg-amber-400 dark:bg-amber-500"></div>
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-amber-100 text-amber-700 rounded-lg shadow-inner border border-amber-200/50">
+                  <div className="p-2.5 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-lg shadow-inner border border-amber-200/50 dark:border-amber-800/50">
                     <Lock className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-amber-900 text-base">Internal Notes</h3>
-                    <p className="text-xs text-amber-700/70 font-medium mt-0.5">Private to your team</p>
+                    <h3 className="font-bold text-amber-900 dark:text-amber-500 text-base">Internal Notes</h3>
+                    <p className="text-xs text-amber-700/70 dark:text-amber-500/70 font-medium mt-0.5">Private to your team</p>
                   </div>
                 </div>
                 {!isEditingNotes && (
-                  <Button variant="secondary" className="h-8 px-3.5 text-xs font-semibold bg-white dark:bg-ink-900 text-amber-700 border-amber-200 hover:bg-amber-100 hover:border-amber-300 transition-colors shadow-sm" onClick={() => {
+                  <Button variant="secondary" className="h-8 px-3.5 text-xs font-semibold bg-white dark:bg-ink-900 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/30 hover:border-amber-300 dark:hover:border-amber-700 transition-colors shadow-sm" onClick={() => {
                     setDraftNotes(booking.owner_notes || '')
                     setIsEditingNotes(true)
                   }}>
@@ -1090,7 +1090,7 @@ export default function BookingDetail() {
                 {isEditingNotes ? (
                   <div className="space-y-3 flex-1 flex flex-col animate-in fade-in zoom-in-95 duration-200">
                     <textarea 
-                      className="w-full rounded-lg border border-amber-300/60 bg-white/80 p-4 text-sm text-amber-950 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all shadow-inner flex-1 min-h-[160px] resize-none"
+                      className="w-full rounded-lg border border-amber-300/60 dark:border-amber-900/60 bg-white/80 dark:bg-ink-950 p-4 text-sm text-amber-950 dark:text-amber-100 focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all shadow-inner flex-1 min-h-[160px] resize-none"
                       placeholder="Add private notes, reminders, or special arrangements..."
                       value={draftNotes}
                       onChange={(e) => setDraftNotes(e.target.value)}
@@ -1098,19 +1098,19 @@ export default function BookingDetail() {
                       autoFocus
                     />
                     <div className="flex justify-end gap-2 pt-1">
-                      <Button variant="secondary" className="h-9 px-4 text-xs font-semibold bg-white dark:bg-ink-900 border-amber-200 text-amber-700 hover:bg-amber-50" onClick={() => setIsEditingNotes(false)} disabled={actionLoading}>Cancel</Button>
-                      <Button variant="primary" className="h-9 px-4 text-xs font-semibold bg-amber-600 hover:bg-amber-700 border-none text-white shadow-sm" onClick={() => handleAction('updateOwnerNotes', { notes: draftNotes })} disabled={actionLoading}>Save Internal Notes</Button>
+                      <Button variant="secondary" className="h-9 px-4 text-xs font-semibold bg-white dark:bg-ink-900 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30" onClick={() => setIsEditingNotes(false)} disabled={actionLoading}>Cancel</Button>
+                      <Button variant="primary" className="h-9 px-4 text-xs font-semibold bg-amber-600 dark:bg-amber-700 hover:bg-amber-700 dark:hover:bg-amber-600 border-none text-white shadow-sm" onClick={() => handleAction('updateOwnerNotes', { notes: draftNotes })} disabled={actionLoading}>Save Internal Notes</Button>
                     </div>
                   </div>
                 ) : (
                   booking.owner_notes ? (
-                    <div className="flex-1 bg-white/70 rounded-lg p-5 text-amber-950 text-sm whitespace-pre-wrap border border-amber-200/50 shadow-sm leading-relaxed">
+                    <div className="flex-1 bg-white/70 dark:bg-ink-900/50 rounded-lg p-5 text-amber-950 dark:text-amber-100 text-sm whitespace-pre-wrap border border-amber-200/50 dark:border-amber-900/50 shadow-sm leading-relaxed">
                       {booking.owner_notes}
                     </div>
                   ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-amber-700/50 py-10 border-2 border-dashed border-amber-200/60 rounded-lg bg-amber-50/50">
+                    <div className="flex-1 flex flex-col items-center justify-center text-amber-700/50 dark:text-amber-600/50 py-10 border-2 border-dashed border-amber-200/60 dark:border-amber-900/50 rounded-lg bg-amber-50/50 dark:bg-amber-950/20">
                       <AlignLeft className="h-8 w-8 mb-3 opacity-40" />
-                      <span className="text-sm font-medium text-amber-800/60">No internal notes yet</span>
+                      <span className="text-sm font-medium text-amber-800/60 dark:text-amber-500/60">No internal notes yet</span>
                       <span className="text-xs mt-1">Add reminders or staff instructions here.</span>
                     </div>
                   )

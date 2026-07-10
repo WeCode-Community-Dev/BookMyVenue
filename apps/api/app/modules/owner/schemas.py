@@ -17,7 +17,7 @@ class DashboardStats(BaseModel):
 
 
 class ChartDataPoint(BaseModel):
-    month: str       # e.g. "Jan 26"
+    month: str  # e.g. "Jan 26"
     enquiries: int
     completed: int
     cancelled: int
@@ -28,8 +28,5 @@ class UpcomingEventOut(BaseModel):
     event_type: str | None = None
     venue_name: str
     status: str
-    starts_at: str | None = None   # ISO string
+    starts_at: str | None = None  # ISO string
     guest_count: int
-
-
-

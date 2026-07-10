@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Button, Card, Input, SectionHeader, LocationPickerMap, InfoTooltip, Select } from '@venue404/ui'
+import { Button, Card, Input, SectionHeader, LocationPickerMap, InfoTooltip, Select, forwardGeocode } from '@venue404/ui'
 import * as Icons from 'lucide-react'
 import { createClient, venueEndpoints } from '@venue404/api-client'
 import type { VenuePhoto } from '@venue404/api-client'
@@ -521,7 +521,7 @@ export default function CreateVenueWizard() {
 
       {/* Step Content */}
       <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
-        <Card className="p-8">
+        <Card className="p-5">
           {currentStep === 0 && (
             <div className="space-y-6">
               <Input label="Venue Name" name="name" value={formData.name} onChange={handleChange} placeholder="e.g. Skyline Rooftop" required />
@@ -566,7 +566,31 @@ export default function CreateVenueWizard() {
                 <Input label="Postal Code" name="postal_code" value={formData.postal_code} onChange={handleChange} />
               </div>
               <div className="pt-2">
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">Pinpoint Location on Map</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Pinpoint Location on Map</label>
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    type="button" 
+                    onClick={async () => {
+                      const query = [formData.address_line1, formData.city, formData.state, formData.postal_code].filter(Boolean).join(', ')
+                      if (!query) {
+                        toast.error("Please enter an address first.")
+                        return
+                      }
+                      const coords = await forwardGeocode(query)
+                      if (coords) {
+                        setFormData(prev => ({ ...prev, latitude: coords[0], longitude: coords[1] }))
+                        toast.success("Location found on map!")
+                      } else {
+                        toast.error("Could not find this address on the map.")
+                      }
+                    }}
+                  >
+                    <Icons.MapPin className="w-4 h-4 mr-1.5" />
+                    Find on Map
+                  </Button>
+                </div>
                 <LocationPickerMap
                   latitude={formData.latitude}
                   longitude={formData.longitude}
@@ -840,7 +864,7 @@ export default function CreateVenueWizard() {
 
         {currentStep === 7 && (
           <div className="space-y-6">
-            <div className="p-6 bg-brand-light text-brand-hover rounded-xl text-center border border-brand-muted/30">
+            <div className="p-5 bg-brand-light text-brand-hover rounded-xl text-center border border-brand-muted/30">
               <Icons.Check className="h-12 w-12 mx-auto text-brand mb-4" />
               <h3 className="text-xl font-semibold">Ready to Review!</h3>
               <p className="mt-2 text-sm max-w-sm mx-auto">Your initial setup is complete. Proceed to your venue workspace to review your details, add more photos, and submit it for admin approval when you are ready.</p>

@@ -33,7 +33,7 @@ def test_refund_computation_no_policy():
     booking = Booking(
         amount_paid_paise=100000,  # INR 1000
         platform_fee_paise=10000,  # INR 100
-        slot=BookingSlot(starts_at=datetime.now(UTC) + timedelta(days=2))
+        slot=BookingSlot(starts_at=datetime.now(UTC) + timedelta(days=2)),
     )
     # Without policy, refund should default to 0.0% (and match no_show or None tier)
     result = _compute_refund(booking, None)
@@ -51,14 +51,14 @@ def test_refund_computation_policy_fee_refundable():
         tier_3_hours=12,
         tier_3_refund_pct=25.0,
         no_show_refund_pct=10.0,
-        platform_fee_refundable=True
+        platform_fee_refundable=True,
     )
 
     starts_at = datetime.now(UTC) + timedelta(days=3)
     booking = Booking(
         amount_paid_paise=100000,  # INR 1000
         platform_fee_paise=10000,  # INR 100
-        slot=BookingSlot(starts_at=starts_at)
+        slot=BookingSlot(starts_at=starts_at),
     )
 
     # Case 1: > 48 hours notice (Tier 1 -> 100% refund)
@@ -87,14 +87,14 @@ def test_refund_computation_policy_fee_non_refundable():
         tier_2_hours=24,
         tier_2_refund_pct=50.0,
         no_show_refund_pct=0.0,
-        platform_fee_refundable=False
+        platform_fee_refundable=False,
     )
 
     starts_at = datetime.now(UTC) + timedelta(days=3)
     booking = Booking(
         amount_paid_paise=100000,  # INR 1000
         platform_fee_paise=10000,  # INR 100
-        slot=BookingSlot(starts_at=starts_at)
+        slot=BookingSlot(starts_at=starts_at),
     )
 
     # Case 1: > 48 hours notice (Tier 1 -> 100% refund of owner share (900) = 900)

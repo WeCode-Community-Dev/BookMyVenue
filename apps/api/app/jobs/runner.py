@@ -8,6 +8,7 @@ The same canonical `app/jobs/*` functions are run three ways:
 Each job manages its own session (commit on success, rollback on error) and
 returns the number of rows it processed.
 """
+
 import logging
 
 import app.models  # noqa: F401 — register every ORM model before any job queries run

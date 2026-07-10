@@ -23,9 +23,8 @@ router = APIRouter()
 # CUSTOMER ENDPOINTS
 # ────────────────────────────────────────────────────────────────
 
-@router.post(
-    "/venues/{venue_id}/reviews", response_model=ReviewResponse, status_code=201
-)
+
+@router.post("/venues/{venue_id}/reviews", response_model=ReviewResponse, status_code=201)
 def create_review(
     venue_id: UUID,
     body: ReviewCreate,
@@ -93,6 +92,7 @@ def get_eligible_booking_ids(
 # ────────────────────────────────────────────────────────────────
 # ADMIN ENDPOINTS
 # ────────────────────────────────────────────────────────────────
+
 
 @router.get("/admin/reviews", response_model=ReviewListResponse)
 def list_all_reviews(
@@ -170,6 +170,7 @@ def delete_review_admin(
 # ────────────────────────────────────────────────────────────────
 # SUMMARY ENDPOINT
 # ────────────────────────────────────────────────────────────────
+
 
 @router.get("/venues/{venue_id}/reviews/summary", response_model=ReviewSummaryResponse)
 def get_rating_summary(

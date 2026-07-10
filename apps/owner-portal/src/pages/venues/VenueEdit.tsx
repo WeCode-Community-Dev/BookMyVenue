@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom'
-import { Card, Button, Input, LocationPickerMap, InfoTooltip, Skeleton, Select } from '@venue404/ui'
+import { Card, Button, Input, LocationPickerMap, InfoTooltip, Skeleton, Select, forwardGeocode } from '@venue404/ui'
 import { ArrowLeft } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -368,7 +368,7 @@ export default function VenueEdit() {
           <Skeleton className="h-8 w-64 mb-2" />
           <Skeleton className="h-4 w-96" />
         </div>
-        <Card className="p-8 space-y-6">
+        <Card className="p-5 space-y-6">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-10 w-full rounded-md" />
           <div className="space-y-1">
@@ -397,7 +397,7 @@ export default function VenueEdit() {
   return (
     <div className="max-w-4xl mx-auto pb-12 space-y-6 pt-6">
       {portalTarget && createPortal(
-        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:text-zinc-100 transition-colors flex items-center gap-1.5 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800">
+        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors flex items-center gap-1.5 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-ink-800">
           <ArrowLeft className="h-4 w-4" />
           Back to Overview
         </Link>,
@@ -407,10 +407,10 @@ export default function VenueEdit() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="">
-          <div className="flex items-center justify-between p-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 rounded-t-xl">
+          <div className="flex items-center justify-between p-5 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
             <div>
               <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{titleMap[editSection] || 'Venue'}</h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Update your venue settings below.</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Update your venue settings below.</p>
             </div>
             <div className="flex items-center gap-3">
               {!isEditing ? (
@@ -430,7 +430,7 @@ export default function VenueEdit() {
               )}
             </div>
           </div>
-          <div className={`p-8 ${!isEditing ? 'opacity-90 pointer-events-none' : ''}`}>
+          <div className={`p-5 ${!isEditing ? 'opacity-90 pointer-events-none' : ''}`}>
           
           {editSection === 'details' && (
             <div className="space-y-6">
@@ -480,7 +480,31 @@ export default function VenueEdit() {
                   <Input label="Postal Code" name="postal_code" value={venue.postal_code || ''} onChange={e => setVenue(prev => prev ? { ...prev, postal_code: e.target.value } : null)} />
                 </div>
                 <div className="pt-2">
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">Pinpoint Location on Map</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Pinpoint Location on Map</label>
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      type="button" 
+                      onClick={async () => {
+                        const query = [venue.address_line1, venue.city, venue.state, venue.postal_code].filter(Boolean).join(', ')
+                        if (!query) {
+                          toast.error("Please enter an address first.")
+                          return
+                        }
+                        const coords = await forwardGeocode(query)
+                        if (coords) {
+                          setVenue(prev => prev ? { ...prev, latitude: String(coords[0]), longitude: String(coords[1]) } : null)
+                          toast.success("Location found on map!")
+                        } else {
+                          toast.error("Could not find this address on the map.")
+                        }
+                      }}
+                    >
+                      <Icons.MapPin className="w-4 h-4 mr-1.5" />
+                      Find on Map
+                    </Button>
+                  </div>
                   <LocationPickerMap
                     latitude={venue.latitude ? parseFloat(venue.latitude) : null}
                     longitude={venue.longitude ? parseFloat(venue.longitude) : null}
@@ -555,7 +579,7 @@ export default function VenueEdit() {
 
               <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Booking Mode</h4>
-                <div className="flex gap-6 mt-2">
+                <div className="flex gap-5 mt-2">
                   <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
                     <input type="radio" name="booking_mode" value="MANUAL" checked={venue.booking_mode !== 'INSTANT'} onChange={() => setVenue(prev => prev ? { ...prev, booking_mode: 'MANUAL' } : null)} className="mt-1 text-brand focus:ring-brand w-4 h-4" />
                     <div>

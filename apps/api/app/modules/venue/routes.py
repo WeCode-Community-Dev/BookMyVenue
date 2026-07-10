@@ -71,9 +71,7 @@ def get_my_venue_stats(
     auth: AuthContext = Depends(require_owner),
     db: Session = Depends(get_db),
 ):
-    return service.get_venue_stats_this_month(
-        db, venue_id=venue_id, owner_id=auth.user_id
-    )
+    return service.get_venue_stats_this_month(db, venue_id=venue_id, owner_id=auth.user_id)
 
 
 @router.post("/", response_model=VenueResponse, status_code=201)
@@ -124,9 +122,7 @@ def bulk_update_availability(
     auth: AuthContext = Depends(require_owner),
     db: Session = Depends(get_db),
 ):
-    return service.bulk_update_availability(
-        db, venue_id, auth.user_id, body.availabilities
-    )
+    return service.bulk_update_availability(db, venue_id, auth.user_id, body.availabilities)
 
 
 @router.post(
@@ -181,9 +177,7 @@ def create_pricing_rule(
     return service.create_pricing_rule(db, venue_id, auth.user_id, body)
 
 
-@router.patch(
-    "/{venue_id}/pricing-rules/{rule_id}", response_model=VenuePricingRuleResponse
-)
+@router.patch("/{venue_id}/pricing-rules/{rule_id}", response_model=VenuePricingRuleResponse)
 def update_pricing_rule(
     venue_id: UUID,
     rule_id: UUID,
@@ -225,9 +219,7 @@ def get_owner_pricing_preview(
     )
 
 
-@router.put(
-    "/{venue_id}/cancellation-policy", response_model=CancellationPolicyResponse
-)
+@router.put("/{venue_id}/cancellation-policy", response_model=CancellationPolicyResponse)
 def put_venue_cancellation_policy(
     venue_id: UUID,
     body: UpdateCancellationPolicyRequest,
@@ -271,9 +263,7 @@ def bulk_update_venue_photos(
     return service.bulk_update_venue_photos(db, venue_id, auth.user_id, body)
 
 
-@router.delete(
-    "/{venue_id}/photos/{photo_id}", response_model=DeleteResponse, status_code=200
-)
+@router.delete("/{venue_id}/photos/{photo_id}", response_model=DeleteResponse, status_code=200)
 def delete_venue_photo(
     venue_id: UUID,
     photo_id: UUID,
@@ -373,9 +363,7 @@ def get_venue_availability(
     return service.get_venue_availability(db, venue_id)
 
 
-@router.get(
-    "/{venue_id}/blocked-dates", response_model=list[PublicVenueBlockedDateResponse]
-)
+@router.get("/{venue_id}/blocked-dates", response_model=list[PublicVenueBlockedDateResponse])
 def get_venue_blocked_dates(
     venue_id: UUID,
     db: Session = Depends(get_db),
@@ -383,9 +371,7 @@ def get_venue_blocked_dates(
     return service.get_venue_blocked_dates(db, venue_id)
 
 
-@router.get(
-    "/{venue_id}/cancellation-policy", response_model=CancellationPolicyResponse
-)
+@router.get("/{venue_id}/cancellation-policy", response_model=CancellationPolicyResponse)
 def get_venue_cancellation_policy(
     venue_id: UUID,
     db: Session = Depends(get_db),

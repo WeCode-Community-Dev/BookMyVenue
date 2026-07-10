@@ -45,11 +45,21 @@ def run_flag() -> int:
             b.balance_overdue_at = now
             b.owner_action_deadline = now + timedelta(hours=window)
             venue_name = venue.name if venue else "your venue"
-            notifications.notify(db, b.user_id, "balance_overdue",
-                                 context={"venue_name": venue_name}, booking_id=b.id)
+            notifications.notify(
+                db,
+                b.user_id,
+                "balance_overdue",
+                context={"venue_name": venue_name},
+                booking_id=b.id,
+            )
             if venue:
-                notifications.notify(db, venue.owner_id, "balance_overdue",
-                                     context={"venue_name": venue_name}, booking_id=b.id)
+                notifications.notify(
+                    db,
+                    venue.owner_id,
+                    "balance_overdue",
+                    context={"venue_name": venue_name},
+                    booking_id=b.id,
+                )
             flagged += 1
         logger.info("balance_overdue_flag: flagged %d booking(s)", flagged)
         return flagged
@@ -86,15 +96,23 @@ def run_autocancel() -> int:
             b.cancelled_at = now
             if b.slot:
                 b.slot.is_blocking = False
-            db.add(BookingStatusHistory(
-                booking_id=b.id, old_status=old,
-                new_status=BookingStatus.balance_overdue_cancelled,
-                reason="balance_overdue_autocancel_job",
-            ))
+            db.add(
+                BookingStatusHistory(
+                    booking_id=b.id,
+                    old_status=old,
+                    new_status=BookingStatus.balance_overdue_cancelled,
+                    reason="balance_overdue_autocancel_job",
+                )
+            )
             venue = db.get(Venue, b.venue_id)
             venue_name = venue.name if venue else "your venue"
-            notifications.notify(db, b.user_id, "booking_canceled",
-                                 context={"venue_name": venue_name}, booking_id=b.id)
+            notifications.notify(
+                db,
+                b.user_id,
+                "booking_canceled",
+                context={"venue_name": venue_name},
+                booking_id=b.id,
+            )
             cancelled += 1
         logger.info("balance_overdue_autocancel: cancelled %d booking(s)", cancelled)
         return cancelled

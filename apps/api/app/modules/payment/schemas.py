@@ -48,6 +48,7 @@ class OwnerLedgerStatsResponse(BaseModel):
     payouts_completed_paise: int
     available_balance_paise: int
 
+
 class LedgerEntryResponse(BaseModel):
     id: str
     booking_id: str

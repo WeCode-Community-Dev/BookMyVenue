@@ -350,7 +350,7 @@ export default function VenuePricingRules() {
     return (
       <div className="max-w-4xl mx-auto pb-12 space-y-6 pt-4">
         <Skeleton className="h-4 w-32 mb-6" />
-        <Card className="p-8 space-y-6">
+        <Card className="p-5 space-y-6">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-10 w-full rounded-md" />
         </Card>
@@ -374,21 +374,21 @@ export default function VenuePricingRules() {
 
       {/* Bounds panel */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 rounded-t-xl gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-5 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl gap-4">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Settings className="w-5 h-5 text-brand" />
               Price Bounds
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">No rule can ever push your price outside this range.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">No rule can ever push your price outside this range.</p>
           </div>
           <Button variant="secondary" onClick={saveBounds} disabled={savingBounds}>
             {savingBounds ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
             Save Bounds
           </Button>
         </div>
-        <div className="p-6 pt-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+        <div className="p-5 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-end">
             <Input info="The absolute lowest limit your price can ever reach. e.g. 50% means the final price will never drop below half your base price." label="Minimum %" type="number" value={minPct} onChange={e => setMinPct(e.target.value)} suffix="%" />
             <Input info="The absolute highest limit your price can ever reach. e.g. 200% means the final price will never exceed double your base price, even if a +150% rule is applied." label="Maximum %" type="number" value={maxPct} onChange={e => setMaxPct(e.target.value)} suffix="%" />
           </div>
@@ -403,32 +403,32 @@ export default function VenuePricingRules() {
 
       {/* Add rule */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 rounded-t-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-5 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Tag className="w-5 h-5 text-brand" />
               Add Pricing Rule
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Create a new dynamic pricing adjustment.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Create a new dynamic pricing adjustment.</p>
           </div>
         </div>
-        <div className="p-6 pt-5">
+        <div className="p-5 pt-4">
           <RuleForm form={createForm} setForm={setCreateForm} onSubmit={handleCreate} submitting={creating} submitLabel="Add rule" />
         </div>
       </Card>
 
       {/* Rules list */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 rounded-t-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-5 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <List className="w-5 h-5 text-brand" />
               Your Rules
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Manage your active pricing rules ({rules.length}).</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Manage your active pricing rules ({rules.length}).</p>
           </div>
         </div>
-        <div className="p-6 pt-5">
+        <div className="p-5 pt-4">
           {rules.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-ink-800 rounded-xl bg-zinc-50 dark:bg-ink-800">
               <Tag className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
@@ -466,16 +466,16 @@ export default function VenuePricingRules() {
 
       {/* Live preview */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 rounded-t-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-brand" />
               Preview a price
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">See exactly how your rules apply to a specific date.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">See exactly how your rules apply to a specific date.</p>
           </div>
         </div>
-        <div className="p-8">
+        <div className="p-5">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <DatePicker label="Date" value={previewDate} onChange={setPreviewDate} />
             <div>
@@ -507,7 +507,7 @@ export default function VenuePricingRules() {
             <div className="mt-6 p-5 rounded-xl bg-zinc-50 dark:bg-ink-800 border border-zinc-200 dark:border-ink-800">
               <div className="flex items-center justify-between border-b border-zinc-200 dark:border-ink-800 pb-3 mb-3">
                 <span className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-medium">Final Quote</span>
-                <span className="text-2xl font-black text-zinc-900 dark:text-zinc-100">{preview.display.quoted_price}</span>
+                <span className="text-xl font-black text-zinc-900 dark:text-zinc-100">{preview.display.quoted_price}</span>
               </div>
               {preview.clamped && (
                 <p className="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded inline-block mb-3">
@@ -537,7 +537,7 @@ export default function VenuePricingRules() {
       </Card>
 
       <Modal open={!!editingRule} onClose={() => setEditingRule(null)} className="max-w-lg">
-        <div className="p-6 max-h-[85vh] overflow-y-auto">
+        <div className="p-5 max-h-[85vh] overflow-y-auto">
           <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-4">Edit rule</h3>
           <RuleForm form={editForm} setForm={setEditForm} onSubmit={handleUpdate} submitting={updating} submitLabel="Save changes" />
         </div>
