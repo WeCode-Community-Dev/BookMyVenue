@@ -10,12 +10,12 @@ import (
 )
 
 type Handler struct {
-	service *Service
+	service *service
 }
 
 func NewHandler(db *sqlc.Queries) *Handler {
 	return &Handler{
-		service: NewService(db),
+		service: newService(db),
 	}
 }
 

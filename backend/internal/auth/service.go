@@ -8,24 +8,23 @@ import (
 	"github.com/WeCode-Community-Dev/BookMyVenue/db/sqlc"
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/hash"
 	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/token"
-	"github.com/WeCode-Community-Dev/BookMyVenue/pkg/utils"
 )
 
 // Service provides business logic for authentication operations.
-type Service struct {
-	db *sqlc.Queries
+type service struct {
+	repo *repository
 }
 
-func NewService(db *sqlc.Queries) *Service {
-	return &Service{
-		db: db,
+func newService(db *sqlc.Queries) *service {
+	return &service{
+		repo: newRepository(db),
 	}
 }
 
-func (s *Service) Register(ctx context.Context, req RegisterRequest) (*sqlc.User, error) {
+func (s *service) Register(ctx context.Context, req RegisterRequest) (*sqlc.User, error) {
 
 	// check if email already exists
-	existingUser, _ := s.db.GetUserByEmail(ctx, req.Email)
+	existingUser, _ := s.repo.getUserByEmail(ctx, req.Email)
 	if existingUser.ID.String() != "" {
 		return nil, errors.New("email already registered")
 	}
@@ -37,7 +36,7 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (*sqlc.User
 	}
 
 	// save user to DB
-	user, err := s.db.CreateUser(ctx, sqlc.CreateUserParams{
+	user, err := s.repo.createUser(ctx, sqlc.CreateUserParams{
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: hashedPassword,
@@ -56,9 +55,9 @@ type TokenPair struct {
 	Role         string `json:"role"`
 }
 
-func (s *Service) Login(ctx context.Context, req LoginRequest) (*TokenPair, error) {
+func (s *service) Login(ctx context.Context, req LoginRequest) (*TokenPair, error) {
 
-	user, err := s.db.GetUserByEmail(ctx, req.Email)
+	user, err := s.repo.getUserByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, errors.New("invalid email or password")
 	}
@@ -84,18 +83,14 @@ func (s *Service) Login(ctx context.Context, req LoginRequest) (*TokenPair, erro
 	}, nil
 }
 
-func (s *Service) refresh(ctx context.Context, refreshToken string) (string, error) {
+func (s *service) refresh(ctx context.Context, refreshToken string) (string, error) {
 	// verify token
 	claims, err := token.VerifyRefreshToken(refreshToken)
 	if err != nil {
 		return "", errors.New("Invalid or expired refresh token")
 	}
 
-	userUUID, err := utils.StringToUUID(claims.UserID)
-	if err != nil {
-		return "", errors.New(err.Error())
-	}
-	user, err := s.db.GetUserByID(ctx, userUUID)
+	user, err := s.repo.getUserByID(ctx, claims.UserID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return "", errors.New("user not found")
