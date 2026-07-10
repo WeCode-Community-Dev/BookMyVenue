@@ -9,14 +9,14 @@ Tests verify:
   2. AdminAction rows have no cascade delete from the ORM side
   3. No DELETE or PUT routes exist for admin_actions
 """
+from uuid import uuid4
+
 import pytest
 from sqlalchemy.exc import IntegrityError
-from uuid import uuid4
 
 from app.modules.admin.models import AdminAction
 from app.modules.profile.models import Profile
 from tests.conftest import seed_user
-
 
 # ── DB-level constraint ───────────────────────────────────────────────────────
 

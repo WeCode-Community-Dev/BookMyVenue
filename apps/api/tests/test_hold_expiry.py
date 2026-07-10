@@ -6,7 +6,7 @@ Business rule (CLAUDE.md):
     accepted -> hold_expired
   The slot must be unblocked so the owner can accept another requester.
 """
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from app.jobs.hold_expiry import run as run_hold_expiry
 from app.modules.booking.models import Booking, BookingSlot, BookingStatus
@@ -23,7 +23,7 @@ def _accept_booking(client, owner_token: str, booking_id: str):
 def _expire_hold(db, booking_id: str):
     """Force hold_expires_at into the past to simulate expiry."""
     db.query(Booking).filter(Booking.id == booking_id).update(
-        {"hold_expires_at": datetime.now(timezone.utc) - timedelta(hours=25)}
+        {"hold_expires_at": datetime.now(UTC) - timedelta(hours=25)}
     )
     db.commit()
 

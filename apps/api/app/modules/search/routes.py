@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
+
 from app.core.database import get_db
-from app.modules.search.schemas import SearchParams, SearchResult
 from app.modules.search import service
+from app.modules.search.schemas import SearchParams, SearchResult
 from app.shared.pagination import Page
 
 router = APIRouter()

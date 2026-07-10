@@ -1,7 +1,7 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, time
-from decimal import Decimal, ROUND_HALF_EVEN
-from typing import Sequence
+from decimal import ROUND_HALF_EVEN, Decimal
 from uuid import UUID
 
 from app.modules.venue.models import VenuePricingRule

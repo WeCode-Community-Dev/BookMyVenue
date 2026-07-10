@@ -1,48 +1,48 @@
 import re
 import uuid
-from datetime import datetime, timedelta, timezone
-from decimal import Decimal, ROUND_HALF_EVEN
+from datetime import UTC, datetime, timedelta
+from decimal import ROUND_HALF_EVEN, Decimal
 from uuid import UUID
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload, selectinload
 
-from app.core.exceptions import NotFoundError, ForbiddenError, ConflictError
+from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
+from app.core.storage import upload_image_to_cloudinary
+from app.modules.booking.models import Booking, BookingStatus, BookingType
+from app.modules.payment.models import LedgerEntry
+from app.modules.venue import pricing_engine
 from app.modules.venue.models import (
+    Amenity,
     Venue,
-    VenueCategory,
-    VenueStatus,
+    VenueAmenity,
     VenueAvailability,
     VenueBlockedDate,
     VenueCancellationPolicy,
-    VenueAmenity,
-    Amenity,
+    VenueCategory,
+    VenueLike,
     VenuePhoto,
     VenuePricingRule,
-    VenueLike,
+    VenueStatus,
 )
 from app.modules.venue.schemas import (
-    CreateVenueRequest,
-    UpdateVenueRequest,
-    PricingPreviewResponse,
-    PricingDisplay,
-    PricingBreakdownItem,
-    PricingQuote,
-    VenueAvailabilityUpdate,
-    CreateBlockedDateRequest,
-    UpdateCancellationPolicyRequest,
-    UpdateVenueAmenitiesRequest,
-    BulkUpdateVenuePhotosRequest,
-    VenuePricingRuleResponse,
-    CreatePricingRuleRequest,
-    UpdatePricingRuleRequest,
     MAX_ACTIVE_PRICING_RULES_PER_VENUE,
     MIN_VENUE_PHOTOS,
+    BulkUpdateVenuePhotosRequest,
+    CreateBlockedDateRequest,
+    CreatePricingRuleRequest,
+    CreateVenueRequest,
+    PricingBreakdownItem,
+    PricingDisplay,
+    PricingPreviewResponse,
+    PricingQuote,
+    UpdateCancellationPolicyRequest,
+    UpdatePricingRuleRequest,
+    UpdateVenueAmenitiesRequest,
+    UpdateVenueRequest,
+    VenueAvailabilityUpdate,
+    VenuePricingRuleResponse,
 )
-from app.modules.venue import pricing_engine
-from app.modules.booking.models import BookingType, Booking, BookingStatus
-from app.modules.payment.models import LedgerEntry
-from sqlalchemy import func
-from app.core.storage import upload_image_to_cloudinary, delete_image_from_cloudinary
 
 # Default platform commission
 
@@ -640,7 +640,7 @@ def delete_venue(db: Session, venue_id: UUID, owner_id: UUID) -> None:
             "Only draft, rejected, or suspended venues can be deleted."
         )
 
-    venue.deleted_at = datetime.now(timezone.utc)
+    venue.deleted_at = datetime.now(UTC)
     db.commit()
 
 
@@ -696,7 +696,7 @@ def bulk_update_availability(
     venue = _get_venue_or_404(db, venue_id)
     _assert_owner(venue, owner_id)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     db.query(VenueAvailability).filter(
         VenueAvailability.venue_id == venue_id, VenueAvailability.deleted_at.is_(None)
     ).update({"deleted_at": now}, synchronize_session=False)
@@ -723,7 +723,7 @@ def bulk_update_availability(
 
 def get_venue_blocked_dates(db: Session, venue_id: UUID) -> list[VenueBlockedDate]:
     _get_active_venue_or_404(db, venue_id)
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return (
         db.query(VenueBlockedDate)
         .filter(
@@ -778,7 +778,7 @@ def delete_blocked_date(
     if not blocked_date:
         raise NotFoundError("Blocked date not found")
 
-    blocked_date.deleted_at = datetime.now(timezone.utc)
+    blocked_date.deleted_at = datetime.now(UTC)
     db.commit()
 
 
@@ -1004,7 +1004,7 @@ def delete_pricing_rule(
     _assert_owner(venue, owner_id)
     rule = _get_pricing_rule_or_404(db, venue_id, rule_id)
 
-    rule.deleted_at = datetime.now(timezone.utc)
+    rule.deleted_at = datetime.now(UTC)
     db.flush()
     db.refresh(venue)
     _recompute_display_price_range(venue)
@@ -1201,7 +1201,7 @@ def delete_venue_photo(
     if not photo:
         raise NotFoundError("Photo not found")
 
-    photo.deleted_at = datetime.now(timezone.utc)
+    photo.deleted_at = datetime.now(UTC)
 
     if photo.is_cover:
         photo.is_cover = False
@@ -1279,8 +1279,8 @@ def get_venue_stats_this_month(db: Session, venue_id: UUID, owner_id: UUID) -> d
     if venue.owner_id != owner_id:
         raise ForbiddenError("Not your venue")
 
-    now = datetime.now(timezone.utc)
-    start_of_month = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+    now = datetime.now(UTC)
+    start_of_month = datetime(now.year, now.month, 1, tzinfo=UTC)
 
     from app.modules.booking.models import BookingSlot
 

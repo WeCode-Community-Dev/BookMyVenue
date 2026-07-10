@@ -1,13 +1,14 @@
 from apscheduler.schedulers.background import BackgroundScheduler
+
 from app.jobs import (
-    hold_expiry,
-    stale_requests,
-    payment_reminders,
-    booking_completion,
     balance_overdue,
-    search_indexer,
-    payment_pending_expiry,
+    booking_completion,
+    hold_expiry,
     invoice_generator,
+    payment_pending_expiry,
+    payment_reminders,
+    search_indexer,
+    stale_requests,
 )
 
 scheduler = BackgroundScheduler()

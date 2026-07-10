@@ -1,6 +1,5 @@
 from tests.conftest import seed_user
 
-
 VENUE_BODY = {
     "name": "Integration Test Venue",
     "address_line1": "1 Main Street",

@@ -3,15 +3,17 @@ import logging
 import math
 import urllib.request
 import uuid
-from datetime import datetime, timedelta, timezone
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, case, text, cast
+from datetime import UTC, datetime, timedelta
+
+from sqlalchemy import case, cast, func, text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.config import settings
 from app.core.database import SessionLocal
-from app.core.exceptions import NotFoundError, ForbiddenError, ConflictError
+from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
+from app.core.storage import delete_image_from_cloudinary, upload_image_to_cloudinary
 from app.modules.admin.models import AdminAction
 from app.modules.admin.schemas import (
     AmenityUpdateRequest,
@@ -21,18 +23,15 @@ from app.modules.admin.schemas import (
     DeepResearchQuerySummary,
     DeepResearchStatsResponse,
 )
-from app.modules.profile.models import Profile, UserRoleAssignment, UserRole, ProfileStatus
-from app.modules.venue.models import Amenity, VenueAmenity, Venue, VenueCategory, VenueStatus
 from app.modules.booking.models import Booking, BookingSlot, BookingStatus
 from app.modules.deep_research.models import DeepResearchQuery
-from app.core.storage import upload_image_to_cloudinary, delete_image_from_cloudinary
-
-
+from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRoleAssignment
+from app.modules.venue.models import Amenity, Venue, VenueAmenity, VenueCategory, VenueStatus
 
 logger = logging.getLogger(__name__)
 
 def _month_start(year: int, month: int) -> datetime:
-    return datetime(year, month, 1, tzinfo=timezone.utc)
+    return datetime(year, month, 1, tzinfo=UTC)
 
 
 def _add_months(dt: datetime, n: int) -> datetime:
@@ -44,7 +43,7 @@ def _add_months(dt: datetime, n: int) -> datetime:
 def get_growth_stats(db: Session, period: str = "6m") -> dict:
     from datetime import timedelta
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # Parse period → build (start, end, label) buckets + trunc unit
     VALID = {"7d", "30d", "3m", "6m", "12m"}
@@ -92,7 +91,7 @@ def get_growth_stats(db: Session, period: str = "6m") -> dict:
         if extra_filter is not None:
             q = q.filter(extra_filter)
         rows = q.group_by("bucket").all()
-        return {r.bucket.replace(tzinfo=timezone.utc): r.cnt for r in rows}
+        return {r.bucket.replace(tzinfo=UTC): r.cnt for r in rows}
 
     base_users    = baseline(Profile)
     base_owners   = baseline(UserRoleAssignment, UserRoleAssignment.role == UserRole.venue_owner)
@@ -809,7 +808,7 @@ def delete_amenity(
         raise ConflictError("Amenity is already deleted")
 
     active_count = _count_active_venues(db, amenity.id)
-    amenity.deleted_at = datetime.now(timezone.utc)
+    amenity.deleted_at = datetime.now(UTC)
 
     db.add(AdminAction(
         admin_id=admin_id,
@@ -993,7 +992,7 @@ def delete_category(
         raise ConflictError("Category is already deleted")
 
     venue_count = _count_category_venues(db, cat.id)
-    cat.deleted_at = datetime.now(timezone.utc)
+    cat.deleted_at = datetime.now(UTC)
     cat.is_active = False
 
     db.add(AdminAction(
@@ -1330,7 +1329,7 @@ def get_deep_research_query(db: Session, query_id: uuid.UUID) -> DeepResearchQue
 
 
 def get_deep_research_stats(db: Session, days: int = 30) -> DeepResearchStatsResponse:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     period_start = today_start - timedelta(days=days - 1)
 
@@ -1344,7 +1343,7 @@ def get_deep_research_stats(db: Session, days: int = 30) -> DeepResearchStatsRes
         .group_by("bucket")
         .all()
     )
-    by_bucket = {r.bucket.replace(tzinfo=timezone.utc): r for r in rows}
+    by_bucket = {r.bucket.replace(tzinfo=UTC): r for r in rows}
 
     labels: list[str] = []
     counts: list[int] = []

@@ -25,7 +25,6 @@ from app.main import app
 from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRoleAssignment
 from app.modules.venue.models import Venue, VenueCategory, VenueStatus
 
-
 # ── Session-scoped: seed one category for the whole run ──────────────────────
 
 @pytest.fixture(scope="session")

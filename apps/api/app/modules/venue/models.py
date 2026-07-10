@@ -1,14 +1,28 @@
 import enum
 import uuid
-from datetime import datetime, date, time
+from datetime import date, datetime, time
 from typing import Any
-from sqlalchemy import (
-    Integer, Boolean, Numeric, BigInteger, Text, Time, DateTime, Date,
-    ForeignKey, CheckConstraint, Index, func, Enum, text
-)
-from sqlalchemy.dialects.postgresql import UUID, ARRAY, TSVECTOR
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+
 from pgvector.sqlalchemy import Vector
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    Text,
+    Time,
+    func,
+    text,
+)
+from sqlalchemy.dialects.postgresql import ARRAY, TSVECTOR, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.core.database import Base
 
 
@@ -124,23 +138,23 @@ class Venue(Base):
     # Relationships
     category: Mapped["VenueCategory"] = relationship(back_populates="venues")
     photos: Mapped[list["VenuePhoto"]] = relationship(
-        back_populates="venue", 
+        back_populates="venue",
         cascade="all, delete-orphan",
         primaryjoin="and_(Venue.id==VenuePhoto.venue_id, VenuePhoto.deleted_at.is_(None))",
         order_by="VenuePhoto.sort_order"
     )
     amenities: Mapped[list["Amenity"]] = relationship(
-        secondary="venue_amenities", 
+        secondary="venue_amenities",
         back_populates="venues",
         secondaryjoin="and_(VenueAmenity.amenity_id==Amenity.id, Amenity.deleted_at.is_(None))"
     )
     availability: Mapped[list["VenueAvailability"]] = relationship(
-        back_populates="venue", 
+        back_populates="venue",
         cascade="all, delete-orphan",
         primaryjoin="and_(Venue.id==VenueAvailability.venue_id, VenueAvailability.deleted_at.is_(None))"
     )
     blocked_dates: Mapped[list["VenueBlockedDate"]] = relationship(
-        back_populates="venue", 
+        back_populates="venue",
         cascade="all, delete-orphan",
         primaryjoin="and_(Venue.id==VenueBlockedDate.venue_id, VenueBlockedDate.deleted_at.is_(None))"
     )
@@ -175,7 +189,7 @@ class Venue(Base):
         back_populates="venue",
     )
 
-    reviews: Mapped[list["VenueReview"]] = relationship(
+    reviews: Mapped[list["VenueReview"]] = relationship(  # noqa: F821 -- resolved via SQLAlchemy registry, see app/models.py
         back_populates="venue",
     )
 
@@ -195,7 +209,7 @@ class VenuePhoto(Base):
     image_url: Mapped[str] = mapped_column(Text, nullable=False)
     sort_order: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     is_cover: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
-    
+
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
@@ -239,7 +253,7 @@ class VenueAvailability(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     venue_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("venues.id"), nullable=False)
     day_of_week: Mapped[int] = mapped_column(Integer, nullable=False)
-    
+
     is_available: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
     opens_at: Mapped[time | None] = mapped_column(Time, nullable=True)
     closes_at: Mapped[time | None] = mapped_column(Time, nullable=True)
@@ -335,7 +349,7 @@ class VenueCancellationPolicy(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     venue_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("venues.id"), nullable=False, unique=True)
-    
+
     tier_1_hours: Mapped[int | None] = mapped_column(Integer, nullable=True)
     tier_1_refund_pct: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
     tier_2_hours: Mapped[int | None] = mapped_column(Integer, nullable=True)

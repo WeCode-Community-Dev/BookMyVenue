@@ -1,29 +1,28 @@
 import enum
 import uuid
-from datetime import datetime, date
+from datetime import date, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    CheckConstraint,
-    Enum,
-    DateTime,
-    Date,
-    ForeignKey,
-    func,
-    Integer,
     BigInteger,
-    Numeric,
-    Text,
-    String,
     Boolean,
+    CheckConstraint,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    func,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
     relationship,
 )
-
-from typing import TYPE_CHECKING
 
 from app.core.database import Base
 
@@ -303,7 +302,7 @@ class Booking(Base):
         back_populates="booking",
         cascade="all, delete-orphan",
     )
-    
+
     venue: Mapped["Venue"] = relationship(
         back_populates="bookings",
     )

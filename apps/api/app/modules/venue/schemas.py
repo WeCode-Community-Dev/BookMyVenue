@@ -1,10 +1,9 @@
-from pydantic import BaseModel, field_validator, Field
-from uuid import UUID
-from datetime import datetime, date, time
-from typing import Optional
+from datetime import date, datetime, time
 from decimal import Decimal
 from enum import Enum
+from uuid import UUID
 
+from pydantic import BaseModel, Field, field_validator
 
 
 class BookingType(str, Enum):
@@ -36,8 +35,8 @@ class VenueCategoryResponse(BaseModel):
     id: UUID
     slug: str
     label: str
-    icon: Optional[str] = None
-    banner_image: Optional[str] = None
+    icon: str | None = None
+    banner_image: str | None = None
     is_active: bool
     sort_order: int
 
@@ -58,34 +57,34 @@ class VenuePhotoResponse(BaseModel):
 class AmenityResponse(BaseModel):
     id: UUID
     name: str
-    icon: Optional[str] = None
+    icon: str | None = None
 
     model_config = {"from_attributes": True}
 
 
 class CancellationPolicyResponse(BaseModel):
-    tier_1_hours: Optional[int] = None
-    tier_1_refund_pct: Optional[Decimal] = None
-    tier_2_hours: Optional[int] = None
-    tier_2_refund_pct: Optional[Decimal] = None
-    tier_3_hours: Optional[int] = None
-    tier_3_refund_pct: Optional[Decimal] = None
+    tier_1_hours: int | None = None
+    tier_1_refund_pct: Decimal | None = None
+    tier_2_hours: int | None = None
+    tier_2_refund_pct: Decimal | None = None
+    tier_3_hours: int | None = None
+    tier_3_refund_pct: Decimal | None = None
     no_show_refund_pct: Decimal
     platform_fee_refundable: bool
-    notes: Optional[str] = None
+    notes: str | None = None
 
     model_config = {"from_attributes": True}
 
 class UpdateCancellationPolicyRequest(BaseModel):
-    tier_1_hours: Optional[int] = Field(default=None, gt=0)
-    tier_1_refund_pct: Optional[Decimal] = Field(default=None, ge=0, le=100)
-    tier_2_hours: Optional[int] = Field(default=None, gt=0)
-    tier_2_refund_pct: Optional[Decimal] = Field(default=None, ge=0, le=100)
-    tier_3_hours: Optional[int] = Field(default=None, gt=0)
-    tier_3_refund_pct: Optional[Decimal] = Field(default=None, ge=0, le=100)
+    tier_1_hours: int | None = Field(default=None, gt=0)
+    tier_1_refund_pct: Decimal | None = Field(default=None, ge=0, le=100)
+    tier_2_hours: int | None = Field(default=None, gt=0)
+    tier_2_refund_pct: Decimal | None = Field(default=None, ge=0, le=100)
+    tier_3_hours: int | None = Field(default=None, gt=0)
+    tier_3_refund_pct: Decimal | None = Field(default=None, ge=0, le=100)
     no_show_refund_pct: Decimal = Field(default=Decimal("0.00"), ge=0, le=100)
     platform_fee_refundable: bool = False
-    notes: Optional[str] = None
+    notes: str | None = None
 
     def model_post_init(self, __context) -> None:
         if (self.tier_1_hours is None) != (self.tier_1_refund_pct is None):
@@ -117,26 +116,28 @@ class BulkUpdateVenuePhotosRequest(BaseModel):
 
 
 from typing import Any
+
 from pydantic import model_validator
+
 
 class VenueListResponse(BaseModel):
     id: UUID
     name: str
-    slug: Optional[str] = None
+    slug: str | None = None
     city: str
     max_capacity: int
     status: VenueStatus
     is_active: bool
     category_name: str
-    cover_photo_url: Optional[str] = None
-    last_completed_step: Optional[int] = Field(default=0, ge=0)
+    cover_photo_url: str | None = None
+    last_completed_step: int | None = Field(default=0, ge=0)
 
     @model_validator(mode="before")
     @classmethod
     def flatten_nested(cls, data: Any) -> Any:
         if isinstance(data, dict):
             return data
-        
+
         result = {
             "id": data.id,
             "name": data.name,
@@ -168,51 +169,51 @@ class VenueResponse(BaseModel):
     id: UUID
     owner_id: UUID
 
-    
+
     name: str
-    slug: Optional[str] = None
-    description: Optional[str] = None
+    slug: str | None = None
+    description: str | None = None
     category: VenueCategoryResponse
 
 
     address_line1: str
-    address_line2: Optional[str] = None
+    address_line2: str | None = None
     city: str
     state: str
     country: str
-    postal_code: Optional[str] = None
-    latitude: Optional[Decimal] = None
-    longitude: Optional[Decimal] = None
+    postal_code: str | None = None
+    latitude: Decimal | None = None
+    longitude: Decimal | None = None
     timezone: str
 
-    
-    min_capacity: Optional[int] = None
+
+    min_capacity: int | None = None
     max_capacity: int
 
-    
+
     open_time: time
     close_time: time
     spans_next_day: bool
 
-    
+
     allowed_booking_types: list[BookingType]
     min_booking_duration_minutes: int
     max_booking_duration_minutes: int
     slot_interval_minutes: int
 
-    
+
     pre_buffer_minutes: int
     post_buffer_minutes: int
 
-    
-    pricing_mode: PricingMode
-    starting_price_paise: Optional[int] = None     
-    hourly_rate_paise: Optional[int] = None   
 
-    
+    pricing_mode: PricingMode
+    starting_price_paise: int | None = None
+    hourly_rate_paise: int | None = None
+
+
     platform_commission_pct: Decimal
 
-    
+
     advance_pct: Decimal
     balance_due_days_before_event: int
     owner_action_window_hours: int
@@ -220,26 +221,26 @@ class VenueResponse(BaseModel):
 
     min_price_pct: Decimal
     max_price_pct: Decimal
-    display_price_min_paise: Optional[int] = None
-    display_price_max_paise: Optional[int] = None
+    display_price_min_paise: int | None = None
+    display_price_max_paise: int | None = None
 
 
     status: VenueStatus
     booking_mode: BookingMode = BookingMode.MANUAL
     is_active: bool
 
-    
+
     created_at: datetime
     updated_at: datetime
 
     last_completed_step: int
 
-    
+
     photos: list[VenuePhotoResponse] = Field(default_factory=list)
     amenities: list[AmenityResponse] = Field(default_factory=list)
-    cancellation_policy: Optional[CancellationPolicyResponse] = None
+    cancellation_policy: CancellationPolicyResponse | None = None
     is_liked: bool = False
-    average_rating: Optional[float] = None
+    average_rating: float | None = None
     review_count: int = 0
 
     model_config = {"from_attributes": True}
@@ -254,46 +255,46 @@ class DeleteResponse(BaseModel):
 class CreateVenueRequest(BaseModel):
 
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     category_id: UUID
 
-    
+
     address_line1: str
-    address_line2: Optional[str] = None
+    address_line2: str | None = None
     city: str
     state: str
     country: str = "India"
-    postal_code: Optional[str] = None
-    latitude: Optional[Decimal] = None
-    longitude: Optional[Decimal] = None
+    postal_code: str | None = None
+    latitude: Decimal | None = None
+    longitude: Decimal | None = None
     timezone: str = "Asia/Kolkata"
 
-    
-    min_capacity: Optional[int] = Field(default=None, gt=0)
+
+    min_capacity: int | None = Field(default=None, gt=0)
     max_capacity: int = Field(gt=0)
 
-    
+
     open_time: time
     close_time: time
     spans_next_day: bool = False
 
-    
+
     allowed_booking_types: list[BookingType] = Field(default_factory=lambda: [BookingType.full_day, BookingType.time_slot])
     booking_mode: BookingMode = BookingMode.MANUAL
     min_booking_duration_minutes: int = Field(default=60, gt=0)
     max_booking_duration_minutes: int = Field(default=1440, gt=0)
     slot_interval_minutes: int = Field(default=30, gt=0)
 
-    
+
     pre_buffer_minutes: int = Field(default=0, ge=0)
     post_buffer_minutes: int = Field(default=0, ge=0)
 
-    
-    pricing_mode: PricingMode = PricingMode.flat
-    starting_price_paise: Optional[int] = Field(default=None, ge=0)
-    hourly_rate_paise: Optional[int] = Field(default=None, ge=0)
 
-    
+    pricing_mode: PricingMode = PricingMode.flat
+    starting_price_paise: int | None = Field(default=None, ge=0)
+    hourly_rate_paise: int | None = Field(default=None, ge=0)
+
+
     advance_pct: Decimal = Field(default=Decimal("30.00"), gt=0, le=100)
     balance_due_days_before_event: int = Field(default=7, gt=0)
     owner_action_window_hours: int = Field(default=48, ge=24, le=72)
@@ -302,10 +303,10 @@ class CreateVenueRequest(BaseModel):
     min_price_pct: Decimal = Field(default=Decimal("50.00"), gt=0, le=100)
     max_price_pct: Decimal = Field(default=Decimal("200.00"), ge=100, le=500)
 
-    cancellation_policy: Optional[UpdateCancellationPolicyRequest] = None
-    amenity_ids: Optional[list[UUID]] = None
+    cancellation_policy: UpdateCancellationPolicyRequest | None = None
+    amenity_ids: list[UUID] | None = None
 
-    last_completed_step: Optional[int] = Field(default=0, ge=0)
+    last_completed_step: int | None = Field(default=0, ge=0)
 
     @field_validator("allowed_booking_types")
     @classmethod
@@ -344,14 +345,14 @@ class CreateVenueRequest(BaseModel):
             if self.starting_price_paise is None or self.hourly_rate_paise is None:
                 raise ValueError("Both starting_price_paise and hourly_rate_paise are required when pricing_mode is 'mixed'")
 
-        
+
         if (
             self.min_capacity is not None
             and self.min_capacity > self.max_capacity
         ):
             raise ValueError("min_capacity cannot exceed max_capacity")
 
-        
+
         if self.min_booking_duration_minutes > self.max_booking_duration_minutes:
             raise ValueError(
                 "min_booking_duration_minutes cannot exceed max_booking_duration_minutes"
@@ -365,53 +366,53 @@ class CreateVenueRequest(BaseModel):
 
 
 class UpdateVenueRequest(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    category_id: Optional[UUID] = None
+    name: str | None = None
+    description: str | None = None
+    category_id: UUID | None = None
 
-    address_line1: Optional[str] = None
-    address_line2: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    country: Optional[str] = None
-    postal_code: Optional[str] = None
-    latitude: Optional[Decimal] = None
-    longitude: Optional[Decimal] = None
-    timezone: Optional[str] = None
+    address_line1: str | None = None
+    address_line2: str | None = None
+    city: str | None = None
+    state: str | None = None
+    country: str | None = None
+    postal_code: str | None = None
+    latitude: Decimal | None = None
+    longitude: Decimal | None = None
+    timezone: str | None = None
 
-    min_capacity: Optional[int] = Field(default=None, gt=0)
-    max_capacity: Optional[int] = Field(default=None, gt=0)
+    min_capacity: int | None = Field(default=None, gt=0)
+    max_capacity: int | None = Field(default=None, gt=0)
 
-    open_time: Optional[time] = None
-    close_time: Optional[time] = None
-    spans_next_day: Optional[bool] = None
+    open_time: time | None = None
+    close_time: time | None = None
+    spans_next_day: bool | None = None
 
-    allowed_booking_types: Optional[list[BookingType]] = None
-    booking_mode: Optional[BookingMode] = None
-    min_booking_duration_minutes: Optional[int] = Field(default=None, gt=0)
-    max_booking_duration_minutes: Optional[int] = Field(default=None, gt=0)
-    slot_interval_minutes: Optional[int] = Field(default=None, gt=0)
+    allowed_booking_types: list[BookingType] | None = None
+    booking_mode: BookingMode | None = None
+    min_booking_duration_minutes: int | None = Field(default=None, gt=0)
+    max_booking_duration_minutes: int | None = Field(default=None, gt=0)
+    slot_interval_minutes: int | None = Field(default=None, gt=0)
 
-    pre_buffer_minutes: Optional[int] = Field(default=None, ge=0)
-    post_buffer_minutes: Optional[int] = Field(default=None, ge=0)
+    pre_buffer_minutes: int | None = Field(default=None, ge=0)
+    post_buffer_minutes: int | None = Field(default=None, ge=0)
 
-    pricing_mode: Optional[PricingMode] = None
-    starting_price_paise: Optional[int] = Field(default=None, ge=0)
-    hourly_rate_paise: Optional[int] = Field(default=None, ge=0)
+    pricing_mode: PricingMode | None = None
+    starting_price_paise: int | None = Field(default=None, ge=0)
+    hourly_rate_paise: int | None = Field(default=None, ge=0)
 
-    advance_pct: Optional[Decimal] = Field(default=None, gt=0, le=100)
-    balance_due_days_before_event: Optional[int] = Field(default=None, gt=0)
-    owner_action_window_hours: Optional[int] = Field(default=None, ge=24, le=72)
-    overdue_advance_refund_pct: Optional[Decimal] = Field(default=None, ge=0, le=100)
+    advance_pct: Decimal | None = Field(default=None, gt=0, le=100)
+    balance_due_days_before_event: int | None = Field(default=None, gt=0)
+    owner_action_window_hours: int | None = Field(default=None, ge=24, le=72)
+    overdue_advance_refund_pct: Decimal | None = Field(default=None, ge=0, le=100)
 
-    min_price_pct: Optional[Decimal] = Field(default=None, gt=0, le=100)
-    max_price_pct: Optional[Decimal] = Field(default=None, ge=100, le=500)
+    min_price_pct: Decimal | None = Field(default=None, gt=0, le=100)
+    max_price_pct: Decimal | None = Field(default=None, ge=100, le=500)
 
-    last_completed_step: Optional[int] = None
+    last_completed_step: int | None = None
 
     @field_validator("allowed_booking_types")
     @classmethod
-    def validate_booking_types(cls, v: Optional[list[BookingType]]) -> Optional[list[BookingType]]:
+    def validate_booking_types(cls, v: list[BookingType] | None) -> list[BookingType] | None:
         if v is not None:
             if not v:
                 raise ValueError("allowed_booking_types cannot be empty if provided")
@@ -478,11 +479,11 @@ class PricingDisplay(BaseModel):
 
 class PricingBreakdownItem(BaseModel):
     period_date: date
-    start_time: Optional[time] = None
-    end_time: Optional[time] = None
+    start_time: time | None = None
+    end_time: time | None = None
     base_paise: int
-    applied_rule_id: Optional[UUID] = None
-    applied_rule_name: Optional[str] = None
+    applied_rule_id: UUID | None = None
+    applied_rule_name: str | None = None
     clamped: bool
     final_paise: int
 
@@ -506,15 +507,15 @@ class PricingPreviewResponse(BaseModel):
 class VenueSearchResult(BaseModel):
     id: UUID
     name: str
-    slug: Optional[str] = None
+    slug: str | None = None
     category: VenueCategoryResponse
     city: str
     state: str
     max_capacity: int
     pricing_mode: PricingMode
-    starting_price_paise: Optional[int] = None
-    hourly_rate_paise: Optional[int] = None
-    cover_photo_url: Optional[str] = None
+    starting_price_paise: int | None = None
+    hourly_rate_paise: int | None = None
+    cover_photo_url: str | None = None
     status: VenueStatus
     is_liked: bool = False
 
@@ -524,8 +525,8 @@ class VenueSearchResult(BaseModel):
 class VenueAvailabilityResponse(BaseModel):
     day_of_week: int = Field(ge=0, le=6)
     is_available: bool
-    opens_at: Optional[time] = None
-    closes_at: Optional[time] = None
+    opens_at: time | None = None
+    closes_at: time | None = None
     spans_next_day: bool
 
     model_config = {"from_attributes": True}
@@ -533,8 +534,8 @@ class VenueAvailabilityResponse(BaseModel):
 class VenueAvailabilityUpdate(BaseModel):
     day_of_week: int = Field(ge=0, le=6)
     is_available: bool
-    opens_at: Optional[time] = None
-    closes_at: Optional[time] = None
+    opens_at: time | None = None
+    closes_at: time | None = None
     spans_next_day: bool = False
 
     def model_post_init(self, __context) -> None:
@@ -570,7 +571,7 @@ class VenueBlockedDateResponse(BaseModel):
     venue_id: UUID
     starts_at: datetime
     ends_at: datetime
-    reason: Optional[str] = None
+    reason: str | None = None
     blocked_by: UUID
     created_at: datetime
 
@@ -579,7 +580,7 @@ class VenueBlockedDateResponse(BaseModel):
 class CreateBlockedDateRequest(BaseModel):
     starts_at: datetime
     ends_at: datetime
-    reason: Optional[str] = None
+    reason: str | None = None
 
     def model_post_init(self, __context) -> None:
         if self.ends_at <= self.starts_at:
@@ -607,14 +608,14 @@ class VenuePricingRuleResponse(BaseModel):
     id: UUID
     venue_id: UUID
     name: str
-    days_of_week: Optional[list[int]] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    start_time: Optional[time] = None
-    end_time: Optional[time] = None
+    days_of_week: list[int] | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    start_time: time | None = None
+    end_time: time | None = None
     adjustment_type: PricingRuleAdjustmentType
-    multiplier: Optional[Decimal] = None
-    amount_paise: Optional[int] = None
+    multiplier: Decimal | None = None
+    amount_paise: int | None = None
     applies_to: PricingRuleAppliesTo
     priority: int
     source: str
@@ -628,14 +629,14 @@ class VenuePricingRuleResponse(BaseModel):
 
 class CreatePricingRuleRequest(BaseModel):
     name: str = Field(min_length=1)
-    days_of_week: Optional[list[int]] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    start_time: Optional[time] = None
-    end_time: Optional[time] = None
+    days_of_week: list[int] | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    start_time: time | None = None
+    end_time: time | None = None
     adjustment_type: PricingRuleAdjustmentType = PricingRuleAdjustmentType.multiplier
-    multiplier: Optional[Decimal] = Field(default=None, gt=0)
-    amount_paise: Optional[int] = None
+    multiplier: Decimal | None = Field(default=None, gt=0)
+    amount_paise: int | None = None
     applies_to: PricingRuleAppliesTo = PricingRuleAppliesTo.both
     priority: int = 0
     is_active: bool = True
@@ -665,18 +666,18 @@ class CreatePricingRuleRequest(BaseModel):
 
 
 class UpdatePricingRuleRequest(BaseModel):
-    name: Optional[str] = Field(default=None, min_length=1)
-    days_of_week: Optional[list[int]] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    start_time: Optional[time] = None
-    end_time: Optional[time] = None
-    adjustment_type: Optional[PricingRuleAdjustmentType] = None
-    multiplier: Optional[Decimal] = Field(default=None, gt=0)
-    amount_paise: Optional[int] = None
-    applies_to: Optional[PricingRuleAppliesTo] = None
-    priority: Optional[int] = None
-    is_active: Optional[bool] = None
+    name: str | None = Field(default=None, min_length=1)
+    days_of_week: list[int] | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    start_time: time | None = None
+    end_time: time | None = None
+    adjustment_type: PricingRuleAdjustmentType | None = None
+    multiplier: Decimal | None = Field(default=None, gt=0)
+    amount_paise: int | None = None
+    applies_to: PricingRuleAppliesTo | None = None
+    priority: int | None = None
+    is_active: bool | None = None
 
     def model_post_init(self, __context) -> None:
         if self.days_of_week is not None:

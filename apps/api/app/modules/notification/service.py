@@ -1,9 +1,8 @@
 import json
 import logging
-import urllib.request
 import urllib.error
-from datetime import datetime, timezone
-from typing import List
+import urllib.request
+from datetime import UTC, datetime
 
 from sqlalchemy import event
 from sqlalchemy.orm import Session
@@ -11,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.email import send_email
-from app.core.exceptions import NotFoundError, ForbiddenError
+from app.core.exceptions import ForbiddenError, NotFoundError
 from app.modules.notification.models import InAppNotification
 from app.modules.notification.schemas import NotificationResponse
 from app.modules.notification.templates import render_notification
@@ -69,7 +68,7 @@ def _mark_email_sent(notification_id) -> None:
     try:
         row = s.get(InAppNotification, notification_id)
         if row and row.sent_at is None:
-            row.sent_at = datetime.now(timezone.utc)
+            row.sent_at = datetime.now(UTC)
             s.commit()
     except Exception:
         logger.exception("Could not stamp sent_at for notification %s", notification_id)
@@ -82,7 +81,7 @@ def _mark_email_sent(notification_id) -> None:
 event.listen(SessionLocal, "after_commit", _send_pending_emails)
 
 
-def list_notifications(db: Session, user_id) -> List[NotificationResponse]:
+def list_notifications(db: Session, user_id) -> list[NotificationResponse]:
     rows = (
         db.query(InAppNotification)
         .filter(InAppNotification.user_id == user_id)
@@ -99,7 +98,7 @@ def mark_read(db: Session, notification_id: str, user_id) -> None:
     if str(row.user_id) != str(user_id):
         raise ForbiddenError("Not your notification")
     if row.read_at is None:
-        row.read_at = datetime.now(timezone.utc)
+        row.read_at = datetime.now(UTC)
         db.commit()
 
 

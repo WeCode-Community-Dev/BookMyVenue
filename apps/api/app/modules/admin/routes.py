@@ -1,44 +1,45 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, Query, UploadFile, File, HTTPException
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.modules.admin import service
 from app.modules.admin.schemas import (
-    VenueActionRequest,
-    AdminVenueListResponse,
-    UserListResponse,
-    UserSummary,
-    SuspendUserRequest,
-    ReactivateUserRequest,
     AdminActionListResponse,
-    OwnerApprovalRequest,
-    OwnerStatsResponse,
-    AmenityCreateRequest,
-    AmenityUpdateRequest,
     AdminAmenityResponse,
-    AmenityListResponse,
-    AmenityDeleteResponse,
-    CategoryCreateRequest,
-    CategoryUpdateRequest,
-    AdminCategoryResponse,
-    CategoryListResponse,
-    CategoryDeleteResponse,
-    CategoryBannerResponse,
-    BookingStatsResponse,
     AdminBookingListResponse,
-    VenueStatsResponse,
-    GrowthStatsResponse,
+    AdminCategoryResponse,
+    AdminVenueListResponse,
+    AmenityCreateRequest,
+    AmenityDeleteResponse,
+    AmenityListResponse,
+    AmenityUpdateRequest,
+    BookingStatsResponse,
+    CategoryBannerResponse,
+    CategoryCreateRequest,
+    CategoryDeleteResponse,
+    CategoryListResponse,
+    CategoryUpdateRequest,
+    ContactOwnerRequest,
     DeepResearchQueryDetail,
     DeepResearchQueryListResponse,
     DeepResearchStatsResponse,
     ExternalReservationListResponse,
-    ContactOwnerRequest,
-    MarkInterestedRequest,
+    GrowthStatsResponse,
     InviteOwnerRequest,
     InviteOwnerResponse,
+    MarkInterestedRequest,
+    OwnerApprovalRequest,
+    OwnerStatsResponse,
+    ReactivateUserRequest,
+    SuspendUserRequest,
+    UserListResponse,
+    UserSummary,
+    VenueActionRequest,
+    VenueStatsResponse,
 )
-from app.modules.auth.dependencies import require_admin, AuthContext
-from app.modules.admin import service
+from app.modules.auth.dependencies import AuthContext, require_admin
 from app.modules.deep_research import service as reservation_service
 
 router = APIRouter()

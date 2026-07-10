@@ -3,10 +3,8 @@ from pprint import pprint
 from sqlalchemy.orm import joinedload
 
 from app.core.database import SessionLocal
-from app.modules.booking.models import Booking
-from app.modules.venue.models import Venue
-from app.modules.profile.models import Profile
 from app.modules.search.indexer import _build_search_document
+from app.modules.venue.models import Venue
 
 db = SessionLocal()
 

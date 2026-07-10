@@ -2,9 +2,11 @@ import logging
 from uuid import UUID
 
 import numpy as np
-from sqlalchemy import func as sa_func, text, or_
+from sqlalchemy import func as sa_func
+from sqlalchemy import or_, text
 from sqlalchemy.orm import Session, joinedload
 
+from app.core.config import settings
 from app.modules.search import search_metadata_cache
 from app.modules.search.category_intent import (
     GROUP_CORPORATE,
@@ -14,9 +16,8 @@ from app.modules.search.category_intent import (
 )
 from app.modules.search.query_normalizer import normalize_query
 from app.modules.search.schemas import SearchParams, SearchResult
-from app.modules.venue.models import Venue, VenueCategory, VenueStatus, VenuePhoto
+from app.modules.venue.models import Venue, VenueCategory, VenuePhoto, VenueStatus
 from app.shared.pagination import Page
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -141,31 +142,7 @@ def search(db: Session, params: SearchParams) -> Page[SearchResult]:
         .all()
     )
 
-    venue_ids = [v.id for v in venues]
-    cover_photos = {}
-    if venue_ids:
-        photos = db.query(VenuePhoto).filter(
-            VenuePhoto.venue_id.in_(venue_ids),
-            VenuePhoto.is_cover == True,
-            VenuePhoto.deleted_at.is_(None),
-        ).all()
-        cover_photos = {p.venue_id: p.image_url for p in photos}
-
-    results = []
-    for v in venues:
-        starting_price = v.starting_price_paise if v.pricing_mode in ('flat', 'mixed') else v.hourly_rate_paise
-        results.append(SearchResult(
-            id=v.id,
-            name=v.name,
-            city=v.city,
-            category=v.category,
-            capacity=v.max_capacity,
-            pricing_mode=v.pricing_mode,
-            starting_price_paise=starting_price,
-            display_price_min_paise=v.display_price_min_paise,
-            display_price_max_paise=v.display_price_max_paise,
-            cover_photo_url=cover_photos.get(v.id),
-        ))
+    covers = _cover_photos(db, [v.id for v in venues])
 
     return Page(
         items=_to_results(venues, covers),

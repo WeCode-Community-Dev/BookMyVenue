@@ -17,7 +17,7 @@ model lives in booking/models.py, alongside every other booking table.
 """
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
@@ -188,7 +188,7 @@ def _send_invoice_email(db: Session, booking, pdf_url: str) -> None:
         .first()
     )
     if row:
-        row.sent_at = datetime.now(timezone.utc)
+        row.sent_at = datetime.now(UTC)
         db.commit()
 
 

@@ -1,12 +1,15 @@
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from app.core.database import with_session
 from app.modules.booking.models import (
-    Booking, BookingStatus, PaymentStatus, BookingStatusHistory,
+    Booking,
+    BookingStatus,
+    BookingStatusHistory,
+    PaymentStatus,
 )
-from app.modules.venue.models import Venue
 from app.modules.notification import service as notifications
+from app.modules.venue.models import Venue
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +21,7 @@ def run_flag() -> int:
     """Flag confirmed-but-balance-unpaid bookings whose balance due date has
     passed, opening the owner-action window (extend / forfeit / goodwill).
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     today = now.date()
     flagged = 0
     with with_session() as db:
@@ -60,7 +63,7 @@ def run_autocancel() -> int:
     so the advance is forfeited (this is a system cancel for non-payment, not an
     owner cancellation). Owner-initiated cancels still refund per their own paths.
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     cancelled = 0
     with with_session() as db:
         rows = (

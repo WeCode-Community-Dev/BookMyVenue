@@ -1,8 +1,10 @@
 import io
+
 import cloudinary
 import cloudinary.uploader
 from fastapi import HTTPException, status
 from PIL import Image
+
 from app.core.config import settings
 
 _MAX_DIMENSION = 2048
@@ -29,7 +31,7 @@ if settings.cloudinary_cloud_name and settings.cloudinary_api_key and settings.c
     )
 
 def upload_image_to_cloudinary(file_bytes: bytes, folder: str = "venues") -> str:
-    
+
     if not settings.cloudinary_cloud_name:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -51,10 +53,10 @@ def upload_image_to_cloudinary(file_bytes: bytes, folder: str = "venues") -> str
         )
 
 def delete_image_from_cloudinary(public_id: str):
-    
+
     if not settings.cloudinary_cloud_name:
         return
     try:
         cloudinary.uploader.destroy(public_id)
     except Exception:
-        pass 
+        pass

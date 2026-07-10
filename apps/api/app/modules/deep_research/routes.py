@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
 from uuid import UUID
+
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -8,9 +9,12 @@ from app.core.rate_limit import enforce_daily_limit, enforce_per_minute_limit
 from app.modules.auth.dependencies import AuthContext, require_auth
 from app.modules.deep_research import service
 from app.modules.deep_research.schemas import (
-    DeepResearchSearchRequest, DeepResearchSearchResponse,
-    TriggerExternalDiscoveryRequest, ExternalLeadPublic,
-    ReserveLeadRequest, ReserveLeadResponse,
+    DeepResearchSearchRequest,
+    DeepResearchSearchResponse,
+    ExternalLeadPublic,
+    ReserveLeadRequest,
+    ReserveLeadResponse,
+    TriggerExternalDiscoveryRequest,
     UserReservationResponse,
 )
 

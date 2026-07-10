@@ -1,5 +1,5 @@
-from app.modules.booking.state_machine import can_transition, VALID_TRANSITIONS
 from app.modules.booking.models import BookingStatus
+from app.modules.booking.state_machine import VALID_TRANSITIONS, can_transition
 
 TERMINAL = [
     BookingStatus.completed,

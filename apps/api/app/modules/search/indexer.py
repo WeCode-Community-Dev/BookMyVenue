@@ -1,6 +1,6 @@
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import text
@@ -116,7 +116,7 @@ def process_job(db: Session, job_id: str) -> None:
         return
 
     job.status = "processing"
-    job.started_at = datetime.now(timezone.utc)
+    job.started_at = datetime.now(UTC)
     db.commit()
 
     try:
@@ -136,10 +136,10 @@ def process_job(db: Session, job_id: str) -> None:
         if settings.jina_api_key:
             embedding = embed_passage(document)
             venue.embedding = embedding
-            venue.embedding_updated_at = datetime.now(timezone.utc)
+            venue.embedding_updated_at = datetime.now(UTC)
 
         job.status = "completed"
-        job.completed_at = datetime.now(timezone.utc)
+        job.completed_at = datetime.now(UTC)
         db.commit()
         logger.info("search_indexer: job %s completed for venue %s", job_id, venue.id)
 

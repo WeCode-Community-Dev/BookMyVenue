@@ -1,14 +1,13 @@
 """Manual trigger for confirm_payment - Docker friendly"""
 
 import sys
-from pathlib import Path
 
 # Add correct path for Docker
 sys.path.insert(0, "/app")
 
 from app.core.database import SessionLocal
-from app.modules.payment import service
 from app.modules.booking.models import Booking
+from app.modules.payment import service
 
 
 def main():

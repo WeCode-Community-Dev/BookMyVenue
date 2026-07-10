@@ -16,31 +16,41 @@ Refund row and never aborts the surrounding confirmation) and are idempotent
 (a payment already past `succeeded` is not refunded twice).
 """
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.exceptions import BadRequestError, ForbiddenError, NotFoundError
 from app.core.stripe_client import get_stripe
-from app.core.exceptions import NotFoundError, ForbiddenError, BadRequestError
 from app.modules.auth.dependencies import AuthContext
 from app.modules.booking.models import (
-    Booking, BookingStatus, PaymentStatus, BookingSlot, BookingStatusHistory,
+    Booking,
+    BookingSlot,
+    BookingStatus,
+    BookingStatusHistory,
+    PaymentStatus,
 )
-from app.modules.booking.service import _booking_out
-from sqlalchemy.orm import joinedload, selectinload
-from app.modules.profile.models import Profile
 from app.modules.booking.state_machine import can_transition
-from app.modules.venue.models import Venue
+from app.modules.notification import service as notifications
 from app.modules.payment.models import (
-    Payment, Refund, LedgerEntry, PaymentAttemptStatus, RefundStatus,
+    LedgerEntry,
+    Payment,
+    PaymentAttemptStatus,
+    Refund,
+    RefundStatus,
 )
 from app.modules.payment.schemas import (
-    PaymentIntentResponse, PaymentResponse, RefundResponse, OwnerLedgerStatsResponse, LedgerEntryResponse
+    LedgerEntryResponse,
+    OwnerLedgerStatsResponse,
+    PaymentIntentResponse,
+    PaymentResponse,
+    RefundResponse,
 )
-from app.modules.notification import service as notifications
+from app.modules.profile.models import Profile
+from app.modules.venue.models import Venue
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +77,7 @@ def create_payment_intent(
     if payment_type == ADVANCE:
         if booking.status not in (BookingStatus.owner_accepted, BookingStatus.payment_pending):
             raise BadRequestError("Booking is not awaiting payment")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if booking.status == BookingStatus.owner_accepted:
             if not booking.hold_expires_at or booking.hold_expires_at < now:
                 raise BadRequestError("Payment hold has expired")
@@ -88,7 +98,7 @@ def create_payment_intent(
     elif payment_type == "full":
         if booking.status not in (BookingStatus.owner_accepted, BookingStatus.payment_pending):
             raise BadRequestError("Booking is not awaiting payment")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if booking.status == BookingStatus.owner_accepted:
             if not booking.hold_expires_at or booking.hold_expires_at < now:
                 raise BadRequestError("Payment hold has expired")
@@ -199,9 +209,9 @@ def confirm_payment(db: Session, payment_intent_id: str) -> None:
     old_status = booking.status
     payment.status = PaymentAttemptStatus.succeeded
     booking.status = BookingStatus.confirmed
-    booking.confirmed_at = datetime.now(timezone.utc)
+    booking.confirmed_at = datetime.now(UTC)
     booking.amount_paid_paise = (booking.amount_paid_paise or 0) + payment.amount_paise
-    
+
     if payment.payment_type == "full":
         booking.balance_due_paise = 0
         booking.payment_status = PaymentStatus.fully_paid
@@ -211,7 +221,7 @@ def confirm_payment(db: Session, payment_intent_id: str) -> None:
         )
 
     if old_status == BookingStatus.payment_pending:
-        booking.auto_confirmed_at = datetime.now(timezone.utc)
+        booking.auto_confirmed_at = datetime.now(UTC)
         booking.confirmed_by = "SYSTEM"
     else:
         booking.confirmed_by = "OWNER"
@@ -366,7 +376,7 @@ def refund_booking(db: Session, booking_id: str, current_user: AuthContext, reas
 
     if booking.status == BookingStatus.confirmed and can_transition(booking.status, BookingStatus.user_cancelled):
         booking.status = BookingStatus.user_cancelled
-        booking.cancelled_at = datetime.now(timezone.utc)
+        booking.cancelled_at = datetime.now(UTC)
         db.add(BookingStatusHistory(
             booking_id=booking.id, old_status=BookingStatus.confirmed,
             new_status=BookingStatus.user_cancelled, reason=reason or "owner_cancellation",
@@ -427,7 +437,7 @@ def list_payments_for_booking(db: Session, booking_id: str, current_user: AuthCo
 def get_owner_ledger_stats(db: Session, current_user: AuthContext) -> OwnerLedgerStatsResponse:
     if not current_user.is_owner():
         raise ForbiddenError("Must be a venue owner")
-    
+
     entries = db.query(
         LedgerEntry.entry_type,
         LedgerEntry.direction,
@@ -471,17 +481,17 @@ def get_owner_ledger_stats(db: Session, current_user: AuthContext) -> OwnerLedge
 def list_owner_ledger_entries(db: Session, current_user: AuthContext, entry_type: str | None = None) -> list[LedgerEntryResponse]:
     if not current_user.is_owner():
         raise ForbiddenError("Must be a venue owner")
-        
+
     query = (
         db.query(LedgerEntry, Venue, Profile)
         .outerjoin(Venue, LedgerEntry.venue_id == Venue.id)
         .outerjoin(Profile, LedgerEntry.user_id == Profile.id)
         .filter(LedgerEntry.owner_id == current_user.user_id)
     )
-    
+
     if entry_type and entry_type != "all":
         query = query.filter(LedgerEntry.entry_type == entry_type)
-            
+
     query = query.order_by(LedgerEntry.created_at.desc())
     results = query.all()
 
@@ -596,7 +606,7 @@ def _conflict_cancel(db: Session, competitor: Booking, venue: Venue | None) -> N
         logger.warning("skip conflict-cancel: illegal %s -> conflict_cancelled for booking %s", old, competitor.id)
         return
     competitor.status = BookingStatus.conflict_cancelled
-    competitor.cancelled_at = datetime.now(timezone.utc)
+    competitor.cancelled_at = datetime.now(UTC)
     db.add(BookingStatusHistory(
         booking_id=competitor.id, old_status=old, new_status=BookingStatus.conflict_cancelled,
         reason="slot_confirmed_by_another",
@@ -629,7 +639,7 @@ def _conflict_cancel_self_and_refund(db: Session, payment_intent_id: str) -> Non
         logger.warning("skip self conflict-cancel: illegal %s -> conflict_cancelled for booking %s", old, booking.id)
         return
     booking.status = BookingStatus.conflict_cancelled
-    booking.cancelled_at = datetime.now(timezone.utc)
+    booking.cancelled_at = datetime.now(UTC)
     db.add(BookingStatusHistory(
         booking_id=booking.id, old_status=old, new_status=BookingStatus.conflict_cancelled,
         reason="lost_slot_race",

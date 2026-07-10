@@ -12,14 +12,14 @@ import logging
 
 import app.models  # noqa: F401 — register every ORM model before any job queries run
 from app.jobs import (
-    hold_expiry,
-    stale_requests,
-    booking_completion,
-    payment_reminders,
     balance_overdue,
-    search_indexer,
-    payment_pending_expiry,
+    booking_completion,
+    hold_expiry,
     invoice_generator,
+    payment_pending_expiry,
+    payment_reminders,
+    search_indexer,
+    stale_requests,
 )
 
 logger = logging.getLogger(__name__)

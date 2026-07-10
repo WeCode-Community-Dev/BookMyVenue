@@ -2,17 +2,18 @@
 Tests for the review system (service layer and API endpoints).
 """
 
-import pytest
 from datetime import datetime
 from uuid import uuid4
+
+import pytest
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import APIException
-from app.modules.review.service import ReviewService
-from app.modules.review.schemas import ReviewCreate, ReviewUpdate
-from app.modules.review.models import VenueReview
 from app.modules.booking.models import Booking, BookingStatus
 from app.modules.profile.models import Profile
+from app.modules.review.models import VenueReview
+from app.modules.review.schemas import ReviewCreate, ReviewUpdate
+from app.modules.review.service import ReviewService
 from app.modules.venue.models import Venue
 
 
@@ -440,7 +441,7 @@ def admin_user(db: Session) -> Profile:
 @pytest.fixture
 def venue(db: Session, user_profile: Profile) -> Venue:
     """Create a test venue."""
-    from app.modules.venue.models import VenueCategory, VenueStatus, BookingMode
+    from app.modules.venue.models import BookingMode, VenueCategory, VenueStatus
 
     category = VenueCategory(
         id=uuid4(),

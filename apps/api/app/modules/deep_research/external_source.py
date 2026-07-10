@@ -1,6 +1,8 @@
 import logging
 from typing import Any
+
 import httpx
+
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -54,7 +56,7 @@ class GooglePlacesSource:
             "textQuery": query,
             "maxResultCount": max_results,
         }
-        
+
         if latitude is not None and longitude is not None:
             payload["locationBias"] = {
                 "circle": {

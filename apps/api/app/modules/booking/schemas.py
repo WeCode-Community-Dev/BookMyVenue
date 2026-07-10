@@ -4,7 +4,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, computed_field
 
-
 BookingTypeValue = Literal["full_day", "time_slot"]
 
 

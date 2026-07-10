@@ -1,14 +1,14 @@
-from datetime import date, datetime, time, timezone, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
+import app.modules.venue.service as venue_service
 from app.modules.availability.service import (
-    resolve_operating_window,
-    expand_full_day_slot,
     compute_effective_range,
+    expand_full_day_slot,
+    resolve_operating_window,
 )
 from app.modules.booking.models import BookingType
 from app.modules.venue.models import Venue
-import app.modules.venue.service as venue_service
 
 
 def make_venue(tz="Asia/Kolkata"):
@@ -49,8 +49,8 @@ def test_compute_effective_range():
 def test_pricing_quote_hourly(monkeypatch):
     v = make_venue()
     tz = ZoneInfo(v.timezone)
-    starts = datetime(2026, 6, 7, 10, 0, tzinfo=tz).astimezone(timezone.utc)
-    ends = datetime(2026, 6, 7, 12, 30, tzinfo=tz).astimezone(timezone.utc)
+    starts = datetime(2026, 6, 7, 10, 0, tzinfo=tz).astimezone(UTC)
+    ends = datetime(2026, 6, 7, 12, 30, tzinfo=tz).astimezone(UTC)
 
     # Pricing now resolves the venue from the DB; stub that lookup so we can
     # exercise the (DB-free) pricing math on our in-memory venue.

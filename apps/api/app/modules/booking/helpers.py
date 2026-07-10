@@ -1,7 +1,8 @@
-import uuid
 import logging
-from datetime import datetime, timezone, date
+import uuid
+from datetime import UTC, datetime
 from uuid import UUID
+
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, selectinload
 
@@ -10,9 +11,8 @@ from app.modules.booking.models import (
     BookingSlot,
     BookingStatus,
     BookingStatusHistory,
-    PaymentStatus,
 )
-from app.modules.booking.schemas import BookingOut, BookingDisplay, PaymentOption, PaymentOptions
+from app.modules.booking.schemas import BookingDisplay, BookingOut, PaymentOption, PaymentOptions
 from app.modules.venue.models import Venue, VenueCancellationPolicy
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ TERMINAL_STATUSES = {
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _format_inr(paise: int) -> str:

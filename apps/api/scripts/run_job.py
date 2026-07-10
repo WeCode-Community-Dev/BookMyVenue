@@ -11,8 +11,8 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 import app.models  # noqa: F401 — register every ORM model before any job queries run
-
-from app.jobs.runner import JOBS, run_job as _run_job
+from app.jobs.runner import JOBS
+from app.jobs.runner import run_job as _run_job
 
 
 def run_job(job_name: str) -> bool:
