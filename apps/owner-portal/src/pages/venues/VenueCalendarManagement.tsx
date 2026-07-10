@@ -406,7 +406,7 @@ export default function VenueCalendarManagement() {
                 </div>
               </div>
             </form>
-          </section>
+          </div>
 
           <section>
             <h4 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-6">Upcoming Blocked Dates</h4>
