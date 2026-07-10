@@ -47,11 +47,18 @@ def enqueue(db: Session, booking_id: uuid.UUID) -> None:
     being a no-op, so process() regenerates it.
     """
     invoice = BookingInvoice(booking_id=booking_id)
-    db.add(invoice)
     try:
-        db.flush()
+        # SAVEPOINT: a duplicate-booking IntegrityError must roll back ONLY this
+        # insert, never the caller's in-flight transaction. enqueue() runs inside
+        # confirm_payment / confirm_balance_payment's uncommitted webhook
+        # transaction (webhooks.py owns the commit), so a bare db.rollback() here
+        # would silently discard the payment confirmation itself — losing the
+        # balance capture on every re-enqueue (the row already exists from the
+        # advance leg, so the flush always conflicts). begin_nested() isolates it.
+        with db.begin_nested():
+            db.add(invoice)
+            db.flush()
     except IntegrityError:
-        db.rollback()
         invoice = db.query(BookingInvoice).filter(BookingInvoice.booking_id == booking_id).first()
         if not invoice or invoice.status in ("pending", "processing"):
             return  # already queued/in flight — nothing to do
@@ -62,9 +69,11 @@ def enqueue(db: Session, booking_id: uuid.UUID) -> None:
     try:
         if redis_client.is_configured():
             redis_client.get_redis().lpush(settings.upstash_invoice_queue_key, str(invoice.id))
-    except Exception:
-        # Redis push failure is non-fatal — the scheduler worker will poll the DB.
-        pass
+    except Exception as exc:
+        # Redis push failure is non-fatal — the worker still polls the DB — but
+        # log it (like dequeue_from_redis does) so a misconfigured or unreachable
+        # Upstash isn't completely invisible.
+        logger.warning("invoice: Redis push failed for %s: %s", invoice.id, exc)
 
 
 # ─── Job processing (called from app/jobs/invoice_generator.py) ───────────

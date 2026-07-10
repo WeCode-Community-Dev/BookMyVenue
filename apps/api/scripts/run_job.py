@@ -10,9 +10,7 @@ setup_logging()
 
 logger = logging.getLogger(__name__)
 
-import app.modules.venue.models  # noqa: F401
-import app.modules.profile.models  # noqa: F401
-import app.modules.booking.models  # noqa: F401
+import app.models  # noqa: F401 — register every ORM model before any job queries run
 
 from app.jobs.runner import JOBS, run_job as _run_job
 

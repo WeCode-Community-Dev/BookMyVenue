@@ -10,6 +10,7 @@ returns the number of rows it processed.
 """
 import logging
 
+import app.models  # noqa: F401 — register every ORM model before any job queries run
 from app.jobs import (
     hold_expiry,
     stale_requests,
