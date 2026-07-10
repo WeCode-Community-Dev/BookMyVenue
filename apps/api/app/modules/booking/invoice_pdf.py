@@ -73,7 +73,9 @@ def upload_pdf_to_cloudinary(pdf_bytes: bytes, booking_id: uuid.UUID) -> str:
     result = cloudinary.uploader.upload(
         pdf_bytes,
         folder="venue404/invoices",
-        public_id=f"invoice_{booking_id}.pdf",
+        # No ".pdf" here — Cloudinary appends the format extension to the
+        # public_id itself, so including it yields "invoice_<id>.pdf.pdf".
+        public_id=f"invoice_{booking_id}",
         resource_type="auto",
         overwrite=True,
     )
