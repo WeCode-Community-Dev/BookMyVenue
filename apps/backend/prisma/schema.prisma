@@ -41,6 +41,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   venues    Venue[]
+  bookings  Booking[]
   wishlists Wishlist[]
 
   refreshToken String?
@@ -49,28 +50,28 @@ model User {
 }
 
 model Venue {
-  id            String          @id @default(uuid())
-  ownerId       String
-  owner         User            @relation(fields: [ownerId], references: [id])
+  id      String @id @default(uuid())
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id])
 
-  name          String
-  description   String
-  venueType     VenueType
-  capacityMin   Int
-  capacityMax   Int
+  name        String
+  description String
+  venueType   VenueType
+  capacityMin Int
+  capacityMax Int
 
-  addressLine   String
-  city          String
-  state         String          @default("Kerala")
-  latitude      Float
-  longitude     Float
+  addressLine String
+  city        String
+  state       String @default("Kerala")
+  latitude    Float
+  longitude   Float
 
-  status        VenueStatus     @default(PENDING)
-  rejectionNote String?         // populated only if status = REJECTED — surfaced to the owner via the Admin module
+  status        VenueStatus @default(PENDING)
+  rejectionNote String? // populated only if status = REJECTED — surfaced to the owner via the Admin module
 
-  isActive      Boolean         @default(true)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   categories    VenueCategory[]
   amenities     VenueAmenity[]
@@ -109,11 +110,10 @@ enum EventCategory {
   OTHER
 }
 
-
 model VenueCategory {
-  id       String         @id @default(uuid())
+  id       String        @id @default(uuid())
   venueId  String
-  venue    Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venue    Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
   category EventCategory
 
   @@unique([venueId, category])
@@ -122,16 +122,16 @@ model VenueCategory {
 
 model Amenity {
   id     String         @id @default(uuid())
-  name   String         @unique   // e.g. "Parking", "AC", "Catering", "DJ Allowed"
+  name   String         @unique // e.g. "Parking", "AC", "Catering", "DJ Allowed"
   venues VenueAmenity[]
 }
 
 model VenueAmenity {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   venueId   String
-  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venue     Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
   amenityId String
-  amenity   Amenity  @relation(fields: [amenityId], references: [id])
+  amenity   Amenity @relation(fields: [amenityId], references: [id])
 
   @@unique([venueId, amenityId])
 }
@@ -140,7 +140,7 @@ model VenueImage {
   id        String   @id @default(uuid())
   venueId   String
   venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  url       String   // Cloudinary URL
+  url       String // Cloudinary URL
   isPrimary Boolean  @default(false)
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
@@ -148,49 +148,48 @@ model VenueImage {
   @@index([venueId])
 }
 
-
 model VenueSlotTemplate {
-  id            String   @id @default(uuid())
-  venueId       String
-  venue         Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  id      String @id @default(uuid())
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
 
-  label         String   // owner-defined, e.g. "Full Wedding Slot (incl. kitchen prep)", "Evening Birthday"
-  startDayOffset Int     // 0 = event day, -1 = previous day, etc.
-  startTime     String   
-  endDayOffset  Int      // 0 = event day, +1 = next day, etc.
-  endTime       String
+  label          String // owner-defined, e.g. "Full Wedding Slot (incl. kitchen prep)", "Evening Birthday"
+  startDayOffset Int // 0 = event day, -1 = previous day, etc.
+  startTime      String
+  endDayOffset   Int // 0 = event day, +1 = next day, etc.
+  endTime        String
 
-  isCustom      Boolean  @default(false)  // true = priced per guest per hour instead of fixed tiers
+  isCustom                  Boolean  @default(false) // true = priced per guest per hour instead of fixed tiers
   customRatePerGuestPerHour Decimal? @db.Decimal(10, 2)
 
-  isActive      Boolean  @default(true)
+  isActive Boolean @default(true)
 
-  pricingTiers  VenueSlotPricing[]
+  pricingTiers VenueSlotPricing[]
 
   @@index([venueId])
 }
 
 model VenueSlotPricing {
-  id              String             @id @default(uuid())
-  slotTemplateId  String
-  slotTemplate    VenueSlotTemplate  @relation(fields: [slotTemplateId], references: [id], onDelete: Cascade)
+  id             String            @id @default(uuid())
+  slotTemplateId String
+  slotTemplate   VenueSlotTemplate @relation(fields: [slotTemplateId], references: [id], onDelete: Cascade)
 
-  minGuests       Int
-  maxGuests       Int
-  price           Decimal            @db.Decimal(10, 2)
+  minGuests Int
+  maxGuests Int
+  price     Decimal @db.Decimal(10, 2)
 
-  bookedSlots     BookedSlot[]       // Booking module's rows referencing this exact tier
+  bookedSlots BookedSlot[] // Booking module's rows referencing this exact tier
 
   @@index([slotTemplateId])
 }
 
 model VenueBlockedDate {
-  id        String   @id @default(uuid())
-  venueId   String
-  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  fromDate  DateTime @db.Date
-  toDate    DateTime @db.Date
-  note      String?  // owner's private note, e.g. "offline wedding booking — 4 days"
+  id       String   @id @default(uuid())
+  venueId  String
+  venue    Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  fromDate DateTime @db.Date
+  toDate   DateTime @db.Date
+  note     String? // owner's private note, e.g. "offline wedding booking — 4 days"
 
   @@index([venueId, fromDate, toDate])
 }
@@ -208,25 +207,63 @@ model Wishlist {
 }
 
 enum BookingStatus {
-  PENDING
+  PENDING_PAYMENT
   CONFIRMED
+  EXPIRED
+  REFUNDED
   CANCELLED
 }
 
 model Booking {
-  id          String        @id @default(uuid())
-  venueId     String
-  venue       Venue         @relation(fields: [venueId], references: [id])
-  status      BookingStatus @default(PENDING)
-  bookedSlots BookedSlot[]
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id])
+
+  totalPrice Decimal @db.Decimal(10, 2)
+
+  status BookingStatus @default(PENDING_PAYMENT)
+
+  cancellationEligible Boolean
+
+  confirmedAt DateTime?
+  cancelledAt DateTime?
+
+  razorpayOrderId   String? @unique
+  razorpayPaymentId String? @unique
+  razorpayRefundId  String? @unique
+
+  slots BookedSlot[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([venueId])
+  @@index([status])
 }
 
 model BookedSlot {
-  id                 String           @id @default(uuid())
-  venueSlotPricingId String
-  venueSlotPricing   VenueSlotPricing @relation(fields: [venueSlotPricingId], references: [id])
-  bookingId          String
-  booking            Booking          @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  occupiedFrom       DateTime
-  occupiedTo         DateTime
+  id String @id @default(uuid())
+
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  slotPricingTierId String
+  slotPricingTier   VenueSlotPricing @relation(fields: [slotPricingTierId], references: [id])
+
+  eventDate DateTime @db.Date
+
+  occupiedFrom DateTime
+  occupiedTo   DateTime
+
+  slotPrice Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+
+  @@index([slotPricingTierId, eventDate])
+  @@index([occupiedFrom, occupiedTo])
 }

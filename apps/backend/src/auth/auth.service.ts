@@ -1,5 +1,10 @@
 import { AuthProvider, User } from '@prisma/client';
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 import { GoogleUser } from 'src/types/google-auth.request.interface';
 import { JwtService } from '@nestjs/jwt';
@@ -17,7 +22,7 @@ export class AuthService {
     private readonly prismaService: PrismaService,
     private readonly redisService: RedisService,
     private readonly mailService: MailService,
-  ) { }
+  ) {}
 
   private async generateAccessToken(user: User) {
     return this.jwtService.signAsync(
@@ -218,20 +223,13 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string) {
-
     if (!refreshToken) {
-      throw new UnauthorizedException(
-        'Refresh token not found',
-      );
+      throw new UnauthorizedException('Refresh token not found');
     }
 
-    const payload = await this.jwtService.verifyAsync(
-      refreshToken,
-      {
-        secret: process.env.JWT_SECRET,
-      }
-    );
-
+    const payload = await this.jwtService.verifyAsync(refreshToken, {
+      secret: process.env.JWT_SECRET,
+    });
 
     const user = await this.prismaService.user.findUnique({
       where: {
@@ -239,24 +237,14 @@ export class AuthService {
       },
     });
 
-
     if (!user || !user.refreshToken) {
-      throw new UnauthorizedException(
-        'Invalid refresh token',
-      );
+      throw new UnauthorizedException('Invalid refresh token');
     }
 
-
-    const isMatch = await bcrypt.compare(
-      refreshToken,
-      user.refreshToken,
-    );
-
+    const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
 
     if (!isMatch) {
-      throw new UnauthorizedException(
-        'Invalid refresh token',
-      );
+      throw new UnauthorizedException('Invalid refresh token');
     }
 
     return this.generateAccessToken(user);
