@@ -10,96 +10,95 @@ export function VenueSummaryCard({ venue }: Props) {
 
   const venueType = venue.category?.label ?? venue.category?.slug ?? ''
 
+  const bookingTypes = venue.allowed_booking_types
+    .map((type) => (type === 'full_day' ? 'Full Day' : 'Time Slot'))
+    .join(', ')
+
+  const initials = venue.name
+    .split(' ')
+    .map((word) => word.charAt(0))
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm dark:border-ink-800 dark:bg-ink-900">
-      {coverPhoto ? (
-        <img src={coverPhoto} alt={venue.name} className="h-56 w-full object-cover" />
-      ) : (
-        <div className="flex h-56 w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-50 dark:from-ink-800 dark:to-ink-900">
-          <svg
-            className="h-9 w-9 text-zinc-300"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M3 7l4-4h10l4 4v10a4 4 0 01-4 4H7a4 4 0 01-4-4V7z"
+    <div className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-ink-800 dark:bg-ink-900">
+      <div className="relative h-40 w-full overflow-hidden">
+        {coverPhoto ? (
+          <>
+            <img
+              src={coverPhoto || '/placeholder.svg'}
+              alt={venue.name}
+              className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             />
-          </svg>
-        </div>
-      )}
-
-      <div className="p-6">
-        <div className="space-y-6">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              Venue
-            </div>
-
-            <h2 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{venue.name}</h2>
-
-            <div className="mt-2 flex items-center gap-2 text-zinc-500">
-              <svg
-                className="h-4 w-4 shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              <span className="text-sm">
-                {venue.city}, {venue.state}
-              </span>
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          </>
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-brand-light dark:bg-brand/15">
+            <span className="text-4xl font-bold tracking-tight text-brand dark:text-brand-secondary">
+              {initials || 'V'}
+            </span>
           </div>
+        )}
+      </div>
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <InfoCard label="Venue Type" value={venueType} />
-            <InfoCard label="Capacity" value={String(venue.max_capacity)} />
-            <InfoCard
-              label="Booking Type"
-              value={venue.allowed_booking_types
-                .map((type) => (type === 'full_day' ? 'Full Day' : 'Time Slot'))
-                .join(', ')}
-            />
-            <InfoCard label="Pricing" value={venue.pricing_mode} />
+      <div className="space-y-4 p-5">
+        <div>
+          <div className="text-[13px] font-medium text-brand dark:text-brand-secondary">Venue</div>
+
+          <h2 className="mt-1 text-xl font-bold tracking-tight text-balance text-zinc-900 dark:text-zinc-100">
+            {venue.name}
+          </h2>
+
+          <div className="mt-1.5 flex items-center gap-1.5 text-zinc-500">
+            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0L6.343 16.657a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            <span className="text-sm">
+              {venue.city}, {venue.state}
+            </span>
           </div>
-
-          {venue.description && (
-            <div className="border-t border-zinc-100 pt-5 dark:border-ink-800">
-              <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{venue.description}</p>
-            </div>
-          )}
         </div>
+
+        <div className="flex flex-wrap gap-2">
+          {venueType && <Chip>{venueType}</Chip>}
+          <Chip>{venue.max_capacity} guests</Chip>
+          {bookingTypes && <Chip>{bookingTypes}</Chip>}
+          {venue.pricing_mode && <Chip className="capitalize">{venue.pricing_mode}</Chip>}
+        </div>
+
+        {venue.description && (
+          <p className="border-t border-zinc-100 pt-4 text-sm leading-relaxed text-zinc-600 dark:border-ink-800 dark:text-zinc-400">
+            {venue.description}
+          </p>
+        )}
       </div>
     </div>
   )
 }
 
-type InfoCardProps = {
-  label: string
-  value: string
+type ChipProps = {
+  children: React.ReactNode
+  className?: string
 }
 
-function InfoCard({ label, value }: InfoCardProps) {
+function Chip({ children, className = '' }: ChipProps) {
   return (
-    <div className="rounded-xl border border-zinc-100 p-4 dark:border-ink-800">
-      <div className="text-xs font-medium uppercase tracking-wide text-zinc-400">{label}</div>
-      <div className="mt-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">{value}</div>
-    </div>
+    <span
+      className={`inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-ink-800 dark:bg-ink-850/60 dark:text-zinc-300 ${className}`}
+    >
+      {children}
+    </span>
   )
 }

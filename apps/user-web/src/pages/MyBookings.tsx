@@ -49,21 +49,29 @@ function FeaturedBookingHero({ booking }: { booking: BookingOut }) {
             <BookingStatusBadge status={booking.status} />
           </div>
 
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{booking.venue_name}</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            {booking.venue_name}
+          </h2>
 
           <p className="mt-2 text-zinc-500">{booking.venue_city}</p>
 
           <div className="mt-8 grid grid-cols-2 gap-6">
             <div>
-              <p className="text-xs uppercase tracking-wide text-zinc-400">Event Date</p>
+              <p className="text-[13px] font-medium text-zinc-500 dark:text-zinc-400">Event date</p>
 
-              <p className="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{formatDate(booking.starts_at)}</p>
+              <p className="mt-1 font-medium text-zinc-900 dark:text-zinc-100">
+                {formatDate(booking.starts_at)}
+              </p>
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-wide text-zinc-400">Booking Value</p>
+              <p className="text-[13px] font-medium text-zinc-500 dark:text-zinc-400">
+                Booking value
+              </p>
 
-              <p className="mt-1 font-medium text-zinc-900 dark:text-zinc-100">{booking.display.quoted_price}</p>
+              <p className="mt-1 font-medium text-zinc-900 dark:text-zinc-100">
+                {booking.display.quoted_price}
+              </p>
             </div>
           </div>
 
@@ -72,10 +80,10 @@ function FeaturedBookingHero({ booking }: { booking: BookingOut }) {
             (booking.status === 'confirmed' &&
               booking.payment_status === 'advance_paid' &&
               booking.balance_due_paise > 0)) && (
-              <div className="mt-6 inline-flex w-fit rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand dark:bg-brand/15 dark:text-brand-secondary">
-                Action Required
-              </div>
-            )}
+            <div className="mt-6 inline-flex w-fit rounded-full bg-brand-light px-3 py-1 text-xs font-semibold text-brand dark:bg-brand/15 dark:text-brand-secondary">
+              Action required
+            </div>
+          )}
 
           <Link to={`/bookings/${booking.id}`} className="mt-8">
             <Button>View Booking</Button>
@@ -109,7 +117,7 @@ function TabButton({
 
       <span className="ml-2 text-zinc-400">{count}</span>
 
-      {active && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-900 dark:bg-zinc-100" />}
+      {active && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand" />}
     </button>
   )
 }
@@ -137,12 +145,15 @@ export default function MyBookings() {
   const now = new Date()
 
   const upcomingBookings = bookings.filter(
-    (booking) =>
-      (booking.status === 'confirmed') &&
-      new Date(booking.ends_at) > now
+    (booking) => booking.status === 'confirmed' && new Date(booking.ends_at) > now
   )
 
-  const pendingBookings = bookings.filter((booking) => booking.status === 'requested' || booking.status === 'payment_pending' || booking.status === 'owner_accepted')
+  const pendingBookings = bookings.filter(
+    (booking) =>
+      booking.status === 'requested' ||
+      booking.status === 'payment_pending' ||
+      booking.status === 'owner_accepted'
+  )
 
   const pastBookings = bookings.filter((booking) => booking.status === 'completed')
 
@@ -195,14 +206,13 @@ export default function MyBookings() {
     <div className="min-h-screen bg-zinc-50 dark:bg-ink-950">
       <AppNavbar />
 
-      <div className="mx-auto max-w-6xl px-4 py-8">
-
-        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               My Bookings
             </h1>
-            <p className="mt-2 max-w-2xl text-zinc-500">
+            <p className="mt-2 max-w-2xl text-sm text-zinc-500">
               Manage reservations, complete payments, and track upcoming events.
             </p>
           </div>
@@ -211,19 +221,21 @@ export default function MyBookings() {
           <div className="flex h-10 shrink-0 items-center rounded-xl bg-zinc-200/50 p-1 dark:bg-ink-800">
             <button
               onClick={() => setMasterTab('bookings')}
-              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${masterTab === 'bookings'
-                ? 'bg-white text-zinc-900 shadow-sm dark:bg-ink-900 dark:text-zinc-100'
-                : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-                }`}
+              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${
+                masterTab === 'bookings'
+                  ? 'bg-white text-zinc-900 shadow-sm dark:bg-ink-900 dark:text-zinc-100'
+                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
             >
               Platform Bookings
             </button>
             <button
               onClick={() => setMasterTab('reservations')}
-              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${masterTab === 'reservations'
-                ? 'bg-white text-zinc-900 shadow-sm dark:bg-ink-900 dark:text-zinc-100'
-                : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-                }`}
+              className={`flex h-full items-center rounded-lg px-4 text-sm font-semibold transition-all ${
+                masterTab === 'reservations'
+                  ? 'bg-white text-zinc-900 shadow-sm dark:bg-ink-900 dark:text-zinc-100'
+                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+              }`}
             >
               Venue Requests
             </button>

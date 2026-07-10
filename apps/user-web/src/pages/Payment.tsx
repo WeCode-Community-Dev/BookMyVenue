@@ -45,7 +45,9 @@ function BookingSummaryCard({ booking }: { booking: BookingOut }) {
       </div>
 
       <div className="p-5">
-        <h3 className="text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">{booking.venue_name}</h3>
+        <h3 className="text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100">
+          {booking.venue_name}
+        </h3>
 
         {/* Date / time / guests */}
         <div className="mt-4 space-y-2">
@@ -107,6 +109,7 @@ function BookingSummaryCard({ booking }: { booking: BookingOut }) {
           source="booking"
           display={booking.display}
           balanceDueDate={booking.balance_due_date}
+          embedded
         />
       </div>
     </div>
@@ -146,7 +149,7 @@ function IntentErrorRow({ onRetry }: { onRetry: () => void }) {
     <div className="space-y-4">
       <div
         role="alert"
-        className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400"
+        className="flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400"
       >
         <svg
           className="mt-0.5 h-4 w-4 shrink-0"
@@ -165,7 +168,7 @@ function IntentErrorRow({ onRetry }: { onRetry: () => void }) {
       </div>
       <button
         onClick={onRetry}
-        className="w-full rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 transition-colors dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
+        className="press w-full rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 transition-colors focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
       >
         Try again
       </button>
@@ -176,30 +179,34 @@ function IntentErrorRow({ onRetry }: { onRetry: () => void }) {
 // ─── Not-found state ──────────────────────────────────────────────────────────
 function BookingNotFound({ onBack }: { onBack: () => void }) {
   return (
-    <div className="mx-auto max-w-xl px-4 py-24 text-center">
-      <div className="mx-auto mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-ink-800">
-        <svg
-          className="h-7 w-7 text-zinc-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+    <div className="mx-auto max-w-4xl px-6 py-24">
+      <div className="mx-auto max-w-xl text-center">
+        <div className="mx-auto mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-ink-800">
+          <svg
+            className="h-7 w-7 text-zinc-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+          Booking not found
+        </h2>
+        <p className="mt-2 text-sm text-zinc-400">The booking may have been removed.</p>
+        <button
+          onClick={onBack}
+          className="press mt-8 rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-hover focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
+          Back to Bookings
+        </button>
       </div>
-      <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Booking not found</h2>
-      <p className="mt-2 text-sm text-zinc-400">The booking may have been removed.</p>
-      <button
-        onClick={onBack}
-        className="press mt-8 rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-hover focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2"
-      >
-        Back to Bookings
-      </button>
     </div>
   )
 }
@@ -240,11 +247,7 @@ export default function Payment() {
     (booking.status === 'payment_pending' || booking.status === 'owner_accepted')
 
   const isPaymentDue =
-    paymentType === 'balance'
-      ? isBalanceDue
-      : paymentType === 'full'
-        ? isFullDue
-        : isAdvanceDue
+    paymentType === 'balance' ? isBalanceDue : paymentType === 'full' ? isFullDue : isAdvanceDue
 
   const intentQuery = useQuery({
     queryKey: ['payment-intent', bookingId, paymentType],
@@ -309,12 +312,13 @@ export default function Payment() {
     )
   }
 
-const isFullPayment = paymentType === 'full'
-const amountDuePaise =
+  const isFullPayment = paymentType === 'full'
+  const amountDuePaise =
     paymentType === 'balance'
       ? booking.balance_due_paise
       : paymentType === 'full'
-        ? booking.payment_options?.full?.amount_paise ?? booking.balance_due_paise + booking.advance_due_paise
+        ? (booking.payment_options?.full?.amount_paise ??
+          booking.balance_due_paise + booking.advance_due_paise)
         : booking.advance_due_paise
   const payLabel = formatPrice(amountDuePaise)
 
@@ -361,13 +365,15 @@ const amountDuePaise =
       </header>
 
       {/* ── Two-column body ─────────────────────────────────────────────── */}
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10">
+      <div className="page-enter mx-auto max-w-6xl px-4 sm:px-6 py-10">
         <div className="flex flex-col lg:flex-row gap-10 xl:gap-14">
           {/* ── Left: payment form ─────────────────────────────────────── */}
           <div className="min-w-0 flex-1 space-y-6">
             {/* Heading */}
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">{heading}</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+                {heading}
+              </h1>
               <p className="mt-1.5 text-sm text-zinc-500">{subheading}</p>
             </div>
 
@@ -376,7 +382,9 @@ const amountDuePaise =
               {/* Amount row */}
               <div className="flex items-center justify-between pb-5 border-b border-zinc-100 dark:border-ink-800">
                 <span className="text-sm font-medium text-zinc-500">Amount due</span>
-                <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">{payLabel}</span>
+                <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                  {payLabel}
+                </span>
               </div>
 
               {intentQuery.isLoading && <IntentLoadingRow />}

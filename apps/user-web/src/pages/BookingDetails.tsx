@@ -16,13 +16,14 @@ import { BookingActionsCard } from '../components/booking/BookingActionsCard'
 
 function BookingDetailSkeleton() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="flex flex-col gap-8 lg:flex-row">
-        <div className="flex-1 space-y-8">
-          <div className="h-40 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
-          <div className="h-72 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
+    <div className="mx-auto max-w-6xl px-6 py-10">
+      <div className="mb-8 h-9 w-24 animate-pulse rounded-lg bg-zinc-100 dark:bg-ink-800" />
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <div className="flex-1 space-y-6">
+          <div className="h-44 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
           <div className="h-64 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
-          <div className="h-64 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
+          <div className="h-56 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
+          <div className="h-56 animate-pulse rounded-2xl bg-zinc-100 dark:bg-ink-800" />
         </div>
 
         <div className="w-full lg:w-[380px]">
@@ -35,14 +36,9 @@ function BookingDetailSkeleton() {
 
 function BookingNotFound({ onBack }: { onBack: () => void }) {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-24 text-center">
-      <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-ink-800">
-        <svg
-          className="h-7 w-7 text-zinc-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+    <div className="mx-auto flex max-w-6xl flex-col items-center px-6 py-28 text-center">
+      <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-light text-brand dark:bg-brand/15 dark:text-brand-secondary">
+        <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -52,12 +48,16 @@ function BookingNotFound({ onBack }: { onBack: () => void }) {
         </svg>
       </div>
 
-      <h2 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">Booking not found</h2>
-      <p className="mb-8 text-sm text-zinc-500">The booking may have been removed.</p>
+      <h2 className="mb-2 text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+        Booking not found
+      </h2>
+      <p className="mb-8 max-w-sm text-sm leading-relaxed text-zinc-500">
+        This booking may have been removed, or the link is no longer valid.
+      </p>
 
       <button
         onClick={onBack}
-        className="press rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-hover"
+        className="press rounded-lg bg-brand px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-hover"
       >
         Back to Bookings
       </button>
@@ -90,7 +90,7 @@ export default function BookingDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-ink-950">
+      <div className="min-h-screen bg-zinc-50 dark:bg-ink-950">
         <AppNavbar />
         <BookingDetailSkeleton />
       </div>
@@ -99,7 +99,7 @@ export default function BookingDetail() {
 
   if (bookingQuery.isError || venueQuery.isError || !booking || !venue) {
     return (
-      <div className="min-h-screen bg-white dark:bg-ink-950">
+      <div className="min-h-screen bg-zinc-50 dark:bg-ink-950">
         <AppNavbar />
         <BookingNotFound onBack={() => navigate('/my-bookings')} />
       </div>
@@ -107,13 +107,13 @@ export default function BookingDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-ink-950">
+    <div className="page-enter min-h-screen bg-zinc-50 dark:bg-ink-950">
       <AppNavbar />
 
-      <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="mx-auto max-w-6xl px-6 py-10">
         <button
           onClick={() => navigate(-1)}
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-200"
+          className="press mb-6 inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:border-ink-800 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800 dark:hover:text-zinc-100"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -126,17 +126,17 @@ export default function BookingDetail() {
           Back
         </button>
 
-        <div className="flex flex-col gap-8 lg:flex-row">
-          <div className="min-w-0 flex-1 space-y-8">
+        <div className="flex flex-col gap-6 lg:flex-row">
+          <div className="min-w-0 flex-1 space-y-6">
             <BookingStatusHero booking={booking} />
             <VenueSummaryCard venue={venue} />
-            <BookingInformationCard booking={booking} venue={venue} />{' '}
+            <BookingInformationCard booking={booking} venue={venue} />
             <BookingTimelineCard booking={booking} />
             <CancellationPolicyCard policy={venue.cancellation_policy} />
           </div>
 
           <aside className="w-full shrink-0 lg:w-[380px]">
-            <div className="space-y-6 lg:sticky lg:top-[80px]">
+            <div className="space-y-6 lg:sticky lg:top-[88px]">
               <PaymentSummaryCard booking={booking} />
               <BookingActionsCard booking={booking} />
             </div>

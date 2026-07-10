@@ -57,7 +57,24 @@ function PrimaryActionButton({
   return (
     <button
       onClick={onClick}
-      className="press w-full rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm outline-none transition-colors hover:bg-brand-hover focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-ink-900"
+      className="press w-full rounded-lg bg-brand px-5 py-3 text-sm font-medium text-white shadow-sm outline-none transition-colors hover:bg-brand-hover focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-ink-900"
+    >
+      {children}
+    </button>
+  )
+}
+
+function SecondaryActionButton({
+  onClick,
+  children,
+}: {
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="press w-full rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
     >
       {children}
     </button>
@@ -74,7 +91,7 @@ function DestructiveActionButton({
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-lg border border-red-200 px-5 py-3 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/30"
+      className="press w-full rounded-lg border border-red-200 px-5 py-3 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/30"
     >
       {children}
     </button>
@@ -98,25 +115,33 @@ export function BookingActionsCard({ booking }: Props) {
   const countdown = useCountdown(showInstantPayment ? booking.payment_expires_at : null)
 
   const isCancelled = CANCELLED_STATUSES.includes(booking.status)
-  const isCompleted = booking.status === 'completed'
 
   return (
     <>
-      <div className="rounded-2xl border border-zinc-100 bg-white p-6 shadow-sm dark:border-ink-800 dark:bg-ink-900">
+      <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-ink-800 dark:bg-ink-900 sm:p-6">
         <div className="space-y-4">
-          <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-            Actions
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-light text-brand dark:bg-brand/15 dark:text-brand-secondary">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+            </span>
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Actions</h3>
           </div>
 
           {isCancelled && <Alert variant="destructive">This booking has been cancelled.</Alert>}
-          {isCompleted && <Alert variant="success">Event completed.</Alert>}
 
           {/* Instant Booking — payment countdown + Advance/Full choice */}
           {showInstantPayment && !countdown?.expired && (
             <>
               {countdown && (
                 <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center dark:border-amber-900/50 dark:bg-amber-950/30">
-                  <div className="text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-400">
                     Time remaining
                   </div>
                   <div className="mt-1 text-2xl font-bold tabular-nums text-amber-900 dark:text-amber-300">
@@ -132,12 +157,11 @@ export function BookingActionsCard({ booking }: Props) {
                   >
                     {`Pay Advance • ${booking.payment_options.advance.display_amount}`}
                   </PrimaryActionButton>
-                  <button
+                  <SecondaryActionButton
                     onClick={() => navigate(`/payment/${booking.id}?type=full`)}
-                    className="w-full rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
                   >
                     {`Pay Full Amount • ${booking.payment_options.full.display_amount}`}
-                  </button>
+                  </SecondaryActionButton>
                 </>
               ) : (
                 <PrimaryActionButton onClick={() => navigate(`/payment/${booking.id}?type=full`)}>
@@ -157,12 +181,9 @@ export function BookingActionsCard({ booking }: Props) {
               <PrimaryActionButton onClick={() => navigate(`/payment/${booking.id}?type=advance`)}>
                 {`Pay Advance • ${booking.payment_options.advance.display_amount}`}
               </PrimaryActionButton>
-              <button
-                onClick={() => navigate(`/payment/${booking.id}?type=full`)}
-                className="w-full rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
-              >
+              <SecondaryActionButton onClick={() => navigate(`/payment/${booking.id}?type=full`)}>
                 {`Pay Full Amount • ${booking.payment_options.full.display_amount}`}
-              </button>
+              </SecondaryActionButton>
             </>
           ) : showAdvancePayment ? (
             <PrimaryActionButton onClick={() => navigate(`/payment/${booking.id}?type=full`)}>
@@ -204,11 +225,6 @@ export function BookingActionsCard({ booking }: Props) {
 
           {(booking.status === 'hold_expired' || booking.status === 'request_expired') && (
             <Alert variant="warning">This booking has expired.</Alert>
-          )}
-
-          {/* Fully paid confirmation */}
-          {booking.payment_status === 'fully_paid' && booking.status === 'confirmed' && (
-            <Alert variant="success">Payment complete — this booking is fully paid.</Alert>
           )}
         </div>
       </div>

@@ -23,6 +23,8 @@ export default function MyBookingCard({ booking }: Props) {
     booking.payment_status === 'advance_paid' &&
     booking.balance_due_paise > 0
 
+  const actionRequired = requiresInstantPayment || requiresAdvance || requiresBalance
+
   const actionLabel = requiresInstantPayment
     ? 'Complete Payment'
     : requiresAdvance
@@ -32,18 +34,18 @@ export default function MyBookingCard({ booking }: Props) {
         : 'View Booking'
 
   return (
-    <Card className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm transition-all hover:shadow-md dark:border-ink-800 dark:bg-ink-900">
+    <Card className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-ink-800 dark:bg-ink-900">
       <div className="flex flex-col md:flex-row">
         {/* Image */}
-        <div className="relative shrink-0 md:w-[320px]">
+        <div className="relative shrink-0 md:w-[260px]">
           {booking.venue_cover_photo_url ? (
             <img
               src={booking.venue_cover_photo_url}
               alt={booking.venue_name}
-              className="h-64 w-full object-cover md:h-full"
+              className="h-48 w-full object-cover md:h-full"
             />
           ) : (
-            <div className="flex h-64 w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-50 md:h-full dark:from-ink-800 dark:to-ink-900">
+            <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-50 md:h-full dark:from-ink-800 dark:to-ink-900">
               <svg
                 className="h-9 w-9 text-zinc-300"
                 fill="none"
@@ -60,82 +62,44 @@ export default function MyBookingCard({ booking }: Props) {
             </div>
           )}
 
-          {(requiresInstantPayment || requiresAdvance || requiresBalance) && (
-            <div className="absolute left-4 top-4 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white shadow">
-              Action Required
+          {actionRequired && (
+            <div className="absolute left-3 top-3 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-white shadow">
+              Action required
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div className="flex flex-1 flex-col p-6 lg:p-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
+        <div className="flex flex-1 flex-col p-5 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
               <BookingStatusBadge status={booking.status} />
 
-              <h3 className="mt-3 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+              <h3 className="mt-2 text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
                 {booking.venue_name}
               </h3>
 
-              <p className="mt-1 text-sm text-zinc-500">{booking.venue_city}</p>
+              <p className="mt-0.5 text-sm text-zinc-500">{booking.venue_city}</p>
             </div>
 
-            <div className="text-left lg:text-right">
-              <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{booking.display.quoted_price}</div>
-              <div className="text-xs text-zinc-400">Total booking value</div>
-            </div>
-          </div>
-
-          <div className="my-6 border-t border-zinc-100 dark:border-ink-800" />
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <div className="text-xs font-medium uppercase tracking-wide text-zinc-400">
-                Event Date
+            <div className="shrink-0 text-left sm:text-right">
+              <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                {booking.display.quoted_price}
               </div>
-              <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                {formatDate(booking.starts_at)}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-xs font-medium uppercase tracking-wide text-zinc-400">Time</div>
-              <div className="mt-1 text-sm text-zinc-900 dark:text-zinc-100">
-                {formatTime(booking.starts_at)} - {formatTime(booking.ends_at)}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-xs font-medium uppercase tracking-wide text-zinc-400">
-                Booking Type
-              </div>
-              <div className="mt-1 text-sm text-zinc-900 dark:text-zinc-100">
-                {booking.booking_type === 'full_day' ? 'Full Day' : 'Time Slot'}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-xs font-medium uppercase tracking-wide text-zinc-400">
-                Guests
-              </div>
-              <div className="mt-1 text-sm text-zinc-900 dark:text-zinc-100">{booking.guest_count} Guests</div>
+              <div className="text-xs text-zinc-400">Total value</div>
             </div>
           </div>
 
-          {(requiresInstantPayment || requiresAdvance || requiresBalance) && (
-            <div className="mt-6 rounded-xl border border-brand-light-strong bg-brand-light p-4 dark:border-brand/30 dark:bg-brand/15">
-              <div className="text-sm font-semibold text-brand dark:text-brand-secondary">Payment Required</div>
-              <div className="mt-1 text-sm text-brand dark:text-brand-secondary">
-                {requiresInstantPayment
-                  ? 'Payment is required to secure this instant booking.'
-                  : requiresAdvance
-                    ? `Advance payment of ${booking.display.advance_due} is required to confirm this booking.`
-                    : `Balance payment of ${booking.display.balance_due} is pending.`}
-              </div>
-            </div>
-          )}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Chip>{formatDate(booking.starts_at)}</Chip>
+            <Chip>
+              {formatTime(booking.starts_at)} – {formatTime(booking.ends_at)}
+            </Chip>
+            <Chip>{booking.booking_type === 'full_day' ? 'Full Day' : 'Time Slot'}</Chip>
+            <Chip>{booking.guest_count} guests</Chip>
+          </div>
 
-          <div className="mt-auto flex items-center justify-end pt-8">
+          <div className="mt-auto flex items-center justify-end pt-6">
             <Button
               onClick={() =>
                 requiresInstantPayment
@@ -152,6 +116,14 @@ export default function MyBookingCard({ booking }: Props) {
           </div>
         </div>
       </div>
-    </Card >
+    </Card>
+  )
+}
+
+function Chip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:border-ink-800 dark:bg-ink-850/60 dark:text-zinc-300">
+      {children}
+    </span>
   )
 }
