@@ -103,16 +103,16 @@ export default function Reviews() {
       {/* Metric strip */}
       <div className="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { label: 'Total Reviews',  value: stats?.total,           accent: 'brand' as const,   icon: <MessageSquare className="h-4 w-4" /> },
-          { label: 'Visible',        value: stats?.visible,         accent: 'emerald' as const, icon: <Eye className="h-4 w-4" /> },
-          { label: 'Hidden',         value: stats?.hidden,          accent: 'amber' as const,   icon: <EyeOff className="h-4 w-4" /> },
-          { label: 'Average Rating', value: stats?.average_rating,  accent: 'rose' as const,    icon: <StarHalf className="h-4 w-4" /> },
+          { label: 'Total Reviews',  value: stats?.total,           description: 'All non-deleted reviews',        accent: 'brand' as const,   icon: <MessageSquare className="h-4 w-4" /> },
+          { label: 'Visible',        value: stats?.visible,         description: 'Shown publicly on venue pages',  accent: 'emerald' as const, icon: <Eye className="h-4 w-4" /> },
+          { label: 'Hidden',         value: stats?.hidden,          description: 'Moderated out of public view',   accent: 'amber' as const,   icon: <EyeOff className="h-4 w-4" /> },
+          { label: 'Average Rating', value: stats?.average_rating,  description: 'Across all reviews, out of 5',   accent: 'rose' as const,    icon: <StarHalf className="h-4 w-4" /> },
         ].map((m, i) => (
           <div key={m.label} className="card-enter" style={{ '--index': i } as React.CSSProperties}>
             <MetricCard
               label={m.label}
               value={m.value !== undefined ? String(m.value) : '—'}
-              description=""
+              description={m.description}
               icon={m.icon}
               accent={m.accent}
             />

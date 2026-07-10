@@ -121,16 +121,16 @@ export default function ExternalReservations() {
       {/* Metric strip */}
       <div className="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { label: 'Total Reservations', value: stats?.total,           accent: 'brand' as const,   icon: <PhoneCall className="h-4 w-4" /> },
-          { label: 'New',                value: stats?.new,             accent: 'amber' as const,   icon: <Sparkles className="h-4 w-4" /> },
-          { label: 'In Progress',        value: stats?.in_progress,     accent: 'rose' as const,    icon: <Send className="h-4 w-4" /> },
-          { label: 'Booking Created',    value: stats?.booking_created, accent: 'emerald' as const, icon: <CheckCircle2 className="h-4 w-4" /> },
+          { label: 'Total Reservations', value: stats?.total,           description: 'All external venue leads',      accent: 'brand' as const,   icon: <PhoneCall className="h-4 w-4" /> },
+          { label: 'New',                value: stats?.new,             description: 'Awaiting first contact',        accent: 'amber' as const,   icon: <Sparkles className="h-4 w-4" /> },
+          { label: 'In Progress',        value: stats?.in_progress,     description: 'Contacted through venue setup', accent: 'rose' as const,    icon: <Send className="h-4 w-4" /> },
+          { label: 'Booking Created',    value: stats?.booking_created, description: 'Successfully converted',        accent: 'emerald' as const, icon: <CheckCircle2 className="h-4 w-4" /> },
         ].map((m, i) => (
           <div key={m.label} className="card-enter" style={{ '--index': i } as React.CSSProperties}>
             <MetricCard
               label={m.label}
               value={m.value !== undefined ? String(m.value) : '—'}
-              description=""
+              description={m.description}
               icon={m.icon}
               accent={m.accent}
             />
