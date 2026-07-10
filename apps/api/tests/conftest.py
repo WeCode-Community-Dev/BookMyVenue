@@ -24,7 +24,6 @@ from app.core.database import SessionLocal  # noqa: E402 -- must follow the DB s
 from app.main import app  # noqa: E402
 from app.modules.profile.models import (  # noqa: E402
     Profile,
-    ProfileStatus,
     UserRole,
     UserRoleAssignment,
 )
@@ -54,7 +53,7 @@ def db() -> Session:
     session = SessionLocal()
     yield session
     session.rollback()
-    session.execute(text("TRUNCATE profiles CASCADE"))
+    session.execute(text("TRUNCATE auth.users, profiles CASCADE"))
     session.commit()
     session.close()
 
@@ -81,12 +80,52 @@ def make_token(user_id: UUID, email: str) -> str:
     )
 
 
+def seed_auth_user(
+    db: Session,
+    user_id: UUID,
+    email: str,
+    *,
+    full_name: str | None = None,
+    phone: str | None = None,
+    status: str = "active",
+) -> Profile:
+    """Insert the auth.users row a profiles.id FK requires, then patch the
+    profile row the on_auth_user_created trigger auto-creates.
+
+    Inserting into auth.users fires that trigger (see alembic 0002/0006),
+    which creates the profiles row (status=active) and a customer
+    user_roles row — mirroring a real Supabase signup, both idempotent via
+    ON CONFLICT DO NOTHING. The trigger never sets email, so every caller
+    needs this patch step. Callers must NOT also `db.add(Profile(...))` —
+    that duplicates what the trigger already inserted.
+    """
+    db.execute(
+        text("INSERT INTO auth.users (id, email) VALUES (:id, :email)"),
+        {"id": user_id, "email": email},
+    )
+    db.execute(
+        text(
+            "UPDATE profiles SET email = :email, "
+            "full_name = COALESCE(:full_name, full_name), "
+            "phone = COALESCE(:phone, phone), "
+            "status = CAST(:status AS profile_status) "
+            "WHERE id = :id"
+        ),
+        {"email": email, "full_name": full_name, "phone": phone, "status": status, "id": user_id},
+    )
+    db.flush()
+    return db.get(Profile, user_id)
+
+
 def seed_user(db: Session, role: str) -> tuple[UUID, str]:
-    """Insert a profile + role row. Returns (user_id, bearer_token)."""
+    """Insert an auth.users row (+ trigger-created profile/customer role),
+    add the target role if it isn't customer. Returns (user_id, bearer_token).
+    """
     user_id = uuid4()
     email = f"{role}-{user_id.hex[:6]}@test.com"
-    db.add(Profile(id=user_id, email=email, status=ProfileStatus.active))
-    db.add(UserRoleAssignment(user_id=user_id, role=UserRole(role)))
+    seed_auth_user(db, user_id, email)
+    if role != "customer":
+        db.add(UserRoleAssignment(user_id=user_id, role=UserRole(role)))
     db.commit()
     return user_id, make_token(user_id, email)
 

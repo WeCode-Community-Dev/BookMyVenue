@@ -392,6 +392,8 @@ def validate_booking_request(
 
     return ValidationResponse(
         valid=True,
+        starts_at=starts_at,
+        ends_at=ends_at,
         effective_starts_at=effective_starts_at,
         effective_ends_at=effective_ends_at,
     )

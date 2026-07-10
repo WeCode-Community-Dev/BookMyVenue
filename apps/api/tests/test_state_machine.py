@@ -14,7 +14,9 @@ TERMINAL = [
 
 
 def test_status_count():
-    assert len(list(BookingStatus)) == 11
+    # Tripwire: bump this when BookingStatus gains/loses a member, and check
+    # VALID_TRANSITIONS (state_machine.py) is updated to match.
+    assert len(list(BookingStatus)) == 12
 
 
 def test_happy_path_request_accept_confirm_complete():

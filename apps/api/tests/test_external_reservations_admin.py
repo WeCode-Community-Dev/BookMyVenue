@@ -28,9 +28,9 @@ from app.modules.deep_research.models import (
     LeadReservation,
     LeadReservationStatus,
 )
-from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRoleAssignment
+from app.modules.profile.models import UserRole, UserRoleAssignment
 from app.modules.venue.models import Venue
-from tests.conftest import seed_user
+from tests.conftest import seed_auth_user, seed_user
 
 
 def _seed_reservation(db, category_id=None, guest_count=450):
@@ -65,17 +65,9 @@ def _seed_reservation(db, category_id=None, guest_count=450):
 
 def _mock_invite(monkeypatch, db, invited_user_id):
     def fake_create_invite_link(self, email, *, full_name=None, phone=None, redirect_to=None):
-        # Mirrors what the `handle_new_user` DB trigger does for a real invite.
-        db.add(
-            Profile(
-                id=invited_user_id,
-                email=email,
-                full_name=full_name,
-                phone=phone,
-                status=ProfileStatus.active,
-            )
-        )
-        db.add(UserRoleAssignment(user_id=invited_user_id, role=UserRole.customer))
+        # Inserting into auth.users fires the real on_auth_user_created
+        # trigger, which creates the profile + customer role itself.
+        seed_auth_user(db, invited_user_id, email, full_name=full_name, phone=phone)
         db.commit()
         return ProviderUser(
             id=invited_user_id, email=email

@@ -118,7 +118,7 @@ def test_owner_accept_booking_idempotency(monkeypatch):
     booking.status = BookingStatus.owner_accepted
     booking.venue.owner_id = uuid4()
 
-    db.query().filter().with_for_update().first.return_value = booking
+    db.query().options().filter().with_for_update().first.return_value = booking
 
     # _booking_out serializes a real Booking to a pydantic model; stub it so the
     # test focuses on the idempotency control flow, not response serialization.
@@ -144,7 +144,7 @@ def test_owner_extend_deadline_validation():
     # Slot starts in the past relative to execution
     booking.slot.starts_at = datetime.now(UTC) - timedelta(hours=2)
 
-    db.query().filter().with_for_update().first.return_value = booking
+    db.query().options().filter().with_for_update().first.return_value = booking
 
     # Extension on already started event should fail
     body = ExtendDeadlineIn(new_due_date=date.today() + timedelta(days=2))

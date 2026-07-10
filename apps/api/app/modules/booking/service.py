@@ -63,8 +63,8 @@ def create_booking_request(
         booking_date=payload.booking_date,
         guest_count=payload.guest_count,
     )
-    starts_at = payload.starts_at
-    ends_at = payload.ends_at
+    starts_at = validation.starts_at
+    ends_at = validation.ends_at
 
     quote = get_pricing_quote_for_slot(
         db=db,
