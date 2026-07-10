@@ -374,13 +374,13 @@ export default function VenuePricingRules() {
 
       {/* Bounds panel */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 rounded-t-xl gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl gap-4">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Settings className="w-5 h-5 text-brand" />
               Price Bounds
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">No rule can ever push your price outside this range.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">No rule can ever push your price outside this range.</p>
           </div>
           <Button variant="secondary" onClick={saveBounds} disabled={savingBounds}>
             {savingBounds ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
@@ -403,13 +403,13 @@ export default function VenuePricingRules() {
 
       {/* Add rule */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 rounded-t-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Tag className="w-5 h-5 text-brand" />
               Add Pricing Rule
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Create a new dynamic pricing adjustment.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Create a new dynamic pricing adjustment.</p>
           </div>
         </div>
         <div className="p-6 pt-5">
@@ -419,13 +419,13 @@ export default function VenuePricingRules() {
 
       {/* Rules list */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 rounded-t-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <List className="w-5 h-5 text-brand" />
               Your Rules
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Manage your active pricing rules ({rules.length}).</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Manage your active pricing rules ({rules.length}).</p>
           </div>
         </div>
         <div className="p-6 pt-5">
@@ -466,13 +466,13 @@ export default function VenuePricingRules() {
 
       {/* Live preview */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 rounded-t-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-brand" />
               Preview a price
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">See exactly how your rules apply to a specific date.</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">See exactly how your rules apply to a specific date.</p>
           </div>
         </div>
         <div className="p-8">

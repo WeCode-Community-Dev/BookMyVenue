@@ -283,7 +283,7 @@ export default function VenueCalendarManagement() {
             </p>
           </div>
           <div className="bg-zinc-50 dark:bg-ink-800 rounded-xl border border-zinc-200 dark:border-ink-800 overflow-hidden">
-            <div className="grid grid-cols-12 gap-4 p-4 border-b border-zinc-200 dark:border-ink-800 bg-zinc-100/50 font-medium text-sm text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">
+            <div className="grid grid-cols-12 gap-4 p-4 border-b border-zinc-200 dark:border-ink-800 bg-zinc-100/50 dark:bg-ink-950/50 font-medium text-sm text-zinc-700 dark:text-zinc-300">
               <div className="col-span-3">Day</div>
               <div className="col-span-2 text-center">Available</div>
               <div className="col-span-3">Opening Time</div>
@@ -406,11 +406,11 @@ export default function VenueCalendarManagement() {
           <section>
             <h4 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-6">Upcoming Blocked Dates</h4>
             {blockedDates.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 px-4 bg-zinc-50/50 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-ink-800">
+              <div className="flex flex-col items-center justify-center py-16 px-4 bg-zinc-50/50 dark:bg-ink-950/20 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-ink-800">
                 <div className="w-16 h-16 bg-white dark:bg-ink-900 rounded-full flex items-center justify-center shadow-sm mb-4 border border-zinc-100 dark:border-ink-800">
                   <Ban className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
                 </div>
-                <p className="text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 font-medium">No upcoming blocked dates.</p>
+                <p className="text-zinc-600 dark:text-zinc-400 font-medium">No upcoming blocked dates.</p>
                 <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1 max-w-sm text-center">Dates you block will appear here so you can easily unblock them later.</p>
               </div>
             ) : (

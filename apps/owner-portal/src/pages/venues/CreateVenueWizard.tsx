@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Button, Card, Input, SectionHeader, LocationPickerMap, InfoTooltip, Select } from '@venue404/ui'
+import { Button, Card, Input, SectionHeader, LocationPickerMap, InfoTooltip, Select, forwardGeocode } from '@venue404/ui'
 import * as Icons from 'lucide-react'
 import { createClient, venueEndpoints } from '@venue404/api-client'
 import type { VenuePhoto } from '@venue404/api-client'
@@ -566,7 +566,31 @@ export default function CreateVenueWizard() {
                 <Input label="Postal Code" name="postal_code" value={formData.postal_code} onChange={handleChange} />
               </div>
               <div className="pt-2">
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">Pinpoint Location on Map</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Pinpoint Location on Map</label>
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    type="button" 
+                    onClick={async () => {
+                      const query = [formData.address_line1, formData.city, formData.state, formData.postal_code].filter(Boolean).join(', ')
+                      if (!query) {
+                        toast.error("Please enter an address first.")
+                        return
+                      }
+                      const coords = await forwardGeocode(query)
+                      if (coords) {
+                        setFormData(prev => ({ ...prev, latitude: coords[0], longitude: coords[1] }))
+                        toast.success("Location found on map!")
+                      } else {
+                        toast.error("Could not find this address on the map.")
+                      }
+                    }}
+                  >
+                    <Icons.MapPin className="w-4 h-4 mr-1.5" />
+                    Find on Map
+                  </Button>
+                </div>
                 <LocationPickerMap
                   latitude={formData.latitude}
                   longitude={formData.longitude}

@@ -54,6 +54,23 @@ async function reverseGeocode(lat: number, lng: number): Promise<LocationAddress
   return undefined
 }
 
+export async function forwardGeocode(addressQuery: string): Promise<[number, number] | undefined> {
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressQuery)}&format=json&limit=1`, {
+      headers: {
+        'Accept-Language': 'en'
+      }
+    })
+    const data = await res.json()
+    if (data && data.length > 0) {
+      return [parseFloat(data[0].lat), parseFloat(data[0].lon)]
+    }
+  } catch (err) {
+    console.error('Forward geocoding failed', err)
+  }
+  return undefined
+}
+
 const DEFAULT_CENTER: [number, number] = [9.9312, 76.2673] // Kochi, Kerala
 const DEFAULT_ZOOM = 12
 const ZOOM_WHEN_SET = 15

@@ -317,7 +317,7 @@ export default function VenueOverview() {
               desc: 'Notice periods, limits, and approvals.',
               icon: ShieldCheck,
               color: 'text-indigo-600',
-              bg: 'bg-indigo-50 group-hover:bg-indigo-100'
+              bg: 'bg-indigo-50 dark:bg-indigo-500/10 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20'
             },
             {
               id: 'pricing',
@@ -325,7 +325,7 @@ export default function VenueOverview() {
               desc: 'Set hourly rates, daily rates, deposits.',
               icon: Banknote,
               color: 'text-teal-600',
-              bg: 'bg-teal-50 group-hover:bg-teal-100'
+              bg: 'bg-teal-50 dark:bg-teal-500/10 group-hover:bg-teal-100 dark:group-hover:bg-teal-500/20'
             },
             {
               id: 'policies',
@@ -343,7 +343,7 @@ export default function VenueOverview() {
                     <module.icon className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-black dark:text-white transition-colors">{module.label}</h4>
+                    <h4 className="font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-black dark:group-hover:text-white transition-colors">{module.label}</h4>
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1 leading-relaxed line-clamp-2">{module.desc}</p>
                   </div>
                 </div>
