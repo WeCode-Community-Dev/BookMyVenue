@@ -1,20 +1,22 @@
+import { lazy } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import Dashboard from './pages/Dashboard'
-import Login from './pages/Login'
-import LoginSuccess from './pages/LoginSuccess'
-import Forbidden from './pages/Forbidden'
-import NotFound from './pages/NotFound'
-import ComingSoon from './pages/ComingSoon'
-import Bookings from './pages/Bookings'
-import Users from './pages/Users'
-import VenueOwners from './pages/VenueOwners'
-import VenueApprovals from './pages/VenueApprovals'
-import Amenities from './pages/Amenities'
-import Categories from './pages/Categories'
-import AuditLog from './pages/AuditLog'
-import DeepResearchInsights from './pages/DeepResearchInsights'
-import ExternalReservations from './pages/ExternalReservations'
+
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Login = lazy(() => import('./pages/Login'))
+const LoginSuccess = lazy(() => import('./pages/LoginSuccess'))
+const Forbidden = lazy(() => import('./pages/Forbidden'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+const ComingSoon = lazy(() => import('./pages/ComingSoon'))
+const Bookings = lazy(() => import('./pages/Bookings'))
+const Users = lazy(() => import('./pages/Users'))
+const VenueOwners = lazy(() => import('./pages/VenueOwners'))
+const VenueApprovals = lazy(() => import('./pages/VenueApprovals'))
+const Amenities = lazy(() => import('./pages/Amenities'))
+const Categories = lazy(() => import('./pages/Categories'))
+const AuditLog = lazy(() => import('./pages/AuditLog'))
+const DeepResearchInsights = lazy(() => import('./pages/DeepResearchInsights'))
+const ExternalReservations = lazy(() => import('./pages/ExternalReservations'))
 
 export const router = createBrowserRouter([
   // Auth

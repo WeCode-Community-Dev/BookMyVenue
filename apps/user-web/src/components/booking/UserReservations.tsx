@@ -82,7 +82,7 @@ function ReservationCard({ reservation: res }: { reservation: UserReservationRes
       {/* Image */}
       <div className="h-48 w-full md:w-64 shrink-0 overflow-hidden rounded-2xl bg-zinc-100 dark:bg-ink-800">
         {res.lead.cover_photo_url ? (
-          <img src={res.lead.cover_photo_url} alt={res.lead.name} className="h-full w-full object-cover" />
+          <img src={res.lead.cover_photo_url} alt={res.lead.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-zinc-300">
             <Building2 className="h-10 w-10" />

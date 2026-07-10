@@ -5,6 +5,7 @@ which pass the cadence-group job names and the shared X-Job-Token secret. This
 replaces the in-process APScheduler in production so the free web service can
 sleep when idle (ENABLE_JOBS stays false).
 """
+
 import hmac
 import logging
 
@@ -28,7 +29,9 @@ def _authorize(x_job_token: str | None) -> None:
 
 @router.post("/run-jobs")
 def run_jobs(
-    jobs: str = Query(..., description="Comma-separated job names, e.g. hold_expiry,payment_reminders"),
+    jobs: str = Query(
+        ..., description="Comma-separated job names, e.g. hold_expiry,payment_reminders"
+    ),
     x_job_token: str | None = Header(default=None, alias="X-Job-Token"),
 ):
     _authorize(x_job_token)

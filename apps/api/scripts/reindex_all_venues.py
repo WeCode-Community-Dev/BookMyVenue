@@ -8,9 +8,7 @@ import sys
 
 from app.core.database import SessionLocal
 from app.modules.search.indexer import enqueue_job
-from app.modules.venue.models import Venue, VenueStatus
-from app.modules.booking.models import Booking
-from app.modules.profile.models import Profile
+from app.modules.venue.models import Venue
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -57,7 +55,7 @@ def reindex_all_venues(batch_size: int = 200):
 
         logger.info(f"✅ Successfully enqueued {processed} out of {total} venues.")
 
-    except Exception as exc:
+    except Exception:
         logger.exception("Reindexing failed")
         sys.exit(1)
     finally:

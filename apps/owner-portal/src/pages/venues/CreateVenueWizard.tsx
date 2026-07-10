@@ -617,7 +617,7 @@ export default function CreateVenueWizard() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {existingPhotos.map((photo) => (
                     <div key={photo.id} className="relative group rounded-lg overflow-hidden border border-zinc-200 dark:border-ink-800 aspect-video bg-zinc-100 dark:bg-ink-800">
-                      <img src={photo.image_url} className="w-full h-full object-cover" alt="Venue Photo" />
+                      <img src={photo.image_url} loading="lazy" className="w-full h-full object-cover" alt="Venue Photo" />
                       <button
                         type="button"
                         onClick={async () => {

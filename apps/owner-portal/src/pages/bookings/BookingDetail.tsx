@@ -521,7 +521,7 @@ export default function BookingDetail() {
                 <Card className="p-0 overflow-hidden border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
                   {booking.venue_cover_photo_url && (
                     <div className="h-32 w-full bg-zinc-100 dark:bg-ink-800 relative">
-                      <img src={booking.venue_cover_photo_url} alt="Venue" className="w-full h-full object-cover" />
+                      <img src={booking.venue_cover_photo_url} alt="Venue" loading="lazy" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                     </div>
                   )}

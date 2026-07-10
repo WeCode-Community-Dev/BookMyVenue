@@ -1,10 +1,10 @@
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from app.core.database import with_session
 from app.modules.booking.models import Booking, BookingStatus, BookingStatusHistory
-from app.modules.venue.models import Venue
 from app.modules.notification import service as notifications
+from app.modules.venue.models import Venue
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ BATCH = 100
 
 def run() -> int:
     """Auto-expire booking requests that have been pending (requested) for 7 days."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     cutoff = now - STALE_AFTER
     expired = 0
     with with_session() as db:

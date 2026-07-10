@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
 from uuid import UUID
+
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -8,9 +9,12 @@ from app.core.rate_limit import enforce_daily_limit, enforce_per_minute_limit
 from app.modules.auth.dependencies import AuthContext, require_auth
 from app.modules.deep_research import service
 from app.modules.deep_research.schemas import (
-    DeepResearchSearchRequest, DeepResearchSearchResponse,
-    TriggerExternalDiscoveryRequest, ExternalLeadPublic,
-    ReserveLeadRequest, ReserveLeadResponse,
+    DeepResearchSearchRequest,
+    DeepResearchSearchResponse,
+    ExternalLeadPublic,
+    ReserveLeadRequest,
+    ReserveLeadResponse,
+    TriggerExternalDiscoveryRequest,
     UserReservationResponse,
 )
 
@@ -39,9 +43,7 @@ async def trigger_external(
     then returns all discovered leads in one response. No jobs, no polling.
     """
     enforce_per_minute_limit(auth.user_id, "deep_research_external")
-    return await service.run_external_discovery(
-        db, body.query_id, body.latitude, body.longitude
-    )
+    return await service.run_external_discovery(db, body.query_id, body.latitude, body.longitude)
 
 
 @router.post("/leads/{lead_id}/reserve", response_model=ReserveLeadResponse)
@@ -52,7 +54,14 @@ def reserve(
     auth: AuthContext = Depends(require_auth),
 ):
     reservation = service.reserve_lead(
-        db, lead_id, auth.user_id, body.category_id, body.event_date, body.guest_count, body.phone, body.notes
+        db,
+        lead_id,
+        auth.user_id,
+        body.category_id,
+        body.event_date,
+        body.guest_count,
+        body.phone,
+        body.notes,
     )
     return ReserveLeadResponse(reservation_id=reservation.id, status=reservation.status.value)
 

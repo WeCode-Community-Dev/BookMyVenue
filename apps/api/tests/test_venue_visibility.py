@@ -6,7 +6,7 @@ Business rule (CLAUDE.md): a venue is visible to customers only when
 
 Every other status must be invisible in public search results.
 """
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.modules.venue.models import Venue, VenueStatus
@@ -112,7 +112,7 @@ def test_soft_deleted_venue_hidden_from_search(client, db, category_id):
     venue_id = seed_approved_venue(db, owner_id, category_id)
 
     db.query(Venue).filter(Venue.id == venue_id).update(
-        {"deleted_at": datetime.now(timezone.utc)}
+        {"deleted_at": datetime.now(UTC)}
     )
     db.commit()
 

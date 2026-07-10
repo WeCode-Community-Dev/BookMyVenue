@@ -3,7 +3,7 @@ import urllib.error
 import urllib.request
 from uuid import UUID
 
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 
 from app.core.config import settings
 from app.core.exceptions import BadRequestError, ConflictError, UnauthorizedError
@@ -37,7 +37,9 @@ class SupabaseAuthProvider(AuthProvider):
                 # RS256 or other asymmetric alg — verify via Supabase JWKS
                 kid = header.get("kid")
                 keys = self._get_jwks()
-                key = next((k for k in keys if k.get("kid") == kid), None) or (keys[0] if keys else None)
+                key = next((k for k in keys if k.get("kid") == kid), None) or (
+                    keys[0] if keys else None
+                )
                 if key is None:
                     raise UnauthorizedError("No matching JWKS key found")
                 payload = jwt.decode(
@@ -97,7 +99,10 @@ class SupabaseAuthProvider(AuthProvider):
             error_body = exc.read().decode()
             if exc.code == 422 or "already been registered" in error_body:
                 raise ConflictError("This email is already registered")
-            raise BadRequestError(f"Supabase could not create the invite (HTTP {exc.code}): {error_body or exc.reason}")
+            raise BadRequestError(
+                f"Supabase could not create the invite "
+                f"(HTTP {exc.code}): {error_body or exc.reason}"
+            )
         except urllib.error.URLError as exc:
             raise BadRequestError(f"Could not reach Supabase to create the invite: {exc.reason}")
 
@@ -115,8 +120,13 @@ class SupabaseAuthProvider(AuthProvider):
             if exc.code in (400, 404, 422):
                 return None
             error_body = exc.read().decode()
-            raise BadRequestError(f"Supabase could not create the reset link (HTTP {exc.code}): {error_body or exc.reason}")
+            raise BadRequestError(
+                f"Supabase could not create the reset link "
+                f"(HTTP {exc.code}): {error_body or exc.reason}"
+            )
         except urllib.error.URLError as exc:
-            raise BadRequestError(f"Could not reach Supabase to create the reset link: {exc.reason}")
+            raise BadRequestError(
+                f"Could not reach Supabase to create the reset link: {exc.reason}"
+            )
 
         return payload["action_link"]

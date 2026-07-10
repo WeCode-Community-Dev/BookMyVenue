@@ -3,15 +3,17 @@ import logging
 import math
 import urllib.request
 import uuid
-from datetime import datetime, timedelta, timezone
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, case, text, cast
+from datetime import UTC, datetime, timedelta
+
+from sqlalchemy import case, cast, func, text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session, contains_eager, joinedload
 
 from app.core.config import settings
 from app.core.database import SessionLocal
-from app.core.exceptions import NotFoundError, ForbiddenError, ConflictError
+from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
+from app.core.storage import delete_image_from_cloudinary, upload_image_to_cloudinary
 from app.modules.admin.models import AdminAction
 from app.modules.admin.schemas import (
     AmenityUpdateRequest,
@@ -21,18 +23,16 @@ from app.modules.admin.schemas import (
     DeepResearchQuerySummary,
     DeepResearchStatsResponse,
 )
-from app.modules.profile.models import Profile, UserRoleAssignment, UserRole, ProfileStatus
-from app.modules.venue.models import Amenity, VenueAmenity, Venue, VenueCategory, VenueStatus
 from app.modules.booking.models import Booking, BookingSlot, BookingStatus
 from app.modules.deep_research.models import DeepResearchQuery
-from app.core.storage import upload_image_to_cloudinary, delete_image_from_cloudinary
-
-
+from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRoleAssignment
+from app.modules.venue.models import Amenity, Venue, VenueAmenity, VenueCategory, VenueStatus
 
 logger = logging.getLogger(__name__)
 
+
 def _month_start(year: int, month: int) -> datetime:
-    return datetime(year, month, 1, tzinfo=timezone.utc)
+    return datetime(year, month, 1, tzinfo=UTC)
 
 
 def _add_months(dt: datetime, n: int) -> datetime:
@@ -44,7 +44,7 @@ def _add_months(dt: datetime, n: int) -> datetime:
 def get_growth_stats(db: Session, period: str = "6m") -> dict:
     from datetime import timedelta
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # Parse period → build (start, end, label) buckets + trunc unit
     VALID = {"7d", "30d", "3m", "6m", "12m"}
@@ -82,30 +82,30 @@ def get_growth_stats(db: Session, period: str = "6m") -> dict:
         return q.scalar() or 0
 
     def bucket_new(model, extra_filter=None):
-        q = (
-            db.query(
-                func.date_trunc(trunc, model.created_at).label("bucket"),
-                func.count(model.id).label("cnt"),
-            )
-            .filter(model.created_at >= period_start)
-        )
+        q = db.query(
+            func.date_trunc(trunc, model.created_at).label("bucket"),
+            func.count(model.id).label("cnt"),
+        ).filter(model.created_at >= period_start)
         if extra_filter is not None:
             q = q.filter(extra_filter)
         rows = q.group_by("bucket").all()
-        return {r.bucket.replace(tzinfo=timezone.utc): r.cnt for r in rows}
+        return {r.bucket.replace(tzinfo=UTC): r.cnt for r in rows}
 
-    base_users    = baseline(Profile)
-    base_owners   = baseline(UserRoleAssignment, UserRoleAssignment.role == UserRole.venue_owner)
-    base_venues   = baseline(Venue, Venue.deleted_at.is_(None))
+    base_users = baseline(Profile)
+    base_owners = baseline(UserRoleAssignment, UserRoleAssignment.role == UserRole.venue_owner)
+    base_venues = baseline(Venue, Venue.deleted_at.is_(None))
     base_bookings = baseline(Booking, Booking.deleted_at.is_(None))
 
-    new_users    = bucket_new(Profile)
-    new_owners   = bucket_new(UserRoleAssignment, UserRoleAssignment.role == UserRole.venue_owner)
-    new_venues   = bucket_new(Venue, Venue.deleted_at.is_(None))
+    new_users = bucket_new(Profile)
+    new_owners = bucket_new(UserRoleAssignment, UserRoleAssignment.role == UserRole.venue_owner)
+    new_venues = bucket_new(Venue, Venue.deleted_at.is_(None))
     new_bookings = bucket_new(Booking, Booking.deleted_at.is_(None))
 
     labels, users_s, owners_s, venues_s, bookings_s = [], [], [], [], []
-    cum_u = base_users; cum_o = base_owners; cum_v = base_venues; cum_b = base_bookings
+    cum_u = base_users
+    cum_o = base_owners
+    cum_v = base_venues
+    cum_b = base_bookings
 
     for start, _end, label in buckets:
         cum_u += new_users.get(start, 0)
@@ -134,14 +134,21 @@ def get_growth_stats(db: Session, period: str = "6m") -> dict:
 
 
 def get_venue_stats(db: Session) -> dict:
-    row = db.query(Venue).filter(Venue.deleted_at.is_(None)).with_entities(
-        func.count(Venue.id).label("total"),
-        func.count(case((Venue.status == VenueStatus.pending_approval, 1))).label("pending_approval"),
-        func.count(case((Venue.status == VenueStatus.approved, 1))).label("approved"),
-        func.count(case((Venue.status == VenueStatus.rejected, 1))).label("rejected"),
-        func.count(case((Venue.status == VenueStatus.suspended, 1))).label("suspended"),
-        func.count(case((Venue.status == VenueStatus.draft, 1))).label("draft"),
-    ).one()
+    row = (
+        db.query(Venue)
+        .filter(Venue.deleted_at.is_(None))
+        .with_entities(
+            func.count(Venue.id).label("total"),
+            func.count(case((Venue.status == VenueStatus.pending_approval, 1))).label(
+                "pending_approval"
+            ),
+            func.count(case((Venue.status == VenueStatus.approved, 1))).label("approved"),
+            func.count(case((Venue.status == VenueStatus.rejected, 1))).label("rejected"),
+            func.count(case((Venue.status == VenueStatus.suspended, 1))).label("suspended"),
+            func.count(case((Venue.status == VenueStatus.draft, 1))).label("draft"),
+        )
+        .one()
+    )
     return {
         "total": row.total,
         "pending_approval": row.pending_approval,
@@ -164,7 +171,9 @@ def list_admin_venues(
 
     stats_row = base.with_entities(
         func.count(Venue.id).label("total"),
-        func.count(case((Venue.status == VenueStatus.pending_approval, 1))).label("pending_approval"),
+        func.count(case((Venue.status == VenueStatus.pending_approval, 1))).label(
+            "pending_approval"
+        ),
         func.count(case((Venue.status == VenueStatus.approved, 1))).label("approved"),
         func.count(case((Venue.status == VenueStatus.rejected, 1))).label("rejected"),
         func.count(case((Venue.status == VenueStatus.suspended, 1))).label("suspended"),
@@ -180,8 +189,9 @@ def list_admin_venues(
 
     total = filtered.with_entities(func.count(Venue.id)).scalar()
     venues = (
-        filtered
-        .options(joinedload(Venue.photos), joinedload(Venue.amenities), joinedload(Venue.category))
+        filtered.options(
+            joinedload(Venue.photos), joinedload(Venue.amenities), joinedload(Venue.category)
+        )
         .order_by(Venue.updated_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
@@ -196,37 +206,39 @@ def list_admin_venues(
     for v in venues:
         cover = next((p.image_url for p in v.photos if p.is_cover and p.deleted_at is None), None)
         owner = profile_by_id.get(v.owner_id)
-        items.append({
-            "id": v.id,
-            "name": v.name,
-            "slug": v.slug,
-            "description": v.description,
-            "category_slug": v.category.slug,
-            "address_line1": v.address_line1,
-            "city": v.city,
-            "state": v.state,
-            "country": v.country,
-            "min_capacity": v.min_capacity,
-            "max_capacity": v.max_capacity,
-            "open_time": str(v.open_time),
-            "close_time": str(v.close_time),
-            "pricing_mode": v.pricing_mode,
-            "starting_price_paise": v.starting_price_paise,
-            "hourly_rate_paise": v.hourly_rate_paise,
-            "advance_pct": float(v.advance_pct),
-            "platform_commission_pct": float(v.platform_commission_pct),
-            "status": v.status.value,
-            "is_active": v.is_active,
-            "cover_photo_url": cover,
-            "amenities": [a.name for a in v.amenities],
-            "owner": {
-                "id": owner.id if owner else v.owner_id,
-                "full_name": owner.full_name if owner else None,
-                "email": owner.email if owner else None,
-            },
-            "created_at": v.created_at,
-            "updated_at": v.updated_at,
-        })
+        items.append(
+            {
+                "id": v.id,
+                "name": v.name,
+                "slug": v.slug,
+                "description": v.description,
+                "category_slug": v.category.slug,
+                "address_line1": v.address_line1,
+                "city": v.city,
+                "state": v.state,
+                "country": v.country,
+                "min_capacity": v.min_capacity,
+                "max_capacity": v.max_capacity,
+                "open_time": str(v.open_time),
+                "close_time": str(v.close_time),
+                "pricing_mode": v.pricing_mode,
+                "starting_price_paise": v.starting_price_paise,
+                "hourly_rate_paise": v.hourly_rate_paise,
+                "advance_pct": float(v.advance_pct),
+                "platform_commission_pct": float(v.platform_commission_pct),
+                "status": v.status.value,
+                "is_active": v.is_active,
+                "cover_photo_url": cover,
+                "amenities": [a.name for a in v.amenities],
+                "owner": {
+                    "id": owner.id if owner else v.owner_id,
+                    "full_name": owner.full_name if owner else None,
+                    "email": owner.email if owner else None,
+                },
+                "created_at": v.created_at,
+                "updated_at": v.updated_at,
+            }
+        )
 
     return {
         "items": items,
@@ -260,13 +272,18 @@ def _check_no_active_bookings(db: Session, venue_id: uuid.UUID) -> None:
         return  # Bookings not yet migrated — skip check
     try:
         from app.modules.booking.models import Booking, BookingStatus  # noqa: PLC0415
+
         count = (
             db.query(func.count(Booking.id))
             .filter(
                 cast(Booking.venue_id, PGUUID) == venue_id,
-                Booking.status.in_([
-                    BookingStatus.requested, BookingStatus.accepted, BookingStatus.confirmed,
-                ]),
+                Booking.status.in_(
+                    [
+                        BookingStatus.requested,
+                        BookingStatus.accepted,
+                        BookingStatus.confirmed,
+                    ]
+                ),
             )
             .scalar()
         )
@@ -289,24 +306,34 @@ def approve_venue(
     if venue.status != VenueStatus.pending_approval:
         raise ConflictError("Venue is not pending approval")
     venue.status = VenueStatus.approved
-    db.add(AdminAction(
-        admin_id=admin_id, action_type="venue_approved",
-        target_type="venue", target_id=venue_id, reason=reason or None,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="venue_approved",
+            target_type="venue",
+            target_id=venue_id,
+            reason=reason or None,
+        )
+    )
 
     from app.modules.deep_research.service import sync_reservation_status_for_venue
+
     sync_reservation_status_for_venue(db, venue_id, VenueStatus.approved)
 
     from app.modules.notification import service as notifications
     from app.modules.notification.types import NotificationType
+
     notifications.notify(
-        db, venue.owner_id, NotificationType.VENUE_APPROVED,
+        db,
+        venue.owner_id,
+        NotificationType.VENUE_APPROVED,
         context={"venue_name": venue.name},
     )
 
     db.commit()
 
     from app.modules.search.indexer import enqueue_job
+
     enqueue_job(db, venue_id, "update")
 
 
@@ -321,15 +348,23 @@ def reject_venue(
     if venue.status not in (VenueStatus.pending_approval, VenueStatus.approved):
         raise ConflictError("Venue cannot be rejected in its current state")
     venue.status = VenueStatus.rejected
-    db.add(AdminAction(
-        admin_id=admin_id, action_type="venue_rejected",
-        target_type="venue", target_id=venue_id, reason=reason or None,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="venue_rejected",
+            target_type="venue",
+            target_id=venue_id,
+            reason=reason or None,
+        )
+    )
 
     from app.modules.notification import service as notifications
     from app.modules.notification.types import NotificationType
+
     notifications.notify(
-        db, venue.owner_id, NotificationType.VENUE_REJECTED,
+        db,
+        venue.owner_id,
+        NotificationType.VENUE_REJECTED,
         context={"venue_name": venue.name, "reason": reason or "No reason provided."},
     )
 
@@ -352,15 +387,23 @@ def suspend_venue(
         raise ConflictError("Only approved venues can be suspended")
     _check_no_active_bookings(db, venue_id)
     venue.status = VenueStatus.suspended
-    db.add(AdminAction(
-        admin_id=admin_id, action_type="venue_suspended",
-        target_type="venue", target_id=venue_id, reason=reason,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="venue_suspended",
+            target_type="venue",
+            target_id=venue_id,
+            reason=reason,
+        )
+    )
 
     from app.modules.notification import service as notifications
     from app.modules.notification.types import NotificationType
+
     notifications.notify(
-        db, venue.owner_id, NotificationType.VENUE_SUSPENDED,
+        db,
+        venue.owner_id,
+        NotificationType.VENUE_SUSPENDED,
         context={"venue_name": venue.name, "reason": reason},
     )
 
@@ -378,21 +421,30 @@ def reactivate_venue(
     if venue.status not in (VenueStatus.suspended, VenueStatus.rejected):
         raise ConflictError("Only suspended or rejected venues can be reactivated")
     venue.status = VenueStatus.approved
-    db.add(AdminAction(
-        admin_id=admin_id, action_type="venue_reactivated",
-        target_type="venue", target_id=venue_id, reason=reason or None,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="venue_reactivated",
+            target_type="venue",
+            target_id=venue_id,
+            reason=reason or None,
+        )
+    )
 
     from app.modules.notification import service as notifications
     from app.modules.notification.types import NotificationType
+
     notifications.notify(
-        db, venue.owner_id, NotificationType.VENUE_REACTIVATED,
+        db,
+        venue.owner_id,
+        NotificationType.VENUE_REACTIVATED,
         context={"venue_name": venue.name},
     )
 
     db.commit()
 
     from app.modules.search.indexer import enqueue_job
+
     enqueue_job(db, venue_id, "update")
 
 
@@ -403,23 +455,29 @@ def approve_owner(
     user_id: uuid.UUID,
     reason: str = "",
 ) -> None:
-    profile = db.query(Profile).filter(
-        Profile.id == user_id,
-        Profile.deleted_at.is_(None),
-    ).first()
+    profile = (
+        db.query(Profile)
+        .filter(
+            Profile.id == user_id,
+            Profile.deleted_at.is_(None),
+        )
+        .first()
+    )
     if not profile:
         raise NotFoundError("User not found")
     if profile.status != ProfileStatus.pending:
         raise ConflictError("User is not in pending status")
 
     profile.status = ProfileStatus.active
-    db.add(AdminAction(
-        admin_id=admin_id,
-        action_type="venue_owner_approved",
-        target_type="user",
-        target_id=user_id,
-        reason=reason or None,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="venue_owner_approved",
+            target_type="user",
+            target_id=user_id,
+            reason=reason or None,
+        )
+    )
     db.commit()
 
     # Best-effort — email delivery must never undo the approval above, which
@@ -432,7 +490,9 @@ def approve_owner(
             subject, html = render_owner_approved_email(profile.full_name)
             send_email(profile.email, subject, html)
         except Exception:
-            logger.warning("Could not email owner-approved notice to %s", profile.email, exc_info=True)
+            logger.warning(
+                "Could not email owner-approved notice to %s", profile.email, exc_info=True
+            )
 
 
 def reject_owner(
@@ -442,23 +502,29 @@ def reject_owner(
     user_id: uuid.UUID,
     reason: str = "",
 ) -> None:
-    profile = db.query(Profile).filter(
-        Profile.id == user_id,
-        Profile.deleted_at.is_(None),
-    ).first()
+    profile = (
+        db.query(Profile)
+        .filter(
+            Profile.id == user_id,
+            Profile.deleted_at.is_(None),
+        )
+        .first()
+    )
     if not profile:
         raise NotFoundError("User not found")
     if profile.status != ProfileStatus.pending:
         raise ConflictError("User is not in pending status")
 
     profile.status = ProfileStatus.rejected
-    db.add(AdminAction(
-        admin_id=admin_id,
-        action_type="venue_owner_rejected",
-        target_type="user",
-        target_id=user_id,
-        reason=reason or None,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="venue_owner_rejected",
+            target_type="user",
+            target_id=user_id,
+            reason=reason or None,
+        )
+    )
     db.commit()
 
     # Best-effort — email delivery must never undo the rejection above, which
@@ -471,7 +537,9 @@ def reject_owner(
             subject, html = render_owner_rejected_email(profile.full_name, reason)
             send_email(profile.email, subject, html)
         except Exception:
-            logger.warning("Could not email owner-rejected notice to %s", profile.email, exc_info=True)
+            logger.warning(
+                "Could not email owner-rejected notice to %s", profile.email, exc_info=True
+            )
 
 
 def _build_user_dict(
@@ -532,9 +600,7 @@ def list_users(
     if search:
         safe = search.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         pattern = f"%{safe}%"
-        filtered = filtered.filter(
-            Profile.full_name.ilike(pattern) | Profile.email.ilike(pattern)
-        )
+        filtered = filtered.filter(Profile.full_name.ilike(pattern) | Profile.email.ilike(pattern))
     if status:
         filtered = filtered.filter(Profile.status == ProfileStatus(status))
     if role:
@@ -566,19 +632,14 @@ def list_users(
     profile_ids = [p.id for p in profiles]
 
     role_rows = (
-        db.query(UserRoleAssignment)
-        .filter(UserRoleAssignment.user_id.in_(profile_ids))
-        .all()
+        db.query(UserRoleAssignment).filter(UserRoleAssignment.user_id.in_(profile_ids)).all()
     )
     roles_by_user: dict[uuid.UUID, list[str]] = {pid: [] for pid in profile_ids}
     for rr in role_rows:
         if rr.user_id in roles_by_user:
             roles_by_user[rr.user_id].append(rr.role.value)
 
-    items = [
-        _build_user_dict(p, roles_by_user.get(p.id, []), p.email)
-        for p in profiles
-    ]
+    items = [_build_user_dict(p, roles_by_user.get(p.id, []), p.email) for p in profiles]
 
     return {
         "items": items,
@@ -597,16 +658,24 @@ def list_users(
 
 
 def get_user(db: Session, user_id: uuid.UUID) -> dict:
-    profile = db.query(Profile).filter(
-        Profile.id == user_id,
-        Profile.deleted_at.is_(None),
-    ).first()
+    profile = (
+        db.query(Profile)
+        .filter(
+            Profile.id == user_id,
+            Profile.deleted_at.is_(None),
+        )
+        .first()
+    )
     if not profile:
         raise NotFoundError("User not found")
 
-    role_rows = db.query(UserRoleAssignment).filter(
-        UserRoleAssignment.user_id == user_id,
-    ).all()
+    role_rows = (
+        db.query(UserRoleAssignment)
+        .filter(
+            UserRoleAssignment.user_id == user_id,
+        )
+        .all()
+    )
     roles = [r.role.value for r in role_rows]
     return _build_user_dict(profile, roles, profile.email)
 
@@ -621,17 +690,25 @@ def suspend_user(
     if not reason.strip():
         raise ConflictError("Reason is required")
 
-    profile = db.query(Profile).filter(
-        Profile.id == user_id,
-        Profile.deleted_at.is_(None),
-    ).first()
+    profile = (
+        db.query(Profile)
+        .filter(
+            Profile.id == user_id,
+            Profile.deleted_at.is_(None),
+        )
+        .first()
+    )
     if not profile:
         raise NotFoundError("User not found")
 
-    is_super_admin = db.query(UserRoleAssignment).filter(
-        UserRoleAssignment.user_id == user_id,
-        UserRoleAssignment.role == UserRole.super_admin,
-    ).first()
+    is_super_admin = (
+        db.query(UserRoleAssignment)
+        .filter(
+            UserRoleAssignment.user_id == user_id,
+            UserRoleAssignment.role == UserRole.super_admin,
+        )
+        .first()
+    )
     if is_super_admin:
         raise ForbiddenError("Super admin accounts cannot be suspended")
 
@@ -639,18 +716,23 @@ def suspend_user(
         raise ConflictError("User is already suspended")
 
     profile.status = ProfileStatus.suspended
-    db.add(AdminAction(
-        admin_id=admin_id,
-        action_type="user_suspended",
-        target_type="user",
-        target_id=user_id,
-        reason=reason,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="user_suspended",
+            target_type="user",
+            target_id=user_id,
+            reason=reason,
+        )
+    )
 
     from app.modules.notification import service as notifications
     from app.modules.notification.types import NotificationType
+
     notifications.notify(
-        db, user_id, NotificationType.USER_SUSPENDED,
+        db,
+        user_id,
+        NotificationType.USER_SUSPENDED,
         context={"reason": reason},
     )
 
@@ -664,10 +746,14 @@ def reactivate_user(
     user_id: uuid.UUID,
     reason: str = "",
 ) -> None:
-    profile = db.query(Profile).filter(
-        Profile.id == user_id,
-        Profile.deleted_at.is_(None),
-    ).first()
+    profile = (
+        db.query(Profile)
+        .filter(
+            Profile.id == user_id,
+            Profile.deleted_at.is_(None),
+        )
+        .first()
+    )
     if not profile:
         raise NotFoundError("User not found")
 
@@ -675,16 +761,19 @@ def reactivate_user(
         raise ConflictError("User is already active")
 
     profile.status = ProfileStatus.active
-    db.add(AdminAction(
-        admin_id=admin_id,
-        action_type="user_reactivated",
-        target_type="user",
-        target_id=user_id,
-        reason=reason,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="user_reactivated",
+            target_type="user",
+            target_id=user_id,
+            reason=reason,
+        )
+    )
 
     from app.modules.notification import service as notifications
     from app.modules.notification.types import NotificationType
+
     notifications.notify(db, user_id, NotificationType.USER_REACTIVATED)
 
     db.commit()
@@ -721,11 +810,15 @@ def list_amenities(db: Session, *, include_deleted: bool = False) -> dict:
     amenity_ids = [a.id for a in amenities]
 
     count_rows = (
-        db.query(VenueAmenity.amenity_id, func.count(VenueAmenity.venue_id).label("cnt"))
-        .filter(VenueAmenity.amenity_id.in_(amenity_ids))
-        .group_by(VenueAmenity.amenity_id)
-        .all()
-    ) if amenity_ids else []
+        (
+            db.query(VenueAmenity.amenity_id, func.count(VenueAmenity.venue_id).label("cnt"))
+            .filter(VenueAmenity.amenity_id.in_(amenity_ids))
+            .group_by(VenueAmenity.amenity_id)
+            .all()
+        )
+        if amenity_ids
+        else []
+    )
     counts = {row.amenity_id: row.cnt for row in count_rows}
 
     items = [_amenity_to_dict(a, counts.get(a.id, 0)) for a in amenities]
@@ -751,12 +844,14 @@ def create_amenity(
         db.rollback()
         raise ConflictError("An amenity with this name already exists")
 
-    db.add(AdminAction(
-        admin_id=admin_id,
-        action_type="amenity_created",
-        target_type="amenity",
-        target_id=amenity.id,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="amenity_created",
+            target_type="amenity",
+            target_id=amenity.id,
+        )
+    )
     db.commit()
     db.refresh(amenity)
     return _amenity_to_dict(amenity, 0)
@@ -786,12 +881,14 @@ def update_amenity(
         db.rollback()
         raise ConflictError("An amenity with this name already exists")
 
-    db.add(AdminAction(
-        admin_id=admin_id,
-        action_type="amenity_updated",
-        target_type="amenity",
-        target_id=amenity.id,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="amenity_updated",
+            target_type="amenity",
+            target_id=amenity.id,
+        )
+    )
     db.commit()
     db.refresh(amenity)
     active_count = _count_active_venues(db, amenity.id)
@@ -809,14 +906,16 @@ def delete_amenity(
         raise ConflictError("Amenity is already deleted")
 
     active_count = _count_active_venues(db, amenity.id)
-    amenity.deleted_at = datetime.now(timezone.utc)
+    amenity.deleted_at = datetime.now(UTC)
 
-    db.add(AdminAction(
-        admin_id=admin_id,
-        action_type="amenity_deleted",
-        target_type="amenity",
-        target_id=amenity.id,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="amenity_deleted",
+            target_type="amenity",
+            target_id=amenity.id,
+        )
+    )
     db.commit()
     return {"deleted": True, "active_venue_count": active_count}
 
@@ -829,7 +928,9 @@ def _get_category_or_404(db: Session, category_id: uuid.UUID) -> VenueCategory:
 
 
 def _count_category_venues(db: Session, category_id: uuid.UUID) -> int:
-    return db.query(Venue).filter(Venue.category_id == category_id, Venue.deleted_at.is_(None)).count()
+    return (
+        db.query(Venue).filter(Venue.category_id == category_id, Venue.deleted_at.is_(None)).count()
+    )
 
 
 def _category_to_dict(cat: VenueCategory, venue_count: int) -> dict:
@@ -855,11 +956,15 @@ def list_categories(db: Session, *, include_deleted: bool = False) -> dict:
 
     cat_ids = [c.id for c in cats]
     count_rows = (
-        db.query(Venue.category_id, func.count(Venue.id).label("cnt"))
-        .filter(Venue.category_id.in_(cat_ids), Venue.deleted_at.is_(None))
-        .group_by(Venue.category_id)
-        .all()
-    ) if cat_ids else []
+        (
+            db.query(Venue.category_id, func.count(Venue.id).label("cnt"))
+            .filter(Venue.category_id.in_(cat_ids), Venue.deleted_at.is_(None))
+            .group_by(Venue.category_id)
+            .all()
+        )
+        if cat_ids
+        else []
+    )
     counts = {row.category_id: row.cnt for row in count_rows}
 
     items = [_category_to_dict(c, counts.get(c.id, 0)) for c in cats]
@@ -885,12 +990,14 @@ def create_category(
         db.rollback()
         raise ConflictError("A category with this slug already exists")
 
-    db.add(AdminAction(
-        admin_id=admin_id,
-        action_type="category_created",
-        target_type="category",
-        target_id=cat.id,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="category_created",
+            target_type="category",
+            target_id=cat.id,
+        )
+    )
     db.commit()
     db.refresh(cat)
     return _category_to_dict(cat, 0)
@@ -916,12 +1023,14 @@ def update_category(
     if "is_active" in body.model_fields_set and body.is_active is not None:
         cat.is_active = body.is_active
 
-    db.add(AdminAction(
-        admin_id=admin_id,
-        action_type="category_updated",
-        target_type="category",
-        target_id=cat.id,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="category_updated",
+            target_type="category",
+            target_id=cat.id,
+        )
+    )
     db.commit()
     db.refresh(cat)
     venue_count = _count_category_venues(db, cat.id)
@@ -948,12 +1057,14 @@ def upload_category_banner(
     banner_url = upload_image_to_cloudinary(file_bytes, folder=f"categories/{category_id}")
     cat.banner_image = banner_url
 
-    db.add(AdminAction(
-        admin_id=admin_id,
-        action_type="category_banner_updated",
-        target_type="category",
-        target_id=cat.id,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="category_banner_updated",
+            target_type="category",
+            target_id=cat.id,
+        )
+    )
     db.commit()
     db.refresh(cat)
     return {"banner_image": cat.banner_image}
@@ -972,12 +1083,14 @@ def delete_category_banner(
         except Exception:
             pass
         cat.banner_image = None
-        db.add(AdminAction(
-            admin_id=admin_id,
-            action_type="category_banner_deleted",
-            target_type="category",
-            target_id=cat.id,
-        ))
+        db.add(
+            AdminAction(
+                admin_id=admin_id,
+                action_type="category_banner_deleted",
+                target_type="category",
+                target_id=cat.id,
+            )
+        )
         db.commit()
     return {"banner_image": None}
 
@@ -993,15 +1106,17 @@ def delete_category(
         raise ConflictError("Category is already deleted")
 
     venue_count = _count_category_venues(db, cat.id)
-    cat.deleted_at = datetime.now(timezone.utc)
+    cat.deleted_at = datetime.now(UTC)
     cat.is_active = False
 
-    db.add(AdminAction(
-        admin_id=admin_id,
-        action_type="category_deleted",
-        target_type="category",
-        target_id=cat.id,
-    ))
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="category_deleted",
+            target_type="category",
+            target_id=cat.id,
+        )
+    )
     db.commit()
     return {"deleted": True, "venue_count": venue_count}
 
@@ -1028,8 +1143,7 @@ def list_actions(
     offset = 0 if limit is not None else (page - 1) * page_size
 
     items = (
-        query
-        .order_by(AdminAction.created_at.desc())
+        query.order_by(AdminAction.created_at.desc())
         .offset(offset)
         .limit(effective_page_size)
         .all()
@@ -1121,10 +1235,14 @@ def _seed(db: Session, email: str, password: str, name: str) -> None:
         db.flush()
         logger.info("Updated full_name for super admin %s", email)
 
-    role_exists = db.query(UserRoleAssignment).filter(
-        UserRoleAssignment.user_id == auth_user_id,
-        UserRoleAssignment.role == UserRole.super_admin,
-    ).first()
+    role_exists = (
+        db.query(UserRoleAssignment)
+        .filter(
+            UserRoleAssignment.user_id == auth_user_id,
+            UserRoleAssignment.role == UserRole.super_admin,
+        )
+        .first()
+    )
 
     if not role_exists:
         db.add(UserRoleAssignment(user_id=auth_user_id, role=UserRole.super_admin))
@@ -1172,12 +1290,16 @@ def _resolve_supabase_user(email: str, password: str, name: str = "") -> uuid.UU
         page += 1
 
     # Not found — create via Admin API (email_confirm skips verification email)
-    result = _supabase_admin_request("POST", "users", {
-        "email": email,
-        "password": password,
-        "email_confirm": True,
-        "user_metadata": {"full_name": name or "Super Admin"},
-    })
+    result = _supabase_admin_request(
+        "POST",
+        "users",
+        {
+            "email": email,
+            "password": password,
+            "email_confirm": True,
+            "user_metadata": {"full_name": name or "Super Admin"},
+        },
+    )
     logger.info("Created Supabase auth user for super admin: %s", email)
     return uuid.UUID(result["id"])
 
@@ -1196,13 +1318,17 @@ _CANCELLED_STATUSES = (
 
 
 def get_booking_stats(db: Session) -> dict:
-    row = db.query(
-        func.count(Booking.id).label("total"),
-        func.count(case((Booking.status == BookingStatus.requested, 1))).label("requested"),
-        func.count(case((Booking.status == BookingStatus.confirmed, 1))).label("confirmed"),
-        func.count(case((Booking.status == BookingStatus.completed, 1))).label("completed"),
-        func.count(case((Booking.status.in_(_CANCELLED_STATUSES), 1))).label("cancelled"),
-    ).filter(Booking.deleted_at.is_(None)).one()
+    row = (
+        db.query(
+            func.count(Booking.id).label("total"),
+            func.count(case((Booking.status == BookingStatus.requested, 1))).label("requested"),
+            func.count(case((Booking.status == BookingStatus.confirmed, 1))).label("confirmed"),
+            func.count(case((Booking.status == BookingStatus.completed, 1))).label("completed"),
+            func.count(case((Booking.status.in_(_CANCELLED_STATUSES), 1))).label("cancelled"),
+        )
+        .filter(Booking.deleted_at.is_(None))
+        .one()
+    )
     return {
         "total": row.total,
         "requested": row.requested,
@@ -1226,6 +1352,7 @@ def list_admin_bookings(
         db.query(Booking)
         .join(Venue, Venue.id == Booking.venue_id)
         .join(Profile, Profile.id == Booking.user_id)
+        .options(contains_eager(Booking.venue), contains_eager(Booking.user))
         .filter(Booking.deleted_at.is_(None))
     )
 
@@ -1242,8 +1369,7 @@ def list_admin_bookings(
     total = base.count()
     total_pages = max(1, math.ceil(total / page_size))
     rows = (
-        base
-        .order_by(Booking.created_at.desc())
+        base.order_by(Booking.created_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
         .all()
@@ -1265,23 +1391,25 @@ def list_admin_bookings(
         slot = slot_map.get(b.id)
         event_date = slot.starts_at.date().isoformat() if slot else ""
         owner = owner_map.get(b.venue.owner_id)
-        items.append({
-            "id": b.id,
-            "venue_id": b.venue_id,
-            "venue_name": b.venue.name,
-            "customer_name": b.user.full_name,
-            "customer_email": b.user.email,
-            "customer_phone": b.user.phone,
-            "owner_id": b.venue.owner_id,
-            "owner_name": owner.full_name if owner else None,
-            "owner_email": owner.email if owner else None,
-            "owner_phone": owner.phone if owner else None,
-            "status": b.status.value,
-            "payment_status": b.payment_status.value,
-            "event_date": event_date,
-            "guest_count": b.guest_count,
-            "created_at": b.created_at,
-        })
+        items.append(
+            {
+                "id": b.id,
+                "venue_id": b.venue_id,
+                "venue_name": b.venue.name,
+                "customer_name": b.user.full_name,
+                "customer_email": b.user.email,
+                "customer_phone": b.user.phone,
+                "owner_id": b.venue.owner_id,
+                "owner_name": owner.full_name if owner else None,
+                "owner_email": owner.email if owner else None,
+                "owner_phone": owner.phone if owner else None,
+                "status": b.status.value,
+                "payment_status": b.payment_status.value,
+                "event_date": event_date,
+                "guest_count": b.guest_count,
+                "created_at": b.created_at,
+            }
+        )
 
     return {
         "items": items,
@@ -1330,7 +1458,7 @@ def get_deep_research_query(db: Session, query_id: uuid.UUID) -> DeepResearchQue
 
 
 def get_deep_research_stats(db: Session, days: int = 30) -> DeepResearchStatsResponse:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     period_start = today_start - timedelta(days=days - 1)
 
@@ -1344,7 +1472,7 @@ def get_deep_research_stats(db: Session, days: int = 30) -> DeepResearchStatsRes
         .group_by("bucket")
         .all()
     )
-    by_bucket = {r.bucket.replace(tzinfo=timezone.utc): r for r in rows}
+    by_bucket = {r.bucket.replace(tzinfo=UTC): r for r in rows}
 
     labels: list[str] = []
     counts: list[int] = []

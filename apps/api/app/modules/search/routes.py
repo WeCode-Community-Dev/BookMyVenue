@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
+
 from app.core.database import get_db
-from app.modules.search.schemas import SearchParams, SearchResult
 from app.modules.search import service
+from app.modules.search.schemas import SearchParams, SearchResult
 from app.shared.pagination import Page
 
 router = APIRouter()
@@ -16,7 +17,9 @@ def _params(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
 ) -> SearchParams:
-    return SearchParams(q=q, city=city, venue_type=venue_type, capacity=capacity, page=page, page_size=page_size)
+    return SearchParams(
+        q=q, city=city, venue_type=venue_type, capacity=capacity, page=page, page_size=page_size
+    )
 
 
 @router.get("/", response_model=Page[SearchResult])

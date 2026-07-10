@@ -1,9 +1,8 @@
 import json
 import logging
-import urllib.request
 import urllib.error
-from datetime import datetime, timezone
-from typing import List
+import urllib.request
+from datetime import UTC, datetime
 
 from sqlalchemy import event
 from sqlalchemy.orm import Session
@@ -11,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.email import send_email
-from app.core.exceptions import NotFoundError, ForbiddenError
+from app.core.exceptions import ForbiddenError, NotFoundError
 from app.modules.notification.models import InAppNotification
 from app.modules.notification.schemas import NotificationResponse
 from app.modules.notification.templates import render_notification
@@ -20,7 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 def notify(
-    db: Session, user_id, type: str, context: dict | None = None, booking_id=None,
+    db: Session,
+    user_id,
+    type: str,
+    context: dict | None = None,
+    booking_id=None,
     skip_email: bool = False,
 ) -> InAppNotification:
     """Create an in-app notification and queue its email for after-commit send.
@@ -36,13 +39,17 @@ def notify(
     app.modules.booking.invoice) will be sent later by an async job instead.
     """
     title, body, html = render_notification(type, context, booking_id)
-    row = InAppNotification(user_id=user_id, booking_id=booking_id, type=type, title=title, body=body)
+    row = InAppNotification(
+        user_id=user_id, booking_id=booking_id, type=type, title=title, body=body
+    )
     db.add(row)
     db.flush()
 
     if not skip_email:
         pending = db.info.setdefault("_pending_emails", [])
-        pending.append({"user_id": str(user_id), "subject": title, "html": html, "notification_id": row.id})
+        pending.append(
+            {"user_id": str(user_id), "subject": title, "html": html, "notification_id": row.id}
+        )
     return row
 
 
@@ -61,7 +68,9 @@ def _send_pending_emails(session: Session) -> None:
             if email and send_email(email, item["subject"], item["html"]):
                 _mark_email_sent(item["notification_id"])
         except Exception:
-            logger.exception("Deferred notification email failed (notification=%s)", item.get("notification_id"))
+            logger.exception(
+                "Deferred notification email failed (notification=%s)", item.get("notification_id")
+            )
 
 
 def _mark_email_sent(notification_id) -> None:
@@ -69,7 +78,7 @@ def _mark_email_sent(notification_id) -> None:
     try:
         row = s.get(InAppNotification, notification_id)
         if row and row.sent_at is None:
-            row.sent_at = datetime.now(timezone.utc)
+            row.sent_at = datetime.now(UTC)
             s.commit()
     except Exception:
         logger.exception("Could not stamp sent_at for notification %s", notification_id)
@@ -82,7 +91,7 @@ def _mark_email_sent(notification_id) -> None:
 event.listen(SessionLocal, "after_commit", _send_pending_emails)
 
 
-def list_notifications(db: Session, user_id) -> List[NotificationResponse]:
+def list_notifications(db: Session, user_id) -> list[NotificationResponse]:
     rows = (
         db.query(InAppNotification)
         .filter(InAppNotification.user_id == user_id)
@@ -99,7 +108,7 @@ def mark_read(db: Session, notification_id: str, user_id) -> None:
     if str(row.user_id) != str(user_id):
         raise ForbiddenError("Not your notification")
     if row.read_at is None:
-        row.read_at = datetime.now(timezone.utc)
+        row.read_at = datetime.now(UTC)
         db.commit()
 
 

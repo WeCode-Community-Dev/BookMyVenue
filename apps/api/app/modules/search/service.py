@@ -2,9 +2,11 @@ import logging
 from uuid import UUID
 
 import numpy as np
-from sqlalchemy import func as sa_func, text, or_
+from sqlalchemy import func as sa_func
+from sqlalchemy import or_, text
 from sqlalchemy.orm import Session, joinedload
 
+from app.core.config import settings
 from app.modules.search import search_metadata_cache
 from app.modules.search.category_intent import (
     GROUP_CORPORATE,
@@ -14,9 +16,8 @@ from app.modules.search.category_intent import (
 )
 from app.modules.search.query_normalizer import normalize_query
 from app.modules.search.schemas import SearchParams, SearchResult
-from app.modules.venue.models import Venue, VenueCategory, VenueStatus, VenuePhoto
+from app.modules.venue.models import Venue, VenueCategory, VenuePhoto, VenueStatus
 from app.shared.pagination import Page
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ def _base_query(db: Session, params: SearchParams):
         .options(joinedload(Venue.category))
         .filter(
             Venue.status == VenueStatus.approved,
-            Venue.is_active == True,
+            Venue.is_active,
             Venue.deleted_at.is_(None),
         )
     )
@@ -50,7 +51,7 @@ def _cover_photos(db: Session, venue_ids: list) -> dict:
         db.query(VenuePhoto)
         .filter(
             VenuePhoto.venue_id.in_(venue_ids),
-            VenuePhoto.is_cover == True,
+            VenuePhoto.is_cover,
             VenuePhoto.deleted_at.is_(None),
         )
         .all()
@@ -72,29 +73,33 @@ def _to_results(
     scores = scores or {}
     results = []
     for v in venues:
-        starting_price = v.starting_price_paise if v.pricing_mode in ('flat', 'mixed') else v.hourly_rate_paise
+        starting_price = (
+            v.starting_price_paise if v.pricing_mode in ("flat", "mixed") else v.hourly_rate_paise
+        )
         row_scores = scores.get(v.id)
-        results.append(SearchResult(
-            id=v.id,
-            name=v.name,
-            city=v.city,
-            category=v.category,
-            capacity=v.max_capacity,
-            pricing_mode=v.pricing_mode,
-            starting_price_paise=starting_price,
-            display_price_min_paise=v.display_price_min_paise,
-            display_price_max_paise=v.display_price_max_paise,
-            cover_photo_url=cover_photos.get(v.id),
-            match_source=(
-                _match_source(row_scores["fts_matched"], row_scores["vector_matched"])
-                if row_scores
-                else None
-            ),
-            fts_score=row_scores["fts_score"] if row_scores else None,
-            vector_score=row_scores["vector_score"] if row_scores else None,
-            category_boost=row_scores["boost"] if row_scores else None,
-            match_score=row_scores["hybrid_score"] if row_scores else None,
-        ))
+        results.append(
+            SearchResult(
+                id=v.id,
+                name=v.name,
+                city=v.city,
+                category=v.category,
+                capacity=v.max_capacity,
+                pricing_mode=v.pricing_mode,
+                starting_price_paise=starting_price,
+                display_price_min_paise=v.display_price_min_paise,
+                display_price_max_paise=v.display_price_max_paise,
+                cover_photo_url=cover_photos.get(v.id),
+                match_source=(
+                    _match_source(row_scores["fts_matched"], row_scores["vector_matched"])
+                    if row_scores
+                    else None
+                ),
+                fts_score=row_scores["fts_score"] if row_scores else None,
+                vector_score=row_scores["vector_score"] if row_scores else None,
+                category_boost=row_scores["boost"] if row_scores else None,
+                match_score=row_scores["hybrid_score"] if row_scores else None,
+            )
+        )
     return results
 
 
@@ -104,7 +109,7 @@ def search(db: Session, params: SearchParams) -> Page[SearchResult]:
         .options(joinedload(Venue.category))
         .filter(
             Venue.status == VenueStatus.approved,
-            Venue.is_active == True,
+            Venue.is_active,
             Venue.deleted_at.is_(None),
         )
     )
@@ -134,38 +139,9 @@ def search(db: Session, params: SearchParams) -> Page[SearchResult]:
     total_count = query.count()
 
     offset = (params.page - 1) * params.page_size
-    venues = (
-        query.order_by(Venue.created_at.desc())
-        .offset(offset)
-        .limit(params.page_size)
-        .all()
-    )
+    venues = query.order_by(Venue.created_at.desc()).offset(offset).limit(params.page_size).all()
 
-    venue_ids = [v.id for v in venues]
-    cover_photos = {}
-    if venue_ids:
-        photos = db.query(VenuePhoto).filter(
-            VenuePhoto.venue_id.in_(venue_ids),
-            VenuePhoto.is_cover == True,
-            VenuePhoto.deleted_at.is_(None),
-        ).all()
-        cover_photos = {p.venue_id: p.image_url for p in photos}
-
-    results = []
-    for v in venues:
-        starting_price = v.starting_price_paise if v.pricing_mode in ('flat', 'mixed') else v.hourly_rate_paise
-        results.append(SearchResult(
-            id=v.id,
-            name=v.name,
-            city=v.city,
-            category=v.category,
-            capacity=v.max_capacity,
-            pricing_mode=v.pricing_mode,
-            starting_price_paise=starting_price,
-            display_price_min_paise=v.display_price_min_paise,
-            display_price_max_paise=v.display_price_max_paise,
-            cover_photo_url=cover_photos.get(v.id),
-        ))
+    covers = _cover_photos(db, [v.id for v in venues])
 
     return Page(
         items=_to_results(venues, covers),
@@ -246,7 +222,7 @@ def _has_any_embeddings(db: Session) -> bool:
         db.query(Venue.id)
         .filter(
             Venue.status == VenueStatus.approved,
-            Venue.is_active == True,
+            Venue.is_active,
             Venue.deleted_at.is_(None),
             Venue.embedding.isnot(None),
         )
@@ -288,9 +264,7 @@ def _log_hybrid_diagnostics(
             ORDER BY ts_rank(v.search_vector, plainto_tsquery('english', :q)) DESC
             LIMIT 10
         """)
-        fts_top_ids = [
-            str(r.id) for r in db.execute(fts_top_sql, {"q": normalized_q}).fetchall()
-        ]
+        fts_top_ids = [str(r.id) for r in db.execute(fts_top_sql, {"q": normalized_q}).fetchall()]
 
         vec_top_sql = text(f"""
             SELECT v.id FROM venues v
@@ -300,8 +274,7 @@ def _log_hybrid_diagnostics(
             LIMIT 10
         """)
         vec_top_ids = [
-            str(r.id)
-            for r in db.execute(vec_top_sql, {"qvec": str(query_vec)}).fetchall()
+            str(r.id) for r in db.execute(vec_top_sql, {"qvec": str(query_vec)}).fetchall()
         ]
 
         overlap = len(set(fts_top_ids) & set(vec_top_ids))
@@ -331,14 +304,12 @@ def _log_hybrid_result_scores(rows, limit: int = 20) -> None:
     """Log the FTS/vector/boost/hybrid score breakdown for top results."""
     try:
         lines = [
-            f"  #{i+1:>2} id={row.id} cat={row.category_slug or '-':<14} "
+            f"  #{i + 1:>2} id={row.id} cat={row.category_slug or '-':<14} "
             f"fts={row.fts_score:.4f} vec={row.vector_score:.4f} "
             f"boost={row.boost:.2f} hybrid={row.hybrid_score:.4f} name={row.name!r}"
             for i, row in enumerate(rows[:limit])
         ]
-        logger.info(
-            "search_hybrid result scores (top %s):\n%s", len(lines), "\n".join(lines)
-        )
+        logger.info("search_hybrid result scores (top %s):\n%s", len(lines), "\n".join(lines))
     except Exception:
         logger.exception("search_hybrid: result score logging failed")
 

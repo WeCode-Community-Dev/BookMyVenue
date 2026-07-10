@@ -1,26 +1,28 @@
 import logging
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
+
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.logging import setup_logging
 from app.core.middleware import register_middleware
 from app.jobs import scheduler as job_scheduler
-from app.modules.auth.routes import router as auth_router
-from app.modules.profile.routes import router as profile_router
-from app.modules.venue.routes import router as venue_router
-from app.modules.search.routes import router as search_router
-from app.modules.search import search_metadata_cache, query_normalizer
-from app.modules.booking.routes import router as booking_router
-from app.modules.availability.routes import router as availability_router
-from app.modules.notification.routes import router as notification_router
 from app.modules.admin.routes import router as admin_router
-from app.modules.payment.routes import router as payment_router
-from app.modules.internal.routes import router as internal_router
-from app.modules.owner.routes import router as owner_router
-from app.modules.deep_research.routes import router as deep_research_router
-from app.modules.review.routes import router as review_router
 from app.modules.admin.service import seed_super_admin
+from app.modules.auth.routes import router as auth_router
+from app.modules.availability.routes import router as availability_router
+from app.modules.booking.routes import router as booking_router
+from app.modules.deep_research.routes import router as deep_research_router
+from app.modules.internal.routes import router as internal_router
+from app.modules.notification.routes import router as notification_router
+from app.modules.owner.routes import router as owner_router
+from app.modules.payment.routes import router as payment_router
+from app.modules.profile.routes import router as profile_router
+from app.modules.review.routes import router as review_router
+from app.modules.search import query_normalizer, search_metadata_cache
+from app.modules.search.routes import router as search_router
+from app.modules.venue.routes import router as venue_router
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +54,15 @@ async def lifespan(_: FastAPI):
         job_scheduler.shutdown()
 
 
-app = FastAPI(title="Venue404 API", lifespan=lifespan)
+# Disable the interactive docs (/docs, /redoc) in production so the full API
+# surface isn't publicly listed; keep them in development.
+app = FastAPI(
+    title="Venue404 API",
+    lifespan=lifespan,
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
+    openapi_url=None if settings.is_production else "/openapi.json",
+)
 
 register_middleware(app)
 

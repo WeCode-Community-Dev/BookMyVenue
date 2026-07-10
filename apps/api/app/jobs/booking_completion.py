@@ -1,12 +1,16 @@
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.core.database import with_session
 from app.modules.booking.models import (
-    Booking, BookingSlot, BookingStatus, PaymentStatus, BookingStatusHistory,
+    Booking,
+    BookingSlot,
+    BookingStatus,
+    BookingStatusHistory,
+    PaymentStatus,
 )
-from app.modules.venue.models import Venue
 from app.modules.notification import service as notifications
+from app.modules.venue.models import Venue
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +21,7 @@ def run() -> int:
     """Mark confirmed bookings completed once the event date has passed and no
     payment is pending. (Dispute/cancellation workflow checks go here too.)
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     completed = 0
     with with_session() as db:
         rows = (

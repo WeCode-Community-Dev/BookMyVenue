@@ -1,39 +1,36 @@
-from datetime import date, datetime, time, timezone, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
-from app.modules.booking.models import BookingSlot
-from app.modules.booking.models import Booking
-from app.modules.profile.models import Profile  # noqa: F401
-
 from app.modules.availability.schemas import (
     AvailabilityResponse,
-    OperatingWindow,
     BlockedRange,
-    ValidationResponse,
     CalendarBlockedRange,
     CalendarBookingSummary,
     CalendarDay,
     CalendarResponse,
+    OperatingWindow,
+    ValidationResponse,
 )
-
+from app.modules.booking.models import Booking, BookingSlot
+from app.modules.profile.models import Profile  # noqa: F401
+from app.modules.venue.models import VenueAvailability, VenueBlockedDate
 from app.modules.venue.service import (
+    _assert_owner,
     _get_active_venue_or_404,
     _get_venue_or_404,
-    _assert_owner,
     get_pricing_quote_for_slot,
 )
-from app.modules.venue.models import VenueAvailability, VenueBlockedDate
 
 
 def _to_utc(value: datetime) -> datetime:
     if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
+        return value.replace(tzinfo=UTC)
 
-    return value.astimezone(timezone.utc)
+    return value.astimezone(UTC)
 
 
 def _localize(booking_date: date, value: time, tz: ZoneInfo) -> datetime:
@@ -49,7 +46,7 @@ def _local_day_bounds(venue, booking_date: date) -> tuple[datetime, datetime]:
     starts_at = datetime.combine(booking_date, datetime.min.time()).replace(tzinfo=tz)
     ends_at = starts_at + timedelta(days=1)
 
-    return starts_at.astimezone(timezone.utc), ends_at.astimezone(timezone.utc)
+    return starts_at.astimezone(UTC), ends_at.astimezone(UTC)
 
 
 def _date_range(start_date: date, end_date: date) -> list[date]:
@@ -63,7 +60,9 @@ def _has_overlap(
     range_starts_at: datetime,
     range_ends_at: datetime,
 ) -> bool:
-    return _to_utc(starts_at) < _to_utc(range_ends_at) and _to_utc(ends_at) > _to_utc(range_starts_at)
+    return _to_utc(starts_at) < _to_utc(range_ends_at) and _to_utc(ends_at) > _to_utc(
+        range_starts_at
+    )
 
 
 def _covers_range(
@@ -158,7 +157,6 @@ def is_date_blocked(
     ends_at = _to_utc(ends_at)
 
     for blocked in getattr(venue, "blocked_dates", []):
-
         if blocked.deleted_at:
             continue
 
@@ -227,8 +225,8 @@ def expand_full_day_slot(
         ends_at += timedelta(days=1)
 
     return (
-        starts_at.astimezone(timezone.utc),
-        ends_at.astimezone(timezone.utc),
+        starts_at.astimezone(UTC),
+        ends_at.astimezone(UTC),
     )
 
 
@@ -283,7 +281,7 @@ def validate_booking_request(
             detail="End time must be after start time",
         )
 
-    if starts_at <= datetime.now(timezone.utc):
+    if starts_at <= datetime.now(UTC):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Booking must be in the future",
@@ -305,13 +303,12 @@ def validate_booking_request(
 
     # Duration limit - relaxed for full_day multi-day
     if booking_type == "full_day":
-        max_multi_day_minutes = (
-            getattr(venue, "max_multi_day_duration_days", 7) * 24 * 60
-        )
+        max_multi_day_days = getattr(venue, "max_multi_day_duration_days", 7)
+        max_multi_day_minutes = max_multi_day_days * 24 * 60
         if duration_minutes > max_multi_day_minutes:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Multi-day booking cannot exceed {getattr(venue, 'max_multi_day_duration_days', 7)} days",
+                detail=f"Multi-day booking cannot exceed {max_multi_day_days} days",
             )
     elif duration_minutes > venue.max_booking_duration_minutes:
         raise HTTPException(
@@ -332,7 +329,6 @@ def validate_booking_request(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Booking times must align with slot interval",
         )
-
 
     # === Multi-day Operating Window Validation ===
     current_date = local_starts_at.date()
@@ -366,7 +362,7 @@ def validate_booking_request(
         # Middle days: only require availability
 
         current_date += timedelta(days=1)
-        
+
     # Original effective range + conflict checks
     effective_starts_at, effective_ends_at = compute_effective_range(
         starts_at,
@@ -396,6 +392,8 @@ def validate_booking_request(
 
     return ValidationResponse(
         valid=True,
+        starts_at=starts_at,
+        ends_at=ends_at,
         effective_starts_at=effective_starts_at,
         effective_ends_at=effective_ends_at,
     )
@@ -439,9 +437,7 @@ def get_availability_for_date(
             return AvailabilityResponse(
                 date=booking_date,
                 operating_window=operating_window,
-                blocked_slots=[
-                    BlockedRange(starts_at=window_start, ends_at=window_end)
-                ],
+                blocked_slots=[BlockedRange(starts_at=window_start, ends_at=window_end)],
             )
         else:
             return AvailabilityResponse(
@@ -527,7 +523,7 @@ def _build_calendar_for_venue(
         .all()
     )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     days: list[CalendarDay] = []
 
     for calendar_date in _date_range(start_date, end_date):

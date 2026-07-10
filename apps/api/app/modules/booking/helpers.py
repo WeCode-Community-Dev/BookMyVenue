@@ -1,7 +1,8 @@
-import uuid
 import logging
-from datetime import datetime, timezone, date
+import uuid
+from datetime import UTC, datetime
 from uuid import UUID
+
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, selectinload
 
@@ -10,9 +11,8 @@ from app.modules.booking.models import (
     BookingSlot,
     BookingStatus,
     BookingStatusHistory,
-    PaymentStatus,
 )
-from app.modules.booking.schemas import BookingOut, BookingDisplay, PaymentOption, PaymentOptions
+from app.modules.booking.schemas import BookingDisplay, BookingOut, PaymentOption, PaymentOptions
 from app.modules.venue.models import Venue, VenueCancellationPolicy
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ TERMINAL_STATUSES = {
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _format_inr(paise: int) -> str:
@@ -71,13 +71,17 @@ def _booking_or_404(
     booking_id: UUID,
     for_update: bool = False,
 ) -> Booking:
-    query = db.query(Booking).options(
-        selectinload(Booking.slot),
-        selectinload(Booking.venue).selectinload(Venue.photos),
-        selectinload(Booking.user),
-    ).filter(
-        Booking.id == booking_id,
-        Booking.deleted_at.is_(None),
+    query = (
+        db.query(Booking)
+        .options(
+            selectinload(Booking.slot),
+            selectinload(Booking.venue).selectinload(Venue.photos),
+            selectinload(Booking.user),
+        )
+        .filter(
+            Booking.id == booking_id,
+            Booking.deleted_at.is_(None),
+        )
     )
     if for_update:
         query = query.with_for_update()
@@ -96,7 +100,9 @@ def _assert_booking_user(booking: Booking, user_id: UUID) -> None:
 
 def _assert_booking_owner(booking: Booking, owner_id: UUID) -> None:
     if booking.venue.owner_id != owner_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Booking owner access denied")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Booking owner access denied"
+        )
 
 
 def _slot_for_update(db: Session, booking_id: UUID) -> BookingSlot:
@@ -127,7 +133,7 @@ def _booking_out(booking: Booking) -> BookingOut:
         None,
     )
 
-    payment_required = (booking.status == BookingStatus.payment_pending)
+    payment_required = booking.status == BookingStatus.payment_pending
 
     payment_options = None
     if booking.status in (BookingStatus.payment_pending, BookingStatus.owner_accepted):
@@ -147,14 +153,15 @@ def _booking_out(booking: Booking) -> BookingOut:
     client_secret = None
     if booking.status in (BookingStatus.payment_pending, BookingStatus.owner_accepted):
         from sqlalchemy.orm import object_session
+
         session = object_session(booking)
         if session:
             from app.modules.payment.models import Payment, PaymentAttemptStatus
+
             pending_payment = (
                 session.query(Payment)
                 .filter(
-                    Payment.booking_id == booking.id,
-                    Payment.status == PaymentAttemptStatus.pending
+                    Payment.booking_id == booking.id, Payment.status == PaymentAttemptStatus.pending
                 )
                 .order_by(Payment.created_at.desc())
                 .first()
@@ -165,12 +172,16 @@ def _booking_out(booking: Booking) -> BookingOut:
     invoice_url = None
     if booking.status == BookingStatus.confirmed:
         from sqlalchemy.orm import object_session
+
         session = object_session(booking)
         if session:
             from app.modules.booking.models import BookingInvoice
+
             invoice = (
                 session.query(BookingInvoice)
-                .filter(BookingInvoice.booking_id == booking.id, BookingInvoice.status == "generated")
+                .filter(
+                    BookingInvoice.booking_id == booking.id, BookingInvoice.status == "generated"
+                )
                 .first()
             )
             if invoice:

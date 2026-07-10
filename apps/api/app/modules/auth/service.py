@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import ForbiddenError
 from app.modules.auth.schemas import AuthMeResponse, ProfileResponse
-from app.modules.profile.models import Profile, ProfileStatus, UserRoleAssignment, UserRole
+from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRoleAssignment
 
 
 def register_owner(user_id, db: Session) -> None:

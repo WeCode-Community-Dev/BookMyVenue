@@ -13,7 +13,7 @@ export function VenueSummaryCard({ venue }: Props) {
   return (
     <div className="overflow-hidden rounded-2xl border border-zinc-100 bg-white shadow-sm dark:border-ink-800 dark:bg-ink-900">
       {coverPhoto ? (
-        <img src={coverPhoto} alt={venue.name} className="h-56 w-full object-cover" />
+        <img src={coverPhoto} alt={venue.name} loading="lazy" className="h-56 w-full object-cover" />
       ) : (
         <div className="flex h-56 w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-50 dark:from-ink-800 dark:to-ink-900">
           <svg

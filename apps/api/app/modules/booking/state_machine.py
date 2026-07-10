@@ -1,6 +1,5 @@
 from app.modules.booking.models import BookingStatus
 
-
 VALID_TRANSITIONS: dict[BookingStatus, set[BookingStatus]] = {
     BookingStatus.requested: {
         BookingStatus.owner_accepted,

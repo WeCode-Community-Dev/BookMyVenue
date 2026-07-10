@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { Logo, ThemeToggle } from '@venue404/ui'
+import { createClient, notificationEndpoints } from '@venue404/api-client'
 import { useAuth } from '../../lib/AuthContext'
 import { useAuthModal } from '../../lib/AuthModalContext'
 
@@ -99,6 +101,34 @@ function UserMenu({ displayName, onSignOut }: { displayName: string; onSignOut: 
   )
 }
 
+function NotificationBell() {
+  const client = createClient()
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => notificationEndpoints(client).list(),
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+  })
+  const unreadCount = notifications.filter((n) => n.read_at == null).length
+
+  return (
+    <Link
+      to="/notifications"
+      className="relative flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-ink-800 dark:hover:text-zinc-100"
+      aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+    >
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+      </svg>
+      {unreadCount > 0 && (
+        <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white">
+          {unreadCount > 9 ? '9+' : unreadCount}
+        </span>
+      )}
+    </Link>
+  )
+}
+
 export function AppNavbar() {
   const { user, signOut } = useAuth()
   const { openLogin, openRegister } = useAuthModal()
@@ -115,15 +145,7 @@ export function AppNavbar() {
           <ThemeToggle className="mr-1" />
           {user ? (
             <>
-              <Link
-                to="/notifications"
-                className="relative flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-ink-800 dark:hover:text-zinc-100"
-                aria-label="Notifications"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-              </Link>
+              <NotificationBell />
               <UserMenu displayName={displayName} onSignOut={signOut} />
             </>
           ) : (

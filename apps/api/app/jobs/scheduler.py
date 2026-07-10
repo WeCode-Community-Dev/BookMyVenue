@@ -1,20 +1,23 @@
 from apscheduler.schedulers.background import BackgroundScheduler
+
 from app.jobs import (
-    hold_expiry,
-    stale_requests,
-    payment_reminders,
-    booking_completion,
     balance_overdue,
-    search_indexer,
-    payment_pending_expiry,
+    booking_completion,
+    hold_expiry,
     invoice_generator,
+    payment_pending_expiry,
+    payment_reminders,
+    search_indexer,
+    stale_requests,
 )
 
 scheduler = BackgroundScheduler()
 
 
 def start():
-    scheduler.add_job(payment_pending_expiry.run, "interval", minutes=1, id="payment_pending_expiry")
+    scheduler.add_job(
+        payment_pending_expiry.run, "interval", minutes=1, id="payment_pending_expiry"
+    )
     scheduler.add_job(invoice_generator.run, "interval", minutes=1, id="invoice_generator")
     scheduler.add_job(hold_expiry.run, "interval", hours=1, id="hold_expiry")
     scheduler.add_job(stale_requests.run, "interval", hours=6, id="stale_requests")
@@ -22,7 +25,9 @@ def start():
     scheduler.add_job(payment_reminders.run, "interval", hours=1, id="payment_reminders")
     scheduler.add_job(booking_completion.run, "cron", hour=0, id="booking_completion")
     scheduler.add_job(balance_overdue.run_flag, "interval", hours=6, id="balance_overdue_flag")
-    scheduler.add_job(balance_overdue.run_autocancel, "interval", hours=6, id="balance_overdue_autocancel")
+    scheduler.add_job(
+        balance_overdue.run_autocancel, "interval", hours=6, id="balance_overdue_autocancel"
+    )
     scheduler.add_job(search_indexer.run, "interval", hours=1, id="search_indexer")
     scheduler.start()
 

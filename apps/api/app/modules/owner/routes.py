@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.modules.auth.dependencies import AuthContext, require_owner
 from app.modules.owner import service
-from app.modules.owner.schemas import DashboardStats, ChartDataPoint, UpcomingEventOut
+from app.modules.owner.schemas import ChartDataPoint, DashboardStats, UpcomingEventOut
 
 router = APIRouter()
 
