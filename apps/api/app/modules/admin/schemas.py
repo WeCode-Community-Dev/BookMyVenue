@@ -360,12 +360,20 @@ class ExternalReservationSummary(BaseModel):
     created_at: datetime
 
 
+class ExternalReservationStats(BaseModel):
+    total: int
+    new: int
+    in_progress: int
+    booking_created: int
+
+
 class ExternalReservationListResponse(BaseModel):
     items: list[ExternalReservationSummary]
     total: int
     page: int
     page_size: int
     total_pages: int
+    stats: ExternalReservationStats
 
 
 class ContactOwnerRequest(BaseModel):

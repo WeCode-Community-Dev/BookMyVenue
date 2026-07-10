@@ -14,6 +14,7 @@ import math
 from datetime import UTC
 from uuid import UUID
 
+from sqlalchemy import case, func
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -474,6 +475,38 @@ def sync_reservation_status_for_venue(db: Session, venue_id: UUID, new_venue_sta
         reservation.status = target
 
 
+def get_reservation_stats(db: Session) -> dict:
+    """
+    Platform-wide external-reservation funnel counts for the admin dashboard.
+    Always reflects all reservations, regardless of active filters.
+    """
+    in_progress_statuses = (
+        LeadReservationStatus.CONTACTED,
+        LeadReservationStatus.OWNER_INTERESTED,
+        LeadReservationStatus.OWNER_INVITED,
+        LeadReservationStatus.OWNER_ONBOARDED,
+        LeadReservationStatus.VENUE_DRAFT_CREATED,
+        LeadReservationStatus.VENUE_PENDING_APPROVAL,
+        LeadReservationStatus.VENUE_APPROVED,
+    )
+    row = db.query(LeadReservation).with_entities(
+        func.count(LeadReservation.id).label("total"),
+        func.count(case((LeadReservation.status == LeadReservationStatus.NEW, 1))).label("new"),
+        func.count(case((LeadReservation.status.in_(in_progress_statuses), 1))).label(
+            "in_progress"
+        ),
+        func.count(
+            case((LeadReservation.status == LeadReservationStatus.BOOKING_CREATED, 1))
+        ).label("booking_created"),
+    ).one()
+    return {
+        "total": row.total,
+        "new": row.new,
+        "in_progress": row.in_progress,
+        "booking_created": row.booking_created,
+    }
+
+
 def list_external_reservations(db: Session, status: str | None, page: int, page_size: int) -> dict:
     from sqlalchemy.orm import joinedload
 
@@ -550,6 +583,7 @@ def list_external_reservations(db: Session, status: str | None, page: int, page_
         "page": page,
         "page_size": page_size,
         "total_pages": max(1, math.ceil(total / page_size)),
+        "stats": get_reservation_stats(db),
     }
 
 
