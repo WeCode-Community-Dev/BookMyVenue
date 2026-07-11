@@ -85,4 +85,92 @@ export const walletRepository = {
       totalPages: Math.ceil(total / limit),
     };
   },
+
+  /**
+   * Finds an existing REFUND transaction for a booking — used to prevent duplication.
+   */
+  async findRefundTransaction(
+    bookingId: string,
+    session?: mongoose.ClientSession
+  ): Promise<IWalletTransaction | null> {
+    return WalletTransaction.findOne(
+      { bookingId: new mongoose.Types.ObjectId(bookingId), source: 'REFUND' },
+      null,
+      { session }
+    );
+  },
+
+  /**
+   * Atomically credits a refund amount to the user's wallet and returns the updated wallet.
+   */
+  async creditRefundToWallet(
+    userId: string,
+    amount: number,
+    session: mongoose.ClientSession
+  ): Promise<IWallet | null> {
+    return Wallet.findOneAndUpdate(
+      { userId },
+      { $inc: { balance: amount } },
+      { session, new: true }
+    );
+  },
+
+  /**
+   * Creates a CREDIT wallet transaction record for a refund inside a session.
+   */
+  async createRefundTransaction(
+    data: {
+      walletId: mongoose.Types.ObjectId;
+      userId: mongoose.Types.ObjectId;
+      amount: number;
+      balanceBefore: number;
+      balanceAfter: number;
+      bookingId: mongoose.Types.ObjectId;
+    },
+    session: mongoose.ClientSession
+  ): Promise<IWalletTransaction> {
+    const [doc] = await WalletTransaction.create(
+      [
+        {
+          walletId: data.walletId,
+          userId: data.userId,
+          type: 'CREDIT',
+          amount: data.amount,
+          balanceBefore: data.balanceBefore,
+          balanceAfter: data.balanceAfter,
+          status: 'SUCCESS',
+          source: 'REFUND',
+          bookingId: data.bookingId,
+          description: 'Refund for cancelled booking',
+        },
+      ],
+      { session }
+    );
+    return doc;
+  },
+
+
+  async findAdminTransactions(filter: any): Promise<IWalletTransaction[]> {
+    return WalletTransaction.find(filter)
+      .populate('userId', 'fullName')
+      .populate({
+        path: 'bookingId',
+        select: 'bookingId venue',
+        populate: {
+          path: 'venue',
+          select: 'name ownerId',
+          populate: {
+            path: 'ownerId',
+            select: 'fullName'
+          }
+        }
+      })
+      .sort({ createdAt: -1 });
+  },
+
+
+  async findAllTransactions(): Promise<IWalletTransaction[]> {
+    return WalletTransaction.find();
+  }
 };
+

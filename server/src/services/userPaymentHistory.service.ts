@@ -8,7 +8,6 @@ export const getPaymentHistory = async (
     limit?: number;
     search?: string;
     paymentStatus?: string;
-    refundStatus?: string;
     sort?: string;
   }
 ) => {
@@ -16,24 +15,21 @@ export const getPaymentHistory = async (
   const limit = options.limit || 10;
   const skip = (page - 1) * limit;
 
-  // We only show bookings that have some financial transaction (e.g. not purely free/unpaid if that matters)
-  // For now, let's include all bookings since they all have payment/refund statuses.
   const query: any = { user: new mongoose.Types.ObjectId(userId) };
 
   if (options.paymentStatus) {
-    query.paymentStatus = options.paymentStatus;
-  }
-  
-  if (options.refundStatus) {
-    query.refundStatus = options.refundStatus;
+    if (options.paymentStatus === 'REFUNDED') {
+      query.refundStatus = { $in: ['PENDING', 'PROCESSING', 'COMPLETED'] };
+    } else {
+      query.paymentStatus = options.paymentStatus;
+      query.refundStatus = { $nin: ['PENDING', 'PROCESSING', 'COMPLETED'] };
+    }
   }
 
   if (options.search) {
-    // If it's a valid object ID, search by ID
     if (mongoose.Types.ObjectId.isValid(options.search)) {
       query._id = new mongoose.Types.ObjectId(options.search);
     } else {
-      // Otherwise search by contact name or email as a fallback, or we can just ignore if it's not an ID
       query.$or = [
         { contactName: { $regex: options.search, $options: 'i' } },
       ];
@@ -53,14 +49,13 @@ export const getPaymentHistory = async (
   ]);
 
   const data = bookings.map((booking: any) => ({
-    id: booking._id,
+    id: `BK-${booking._id.toString().slice(17).toUpperCase()}`,
     venueName: booking.venue?.name || 'Unknown Venue',
     date: booking.createdAt,
     totalAmount: booking.totalAmount,
     amountPaid: booking.amountPaid,
     refundAmount: booking.refundAmount,
     paymentStatus: booking.paymentStatus,
-    refundStatus: booking.refundStatus,
     bookingStatus: booking.bookingStatus,
   }));
 

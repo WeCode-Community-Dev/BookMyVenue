@@ -321,3 +321,24 @@ export const findBookingsByVenueIds = async (
     pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
   };
 };
+
+
+export const finalizeRefundBooking = async (
+  bookingId: string,
+  session: ClientSession
+): Promise<IBooking | null> => {
+  return Booking.findOneAndUpdate(
+    { _id: bookingId, refundStatus: RefundStatus.PROCESSING },
+    { refundStatus: RefundStatus.COMPLETED },
+    { session, new: true }
+  ) as Promise<IBooking | null>;
+};
+
+
+export const markRefundFailed = async (bookingId: string): Promise<IBooking | null> => {
+  return Booking.findOneAndUpdate(
+    { _id: bookingId, refundStatus: RefundStatus.PROCESSING },
+    { refundStatus: RefundStatus.FAILED },
+    { new: true }
+  ) as Promise<IBooking | null>;
+};

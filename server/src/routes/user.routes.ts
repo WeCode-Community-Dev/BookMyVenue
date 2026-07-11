@@ -6,12 +6,15 @@ import { getProfile, updateProfile, getUserBookings } from '@/controllers/user.c
 import { getUserWallet } from '@/controllers/wallet.controller';
 import { getPaymentHistory } from '@/controllers/paymentHistory.controller';
 import { upload } from '@/middlewares/upload.middleware';
-import { requestPasswordChangeOtp, verifyAndChangePassword } from '@/controllers/password.controller';
+import { getSuggestions } from '@/controllers/search.controller';
 import { getWishlist, toggleWishlist } from '@/controllers/wishlist.controller';
+import { requestPasswordChangeOtp, verifyAndChangePassword } from '@/controllers/password.controller';
 
 const router = Router();
 
 router.get('/home', getHomeData);
+router.get('/search', getSuggestions);
+
 // Protected user routes
 router.use(authMiddleware);
 
