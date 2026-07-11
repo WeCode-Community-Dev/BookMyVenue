@@ -1,4 +1,4 @@
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 export interface IUser extends Document {
   fullName: string;
@@ -11,6 +11,7 @@ export interface IUser extends Document {
   googleId?: string;
   avatar?: string;
   authProvider?: 'local' | 'google';
+  wishlist: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
