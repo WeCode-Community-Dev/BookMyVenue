@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     CLOUDINARY_FOLDER_NAME: str
     RAZORPAY_KEY_ID: str
     RAZORPAY_KEY_SECRET: str
+    SMTP_HOST: str
+    SMTP_PORT: int
+    SMTP_EMAIL: str
+    SMTP_PASSWORD: str
 
     class Config:
         env_file = ".env"
