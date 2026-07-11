@@ -52,6 +52,14 @@ export default function LoginModal({
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        if (step === LoginStatus.OTP) {
+            setTimeout(() => {
+                inputRefs.current[0]?.focus();
+            }, 50);
+        }
+    }, [step]);
+
     const handleContinue = async (evt: React.FormEvent) => {
         evt.preventDefault();
         if (!email) return;
