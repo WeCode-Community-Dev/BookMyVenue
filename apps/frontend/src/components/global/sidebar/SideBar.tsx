@@ -16,7 +16,7 @@ import { AppText } from "@/lib/language/LanguageHelper";
 import { Button } from "../../ui/button/Button";
 import NxtImage from "next/image";
 import { SCREENS } from "@/lib/Constants";
-import { cn } from "@/lib/Utils";
+import { cn } from "@/lib/utils";
 import { sideBarStyle } from "./SideBarStyle";
 import { useRouter } from "next/navigation";
 
