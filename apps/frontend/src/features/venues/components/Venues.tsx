@@ -2,7 +2,7 @@
 
 import Card, { Venue } from "@/components/global/card/Card";
 
-import EventTypeFilter from "@/components/global/EventTypefilter";
+import EventTypeFilter from "@/components/global/eventtypefilter";
 import LoginModal from "@/components/global/login/Login";
 import MapPanel from "@/components/global/mappanel";
 import OfferSection from "@/components/global/offersection";
