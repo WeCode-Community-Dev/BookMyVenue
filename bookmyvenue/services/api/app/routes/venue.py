@@ -1,7 +1,7 @@
 from typing import Annotated, List, Optional
 from fastapi import APIRouter, HTTPException, Depends, status, Query
 from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import func, select, or_, desc, asc
+from sqlalchemy import func, select, or_, desc
 from utils.dependencies import require_role
 from models.user import User, RoleEnum
 from models.venue_category import VenueCategory
