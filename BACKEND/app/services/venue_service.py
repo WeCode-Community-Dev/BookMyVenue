@@ -7,6 +7,7 @@ from app.model.venue_images import VenueImages
 from app.model.venue_availability import VenueAvailability
 from typing import List
 from sqlalchemy import or_
+from app.services.email_service import send_email
 
 def get_venues(
     db: Session,
@@ -298,7 +299,8 @@ def update_venue_approval_status(
     db: Session,
     venue_id: int,
     status: str,
-    reason: str
+    reason: str,
+    user_id: int
 ):
     venue = (
         db.query(Venue)
@@ -309,14 +311,30 @@ def update_venue_approval_status(
     if not venue:
         raise Exception("Invalid venue")
 
+    email_id = (
+        db.query(User.email)
+        .filter(User.id == user_id)
+        .first()
+    )
+
     if status.lower() == "approved":
         venue.is_approved = True
+
+        send_email(
+            to_email=email_id.email,
+            subject="Venue Approval Approved",
+            body="Your venue request has been approved."
+        )
+
     elif status.lower() == "rejected":
         venue.is_approved = False
-        
-        ## reason
-        ## rejection schema to store rejected description plus venue_id
-        ## shoot mail to venue owner mentioning rejection
+        venue.rejected_reason = reason
+
+        send_email(
+            to_email=email_id.email,
+            subject="Venue Approval Rejection",
+            body="Your venue request has been rejected. due to this reason: " + reason
+        )
 
     else:
         raise Exception("Status must be either 'approved' or 'rejected'")

@@ -21,7 +21,7 @@ router = APIRouter(
     tags=["Admin"]
 )
 
-@router.post("/venue/{venue_id}")
+@router.post("/update-venue-approval-status/{venue_id}")
 def get_venue_by_id(
     payload: VenueApprovalRequest,
     venue_id: int,
@@ -32,7 +32,8 @@ def get_venue_by_id(
             db,
             venue_id,
             payload.status,
-            payload.reason
+            payload.reason,
+            payload.user_id
         )
     except Exception as e:
         raise HTTPException(
