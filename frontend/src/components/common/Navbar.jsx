@@ -80,8 +80,8 @@ const Navbar = () => {
       {!isAuthenticated && (
         <Link
           to="/register"
-          className={mobileDrawerNavClass}
           onClick={closeMenu}
+          className="mt-4 flex w-full items-center justify-center rounded-full bg-red-600 px-4 py-3 text-sm font-medium text-white shadow-sm shadow-red-600/25 transition-all duration-200 hover:bg-red-700 hover:shadow-md hover:shadow-red-600/30"
         >
           Get started
         </Link>
