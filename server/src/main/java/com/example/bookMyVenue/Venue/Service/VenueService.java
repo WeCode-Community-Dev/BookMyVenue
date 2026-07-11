@@ -11,6 +11,7 @@ import com.example.bookMyVenue.Venue.DTO.VenueAvailabiltyRulesResponse;
 import com.example.bookMyVenue.Venue.DTO.VenueResponse;
 import com.example.bookMyVenue.Venue.Model.AdminVenueActionLog;
 import com.example.bookMyVenue.Venue.Model.Venue;
+import com.example.bookMyVenue.Venue.Model.VenueImages;
 import com.example.bookMyVenue.Venue.Repository.AdminVenueActionRepository;
 import com.example.bookMyVenue.Venue.Repository.VenueRepo;
 import com.example.bookMyVenue.Venue.Repository.VenueVerificationLogRepo;
@@ -44,6 +45,7 @@ public class VenueService {
     public VenueResponse mapToVenueResponse(Venue v) {
         VenueAvailabiltyRulesResponse activeRule =
                 venueAvailabilityRulesService.getActiveRule(v.getId());
+        List<String> imageFiles =v.getImageFiles().stream().map(VenueImages::getFileLocation).toList();
         return VenueResponse.builder()
                 .id(v.getId())
                 .venueType(v.getVenueType().name())
@@ -55,6 +57,7 @@ public class VenueService {
                 .address(v.getAddress())
                 .seatingCapacity(v.getSeatingCapacity())
                 .activeAvailabilityRule(activeRule)
+                .imageFiles(imageFiles)
                 .build();
     }
 

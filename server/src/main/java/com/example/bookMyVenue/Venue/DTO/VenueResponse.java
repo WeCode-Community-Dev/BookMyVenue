@@ -22,7 +22,7 @@ public class VenueResponse {
     private String address;
     private String city;
     private Double pricePerHour;
-    private List<MultipartFile> imageFiles;
+    private List<String> imageFiles;
     private VenueAvailabiltyRulesResponse activeAvailabilityRule;
     private String venueType;
     private Boolean parking;
