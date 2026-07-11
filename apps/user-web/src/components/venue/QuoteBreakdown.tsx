@@ -1,5 +1,5 @@
 import { formatPrice } from '../../utils'
-import type { PricingQuote, BookingDisplay } from '../../types'
+import type { PricingQuote, BookingOut } from '../../types'
 
 type FromQuote = {
   source: 'quote'
@@ -13,8 +13,7 @@ type FromQuote = {
 
 type FromBooking = {
   source: 'booking'
-  display: BookingDisplay
-  balanceDueDate?: string | null
+  booking: BookingOut
   /** Set when nested inside another card (e.g. BookingSummaryCard) so this
    * component doesn't draw its own border/shadow/background on top of the
    * parent's. Defaults to false (standalone, boxed). */
@@ -40,12 +39,10 @@ function Row({
 }) {
   return (
     <div
-      className={`flex items-center justify-between py-2.5 ${
-        !muted ? 'border-b border-zinc-100 dark:border-ink-800' : ''
-      }`}
+      className={'flex items-center justify-between py-2.5 ' + (!muted ? 'border-b border-zinc-100 dark:border-ink-800' : '')}
     >
       <span
-        className={`text-sm ${muted ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-500 dark:text-zinc-400'}`}
+        className={'text-sm ' + (muted ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-500 dark:text-zinc-400')}
       >
         {label}
       </span>
@@ -53,13 +50,14 @@ function Row({
         <span className="h-4 w-20 animate-pulse rounded bg-zinc-100 dark:bg-ink-800" />
       ) : (
         <span
-          className={`text-sm ${
-            bold
+          className={
+            'text-sm ' +
+            (bold
               ? 'text-base font-semibold text-zinc-900 dark:text-zinc-100'
               : muted
                 ? 'text-zinc-400 dark:text-zinc-500'
-                : 'font-medium text-zinc-700 dark:text-zinc-300'
-          }`}
+                : 'font-medium text-zinc-700 dark:text-zinc-300')
+          }
         >
           {value}
         </span>
@@ -124,23 +122,38 @@ export function QuoteBreakdown(props: Props) {
   }
 
   // source === 'booking'
-  const { display, balanceDueDate } = props
+  const { booking } = props
+
+  // Defensive logic: when fully paid, the backend should have updated advance_due_paise
+  // to quoted_price_paise and balance_due_paise to 0. If not, we compute remaining
+  // based on payment_status to avoid showing stale balance values.
+  const isFullyPaid = booking.payment_status === 'fully_paid'
+  const advanceDuePaise = isFullyPaid ? booking.quoted_price_paise : booking.advance_due_paise
+  const balanceDuePaise = isFullyPaid ? 0 : booking.balance_due_paise
+
+  const advance = formatPrice(advanceDuePaise)
+  const balance = formatPrice(balanceDuePaise)
+
+  // Detect whether there is still a balance remaining (for BalanceDueNotice)
+  const hasBalanceDue = balanceDuePaise > 0
 
   return (
     <div className={wrapperClass}>
-      <Row label="Total price" value={display.quoted_price} bold />
-      <Row label="Advance paid" value={display.advance_due} />
-      <Row label="Balance due" value={display.balance_due} />
+      <Row label="Total price" value={formatPrice(booking.quoted_price_paise)} bold />
 
-      {balanceDueDate && (
+      <Row label="Advance due now" value={advance} />
+
+      <Row label="Balance due later" value={balance} />
+
+      {hasBalanceDue && booking.balance_due_date && (
         <div className="pb-1">
-          <BalanceDueNotice date={balanceDueDate} />
+          <BalanceDueNotice date={booking.balance_due_date} />
         </div>
       )}
 
       <div className="mt-1.5 border-t border-zinc-100 pt-1.5 dark:border-ink-800">
-        <Row label="Platform fee" value={display.platform_fee} muted />
-        <Row label="Owner receives" value={display.owner_payout} muted />
+        <Row label="Platform fee" value={formatPrice(booking.platform_fee_paise)} muted />
+        <Row label="Owner receives" value={formatPrice(booking.owner_payout_paise)} muted />
       </div>
     </div>
   )

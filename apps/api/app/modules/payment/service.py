@@ -224,6 +224,9 @@ def confirm_payment(db: Session, payment_intent_id: str) -> None:
     booking.amount_paid_paise = (booking.amount_paid_paise or 0) + payment.amount_paise
 
     if payment.payment_type == "full":
+        # Full payment covers both advance and balance — advance_due_paise now represents
+        # what was paid upfront (the total), and balance is fully settled.
+        booking.advance_due_paise = booking.quoted_price_paise
         booking.balance_due_paise = 0
         booking.payment_status = PaymentStatus.fully_paid
     else:
@@ -441,7 +444,13 @@ def refund_booking(
         refunded += _record_refund(db, p, booking, p.amount_paise, reason or "owner_cancellation")
 
     if refunded > 0:
-        booking.payment_status = PaymentStatus.refunded
+        # Set payment_status based on whether full amount was refunded or only partial
+        total_paid = booking.amount_paid_paise or 0
+        booking.payment_status = (
+            PaymentStatus.refunded
+            if refunded >= total_paid
+            else PaymentStatus.partially_refunded
+        )
         venue_name = venue.name if venue else "your venue"
         notifications.notify(
             db,

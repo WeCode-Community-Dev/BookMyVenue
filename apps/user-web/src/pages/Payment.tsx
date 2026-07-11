@@ -106,12 +106,7 @@ function BookingSummaryCard({ booking }: { booking: BookingOut }) {
 
         <div className="my-5 border-t border-zinc-100 dark:border-ink-800" />
 
-        <QuoteBreakdown
-          source="booking"
-          display={booking.display}
-          balanceDueDate={booking.balance_due_date}
-          embedded
-        />
+        <QuoteBreakdown source="booking" booking={booking} embedded />
       </div>
     </div>
   )
