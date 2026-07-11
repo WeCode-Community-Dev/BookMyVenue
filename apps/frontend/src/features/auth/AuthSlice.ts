@@ -17,46 +17,42 @@ interface AuthState {
   otpSent: boolean;
   emailSentTo: string | null;
   tokenExpiresAt: number | null;
+  justLoggedOut: boolean;
 }
 
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
-  loading: false,
+  loading: true,
   error: null,
   otpSent: false,
   emailSentTo: null,
   tokenExpiresAt: null,
+  justLoggedOut: false,
 };
 
 const AuthSlice = createSlice({
   name: "AuthReducer",
   initialState,
-
   reducers: {
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
-
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
-
     setOtpSent: (state, action: PayloadAction<{ email: string }>) => {
       state.otpSent = true;
       state.emailSentTo = action.payload.email;
       state.error = null;
     },
-
     clearOtpSent: (state) => {
       state.otpSent = false;
       state.emailSentTo = null;
     },
-
     setTokenExpiresAt: (state, action: PayloadAction<number | null>) => {
       state.tokenExpiresAt = action.payload;
     },
-
     setAuthSuccess: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
       state.isAuthenticated = true;
@@ -64,15 +60,17 @@ const AuthSlice = createSlice({
       state.error = null;
       // Access token is valid for 15 minutes in backend configuration
       state.tokenExpiresAt = Date.now() + 15 * 60 * 1000;
+      state.justLoggedOut = false;
     },
-    
-    setLogout: (state) => {
+    setLogout: (state, action: PayloadAction<{ isManual?: boolean } | undefined>) => {
       state.user = null;
       state.isAuthenticated = false;
       state.otpSent = false;
       state.emailSentTo = null;
       state.error = null;
       state.tokenExpiresAt = null;
+      state.loading = false;
+      state.justLoggedOut = action.payload?.isManual ?? false;
     },
   },
 });
@@ -93,5 +91,6 @@ export const selectAuthLoading = (state: { AuthReducer: AuthState }) => state.Au
 export const selectAuthError = (state: { AuthReducer: AuthState }) => state.AuthReducer.error;
 export const selectOtpSent = (state: { AuthReducer: AuthState }) => state.AuthReducer.otpSent;
 export const selectEmailSentTo = (state: { AuthReducer: AuthState }) => state.AuthReducer.emailSentTo;
+export const selectJustLoggedOut = (state: { AuthReducer: AuthState }) => state.AuthReducer.justLoggedOut;
 
 export default AuthSlice.reducer;

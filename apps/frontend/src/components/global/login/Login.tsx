@@ -16,37 +16,131 @@ import { LoginStatus } from "@/lib/Constants";
 import NxtImage from "next/image";
 import googleIcon from "../../../../public/assets/images/login/google-color.svg";
 import { loginStyle } from "./LoginStyle";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { authService } from "@/features/auth/services/AuthService";
 
 type LoginModalProps = {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
 };
 
 export default function LoginModal({
     isOpen,
     onOpenChange,
 }: LoginModalProps) {
-    const [
-        step, setStep
-    ] = useState<LoginStatus>(LoginStatus.LOGIN);
+    const {
+        loading,
+        error,
+        requestOtp,
+        verifyOtp,
+        changeEmail,
+        clearError
+    } = authService();
 
-    const [
-        value, setValue
-    ] = useState("");
+    const [step, setStep] = useState<LoginStatus>(LoginStatus.LOGIN);
+    const [email, setEmail] = useState("");
+    const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(""));
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    const handleContinue = () => {
-        if (!value) return;
-        setStep(LoginStatus.OTP);
+    useEffect(() => {
+        if (isOpen) {
+            clearError();
+            setStep(LoginStatus.LOGIN);
+            setEmail("");
+            setOtpValues(Array(6).fill(""));
+            changeEmail();
+        }
+    }, [isOpen]);
+
+    const handleContinue = async (evt: React.FormEvent) => {
+        evt.preventDefault();
+        if (!email) return;
+        const res = await requestOtp(email);
+        if (res.success) {
+            setStep(LoginStatus.OTP);
+        }
     };
 
-    const handleVerify = () => {
-        setStep(LoginStatus.SUCCESS);
+    const triggerAutoVerify = async (otpString: string) => {
+        const res = await verifyOtp(email, otpString);
+        if (res.success) {
+            setStep(LoginStatus.SUCCESS);
+            setTimeout(() => {
+                onOpenChange(false);
+                setStep(LoginStatus.LOGIN);
+                setEmail("");
+                setOtpValues(Array(6).fill(""));
+            }, 2000);
+        }
+    };
 
-        setTimeout(() => {
-            onOpenChange(false);
-            setStep(LoginStatus.LOGIN);
-        }, 2000);
+    const handleVerify = async (evt: React.FormEvent) => {
+        evt.preventDefault();
+        const otpString = otpValues.join("");
+        if (otpString.length !== 6) return;
+        await triggerAutoVerify(otpString);
+    };
+
+    const handleGoogleLogin = () => {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+        window.location.href = `${apiBase}/auth/google`;
+    };
+
+    const handleOtpChange = (index: number, val: string) => {
+        if (val && !/^\d$/.test(val)) return;
+
+        clearError();
+
+        const newOtpValues = [...otpValues];
+        newOtpValues[index] = val;
+        setOtpValues(newOtpValues);
+
+        if (val && index < 5) {
+            inputRefs.current[index + 1]?.focus();
+        }
+
+        const otpString = newOtpValues.join("");
+        if (otpString.length === 6) {
+            triggerAutoVerify(otpString);
+        }
+    };
+
+    const handleOtpKeyDown = (index: number, evt: React.KeyboardEvent<HTMLInputElement>) => {
+        clearError();
+        if (evt.key === "Backspace") {
+            if (!otpValues[index] && index > 0) {
+                const newOtpValues = [...otpValues];
+                newOtpValues[index - 1] = "";
+                setOtpValues(newOtpValues);
+                inputRefs.current[index - 1]?.focus();
+            } else {
+                const newOtpValues = [...otpValues];
+                newOtpValues[index] = "";
+                setOtpValues(newOtpValues);
+            }
+        }
+    };
+
+    const handleOtpPaste = (evt: React.ClipboardEvent<HTMLInputElement>) => {
+        evt.preventDefault();
+        const pastedData = evt.clipboardData.getData("text").slice(0, 6);
+        if (!/^\d+$/.test(pastedData)) return;
+
+        clearError();
+
+        const newOtpValues = [...otpValues];
+        for (let i = 0; i < pastedData.length; i++) {
+            newOtpValues[i] = pastedData[i];
+        }
+        setOtpValues(newOtpValues);
+
+        const otpString = newOtpValues.join("");
+        if (otpString.length === 6) {
+            triggerAutoVerify(otpString);
+        } else {
+            const focusIndex = Math.min(pastedData.length, 5);
+            inputRefs.current[focusIndex]?.focus();
+        }
     };
 
     return (
@@ -64,55 +158,71 @@ export default function LoginModal({
                         </div>
 
                         <DialogTitle className={loginStyle.title}>
-              Welcome Back
+                            Welcome Back
                         </DialogTitle>
 
                         <p className={loginStyle.subtitle}>
-              Login or sign in to continue
+                            Login or sign in to continue
                         </p>
 
-                        {/* Google */}
-                        <button className={loginStyle.googleButton}>
-                            <NxtImage src={googleIcon} alt="Google"
-                                className={loginStyle.googleIcon}
-                            />
-              Continue with Google
-                        </button>
+                        {error && (
+                            <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-600 border border-red-100 text-center font-medium">
+                                {error}
+                            </div>
+                        )}
 
-                        <div className={loginStyle.separatorWrapper}>
-                            <div className={loginStyle.separatorLine} />
-                            <span className={loginStyle.separatorText}>
-                OR
-                            </span>
-                            <div className={loginStyle.separatorLine} />
-                        </div>
+                        <form onSubmit={handleContinue}>
+                            {/* Google */}
+                            <button
+                                type="button"
+                                onClick={handleGoogleLogin}
+                                className={loginStyle.googleButton}
+                            >
+                                <NxtImage src={googleIcon} alt="Google"
+                                    className={loginStyle.googleIcon}
+                                />
+                                Continue with Google
+                            </button>
 
-                        <p className={loginStyle.formPrompt}>
-              Enter your mobile number or email
-                        </p>
+                            <div className={loginStyle.separatorWrapper}>
+                                <div className={loginStyle.separatorLine} />
+                                <span className={loginStyle.separatorText}>
+                                    OR
+                                </span>
+                                <div className={loginStyle.separatorLine} />
+                            </div>
 
-                        <div className={loginStyle.inputWrapper}>
-                            <Mail className={loginStyle.inputIcon} />
+                            <p className={loginStyle.formPrompt}>
+                                Enter your email address
+                            </p>
 
-                            <input
-                                value={value}
-                                onChange={(evt) => {
-                                    return setValue(evt.target.value);
-                                }}
-                                placeholder="Mobile number or email address"
-                                className={loginStyle.inputField}
-                            />
-                        </div>
+                            <div className={loginStyle.inputWrapper}>
+                                <Mail className={loginStyle.inputIcon} />
 
-                        <button
-                            onClick={handleContinue}
-                            className={loginStyle.primaryButton}
-                        >
-              Continue
-                        </button>
+                                <input
+                                    type="email"
+                                    required
+                                    value={email}
+                                    onChange={(evt) => {
+                                        return setEmail(evt.target.value);
+                                    }}
+                                    placeholder="Email address"
+                                    className={loginStyle.inputField}
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                className={loginStyle.primaryButton}
+                                disabled={loading}
+                            >
+                                {loading ? "Sending..." : "Continue"}
+                            </button>
+                        </form>
 
                         <p className={loginStyle.disclaimer}>
-              We&apos;ll send a one-time password (OTP)
+                            We&apos;ll send a one-time password (OTP)
                         </p>
 
                     </div>
@@ -123,8 +233,10 @@ export default function LoginModal({
                     <div className={loginStyle.otpStep}>
 
                         <button
+                            type="button"
                             onClick={() => {
-                                return setStep(LoginStatus.LOGIN);
+                                changeEmail();
+                                setStep(LoginStatus.LOGIN);
                             }}
                             className={loginStyle.backButton}
                         >
@@ -138,36 +250,49 @@ export default function LoginModal({
                         </div>
 
                         <DialogTitle className={loginStyle.otpTitle}>
-              Enter OTP
+                            Enter OTP
                         </DialogTitle>
 
                         <p className={loginStyle.subtitle}>
-              We sent a 6-digit OTP
+                            We sent a 6-digit OTP to <span className="font-semibold">{email}</span>
                         </p>
 
-                        <div className={loginStyle.otpInputsContainer}>
-                            {[
-                                1, 2, 3, 4, 5, 6
-                            ].map((item) => {
-                                return (
-                                    <input
-                                        key={item}
-                                        maxLength={1}
-                                        className={loginStyle.otpInputItem}
-                                    />
-                                );
-                            })}
-                        </div>
+                        {error && (
+                            <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-600 border border-red-100 text-center font-medium">
+                                {error}
+                            </div>
+                        )}
 
-                        <button
-                            onClick={handleVerify}
-                            className={loginStyle.otpButton}
+                        <form onSubmit={handleVerify}>
+                            <div className={loginStyle.otpInputsContainer}>
+                                {[0, 1, 2, 3, 4, 5].map((index) => {
+                                    return (
+                                        <input
+                                            key={index}
+                                            ref={(el) => {
+                                                inputRefs.current[index] = el;
+                                            }}
+                                            value={otpValues[index]}
+                                            onChange={(evt) => handleOtpChange(index, evt.target.value)}
+                                            onKeyDown={(evt) => handleOtpKeyDown(index, evt)}
+                                            onPaste={handleOtpPaste}
+                                            maxLength={1}
+                                            disabled={loading}
+                                            className={loginStyle.otpInputItem}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </form>
+
+                        <p
+                            onClick={async () => {
+                                if (loading) return;
+                                await requestOtp(email);
+                            }}
+                            className={loginStyle.resendOtp}
                         >
-              Verify & Login
-                        </button>
-
-                        <p className={loginStyle.resendOtp}>
-              Resend OTP
+                            {loading ? "Sending..." : "Resend OTP"}
                         </p>
 
                     </div>
@@ -184,11 +309,11 @@ export default function LoginModal({
                         </div>
 
                         <DialogTitle className={loginStyle.successTitle}>
-              Login Successful!
+                            Login Successful!
                         </DialogTitle>
 
                         <p className={loginStyle.successSubtitle}>
-              Welcome back 👋
+                            Welcome back 👋
                         </p>
 
                         <div className={loginStyle.progressBarContainer}>
@@ -196,7 +321,7 @@ export default function LoginModal({
                         </div>
 
                         <p className={loginStyle.redirectText}>
-              Redirecting...
+                            Redirecting...
                         </p>
 
                     </div>

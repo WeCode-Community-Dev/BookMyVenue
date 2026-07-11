@@ -99,18 +99,14 @@ export const authService = () => {
 
     const logout = async () => {
         dispatch(setLoading(true));
-
         try {
             await apiFetch('/auth/logout', { method: 'POST' });
-
         } catch (err) {
             console.error('Logout error on backend:', err);
-
         } finally {
-
-            dispatch(setLogout());
+            dispatch(setLogout({ isManual: true }));
             dispatch(clearOtpSent());
-            router.push('/auth');
+            router.push('/venues');
             dispatch(setLoading(false));
         }
     };
