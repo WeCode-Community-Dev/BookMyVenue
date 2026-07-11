@@ -159,6 +159,7 @@ export const authStyle = {
         "transition",
         "hover:bg-teal-700",
         "sm:h-14",
+        "cursor-pointer",
     ),
 
     divider: clsx("my-6", "flex", "items-center", "gap-4"),
@@ -178,6 +179,7 @@ export const authStyle = {
         "transition",
         "hover:bg-slate-50",
         "sm:h-14",
+        "cursor-pointer",
     ),
 
     loginText: clsx("mt-6", "text-center", "text-sm", "text-slate-500"),

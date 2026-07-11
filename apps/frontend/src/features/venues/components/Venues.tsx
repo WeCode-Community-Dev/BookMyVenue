@@ -16,7 +16,7 @@ import { venues } from "../services/VenuService";
 export default function Venues() {
     const [
         loginOpen, setLoginOpen
-    ] = useState(false);
+    ] = useState(true);
 
     const [
         selectedVenue, setSelectedVenue
