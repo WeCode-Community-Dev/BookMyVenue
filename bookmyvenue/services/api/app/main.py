@@ -8,9 +8,11 @@ from models.venue import Venue
 from models.venue_category import VenueCategory
 from models.venue_image import VenueImage
 from models.booking import Booking
+from models.booking_slot import BookingSlot
+
 
 from database import Base, engine
-from routes import auth, venue_category, venue
+from routes import auth, venue_category, venue, availability, booking
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +24,10 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(venue_category.router,
                    prefix="/api/categories", tags=[" Venue Categories"])
 app.include_router(venue.router, prefix="/api/venues", tags=["Venue"])
+app.include_router(availability.router,
+                   prefix="/api/availability", tags=["Availability"])
+app.include_router(booking.router,
+                   prefix="/api/booking", tags=["Booking"])
 
 app.add_middleware(
     CORSMiddleware,
@@ -45,3 +51,5 @@ def db_check(db: Session = Depends(get_db)):
 @app.get("/me")
 def get_user(current_user: User = Depends(get_current_user)):
     return current_user
+
+

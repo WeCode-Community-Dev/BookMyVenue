@@ -10,9 +10,7 @@ from .venue_category import VenueCategory
 import enum
 
 
-
-
-class StatusEnum(enum.Enum):
+class StatusEnum(str, enum.Enum):
     ACTIVE = "active"
     INACTIVE = "inactive"
 
@@ -49,3 +47,5 @@ class Venue(Base):
     owner = relationship("User", back_populates="venues")
     category = relationship("VenueCategory", back_populates="venues")
     images = relationship("VenueImage", back_populates="venue")
+    availabilities = relationship("Availability", back_populates="venue")
+    bookings = relationship("Booking", back_populates="venue")

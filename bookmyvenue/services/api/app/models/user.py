@@ -3,12 +3,13 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from sqlalchemy import DateTime, Integer, String, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 import enum
 
 from database import Base
 
 
-class RoleEnum(enum.Enum):
+class RoleEnum(str, enum.Enum):
     BOOKER = "booker"
     OWNER = "owner"
     ADMIN = "admin"
@@ -29,3 +30,4 @@ class User(Base):
         DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
     venues = relationship("Venue", back_populates="owner")
+    bookings = relationship("Booking", back_populates="booker")

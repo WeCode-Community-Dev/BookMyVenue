@@ -1,6 +1,6 @@
 from typing_extensions import Self
 from datetime import datetime
-from pydantic import BaseModel, Field, PositiveInt, model_validator, ValidationError
+from pydantic import BaseModel, Field, PositiveInt, model_validator
 from typing import Optional, List
 from .venue_image import VenueImageOut
 from .venue_category import VenueCategoryOut

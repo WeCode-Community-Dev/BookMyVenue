@@ -9,6 +9,7 @@ import { AuthProvider } from "./context/AuthContext";
 import CreateVenue from "./pages/owner/CreateVenue";
 import OwnerDashboard from "./pages/owner/OwnerDashboard";
 import Home from "./pages/Home";
+import VenueDetail from "./pages/VenueDetail";
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/venues/:venueId" element={<VenueDetail />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
