@@ -35,10 +35,12 @@ dev = [
 
 [tool.pytest.ini_options]
 env_files = [".env.test"]
+pythonpath = "."
 
 [tool.ruff]
 target-version = "py312"
 line-length = 100
+exclude = ["alembic"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP"]

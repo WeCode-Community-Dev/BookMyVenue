@@ -62,7 +62,7 @@ export default function DatePicker({ value, onChange, label, required, name, cla
   return (
     <div className={`relative w-full ${className}`} ref={containerRef}>
       {label && (
-        <label className="flex items-center gap-1.5 text-sm font-medium text-zinc-700 mb-1">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
           <span>{label} {required && <span className="text-red-500">*</span>}</span>
           {info && <InfoTooltip content={info} />}
         </label>
@@ -73,10 +73,10 @@ export default function DatePicker({ value, onChange, label, required, name, cla
       <button
         type="button"
         onClick={toggleOpen}
-        className="w-full h-10 px-3 flex items-center justify-between rounded-md border border-zinc-200 bg-white hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-brand/20 transition-colors text-sm text-zinc-700"
+        className="w-full h-10 px-3 flex items-center justify-between rounded-md border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 hover:border-zinc-300 dark:hover:border-ink-700 focus:outline-none focus:ring-2 focus:ring-brand/20 transition-colors text-sm text-zinc-700 dark:text-zinc-100"
       >
         <div className="flex items-center gap-2">
-          <CalendarIcon className="w-4 h-4 text-zinc-400" />
+          <CalendarIcon className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
           <span>{selectedDate ? format(selectedDate, 'MMM d, yyyy') : 'Pick a date'}</span>
         </div>
       </button>
@@ -84,7 +84,7 @@ export default function DatePicker({ value, onChange, label, required, name, cla
       {isOpen && typeof document !== 'undefined' && createPortal(
         <div 
           ref={popoverRef}
-          className="absolute z-[9999] bg-white rounded-xl border border-zinc-200 shadow-xl p-3 animate-in fade-in zoom-in-95 duration-200"
+          className="absolute z-[9999] bg-white dark:bg-ink-900 rounded-xl border border-zinc-200 dark:border-ink-800 shadow-xl p-3 animate-in fade-in zoom-in-95 duration-200"
           style={{ top: coords.top, left: coords.left }}
         >
           <style>{`

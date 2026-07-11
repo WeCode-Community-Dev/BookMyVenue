@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+
 from fastapi import HTTPException
 
 
@@ -23,7 +24,10 @@ def parse_timezone_datetime(val: str, field_name: str) -> datetime:
                 {
                     "type": "datetime_from_date_parsing",
                     "loc": ["query", field_name],
-                    "msg": f"Input should be a valid datetime or date, unexpected extra characters at the end of the input: {str(e)}",
+                    "msg": (
+                        "Input should be a valid datetime or date, unexpected "
+                        f"extra characters at the end of the input: {str(e)}"
+                    ),
                     "input": val,
                 }
             ],

@@ -1,12 +1,15 @@
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from app.core.database import with_session
 from app.modules.booking.models import (
-    Booking, BookingStatus, PaymentStatus, BookingStatusHistory,
+    Booking,
+    BookingStatus,
+    BookingStatusHistory,
+    PaymentStatus,
 )
-from app.modules.venue.models import Venue
 from app.modules.notification import service as notifications
+from app.modules.venue.models import Venue
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +21,7 @@ def run_flag() -> int:
     """Flag confirmed-but-balance-unpaid bookings whose balance due date has
     passed, opening the owner-action window (extend / forfeit / goodwill).
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     today = now.date()
     flagged = 0
     with with_session() as db:
@@ -42,11 +45,21 @@ def run_flag() -> int:
             b.balance_overdue_at = now
             b.owner_action_deadline = now + timedelta(hours=window)
             venue_name = venue.name if venue else "your venue"
-            notifications.notify(db, b.user_id, "balance_overdue",
-                                 context={"venue_name": venue_name}, booking_id=b.id)
+            notifications.notify(
+                db,
+                b.user_id,
+                "balance_overdue",
+                context={"venue_name": venue_name},
+                booking_id=b.id,
+            )
             if venue:
-                notifications.notify(db, venue.owner_id, "balance_overdue",
-                                     context={"venue_name": venue_name}, booking_id=b.id)
+                notifications.notify(
+                    db,
+                    venue.owner_id,
+                    "balance_overdue",
+                    context={"venue_name": venue_name},
+                    booking_id=b.id,
+                )
             flagged += 1
         logger.info("balance_overdue_flag: flagged %d booking(s)", flagged)
         return flagged
@@ -60,7 +73,7 @@ def run_autocancel() -> int:
     so the advance is forfeited (this is a system cancel for non-payment, not an
     owner cancellation). Owner-initiated cancels still refund per their own paths.
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     cancelled = 0
     with with_session() as db:
         rows = (
@@ -83,15 +96,23 @@ def run_autocancel() -> int:
             b.cancelled_at = now
             if b.slot:
                 b.slot.is_blocking = False
-            db.add(BookingStatusHistory(
-                booking_id=b.id, old_status=old,
-                new_status=BookingStatus.balance_overdue_cancelled,
-                reason="balance_overdue_autocancel_job",
-            ))
+            db.add(
+                BookingStatusHistory(
+                    booking_id=b.id,
+                    old_status=old,
+                    new_status=BookingStatus.balance_overdue_cancelled,
+                    reason="balance_overdue_autocancel_job",
+                )
+            )
             venue = db.get(Venue, b.venue_id)
             venue_name = venue.name if venue else "your venue"
-            notifications.notify(db, b.user_id, "booking_canceled",
-                                 context={"venue_name": venue_name}, booking_id=b.id)
+            notifications.notify(
+                db,
+                b.user_id,
+                "booking_canceled",
+                context={"venue_name": venue_name},
+                booking_id=b.id,
+            )
             cancelled += 1
         logger.info("balance_overdue_autocancel: cancelled %d booking(s)", cancelled)
         return cancelled

@@ -1,7 +1,7 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, time
-from decimal import Decimal, ROUND_HALF_EVEN
-from typing import Sequence
+from decimal import ROUND_HALF_EVEN, Decimal
 from uuid import UUID
 
 from app.modules.venue.models import VenuePricingRule
@@ -52,7 +52,8 @@ def resolve_rule(
 ) -> VenuePricingRule | None:
     """Highest-priority active rule matching the given date/time. No stacking."""
     candidates = [
-        r for r in rules
+        r
+        for r in rules
         if r.is_active
         and r.deleted_at is None
         and r.applies_to in (applies_to, "both")
@@ -102,7 +103,9 @@ def price_unit(
     min_price_pct: Decimal,
     max_price_pct: Decimal,
 ) -> PricedUnit:
-    rule = resolve_rule(rules, target_date=target_date, target_time=target_time, applies_to=applies_to)
+    rule = resolve_rule(
+        rules, target_date=target_date, target_time=target_time, applies_to=applies_to
+    )
     computed_paise = apply_adjustment(base_paise, rule)
     final_paise, clamped = clamp_price(computed_paise, base_paise, min_price_pct, max_price_pct)
     return PricedUnit(

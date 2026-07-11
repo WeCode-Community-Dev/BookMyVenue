@@ -1,8 +1,8 @@
-from fastapi import APIRouter
-from app.modules.profile.schemas import ProfileResponse, UpdateProfileRequest
+from fastapi import APIRouter, Depends
+
 from app.modules.auth.dependencies import get_current_user
-from fastapi import Depends
 from app.modules.profile import service
+from app.modules.profile.schemas import ProfileResponse, UpdateProfileRequest
 
 router = APIRouter()
 

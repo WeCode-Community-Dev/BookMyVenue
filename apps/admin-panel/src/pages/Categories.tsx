@@ -222,7 +222,7 @@ export default function Categories() {
                     <td className="px-5 py-3.5">
                       {cat.banner_image ? (
                         <div className="flex items-center gap-2">
-                          <img src={cat.banner_image} alt={cat.label}
+                          <img src={cat.banner_image} alt={cat.label} loading="lazy"
                             className="h-10 w-16 rounded object-cover border border-zinc-200" />
                           {!cat.deleted_at && (
                             <button type="button" onClick={() => deleteBannerMutation.mutate(cat.id)}

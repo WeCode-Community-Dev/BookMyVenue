@@ -4,17 +4,19 @@ Suspended user access tests.
 Business rule: a suspended user must be denied access to every protected route
 even when they hold a valid JWT.
 """
+
 from uuid import uuid4
 
-from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRoleAssignment
-from tests.conftest import make_token
+from app.modules.profile.models import ProfileStatus, UserRole, UserRoleAssignment
+from tests.conftest import make_token, seed_auth_user
 
 
 def _seed_suspended(db, role: str):
     user_id = uuid4()
     email = f"suspended-{user_id.hex[:6]}@test.com"
-    db.add(Profile(id=user_id, email=email, status=ProfileStatus.suspended))
-    db.add(UserRoleAssignment(user_id=user_id, role=UserRole(role)))
+    seed_auth_user(db, user_id, email, status=ProfileStatus.suspended)
+    if role != "customer":
+        db.add(UserRoleAssignment(user_id=user_id, role=UserRole(role)))
     db.commit()
     return make_token(user_id, email)
 

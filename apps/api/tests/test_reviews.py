@@ -2,18 +2,20 @@
 Tests for the review system (service layer and API endpoints).
 """
 
-import pytest
 from datetime import datetime
 from uuid import uuid4
+
+import pytest
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import APIException
-from app.modules.review.service import ReviewService
-from app.modules.review.schemas import ReviewCreate, ReviewUpdate
-from app.modules.review.models import VenueReview
 from app.modules.booking.models import Booking, BookingStatus
 from app.modules.profile.models import Profile
+from app.modules.review.models import VenueReview
+from app.modules.review.schemas import ReviewCreate, ReviewUpdate
+from app.modules.review.service import ReviewService
 from app.modules.venue.models import Venue
+from tests.conftest import seed_auth_user
 
 
 class TestReviewService:
@@ -97,9 +99,7 @@ class TestReviewService:
         assert exc_info.value.status_code == 403
         assert "own reviews" in exc_info.value.detail.lower()
 
-    def test_delete_review_success(
-        self, db: Session, user_profile: Profile, review: VenueReview
-    ):
+    def test_delete_review_success(self, db: Session, user_profile: Profile, review: VenueReview):
         """User can soft delete their own review."""
         ReviewService.delete_review(db, user_profile.id, review.id)
 
@@ -149,15 +149,13 @@ class TestReviewService:
         """Reviews are paginated and exclude deleted/hidden reviews."""
         # Create multiple reviews
         for i in range(25):
-            user = Profile(id=uuid4(), email=f"user{i}@test.com", full_name=f"User {i}")
+            user = seed_auth_user(db, uuid4(), f"user{i}@test.com", full_name=f"User {i}")
             booking = Booking(
                 id=uuid4(),
                 venue_id=venue.id,
                 user_id=user.id,
                 status=BookingStatus.completed,
                 booking_type="full_day",
-                starts_at=datetime.utcnow(),
-                ends_at=datetime.utcnow(),
                 guest_count=2,
                 quoted_price_paise=10000,
                 advance_pct=30,
@@ -165,7 +163,6 @@ class TestReviewService:
                 advance_due_paise=3000,
                 balance_due_paise=7000,
             )
-            db.add(user)
             db.add(booking)
             db.flush()
 
@@ -218,22 +215,16 @@ class TestReviewService:
         result = ReviewService.list_venue_reviews(db, venue.id)
         assert len(result.items) == 0
 
-    def test_hide_review_admin(
-        self, db: Session, admin_user: Profile, review: VenueReview
-    ):
+    def test_hide_review_admin(self, db: Session, admin_user: Profile, review: VenueReview):
         """Admin can hide a review with a reason."""
-        hidden = ReviewService.hide_review(
-            db, admin_user.id, review.id, reason="Offensive content"
-        )
+        hidden = ReviewService.hide_review(db, admin_user.id, review.id, reason="Offensive content")
 
         assert hidden.is_hidden is True
         assert hidden.hidden_reason == "Offensive content"
         assert hidden.hidden_by == admin_user.id
         assert hidden.hidden_at is not None
 
-    def test_restore_review_admin(
-        self, db: Session, admin_user: Profile, review: VenueReview
-    ):
+    def test_restore_review_admin(self, db: Session, admin_user: Profile, review: VenueReview):
         """Admin can restore a hidden review."""
         # Hide first
         ReviewService.hide_review(db, admin_user.id, review.id, reason="Test")
@@ -258,14 +249,12 @@ class TestReviewService:
         remaining = db.query(VenueReview).filter(VenueReview.id == review_id).first()
         assert remaining is None
 
-    def test_list_all_reviews_admin_filters(
-        self, db: Session, venue: Venue, user_profile: Profile
-    ):
+    def test_list_all_reviews_admin_filters(self, db: Session, venue: Venue, user_profile: Profile):
         """Admin can filter reviews by venue, user, rating, hidden status."""
         # Create test reviews with different ratings
         for rating in [1, 2, 3, 4, 5]:
-            user = Profile(
-                id=uuid4(), email=f"user-r{rating}@test.com", full_name=f"User {rating}"
+            user = seed_auth_user(
+                db, uuid4(), f"user-r{rating}@test.com", full_name=f"User {rating}"
             )
             booking = Booking(
                 id=uuid4(),
@@ -273,8 +262,6 @@ class TestReviewService:
                 user_id=user.id,
                 status=BookingStatus.completed,
                 booking_type="full_day",
-                starts_at=datetime.utcnow(),
-                ends_at=datetime.utcnow(),
                 guest_count=2,
                 quoted_price_paise=10000,
                 advance_pct=30,
@@ -282,7 +269,6 @@ class TestReviewService:
                 advance_due_paise=3000,
                 balance_due_paise=7000,
             )
-            db.add(user)
             db.add(booking)
             db.flush()
 
@@ -324,17 +310,13 @@ class TestReviewService:
         """Rating summary calculates average and distribution correctly."""
         bookings = []
         for i in range(5):
-            user = Profile(
-                id=uuid4(), email=f"user-sum{i}@test.com", full_name=f"User {i}"
-            )
+            user = seed_auth_user(db, uuid4(), f"user-sum{i}@test.com", full_name=f"User {i}")
             booking = Booking(
                 id=uuid4(),
                 venue_id=venue.id,
                 user_id=user.id,
                 status=BookingStatus.completed,
                 booking_type="full_day",
-                starts_at=datetime.utcnow(),
-                ends_at=datetime.utcnow(),
                 guest_count=2,
                 quoted_price_paise=10000,
                 advance_pct=30,
@@ -342,7 +324,6 @@ class TestReviewService:
                 advance_due_paise=3000,
                 balance_due_paise=7000,
             )
-            db.add(user)
             db.add(booking)
             db.flush()
             bookings.append((user, booking))
@@ -394,12 +375,7 @@ class TestReviewService:
 @pytest.fixture
 def user_profile(db: Session) -> Profile:
     """Create a test user profile."""
-    user = Profile(
-        id=uuid4(),
-        email="testuser@example.com",
-        full_name="Test User",
-    )
-    db.add(user)
+    user = seed_auth_user(db, uuid4(), "testuser@example.com", full_name="Test User")
     db.commit()
     return user
 
@@ -407,31 +383,18 @@ def user_profile(db: Session) -> Profile:
 @pytest.fixture
 def other_user(db: Session) -> Profile:
     """Create another test user profile."""
-    user = Profile(
-        id=uuid4(),
-        email="otheruser@example.com",
-        full_name="Other User",
-    )
-    db.add(user)
+    user = seed_auth_user(db, uuid4(), "otheruser@example.com", full_name="Other User")
     db.commit()
     return user
 
 
 @pytest.fixture
 def admin_user(db: Session) -> Profile:
-    """Create an admin user profile."""
-    from app.modules.admin.models import AdminUser
+    """Create an admin user profile with the super_admin role."""
+    from app.modules.profile.models import UserRole, UserRoleAssignment
 
-    user = Profile(
-        id=uuid4(),
-        email="admin@example.com",
-        full_name="Admin User",
-    )
-    db.add(user)
-    db.flush()
-
-    admin = AdminUser(id=user.id, user_id=user.id)
-    db.add(admin)
+    user = seed_auth_user(db, uuid4(), "admin@example.com", full_name="Admin User")
+    db.add(UserRoleAssignment(user_id=user.id, role=UserRole.super_admin))
     db.commit()
 
     return user
@@ -440,11 +403,12 @@ def admin_user(db: Session) -> Profile:
 @pytest.fixture
 def venue(db: Session, user_profile: Profile) -> Venue:
     """Create a test venue."""
-    from app.modules.venue.models import VenueCategory, VenueStatus, BookingMode
+    from app.modules.venue.models import BookingMode, VenueCategory, VenueStatus
 
+    unique = uuid4().hex[:8]
     category = VenueCategory(
         id=uuid4(),
-        slug="test-category",
+        slug=f"test-category-{unique}",
         label="Test Category",
         is_active=True,
     )
@@ -455,7 +419,7 @@ def venue(db: Session, user_profile: Profile) -> Venue:
         id=uuid4(),
         owner_id=user_profile.id,
         name="Test Venue",
-        slug="test-venue",
+        slug=f"test-venue-{unique}",
         category_id=category.id,
         address_line1="123 Test St",
         city="Test City",
@@ -488,8 +452,6 @@ def completed_booking(db: Session, user_profile: Profile, venue: Venue) -> Booki
         user_id=user_profile.id,
         status=BookingStatus.completed,
         booking_type="full_day",
-        starts_at=datetime.utcnow(),
-        ends_at=datetime.utcnow(),
         guest_count=2,
         quoted_price_paise=50000,
         advance_pct=30,

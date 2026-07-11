@@ -1,6 +1,5 @@
-from typing import Optional
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -10,11 +9,11 @@ from app.shared.pagination import Page
 
 class QueryUnderstanding(BaseModel):
     intent: str
-    city: Optional[str] = None
-    venue_type: Optional[str] = None
-    capacity: Optional[int] = None
-    budget_hint: Optional[str] = None
-    date_hint: Optional[str] = None
+    city: str | None = None
+    venue_type: str | None = None
+    capacity: int | None = None
+    budget_hint: str | None = None
+    date_hint: str | None = None
     required_amenities: list[str] = []
     special_requirements: list[str] = []
 
@@ -40,10 +39,10 @@ class TriggerExternalDiscoveryRequest(BaseModel):
 class ExternalLeadPublic(BaseModel):
     id: UUID
     name: str
-    city: Optional[str] = None
-    formatted_address: Optional[str] = None
-    cover_photo_url: Optional[str] = None
-    category_guess: Optional[str] = None
+    city: str | None = None
+    formatted_address: str | None = None
+    cover_photo_url: str | None = None
+    category_guess: str | None = None
     source: str
     disclaimer: str = (
         "Not verified on Venue404. Reservation is a request only, subject to "
@@ -53,10 +52,10 @@ class ExternalLeadPublic(BaseModel):
 
 class ReserveLeadRequest(BaseModel):
     category_id: UUID
-    event_date: Optional[str] = None
-    guest_count: Optional[int] = None
-    phone: Optional[str] = None
-    notes: Optional[str] = None
+    event_date: str | None = None
+    guest_count: int | None = None
+    phone: str | None = None
+    notes: str | None = None
 
 
 class ReserveLeadResponse(BaseModel):
@@ -68,8 +67,8 @@ class UserReservationResponse(BaseModel):
     id: UUID
     lead: ExternalLeadPublic
     status: str
-    event_date: Optional[str] = None
-    guest_count: Optional[int] = None
-    phone: Optional[str] = None
-    notes: Optional[str] = None
+    event_date: str | None = None
+    guest_count: int | None = None
+    phone: str | None = None
+    notes: str | None = None
     created_at: datetime

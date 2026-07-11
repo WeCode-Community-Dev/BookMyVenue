@@ -1,14 +1,13 @@
 """Manual trigger for confirm_payment - Docker friendly"""
 
 import sys
-from pathlib import Path
 
 # Add correct path for Docker
 sys.path.insert(0, "/app")
 
 from app.core.database import SessionLocal
-from app.modules.payment import service
 from app.modules.booking.models import Booking
+from app.modules.payment import service
 
 
 def main():
@@ -23,11 +22,7 @@ def main():
         print("✅ confirm_payment executed successfully!")
 
         # Check result
-        booking = (
-            db.query(Booking)
-            .filter_by(id="bddb9e73-8931-483c-8fe4-00662144d4f6")
-            .first()
-        )
+        booking = db.query(Booking).filter_by(id="bddb9e73-8931-483c-8fe4-00662144d4f6").first()
         if booking:
             print(
                 f"📊 Final Status → Booking: {booking.status} | Payment: {booking.payment_status}"

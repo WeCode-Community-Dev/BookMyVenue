@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID, ENUM as PgEnum
 
 revision: str = "0001"
-down_revision: Union[str, None] = None
+down_revision: Union[str, None] = "1de56a630d60"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

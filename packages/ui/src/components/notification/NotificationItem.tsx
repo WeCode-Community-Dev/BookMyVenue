@@ -133,9 +133,9 @@ const NOTIFICATION_CONFIG: Record<string, IconConfig> = {
     iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
   balance_paid: { icon: CheckCircleIcon, iconBg: 'bg-emerald-50 dark:bg-emerald-950/30', iconColor: 'text-emerald-600 dark:text-emerald-400' },
-  request_received: { icon: InboxIcon, iconBg: 'bg-zinc-100 dark:bg-ink-800', iconColor: 'text-zinc-500 dark:text-zinc-400' },
+  request_received: { icon: InboxIcon, iconBg: 'bg-zinc-100 dark:bg-ink-800', iconColor: 'text-zinc-500 dark:text-zinc-400 dark:text-zinc-500' },
   request_accepted: { icon: ThumbUpIcon, iconBg: 'bg-amber-50 dark:bg-amber-950/30', iconColor: 'text-amber-600 dark:text-amber-400' },
-  hold_expired: { icon: ClockIcon, iconBg: 'bg-zinc-100 dark:bg-ink-800', iconColor: 'text-zinc-400' },
+  hold_expired: { icon: ClockIcon, iconBg: 'bg-zinc-100 dark:bg-ink-800', iconColor: 'text-zinc-400 dark:text-zinc-500' },
   balance_payment_overdue: {
     icon: AlertTriangleIcon,
     iconBg: 'bg-red-50 dark:bg-red-950/30',
@@ -152,7 +152,7 @@ const NOTIFICATION_CONFIG: Record<string, IconConfig> = {
 const DEFAULT_CONFIG: IconConfig = {
   icon: BellIcon,
   iconBg: 'bg-zinc-100 dark:bg-ink-800',
-  iconColor: 'text-zinc-400',
+  iconColor: 'text-zinc-400 dark:text-zinc-500',
 }
 
 // Types that need the person to act on a payment
@@ -196,7 +196,7 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
         'press group flex w-full items-start gap-3.5 px-5 py-4 text-left transition-colors',
         unread
           ? 'bg-emerald-50/40 hover:bg-emerald-50/70 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30'
-          : 'hover:bg-zinc-50 dark:hover:bg-ink-800'
+          : 'hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800 dark:hover:bg-ink-800'
       )}
     >
       <div
@@ -216,21 +216,21 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
           <span
             className={cn(
               'truncate text-sm',
-              unread ? 'font-semibold text-zinc-900 dark:text-zinc-100' : 'font-medium text-zinc-700 dark:text-zinc-300'
+              unread ? 'font-semibold text-zinc-900 dark:text-zinc-100' : 'font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600'
             )}
           >
             {notification.title}
           </span>
         </div>
-        <p className="mt-0.5 line-clamp-2 text-xs text-zinc-500">{notification.body}</p>
-        <span className="mt-1 block text-[11px] text-zinc-400">
+        <p className="mt-0.5 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">{notification.body}</p>
+        <span className="mt-1 block text-[11px] text-zinc-400 dark:text-zinc-500">
           {formatRelativeTime(notification.created_at)}
         </span>
       </div>
 
       {navigable && (
         <svg
-          className="mt-2.5 h-4 w-4 shrink-0 text-zinc-300 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-400 dark:text-zinc-600 dark:group-hover:text-zinc-400"
+          className="mt-2.5 h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-400 dark:text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 dark:group-hover:text-zinc-400 dark:text-zinc-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

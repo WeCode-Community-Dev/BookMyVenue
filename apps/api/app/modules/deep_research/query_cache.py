@@ -6,6 +6,7 @@ normalized query text avoids re-paying for both on every repeat.
 Same fail-open pattern as app.core.rate_limit — if Upstash isn't configured
 or is unreachable, callers just get a cache miss and run the real call.
 """
+
 import hashlib
 import json
 import logging
@@ -15,8 +16,8 @@ from app.modules.deep_research.schemas import QueryUnderstanding
 
 logger = logging.getLogger(__name__)
 
-UNDERSTANDING_TTL_SECONDS = 3600       # 1h — query phrasing varies a lot, keep it short
-EXTERNAL_RESULTS_TTL_SECONDS = 21600   # 6h — Places listings barely change; this is the billed call
+UNDERSTANDING_TTL_SECONDS = 3600  # 1h — query phrasing varies a lot, keep it short
+EXTERNAL_RESULTS_TTL_SECONDS = 21600  # 6h — Places listings barely change; this is the billed call
 
 
 def _normalize(text: str) -> str:
@@ -61,7 +62,9 @@ def get_external_results(query_text: str) -> list[dict] | None:
             return None
         return json.loads(raw)
     except Exception:
-        logger.warning("query_cache.get_external_results failed for query_text=%r", query_text, exc_info=True)
+        logger.warning(
+            "query_cache.get_external_results failed for query_text=%r", query_text, exc_info=True
+        )
         return None
 
 
@@ -73,4 +76,6 @@ def set_external_results(query_text: str, results: list[dict]) -> None:
             _key("ext", query_text), json.dumps(results), ex=EXTERNAL_RESULTS_TTL_SECONDS
         )
     except Exception:
-        logger.warning("query_cache.set_external_results failed for query_text=%r", query_text, exc_info=True)
+        logger.warning(
+            "query_cache.set_external_results failed for query_text=%r", query_text, exc_info=True
+        )

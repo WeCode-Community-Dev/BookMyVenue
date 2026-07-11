@@ -23,7 +23,7 @@ type StatusKey = 'approved' | 'pending_approval' | 'draft' | 'rejected' | 'suspe
 const STATUS: Record<StatusKey, { label: string; dot: string; pill: string }> = {
   approved:         { label: 'Live',          dot: 'bg-emerald-500', pill: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20' },
   pending_approval: { label: 'Under Review',  dot: 'bg-amber-400',   pill: 'bg-amber-400/10  text-amber-700   ring-amber-400/20'   },
-  draft:            { label: 'Draft',         dot: 'bg-zinc-400',    pill: 'bg-zinc-100      text-zinc-600     ring-zinc-300/40'    },
+  draft:            { label: 'Draft',         dot: 'bg-zinc-400',    pill: 'bg-zinc-100 dark:bg-ink-800      text-zinc-600 dark:text-zinc-400 dark:text-zinc-500     ring-zinc-300/40'    },
   rejected:         { label: 'Rejected',      dot: 'bg-red-500',     pill: 'bg-red-500/10    text-red-700      ring-red-500/20'     },
   suspended:        { label: 'Suspended',     dot: 'bg-orange-400',  pill: 'bg-orange-400/10 text-orange-700   ring-orange-400/20'  },
 }
@@ -66,7 +66,7 @@ export default function ManageVenues() {
     <div className="space-y-6 pb-10">
 
       {/* ── Tabs ── */}
-      <div className="border-b border-zinc-200">
+      <div className="border-b border-zinc-200 dark:border-ink-800">
         <nav className="-mb-px flex w-full overflow-x-auto no-scrollbar">
           {TABS.map(t => (
             <button
@@ -75,13 +75,13 @@ export default function ManageVenues() {
               className={`flex-1 whitespace-nowrap py-3 border-b-2 font-medium text-sm transition-all flex items-center justify-center gap-1.5 ${
                 filter === t.id
                   ? 'border-brand-500 text-brand-600'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300'
+                  : 'border-transparent text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'
               }`}
             >
               {t.label}
               {counts[t.id] > 0 && (
                 <span className={`text-[11px] font-semibold rounded-full px-1.5 py-0.5 leading-none tabular-nums ${
-                  filter === t.id ? 'bg-brand-100 text-brand-700' : 'bg-zinc-100 text-zinc-500'
+                  filter === t.id ? 'bg-brand-100 text-brand-700' : 'bg-zinc-100 dark:bg-ink-800 text-zinc-500 dark:text-zinc-400 dark:text-zinc-500'
                 }`}>
                   {counts[t.id]}
                 </span>
@@ -95,7 +95,7 @@ export default function ManageVenues() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="rounded-xl overflow-hidden border border-zinc-200 bg-white">
+            <div key={i} className="rounded-xl overflow-hidden border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900">
               <Skeleton className="h-[200px] w-full rounded-none" />
               <div className="p-4 space-y-3">
                 <Skeleton className="h-5 w-1/2" />
@@ -114,7 +114,7 @@ export default function ManageVenues() {
 
       ) : filteredVenues.length === 0 ? (
         <EmptyState
-          icon={<Building2 className="h-10 w-10 text-zinc-300" />}
+          icon={<Building2 className="h-10 w-10 text-zinc-300 dark:text-zinc-600" />}
           title={filter === 'all' ? 'No venues yet' : `No ${TABS.find(t => t.id === filter)?.label} venues`}
           description={filter === 'all' ? 'Create your first venue to start accepting bookings.' : 'Try a different filter to see your venues.'}
         />
@@ -132,25 +132,26 @@ export default function ManageVenues() {
             return (
               <div
                 key={venue.id}
-                className="card-enter group flex flex-col rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-sm hover:shadow-md hover:border-zinc-300 transition-all duration-200"
+                className="card-enter group flex flex-col rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 overflow-hidden shadow-sm hover:shadow-md hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700 transition-all duration-200"
               >
 
                 {/* ── Photo ── */}
                 <Link
                   to={isDraftIncomplete ? continueUrl : `/venues/${venue.id}/overview`}
-                  className="block relative h-[200px] bg-zinc-100 overflow-hidden shrink-0"
+                  className="block relative h-[200px] bg-zinc-100 dark:bg-ink-800 overflow-hidden shrink-0"
                   tabIndex={-1}
                 >
                   {coverPhoto ? (
                     <img
                       src={coverPhoto}
                       alt={venue.name}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500 ease-out"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-zinc-50">
-                      <ImageIcon className="h-8 w-8 text-zinc-300" />
-                      <span className="text-xs text-zinc-400">No photos yet</span>
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-zinc-50 dark:bg-ink-800">
+                      <ImageIcon className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
+                      <span className="text-xs text-zinc-400 dark:text-zinc-500">No photos yet</span>
                     </div>
                   )}
 
@@ -177,10 +178,10 @@ export default function ManageVenues() {
 
                   {/* Name + meta */}
                   <div>
-                    <h3 className="font-semibold text-zinc-900 text-[15px] leading-snug truncate">
+                    <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-[15px] leading-snug truncate">
                       {venue.name}
                     </h3>
-                    <div className="mt-1.5 flex items-center gap-3 text-xs text-zinc-400">
+                    <div className="mt-1.5 flex items-center gap-3 text-xs text-zinc-400 dark:text-zinc-500">
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3 w-3 shrink-0" />
                         {venue.city}
@@ -195,13 +196,13 @@ export default function ManageVenues() {
                   {/* Draft progress bar */}
                   {isDraftIncomplete && (
                     <div className="space-y-1">
-                      <div className="flex justify-between text-xs text-zinc-400">
+                      <div className="flex justify-between text-xs text-zinc-400 dark:text-zinc-500">
                         <span>Setup progress</span>
-                        <span className="font-medium text-zinc-600">
+                        <span className="font-medium text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">
                           {Math.round((step / TOTAL_STEPS) * 100)}%
                         </span>
                       </div>
-                      <div className="h-1 w-full rounded-full bg-zinc-100 overflow-hidden">
+                      <div className="h-1 w-full rounded-full bg-zinc-100 dark:bg-ink-800 overflow-hidden">
                         <div
                           className="h-full rounded-full bg-amber-400"
                           style={{ width: `${Math.min((step / TOTAL_STEPS) * 100, 100)}%` }}
@@ -224,7 +225,7 @@ export default function ManageVenues() {
                   <div className="flex-1" />
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 pt-1 border-t border-zinc-100">
+                  <div className="flex items-center gap-2 pt-1 border-t border-zinc-100 dark:border-ink-800">
                     {isDraftIncomplete ? (
                       <Link to={continueUrl} className="flex-1">
                         <Button variant="primary" className="w-full gap-1.5 text-sm">

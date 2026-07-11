@@ -9,7 +9,7 @@ is Jina, or what the HTTP contract looks like.
 
 import logging
 import time
-from enum import Enum
+from enum import StrEnum
 
 import httpx
 import numpy as np
@@ -28,7 +28,7 @@ _RETRY_BACKOFF_SECONDS = [1, 3, 8]
 _MAX_BATCH_SIZE = 64
 
 
-class EmbeddingTask(str, Enum):
+class EmbeddingTask(StrEnum):
     """Jina task-type strings. Passage = documents being indexed, query = search input."""
 
     PASSAGE = "retrieval.passage"
@@ -90,9 +90,7 @@ def _post_with_retries(payload: dict) -> dict:
             )
             time.sleep(delay)
 
-    logger.error(
-        "jina_embeddings: all %s attempts failed (%s)", _MAX_RETRIES + 1, last_exc
-    )
+    logger.error("jina_embeddings: all %s attempts failed (%s)", _MAX_RETRIES + 1, last_exc)
     raise last_exc
 
 
@@ -100,9 +98,7 @@ def _chunk(items: list[str], size: int) -> list[list[str]]:
     return [items[i : i + size] for i in range(0, len(items), size)]
 
 
-def embed_texts(
-    texts: list[str], task: EmbeddingTask = EmbeddingTask.PASSAGE
-) -> list[list[float]]:
+def embed_texts(texts: list[str], task: EmbeddingTask = EmbeddingTask.PASSAGE) -> list[list[float]]:
     """Embed a batch of texts, batching internally if needed. Returns L2-normalized
     vectors in the same order as the input."""
     if not texts:
@@ -125,9 +121,7 @@ def embed_texts(
     return all_embeddings
 
 
-def embed_text(
-    text_input: str, task: EmbeddingTask = EmbeddingTask.PASSAGE
-) -> list[float]:
+def embed_text(text_input: str, task: EmbeddingTask = EmbeddingTask.PASSAGE) -> list[float]:
     """Embed a single text; convenience wrapper around embed_texts."""
     return embed_texts([text_input], task=task)[0]
 

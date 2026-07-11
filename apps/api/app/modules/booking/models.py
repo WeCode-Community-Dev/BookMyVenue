@@ -1,29 +1,29 @@
 import enum
 import uuid
-from datetime import datetime, date
+from datetime import date, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    CheckConstraint,
-    Enum,
-    DateTime,
-    Date,
-    ForeignKey,
-    func,
-    Integer,
     BigInteger,
-    Numeric,
-    Text,
-    String,
     Boolean,
+    CheckConstraint,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    func,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
     relationship,
 )
-
-from typing import TYPE_CHECKING
 
 from app.core.database import Base
 
@@ -32,12 +32,12 @@ if TYPE_CHECKING:
     from app.modules.venue.models import Venue
 
 
-class BookingType(str, enum.Enum):
+class BookingType(enum.StrEnum):
     full_day = "full_day"
     time_slot = "time_slot"
 
 
-class BookingStatus(str, enum.Enum):
+class BookingStatus(enum.StrEnum):
     requested = "requested"
     owner_accepted = "owner_accepted"
     confirmed = "confirmed"
@@ -52,12 +52,13 @@ class BookingStatus(str, enum.Enum):
     payment_pending = "payment_pending"
 
 
-class PaymentStatus(str, enum.Enum):
+class PaymentStatus(enum.StrEnum):
     unpaid = "unpaid"
     advance_paid = "advance_paid"
     fully_paid = "fully_paid"
     refunded = "refunded"
     partially_refunded = "partially_refunded"
+
 
 class Booking(Base):
     __tablename__ = "bookings"
@@ -75,6 +76,8 @@ class Booking(Base):
             "advance_due_paise + balance_due_paise = quoted_price_paise",
             name="ck_bookings_price_split",
         ),
+        Index("idx_bookings_venue_id", "venue_id"),
+        Index("idx_bookings_user_id", "user_id"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -303,7 +306,7 @@ class Booking(Base):
         back_populates="booking",
         cascade="all, delete-orphan",
     )
-    
+
     venue: Mapped["Venue"] = relationship(
         back_populates="bookings",
     )
@@ -390,6 +393,7 @@ class BookingSlot(Base):
         back_populates="slot",
     )
 
+
 class BookingStatusHistory(Base):
     __tablename__ = "booking_status_history"
 
@@ -398,11 +402,21 @@ class BookingStatusHistory(Base):
         CheckConstraint(
             """
             (old_status IS NULL) OR
-            (old_status = 'requested' AND new_status IN ('owner_accepted', 'owner_rejected', 'user_cancelled', 'conflict_cancelled', 'request_expired')) OR
-            (old_status = 'owner_accepted' AND new_status IN ('confirmed', 'hold_expired', 'user_cancelled')) OR
-            (old_status = 'confirmed' AND new_status IN ('completed', 'user_cancelled', 'admin_cancelled', 'balance_overdue_cancelled')) OR
+            (old_status = 'requested' AND new_status IN (
+                'owner_accepted', 'owner_rejected', 'user_cancelled',
+                'conflict_cancelled', 'request_expired'
+            )) OR
+            (old_status = 'owner_accepted' AND new_status IN (
+                'confirmed', 'hold_expired', 'user_cancelled'
+            )) OR
+            (old_status = 'confirmed' AND new_status IN (
+                'completed', 'user_cancelled', 'admin_cancelled', 'balance_overdue_cancelled'
+            )) OR
             (old_status = 'hold_expired' AND new_status = 'owner_accepted') OR
-            (old_status = 'payment_pending' AND new_status IN ('confirmed', 'hold_expired', 'user_cancelled', 'admin_cancelled', 'conflict_cancelled'))
+            (old_status = 'payment_pending' AND new_status IN (
+                'confirmed', 'hold_expired', 'user_cancelled',
+                'admin_cancelled', 'conflict_cancelled'
+            ))
             """,
             name="ck_booking_status_history_transition",
         ),
@@ -473,13 +487,23 @@ class BookingInvoice(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     booking_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("bookings.id"), nullable=False, unique=True,
+        UUID(as_uuid=True),
+        ForeignKey("bookings.id"),
+        nullable=False,
+        unique=True,
     )
-    status: Mapped[str] = mapped_column(Text, nullable=False, default="pending")  # pending|generated|failed
+    status: Mapped[str] = mapped_column(
+        Text, nullable=False, default="pending"
+    )  # pending|generated|failed
     pdf_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now(),
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
     )

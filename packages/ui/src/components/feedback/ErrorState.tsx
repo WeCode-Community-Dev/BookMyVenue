@@ -35,7 +35,7 @@ export function ErrorState({
         </svg>
       </div>
       <h3 className="mt-4 text-base font-semibold text-zinc-900 dark:text-zinc-100">{title}</h3>
-      <p className="mt-1 max-w-xs text-sm text-zinc-500">{message}</p>
+      <p className="mt-1 max-w-xs text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">{message}</p>
       {action && <div className="mt-5">{action}</div>}
     </div>
   )

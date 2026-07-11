@@ -24,15 +24,15 @@ export default function Rejected() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-zinc-900/5 text-center">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-ink-800 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-ink-900 p-8 shadow-sm ring-1 ring-zinc-900/5 text-center">
         <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
           <svg className="h-6 w-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h1 className="text-xl font-semibold text-zinc-900">Application not approved</h1>
-        <p className="mt-2 text-sm text-zinc-500">
+        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Application not approved</h1>
+        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">
           Your venue owner application was reviewed and could not be approved at this time. You can
           submit a new application for reconsideration.
         </p>
@@ -61,7 +61,7 @@ export default function Rejected() {
           <button
             onClick={() => signOut()}
             disabled={reapplying}
-            className="inline-flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 disabled:opacity-55"
+            className="inline-flex items-center justify-center rounded-lg border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 px-5 py-2.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800 disabled:opacity-55"
           >
             Sign out
           </button>

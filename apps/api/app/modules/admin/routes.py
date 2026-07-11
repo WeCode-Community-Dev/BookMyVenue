@@ -1,44 +1,45 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, Query, UploadFile, File, HTTPException
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.modules.admin import service
 from app.modules.admin.schemas import (
-    VenueActionRequest,
-    AdminVenueListResponse,
-    UserListResponse,
-    UserSummary,
-    SuspendUserRequest,
-    ReactivateUserRequest,
     AdminActionListResponse,
-    OwnerApprovalRequest,
-    OwnerStatsResponse,
-    AmenityCreateRequest,
-    AmenityUpdateRequest,
     AdminAmenityResponse,
-    AmenityListResponse,
-    AmenityDeleteResponse,
-    CategoryCreateRequest,
-    CategoryUpdateRequest,
-    AdminCategoryResponse,
-    CategoryListResponse,
-    CategoryDeleteResponse,
-    CategoryBannerResponse,
-    BookingStatsResponse,
     AdminBookingListResponse,
-    VenueStatsResponse,
-    GrowthStatsResponse,
+    AdminCategoryResponse,
+    AdminVenueListResponse,
+    AmenityCreateRequest,
+    AmenityDeleteResponse,
+    AmenityListResponse,
+    AmenityUpdateRequest,
+    BookingStatsResponse,
+    CategoryBannerResponse,
+    CategoryCreateRequest,
+    CategoryDeleteResponse,
+    CategoryListResponse,
+    CategoryUpdateRequest,
+    ContactOwnerRequest,
     DeepResearchQueryDetail,
     DeepResearchQueryListResponse,
     DeepResearchStatsResponse,
     ExternalReservationListResponse,
-    ContactOwnerRequest,
-    MarkInterestedRequest,
+    GrowthStatsResponse,
     InviteOwnerRequest,
     InviteOwnerResponse,
+    MarkInterestedRequest,
+    OwnerApprovalRequest,
+    OwnerStatsResponse,
+    ReactivateUserRequest,
+    SuspendUserRequest,
+    UserListResponse,
+    UserSummary,
+    VenueActionRequest,
+    VenueStatsResponse,
 )
-from app.modules.auth.dependencies import require_admin, AuthContext
-from app.modules.admin import service
+from app.modules.auth.dependencies import AuthContext, require_admin
 from app.modules.deep_research import service as reservation_service
 
 router = APIRouter()
@@ -56,12 +57,16 @@ def get_venue_stats(
 def list_venues(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    status: str | None = Query(None, pattern="^(draft|pending_approval|approved|rejected|suspended)$"),
+    status: str | None = Query(
+        None, pattern="^(draft|pending_approval|approved|rejected|suspended)$"
+    ),
     search: str | None = Query(None),
     _: AuthContext = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    return service.list_admin_venues(db, status=status, search=search, page=page, page_size=page_size)
+    return service.list_admin_venues(
+        db, status=status, search=search, page=page, page_size=page_size
+    )
 
 
 @router.patch("/venues/{venue_id}/approve", status_code=204)
@@ -185,7 +190,9 @@ def reject_owner(
 def list_actions(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    target_type: str | None = Query(None, pattern="^(user|venue|booking|amenity|external_reservation)$"),
+    target_type: str | None = Query(
+        None, pattern="^(user|venue|booking|amenity|external_reservation)$"
+    ),
     action_type: str | None = Query(None),
     # Legacy convenience: limit=N returns N items on page 1 (used by dashboard)
     limit: int | None = Query(None, ge=1, le=100),
@@ -193,8 +200,12 @@ def list_actions(
     db: Session = Depends(get_db),
 ):
     return service.list_actions(
-        db, page=page, page_size=page_size,
-        target_type=target_type, action_type=action_type, limit=limit,
+        db,
+        page=page,
+        page_size=page_size,
+        target_type=target_type,
+        action_type=action_type,
+        limit=limit,
     )
 
 
@@ -236,6 +247,7 @@ def delete_amenity(
 
 
 # ── Category routes ────────────────────────────────────────────────────────────
+
 
 @router.get("/categories", response_model=CategoryListResponse)
 def list_categories(
@@ -282,7 +294,9 @@ async def upload_category_banner(
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
     file_bytes = await file.read()
-    return service.upload_category_banner(db, admin_id=auth.user_id, category_id=category_id, file_bytes=file_bytes)
+    return service.upload_category_banner(
+        db, admin_id=auth.user_id, category_id=category_id, file_bytes=file_bytes
+    )
 
 
 @router.delete("/categories/{category_id}/banner-image", response_model=CategoryBannerResponse)
@@ -305,6 +319,7 @@ def delete_category(
 
 # ─── Booking routes ────────────────────────────────────────────────────────────
 
+
 @router.get("/bookings/stats", response_model=BookingStatsResponse)
 def get_booking_stats(
     _: AuthContext = Depends(require_admin),
@@ -322,7 +337,9 @@ def list_bookings(
     _: AuthContext = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    return service.list_admin_bookings(db, status=status, search=search, page=page, page_size=page_size)
+    return service.list_admin_bookings(
+        db, status=status, search=search, page=page, page_size=page_size
+    )
 
 
 @router.get("/growth-stats", response_model=GrowthStatsResponse)
@@ -335,6 +352,7 @@ def get_growth_stats(
 
 
 # ─── Deep Research observability ───────────────────────────────────────────────
+
 
 @router.get("/deep-research/stats", response_model=DeepResearchStatsResponse)
 def get_deep_research_stats(
@@ -368,6 +386,7 @@ def get_deep_research_query(
 # ─── External reservation admin workflow ───────────────────────────────────────
 # See docs/Venue404_External_Reservation_Onboarding_PRD.md
 
+
 @router.get("/external-reservations", response_model=ExternalReservationListResponse)
 def list_external_reservations(
     page: int = Query(1, ge=1),
@@ -376,7 +395,9 @@ def list_external_reservations(
     _: AuthContext = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    return reservation_service.list_external_reservations(db, status=status, page=page, page_size=page_size)
+    return reservation_service.list_external_reservations(
+        db, status=status, page=page, page_size=page_size
+    )
 
 
 @router.patch("/external-reservations/{reservation_id}/contact", status_code=204)
@@ -387,8 +408,12 @@ def contact_external_reservation(
     db: Session = Depends(get_db),
 ):
     reservation_service.contact_reservation(
-        db, admin_id=auth.user_id, reservation_id=reservation_id,
-        contact_method=body.contact_method, notes=body.notes, follow_up_date=body.follow_up_date,
+        db,
+        admin_id=auth.user_id,
+        reservation_id=reservation_id,
+        contact_method=body.contact_method,
+        notes=body.notes,
+        follow_up_date=body.follow_up_date,
     )
 
 
@@ -399,10 +424,14 @@ def mark_external_reservation_interested(
     auth: AuthContext = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    reservation_service.mark_owner_interested(db, admin_id=auth.user_id, reservation_id=reservation_id, reason=body.reason)
+    reservation_service.mark_owner_interested(
+        db, admin_id=auth.user_id, reservation_id=reservation_id, reason=body.reason
+    )
 
 
-@router.post("/external-reservations/{reservation_id}/invite-owner", response_model=InviteOwnerResponse)
+@router.post(
+    "/external-reservations/{reservation_id}/invite-owner", response_model=InviteOwnerResponse
+)
 def invite_owner_for_external_reservation(
     reservation_id: UUID,
     body: InviteOwnerRequest,
@@ -410,8 +439,13 @@ def invite_owner_for_external_reservation(
     db: Session = Depends(get_db),
 ):
     _reservation, action_link = reservation_service.invite_owner_for_reservation(
-        db, admin_id=auth.user_id, reservation_id=reservation_id,
-        venue_name=body.venue_name, owner_name=body.owner_name, email=body.email, phone=body.phone,
+        db,
+        admin_id=auth.user_id,
+        reservation_id=reservation_id,
+        venue_name=body.venue_name,
+        owner_name=body.owner_name,
+        email=body.email,
+        phone=body.phone,
         category_id=body.category_id,
     )
     return InviteOwnerResponse(action_link=action_link)
@@ -423,4 +457,6 @@ def create_booking_for_external_reservation(
     auth: AuthContext = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    reservation_service.create_booking_for_reservation(db, admin_id=auth.user_id, reservation_id=reservation_id)
+    reservation_service.create_booking_for_reservation(
+        db, admin_id=auth.user_id, reservation_id=reservation_id
+    )

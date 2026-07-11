@@ -1,19 +1,20 @@
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.modules.auth.dependencies import AuthContext, require_auth, require_admin
-from app.modules.review.service import ReviewService
+from app.modules.auth.dependencies import AuthContext, require_admin, require_auth
 from app.modules.review.schemas import (
-    ReviewCreate,
-    ReviewUpdate,
-    ReviewResponse,
-    ReviewListResponse,
-    ReviewSummaryResponse,
-    EligibleBookingsResponse,
     AdminReviewActionRequest,
+    EligibleBookingsResponse,
+    ReviewCreate,
+    ReviewListResponse,
+    ReviewResponse,
+    ReviewSummaryResponse,
+    ReviewUpdate,
 )
+from app.modules.review.service import ReviewService
 
 router = APIRouter()
 
@@ -22,9 +23,8 @@ router = APIRouter()
 # CUSTOMER ENDPOINTS
 # ────────────────────────────────────────────────────────────────
 
-@router.post(
-    "/venues/{venue_id}/reviews", response_model=ReviewResponse, status_code=201
-)
+
+@router.post("/venues/{venue_id}/reviews", response_model=ReviewResponse, status_code=201)
 def create_review(
     venue_id: UUID,
     body: ReviewCreate,
@@ -93,6 +93,7 @@ def get_eligible_booking_ids(
 # ADMIN ENDPOINTS
 # ────────────────────────────────────────────────────────────────
 
+
 @router.get("/admin/reviews", response_model=ReviewListResponse)
 def list_all_reviews(
     page: int = Query(1, ge=1),
@@ -125,8 +126,8 @@ def get_admin_review(
     db: Session = Depends(get_db),
 ):
     """Get a review (admin can see hidden/deleted reviews)."""
-    from app.modules.review.models import VenueReview
     from app.core.exceptions import APIException
+    from app.modules.review.models import VenueReview
 
     review = db.query(VenueReview).filter(VenueReview.id == review_id).first()
     if not review:
@@ -169,6 +170,7 @@ def delete_review_admin(
 # ────────────────────────────────────────────────────────────────
 # SUMMARY ENDPOINT
 # ────────────────────────────────────────────────────────────────
+
 
 @router.get("/venues/{venue_id}/reviews/summary", response_model=ReviewSummaryResponse)
 def get_rating_summary(

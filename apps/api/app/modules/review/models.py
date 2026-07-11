@@ -1,16 +1,17 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import ForeignKey, Boolean, String, Integer, Text, DateTime
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING
 
 from app.core.database import Base
 
 if TYPE_CHECKING:
-    from app.modules.venue.models import Venue
     from app.modules.booking.models import Booking
     from app.modules.profile.models import Profile
+    from app.modules.venue.models import Venue
 
 
 class VenueReview(Base):
@@ -61,9 +62,7 @@ class VenueReview(Base):
 
     hidden_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, index=True
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
@@ -71,9 +70,7 @@ class VenueReview(Base):
         onupdate=datetime.utcnow,
     )
 
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime, nullable=True, index=True
-    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
 
     # Relationships
     venue: Mapped["Venue"] = relationship(back_populates="reviews")

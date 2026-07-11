@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
 import { createClient, bookingEndpoints } from '@venue404/api-client'
@@ -11,10 +11,10 @@ import { AppNavbar } from '../components/shared/AppNavbar'
 import type { BookingOut } from '../types'
 
 import BookingCard from '../components/booking/BookingCard'
-import BookingStatusBadge from '../components/booking/BookingStatusBadge'
+
 import { UserReservations } from '../components/booking/UserReservations'
 
-import { formatDate } from '../utils'
+
 
 type BookingTab = 'upcoming' | 'pending' | 'past' | 'cancelled'
 
@@ -161,7 +161,6 @@ export default function MyBookings() {
     CANCELLED_STATUSES.includes(booking.status)
   )
 
-  const featuredBooking = upcomingBookings[0]
 
   const filteredBookings = useMemo(() => {
     switch (activeTab) {

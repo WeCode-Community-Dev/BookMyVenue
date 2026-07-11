@@ -23,9 +23,7 @@ from app.core.config import settings
 # Must match the values used in VenueCategory.search_boost_group.
 GROUP_WEDDING = "wedding_hall_banquet_hall"
 GROUP_EVENT = "event_space_rooftop_resort_lawn"
-GROUP_CORPORATE = (
-    "corporate_conference_meeting"  # conference_room, meeting_room, auditorium
-)
+GROUP_CORPORATE = "corporate_conference_meeting"  # conference_room, meeting_room, auditorium
 
 # Terms that suggest the query is about wedding/marriage-function venues.
 _WEDDING_INTENT_TERMS = {
@@ -100,16 +98,10 @@ def detect_category_intents(query: str) -> dict[str, float]:
     """
     tokens = set(query.lower().split()) if query else set()
 
-    wedding_boost = (
-        settings.search_wedding_boost if tokens & _WEDDING_INTENT_TERMS else NO_BOOST
-    )
-    event_boost = (
-        settings.search_event_boost if tokens & _EVENT_INTENT_TERMS else NO_BOOST
-    )
+    wedding_boost = settings.search_wedding_boost if tokens & _WEDDING_INTENT_TERMS else NO_BOOST
+    event_boost = settings.search_event_boost if tokens & _EVENT_INTENT_TERMS else NO_BOOST
     corporate_boost = (
-        settings.search_corporate_boost
-        if tokens & _CORPORATE_INTENT_TERMS
-        else NO_BOOST
+        settings.search_corporate_boost if tokens & _CORPORATE_INTENT_TERMS else NO_BOOST
     )
 
     return {

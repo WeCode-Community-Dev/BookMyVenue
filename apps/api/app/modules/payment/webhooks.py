@@ -3,18 +3,19 @@
 Flow: verify signature -> record the event in stripe_events (idempotency guard,
 duplicate = no-op) -> dispatch -> stamp processed_at / processing_error.
 """
+
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from fastapi import Request, HTTPException
+from fastapi import HTTPException, Request
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.stripe_client import get_stripe
-from app.modules.payment.models import StripeEvent
 from app.modules.payment import service
+from app.modules.payment.models import StripeEvent
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ async def handle(request: Request):
         try:
             _dispatch(db, event)
             stored = db.get(StripeEvent, event_id)
-            stored.processed_at = datetime.now(timezone.utc)
+            stored.processed_at = datetime.now(UTC)
             stored.processing_error = None
             db.commit()
         except HTTPException:

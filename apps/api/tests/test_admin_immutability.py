@@ -9,28 +9,32 @@ Tests verify:
   2. AdminAction rows have no cascade delete from the ORM side
   3. No DELETE or PUT routes exist for admin_actions
 """
+
+from uuid import uuid4
+
 import pytest
 from sqlalchemy.exc import IntegrityError
-from uuid import uuid4
 
 from app.modules.admin.models import AdminAction
 from app.modules.profile.models import Profile
 from tests.conftest import seed_user
 
-
 # ── DB-level constraint ───────────────────────────────────────────────────────
+
 
 def test_cannot_delete_profile_with_admin_actions(db):
     admin_id, _ = seed_user(db, "super_admin")
 
-    db.add(AdminAction(
-        id=uuid4(),
-        admin_id=admin_id,
-        action_type="venue_approved",
-        target_type="venue",
-        target_id=uuid4(),
-        reason="test",
-    ))
+    db.add(
+        AdminAction(
+            id=uuid4(),
+            admin_id=admin_id,
+            action_type="venue_approved",
+            target_type="venue",
+            target_id=uuid4(),
+            reason="test",
+        )
+    )
     db.commit()
 
     with pytest.raises(IntegrityError):
@@ -44,13 +48,15 @@ def test_admin_action_row_persists_after_failed_delete(db):
     admin_id, _ = seed_user(db, "super_admin")
     action_id = uuid4()
 
-    db.add(AdminAction(
-        id=action_id,
-        admin_id=admin_id,
-        action_type="venue_suspended",
-        target_type="venue",
-        target_id=uuid4(),
-    ))
+    db.add(
+        AdminAction(
+            id=action_id,
+            admin_id=admin_id,
+            action_type="venue_suspended",
+            target_type="venue",
+            target_id=uuid4(),
+        )
+    )
     db.commit()
 
     try:
@@ -65,6 +71,7 @@ def test_admin_action_row_persists_after_failed_delete(db):
 
 # ── ORM-level: no cascade delete ─────────────────────────────────────────────
 
+
 def test_admin_action_model_has_no_cascade():
     """The AdminAction model must not define a cascade that enables deletes."""
     mapper = AdminAction.__mapper__
@@ -76,17 +83,20 @@ def test_admin_action_model_has_no_cascade():
 
 # ── Route-level: no mutating routes for audit log ────────────────────────────
 
+
 def test_no_delete_route_for_admin_actions(client, db):
     admin_id, admin_token = seed_user(db, "super_admin")
     action_id = uuid4()
 
-    db.add(AdminAction(
-        id=action_id,
-        admin_id=admin_id,
-        action_type="venue_approved",
-        target_type="venue",
-        target_id=uuid4(),
-    ))
+    db.add(
+        AdminAction(
+            id=action_id,
+            admin_id=admin_id,
+            action_type="venue_approved",
+            target_type="venue",
+            target_id=uuid4(),
+        )
+    )
     db.commit()
 
     resp = client.delete(
@@ -101,13 +111,15 @@ def test_no_update_route_for_admin_actions(client, db):
     admin_id, admin_token = seed_user(db, "super_admin")
     action_id = uuid4()
 
-    db.add(AdminAction(
-        id=action_id,
-        admin_id=admin_id,
-        action_type="venue_approved",
-        target_type="venue",
-        target_id=uuid4(),
-    ))
+    db.add(
+        AdminAction(
+            id=action_id,
+            admin_id=admin_id,
+            action_type="venue_approved",
+            target_type="venue",
+            target_id=uuid4(),
+        )
+    )
     db.commit()
 
     resp = client.patch(

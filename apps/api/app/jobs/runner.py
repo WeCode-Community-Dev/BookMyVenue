@@ -8,17 +8,19 @@ The same canonical `app/jobs/*` functions are run three ways:
 Each job manages its own session (commit on success, rollback on error) and
 returns the number of rows it processed.
 """
+
 import logging
 
+import app.models  # noqa: F401 — register every ORM model before any job queries run
 from app.jobs import (
-    hold_expiry,
-    stale_requests,
-    booking_completion,
-    payment_reminders,
     balance_overdue,
-    search_indexer,
-    payment_pending_expiry,
+    booking_completion,
+    hold_expiry,
     invoice_generator,
+    payment_pending_expiry,
+    payment_reminders,
+    search_indexer,
+    stale_requests,
 )
 
 logger = logging.getLogger(__name__)

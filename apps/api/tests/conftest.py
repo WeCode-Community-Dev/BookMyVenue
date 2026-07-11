@@ -20,13 +20,17 @@ assert "supabase.co" not in _db_url, (
 assert any(h in _db_url for h in ("localhost", "127.0.0.1", "0.0.0.0")), (
     "Tests must use a local database. Set DATABASE_URL in apps/api/.env.test."
 )
-from app.core.database import SessionLocal
-from app.main import app
-from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRoleAssignment
-from app.modules.venue.models import Venue, VenueCategory, VenueStatus
-
+from app.core.database import SessionLocal  # noqa: E402 -- must follow the DB safety check above
+from app.main import app  # noqa: E402
+from app.modules.profile.models import (  # noqa: E402
+    Profile,
+    UserRole,
+    UserRoleAssignment,
+)
+from app.modules.venue.models import Venue, VenueCategory, VenueStatus  # noqa: E402
 
 # ── Session-scoped: seed one category for the whole run ──────────────────────
+
 
 @pytest.fixture(scope="session")
 def category_id() -> UUID:
@@ -45,12 +49,13 @@ def category_id() -> UUID:
 
 # ── Function-scoped: fresh DB state per test ─────────────────────────────────
 
+
 @pytest.fixture
 def db() -> Session:
     session = SessionLocal()
     yield session
     session.rollback()
-    session.execute(text("TRUNCATE profiles CASCADE"))
+    session.execute(text("TRUNCATE auth.users, profiles CASCADE"))
     session.commit()
     session.close()
 
@@ -61,6 +66,7 @@ def client() -> TestClient:
 
 
 # ── Helpers (plain functions, not fixtures) ───────────────────────────────────
+
 
 def make_token(user_id: UUID, email: str) -> str:
     now = int(time.time())
@@ -77,12 +83,52 @@ def make_token(user_id: UUID, email: str) -> str:
     )
 
 
+def seed_auth_user(
+    db: Session,
+    user_id: UUID,
+    email: str,
+    *,
+    full_name: str | None = None,
+    phone: str | None = None,
+    status: str = "active",
+) -> Profile:
+    """Insert the auth.users row a profiles.id FK requires, then patch the
+    profile row the on_auth_user_created trigger auto-creates.
+
+    Inserting into auth.users fires that trigger (see alembic 0002/0006),
+    which creates the profiles row (status=active) and a customer
+    user_roles row — mirroring a real Supabase signup, both idempotent via
+    ON CONFLICT DO NOTHING. The trigger never sets email, so every caller
+    needs this patch step. Callers must NOT also `db.add(Profile(...))` —
+    that duplicates what the trigger already inserted.
+    """
+    db.execute(
+        text("INSERT INTO auth.users (id, email) VALUES (:id, :email)"),
+        {"id": user_id, "email": email},
+    )
+    db.execute(
+        text(
+            "UPDATE profiles SET email = :email, "
+            "full_name = COALESCE(:full_name, full_name), "
+            "phone = COALESCE(:phone, phone), "
+            "status = CAST(:status AS profile_status) "
+            "WHERE id = :id"
+        ),
+        {"email": email, "full_name": full_name, "phone": phone, "status": status, "id": user_id},
+    )
+    db.flush()
+    return db.get(Profile, user_id)
+
+
 def seed_user(db: Session, role: str) -> tuple[UUID, str]:
-    """Insert a profile + role row. Returns (user_id, bearer_token)."""
+    """Insert an auth.users row (+ trigger-created profile/customer role),
+    add the target role if it isn't customer. Returns (user_id, bearer_token).
+    """
     user_id = uuid4()
     email = f"{role}-{user_id.hex[:6]}@test.com"
-    db.add(Profile(id=user_id, email=email, status=ProfileStatus.active))
-    db.add(UserRoleAssignment(user_id=user_id, role=UserRole(role)))
+    seed_auth_user(db, user_id, email)
+    if role != "customer":
+        db.add(UserRoleAssignment(user_id=user_id, role=UserRole(role)))
     db.commit()
     return user_id, make_token(user_id, email)
 
@@ -108,35 +154,37 @@ def create_booking(client, token: str, venue_id: UUID, booking_date: date | None
 def seed_approved_venue(db: Session, owner_id: UUID, category_id: UUID) -> UUID:
     """Insert a fully approved, active venue ready to accept bookings."""
     venue_id = uuid4()
-    db.add(Venue(
-        id=venue_id,
-        owner_id=owner_id,
-        category_id=category_id,
-        name="Test Venue",
-        slug=f"test-venue-{venue_id.hex[:6]}",
-        address_line1="123 Test St",
-        city="Mumbai",
-        state="Maharashtra",
-        country="India",
-        timezone="Asia/Kolkata",
-        max_capacity=100,
-        open_time=dt_time(9, 0),
-        close_time=dt_time(21, 0),
-        allowed_booking_types=["full_day"],
-        min_booking_duration_minutes=60,
-        max_booking_duration_minutes=1440,
-        slot_interval_minutes=30,
-        pre_buffer_minutes=0,
-        post_buffer_minutes=0,
-        pricing_mode="flat",
-        starting_price_paise=1_000_000,
-        platform_commission_pct=10,
-        advance_pct=30,
-        balance_due_days_before_event=7,
-        owner_action_window_hours=48,
-        overdue_advance_refund_pct=0,
-        status=VenueStatus.approved,
-        is_active=True,
-    ))
+    db.add(
+        Venue(
+            id=venue_id,
+            owner_id=owner_id,
+            category_id=category_id,
+            name="Test Venue",
+            slug=f"test-venue-{venue_id.hex[:6]}",
+            address_line1="123 Test St",
+            city="Mumbai",
+            state="Maharashtra",
+            country="India",
+            timezone="Asia/Kolkata",
+            max_capacity=100,
+            open_time=dt_time(9, 0),
+            close_time=dt_time(21, 0),
+            allowed_booking_types=["full_day"],
+            min_booking_duration_minutes=60,
+            max_booking_duration_minutes=1440,
+            slot_interval_minutes=30,
+            pre_buffer_minutes=0,
+            post_buffer_minutes=0,
+            pricing_mode="flat",
+            starting_price_paise=1_000_000,
+            platform_commission_pct=10,
+            advance_pct=30,
+            balance_due_days_before_event=7,
+            owner_action_window_hours=48,
+            overdue_advance_refund_pct=0,
+            status=VenueStatus.approved,
+            is_active=True,
+        )
+    )
     db.commit()
     return venue_id

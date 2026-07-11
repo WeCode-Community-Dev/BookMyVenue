@@ -76,6 +76,7 @@ export default function SavedVenues() {
                 key={venue.id} 
                 // We cast Venue to SearchResult here as VenueCard expects SearchResult, 
                 // but Venue has all the required fields.
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 venue={venue as any} 
                 onClick={() => navigate(`/venues/${venue.id}`)} 
               />

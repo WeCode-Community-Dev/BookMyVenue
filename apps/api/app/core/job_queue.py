@@ -7,8 +7,9 @@ only factors out the two bits that were duplicated identically across them:
 dequeuing from the Upstash fast-path (with DB-polling as the fallback), and
 deciding whether a failed row's backoff window has elapsed yet.
 """
+
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 
 from app.core import redis as redis_client
 
@@ -42,10 +43,12 @@ def dequeue_from_redis(queue_key: str, limit: int) -> list[str]:
 
 
 def is_backoff_eligible(
-    created_at: datetime, attempts: int, backoff_seconds: list[int] = DEFAULT_BACKOFF_SECONDS,
+    created_at: datetime,
+    attempts: int,
+    backoff_seconds: list[int] = DEFAULT_BACKOFF_SECONDS,
 ) -> bool:
     """Whether a failed row created at `created_at` with `attempts` prior
     tries has waited long enough per the backoff schedule to retry now."""
     delay = backoff_seconds[min(attempts, len(backoff_seconds) - 1)]
-    eligible_at = created_at.replace(tzinfo=timezone.utc) + timedelta(seconds=delay)
-    return datetime.now(timezone.utc) >= eligible_at
+    eligible_at = created_at.replace(tzinfo=UTC) + timedelta(seconds=delay)
+    return datetime.now(UTC) >= eligible_at

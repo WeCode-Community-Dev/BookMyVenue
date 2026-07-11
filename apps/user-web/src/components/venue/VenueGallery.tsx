@@ -97,7 +97,7 @@ function Lightbox({
                 i === active ? 'border-white opacity-100' : 'border-transparent opacity-50 hover:opacity-75'
               }`}
             >
-              <img src={p.image_url} alt="" className="h-full w-full object-cover" />
+              <img src={p.image_url} alt="" loading="lazy" className="h-full w-full object-cover" />
             </button>
           ))}
         </div>
@@ -210,6 +210,7 @@ export function VenueGallery({ photos, venueName }: Props) {
                   <img
                     src={photo.image_url}
                     alt=""
+                    loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                   />
                 </button>

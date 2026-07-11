@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { Button, Card } from '@venue404/ui'
 
@@ -42,7 +42,8 @@ export default function MyBookingCard({ booking }: Props) {
             <img
               src={booking.venue_cover_photo_url}
               alt={booking.venue_name}
-              className="h-48 w-full object-cover md:h-full"
+              loading="lazy"
+              className="h-64 w-full object-cover md:h-full"
             />
           ) : (
             <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-50 md:h-full dark:from-ink-800 dark:to-ink-900">

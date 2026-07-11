@@ -87,7 +87,7 @@ export function BookingPanel({ venue }: Props) {
     isError: availError,
   } = useQuery<AvailabilityResponse>({
     queryKey: ['availability-date', venue.id, selectedDate],
-    queryFn: () => venueEndpoints(client).getDateAvailability(venue.id, toUtcIso(selectedDate)!),
+    queryFn: () => venueEndpoints(client).getDateAvailability(venue.id, { booking_date: toUtcIso(selectedDate)!, booking_type: bookingType }),
     enabled: !!selectedDate,
     staleTime: 2 * 60 * 1000,
   })

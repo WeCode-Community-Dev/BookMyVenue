@@ -1,5 +1,3 @@
-from datetime import datetime
-from typing import Optional
 from pydantic import BaseModel
 
 
@@ -19,7 +17,7 @@ class DashboardStats(BaseModel):
 
 
 class ChartDataPoint(BaseModel):
-    month: str       # e.g. "Jan 26"
+    month: str  # e.g. "Jan 26"
     enquiries: int
     completed: int
     cancelled: int
@@ -27,11 +25,8 @@ class ChartDataPoint(BaseModel):
 
 class UpcomingEventOut(BaseModel):
     booking_id: str
-    event_type: Optional[str] = None
+    event_type: str | None = None
     venue_name: str
     status: str
-    starts_at: Optional[str] = None   # ISO string
+    starts_at: str | None = None  # ISO string
     guest_count: int
-
-
-

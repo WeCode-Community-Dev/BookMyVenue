@@ -29,6 +29,7 @@ def _create_booking(client, customer_token: str, venue_id: str, venue_name: str)
 
 # ── Auth guards ───────────────────────────────────────────────────────────────
 
+
 def test_create_booking_unauthenticated_returns_422(client):
     resp = client.post("/api/bookings/", json={})
     assert resp.status_code == 422
@@ -52,6 +53,7 @@ def test_accept_booking_as_customer_returns_403(client, db, category_id):
 
 
 # ── Status transitions ────────────────────────────────────────────────────────
+
 
 def test_create_booking_status_is_requested(client, db, category_id):
     owner_id, _ = seed_user(db, "venue_owner")

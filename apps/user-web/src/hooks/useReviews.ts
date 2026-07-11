@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient, reviewsEndpoints } from '@venue404/api-client'
-import { Review, ReviewListResponse, ReviewSummary } from '../types'
+import { ReviewListResponse, ReviewSummary } from '../types'
 
 const client = createClient()
 const reviews = reviewsEndpoints(client)

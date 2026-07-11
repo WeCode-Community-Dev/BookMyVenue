@@ -20,7 +20,7 @@ function applyTheme(resolved: ResolvedTheme) {
  * Inline script source to inject in index.html (before React mounts) so the
  * correct theme class is applied before first paint — avoids a light-mode flash.
  */
-export const noFlashThemeScript = `(function(){try{var m=localStorage.getItem('${THEME_STORAGE_KEY}');var d=m==='dark'||(m!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);}catch(e){}})();`
+export const noFlashThemeScript = `(function(){try{var m=localStorage.getItem('${THEME_STORAGE_KEY}');document.documentElement.classList.toggle('dark',m!=='light');}catch(e){}})();`
 
 interface ThemeContextValue {
   mode: ThemeMode
@@ -34,7 +34,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<ThemeMode>(() => {
     const stored = localStorage.getItem(THEME_STORAGE_KEY)
-    return stored === 'light' || stored === 'dark' ? stored : 'system'
+    return stored === 'light' || stored === 'dark' ? stored : 'dark'
   })
   const [resolved, setResolved] = useState<ResolvedTheme>(() => resolveTheme(mode))
 

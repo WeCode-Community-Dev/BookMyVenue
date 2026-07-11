@@ -1,5 +1,6 @@
 import logging
 import sys
+
 from app.core.config import settings
 
 
@@ -30,6 +31,4 @@ def setup_logging() -> None:
     logging.getLogger("stripe").setLevel(logging.WARNING)
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
-    logging.getLogger(__name__).info(
-        "✅ Logging initialized at level: %s", settings.log_level
-    )
+    logging.getLogger(__name__).info("✅ Logging initialized at level: %s", settings.log_level)

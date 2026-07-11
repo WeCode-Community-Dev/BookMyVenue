@@ -33,11 +33,11 @@ export function UserMenu({ name, email, role, onSignOut, className }: UserMenuPr
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] font-medium text-zinc-200">{name}</p>
-          {role && <p className="truncate text-[11px] text-zinc-500">{role}</p>}
+          {role && <p className="truncate text-[11px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">{role}</p>}
         </div>
         <svg
           className={cn(
-            'h-3.5 w-3.5 shrink-0 text-zinc-600 transition-transform duration-150',
+            'h-3.5 w-3.5 shrink-0 text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 transition-transform duration-150',
             open && 'rotate-180',
           )}
           fill="none"
@@ -55,13 +55,13 @@ export function UserMenu({ name, email, role, onSignOut, className }: UserMenuPr
           <div className="absolute bottom-full left-0 right-0 z-20 mb-1.5 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900 shadow-xl">
             <div className="px-3 py-2.5 border-b border-zinc-800">
               <p className="text-xs font-medium text-zinc-200 truncate">{name}</p>
-              <p className="text-[11px] text-zinc-500 truncate">{email}</p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 truncate">{email}</p>
             </div>
             {onSignOut && (
               <button
                 type="button"
                 onClick={() => { setOpen(false); onSignOut() }}
-                className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-zinc-400 transition-colors duration-150 hover:bg-zinc-800 hover:text-red-400"
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-zinc-400 dark:text-zinc-500 transition-colors duration-150 hover:bg-zinc-800 hover:text-red-400"
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path

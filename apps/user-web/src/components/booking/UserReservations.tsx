@@ -150,6 +150,7 @@ function ReservationCard({ reservation: res }: { reservation: UserReservationRes
           <img
             src={res.lead.cover_photo_url}
             alt={res.lead.name}
+            loading="lazy"
             className="h-full w-full object-cover"
           />
         ) : (

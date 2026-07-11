@@ -6,9 +6,17 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_jwt_secret: str
     supabase_service_role_key: str
+    # "development" | "production". In production the interactive API docs
+    # (/docs, /redoc) are disabled so the endpoint surface isn't publicly listed.
+    environment: str = "development"
+
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
     stripe_currency: str = "inr"
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment.lower() == "production"
 
     # Email — Resend is primary, SMTP is the fallback transport
     resend_api_key: str = ""
@@ -26,8 +34,7 @@ class Settings(BaseSettings):
 
     # Comma-separated list of allowed browser origins for CORS. Defaults to the
     # local dev ports; in production set this to the deployed Vercel app URLs.
-    cors_origins: str = ("https://venue404-owner-portal-git-main-venue123.vercel.app,https://venue404-user-web-git-main-venue123.vercel.app,https://venue404-admin-panel-git-main-venue123.vercel.app,http://localhost:5397,http://localhost:5398,http://localhost:5399"
-    )
+    cors_origins: str = "https://venue404-owner-portal-git-main-venue123.vercel.app,https://venue404-user-web-git-main-venue123.vercel.app,https://venue404-admin-panel-git-main-venue123.vercel.app,http://localhost:5397,http://localhost:5398,http://localhost:5399"
 
     # Shared secret guarding the machine-to-machine job-runner endpoint. Empty
     # disables the endpoint (returns 503). Set to a long random value in prod.

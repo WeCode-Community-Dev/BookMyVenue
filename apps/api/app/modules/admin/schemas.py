@@ -1,7 +1,8 @@
 import uuid
 from datetime import date, datetime
+from typing import Literal
+
 from pydantic import BaseModel, Field
-from typing import Literal, Optional
 
 
 class VenueApprovalRequest(BaseModel):
@@ -83,20 +84,20 @@ class OwnerStatsResponse(BaseModel):
 
 class AmenityCreateRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    icon: Optional[str] = None
+    icon: str | None = None
 
 
 class AmenityUpdateRequest(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    icon: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=100)
+    icon: str | None = None
 
 
 class AdminAmenityResponse(BaseModel):
     id: uuid.UUID
     name: str
-    icon: Optional[str]
+    icon: str | None
     created_at: datetime
-    deleted_at: Optional[datetime]
+    deleted_at: datetime | None
     active_venue_count: int
 
     model_config = {"from_attributes": True}
@@ -114,30 +115,31 @@ class AmenityDeleteResponse(BaseModel):
 
 # ─── Venue category admin schemas ─────────────────────────────────────────────
 
+
 class CategoryCreateRequest(BaseModel):
-    slug: str = Field(..., min_length=1, max_length=100, pattern=r'^[a-z0-9_]+$')
+    slug: str = Field(..., min_length=1, max_length=100, pattern=r"^[a-z0-9_]+$")
     label: str = Field(..., min_length=1, max_length=100)
-    icon: Optional[str] = None
+    icon: str | None = None
     sort_order: int = Field(default=0, ge=0)
 
 
 class CategoryUpdateRequest(BaseModel):
-    label: Optional[str] = Field(None, min_length=1, max_length=100)
-    icon: Optional[str] = None
-    sort_order: Optional[int] = Field(None, ge=0)
-    is_active: Optional[bool] = None
+    label: str | None = Field(None, min_length=1, max_length=100)
+    icon: str | None = None
+    sort_order: int | None = Field(None, ge=0)
+    is_active: bool | None = None
 
 
 class AdminCategoryResponse(BaseModel):
     id: uuid.UUID
     slug: str
     label: str
-    icon: Optional[str]
-    banner_image: Optional[str]
+    icon: str | None
+    banner_image: str | None
     is_active: bool
     sort_order: int
     created_at: datetime
-    deleted_at: Optional[datetime]
+    deleted_at: datetime | None
     venue_count: int
 
     model_config = {"from_attributes": True}
@@ -158,6 +160,7 @@ class CategoryBannerResponse(BaseModel):
 
 
 # ─── Booking admin schemas ─────────────────────────────────────────────────────
+
 
 class BookingStatsResponse(BaseModel):
     total: int
@@ -197,6 +200,7 @@ class AdminBookingListResponse(BaseModel):
 
 
 # ─── Venue admin schemas ───────────────────────────────────────────────────────
+
 
 class GrowthStatsResponse(BaseModel):
     labels: list[str]
@@ -283,8 +287,8 @@ class AdminVenueListResponse(BaseModel):
 class DeepResearchTopResult(BaseModel):
     id: str
     name: str
-    match_source: Optional[str] = None
-    match_score: Optional[float] = None
+    match_source: str | None = None
+    match_score: float | None = None
 
 
 class DeepResearchQuerySummary(BaseModel):
@@ -293,15 +297,15 @@ class DeepResearchQuerySummary(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
     query_text: str
-    city_filter: Optional[str] = None
+    city_filter: str | None = None
     result_count: int
-    avg_match_score: Optional[float] = None
+    avg_match_score: float | None = None
     created_at: datetime
 
 
 class DeepResearchQueryDetail(DeepResearchQuerySummary):
-    understanding_json: Optional[dict] = None
-    top_results_json: Optional[list[DeepResearchTopResult]] = None
+    understanding_json: dict | None = None
+    top_results_json: list[DeepResearchTopResult] | None = None
 
 
 class DeepResearchQueryListResponse(BaseModel):
@@ -314,44 +318,45 @@ class DeepResearchQueryListResponse(BaseModel):
 class DeepResearchStatsResponse(BaseModel):
     labels: list[str]
     query_counts: list[int]
-    avg_match_scores: list[Optional[float]]
+    avg_match_scores: list[float | None]
     total_queries: int
     avg_result_count: float
-    avg_match_score_overall: Optional[float] = None
+    avg_match_score_overall: float | None = None
 
 
 # ─── External reservation admin workflow ──────────────────────────────────────
 # Converts a customer's external-venue reservation into an onboarded owner +
 # venue + normal Venue404 booking. See docs/Venue404_External_Reservation_Onboarding_PRD.md
 
+
 class ExternalReservationSummary(BaseModel):
     id: uuid.UUID
     status: str
     lead_name: str
-    lead_city: Optional[str] = None
-    lead_formatted_address: Optional[str] = None
-    lead_category_guess: Optional[str] = None
-    lead_cover_photo_url: Optional[str] = None
-    lead_phone: Optional[str] = None
-    lead_website: Optional[str] = None
-    lead_rating: Optional[float] = None
-    lead_google_maps_uri: Optional[str] = None
-    customer_name: Optional[str] = None
-    customer_email: Optional[str] = None
-    customer_phone: Optional[str] = None
-    customer_notes: Optional[str] = None
-    category_id: Optional[uuid.UUID] = None
-    category_label: Optional[str] = None
-    guest_count: Optional[int] = None
-    event_date: Optional[str] = None
-    owner_id: Optional[uuid.UUID] = None
-    venue_id: Optional[uuid.UUID] = None
-    booking_id: Optional[uuid.UUID] = None
-    contact_method: Optional[str] = None
-    contact_notes: Optional[str] = None
-    follow_up_date: Optional[str] = None
-    owner_invited_at: Optional[datetime] = None
-    booking_created_at: Optional[datetime] = None
+    lead_city: str | None = None
+    lead_formatted_address: str | None = None
+    lead_category_guess: str | None = None
+    lead_cover_photo_url: str | None = None
+    lead_phone: str | None = None
+    lead_website: str | None = None
+    lead_rating: float | None = None
+    lead_google_maps_uri: str | None = None
+    customer_name: str | None = None
+    customer_email: str | None = None
+    customer_phone: str | None = None
+    customer_notes: str | None = None
+    category_id: uuid.UUID | None = None
+    category_label: str | None = None
+    guest_count: int | None = None
+    event_date: str | None = None
+    owner_id: uuid.UUID | None = None
+    venue_id: uuid.UUID | None = None
+    booking_id: uuid.UUID | None = None
+    contact_method: str | None = None
+    contact_notes: str | None = None
+    follow_up_date: str | None = None
+    owner_invited_at: datetime | None = None
+    booking_created_at: datetime | None = None
     created_at: datetime
 
 
@@ -366,7 +371,7 @@ class ExternalReservationListResponse(BaseModel):
 class ContactOwnerRequest(BaseModel):
     contact_method: str = Field(..., min_length=1, max_length=100)
     notes: str = ""
-    follow_up_date: Optional[date] = None
+    follow_up_date: date | None = None
 
 
 class MarkInterestedRequest(BaseModel):
@@ -375,13 +380,13 @@ class MarkInterestedRequest(BaseModel):
 
 class InviteOwnerRequest(BaseModel):
     venue_name: str = Field(..., min_length=1, max_length=200)
-    owner_name: Optional[str] = None
+    owner_name: str | None = None
     email: str
-    phone: Optional[str] = None
+    phone: str | None = None
     # Fallback only — normally the reservation already has one, picked by the
     # customer at reservation time. Lets an admin fill it in for older
     # reservations created before that field existed.
-    category_id: Optional[uuid.UUID] = None
+    category_id: uuid.UUID | None = None
 
 
 class InviteOwnerResponse(BaseModel):
