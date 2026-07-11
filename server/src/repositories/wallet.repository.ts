@@ -148,4 +148,29 @@ export const walletRepository = {
     );
     return doc;
   },
+
+
+  async findAdminTransactions(filter: any): Promise<IWalletTransaction[]> {
+    return WalletTransaction.find(filter)
+      .populate('userId', 'fullName')
+      .populate({
+        path: 'bookingId',
+        select: 'bookingId venue',
+        populate: {
+          path: 'venue',
+          select: 'name ownerId',
+          populate: {
+            path: 'ownerId',
+            select: 'fullName'
+          }
+        }
+      })
+      .sort({ createdAt: -1 });
+  },
+
+
+  async findAllTransactions(): Promise<IWalletTransaction[]> {
+    return WalletTransaction.find();
+  }
 };
+

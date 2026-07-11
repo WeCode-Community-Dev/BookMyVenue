@@ -11,6 +11,7 @@ import AdminSettlements from '@/features/admin/pages/AdminSettlements';
 import ProtectedRoute from '@/shared/components/ProtectedRoute';
 import AdminDashboard from '@/features/dashboard/pages/AdminDashboard';
 import UserProfile from '@/features/profile/pages/UserProfile';
+import AdminTransactions from '@/features/admin/pages/AdminTransactions';
 
 export const adminRoutes = {
   path: '/admin',
@@ -57,6 +58,10 @@ export const adminRoutes = {
     {
       path: 'settlements',
       element: <AdminSettlements />,
+    },
+    {
+      path: 'transactions',
+      element: <AdminTransactions />,
     },
     {
       path: 'profile',

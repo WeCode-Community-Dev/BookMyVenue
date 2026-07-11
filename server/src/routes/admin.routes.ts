@@ -60,6 +60,12 @@ router
   .all(validateObjectId('id'))
   .patch(validateInputs(rejectVenueSchema), adminVenueController.rejectVenue);
 
+import * as transactionController from '@/controllers/transaction.controller';
+
+// Transactions
+router.get('/transactions', transactionController.getAdminTransactions);
+router.get('/transactions/stats', transactionController.getAdminTransactionStats);
+
 // Settlements
 router.get('/settlements', settlementController.getPendingSettlements);
 router.post(
