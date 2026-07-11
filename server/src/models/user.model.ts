@@ -46,6 +46,12 @@ const userSchema = new Schema<IUser>(
       enum: ['local', 'google'],
       default: 'local',
     },
+    wishlist: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Venue',
+      },
+    ],
   },
   {
     timestamps: true,

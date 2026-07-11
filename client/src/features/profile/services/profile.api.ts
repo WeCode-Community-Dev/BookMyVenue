@@ -56,4 +56,14 @@ export const profileApi = {
     });
     return res.data;
   },
+
+  requestPasswordOtp: async (): Promise<{ success: boolean; message: string }> => {
+    const res = await apiClient.post('/users/profile/password/request-otp');
+    return res.data;
+  },
+
+  changePassword: async (data: { otp: string; newPassword: string }): Promise<{ success: boolean; message: string }> => {
+    const res = await apiClient.patch('/users/profile/password/change', data);
+    return res.data;
+  },
 };

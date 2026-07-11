@@ -30,16 +30,20 @@ interface User {
   fullName: string;
   role: string;
   avatar?: string;
-  // add other necessary fields
+  wishlist?: string[];
+  authProvider?: string;
+  password?: string;
 }
 
 interface AppState {
   user: User | null;
   owner: OwnerDetails | null;
+  wishlist: string[];
   isAuthenticated: boolean;
   _hasHydrated: boolean;
   setAuth: (user: User) => void;
   setOwner: (owner: OwnerDetails | null) => void;
+  setWishlist: (wishlist: string[]) => void;
   logout: () => void;
   setHasHydrated: (state: boolean) => void;
 }
@@ -49,12 +53,14 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       user: null,
       owner: null,
+      wishlist: [],
       isAuthenticated: false,
       _hasHydrated: false,
 
-      setAuth: (user) => set({ user, isAuthenticated: true }),
+      setAuth: (user) => set({ user, wishlist: user.wishlist || [], isAuthenticated: true }),
       setOwner: (owner) => set({ owner }),
-      logout: () => set({ user: null, owner: null, isAuthenticated: false }),
+      setWishlist: (wishlist) => set({ wishlist }),
+      logout: () => set({ user: null, owner: null, wishlist: [], isAuthenticated: false }),
       setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {

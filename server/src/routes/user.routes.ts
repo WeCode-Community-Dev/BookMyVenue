@@ -6,6 +6,8 @@ import { getProfile, updateProfile, getUserBookings } from '@/controllers/user.c
 import { getUserWallet } from '@/controllers/wallet.controller';
 import { getPaymentHistory } from '@/controllers/paymentHistory.controller';
 import { upload } from '@/middlewares/upload.middleware';
+import { requestPasswordChangeOtp, verifyAndChangePassword } from '@/controllers/password.controller';
+import { getWishlist, toggleWishlist } from '@/controllers/wishlist.controller';
 
 const router = Router();
 
@@ -23,9 +25,14 @@ router.put(
   ]),
   updateProfile
 );
+router.post('/profile/password/request-otp', requestPasswordChangeOtp);
+router.patch('/profile/password/change', verifyAndChangePassword);
 router.get('/bookings', getUserBookings);
 router.get('/wallet', getUserWallet);
 router.get('/payment-history', getPaymentHistory);
+
+router.get('/wishlist', getWishlist);
+router.post('/wishlist/toggle/:venueId', toggleWishlist);
 
 // Public routes
 

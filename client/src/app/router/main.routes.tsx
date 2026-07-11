@@ -4,6 +4,7 @@ import HomePage from '@/features/public/pages/HomePage';
 import VenueListPage from '@/features/public/pages/VenueListPage';
 import VenueDetailsPage from '@/features/public/pages/VenueDetailsPage';
 import UserProfile from '@/features/profile/pages/UserProfile';
+import Wishlist from '@/features/profile/pages/Wishlist';
 import BookingPage from '@/features/bookings/pages/BookingPage';
 import BookingDetailPage from '@/features/bookings/pages/BookingDetailPage';
 import UserBookingsPage from '@/features/users/pages/UserBookingsPage';
@@ -19,6 +20,7 @@ export const mainRoutes = {
     { path: 'venues', element: <VenueListPage /> },
     { path: 'venues/:id', element: <VenueDetailsPage /> },
     { path: 'account/profile', element: <UserProfile /> },
+    { path: 'favorites', element: <Wishlist /> },
     { path: 'account/bookings', element: <UserBookingsPage /> },
     { path: 'account/bookings/:id', element: <BookingDetailPage /> },
     { path: '/bookings/:id', element: <BookingPage /> },

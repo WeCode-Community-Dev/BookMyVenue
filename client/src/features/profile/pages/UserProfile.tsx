@@ -8,6 +8,7 @@ import ProfileHeader from '../components/layout/ProfileHeader';
 import VerificationBanner from '../components/layout/VerificationBanner';
 import PersonalInfoSection from '../components/layout/PersonalInfoSection';
 import OwnerInfoSection from '../components/layout/OwnerInfoSection';
+import ChangePasswordSection from '../components/layout/ChangePasswordSection';
 
 const UserProfile = () => {
   const currentUser = useAppStore((state) => state.user);
@@ -276,6 +277,9 @@ const UserProfile = () => {
                 onIdProofChange={handleIdProofChange}
               />
             )}
+
+            {/* 3. CHANGE PASSWORD SECTION */}
+            <ChangePasswordSection />
           </div>
 
           {/* Form Actions */}
