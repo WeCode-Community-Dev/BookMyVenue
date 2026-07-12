@@ -16,7 +16,7 @@ from app.modules.search.category_intent import (
 )
 from app.modules.search.query_normalizer import normalize_query
 from app.modules.search.schemas import SearchParams, SearchResult
-from app.modules.venue.models import Venue, VenueCategory, VenuePhoto, VenueStatus
+from app.modules.venue.models import BookingMode, Venue, VenueCategory, VenuePhoto, VenueStatus
 from app.shared.pagination import Page
 
 logger = logging.getLogger(__name__)
@@ -41,6 +41,8 @@ def _base_query(db: Session, params: SearchParams):
         )
     if params.capacity > 0:
         query = query.filter(Venue.max_capacity >= params.capacity)
+    if params.instant_booking:
+        query = query.filter(Venue.booking_mode == BookingMode.INSTANT)
     return query
 
 
@@ -136,6 +138,9 @@ def search(db: Session, params: SearchParams) -> Page[SearchResult]:
 
     if params.capacity > 0:
         query = query.filter(Venue.max_capacity >= params.capacity)
+
+    if params.instant_booking:
+        query = query.filter(Venue.booking_mode == BookingMode.INSTANT)
 
     total_count = query.count()
 
@@ -402,6 +407,10 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
     if params.venue_type:
         base_filters.append("vc.slug = :venue_type")
         query_params["venue_type"] = params.venue_type
+
+    if params.instant_booking:
+        base_filters.append("v.booking_mode = :booking_mode")
+        query_params["booking_mode"] = BookingMode.INSTANT.value
 
     where_clause = " AND ".join(base_filters)
 

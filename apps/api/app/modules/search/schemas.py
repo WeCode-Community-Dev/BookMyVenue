@@ -10,6 +10,7 @@ class SearchParams(BaseModel):
     city: str = ""
     venue_type: str | None = None  # slug — kept for URL backward compat
     capacity: int = 0
+    instant_booking: bool = False
     page: int = 1
     page_size: int = 20
 

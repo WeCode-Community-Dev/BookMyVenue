@@ -31,11 +31,13 @@ type Props = {
   hasFilters: boolean
   venueType: string
   capacity: string
+  instantBooking: boolean
   onVenueClick: (id: string) => void
   onRetry: () => void
   onClearFilters: () => void
   onVenueTypeChange: (type: string) => void
   onCapacityChange: (value: string) => void
+  onInstantBookingChange: (value: boolean) => void
 }
 
 function Breadcrumbs() {
@@ -163,11 +165,13 @@ export function VenueGrid({
   hasFilters,
   venueType,
   capacity,
+  instantBooking,
   onVenueClick,
   onRetry,
   onClearFilters,
   onVenueTypeChange,
   onCapacityChange,
+  onInstantBookingChange,
 }: Props) {
   const [searchParams] = useSearchParams()
   const [sort, setSort] = useState<SortKey>('recommended')
@@ -182,7 +186,9 @@ export function VenueGrid({
     setPage(1)
   }, [searchParams.toString()])
 
-  const activeFilterCount = [venueType, capacity].filter(Boolean).length
+  const activeFilterCount = [venueType, capacity, instantBooking ? 'x' : ''].filter(
+    Boolean
+  ).length
   const sorted = useMemo(() => sortVenues(venues, sort), [venues, sort])
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE)
   const paged = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -195,6 +201,7 @@ export function VenueGrid({
   const sidebarProps = {
     venueType,
     capacity,
+    instantBooking,
     onVenueTypeChange: (t: string) => {
       onVenueTypeChange(t)
       setPage(1)
@@ -202,6 +209,10 @@ export function VenueGrid({
     },
     onCapacityChange: (v: string) => {
       onCapacityChange(v)
+      setPage(1)
+    },
+    onInstantBookingChange: (v: boolean) => {
+      onInstantBookingChange(v)
       setPage(1)
     },
     onClearFilters: () => {

@@ -14,11 +14,18 @@ def _params(
     city: str = Query(default=""),
     venue_type: str | None = Query(default=None),
     capacity: int = Query(default=0),
+    instant_booking: bool = Query(default=False),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
 ) -> SearchParams:
     return SearchParams(
-        q=q, city=city, venue_type=venue_type, capacity=capacity, page=page, page_size=page_size
+        q=q,
+        city=city,
+        venue_type=venue_type,
+        capacity=capacity,
+        instant_booking=instant_booking,
+        page=page,
+        page_size=page_size,
     )
 
 

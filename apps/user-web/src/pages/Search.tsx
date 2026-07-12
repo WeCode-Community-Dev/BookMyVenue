@@ -15,6 +15,7 @@ async function searchVenues(params: URLSearchParams) {
   if (params.get('city')) query.city = params.get('city')!
   if (params.get('venue_type')) query.venue_type = params.get('venue_type')!
   if (params.get('capacity')) query.capacity = params.get('capacity')!
+  if (params.get('instant_booking')) query.instant_booking = params.get('instant_booking')!
   return venueEndpoints(client).hybrid_search(query)
 }
 
@@ -35,6 +36,7 @@ export default function Search() {
   }, [searchParams])
 
   const venueType = searchParams.get('venue_type') ?? ''
+  const instantBooking = searchParams.get('instant_booking') === 'true'
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['venues', 'search', searchParams.toString()],
@@ -45,19 +47,27 @@ export default function Search() {
   const total = data?.total ?? null
 
   function buildParams(
-    overrides: Partial<{ q: string; city: string; venue_type: string; capacity: string }> = {}
+    overrides: Partial<{
+      q: string
+      city: string
+      venue_type: string
+      capacity: string
+      instant_booking: boolean
+    }> = {}
   ) {
     const merged = {
       q: overrides.q ?? q,
       city: overrides.city ?? city,
       venue_type: overrides.venue_type ?? venueType,
       capacity: overrides.capacity ?? capacity,
+      instant_booking: overrides.instant_booking ?? instantBooking,
     }
     const next: Record<string, string> = {}
     if (merged.q) next.q = merged.q
     if (merged.city) next.city = merged.city
     if (merged.venue_type) next.venue_type = merged.venue_type
     if (merged.capacity) next.capacity = merged.capacity
+    if (merged.instant_booking) next.instant_booking = 'true'
     return next
   }
 
@@ -73,6 +83,10 @@ export default function Search() {
   function handleCapacityChange(value: string) {
     setCapacity(value)
     setSearchParams(buildParams({ capacity: value }))
+  }
+
+  function handleInstantBookingChange(value: boolean) {
+    setSearchParams(buildParams({ instant_booking: value }))
   }
 
   function handleClearFilters() {
@@ -103,11 +117,13 @@ export default function Search() {
         hasFilters={true}
         venueType={venueType}
         capacity={capacity}
+        instantBooking={instantBooking}
         onVenueClick={(id) => navigate(`/venues/${id}`)}
         onRetry={refetch}
         onClearFilters={handleClearFilters}
         onVenueTypeChange={handleVenueTypeChange}
         onCapacityChange={handleCapacityChange}
+        onInstantBookingChange={handleInstantBookingChange}
       />
 
       <HomeFooter />
