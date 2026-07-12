@@ -122,7 +122,7 @@ export function ExternalVenueCard({ lead }: Props) {
               <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Request Venue</h2>
               <p className="mt-1 text-sm text-zinc-500">Help us negotiate on your behalf with {lead.name}.</p>
             </div>
-            
+
             <form onSubmit={handleReserve} className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">Venue Category</label>
@@ -141,19 +141,19 @@ export function ExternalVenueCard({ lead }: Props) {
 
               <div>
                 <label className="mb-1 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">Event Date</label>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
                   className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all dark:border-ink-700 dark:bg-ink-800 dark:text-zinc-100"
-                  required 
+                  required
                 />
               </div>
-              
+
               <div>
                 <label className="mb-1 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">Guest Count</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   value={guestCount}
                   onChange={(e) => setGuestCount(e.target.value)}
                   placeholder="e.g. 150"
@@ -164,8 +164,8 @@ export function ExternalVenueCard({ lead }: Props) {
 
               <div>
                 <label className="mb-1 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">Phone Number</label>
-                <input 
-                  type="tel" 
+                <input
+                  type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="Your contact number"
@@ -176,7 +176,7 @@ export function ExternalVenueCard({ lead }: Props) {
 
               <div>
                 <label className="mb-1 block text-sm font-semibold text-zinc-900 dark:text-zinc-100">Special Requirements</label>
-                <textarea 
+                <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Any specific needs for the venue..."
@@ -184,7 +184,7 @@ export function ExternalVenueCard({ lead }: Props) {
                   className="w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all dark:border-ink-700 dark:bg-ink-800 dark:text-zinc-100"
                 />
               </div>
-              
+
               <div className="mt-6 flex gap-3 pt-2">
                 <button
                   type="button"
