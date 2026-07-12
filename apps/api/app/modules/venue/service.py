@@ -1060,6 +1060,11 @@ def update_venue_amenities(
 
     db.commit()
     db.refresh(venue)
+
+    from app.modules.search.indexer import enqueue_job
+
+    enqueue_job(db, venue.id, "update")
+
     return venue.amenities
 
 
