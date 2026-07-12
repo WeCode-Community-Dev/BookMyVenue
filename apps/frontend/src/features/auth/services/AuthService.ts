@@ -79,6 +79,27 @@ export const authService = () => {
         }
     };
 
+    const register = async (name: string, email: string, mobile: string, password?: string) => {
+        dispatch(setLoading(true));
+        dispatch(setError(null));
+
+        try {
+            const result = await apiFetch('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({ name, email, mobile, password }),
+            });
+
+            return { success: true, message: result.message };
+
+        } catch (err: any) {
+            dispatch(setError(err.message || 'Registration failed'));
+            return { success: false, error: err.message };
+
+        } finally {
+            dispatch(setLoading(false));
+        }
+    };
+
     const fetchProfile = async () => {
         dispatch(setLoading(true));
 
@@ -120,6 +141,7 @@ export const authService = () => {
         emailSentTo,
         requestOtp,
         verifyOtp,
+        register,
         fetchProfile,
         logout,
         clearError: () => dispatch(setError(null)),
