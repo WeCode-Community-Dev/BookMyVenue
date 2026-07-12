@@ -9,6 +9,10 @@ const STATUS_META: Record<string, { label: string; description: string }> = {
     label: 'Booking Requested',
     description: 'Your booking request has been submitted and is waiting for venue approval.',
   },
+  owner_accepted: {
+    label: 'Booking Accepted',
+    description: 'The venue owner has accepted your booking. Complete payment to secure your reservation.',
+  },
   payment_pending: {
     label: 'Awaiting Payment',
     description:
@@ -115,7 +119,7 @@ export function BookingHero({ booking }: Props) {
 
 function StatusBadge({ status }: { status: string }) {
   const statusColor =
-    status === 'confirmed' || status === 'completed'
+    status === 'confirmed' || status === 'completed' || status === 'owner_accepted'
       ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600'
       : status.includes('cancelled') || status.includes('rejected')
         ? 'bg-red-100 dark:bg-red-950/40 text-red-600'
@@ -126,7 +130,7 @@ function StatusBadge({ status }: { status: string }) {
       className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${statusColor}`}
     >
       <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        {status === 'confirmed' || status === 'completed' ? (
+        {status === 'confirmed' || status === 'completed' || status === 'owner_accepted' ? (
           <path
             strokeLinecap="round"
             strokeLinejoin="round"

@@ -81,12 +81,19 @@ export default function PaymentResult() {
   const {
     data: booking,
     isLoading,
+    isFetching,
     isError,
     refetch,
   } = useQuery({
     queryKey: ['booking', bookingId],
     queryFn: () => bookingEndpoints(client).getBooking(bookingId!),
     enabled: !!bookingId,
+    // Always refetch when navigating to payment result page to ensure fresh booking data
+    // (e.g., after balance payment, the result page should show updated amount_paid)
+    // staleTime: 0 ensures cache is treated as stale, preventing stale cached amounts
+    // from flashing when user returns to see updated payment status.
+    staleTime: 0,
+    refetchOnMount: 'always',
     refetchInterval: (query) => {
       const data = query.state.data
       if (!data) return 2000
@@ -107,7 +114,12 @@ export default function PaymentResult() {
     if (!bookingId) navigate('/')
   }, [bookingId, navigate])
 
-  if (isLoading || !booking) {
+  // Show loading state during background refetch to prevent stale data flash
+  // isLoading alone means no cached data exists yet; isFetching means we have
+  // cached data but are refetching in background (e.g., after advance payment).
+  const isInitialLoading = isLoading && !booking
+  const isBackgroundRefetching = isFetching && !isLoading
+  if (isInitialLoading || isBackgroundRefetching) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-ink-950">
         <AppNavbar />
@@ -128,9 +140,10 @@ export default function PaymentResult() {
     )
   }
 
-  const isConfirmed = booking.status === 'confirmed' || booking.status === 'completed'
-  const isFullyPaid = booking.payment_status === 'fully_paid'
-  const isCancelled = booking.status === 'conflict_cancelled' || booking.status === 'user_cancelled'
+  // At this point, booking is guaranteed to be defined (we have cached data)
+  const isConfirmed = booking!.status === 'confirmed' || booking!.status === 'completed'
+  const isFullyPaid = booking!.payment_status === 'fully_paid'
+  const isCancelled = booking!.status === 'conflict_cancelled' || booking!.status === 'user_cancelled'
   const isPending = !isConfirmed && !isFullyPaid && !isCancelled
 
   return (
@@ -237,12 +250,12 @@ export default function PaymentResult() {
 
               <div className="space-y-3">
                 {[
-                  { label: 'Venue', value: booking.venue_name },
-                  { label: 'Location', value: booking.venue_city },
-                  { label: 'Date', value: formatDate(booking.starts_at) },
+                  { label: 'Venue', value: booking!.venue_name },
+                  { label: 'Location', value: booking!.venue_city },
+                  { label: 'Date', value: formatDate(booking!.starts_at) },
                   {
                     label: 'Time',
-                    value: `${formatTime(booking.starts_at)} – ${formatTime(booking.ends_at)}`,
+                    value: `${formatTime(booking!.starts_at)} – ${formatTime(booking!.ends_at)}`,
                   },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-center justify-between">
@@ -257,7 +270,7 @@ export default function PaymentResult() {
                 <div className="flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-ink-800">
                   <span className="text-sm text-zinc-500">Amount paid</span>
                   <span className="text-base font-semibold text-brand dark:text-brand-secondary">
-                    {formatPrice(booking.amount_paid_paise)}
+                    {formatPrice(booking!.amount_paid_paise)}
                   </span>
                 </div>
               </div>
@@ -267,7 +280,7 @@ export default function PaymentResult() {
           {/* ── Actions ─────────────────────────────────────────────────── */}
           <div className="flex flex-col gap-3 border-t border-zinc-100 px-8 py-6 sm:flex-row dark:border-ink-800">
             <button
-              onClick={() => navigate(`/bookings/${booking.id}`)}
+              onClick={() => navigate(`/bookings/${booking!.id}`)}
               className="press flex flex-1 items-center justify-center rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-hover focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2"
             >
               View booking

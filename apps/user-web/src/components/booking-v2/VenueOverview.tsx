@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom'
+
 import type { VenueResponse } from '../../types'
 
 type Props = {
@@ -5,6 +7,8 @@ type Props = {
 }
 
 export function VenueOverview({ venue }: Props) {
+  const navigate = useNavigate()
+
   const coverPhoto =
     venue.photos?.find((photo) => photo.is_cover)?.image_url ?? venue.photos?.[0]?.image_url ?? null
 
@@ -35,9 +39,26 @@ export function VenueOverview({ venue }: Props) {
 
       {/* Content */}
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-          {venue.name}
-        </h2>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            {venue.name}
+          </h2>
+
+          <button
+            onClick={() => navigate(`/venues/${venue.id}`)}
+            className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:border-brand hover:text-brand dark:border-zinc-700 dark:bg-ink-900 dark:text-zinc-200 dark:hover:border-brand dark:hover:text-brand"
+          >
+            View venue page
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7h6m0 0v6m0-6l-8 8"
+              />
+            </svg>
+          </button>
+        </div>
 
         <div className="mt-2 flex items-center gap-2 text-base text-zinc-500">
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,7 +82,9 @@ export function VenueOverview({ venue }: Props) {
           {venueType && <Chip>{venueType}</Chip>}
           <Chip>{venue.max_capacity.toLocaleString()} Guests</Chip>
           {bookingTypes && <Chip>{bookingTypes}</Chip>}
-          {venue.pricing_mode && <Chip className="capitalize">{venue.pricing_mode.replace('_', ' ')}</Chip>}
+          {venue.pricing_mode && (
+            <Chip className="capitalize">{venue.pricing_mode.replace('_', ' ')}</Chip>
+          )}
         </div>
 
         {venue.description && (

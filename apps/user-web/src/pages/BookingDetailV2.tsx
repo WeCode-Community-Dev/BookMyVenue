@@ -64,6 +64,21 @@ export default function BookingDetailV2() {
     queryKey: ['booking', id],
     queryFn: () => bookingEndpoints(client).getBooking(id!),
     enabled: !!id,
+    refetchInterval: (query) => {
+      const data = query.state.data
+      if (!data) return 2000
+      // Poll when awaiting owner acceptance or payment processing
+      if (
+        data.status === 'requested' ||
+        data.status === 'owner_accepted' ||
+        data.status === 'payment_pending' ||
+        data.payment_status === 'unpaid' ||
+        (data.status === 'confirmed' && data.payment_status === 'advance_paid')
+      ) {
+        return 2000
+      }
+      return false
+    },
   })
 
   const booking = bookingQuery.data

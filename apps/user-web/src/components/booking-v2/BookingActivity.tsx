@@ -17,12 +17,20 @@ export function BookingActivity({ booking, venueTimezone }: Props) {
   const now = new Date()
   const eventStarted = now >= new Date(booking.starts_at)
 
+  const acceptedStatuses = ['owner_accepted', 'payment_pending', 'confirmed', 'completed']
+
   const activities: Activity[] = [
     {
       title: 'Booking Requested',
       description: 'Your booking request was submitted.',
       date: booking.created_at,
       completed: true,
+    },
+    {
+      title: 'Booking Accepted',
+      description: 'The venue owner accepted your request.',
+      date: booking.confirmed_at ?? null,
+      completed: acceptedStatuses.includes(booking.status),
     },
     {
       title: 'Payment Received',
