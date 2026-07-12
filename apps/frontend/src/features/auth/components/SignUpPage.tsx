@@ -95,7 +95,7 @@ export default function SignupPage() {
             <LoginModal isOpen={loginOpen} onOpenChange={setLoginOpen} />
 
             <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-                <DialogContent className={loginStyle.dialogContent}>
+                <DialogContent className={loginStyle.dialogContent} showCloseButton={false}>
                     <div className={loginStyle.successStep}>
                         <div className="flex justify-center">
                             <div className={loginStyle.successIconContainer}>

@@ -159,7 +159,7 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className={loginStyle.dialogContent}>
+            <DialogContent className={loginStyle.dialogContent} showCloseButton={false}>
 
                 {/* LOGIN STEP */}
                 {step === LoginStatus.LOGIN && (

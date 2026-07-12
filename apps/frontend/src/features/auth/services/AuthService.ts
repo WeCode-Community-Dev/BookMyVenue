@@ -152,8 +152,11 @@ export const useAuthService = () => {
                 body: JSON.stringify({ email, otp }),
             });
 
-            dispatch(setAuthSuccess(result.user));
-            router.push("/");
+            setTimeout(() => {
+                dispatch(setAuthSuccess(result.user));
+                router.push("/");
+            }, 2000);
+
             return { success: true, user: result.user };
         } catch (apiError: any) {
             dispatch(setError(apiError.message || "Verification failed"));
