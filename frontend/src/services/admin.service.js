@@ -21,7 +21,21 @@ export const getAdminVenuesCount = async ({ status }) => {
 
 // Fetches one venue awaiting review (PENDING or CHANGES_PENDING) for the review
 // page. For an edit copy the returned venue carries `editOf` (the original's id).
-export const getAdminVenueById = async (id) => {
+export const adminGetVenueById = async (id) => {
   const res = await api.get(`/admin/venues/${id}`);
+  return res.data;
+};
+
+// Approves a venue under review. A new venue goes live;
+// an edit copy is merged into its original and hard-deleted server-side.
+export const adminApproveVenue = async (id) => {
+  const res = await api.post(`/admin/venues/${id}/approve`);
+  return res.data;
+};
+
+// Rejects a venue under review. `rejectionReason` is required (min length is
+// enforced server-side) and shown to the owner.
+export const adminRejectVenue = async (id, rejectionReason) => {
+  const res = await api.post(`/admin/venues/${id}/reject`, { rejectionReason });
   return res.data;
 };

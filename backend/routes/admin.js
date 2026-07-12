@@ -4,6 +4,8 @@ const requireRole = require("../middleware/requireRole");
 const { USER_ROLES } = require("../constants/user");
 const adminListVenues = require("../controllers/admin/adminListVenues");
 const adminGetVenueById = require("../controllers/admin/adminGetVenueById");
+const adminApproveVenue = require("../controllers/admin/adminApproveVenue");
+const adminRejectVenue = require("../controllers/admin/adminRejectVenue");
 
 const adminListAmenities = require("../controllers/amenity/adminListAmenities");
 const createAmenity = require("../controllers/amenity/createAmenity");
@@ -22,6 +24,8 @@ router.use(authenticate, requireRole(USER_ROLES.ADMIN));
 
 router.get("/venues", adminListVenues);
 router.get("/venues/:id", adminGetVenueById);
+router.post("/venues/:id/approve", adminApproveVenue);
+router.post("/venues/:id/reject", adminRejectVenue);
 
 // Amenities management (Venue Options page)
 router.get("/amenities", adminListAmenities);

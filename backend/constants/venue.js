@@ -53,6 +53,10 @@ const HISTORY_ACTIONS = Object.freeze({
    REJECTION: "REJECTION",
 });
 
+// Minimum length for an admin's rejection reason — forces a meaningful
+// explanation rather than "no" / "bad".
+const REJECTION_REASON_MIN_LENGTH = 10;
+
 module.exports = {
    VENUE_STATUSES,
    VENUE_STATUS_VALUES: Object.values(VENUE_STATUSES),
@@ -62,4 +66,5 @@ module.exports = {
    REVIEW_STATUSES,
    HISTORY_ACTIONS,
    HISTORY_ACTION_VALUES: Object.values(HISTORY_ACTIONS),
+   REJECTION_REASON_MIN_LENGTH,
 };
