@@ -79,7 +79,7 @@ export const authService = () => {
         }
     };
 
-    const register = async (name: string, email: string, mobile: string, password?: string) => {
+    const submitRegistration = async (name: string, email: string, mobile: string, password?: string) => {
         dispatch(setLoading(true));
         dispatch(setError(null));
 
@@ -141,7 +141,7 @@ export const authService = () => {
         emailSentTo,
         requestOtp,
         verifyOtp,
-        register,
+        submitRegistration,
         fetchProfile,
         logout,
         clearError: () => dispatch(setError(null)),
