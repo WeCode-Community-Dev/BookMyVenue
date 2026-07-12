@@ -27,7 +27,7 @@ app.include_router(venue.router, prefix="/api/venues", tags=["Venue"])
 app.include_router(availability.router,
                    prefix="/api/availability", tags=["Availability"])
 app.include_router(booking.router,
-                   prefix="/api/booking", tags=["Booking"])
+                   prefix="/api/bookings", tags=["Bookings"])
 
 app.add_middleware(
     CORSMiddleware,
@@ -51,5 +51,3 @@ def db_check(db: Session = Depends(get_db)):
 @app.get("/me")
 def get_user(current_user: User = Depends(get_current_user)):
     return current_user
-
-
