@@ -38,7 +38,10 @@ async function silentRefresh() {
         .catch((error) => {
             refreshPromise = null;
             store.dispatch(setLogout());
-            console.warn("Failed to refresh token (session expired or logged out):", error);
+            console.warn(
+                "Failed to refresh token (session expired or logged out):",
+                error,
+            );
             throw error;
         });
 
@@ -58,7 +61,7 @@ async function parseResponse(response: Response) {
     }
 }
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
+async function apiFetch(path: string, options: RequestInit = {}) {
     const url = `${BASE_URL}${path}`;
 
     const headers: HeadersInit = {
@@ -131,7 +134,10 @@ export const useAuthService = () => {
             });
             return { success: true };
         } catch (apiError: any) {
-            return { success: false, error: apiError.message || "Failed to send OTP" };
+            return {
+                success: false,
+                error: apiError.message || "Failed to send OTP",
+            };
         } finally {
             dispatch(setLoading(false));
         }
@@ -153,7 +159,10 @@ export const useAuthService = () => {
 
             return { success: true, user: result.user };
         } catch (apiError: any) {
-            return { success: false, error: apiError.message || "Verification failed" };
+            return {
+                success: false,
+                error: apiError.message || "Verification failed",
+            };
         } finally {
             dispatch(setLoading(false));
         }
@@ -175,14 +184,20 @@ export const useAuthService = () => {
 
             return { success: true, message: result.message };
         } catch (apiError: any) {
-            return { success: false, error: apiError.message || "Registration failed" };
+            return {
+                success: false,
+                error: apiError.message || "Registration failed",
+            };
         } finally {
             dispatch(setLoading(false));
         }
     };
 
     const fetchProfile = async () => {
-        if (typeof window !== "undefined" && localStorage.getItem("isAuthenticated") !== "true") {
+        if (
+            typeof window !== "undefined" &&
+      localStorage.getItem("isAuthenticated") !== "true"
+        ) {
             dispatch(setLogout());
             return;
         }
@@ -196,7 +211,10 @@ export const useAuthService = () => {
                 dispatch(setAuthSuccess(userProfile));
             }
         } catch (apiError: any) {
-            console.warn("Failed to fetch profile (unauthenticated or session expired):", apiError);
+            console.warn(
+                "Failed to fetch profile (unauthenticated or session expired):",
+                apiError,
+            );
             dispatch(setLogout());
         } finally {
             dispatch(setLoading(false));
