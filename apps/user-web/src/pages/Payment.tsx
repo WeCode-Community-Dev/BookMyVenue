@@ -222,9 +222,19 @@ export default function Payment() {
     queryKey: ['booking', bookingId],
     queryFn: () => bookingEndpoints(client).getBooking(bookingId!),
     enabled: !!bookingId,
+    // Always refetch when navigating to payment page to ensure fresh booking data
+    // (e.g., after advance payment, balance page should show updated amounts)
+    // staleTime: 0 ensures cache is treated as stale, and refetchOnMount: 'always'
+    // triggers a background refetch. Combined with isFetching check below, this
+    // prevents stale cached amounts from flashing when user returns to pay balance.
+    staleTime: 0,
+    refetchOnMount: 'always',
   })
 
   const booking = bookingQuery.data as BookingOut | undefined
+  // Check isFetching to prevent stale cached data from flashing
+  // (happens when user navigates to pay balance after advance payment)
+  const isFetchingBooking = bookingQuery.isFetching && bookingQuery.isLoading === false
 
   const isAdvanceDue =
     booking != null &&
@@ -261,8 +271,8 @@ export default function Payment() {
     }
   }, [booking, isPaymentDue, navigate])
 
-  // ── Loading ──────────────────────────────────────────────────────────────
-  if (bookingQuery.isLoading) {
+  // ── Loading (initial or background refetch for fresh payment data) ───────────
+  if (bookingQuery.isLoading || isFetchingBooking) {
     return (
       <div className="min-h-screen bg-zinc-50/60 dark:bg-ink-950">
         {/* Minimal payment navbar */}
