@@ -2,16 +2,25 @@
 
 import { AppText, getText } from "@/lib/language/LanguageHelper";
 import { CalendarDays, MapPin, PartyPopper, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
 
+import LoginModal from "@/components/global/login/Login";
 import NextImage from "next/image";
 import { authStyle } from "../styles/AuthStyle";
+import googleIcon from "../../../../public/assets/images/login/google-color.svg";
+import { selectIsAuthenticated } from "@/features/auth/AuthSlice";
 import { useAuthService } from "../services/AuthService";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useSelector } from "react-redux";
 
 export default function SignupPage() {
     const router = useRouter();
     const { submitRegistration } = useAuthService();
+    const isAuthenticated = useSelector(selectIsAuthenticated);
+
+    const [
+        loginOpen, setLoginOpen
+    ] = useState(false);
 
     const [
         form, setForm
@@ -21,6 +30,14 @@ export default function SignupPage() {
         mobile: "",
         password: "",
     });
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.push("/venues");
+        }
+    }, [
+        isAuthenticated, router
+    ]);
 
     const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
         setForm((prev) => {
@@ -55,8 +72,13 @@ export default function SignupPage() {
         }
     };
 
+    const handleGoogleLogin = () => {
+        console.log("Google login clicked");
+    };
+
     return (
         <div className={authStyle.pageWrapper}>
+            <LoginModal isOpen={loginOpen} onOpenChange={setLoginOpen} />
             <div className={authStyle.container}>
                 {/* LEFT SECTION */}
                 <div className={authStyle.leftSection}>
@@ -187,7 +209,17 @@ export default function SignupPage() {
                             <div className={authStyle.dividerLine} />
                         </div>
 
-                        <button className={authStyle.googleButton}>
+                        <button
+                            type="button"
+                            onClick={handleGoogleLogin}
+                            className={`${authStyle.googleButton} flex items-center justify-center gap-3`}
+                        >
+                            <NextImage
+                                src={googleIcon}
+                                alt="Google"
+                                width={20}
+                                height={20}
+                            />
                             <AppText textName="CONTINUE_GOOGLE" textModule="BUTTON" />
                         </button>
 
@@ -195,7 +227,13 @@ export default function SignupPage() {
                             <span>
                                 <AppText textName="ALREADY_HAVE_ACCOUNT" textModule="LABEL" />
                             </span>
-                            <button className={authStyle.loginButton} type="button">
+                            <button
+                                className={authStyle.loginButton}
+                                type="button"
+                                onClick={() => {
+                                    setLoginOpen(true);
+                                }}
+                            >
                                 <AppText textName="SIGN_IN" textModule="BUTTON" />
                             </button>
                         </div>
