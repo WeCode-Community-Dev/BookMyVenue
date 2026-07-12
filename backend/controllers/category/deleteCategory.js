@@ -2,7 +2,8 @@ const Categories = require("../../models/category");
 
 // DELETE /admin/categories/:id
 // Soft delete: marks deletedAt + isActive false rather than removing the doc,
-// so venues that already reference this category's identifier don't break.
+// so venues that already reference this category (by _id) don't end up with a
+// dangling ref.
 async function deleteCategory(req, res) {
    try {
       const { id } = req.params;

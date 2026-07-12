@@ -3,6 +3,7 @@ const {
    SUBMITTABLE_STATUSES,
    DELETABLE_STATUSES,
    IN_PLACE_EDIT_STATUSES,
+   REEDITABLE_STATUSES,
 } = require("../../constants/venue");
 const Categories = require("../../models/category");
 
@@ -84,6 +85,7 @@ const STATUS_GATE_BY_ACTION = {
    submit: { statuses: SUBMITTABLE_STATUSES, verb: "submitted" },
    delete: { statuses: DELETABLE_STATUSES, verb: "deleted" },
    edit:   { statuses: IN_PLACE_EDIT_STATUSES, verb: "edited" },
+   reEdit: { statuses: REEDITABLE_STATUSES, verb: "re-edited" },
 };
 
 // Builds the 400 message for a status-gated venue owner action, looking the

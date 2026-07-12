@@ -1,8 +1,8 @@
 const Amenities = require("../../models/amenity");
 
 // PATCH /admin/amenities/:id   body: { name?, isActive? }
-// identifier is intentionally immutable after creation (venues store the
-// identifier, not the id/name, so changing it would silently break them).
+// identifier is intentionally immutable after creation: it's the dedup key set
+// at create time, so this endpoint never accepts or regenerates it.
 async function updateAmenity(req, res) {
    try {
       const { id } = req.params;

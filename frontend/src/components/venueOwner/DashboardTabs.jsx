@@ -14,10 +14,16 @@ export const TABS = [
     emptyTabText: "No drafts in progress.",
   },
   {
-    key: "inReview",
-    label: "Under Review",
-    statuses: ["PENDING", "CHANGES_PENDING", "REJECTED"],
+    key: "submittedForReview",
+    label: "Submitted For Review",
+    statuses: ["PENDING", "CHANGES_PENDING"],
     emptyTabText: "No venues under review.",
+  },
+  {
+    key: "rejected",
+    label: "Rejected",
+    statuses: ["REJECTED"],
+    emptyTabText: "No rejected venues.",
   },
 ];
 

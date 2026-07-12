@@ -11,6 +11,7 @@ const { buildEditDraftSeed, VENUE_POPULATE, OWNER_HIDDEN_FIELDS } = require("./s
 // :id is the APPROVED original. This endpoint is idempotent on the open edit copy:
 //   - existing EDIT_DRAFT copy  -> return it (resume the in-progress edit)
 //   - existing CHANGES_PENDING  -> 409 (edits already submitted, awaiting admin)
+//   - existing REJECTED copy    -> 409 (re-editing a rejection is a separate API)
 //   - no copy yet               -> create a fresh EDIT_DRAFT seeded from the original
 async function venueOwnerGetVenueForEdit(req, res) {
    try {
@@ -47,6 +48,22 @@ async function venueOwnerGetVenueForEdit(req, res) {
       if (pendingCopy) {
          return res.status(409).json({
             message: "Edits for this venue have already been submitted for approval",
+         });
+      }
+
+      // A rejected edit copy is not resumable through this endpoint. Re-editing a
+      // rejection is a distinct flow (the owner reviews the rejection reason first,
+      // and the copy-vs-new-venue branching differs), handled by a dedicated API.
+      const rejectedCopy = await Venues.findOne({
+         editOf: original._id,
+         status: VENUE_STATUSES.REJECTED,
+         deletedAt: null,
+      }).select("_id").lean();
+
+      if (rejectedCopy) {
+         return res.status(409).json({
+            message:
+               "This venue's edit was rejected by an admin. Use POST /venueOwner/reEditRejectedVenue/:id to review the rejection and edit it again.",
          });
       }
 

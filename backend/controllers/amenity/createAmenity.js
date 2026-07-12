@@ -2,9 +2,9 @@ const Amenities = require("../../models/amenity");
 const slugify = require("../../utils/slugify");
 
 // POST /admin/amenities   body: { name }
-// identifier is derived from name and never exposed for manual editing —
-// venues reference amenities by identifier, so keeping it machine-generated
-// avoids typo'd/duplicate slugs.
+// identifier is derived from name (never accepted from the request) and acts as
+// a normalized dedup key: it collapses casing/spacing/punctuation so "Free
+// Parking" and "free parking" resolve to the same slug and can't both be created.
 async function createAmenity(req, res) {
    try {
       const { name } = req.body;

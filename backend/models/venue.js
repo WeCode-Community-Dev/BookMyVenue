@@ -15,16 +15,18 @@ const venueImageSchema = new mongoose.Schema(
    { _id: false }
 );
 
-// One admin decision on this venue. APPROVAL entries stamp the version the
-// approval produced; REJECTION entries carry the reason shown to the owner. The
-// full log lives on the surviving/original doc (an approved edit copy is
-// hard-deleted, so its decisions are recorded on the original it merged into).
+// One admin decision on this venue. The full log lives on the surviving/original
+// doc: a new venue records its own decisions; an edit copy's decisions are
+// recorded on the original it edits (the copy is hard-deleted on approval and
+// kept only as a REJECTED shell on rejection, carrying no history itself).
 const editHistorySchema = new mongoose.Schema(
    {
       action: { type: String, enum: HISTORY_ACTION_VALUES, required: true },
       by: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
       at: { type: Date, required: true },
-      version: { type: Number, required: true },
+      // Set on APPROVAL entries — the version the approval produced. Omitted on
+      // REJECTION entries (rejection never changes the version).
+      version: { type: Number },
       // Only set on REJECTION entries.
       rejectionReason: { type: String, trim: true },
    },

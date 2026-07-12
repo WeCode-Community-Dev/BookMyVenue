@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { AlertCircle } from "lucide-react";
 import { getVenueCategories } from "../../services/venueCategory.service.js";
 import { getAmenities } from "../../services/amenity.service.js";
 
@@ -279,6 +280,26 @@ export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, on
                     </button>
                 </div>
             </div>
+
+            {/* Rejection notice — shown when this draft carries an admin rejection
+                reason (owner reached here via "Edit again" on a rejected venue; the
+                reason is kept on the flipped doc). Normal drafts have an empty reason. */}
+            {initialValues.rejectionReason && (
+                <div className="flex gap-3 rounded-xl border border-red-200 bg-red-50 p-5 shadow-sm">
+                    <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+                    <div className="min-w-0">
+                        <h2 className="text-sm font-semibold text-red-800">
+                            Reasons for rejection and requested changes:
+                        </h2>
+                        <p className="mt-1 text-sm leading-relaxed text-red-700 whitespace-pre-wrap">
+                            {initialValues.rejectionReason}
+                        </p>
+                        <p className="mt-2 text-xs text-red-600/80">
+                            Update the details below to address this, then submit again for approval.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Global submit error */}
             {submitError && (
