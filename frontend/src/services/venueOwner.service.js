@@ -29,6 +29,12 @@ export const getVenueForEdit = async (originalId) => {
   return res.data;
 };
 
+// Pulls a REJECTED venue back into editing.
+export const reEditRejectedVenue = async (id) => {
+   const res = await api.post(`/venueOwner/reEditRejectedVenue/${id}`);
+   return res.data;
+};
+
 // Creates an empty DRAFT venue and returns the created doc ({ _id, status, ... }).
 // The form is then filled on the edit page, which autosaves via updateVenue().
 export const createDraftVenue = async () => {

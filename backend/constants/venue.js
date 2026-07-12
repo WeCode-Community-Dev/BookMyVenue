@@ -37,6 +37,14 @@ const IN_PLACE_EDIT_STATUSES = Object.freeze([
    VENUE_STATUSES.EDIT_DRAFT,
 ]);
 
+// Statuses a venue owner can pull back into editing from the Rejected tab.
+// Only REJECTED — the doc is flipped in place back to a draft state
+// (DRAFT for a rejected new venue, EDIT_DRAFT for a rejected edit copy) and
+// then goes through the normal submit flow.
+const REEDITABLE_STATUSES = Object.freeze([
+   VENUE_STATUSES.REJECTED,
+]);
+
 // Statuses awaiting an admin decision — the admin review queue.
 //   PENDING          → a brand-new venue submitted for first approval
 //   CHANGES_PENDING  → a submitted edit copy awaiting re-approval
@@ -63,6 +71,7 @@ module.exports = {
    SUBMITTABLE_STATUSES,
    DELETABLE_STATUSES,
    IN_PLACE_EDIT_STATUSES,
+   REEDITABLE_STATUSES,
    REVIEW_STATUSES,
    HISTORY_ACTIONS,
    HISTORY_ACTION_VALUES: Object.values(HISTORY_ACTIONS),

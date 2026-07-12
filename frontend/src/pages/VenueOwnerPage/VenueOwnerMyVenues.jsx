@@ -5,6 +5,7 @@ import {
   getVenueOwnerVenues,
   getVenueOwnerVenuesCount,
   createDraftVenue,
+  reEditRejectedVenue,
   submitVenue,
   setVenueVisibility,
   deleteVenue,
@@ -105,6 +106,13 @@ export function VenueOwnerMyVenues() {
     try {
       if (action === 'edit') {
         navigate(`/venue-owner/venues/edit/${venue._id}`);
+        return;
+      }
+      if (action === 'reEdit') {
+        // Flip the rejected venue back to a draft state, then edit it. The doc id
+        // is unchanged (flipped in place), so we navigate to the same edit route.
+        const editable = await reEditRejectedVenue(venue._id);
+        navigate(`/venue-owner/venues/edit/${editable._id}`);
         return;
       }
       if (action === 'submit') await submitVenue(venue._id);
