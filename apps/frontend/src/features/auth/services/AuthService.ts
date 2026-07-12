@@ -60,7 +60,7 @@ async function parseResponse(response: Response) {
     }
 }
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
+async function apiFetch(path: string, options: RequestInit = {}) {
     const url = `${BASE_URL}${path}`;
 
     const headers: HeadersInit = {
