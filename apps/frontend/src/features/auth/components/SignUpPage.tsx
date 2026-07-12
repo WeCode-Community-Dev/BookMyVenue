@@ -1,18 +1,54 @@
 "use client";
 
+import { useState } from "react";
 import { CalendarDays, MapPin, PartyPopper, ShieldCheck } from "lucide-react";
 import { AppText, getText } from "@/lib/language/LanguageHelper";
+import { useRouter } from "next/navigation";
 
 import NextImage from "next/image";
-import { authService } from "../services/AuthService";
 import { authStyle } from "../styles/AuthStyle";
+import { authService } from "../services/AuthService";
 
 export default function SignupPage() {
-    // const { submitRegistration } = authService();
+    const router = useRouter();
+    const { submitRegistration } = authService();
 
-    const handleRegistration = (evt: React.FormEvent<HTMLFormElement>) => {
+    const [form, setForm] = useState({
+        name: "",
+        email: "",
+        mobile: "",
+        password: "",
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setForm((prev) => ({
+            ...prev,
+            [e.target.name]: e.target.value,
+        }));
+    };
+
+    const handleRegistration = async (
+        evt: React.FormEvent<HTMLFormElement>
+    ) => {
         evt.preventDefault();
-        // submitRegistration();
+
+        const result = await submitRegistration(
+            form.name,
+            form.email,
+            form.mobile,
+            form.password
+        );
+
+        if (result.success) {
+            console.log("Registration successful!")
+
+            setTimeout(() => {
+                router.push("/venues");
+            }, 1500);
+
+        } else {
+            console.log("Registration failed")
+        }
     };
 
     return (
@@ -97,10 +133,38 @@ export default function SignupPage() {
                             </p>
                         </div>
                         <form className={authStyle.form} onSubmit={handleRegistration}>
-                            <input className={authStyle.input} placeholder={getText("FULL_NAME", "INPUT_LABELS")} />
-                            <input className={authStyle.input} placeholder={getText("EMAIL_ADDRESS", "INPUT_LABELS")} />
-                            <input className={authStyle.input} placeholder={getText("MOBILE_NUMBER", "INPUT_LABELS")} />
-                            <input className={authStyle.input} placeholder={getText("PASSWORD", "INPUT_LABELS")} />
+                            <input
+                                name="name"
+                                value={form.name}
+                                onChange={handleChange}
+                                className={authStyle.input}
+                                placeholder={getText("FULL_NAME", "INPUT_LABELS")}
+                            />
+
+                            <input
+                                name="email"
+                                value={form.email}
+                                onChange={handleChange}
+                                className={authStyle.input}
+                                placeholder={getText("EMAIL_ADDRESS", "INPUT_LABELS")}
+                            />
+
+                            <input
+                                name="mobile"
+                                value={form.mobile}
+                                onChange={handleChange}
+                                className={authStyle.input}
+                                placeholder={getText("MOBILE_NUMBER", "INPUT_LABELS")}
+                            />
+
+                            <input
+                                type="password"
+                                name="password"
+                                value={form.password}
+                                onChange={handleChange}
+                                className={authStyle.input}
+                                placeholder={getText("PASSWORD", "INPUT_LABELS")}
+                            />
                             <button type="submit" className={authStyle.buttonPrimary}>
                                 <AppText textName="CREATE_ACCOUNT" textModule="BUTTON" />
                             </button>
