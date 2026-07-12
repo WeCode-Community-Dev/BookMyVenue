@@ -13,7 +13,7 @@ import {
     selectAuthError,
     selectOtpSent,
     selectEmailSentTo,
-} from "@/features/auth/AuthSlice";
+} from "@/features/auth/authSlice";
 import { useRouter } from "next/navigation";
 
 export const authService = () => {

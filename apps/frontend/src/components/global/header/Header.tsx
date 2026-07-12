@@ -16,7 +16,7 @@ import ProfileDropdown from "../dropdown/ProfileDropdown";
 import { headerStyle } from "./HeaderStyles";
 
 import { useSelector } from "react-redux";
-import { selectUser, selectIsAuthenticated } from "@/features/auth/AuthSlice";
+import { selectUser, selectIsAuthenticated } from "@/features/auth/authSlice";
 import { useRouter } from "next/navigation";
 
 export default function Header() {
