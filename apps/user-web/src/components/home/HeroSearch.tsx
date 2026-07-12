@@ -36,7 +36,7 @@ function FilterHero({
   const title = titleParts.length > 0 ? titleParts.join(' ') : 'Venue Search'
 
   return (
-    <section className="bg-gradient-to-br from-[#0b1c19] via-[#0f2920] to-[#163326] py-12 sm:py-16">
+    <section className="bg-gradient-to-br from-[#0b1c19] via-[#0f2920] to-[#163326] py-12 sm:py-16 dark:from-ink-950 dark:via-[#0a1815] dark:to-[#0e1f1a]">
       <div className="mx-auto max-w-3xl px-6 text-center">
         {/* Title */}
         <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl">{title}</h1>
