@@ -1,27 +1,11 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import type { SearchResult } from '../../types'
 import { VENUE_TYPE_LABELS } from '../../constants'
 import { VenueCard, VenueCardSkeleton } from './VenueCard'
 import { SearchSidebar } from './SearchSidebar'
 
-const PAGE_SIZE = 12
-
 type SortKey = 'recommended' | 'price_asc' | 'price_desc' | 'capacity_desc'
-
-function sortVenues(venues: SearchResult[], sort: SortKey): SearchResult[] {
-  const copy = [...venues]
-  switch (sort) {
-    case 'price_asc':
-      return copy.sort((a, b) => (a.starting_price_paise ?? 0) - (b.starting_price_paise ?? 0))
-    case 'price_desc':
-      return copy.sort((a, b) => (b.starting_price_paise ?? 0) - (a.starting_price_paise ?? 0))
-    case 'capacity_desc':
-      return copy.sort((a, b) => (b.capacity ?? 0) - (a.capacity ?? 0))
-    default:
-      return copy
-  }
-}
 
 type Props = {
   venues: SearchResult[]
@@ -32,12 +16,17 @@ type Props = {
   venueType: string
   capacity: string
   instantBooking: boolean
+  sort: SortKey
+  hasMore: boolean
+  loadingMore: boolean
   onVenueClick: (id: string) => void
   onRetry: () => void
   onClearFilters: () => void
   onVenueTypeChange: (type: string) => void
   onCapacityChange: (value: string) => void
   onInstantBookingChange: (value: boolean) => void
+  onSortChange: (sort: SortKey) => void
+  onLoadMore: () => void
 }
 
 function Breadcrumbs() {
@@ -166,37 +155,23 @@ export function VenueGrid({
   venueType,
   capacity,
   instantBooking,
+  sort,
+  hasMore,
+  loadingMore,
   onVenueClick,
   onRetry,
   onClearFilters,
   onVenueTypeChange,
   onCapacityChange,
   onInstantBookingChange,
+  onSortChange,
+  onLoadMore,
 }: Props) {
-  const [searchParams] = useSearchParams()
-  const [sort, setSort] = useState<SortKey>('recommended')
-  const [page, setPage] = useState(1)
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-
-  // FIX #3: reset to page 1 whenever the *committed* search query changes
-  // (new q/city/venue_type/capacity submitted) — previously only sort/filter
-  // wrapper functions reset the page, so a fresh search from the hero could
-  // leave you stranded on an out-of-range page with an empty grid.
-  useEffect(() => {
-    setPage(1)
-  }, [searchParams.toString()])
 
   const activeFilterCount = [venueType, capacity, instantBooking ? 'x' : ''].filter(
     Boolean
   ).length
-  const sorted = useMemo(() => sortVenues(venues, sort), [venues, sort])
-  const totalPages = Math.ceil(sorted.length / PAGE_SIZE)
-  const paged = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-
-  function handleSort(next: SortKey) {
-    setSort(next)
-    setPage(1)
-  }
 
   const sidebarProps = {
     venueType,
@@ -204,17 +179,10 @@ export function VenueGrid({
     instantBooking,
     onVenueTypeChange: (t: string) => {
       onVenueTypeChange(t)
-      setPage(1)
       setMobileFiltersOpen(false) // FIX #7: auto-close drawer after picking a filter
     },
-    onCapacityChange: (v: string) => {
-      onCapacityChange(v)
-      setPage(1)
-    },
-    onInstantBookingChange: (v: boolean) => {
-      onInstantBookingChange(v)
-      setPage(1)
-    },
+    onCapacityChange,
+    onInstantBookingChange,
     onClearFilters: () => {
       onClearFilters()
       setMobileFiltersOpen(false)
@@ -252,7 +220,7 @@ export function VenueGrid({
                 <span className="hidden text-xs text-zinc-400 sm:block">Sort</span>
                 <select
                   value={sort}
-                  onChange={(e) => handleSort(e.target.value as SortKey)}
+                  onChange={(e) => onSortChange(e.target.value as SortKey)}
                   className="rounded-xl border border-zinc-200 bg-white py-2 pl-3.5 text-sm text-zinc-700 shadow-sm focus:border-zinc-400 focus:outline-none dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300"
                 >
                   <option value="recommended">Recommended</option>
@@ -290,69 +258,22 @@ export function VenueGrid({
 
               {!loading &&
                 !error &&
-                paged.map((venue) => (
+                venues.map((venue) => (
                   <VenueCard key={venue.id} venue={venue} onClick={() => onVenueClick(venue.id)} />
                 ))}
+
+              {loadingMore &&
+                Array.from({ length: 3 }).map((_, i) => <VenueCardSkeleton key={`more-${i}`} />)}
             </div>
 
-            {!loading && totalPages > 1 && (
-              <div className="mt-12 flex items-center justify-center gap-2">
+            {!loading && !error && hasMore && (
+              <div className="mt-10 flex justify-center">
                 <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
+                  onClick={onLoadMore}
+                  disabled={loadingMore}
+                  className="cursor-pointer rounded-xl border border-zinc-200 bg-white px-6 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
                 >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </button>
-
-                {Array.from({ length: totalPages }).map((_, i) => {
-                  const p = i + 1
-                  const isActive = p === page
-                  const show = isActive || Math.abs(p - page) <= 1 || p === 1 || p === totalPages
-                  if (!show) {
-                    if (p === 2 || p === totalPages - 1)
-                      return (
-                        <span key={p} className="text-sm text-zinc-400">
-                          …
-                        </span>
-                      )
-                    return null
-                  }
-                  return (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={`flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl text-sm font-medium transition-colors ${
-                        isActive
-                          ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-                          : 'border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800'
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  )
-                })}
-
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
+                  {loadingMore ? 'Loading…' : 'Load more venues'}
                 </button>
               </div>
             )}

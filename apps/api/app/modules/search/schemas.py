@@ -11,6 +11,14 @@ class SearchParams(BaseModel):
     venue_type: str | None = None  # slug — kept for URL backward compat
     capacity: int = 0
     instant_booking: bool = False
+    # "recommended" | "price_asc" | "price_desc" | "capacity_desc"
+    sort: str = "recommended"
+    # Opaque keyset cursor from a previous page's `next_cursor`. None = first page.
+    cursor: str | None = None
+    # Offset-style page/page_size are kept for the Deep Research caller, which
+    # still paginates internal_results the old way. Cursor-based callers
+    # (the venue listing "Load more" flow) should leave `page` untouched and
+    # pass `cursor` instead.
     page: int = 1
     page_size: int = 20
 
@@ -37,3 +45,10 @@ class SearchResult(BaseModel):
     vector_score: float | None = None
     category_boost: float | None = None
     match_score: float | None = None
+
+
+class SearchResultPage(BaseModel):
+    items: list[SearchResult]
+    total: int
+    next_cursor: str | None = None
+    has_more: bool = False

@@ -1,5 +1,5 @@
 import { createClient } from '../client'
-import type { SearchPage } from '../model'
+import type { SearchResultPage } from '../model'
 
 export type QueryUnderstanding = {
   intent: string
@@ -15,7 +15,7 @@ export type QueryUnderstanding = {
 export type DeepResearchSearchResponse = {
   query_id: string
   understanding: QueryUnderstanding
-  internal_results: SearchPage
+  internal_results: SearchResultPage
 }
 
 export type ExternalLeadPublic = {
