@@ -111,11 +111,14 @@ export function VenueCard({ venue, onClick }: Props) {
 
         <button
           onClick={handleLike}
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-110 dark:bg-ink-900/90 dark:hover:bg-ink-900"
+          className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-110 focus-visible:opacity-100 dark:bg-white/10 dark:ring-1 dark:ring-white/15 dark:hover:bg-white/20 dark:backdrop-blur-md ${liked
+            ? 'opacity-100'
+            : 'opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100'
+            }`}
           aria-label={liked ? 'Unsave venue' : 'Save venue'}
         >
           <svg
-            className={`h-4 w-4 transition-colors ${liked ? 'text-red-500' : 'text-zinc-400 hover:text-red-400'}`}
+            className={`h-4 w-4 transition-colors ${liked ? 'text-red-500 dark:text-red-400' : 'text-zinc-400 hover:text-red-400'}`}
             fill={liked ? 'currentColor' : 'none'}
             stroke="currentColor"
             viewBox="0 0 24 24"
