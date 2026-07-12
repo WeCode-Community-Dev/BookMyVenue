@@ -1,7 +1,12 @@
 {
     "english": "अंग्रेज़ी",
     "hindi": "हिंदी",
-    "INPUT_LABELS": {},
+    "INPUT_LABELS": {
+        "FULL_NAME": "पूरा नाम",
+        "EMAIL_ADDRESS": "ईमेल पता",
+        "MOBILE_NUMBER": "मोबाइल नंबर",
+        "PASSWORD": "पासवर्ड"
+    },
     "TOOLTIP": {},
     "BUTTON": {
         "GET_STARTED": "शुरू करें",
@@ -10,7 +15,11 @@
         "PAY_NOW": "अभी भुगतान करें",
         "APPROVE_VENUE": "स्थान स्वीकृत करें",
         "OPEN_IN_MAPS": "नक्शे में खोलें",
-        "SIGN_IN": "साइन इन / साइन अप"
+        "SIGN_IN": "साइन इन",
+        "SIGN_UP": "साइन अप",
+        "SIGN_IN_SIGN_UP": "साइन इन / साइन अप",
+        "CREATE_ACCOUNT": "खाता बनाएं",
+        "CONTINUE_GOOGLE": "गूगल के साथ जारी रखें"
     },
     "LABEL": {
         "MENU": "मेनू",
@@ -31,7 +40,21 @@
         "MEMBER_SINCE": "सदस्यता तिथि",
         "SUBMISSION_DETAILS": "जमा करने का विवरण",
         "SUBMITTED_ON": "जमा करने की तिथि",
-        "ADDITIONAL_NOTES": "अतिरिक्त टिप्पणियाँ"
+        "ADDITIONAL_NOTES": "अतिरिक्त टिप्पणियाँ",
+        "OR": "या",
+        "EVERY_CELEBRATION": "हर उत्सव की शुरुआत होती है",
+        "PERFECT_VENUE": "सही स्थान से",
+        "DISCOVER": "खोजें",
+        "AMAZING_VENUES": "अद्भुत स्थान",
+        "BOOK": "बुक करें",
+        "WITH_EASE": "आसानी से",
+        "CELEBRATE": "जश्न मनाएं",
+        "MEMORIES_FOREVER": "यादें हमेशा के लिए",
+        "START_DISCOVERING": "आज ही अद्भुत स्थानों की खोज शुरू करें।",
+        "ALREADY_HAVE_ACCOUNT": "क्या आपके पास पहले से एक खाता है?",
+        "SECURE": "सुरक्षित",
+        "FAST": "तेज",
+        "TRUSTED": "विश्वसनीय"
     },
     "FILTERS": {
         "FILTER": "फ़िल्टर्स",
@@ -58,6 +81,7 @@
     },
     "COLUMNS": {},
     "MESSAGES": {
-        "VENUE_DESCRIPTION": "एक सुंदर समुद्र तट स्थल जो शादियों, पार्टियों और कॉर्पोरेट आयोजनों के लिए बिल्कुल सही है।"
+        "VENUE_DESCRIPTION": "एक सुंदर समुद्र तट स्थल जो शादियों, पार्टियों और कॉर्पोरेट आयोजनों के लिए बिल्कुल सही है।",
+        "HERO_DESCRIPTION": "उन हजारों लोगों में शामिल हों जो अविस्मरणीय क्षणों की खोज करते हैं, बुकिंग करते हैं और जश्न मनाते हैं।"
     }
 }

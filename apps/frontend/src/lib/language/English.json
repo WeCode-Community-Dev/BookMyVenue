@@ -1,7 +1,12 @@
 {
     "english": "English",
     "hindi": "Hindi",
-    "INPUT_LABELS": {},
+    "INPUT_LABELS": {
+        "FULL_NAME": "Full Name",
+        "EMAIL_ADDRESS": "Email Address",
+        "MOBILE_NUMBER": "Mobile Number",
+        "PASSWORD": "Password"
+    },
     "TOOLTIP": {},
     "BUTTON": {
         "GET_STARTED": "Get Started",
@@ -10,7 +15,11 @@
         "PAY_NOW": "Pay Now",
         "APPROVE_VENUE": "Approve Venue",
         "OPEN_IN_MAPS": "Open In Maps",
-        "SIGN_IN": "Sign In / Sign Up"
+        "SIGN_IN": "Sign In",
+        "SIGN_UP": "Sign Up",
+        "SIGN_IN_SIGN_UP": "Sign In / Sign Up",
+        "CREATE_ACCOUNT": "Create Account",
+        "CONTINUE_GOOGLE": "Continue with Google"
     },
     "LABEL": {
         "MENU": "Menu",
@@ -31,7 +40,21 @@
         "MEMBER_SINCE": "Member Since",
         "SUBMISSION_DETAILS": "Submission Details",
         "SUBMITTED_ON": "Submitted On",
-        "ADDITIONAL_NOTES": "Additional Notes"
+        "ADDITIONAL_NOTES": "Additional Notes",
+        "OR": "OR",
+        "EVERY_CELEBRATION": "Every celebration starts at the",
+        "PERFECT_VENUE": "perfect venue",
+        "DISCOVER": "Discover",
+        "AMAZING_VENUES": "Amazing Venues",
+        "BOOK": "Book",
+        "WITH_EASE": "With Ease",
+        "CELEBRATE": "Celebrate",
+        "MEMORIES_FOREVER": "Memories Forever",
+        "START_DISCOVERING": "Start discovering amazing venues today.",
+        "ALREADY_HAVE_ACCOUNT": "Already have an account?",
+        "SECURE": "Secure",
+        "FAST": "Fast",
+        "TRUSTED": "Trusted"
     },
     "FILTERS": {
         "FILTER": "Filters",
@@ -58,6 +81,7 @@
     },
     "COLUMNS": {},
     "MESSAGES": {
-        "VENUE_DESCRIPTION": "A beautiful beachfront venue perfect for weddings, parties and corporate events."
+        "VENUE_DESCRIPTION": "A beautiful beachfront venue perfect for weddings, parties and corporate events.",
+        "HERO_DESCRIPTION": "Join thousands of people who discover, book and celebrate unforgettable moments."
     }
 }

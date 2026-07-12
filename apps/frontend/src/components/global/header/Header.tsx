@@ -152,10 +152,10 @@ export default function Header() {
                             </>
                         ) : (
                             <Button
-                                onClick={() => router.push("/auth")}
+                                onClick={() => router.push("/register")}
                                 className={headerStyle.signInBtn}
                             >
-                                <AppText textName="SIGN_IN" textModule="BUTTON" />
+                                <AppText textName="SIGN_IN_SIGN_UP" textModule="BUTTON" />
                             </Button>
                         )}
                     </div>
@@ -241,11 +241,11 @@ export default function Header() {
                                 <Button
                                     onClick={() => {
                                         setMobileMenuOpen(false);
-                                        router.push("/auth");
+                                        router.push("/register");
                                     }}
                                     className={headerStyle.mobileDrawerSignInBtn}
                                 >
-                                    <AppText textName="SIGN_IN" textModule="BUTTON" />
+                                    <AppText textName="SIGN_IN_SIGN_UP" textModule="BUTTON" />
                                 </Button>
                             </>
                         )}
