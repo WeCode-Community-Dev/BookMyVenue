@@ -1,8 +1,9 @@
 "use client";
 
 import { AppText, getText } from "@/lib/language/LanguageHelper";
-import { ArrowLeft, CheckCircle2, Mail, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog/Dialog";
+import { SuccessStepContent } from "./SuccessModal";
 import { useEffect, useRef, useState } from "react";
 
 import { LoginStatus } from "@/lib/Constants";
@@ -341,31 +342,7 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
 
                 {/* SUCCESS STEP */}
                 {step === LoginStatus.SUCCESS && (
-                    <div className={loginStyle.successStep}>
-
-                        <div className="flex justify-center">
-                            <div className={loginStyle.successIconContainer}>
-                                <CheckCircle2 className={loginStyle.successIcon} />
-                            </div>
-                        </div>
-
-                        <DialogTitle className={loginStyle.successTitle}>
-                            <AppText textName="LOGIN_SUCCESSFUL" textModule="LABEL" />
-                        </DialogTitle>
-
-                        <p className={loginStyle.successSubtitle}>
-                            <AppText textName="WELCOME_BACK_EMOJI" textModule="LABEL" />
-                        </p>
-
-                        <div className={loginStyle.progressBarContainer}>
-                            <div className={loginStyle.progressBarFill} />
-                        </div>
-
-                        <p className={loginStyle.redirectText}>
-                            <AppText textName="REDIRECTING" textModule="LABEL" />
-                        </p>
-
-                    </div>
+                    <SuccessStepContent titleTextName="LOGIN_SUCCESSFUL" />
                 )}
 
             </DialogContent>

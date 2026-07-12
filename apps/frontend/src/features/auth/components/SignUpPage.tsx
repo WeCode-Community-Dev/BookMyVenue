@@ -1,15 +1,14 @@
 "use client";
 
 import { AppText, getText } from "@/lib/language/LanguageHelper";
-import { CalendarDays, CheckCircle2, MapPin, PartyPopper, ShieldCheck } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog/Dialog";
+import { CalendarDays, MapPin, PartyPopper, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import LoginModal from "@/components/global/login/Login";
 import NextImage from "next/image";
+import SuccessModal from "@/components/global/login/SuccessModal";
 import { authStyle } from "../styles/AuthStyle";
 import googleIcon from "../../../../public/assets/images/login/google-color.svg";
-import { loginStyle } from "@/components/global/login/LoginStyle";
 import { selectIsAuthenticated } from "@/features/auth/AuthSlice";
 import { useAuthService } from "../services/AuthService";
 import { useRouter } from "next/navigation";
@@ -94,33 +93,11 @@ export default function SignupPage() {
         <div className={authStyle.pageWrapper}>
             <LoginModal isOpen={loginOpen} onOpenChange={setLoginOpen} />
 
-            <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-                <DialogContent className={loginStyle.dialogContent} showCloseButton={false}>
-                    <div className={loginStyle.successStep}>
-                        <div className="flex justify-center">
-                            <div className={loginStyle.successIconContainer}>
-                                <CheckCircle2 className={loginStyle.successIcon} />
-                            </div>
-                        </div>
-
-                        <DialogTitle className={loginStyle.successTitle}>
-                            <AppText textName="REGISTRATION_SUCCESSFUL" textModule="LABEL" />
-                        </DialogTitle>
-
-                        <p className={loginStyle.successSubtitle}>
-                            <AppText textName="WELCOME_BACK_EMOJI" textModule="LABEL" />
-                        </p>
-
-                        <div className={loginStyle.progressBarContainer}>
-                            <div className={loginStyle.progressBarFill} />
-                        </div>
-
-                        <p className={loginStyle.redirectText}>
-                            <AppText textName="REDIRECTING" textModule="LABEL" />
-                        </p>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            <SuccessModal
+                isOpen={showSuccessModal}
+                onOpenChange={setShowSuccessModal}
+                titleTextName="REGISTRATION_SUCCESSFUL"
+            />
             <div className={authStyle.container}>
                 {/* LEFT SECTION */}
                 <div className={authStyle.leftSection}>
