@@ -15,10 +15,16 @@ import type { AuthRequest } from 'src/types/auth.request.interface';
 import type { GoogleAuthRequest } from 'src/types/google-auth.request.interface';
 import { AuthGuard } from '@nestjs/passport';
 import type { Response } from 'express';
+import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
+
+  @Post('register')
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
 
   @Post('otp/request')
   requestOtp(@Body() dto: RequestOtpDto) {

@@ -13,6 +13,7 @@ import { PrismaService } from 'src/providers/prisma/prisma.service';
 import { RedisService } from 'src/providers/redis/redis.service';
 import { RequestOtpDto } from './dto/request-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { RegisterDto } from './dto/register.dto';
 import bcrypt from 'bcrypt';
 
 @Injectable()
@@ -22,7 +23,7 @@ export class AuthService {
     private readonly prismaService: PrismaService,
     private readonly redisService: RedisService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   private async generateAccessToken(user: User) {
     return this.jwtService.signAsync(
@@ -253,5 +254,43 @@ export class AuthService {
     }
 
     return this.generateAccessToken(user);
+  }
+
+  async register(dto: RegisterDto) {
+    const { name, email, mobile, password } = dto;
+
+    const existingUser = await this.prismaService.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { phone: mobile }
+        ]
+      }
+    });
+
+    if (existingUser) {
+      if (existingUser.email === email) {
+        throw new HttpException('Email already registered', HttpStatus.BAD_REQUEST);
+      }
+      throw new HttpException('Phone number already registered', HttpStatus.BAD_REQUEST);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await this.prismaService.user.create({
+      data: {
+        name,
+        email,
+        phone: mobile,
+        password: hashedPassword,
+        authProvider: AuthProvider.EMAIL,
+        isVerified: true,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'User registered successfully.',
+    };
   }
 }
