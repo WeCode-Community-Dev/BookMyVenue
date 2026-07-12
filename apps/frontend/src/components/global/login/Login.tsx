@@ -90,8 +90,7 @@ export default function LoginModal({
     };
 
     const handleGoogleLogin = () => {
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
-        window.location.href = `${apiBase}/auth/google`;
+        console.log("Google login clicked");
     };
 
     const handleOtpChange = (index: number, val: string) => {
