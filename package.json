@@ -1,0 +1,20 @@
+{
+  "name": "bookmyvenue-backend",
+  "version": "1.0.0",
+  "description": "Backend for BookMyVenue - Kerala venue discovery app",
+  "main": "server.js",
+  "scripts": {
+    "start": "npm start --prefix server",
+    "build": "npm install --prefix server && npm install --include=dev --prefix client && npm run build --prefix client",
+    "dev": "npm run dev --prefix server"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
+}
