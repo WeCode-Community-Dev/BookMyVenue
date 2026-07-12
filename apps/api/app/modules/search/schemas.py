@@ -20,6 +20,7 @@ class SearchResult(BaseModel):
     city: str
     category: VenueCategoryResponse
     capacity: int
+    booking_mode: str
     pricing_mode: str
     starting_price_paise: int | None = None
     display_price_min_paise: int | None = None

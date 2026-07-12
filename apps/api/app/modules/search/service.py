@@ -84,6 +84,7 @@ def _to_results(
                 city=v.city,
                 category=v.category,
                 capacity=v.max_capacity,
+                booking_mode=v.booking_mode,
                 pricing_mode=v.pricing_mode,
                 starting_price_paise=starting_price,
                 display_price_min_paise=v.display_price_min_paise,
