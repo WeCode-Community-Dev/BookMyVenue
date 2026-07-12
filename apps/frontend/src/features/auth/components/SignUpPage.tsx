@@ -78,7 +78,7 @@ export default function SignupPage() {
             setTimeout(() => {
                 setShowSuccessModal(false);
                 router.push("/venues");
-            }, 2000);
+            }, 1000);
 
         } else {
             console.log("Registration failed");

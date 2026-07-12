@@ -149,7 +149,7 @@ export const useAuthService = () => {
             setTimeout(() => {
                 dispatch(setAuthSuccess(result.user));
                 router.push("/");
-            }, 2000);
+            }, 1000);
 
             return { success: true, user: result.user };
         } catch (apiError: any) {
