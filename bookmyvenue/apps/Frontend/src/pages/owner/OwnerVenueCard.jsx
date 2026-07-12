@@ -242,126 +242,84 @@ function OwnerVenueCard({ venue }) {
 
         {/* Actions */}
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
+        <div className="mt-5 grid grid-cols-1 gap-3">
 
 
-          <button
-
+        <button
             onClick={() =>
-              navigate(`/owner/venues/${venue.id}/manage`)
+            navigate(`/owner/venues/${venue.id}/manage`)
             }
-
             className="
-              rounded-full 
-              bg-red-600 
-              px-4 
-              py-2 
-              text-sm 
-              font-semibold 
-              text-white
-              transition
-              hover:bg-red-700
+            rounded-full
+            bg-red-600
+            px-4
+            py-2
+            text-sm
+            font-semibold
+            text-white
+            transition
+            hover:bg-red-700
             "
-
-          >
-
+        >
             Manage Venue
-
-          </button>
-
+        </button>
 
 
 
 
-          <button
+        <div className="grid grid-cols-2 gap-3">
 
+
+            <button
             onClick={() =>
-              navigate(`/owner/venues/${venue.id}/availability`)
+                navigate(`/owner/venues/${venue.id}/availability`)
             }
-
             className="
-              rounded-full 
-              border 
-              border-gray-300
-              px-4
-              py-2
-              text-sm
-              font-semibold
-              text-gray-700
-              transition
-              hover:border-red-600
-              hover:text-red-600
+                rounded-full
+                border
+                border-gray-300
+                px-4
+                py-2
+                text-sm
+                font-semibold
+                text-gray-700
+                transition
+                hover:border-red-600
+                hover:text-red-600
             "
-
-          >
-
+            >
             Availability
-
-          </button>
-
+            </button>
 
 
 
 
-          <button
-
+            <button
             onClick={() =>
-              navigate(`/owner/venues/${venue.id}/bookings`)
+                navigate(`/owner/venues/${venue.id}/bookings`)
             }
-
             className="
-              rounded-full 
-              border 
-              border-gray-300
-              px-4
-              py-2
-              text-sm
-              font-semibold
-              text-gray-700
-              transition
-              hover:border-red-600
-              hover:text-red-600
+                rounded-full
+                border
+                border-gray-300
+                px-4
+                py-2
+                text-sm
+                font-semibold
+                text-gray-700
+                transition
+                hover:border-red-600
+                hover:text-red-600
             "
-
-          >
-
+            >
             Bookings
-
-          </button>
-
-
-
-
-
-          <button
-
-            onClick={() =>
-              navigate(`/owner/venues/${venue.id}/edit`)
-            }
-
-            className="
-              rounded-full 
-              border 
-              border-gray-300
-              px-4
-              py-2
-              text-sm
-              font-semibold
-              text-gray-700
-              transition
-              hover:border-red-600
-              hover:text-red-600
-            "
-
-          >
-
-            Edit
-
-          </button>
-
+            </button>
 
 
         </div>
+
+
+</div>
 
 
       </div>

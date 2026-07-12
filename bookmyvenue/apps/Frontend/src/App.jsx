@@ -11,6 +11,11 @@ import OwnerDashboard from "./pages/owner/OwnerDashboard";
 import Home from "./pages/Home";
 import VenueDetail from "./pages/VenueDetail";
 
+import ManageVenue from "./pages/owner/ManageVenue";
+import ManageAvailability from "./pages/owner/ManageAvailability";
+import OwnerVenueBookings from "./pages/owner/OwnerVenueBookings";
+
+
 function App() {
   return (
     <AuthProvider>
@@ -57,6 +62,37 @@ function App() {
             }
           />
           <Route path="/venues/:venueId" element={<VenueDetail />} />
+
+          <Route
+            path="/owner/venues/:id/manage"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <ManageVenue />
+              </ProtectedRoute>
+            }
+          />
+
+
+          <Route
+            path="/owner/venues/:id/availability"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <ManageAvailability />
+              </ProtectedRoute>
+            }
+          />
+
+
+          <Route
+            path="/owner/venues/:id/bookings"
+            element={
+              <ProtectedRoute allowedRoles={["owner"]}>
+                <OwnerVenueBookings />
+              </ProtectedRoute>
+            }
+          />
+
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>
