@@ -41,12 +41,9 @@ export function AmenitiesList({ amenities }: Props) {
     <div>
       <h2 className="mb-5 text-lg font-semibold text-zinc-900 dark:text-zinc-100">What this venue offers</h2>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
         {visible.map((a) => (
-          <div
-            key={a.id}
-            className="flex items-center gap-3 rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 dark:border-ink-800 dark:bg-ink-900 dark:text-zinc-300"
-          >
+          <div key={a.id} className="flex items-center gap-3.5 text-sm text-zinc-700 dark:text-zinc-300">
             {a.icon ? (
               <span className="shrink-0 text-lg leading-none">{a.icon}</span>
             ) : (
