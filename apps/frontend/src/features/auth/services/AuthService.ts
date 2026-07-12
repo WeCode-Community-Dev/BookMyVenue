@@ -13,7 +13,7 @@ import {
     setLoading,
     setLogout,
     setOtpSent,
-} from "@/features/auth/authSlice";
+} from "@/features/auth/AuthSlice";
 import { useRouter } from "next/navigation";
 
 export const useAuthService = () => {

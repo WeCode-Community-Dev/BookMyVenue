@@ -3,7 +3,6 @@
 import {
     Bell,
     ChevronDown,
-    Link,
     Menu,
     X,
 } from "lucide-react";
@@ -16,7 +15,7 @@ import ProfileDropdown from "../dropdown/ProfileDropdown";
 import { headerStyle } from "./HeaderStyles";
 
 import { useSelector } from "react-redux";
-import { selectUser, selectIsAuthenticated } from "@/features/auth/authSlice";
+import { selectIsAuthenticated, selectUser } from "@/features/auth/AuthSlice";
 import { useRouter } from "next/navigation";
 
 export default function Header() {
@@ -52,7 +51,8 @@ export default function Header() {
                 handleClickOutside
             );
         };
-    }, []);
+    }, [
+    ]);
 
     return (
         <>
@@ -143,7 +143,7 @@ export default function Header() {
 
                                         <ChevronDown
                                             className={`${headerStyle.chevron} ${profileOpen ? "rotate-180" : ""
-                                                }`}
+                                            }`}
                                         />
                                     </Button>
 
@@ -152,7 +152,9 @@ export default function Header() {
                             </>
                         ) : (
                             <Button
-                                onClick={() => router.push("/register")}
+                                onClick={() => {
+                                    return router.push("/register"); 
+                                }}
                                 className={headerStyle.signInBtn}
                             >
                                 <AppText textName="SIGN_IN_SIGN_UP" textModule="BUTTON" />
@@ -167,14 +169,14 @@ export default function Header() {
                 className={`${headerStyle.mobileDrawerOverlayWrapper} ${mobileMenuOpen
                     ? "visible"
                     : "invisible"
-                    }`}
+                }`}
             >
                 {/* Overlay */}
                 <div
                     className={`${headerStyle.mobileDrawerBackdrop} ${mobileMenuOpen
                         ? "opacity-100"
                         : "opacity-0"
-                        }`}
+                    }`}
                     onClick={() => {
                         return setMobileMenuOpen(false);
                     }}
@@ -185,7 +187,7 @@ export default function Header() {
                     className={`${headerStyle.mobileDrawerPanel} ${mobileMenuOpen
                         ? "translate-x-0"
                         : "-translate-x-full"
-                        }`}
+                    }`}
                 >
                     {/* Drawer Header */}
                     <div className={headerStyle.mobileDrawerHeader}>

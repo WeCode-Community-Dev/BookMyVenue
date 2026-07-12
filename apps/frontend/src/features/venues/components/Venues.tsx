@@ -14,7 +14,7 @@ import { venueStyle } from "../styles/VenueStyle";
 import { venues } from "../services/VenuService";
 
 import { useSelector } from "react-redux";
-import { selectAuthLoading, selectIsAuthenticated, selectJustLoggedOut } from "@/features/auth/authSlice";
+import { selectAuthLoading, selectIsAuthenticated, selectJustLoggedOut } from "@/features/auth/AuthSlice";
 
 export default function Venues() {
     const isAuthenticated = useSelector(selectIsAuthenticated);
