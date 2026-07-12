@@ -36,7 +36,7 @@ export default function SignupPage() {
                             </span>
                         </h1>
                         <p className={authStyle.descriptionClass}>
-                            <AppText textName="HERO_DESCRIPTION" textModule="MESSAGES" />
+                            <AppText textName="AUTH_DESCRIPTION" textModule="MESSAGES" />
                         </p>
 
                         <div className={authStyle.featureGrid}>
