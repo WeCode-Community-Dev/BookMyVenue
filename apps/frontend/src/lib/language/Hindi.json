@@ -32,6 +32,7 @@
         "ENTER_OTP": "ओटीपी दर्ज करें",
         "SENT_OTP": "हमने {email} पर 6 अंकों का ओटीपी भेजा है",
         "LOGIN_SUCCESSFUL": "लॉगिन सफल!",
+        "REGISTRATION_SUCCESSFUL": "पंजीकरण सफल!",
         "WELCOME_BACK_EMOJI": "वापसी पर स्वागत है 👋",
         "REDIRECTING": "पुनर्निर्देशित किया जा रहा है...",
         "MENU": "मेनू",

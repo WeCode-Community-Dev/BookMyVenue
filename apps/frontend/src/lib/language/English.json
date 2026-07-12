@@ -32,6 +32,7 @@
         "ENTER_OTP": "Enter OTP",
         "SENT_OTP": "We sent a 6-digit OTP to {email}",
         "LOGIN_SUCCESSFUL": "Login Successful!",
+        "REGISTRATION_SUCCESSFUL": "Registration Successful!",
         "WELCOME_BACK_EMOJI": "Welcome back 👋",
         "REDIRECTING": "Redirecting...",
         "MENU": "Menu",

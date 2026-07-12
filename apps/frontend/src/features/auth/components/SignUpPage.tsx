@@ -1,13 +1,15 @@
 "use client";
 
 import { AppText, getText } from "@/lib/language/LanguageHelper";
-import { CalendarDays, MapPin, PartyPopper, ShieldCheck } from "lucide-react";
+import { CalendarDays, CheckCircle2, MapPin, PartyPopper, ShieldCheck } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog/Dialog";
 import { useEffect, useState } from "react";
 
 import LoginModal from "@/components/global/login/Login";
 import NextImage from "next/image";
 import { authStyle } from "../styles/AuthStyle";
 import googleIcon from "../../../../public/assets/images/login/google-color.svg";
+import { loginStyle } from "@/components/global/login/LoginStyle";
 import { selectIsAuthenticated } from "@/features/auth/AuthSlice";
 import { useAuthService } from "../services/AuthService";
 import { useRouter } from "next/navigation";
@@ -23,6 +25,10 @@ export default function SignupPage() {
     ] = useState(false);
 
     const [
+        showSuccessModal, setShowSuccessModal
+    ] = useState(false);
+
+    const [
         form, setForm
     ] = useState({
         name: "",
@@ -33,7 +39,8 @@ export default function SignupPage() {
 
     useEffect(() => {
         clearError();
-    }, []);
+    }, [
+    ]);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -67,10 +74,12 @@ export default function SignupPage() {
 
         if (result.success) {
             console.log("Registration successful!");
+            setShowSuccessModal(true);
 
             setTimeout(() => {
+                setShowSuccessModal(false);
                 router.push("/venues");
-            }, 1500);
+            }, 2000);
 
         } else {
             console.log("Registration failed");
@@ -84,6 +93,34 @@ export default function SignupPage() {
     return (
         <div className={authStyle.pageWrapper}>
             <LoginModal isOpen={loginOpen} onOpenChange={setLoginOpen} />
+
+            <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+                <DialogContent className={loginStyle.dialogContent}>
+                    <div className={loginStyle.successStep}>
+                        <div className="flex justify-center">
+                            <div className={loginStyle.successIconContainer}>
+                                <CheckCircle2 className={loginStyle.successIcon} />
+                            </div>
+                        </div>
+
+                        <DialogTitle className={loginStyle.successTitle}>
+                            <AppText textName="REGISTRATION_SUCCESSFUL" textModule="LABEL" />
+                        </DialogTitle>
+
+                        <p className={loginStyle.successSubtitle}>
+                            <AppText textName="WELCOME_BACK_EMOJI" textModule="LABEL" />
+                        </p>
+
+                        <div className={loginStyle.progressBarContainer}>
+                            <div className={loginStyle.progressBarFill} />
+                        </div>
+
+                        <p className={loginStyle.redirectText}>
+                            <AppText textName="REDIRECTING" textModule="LABEL" />
+                        </p>
+                    </div>
+                </DialogContent>
+            </Dialog>
             <div className={authStyle.container}>
                 {/* LEFT SECTION */}
                 <div className={authStyle.leftSection}>
@@ -217,11 +254,13 @@ export default function SignupPage() {
                                 className={authStyle.buttonPrimary}
                                 disabled={loading}
                             >
-                                {loading ? (
-                                    <AppText textName="SENDING" textModule="BUTTON" />
-                                ) : (
-                                    <AppText textName="CREATE_ACCOUNT" textModule="BUTTON" />
-                                )}
+                                {loading
+                                    ? (
+                                        <AppText textName="SENDING" textModule="BUTTON" />
+                                    )
+                                    : (
+                                        <AppText textName="CREATE_ACCOUNT" textModule="BUTTON" />
+                                    )}
                             </button>
                         </form>
 
