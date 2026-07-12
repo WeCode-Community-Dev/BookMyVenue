@@ -4,15 +4,19 @@ import { NotFoundError } from '../../../../domain/errors/NotFoundError.js'
 import { ConflictError } from '../../../../domain/errors/ConflictError.js'
 import { ForbiddenError } from '../../../../domain/errors/forbidden.error.js'
 import { ValidationError } from '../../../../domain/errors/ValidationError.js'
+import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.js"
+import { authMessages } from "../../../../shared/constants/messages/authMessages.js"
 
 
 export class VendorEditVenueUsecase  {
     constructor (
         VenueRepository,
-        cloudinaryService
+        cloudinaryService,
+        vendorRepository,
     )  {
         this._venueRepository = VenueRepository
         this._cloudinaryService = cloudinaryService
+        this._vendorRepository = vendorRepository
     }
 
     async execute({ 
@@ -43,6 +47,10 @@ export class VendorEditVenueUsecase  {
         deletedImages = [],
         deletedLicense = []
     }) {
+            const vendor = await this._vendorRepository.findById(vendorId)
+            if(!vendor){
+                throw new UnauthorizedError(authMessages.error.VENDOR_NOT_FOUND)
+            }
             const venue = await this._venueRepository.findById(venueId)
             if(!venue){
                 throw new NotFoundError(VenueMessages.error.VENUE_NOT_FOUND)

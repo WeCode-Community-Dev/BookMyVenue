@@ -77,6 +77,22 @@ class VendorRepositoryImpl extends IVendorRepository {
         };
     }
 
+    async verifyOtp(vendorId) {
+        const document = await VendorModel.findByIdAndUpdate(
+            vendorId,
+            {
+                isVerified: true,
+            },
+            {
+                new: true
+            }
+        );
+
+        if (!document) return null;
+
+        return VendorMapper.mapToEntity(document);
+    }
+
     async approveVendor(vendorId) {
         const updatedVendor = await VendorModel.findByIdAndUpdate(
             vendorId,
@@ -131,8 +147,15 @@ class VendorRepositoryImpl extends IVendorRepository {
     }
 
     async findByEmail(email) {
-        const doc = VendorModel.findOne({ email, isDeleted: false });
-        return doc ? VendorMapper.mapToEntity(doc) : null;
+        const doc = await VendorModel.findOne({ 
+            email, 
+            isDeleted: {$ne: true}
+        });
+        if(!doc){
+            return null
+        }
+
+        return VendorMapper.mapToEntity(doc)
     }
 
     async findByPhone(phone) {
@@ -154,6 +177,14 @@ class VendorRepositoryImpl extends IVendorRepository {
         );
         if (!doc) return null;
         return VendorMapper.mapToEntity(doc);
+    }
+
+    async clearRefreshToken(token) {
+        await VendorModel.findByOneAndUpdate(
+            {refreshToken: token},
+            { $pull: {refreshToken: token } },
+            { new: true }
+        );
     }
 }
 

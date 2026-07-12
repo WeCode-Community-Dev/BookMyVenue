@@ -1,4 +1,4 @@
-class AdminEntity {
+export class AdminEntity {
     constructor({
         id,
         fullName,
@@ -6,20 +6,19 @@ class AdminEntity {
         password = null,
         role,
         isDeleted = false,
+        refreshToken = [],
         createdAt,
         updatedAt,
-        isActive = true,
     }) {
         this.id = id;
         this.fullName = fullName;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.refreshToken = refreshToken;
         this.isDeleted = isDeleted;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.isActive = isActive;
     }
 }
 
-export default AdminEntity;

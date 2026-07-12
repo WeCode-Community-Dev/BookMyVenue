@@ -27,7 +27,7 @@ export const VerifyRegisterotpTemplate = (fullName, otpCode) => `
 
             <div class="otp-box">
                 <div class="otp-code">${otpCode}</div>
-                <div class="timer">⏱️ Expires in 10 minutes</div>
+                <div class="timer">⏱️ Expires in 2 minutes</div>
             </div>
 
             <p><strong>How to use:</strong></p>
