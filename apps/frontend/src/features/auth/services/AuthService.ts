@@ -1,10 +1,8 @@
 import {
-    selectAuthError,
     selectAuthLoading,
     selectIsAuthenticated,
     selectUser,
     setAuthSuccess,
-    setError,
     setLoading,
     setLogout,
 } from "@/features/auth/AuthSlice";
@@ -122,11 +120,9 @@ export const useAuthService = () => {
     const user = useSelector(selectUser);
     const isAuthenticated = useSelector(selectIsAuthenticated);
     const loading = useSelector(selectAuthLoading);
-    const error = useSelector(selectAuthError);
 
     const requestOtp = async (email: string) => {
         dispatch(setLoading(true));
-        dispatch(setError(null));
 
         try {
             await apiFetch("/auth/otp/request", {
@@ -135,8 +131,7 @@ export const useAuthService = () => {
             });
             return { success: true };
         } catch (apiError: any) {
-            dispatch(setError(apiError.message || "Failed to send OTP"));
-            return { success: false, error: apiError.message };
+            return { success: false, error: apiError.message || "Failed to send OTP" };
         } finally {
             dispatch(setLoading(false));
         }
@@ -144,7 +139,6 @@ export const useAuthService = () => {
 
     const verifyOtp = async (email: string, otp: string) => {
         dispatch(setLoading(true));
-        dispatch(setError(null));
 
         try {
             const result = await apiFetch("/auth/otp/verify", {
@@ -159,8 +153,7 @@ export const useAuthService = () => {
 
             return { success: true, user: result.user };
         } catch (apiError: any) {
-            dispatch(setError(apiError.message || "Verification failed"));
-            return { success: false, error: apiError.message };
+            return { success: false, error: apiError.message || "Verification failed" };
         } finally {
             dispatch(setLoading(false));
         }
@@ -173,7 +166,6 @@ export const useAuthService = () => {
         password?: string,
     ) => {
         dispatch(setLoading(true));
-        dispatch(setError(null));
 
         try {
             const result = await apiFetch("/auth/register", {
@@ -183,8 +175,7 @@ export const useAuthService = () => {
 
             return { success: true, message: result.message };
         } catch (apiError: any) {
-            dispatch(setError(apiError.message || "Registration failed"));
-            return { success: false, error: apiError.message };
+            return { success: false, error: apiError.message || "Registration failed" };
         } finally {
             dispatch(setLoading(false));
         }
@@ -229,14 +220,10 @@ export const useAuthService = () => {
         user,
         isAuthenticated,
         loading,
-        error,
         requestOtp,
         verifyOtp,
         submitRegistration,
         fetchProfile,
         logout,
-        clearError: () => {
-            return dispatch(setError(null));
-        },
     };
 };

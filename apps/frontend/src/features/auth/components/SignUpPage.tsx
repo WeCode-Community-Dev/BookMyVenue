@@ -17,7 +17,10 @@ import { useSelector } from "react-redux";
 
 export default function SignupPage() {
     const router = useRouter();
-    const { submitRegistration, error, loading, clearError } = useAuthService();
+    const { submitRegistration, loading } = useAuthService();
+    const [
+        error, setError
+    ] = useState<string | null>(null);
     const isAuthenticated = useSelector(selectIsAuthenticated);
 
     const [
@@ -38,11 +41,6 @@ export default function SignupPage() {
     });
 
     useEffect(() => {
-        clearError();
-    }, [
-    ]);
-
-    useEffect(() => {
         if (isAuthenticated) {
             router.push("/venues");
         }
@@ -51,7 +49,7 @@ export default function SignupPage() {
     ]);
 
     const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-        clearError();
+        setError(null);
         setForm((prev) => {
             return {
                 ...prev,
@@ -64,6 +62,7 @@ export default function SignupPage() {
         evt: React.FormEvent<HTMLFormElement>
     ) => {
         evt.preventDefault();
+        setError(null);
 
         const result = await submitRegistration(
             form.name,
@@ -83,6 +82,7 @@ export default function SignupPage() {
 
         } else {
             console.log("Registration failed");
+            setError(result.error || "Registration failed");
         }
     };
 

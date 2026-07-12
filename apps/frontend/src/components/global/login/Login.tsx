@@ -18,7 +18,10 @@ type LoginModalProps = {
 
 export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
 
-    const { loading, error, requestOtp, verifyOtp, clearError } = useAuthService();
+    const { loading, requestOtp, verifyOtp } = useAuthService();
+    const [
+        error, setError
+    ] = useState<string | null>(null);
 
     const [
         step, setStep 
@@ -38,7 +41,7 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
     useEffect(() => {
         
         if (isOpen) {
-            clearError();
+            setError(null);
             setStep(LoginStatus.LOGIN);
             setEmail("");
             setOtpValues(Array(6).fill(""));
@@ -60,13 +63,17 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
     const handleContinue = async (evt: React.FormEvent) => {
         evt.preventDefault();
         if (!email) return;
+        setError(null);
         const res = await requestOtp(email);
         if (res.success) {
             setStep(LoginStatus.OTP);
+        } else {
+            setError(res.error || "Failed to send OTP");
         }
     };
 
     const triggerAutoVerify = async (otpString: string) => {
+        setError(null);
         const res = await verifyOtp(email, otpString);
         if (res.success) {
             setStep(LoginStatus.SUCCESS);
@@ -76,6 +83,8 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
                 setEmail("");
                 setOtpValues(Array(6).fill(""));
             }, 2000);
+        } else {
+            setError(res.error || "Verification failed");
         }
     };
 
@@ -95,7 +104,7 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
     const handleOtpChange = (index: number, val: string) => {
         if (val && !/^\d$/.test(val)) return;
 
-        clearError();
+        setError(null);
 
         const newOtpValues = [
             ...otpValues
@@ -114,7 +123,7 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
     };
 
     const handleOtpKeyDown = (index: number, evt: React.KeyboardEvent<HTMLInputElement>) => {
-        clearError();
+        setError(null);
         if (evt.key === "Backspace") {
             if (!otpValues[ index ] && index > 0) {
                 const newOtpValues = [
@@ -138,7 +147,7 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
         const pastedData = evt.clipboardData.getData("text").slice(0, 6);
         if (!/^\d+$/.test(pastedData)) return;
 
-        clearError();
+        setError(null);
 
         const newOtpValues = [
             ...otpValues
