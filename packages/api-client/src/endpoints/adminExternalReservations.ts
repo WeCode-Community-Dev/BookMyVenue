@@ -36,12 +36,20 @@ export type ExternalReservationSummary = {
   created_at: string
 }
 
+export type ExternalReservationStats = {
+  total: number
+  new: number
+  in_progress: number
+  booking_created: number
+}
+
 export type ExternalReservationListResponse = {
   items: ExternalReservationSummary[]
   total: number
   page: number
   page_size: number
   total_pages: number
+  stats: ExternalReservationStats
 }
 
 export type ListExternalReservationsParams = {

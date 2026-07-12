@@ -144,16 +144,16 @@ export default function VenueApprovals() {
       {/* Stats strip */}
       <div className="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { label: 'Pending Approval', value: stats?.pending_approval, accent: 'amber' as const, icon: <Clock className="h-4 w-4" /> },
-          { label: 'Approved',         value: stats?.approved,         accent: 'emerald' as const, icon: <CheckCircle2 className="h-4 w-4" /> },
-          { label: 'Suspended',        value: stats?.suspended,        accent: 'rose' as const,    icon: <ShieldOff className="h-4 w-4" /> },
-          { label: 'Total Venues',     value: stats?.total,            accent: 'brand' as const,    icon: <Building2 className="h-4 w-4" /> },
+          { label: 'Pending Approval', value: stats?.pending_approval, description: 'Awaiting admin review',       accent: 'amber' as const,   icon: <Clock className="h-4 w-4" /> },
+          { label: 'Approved',         value: stats?.approved,         description: 'Live and visible to customers', accent: 'emerald' as const, icon: <CheckCircle2 className="h-4 w-4" /> },
+          { label: 'Suspended',        value: stats?.suspended,        description: 'Hidden from public search',   accent: 'rose' as const,    icon: <ShieldOff className="h-4 w-4" /> },
+          { label: 'Total Venues',     value: stats?.total,            description: 'All non-deleted listings',    accent: 'brand' as const,   icon: <Building2 className="h-4 w-4" /> },
         ].map((m, i) => (
           <div key={m.label} className="card-enter" style={{ '--index': i } as React.CSSProperties}>
             <MetricCard
               label={m.label}
               value={m.value !== undefined ? String(m.value) : '—'}
-              description=""
+              description={m.description}
               icon={m.icon}
               accent={m.accent}
             />

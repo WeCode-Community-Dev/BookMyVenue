@@ -4,6 +4,7 @@ import math
 import urllib.request
 import uuid
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 from sqlalchemy import case, cast, func, text
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -29,6 +30,119 @@ from app.modules.profile.models import Profile, ProfileStatus, UserRole, UserRol
 from app.modules.venue.models import Amenity, Venue, VenueAmenity, VenueCategory, VenueStatus
 
 logger = logging.getLogger(__name__)
+
+
+# Descriptions and queue mechanism are business/implementation knowledge, not
+# something a cron schedule encodes, so they stay hardcoded here. The actual
+# `schedule` label for each job is looked up from schedule.json at request
+# time — see _job_schedule_labels() — so it can't drift from the real
+# GitHub Actions trigger in .github/workflows/jobs.yml.
+_JOB_CATALOG = [
+    {
+        "name": "hold_expiry",
+        "description": "Expires accepted bookings whose 24-hour token-payment hold has passed.",
+        "queue_type": "Polling sweep",
+    },
+    {
+        "name": "request_expiry",
+        "description": "Expires unanswered booking requests older than the request-expiry window.",
+        "queue_type": "Polling sweep",
+    },
+    {
+        "name": "completion",
+        "description": "Marks confirmed, fully-paid bookings completed once the event date has passed.",
+        "queue_type": "Polling sweep",
+    },
+    {
+        "name": "payment_reminders",
+        "description": "Reminds accepted-but-unpaid users to pay the token advance before their hold expires.",
+        "queue_type": "Polling sweep",
+    },
+    {
+        "name": "overdue_flag",
+        "description": "Flags bookings with an overdue balance and opens the owner action window.",
+        "queue_type": "Polling sweep",
+    },
+    {
+        "name": "overdue_autocancel",
+        "description": "Auto-cancels bookings whose owner action window has expired (forfeits advance).",
+        "queue_type": "Polling sweep",
+    },
+    {
+        "name": "search_indexer",
+        "description": "Processes queued venue search-index updates.",
+        "queue_type": "Queued (Redis + DB fallback, retries with backoff)",
+    },
+    {
+        "name": "payment_pending_expiry",
+        "description": "Releases instant bookings whose payment window expired unpaid.",
+        "queue_type": "Polling sweep",
+    },
+    {
+        "name": "invoice_generator",
+        "description": "Generates invoices for completed and confirmed bookings.",
+        "queue_type": "Queued (Redis + DB fallback, retries with backoff)",
+    },
+]
+
+_SCHEDULE_FILE = Path(__file__).resolve().parents[2] / "jobs" / "schedule.json"
+
+
+def _job_schedule_labels() -> dict[str, str]:
+    """
+    Map each job name to its human-readable schedule label, derived from
+    app/jobs/schedule.json — the single source of truth also read by
+    .github/workflows/jobs.yml. Falls back to "Unscheduled" if a job is
+    missing from the file rather than failing the whole settings request.
+    """
+    data = json.loads(_SCHEDULE_FILE.read_text())
+    labels: dict[str, str] = {}
+    for entry in data["schedules"]:
+        for job_name in entry["jobs"]:
+            labels[job_name] = entry["label"]
+    return labels
+
+
+def get_platform_settings() -> dict:
+    """
+    Read-only snapshot of the platform-wide booking/commission constants,
+    operational config, and background-job catalog. Sourced directly from
+    the modules that enforce them, so this can never drift out of sync with
+    actual behavior. There is no live job-run history — see _JOB_CATALOG.
+    """
+    from app.jobs.balance_overdue import DEFAULT_ACTION_WINDOW_HOURS
+    from app.jobs.payment_reminders import REMINDER_BEFORE
+    from app.modules.booking.helpers import (
+        INSTANT_BOOKING_PAYMENT_TIMEOUT_MINUTES,
+        MAX_DEADLINE_EXTENSIONS,
+        REQUEST_EXPIRY_DAYS,
+        USER_PAYMENT_HOLD_HOURS,
+    )
+    from app.modules.venue.service import DEFAULT_PLATFORM_COMMISSION_PCT
+
+    schedule_labels = _job_schedule_labels()
+    jobs = [
+        {**job, "schedule": schedule_labels.get(job["name"], "Unscheduled")}
+        for job in _JOB_CATALOG
+    ]
+
+    return {
+        "default_platform_commission_pct": float(DEFAULT_PLATFORM_COMMISSION_PCT),
+        "token_payment_hold_hours": USER_PAYMENT_HOLD_HOURS,
+        "instant_booking_payment_timeout_minutes": INSTANT_BOOKING_PAYMENT_TIMEOUT_MINUTES,
+        "booking_request_expiry_days": REQUEST_EXPIRY_DAYS,
+        "max_deadline_extensions": MAX_DEADLINE_EXTENSIONS,
+        "payment_reminder_hours_before_expiry": int(REMINDER_BEFORE.total_seconds() // 3600),
+        "balance_overdue_action_window_hours": DEFAULT_ACTION_WINDOW_HOURS,
+        "deep_research_rate_limit_per_minute": settings.deep_research_rate_limit_per_minute,
+        "deep_research_daily_limit": settings.deep_research_daily_limit,
+        "environment": settings.environment,
+        "currency": settings.stripe_currency.upper(),
+        "background_jobs_enabled": settings.enable_jobs,
+        "job_runner_configured": bool(settings.job_runner_token),
+        "search_diagnostics_enabled": settings.search_diagnostics_enabled,
+        "jobs": jobs,
+    }
 
 
 def _month_start(year: int, month: int) -> datetime:

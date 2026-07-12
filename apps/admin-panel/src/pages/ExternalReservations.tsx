@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   PhoneCall, UserCheck, Send, CalendarPlus, MapPin, Users as UsersIcon, Tag,
-  X, Mail, Phone, Globe, Star, ExternalLink, StickyNote, Calendar,
+  X, Mail, Phone, Globe, Star, ExternalLink, StickyNote, Calendar, Sparkles, CheckCircle2,
 } from 'lucide-react'
 import { createClient, adminExternalReservationEndpoints } from '@venue404/api-client'
 import type {
@@ -11,7 +11,7 @@ import type {
 } from '@venue404/api-client'
 import { AdminLayout } from '../components/AdminLayout'
 import {
-  SectionHeader, StatusBadge, EmptyState, LoadingScreen, ErrorState, Button, Modal,
+  MetricCard, SectionHeader, StatusBadge, EmptyState, LoadingScreen, ErrorState, Button, Modal,
 } from '@venue404/ui'
 
 const api = adminExternalReservationEndpoints(createClient())
@@ -68,6 +68,7 @@ export default function ExternalReservations() {
   const items = data?.items ?? []
   const total = data?.total ?? 0
   const totalPages = data?.total_pages ?? 1
+  const stats = data?.stats ?? null
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['admin', 'external-reservations'] })
 
@@ -117,6 +118,26 @@ export default function ExternalReservations() {
       pageTitle="External Reservations"
       pageSubtitle="Convert customer reservations at unregistered venues into onboarded owners and bookings"
     >
+      {/* Metric strip */}
+      <div className="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {[
+          { label: 'Total Reservations', value: stats?.total,           description: 'All external venue leads',      accent: 'brand' as const,   icon: <PhoneCall className="h-4 w-4" /> },
+          { label: 'New',                value: stats?.new,             description: 'Awaiting first contact',        accent: 'amber' as const,   icon: <Sparkles className="h-4 w-4" /> },
+          { label: 'In Progress',        value: stats?.in_progress,     description: 'Contacted through venue setup', accent: 'rose' as const,    icon: <Send className="h-4 w-4" /> },
+          { label: 'Booking Created',    value: stats?.booking_created, description: 'Successfully converted',        accent: 'emerald' as const, icon: <CheckCircle2 className="h-4 w-4" /> },
+        ].map((m, i) => (
+          <div key={m.label} className="card-enter" style={{ '--index': i } as React.CSSProperties}>
+            <MetricCard
+              label={m.label}
+              value={m.value !== undefined ? String(m.value) : '—'}
+              description={m.description}
+              icon={m.icon}
+              accent={m.accent}
+            />
+          </div>
+        ))}
+      </div>
+
       <div className="rounded-xl border border-zinc-200 bg-white shadow-sm">
         <div className="border-b border-zinc-100 px-5 pt-4">
           <SectionHeader
