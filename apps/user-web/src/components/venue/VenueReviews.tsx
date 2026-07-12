@@ -33,14 +33,6 @@ export function VenueReviews({ venueId, userEligibleBookingIds = [] }: VenueRevi
   } = useVenueReviews(venueId)
   const { summary, isLoading: summaryLoading } = useReviewSummary(venueId)
   const { createReview, isPending: isCreating } = useCreateReview(venueId)
-
-  // NOTE: these previously took the review id as a *hook* argument
-  // (`useUpdateReview(undefined)` / `useDeleteReview(undefined)`), which
-  // can only ever be bound once when this component mounts — there's no
-  // single "the" review id here, since any row in the list can be edited
-  // or deleted. That's exactly what sent `undefined` to the API. The id
-  // now travels with the mutation call itself, per click, which is the
-  // only place it's actually known.
   const { updateReview, isPending: isUpdating } = useUpdateReview()
   const { deleteReview, isPending: isDeleting } = useDeleteReview()
 
@@ -48,7 +40,6 @@ export function VenueReviews({ venueId, userEligibleBookingIds = [] }: VenueRevi
   const [editingReview, setEditingReview] = useState<Review | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
 
-  // Determine if user can create a review
   const hasEligibleBooking = userEligibleBookingIds && userEligibleBookingIds.length > 0
   const userAlreadyReviewed = user && reviews.some((r) => r.user_id === user.id)
   const canReview = user && hasEligibleBooking && !userAlreadyReviewed
@@ -83,44 +74,46 @@ export function VenueReviews({ venueId, userEligibleBookingIds = [] }: VenueRevi
   }
 
   return (
-    <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Reviews</h2>
+    <div className="space-y-6">
+      {/* Header — one clear action on the right, not four competing states */}
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Reviews</h2>
 
-      {/* Rating Summary */}
-      {summary && !summaryLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-2">
-            <ReviewSummaryComponent summary={summary} />
-          </div>
+        {!user ? (
+          <Button variant="secondary" size="sm" onClick={openLogin}>
+            Sign in to review
+          </Button>
+        ) : canReview && !showForm ? (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => {
+              setEditingReview(null)
+              setShowForm(true)
+            }}
+          >
+            Write a review
+          </Button>
+        ) : null}
+      </div>
 
-          {/* CTA */}
-          <div className="md:col-span-1 flex flex-col items-center justify-start gap-4">
-            {!user ? (
-              <Button variant="primary" onClick={openLogin} className="w-full">
-                Sign in to review
-              </Button>
-            ) : canReview ? (
-              <Button
-                variant="primary"
-                className="w-full"
-                onClick={() => {
-                  setEditingReview(null)
-                  setShowForm(!showForm)
-                }}
-              >
-                {showForm ? 'Cancel' : 'Write a review'}
-              </Button>
-            ) : userAlreadyReviewed ? (
-              <Alert variant="success" className="w-full text-center">
-                You've reviewed this venue
-              </Alert>
-            ) : (
-              <Alert variant="info" className="w-full text-center">
-                Complete a booking to review
-              </Alert>
-            )}
-          </div>
+      {/* Summary card */}
+      {summary && !summaryLoading && summary.total_reviews > 0 && (
+        <div className="rounded-2xl border border-zinc-100 dark:border-ink-800 bg-white dark:bg-ink-900 p-6 sm:p-8">
+          <ReviewSummaryComponent summary={summary} />
         </div>
+      )}
+
+      {/* Status — informational only, the action lives in the header above */}
+      {user && userAlreadyReviewed && (
+        <Alert variant="success" className="text-center">
+          You've reviewed this venue
+        </Alert>
+      )}
+      {user && !hasEligibleBooking && !userAlreadyReviewed && (
+        <Alert variant="info" className="text-center">
+          Complete a booking to review this venue
+        </Alert>
       )}
 
       {/* Review Form */}
@@ -139,8 +132,8 @@ export function VenueReviews({ venueId, userEligibleBookingIds = [] }: VenueRevi
       )}
 
       {/* Reviews List */}
-      <div>
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
+      <div className="space-y-4 pt-2">
+        <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">
           {total} {total === 1 ? 'Review' : 'Reviews'}
         </h3>
 
@@ -184,7 +177,7 @@ export function VenueReviews({ venueId, userEligibleBookingIds = [] }: VenueRevi
 
         {/* Pagination */}
         {total > 10 && (
-          <div className="flex items-center justify-center gap-3 mt-6">
+          <div className="flex items-center justify-center gap-3 pt-2">
             <Button
               variant="secondary"
               size="sm"

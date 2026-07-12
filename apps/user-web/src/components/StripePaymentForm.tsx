@@ -51,7 +51,7 @@ function InnerCheckoutForm({ payLabel, onSuccess, onCancel }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Stripe Payment Element */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-ink-700 dark:bg-ink-900">
+      <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-ink-700 dark:bg-ink-900">
         <PaymentElement options={{ layout: 'tabs' }} />
       </div>
 
@@ -59,7 +59,7 @@ function InnerCheckoutForm({ payLabel, onSuccess, onCancel }: Props) {
       {error && (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400"
+          className="flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400"
         >
           <svg
             className="mt-0.5 h-4 w-4 shrink-0"
@@ -98,7 +98,7 @@ function InnerCheckoutForm({ payLabel, onSuccess, onCancel }: Props) {
           type="button"
           onClick={onCancel}
           disabled={processing}
-          className="flex flex-1 items-center justify-center rounded-lg border border-zinc-200 bg-white px-5 py-3.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
+          className="press flex flex-1 items-center justify-center rounded-lg border border-zinc-200 bg-white px-5 py-3.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 focus-visible:ring-2 focus-visible:ring-brand-secondary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-ink-700 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800"
         >
           Cancel
         </button>
@@ -125,7 +125,7 @@ export function StripePaymentForm(props: Props) {
                   colorText: '#f4f4f5', // zinc-100
                   colorTextSecondary: '#a1a1aa', // zinc-400
                   colorTextPlaceholder: '#71717a', // zinc-500
-                  colorDanger: '#f87171', // red-400
+                  colorDanger: '#fb7185', // rose-400 — matches the app's rose error token
                   borderRadius: '8px',
                 },
                 rules: {

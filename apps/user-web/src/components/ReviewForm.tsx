@@ -39,7 +39,6 @@ export function ReviewForm({
     e.preventDefault()
     setError(null)
 
-    // Validation
     if (rating < 1 || rating > 5) {
       setError('Please select a rating')
       return
@@ -55,14 +54,6 @@ export function ReviewForm({
       return
     }
 
-    // Editing an existing review but its id is missing — bail instead of
-    // silently submitting `undefined` to the API. This is the case that used
-    // to slip through: the parent tracked "which review is being edited" as
-    // separate state from `initialReview`, and the two could fall out of
-    // sync (e.g. a stale closure, or the reviews list refetching between
-    // clicking Edit and submitting). Sourcing the id from `initialReview`
-    // directly at submit time — and refusing to proceed if it's absent —
-    // removes that failure mode entirely.
     if (isEditing && !initialReview?.id) {
       setError('Something went wrong loading this review. Please close and try editing again.')
       return
@@ -82,20 +73,22 @@ export function ReviewForm({
 
   if (!isEligible) {
     return (
-      <div className="rounded-xl border border-zinc-100 dark:border-ink-800 bg-zinc-50 dark:bg-ink-900 p-6 text-center">
-        <svg
-          className="w-12 h-12 text-zinc-300 dark:text-ink-600 mx-auto mb-3"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-          />
-        </svg>
+      <div className="rounded-2xl border border-zinc-100 dark:border-ink-800 bg-zinc-50 dark:bg-ink-900 p-8 text-center">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-white dark:bg-ink-800">
+          <svg
+            className="h-5 w-5 text-zinc-300 dark:text-ink-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
+          </svg>
+        </div>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{eligibilityReason}</p>
       </div>
     )
@@ -104,15 +97,19 @@ export function ReviewForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-xl border border-zinc-100 dark:border-ink-800 bg-white dark:bg-ink-900 p-6"
+      className="card-enter rounded-2xl border border-zinc-100 dark:border-ink-800 bg-white dark:bg-ink-900 p-6 sm:p-8"
     >
-      <div className="space-y-5">
+      <h3 className="mb-6 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+        {isEditing ? 'Update your review' : 'Share your experience'}
+      </h3>
+
+      <div className="space-y-6">
         {/* Rating */}
         <div>
           <label>
             Your rating <span className="text-red-500">*</span>
           </label>
-          <div className="flex gap-1.5 mt-1">
+          <div className="mt-1.5 flex gap-2">
             {[1, 2, 3, 4, 5].map((r) => (
               <button
                 key={r}
@@ -122,8 +119,10 @@ export function ReviewForm({
                 className="press rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/20"
               >
                 <svg
-                  className={`w-8 h-8 transition-colors ${
-                    r <= rating ? 'text-amber-400 fill-current' : 'text-zinc-200 dark:text-ink-700'
+                  className={`h-8 w-8 transition-colors ${
+                    r <= rating
+                      ? 'fill-current text-amber-400'
+                      : 'fill-current text-zinc-200 dark:text-ink-700'
                   }`}
                   viewBox="0 0 20 20"
                 >
@@ -161,14 +160,14 @@ export function ReviewForm({
             rows={4}
             className="resize-none"
           />
-          <div className="text-xs text-zinc-400 mt-1">{comment.length} / 5000 characters</div>
+          <div className="mt-1 text-xs text-zinc-400">{comment.length} / 5000 characters</div>
         </div>
 
         {/* Error */}
         {error && <Alert variant="destructive">{error}</Alert>}
 
         {/* Actions */}
-        <div className="flex gap-3 pt-1">
+        <div className="flex gap-3 border-t border-zinc-100 pt-5 dark:border-ink-800">
           <Button type="submit" variant="primary" disabled={isSubmitting} className="flex-1">
             {isSubmitting ? 'Submitting…' : isEditing ? 'Update review' : 'Post review'}
           </Button>

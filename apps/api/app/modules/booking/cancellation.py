@@ -223,18 +223,17 @@ def owner_cancel_forfeit(db: Session, booking_id: UUID, owner_id: UUID) -> Booki
 
     _slot_for_update(db, booking.id).is_blocking = False
     old_status = booking.status
-    owner_share = math.floor(
-        booking.advance_due_paise * (1 - (float(booking.platform_commission_pct) / 100))
-    )
     booking.status = BookingStatus.balance_overdue_cancelled
     booking.cancelled_at = _now()
+    booking.refund_amount_paise = 0
+    booking.payment_status = PaymentStatus.refunded
     db.add(
         _history(
             booking,
             old_status,
             BookingStatus.balance_overdue_cancelled,
             changed_by=owner_id,
-            metadata={"owner_share_paise": owner_share, "refund_amount_paise": 0},
+            metadata={"refund_amount_paise": 0},
         )
     )
     db.flush()
@@ -260,7 +259,7 @@ def owner_cancel_goodwill(db: Session, booking_id: UUID, owner_id: UUID) -> Book
     _slot_for_update(db, booking.id).is_blocking = False
     old_status = booking.status
     refund_amount = math.floor(
-        booking.advance_due_paise * (float(booking.overdue_advance_refund_pct) / 100)
+        booking.amount_paid_paise * (float(booking.overdue_advance_refund_pct) / 100)
     )
     if refund_amount > 0:
         payment_service.refund_for_cancellation(db, booking, refund_amount, "owner_goodwill")

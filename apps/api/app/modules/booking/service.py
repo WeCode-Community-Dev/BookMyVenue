@@ -11,6 +11,12 @@ from sqlalchemy.orm import Session, joinedload
 from app.modules.availability.service import validate_booking_request
 
 # Re-expose functions from cancellation module
+from app.modules.booking.cancellation import (
+    get_cancellation_preview,
+    user_cancel_booking,
+    owner_cancel_forfeit,
+    owner_cancel_goodwill,
+)
 from app.modules.booking.helpers import (
     MAX_DEADLINE_EXTENSIONS,
     USER_PAYMENT_HOLD_HOURS,

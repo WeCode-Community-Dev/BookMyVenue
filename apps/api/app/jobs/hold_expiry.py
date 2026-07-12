@@ -30,6 +30,9 @@ def run() -> int:
         for b in rows:
             b.status = BookingStatus.hold_expired
             b.payment_status = PaymentStatus.unpaid
+            b.amount_paid_paise = 0
+            b.refund_amount_paise = 0
+            b.stripe_advance_payment_intent_id = None
             b.expired_at = now
             if b.slot:
                 b.slot.is_blocking = False
@@ -46,5 +49,6 @@ def run() -> int:
             notifications.notify(
                 db, b.user_id, "hold_expired", context={"venue_name": venue_name}, booking_id=b.id
             )
+        db.commit()
         logger.info("hold_expiry: expired %d booking(s)", len(rows))
         return len(rows)
