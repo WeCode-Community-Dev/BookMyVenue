@@ -195,4 +195,17 @@ export const authStyle = {
     trustItem: clsx("text-center"),
     trustIcon: clsx("mx-auto", "mb-2", "h-6", "w-6", "text-teal-600"),
     trustText: clsx("text-xs", "text-slate-500"),
+    errorContainer: clsx(
+        "mt-4",
+        "mb-4",
+        "rounded-xl",
+        "bg-red-50",
+        "p-3",
+        "text-sm",
+        "text-red-600",
+        "border",
+        "border-red-100",
+        "text-center",
+        "font-medium",
+    ),
 };

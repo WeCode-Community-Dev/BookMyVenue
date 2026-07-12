@@ -15,7 +15,7 @@ import { useSelector } from "react-redux";
 
 export default function SignupPage() {
     const router = useRouter();
-    const { submitRegistration } = useAuthService();
+    const { submitRegistration, error, loading, clearError } = useAuthService();
     const isAuthenticated = useSelector(selectIsAuthenticated);
 
     const [
@@ -32,6 +32,10 @@ export default function SignupPage() {
     });
 
     useEffect(() => {
+        clearError();
+    }, []);
+
+    useEffect(() => {
         if (isAuthenticated) {
             router.push("/venues");
         }
@@ -40,6 +44,7 @@ export default function SignupPage() {
     ]);
 
     const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+        clearError();
         setForm((prev) => {
             return {
                 ...prev,
@@ -163,6 +168,13 @@ export default function SignupPage() {
                                 <AppText textName="START_DISCOVERING" textModule="LABEL" />
                             </p>
                         </div>
+
+                        {error && (
+                            <div className={authStyle.errorContainer}>
+                                {error}
+                            </div>
+                        )}
+
                         <form className={authStyle.form} onSubmit={handleRegistration}>
                             <input
                                 name="name"
@@ -170,6 +182,7 @@ export default function SignupPage() {
                                 onChange={handleChange}
                                 className={authStyle.input}
                                 placeholder={getText("FULL_NAME", "INPUT_LABELS")}
+                                disabled={loading}
                             />
 
                             <input
@@ -178,6 +191,7 @@ export default function SignupPage() {
                                 onChange={handleChange}
                                 className={authStyle.input}
                                 placeholder={getText("EMAIL_ADDRESS", "INPUT_LABELS")}
+                                disabled={loading}
                             />
 
                             <input
@@ -186,6 +200,7 @@ export default function SignupPage() {
                                 onChange={handleChange}
                                 className={authStyle.input}
                                 placeholder={getText("MOBILE_NUMBER", "INPUT_LABELS")}
+                                disabled={loading}
                             />
 
                             <input
@@ -195,9 +210,18 @@ export default function SignupPage() {
                                 onChange={handleChange}
                                 className={authStyle.input}
                                 placeholder={getText("PASSWORD", "INPUT_LABELS")}
+                                disabled={loading}
                             />
-                            <button type="submit" className={authStyle.buttonPrimary}>
-                                <AppText textName="CREATE_ACCOUNT" textModule="BUTTON" />
+                            <button
+                                type="submit"
+                                className={authStyle.buttonPrimary}
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <AppText textName="SENDING" textModule="BUTTON" />
+                                ) : (
+                                    <AppText textName="CREATE_ACCOUNT" textModule="BUTTON" />
+                                )}
                             </button>
                         </form>
 
