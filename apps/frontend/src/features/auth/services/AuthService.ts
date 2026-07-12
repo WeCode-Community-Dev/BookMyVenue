@@ -1,23 +1,121 @@
-import { useDispatch, useSelector } from "react-redux";
-import { apiFetch } from "@/features/auth/authApi";
 import {
-    clearOtpSent,
     selectAuthError,
     selectAuthLoading,
-    selectEmailSentTo,
     selectIsAuthenticated,
-    selectOtpSent,
     selectUser,
     setAuthSuccess,
     setError,
     setLoading,
     setLogout,
-    setOtpSent,
 } from "@/features/auth/AuthSlice";
+import { useDispatch, useSelector } from "react-redux";
+
+import store from "@/store/Store";
 import { useRouter } from "next/navigation";
 
-export const useAuthService = () => {
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
+let refreshPromise: Promise<any> | null = null;
+
+async function silentRefresh() {
+    if (refreshPromise) {
+        return refreshPromise;
+    }
+
+    const url = `${BASE_URL}/auth/refresh`;
+
+    refreshPromise = fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    })
+        .then(async (response) => {
+            refreshPromise = null;
+            if (!response.ok) {
+                throw new Error("Failed to refresh token");
+            }
+
+            return response.json();
+        })
+        .catch((error) => {
+            refreshPromise = null;
+            store.dispatch(setLogout());
+            console.error("Failed to refresh token:", error);
+            throw error;
+        });
+
+    return refreshPromise;
+}
+
+async function parseResponse(response: Response) {
+    if (response.status === 204) {
+        return null;
+    }
+
+    try {
+        return await response.json();
+    } catch (error) {
+        console.error("Failed to parse response:", error);
+        return null;
+    }
+}
+
+export async function apiFetch(path: string, options: RequestInit = {}) {
+    const url = `${BASE_URL}${path}`;
+
+    const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+    };
+
+    try {
+        const response = await fetch(url, {
+            ...options,
+            headers,
+            credentials: "include",
+        });
+
+        // (if request gets 401, refresh and retry once)
+        if (response.status === 401 && path !== "/auth/refresh") {
+            try {
+                await silentRefresh();
+
+                // Retry with fresh credentials
+                const retryResponse = await fetch(url, {
+                    ...options,
+                    headers,
+                    credentials: "include",
+                });
+
+                return await parseResponse(retryResponse);
+            } catch (error) {
+                store.dispatch(setLogout());
+                console.error("Session expired:", error);
+                throw new Error("Session expired");
+            }
+        }
+
+        if (!response.ok) {
+            let errorMessage = "An error occurred";
+
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+                console.error("API Error:", errorMessage);
+            } catch (error) {
+                console.error("Failed to parse error response:", error);
+            }
+
+            throw new Error(errorMessage);
+        }
+
+        return await parseResponse(response);
+    } catch (error: any) {
+        throw new Error(error.message || "Network error");
+    }
+}
+
+export const useAuthService = () => {
     const dispatch = useDispatch();
     const router = useRouter();
 
@@ -25,41 +123,30 @@ export const useAuthService = () => {
     const isAuthenticated = useSelector(selectIsAuthenticated);
     const loading = useSelector(selectAuthLoading);
     const error = useSelector(selectAuthError);
-    const otpSent = useSelector(selectOtpSent);
-    const emailSentTo = useSelector(selectEmailSentTo);
 
     const requestOtp = async (email: string) => {
-
         dispatch(setLoading(true));
         dispatch(setError(null));
 
         try {
-
             await apiFetch("/auth/otp/request", {
                 method: "POST",
                 body: JSON.stringify({ email }),
             });
-
-            dispatch(setOtpSent({ email }));
             return { success: true };
-
-        } catch (error: any) {
-
-            dispatch(setError(error.message || "Failed to send OTP"));
-            return { success: false, error: error.message };
-
+        } catch (apiError: any) {
+            dispatch(setError(apiError.message || "Failed to send OTP"));
+            return { success: false, error: apiError.message };
         } finally {
             dispatch(setLoading(false));
         }
     };
 
     const verifyOtp = async (email: string, otp: string) => {
-
         dispatch(setLoading(true));
         dispatch(setError(null));
 
         try {
-
             const result = await apiFetch("/auth/otp/verify", {
                 method: "POST",
                 body: JSON.stringify({ email, otp }),
@@ -68,33 +155,33 @@ export const useAuthService = () => {
             dispatch(setAuthSuccess(result.user));
             router.push("/");
             return { success: true, user: result.user };
-
-        } catch (error: any) {
-
-            dispatch(setError(error.message || "Verification failed"));
-            return { success: false, error: error.message };
-
+        } catch (apiError: any) {
+            dispatch(setError(apiError.message || "Verification failed"));
+            return { success: false, error: apiError.message };
         } finally {
             dispatch(setLoading(false));
         }
     };
 
-    const submitRegistration = async (name: string, email: string, mobile: string, password?: string) => {
+    const submitRegistration = async (
+        userName: string,
+        email: string,
+        mobile: string,
+        password?: string,
+    ) => {
         dispatch(setLoading(true));
         dispatch(setError(null));
 
         try {
             const result = await apiFetch("/auth/register", {
                 method: "POST",
-                body: JSON.stringify({ name, email, mobile, password }),
+                body: JSON.stringify({ name: userName, email, mobile, password }),
             });
 
             return { success: true, message: result.message };
-
-        } catch (error: any) {
-            dispatch(setError(error.message || "Registration failed"));
-            return { success: false, error: error.message };
-
+        } catch (apiError: any) {
+            dispatch(setError(apiError.message || "Registration failed"));
+            return { success: false, error: apiError.message };
         } finally {
             dispatch(setLoading(false));
         }
@@ -109,10 +196,9 @@ export const useAuthService = () => {
             if (userProfile) {
                 dispatch(setAuthSuccess(userProfile));
             }
-
-        } catch (error: any) {
+        } catch (apiError: any) {
+            console.error("Failed to fetch profile:", apiError);
             dispatch(setLogout());
-
         } finally {
             dispatch(setLoading(false));
         }
@@ -122,11 +208,10 @@ export const useAuthService = () => {
         dispatch(setLoading(true));
         try {
             await apiFetch("/auth/logout", { method: "POST" });
-        } catch (err) {
-            console.error("Logout error on backend:", err);
+        } catch (apiError: any) {
+            console.error("Logout error on backend:", apiError);
         } finally {
             dispatch(setLogout({ isManual: true }));
-            dispatch(clearOtpSent());
             router.push("/venues");
             dispatch(setLoading(false));
         }
@@ -137,18 +222,13 @@ export const useAuthService = () => {
         isAuthenticated,
         loading,
         error,
-        otpSent,
-        emailSentTo,
         requestOtp,
         verifyOtp,
         submitRegistration,
         fetchProfile,
         logout,
         clearError: () => {
-            return dispatch(setError(null)); 
-        },
-        changeEmail: () => {
-            return dispatch(clearOtpSent()); 
+            return dispatch(setError(null));
         },
     };
 };

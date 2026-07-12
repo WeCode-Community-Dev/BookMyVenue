@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { CalendarDays, MapPin, PartyPopper, ShieldCheck } from "lucide-react";
 import { AppText, getText } from "@/lib/language/LanguageHelper";
-import { useRouter } from "next/navigation";
+import { CalendarDays, MapPin, PartyPopper, ShieldCheck } from "lucide-react";
 
 import NextImage from "next/image";
 import { authStyle } from "../styles/AuthStyle";
 import { useAuthService } from "../services/AuthService";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function SignupPage() {
     const router = useRouter();
@@ -22,11 +22,11 @@ export default function SignupPage() {
         password: "",
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
         setForm((prev) => {
             return {
                 ...prev,
-                [ e.target.name ]: e.target.value,
+                [ evt.target.name ]: evt.target.value,
             }; 
         });
     };
@@ -67,7 +67,7 @@ export default function SignupPage() {
                             width={280}
                             height={80}
                             priority
-                            className="mb-6 h-auto w-[180px] md:w-[220px]"
+                            className="mb-6 h-auto w-45 md:w-55"
                         />
                         <h1 className={authStyle.headingClass}>
                             <AppText textName="EVERY_CELEBRATION" textModule="LABEL" />

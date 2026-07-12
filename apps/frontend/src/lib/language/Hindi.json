@@ -19,9 +19,21 @@
         "SIGN_UP": "साइन अप",
         "SIGN_IN_SIGN_UP": "साइन इन / साइन अप",
         "CREATE_ACCOUNT": "खाता बनाएं",
-        "CONTINUE_GOOGLE": "गूगल के साथ जारी रखें"
+        "CONTINUE_GOOGLE": "गूगल के साथ जारी रखें",
+        "CONTINUE": "जारी रखें",
+        "SENDING": "भेजा जा रहा है...",
+        "RESEND_OTP": "ओटीपी पुनः भेजें"
     },
     "LABEL": {
+        "WELCOME_BACK": "वापसी पर स्वागत है",
+        "LOGIN_OR_SIGNIN": "जारी रखने के लिए लॉगिन या साइन इन करें",
+        "ENTER_EMAIL_PROMPT": "अपना ईमेल पता दर्ज करें",
+        "OTP_DISCLAIMER": "हम एक बार का पासवर्ड (ओटीपी) भेजेंगे",
+        "ENTER_OTP": "ओटीपी दर्ज करें",
+        "SENT_OTP": "हमने {email} पर 6 अंकों का ओटीपी भेजा है",
+        "LOGIN_SUCCESSFUL": "लॉगिन सफल!",
+        "WELCOME_BACK_EMOJI": "वापसी पर स्वागत है 👋",
+        "REDIRECTING": "पुनर्निर्देशित किया जा रहा है...",
         "MENU": "मेनू",
         "REACH_CUSTOMERS": "हर दिन हजारों ग्राहकों तक पहुंचें।",
         "PENDING_APPROVAL": "अनुमोदन लंबित",
