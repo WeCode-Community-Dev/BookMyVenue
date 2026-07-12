@@ -126,7 +126,12 @@ export default function SignupPage() {
 
                         <div className={authStyle.headerWrapper}>
                             <div className={authStyle.avatarWrapper}>
-                                <div className={authStyle.avatar} />
+                                <NextImage
+                                    src="/icon.png"
+                                    alt="App Icon"
+                                    width={40}
+                                    height={40}
+                                />
                             </div>
 
                             <h2 className={authStyle.title}>
