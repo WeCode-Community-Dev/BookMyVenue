@@ -128,8 +128,13 @@ export function Step3Sessions({ form, setSessions, stepError }: Step3Props) {
                         type="number"
                         className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="e.g. 18000"
-                        value={newSession.price}
-                        onChange={(e) => setNewSession((s) => ({ ...s, price: Number(e.target.value) }))}
+                        value={newSession.price || ""}
+                        onChange={(e) =>
+                            setNewSession((s) => ({
+                                ...s,
+                                price: e.target.value === "" ? 0 : Number(e.target.value),
+                            }))
+                        }
                     />
                 </div>
                 {sessionError && <p className="text-red-500 text-xs">{sessionError}</p>}
