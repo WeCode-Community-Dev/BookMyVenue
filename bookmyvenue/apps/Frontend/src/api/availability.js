@@ -1,15 +1,36 @@
-import api from "./axios";
+import axios from "./axios";
 
-export async function getAvailability(venueId, date = null) {
-    const params = {};
 
-    if (date) {
-        params.date = date;
-    }
+// Owner creates availability
+export async function createAvailability(data, token) {
 
-    const response = await api.get(`/api/availability/${venueId}`, {
-        params,
-    });
+    const response = await axios.post(
+        "/api/availability/",
+        data, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+
+    return response.data;
+}
+
+
+
+// Public availability fetch
+export async function getAvailability(
+    venueId,
+    date = null
+) {
+
+    const response = await axios.get(
+        `/api/availability/${venueId}`, {
+            params: date ? {
+                date
+            } : {}
+        }
+    );
 
     return response.data;
 }

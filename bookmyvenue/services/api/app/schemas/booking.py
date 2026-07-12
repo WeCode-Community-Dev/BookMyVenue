@@ -17,14 +17,14 @@ class BookingStatusUpdate(BaseModel):
 
 class BookingSlotOut(BaseModel):
     id: int
-    availabily_id: int
+    availability_id: int
 
     model_config = {"from_attributes": True}
 
 
 class BookingOut(BaseModel):
     id: int
-    venu_id: int
+    venue_id: int
     booker_id: int
     booking_type: BookingTypeEnum
     base_price: float

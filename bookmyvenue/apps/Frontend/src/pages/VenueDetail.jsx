@@ -187,45 +187,127 @@ function VenueDetail() {
   }
 
   async function handleLoginSubmit(e) {
-    e.preventDefault();
-    setLoginError("");
 
-    if (!loginEmail || !loginPassword) {
-      setLoginError("Please enter email and password");
-      return;
+        e.preventDefault();
+
+        setLoginError("");
+
+
+
+        if (!loginEmail || !loginPassword) {
+
+            setLoginError(
+                "Please enter email and password"
+            );
+
+            return;
+
+        }
+
+
+
+        try {
+
+
+            setLoginLoading(true);
+
+
+
+            const formData = new URLSearchParams();
+
+
+            formData.append(
+                "username",
+                loginEmail
+            );
+
+
+            formData.append(
+                "password",
+                loginPassword
+            );
+
+
+
+            const res = await api.post(
+                "/api/auth/login",
+                formData,
+                {
+                    headers: {
+                        "Content-Type":
+                        "application/x-www-form-urlencoded",
+                    },
+                }
+            );
+
+
+
+            const newToken =
+                res.data?.access_token ||
+                res.data?.token;
+
+
+
+            if (!newToken) {
+
+                setLoginError(
+                    "Login failed"
+                );
+
+                return;
+
+            }
+
+
+
+
+            login(newToken);
+
+
+
+            setShowLoginModal(false);
+
+
+            setLoginEmail("");
+
+            setLoginPassword("");
+
+
+
+
+            if (
+                pendingBooking &&
+                selectedSlotIds.length > 0
+            ) {
+
+                setPendingBooking(false);
+
+                await submitBooking(newToken);
+
+            }
+
+
+
+        }
+        catch(err) {
+
+
+            setLoginError(
+                err.response?.data?.detail ||
+                "Invalid credentials"
+            );
+
+
+        }
+        finally {
+
+
+            setLoginLoading(false);
+
+
+        }
+
     }
-
-    try {
-      setLoginLoading(true);
-      const res = await api.post("/api/auth/login", {
-        username: loginEmail,
-        password: loginPassword,
-      });
-
-      const newToken = res.data?.access_token || res.data?.token;
-      if (!newToken) {
-        setLoginError("Login failed");
-        return;
-      }
-
-      // Update auth context
-      login(newToken);
-
-      setShowLoginModal(false);
-      setLoginEmail("");
-      setLoginPassword("");
-
-      // Continue with pending booking
-      if (pendingBooking && selectedSlotIds.length > 0) {
-        setPendingBooking(false);
-        await submitBooking(newToken);
-      }
-    } catch (err) {
-      setLoginError(err.response?.data?.detail || "Invalid credentials");
-    } finally {
-      setLoginLoading(false);
-    }
-  }
 
   function closeLoginModal() {
     setShowLoginModal(false);
