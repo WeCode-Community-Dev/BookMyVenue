@@ -7,11 +7,11 @@ import { useRouter } from "next/navigation";
 
 import NextImage from "next/image";
 import { authStyle } from "../styles/AuthStyle";
-import { authService } from "../services/AuthService";
+import { useAuthService } from "../services/AuthService";
 
 export default function SignupPage() {
     const router = useRouter();
-    const { submitRegistration } = authService();
+    const { submitRegistration } = useAuthService();
 
     const [
         form, setForm
