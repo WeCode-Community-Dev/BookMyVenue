@@ -1,6 +1,8 @@
 "use client";
 
 import Card, { Venue } from "@/components/global/card/Card";
+import { selectAuthLoading, selectIsAuthenticated, selectJustLoggedOut } from "@/features/auth/AuthSlice";
+import { useEffect, useState } from "react";
 
 import EventTypeFilter from "@/components/global/EventTypeFilter";
 import LoginModal from "@/components/global/login/Login";
@@ -9,12 +11,9 @@ import OfferSection from "@/components/global/offersection";
 import VenueFiltersBar from "@/components/global/venuefilterbar";
 import VenueTypeSection from "@/components/global/venuetypesection";
 import VerifyBooking from "@/components/global/booking/VerifyBooking";
-import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { venueStyle } from "../styles/VenueStyle";
 import { venues } from "../services/VenuService";
-
-import { useSelector } from "react-redux";
-import { selectAuthLoading, selectIsAuthenticated, selectJustLoggedOut } from "@/features/auth/AuthSlice";
 
 export default function Venues() {
     const isAuthenticated = useSelector(selectIsAuthenticated);
