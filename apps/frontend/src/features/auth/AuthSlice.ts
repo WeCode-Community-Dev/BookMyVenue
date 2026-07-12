@@ -41,6 +41,9 @@ const AuthSlice = createSlice({
             state.loading = false;
             state.error = null;
             state.justLoggedOut = false;
+            if (typeof window !== "undefined") {
+                localStorage.setItem("isAuthenticated", "true");
+            }
         },
         setLogout: (
             state,
@@ -51,6 +54,9 @@ const AuthSlice = createSlice({
             state.error = null;
             state.loading = false;
             state.justLoggedOut = action.payload?.isManual ?? false;
+            if (typeof window !== "undefined") {
+                localStorage.removeItem("isAuthenticated");
+            }
         },
     },
 });

@@ -40,7 +40,7 @@ async function silentRefresh() {
         .catch((error) => {
             refreshPromise = null;
             store.dispatch(setLogout());
-            console.error("Failed to refresh token:", error);
+            console.warn("Failed to refresh token (session expired or logged out):", error);
             throw error;
         });
 
@@ -90,7 +90,7 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
                 return await parseResponse(retryResponse);
             } catch (error) {
                 store.dispatch(setLogout());
-                console.error("Session expired:", error);
+                console.warn("Session expired or invalid token:", error);
                 throw new Error("Session expired");
             }
         }
@@ -188,6 +188,11 @@ export const useAuthService = () => {
     };
 
     const fetchProfile = async () => {
+        if (typeof window !== "undefined" && localStorage.getItem("isAuthenticated") !== "true") {
+            dispatch(setLogout());
+            return;
+        }
+
         dispatch(setLoading(true));
 
         try {
@@ -197,7 +202,7 @@ export const useAuthService = () => {
                 dispatch(setAuthSuccess(userProfile));
             }
         } catch (apiError: any) {
-            console.error("Failed to fetch profile:", apiError);
+            console.warn("Failed to fetch profile (unauthenticated or session expired):", apiError);
             dispatch(setLogout());
         } finally {
             dispatch(setLoading(false));
