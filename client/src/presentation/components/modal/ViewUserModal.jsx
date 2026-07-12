@@ -4,110 +4,110 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
 const ViewUserModal = ({
-  isOpen,
-  onClose,
-  user,
+    isOpen,
+    onClose,
+    user,
 }) => {
 
-  if (!user) return null;
+    if (!user) return null;
 
-  return (
+    return (
 
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="User Details"
-      width="max-w-lg"
-    >
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="User Details"
+            width="max-w-lg"
+        >
 
-      <div className="space-y-4">
+            <div className="space-y-4">
 
-        <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
 
-          <div>
-            <p className="text-sm text-gray-500">
-              User ID
-            </p>
+                    <div>
+                        <p className="text-sm text-gray-500">
+                            User ID
+                        </p>
 
-            <p className="font-medium">
-              {user.id}
-            </p>
-          </div>
+                        <p className="font-medium">
+                            {user.id}
+                        </p>
+                    </div>
 
-          <div>
-            <p className="text-sm text-gray-500">
-              Full Name
-            </p>
+                    <div>
+                        <p className="text-sm text-gray-500">
+                            Full Name
+                        </p>
 
-            <p className="font-medium">
-              {user.fullName}
-            </p>
-          </div>
+                        <p className="font-medium">
+                            {user.fullName}
+                        </p>
+                    </div>
 
-          <div>
-            <p className="text-sm text-gray-500">
-              Email
-            </p>
+                    <div>
+                        <p className="text-sm text-gray-500">
+                            Email
+                        </p>
 
-            <p className="font-medium">
-              {user.email}
-            </p>
-          </div>
+                        <p className="font-medium">
+                            {user.email}
+                        </p>
+                    </div>
 
-          <div>
-            <p className="text-sm text-gray-500">
-              Phone
-            </p>
+                    <div>
+                        <p className="text-sm text-gray-500">
+                            Phone
+                        </p>
 
-            <p className="font-medium">
-              {user.phone}
-            </p>
-          </div>
+                        <p className="font-medium">
+                            {user.phone}
+                        </p>
+                    </div>
 
-          <div>
-            <p className="text-sm text-gray-500">
-              Status
-            </p>
+                    <div>
+                        <p className="text-sm text-gray-500">
+                            Status
+                        </p>
 
-            <Badge
-              variant={
-                user.isBlocked
-                  ? "destructive"
-                  : "default"
-              }
-            >
-              {user.isBlocked?"Blocked":"Active"}
-            </Badge>
-          </div>
+                        <Badge
+                            variant={
+                                user.isBlocked
+                                    ? "destructive"
+                                    : "default"
+                            }
+                        >
+                            {user.isBlocked ? "Blocked" : "Active"}
+                        </Badge>
+                    </div>
 
-          <div>
-            <p className="text-sm text-gray-500">
-              Joined On
-            </p>
+                    <div>
+                        <p className="text-sm text-gray-500">
+                            Joined On
+                        </p>
 
-            <p className="font-medium">
-              {new Date(user.createdAt).toLocaleDateString()}
-            </p>
-          </div>
+                        <p className="font-medium">
+                            {new Date(user.createdAt).toLocaleDateString()}
+                        </p>
+                    </div>
 
-        </div>
+                </div>
 
-        <div className="flex justify-end pt-4">
+                <div className="flex justify-end pt-4">
 
-          <Button
-            variant="outline"
-            onClick={onClose}
-          >
-            Close
-          </Button>
+                    <Button
+                        variant="outline"
+                        onClick={onClose}
+                    >
+                        Close
+                    </Button>
 
-        </div>
+                </div>
 
-      </div>
+            </div>
 
-    </Modal>
+        </Modal>
 
-  );
+    );
 
 };
 

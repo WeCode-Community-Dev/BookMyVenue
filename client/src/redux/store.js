@@ -4,6 +4,7 @@ import UserProfileSlice from "./slices/UserProfileSlice";
 import UserWishlistSlice from "./slices/UserWishlistSlice";
 import adminUserSlice from './slices/AdminUserSlice'
 import adminVendorSlice from './slices/AdminvendorSlice'
+import adminVenueSlice from './slices/AdminVenueSlice'
 
 export const store = configureStore({
     reducer: {
@@ -11,7 +12,8 @@ export const store = configureStore({
         adminUser: adminUserSlice,
         userProfile: UserProfileSlice,
         userWishlist: UserWishlistSlice,
-        adminVendor: adminVendorSlice
+        adminVendor: adminVendorSlice,
+        adminVenue: adminVenueSlice,
         
     }
 })
