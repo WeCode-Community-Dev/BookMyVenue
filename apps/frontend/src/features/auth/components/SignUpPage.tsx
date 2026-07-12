@@ -13,7 +13,9 @@ export default function SignupPage() {
     const router = useRouter();
     const { submitRegistration } = authService();
 
-    const [form, setForm] = useState({
+    const [
+        form, setForm
+    ] = useState({
         name: "",
         email: "",
         mobile: "",
@@ -21,10 +23,12 @@ export default function SignupPage() {
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm((prev) => ({
-            ...prev,
-            [e.target.name]: e.target.value,
-        }));
+        setForm((prev) => {
+            return {
+                ...prev,
+                [ e.target.name ]: e.target.value,
+            }; 
+        });
     };
 
     const handleRegistration = async (
@@ -40,14 +44,14 @@ export default function SignupPage() {
         );
 
         if (result.success) {
-            console.log("Registration successful!")
+            console.log("Registration successful!");
 
             setTimeout(() => {
                 router.push("/venues");
             }, 1500);
 
         } else {
-            console.log("Registration failed")
+            console.log("Registration failed");
         }
     };
 

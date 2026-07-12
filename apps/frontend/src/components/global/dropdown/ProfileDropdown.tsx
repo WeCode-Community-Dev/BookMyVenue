@@ -13,7 +13,7 @@ import {
 import { LANGUAGE, SCREENS, THEME } from "@/lib/Constants";
 import { storeTheme, useConfigTheme, useLanguage } from "@/store/AppConfigReducer";
 import { useDispatch, useSelector } from "react-redux";
-import { authService } from "@/features/auth/services/AuthService";
+import { useAuthService } from "@/features/auth/services/AuthService";
 
 import NxtImage from "next/image";
 import { profileDropdownStyle } from "./ProfileDropdownStyle";
@@ -28,7 +28,7 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
     const dispatch = useDispatch();
     const theme = useSelector(useConfigTheme);
     const currentLanguage = useSelector(useLanguage);
-    const { logout, user } = authService();
+    const { logout, user } = useAuthService();
 
     if (!isOpen) return null;
 
@@ -82,11 +82,11 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
 
                     <div>
                         <h3 className={profileDropdownStyle.userName}>
-                            {user?.name || user?.email?.split('@')[0] || "User"}
+                            {user?.name || user?.email?.split("@")[ 0 ] || "User"}
                         </h3>
 
                         <p className={profileDropdownStyle.userRole}>
-                            {user?.role === 'VENUE_OWNER' ? 'Venue Owner' : user?.role === 'ADMIN' ? 'Admin' : 'User'}
+                            {user?.role === "VENUE_OWNER" ? "Venue Owner" : user?.role === "ADMIN" ? "Admin" : "User"}
                         </p>
                     </div>
                 </div>
