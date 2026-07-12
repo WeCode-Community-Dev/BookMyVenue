@@ -300,7 +300,7 @@ export default function VenueDetails() {
             Back to results
           </button>
           
-          {venue && <VenueActions venueId={venue.id} />}
+          {venue && <VenueActions venueId={venue.id} venueName={venue.name} />}
         </div>
 
         {isLoading && <VenueDetailSkeleton />}
@@ -313,12 +313,22 @@ export default function VenueDetails() {
 
 // ─── Venue Actions ────────────────────────────────────────────────────────────
 
-function VenueActions({ venueId }: { venueId: string }) {
+function VenueActions({ venueId, venueName }: { venueId: string; venueName: string }) {
   const { isLiked, toggleLike } = useLikes()
   const { user } = useAuth()
   const { openLogin } = useAuthModal()
+  const [shareState, setShareState] = useState<'idle' | 'shared' | 'copied' | 'failed'>('idle')
 
   const liked = isLiked(venueId)
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
+  const shareTitle = venueName ? `${venueName} on Venue404` : 'Check out this venue on Venue404'
+
+  useEffect(() => {
+    if (shareState === 'idle') return
+
+    const timeout = window.setTimeout(() => setShareState('idle'), 1600)
+    return () => window.clearTimeout(timeout)
+  }, [shareState])
 
   const handleLike = () => {
     if (!user) {
@@ -328,15 +338,85 @@ function VenueActions({ venueId }: { venueId: string }) {
     toggleLike(venueId)
   }
 
+  const handleShare = async () => {
+    if (!shareUrl) return
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: `Check out ${shareTitle}`,
+          url: shareUrl,
+        })
+        setShareState('shared')
+        return
+      }
+
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl)
+        setShareState('copied')
+        return
+      }
+
+      window.prompt('Copy this link:', shareUrl)
+      setShareState('failed')
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
+
+      try {
+        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(shareUrl)
+          setShareState('copied')
+        }
+      } catch {
+        setShareState('failed')
+      }
+    }
+  }
+
+  const handleCopyLink = async () => {
+    if (!shareUrl) return
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl)
+        setShareState('copied')
+      } else {
+        window.prompt('Copy this link:', shareUrl)
+        setShareState('failed')
+      }
+    } catch {
+      setShareState('failed')
+    }
+  }
+
+  const shareLabel =
+    shareState === 'shared' ? 'Shared' : shareState === 'copied' ? 'Copied' : shareState === 'failed' ? 'Copy manually' : 'Share'
+
   return (
     <div className="flex items-center gap-2">
-      <button className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline dark:hover:text-zinc-100">
+      <button
+        type="button"
+        onClick={handleShare}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline dark:hover:text-zinc-100"
+      >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
         </svg>
-        Share
+        {shareLabel}
+      </button>
+      <button
+        type="button"
+        onClick={handleCopyLink}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline dark:hover:text-zinc-100"
+      >
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16h8M8 12h8m-8-4h5" />
+        </svg>
+        Copy link
       </button>
       <button 
+        type="button"
         onClick={handleLike}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline dark:hover:text-zinc-100"
       >
