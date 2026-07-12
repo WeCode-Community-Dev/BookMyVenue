@@ -16,8 +16,8 @@ import { LoginStatus } from "@/lib/Constants";
 import NxtImage from "next/image";
 import googleIcon from "../../../../public/assets/images/login/google-color.svg";
 import { loginStyle } from "./LoginStyle";
-import { useState, useRef, useEffect } from "react";
-import { authService } from "@/features/auth/services/AuthService";
+import { useEffect, useRef, useState } from "react";
+import { useAuthService } from "@/features/auth/services/AuthService";
 
 type LoginModalProps = {
     isOpen: boolean;
@@ -35,12 +35,23 @@ export default function LoginModal({
         verifyOtp,
         changeEmail,
         clearError
-    } = authService();
+    } = useAuthService();
 
-    const [step, setStep] = useState<LoginStatus>(LoginStatus.LOGIN);
-    const [email, setEmail] = useState("");
-    const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(""));
-    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+    const [
+        step, setStep
+    ] = useState<LoginStatus>(LoginStatus.LOGIN);
+
+    const [
+        email, setEmail
+    ] = useState("");
+
+    const [
+        otpValues, setOtpValues
+    ] = useState<string[]>(Array(6).fill(""));
+
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([
+    ]);
 
     useEffect(() => {
         if (isOpen) {
@@ -50,15 +61,19 @@ export default function LoginModal({
             setOtpValues(Array(6).fill(""));
             changeEmail();
         }
-    }, [isOpen]);
+    }, [
+        isOpen
+    ]);
 
     useEffect(() => {
         if (step === LoginStatus.OTP) {
             setTimeout(() => {
-                inputRefs.current[0]?.focus();
+                inputRefs.current[ 0 ]?.focus();
             }, 50);
         }
-    }, [step]);
+    }, [
+        step
+    ]);
 
     const handleContinue = async (evt: React.FormEvent) => {
         evt.preventDefault();
@@ -90,8 +105,7 @@ export default function LoginModal({
     };
 
     const handleGoogleLogin = () => {
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
-        window.location.href = `${apiBase}/auth/google`;
+        console.log("Google login clicked");
     };
 
     const handleOtpChange = (index: number, val: string) => {
@@ -99,12 +113,14 @@ export default function LoginModal({
 
         clearError();
 
-        const newOtpValues = [...otpValues];
-        newOtpValues[index] = val;
+        const newOtpValues = [
+            ...otpValues
+        ];
+        newOtpValues[ index ] = val;
         setOtpValues(newOtpValues);
 
         if (val && index < 5) {
-            inputRefs.current[index + 1]?.focus();
+            inputRefs.current[ index + 1 ]?.focus();
         }
 
         const otpString = newOtpValues.join("");
@@ -116,14 +132,18 @@ export default function LoginModal({
     const handleOtpKeyDown = (index: number, evt: React.KeyboardEvent<HTMLInputElement>) => {
         clearError();
         if (evt.key === "Backspace") {
-            if (!otpValues[index] && index > 0) {
-                const newOtpValues = [...otpValues];
-                newOtpValues[index - 1] = "";
+            if (!otpValues[ index ] && index > 0) {
+                const newOtpValues = [
+                    ...otpValues
+                ];
+                newOtpValues[ index - 1 ] = "";
                 setOtpValues(newOtpValues);
-                inputRefs.current[index - 1]?.focus();
+                inputRefs.current[ index - 1 ]?.focus();
             } else {
-                const newOtpValues = [...otpValues];
-                newOtpValues[index] = "";
+                const newOtpValues = [
+                    ...otpValues
+                ];
+                newOtpValues[ index ] = "";
                 setOtpValues(newOtpValues);
             }
         }
@@ -136,9 +156,11 @@ export default function LoginModal({
 
         clearError();
 
-        const newOtpValues = [...otpValues];
+        const newOtpValues = [
+            ...otpValues
+        ];
         for (let i = 0; i < pastedData.length; i++) {
-            newOtpValues[i] = pastedData[i];
+            newOtpValues[ i ] = pastedData[ i ];
         }
         setOtpValues(newOtpValues);
 
@@ -147,7 +169,7 @@ export default function LoginModal({
             triggerAutoVerify(otpString);
         } else {
             const focusIndex = Math.min(pastedData.length, 5);
-            inputRefs.current[focusIndex]?.focus();
+            inputRefs.current[ focusIndex ]?.focus();
         }
     };
 
@@ -273,16 +295,22 @@ export default function LoginModal({
 
                         <form onSubmit={handleVerify}>
                             <div className={loginStyle.otpInputsContainer}>
-                                {[0, 1, 2, 3, 4, 5].map((index) => {
+                                {[
+                                    0, 1, 2, 3, 4, 5
+                                ].map((index) => {
                                     return (
                                         <input
                                             key={index}
                                             ref={(el) => {
-                                                inputRefs.current[index] = el;
+                                                inputRefs.current[ index ] = el;
                                             }}
-                                            value={otpValues[index]}
-                                            onChange={(evt) => handleOtpChange(index, evt.target.value)}
-                                            onKeyDown={(evt) => handleOtpKeyDown(index, evt)}
+                                            value={otpValues[ index ]}
+                                            onChange={(evt) => {
+                                                return handleOtpChange(index, evt.target.value); 
+                                            }}
+                                            onKeyDown={(evt) => {
+                                                return handleOtpKeyDown(index, evt); 
+                                            }}
                                             onPaste={handleOtpPaste}
                                             maxLength={1}
                                             disabled={loading}

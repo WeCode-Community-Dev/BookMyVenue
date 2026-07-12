@@ -4,7 +4,7 @@ import { DEFAULT_LANGUAGE } from "@/lib/Constants";
 import { StringNumberDictionary } from "@/types/SharedInterface";
 import english from "./English.json";
 import hindi from "./Hindi.json";
-import { isNonEmpty } from "../utils";
+import { isNonEmpty } from "../Utils";
 import store from "@/store/Store";
 import { useSelector } from "react-redux";
 

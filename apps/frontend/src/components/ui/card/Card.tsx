@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { cardStyle } from "./CardStyle";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/Utils";
 
 function Card({
     className,

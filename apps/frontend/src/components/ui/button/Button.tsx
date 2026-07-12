@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { Slot } from "radix-ui";
 import { buttonStyle } from "./ButtonStyle";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/Utils";
 
 export interface ButtonProps extends React.ComponentProps<"button"> {
   variant?: keyof typeof buttonStyle.variants;

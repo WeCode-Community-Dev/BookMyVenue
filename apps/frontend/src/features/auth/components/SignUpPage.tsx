@@ -1,17 +1,58 @@
 "use client";
 
+import { useState } from "react";
 import { CalendarDays, MapPin, PartyPopper, ShieldCheck } from "lucide-react";
+import { AppText, getText } from "@/lib/language/LanguageHelper";
+import { useRouter } from "next/navigation";
 
 import NextImage from "next/image";
-import { authService } from "../services/AuthService";
 import { authStyle } from "../styles/AuthStyle";
+import { authService } from "../services/AuthService";
 
 export default function SignupPage() {
-    // const { submitRegistration } = authService();
+    const router = useRouter();
+    const { submitRegistration } = authService();
 
-    const handleRegistration = (evt: React.FormEvent<HTMLFormElement>) => {
+    const [
+        form, setForm
+    ] = useState({
+        name: "",
+        email: "",
+        mobile: "",
+        password: "",
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setForm((prev) => {
+            return {
+                ...prev,
+                [ e.target.name ]: e.target.value,
+            }; 
+        });
+    };
+
+    const handleRegistration = async (
+        evt: React.FormEvent<HTMLFormElement>
+    ) => {
         evt.preventDefault();
-        // submitRegistration();
+
+        const result = await submitRegistration(
+            form.name,
+            form.email,
+            form.mobile,
+            form.password
+        );
+
+        if (result.success) {
+            console.log("Registration successful!");
+
+            setTimeout(() => {
+                router.push("/venues");
+            }, 1500);
+
+        } else {
+            console.log("Registration failed");
+        }
     };
 
     return (
@@ -29,12 +70,13 @@ export default function SignupPage() {
                             className="mb-6 h-auto w-[180px] md:w-[220px]"
                         />
                         <h1 className={authStyle.headingClass}>
-                            Every celebration starts at the
-                            <span className="ml-2 text-teal-600">perfect venue</span>
+                            <AppText textName="EVERY_CELEBRATION" textModule="LABEL" />
+                            <span className="ml-2 text-teal-600">
+                                <AppText textName="PERFECT_VENUE" textModule="LABEL" />
+                            </span>
                         </h1>
                         <p className={authStyle.descriptionClass}>
-                            Join thousands of people who discover, book and celebrate
-                            unforgettable moments.
+                            <AppText textName="AUTH_DESCRIPTION" textModule="MESSAGES" />
                         </p>
 
                         <div className={authStyle.featureGrid}>
@@ -42,24 +84,36 @@ export default function SignupPage() {
                                 <div className={authStyle.featureIconWrapper}>
                                     <MapPin className={authStyle.featureIcon} />
                                 </div>
-                                <h3 className={authStyle.featureTitle}>Discover</h3>
-                                <p className={authStyle.featureText}>Amazing Venues</p>
+                                <h3 className={authStyle.featureTitle}>
+                                    <AppText textName="DISCOVER" textModule="LABEL" />
+                                </h3>
+                                <p className={authStyle.featureText}>
+                                    <AppText textName="AMAZING_VENUES" textModule="LABEL" />
+                                </p>
                             </div>
 
                             <div className={authStyle.featureCard}>
                                 <div className={authStyle.featureIconWrapper}>
                                     <CalendarDays className={authStyle.featureIcon} />
                                 </div>
-                                <h3 className={authStyle.featureTitle}>Book</h3>
-                                <p className={authStyle.featureText}>With Ease</p>
+                                <h3 className={authStyle.featureTitle}>
+                                    <AppText textName="BOOK" textModule="LABEL" />
+                                </h3>
+                                <p className={authStyle.featureText}>
+                                    <AppText textName="WITH_EASE" textModule="LABEL" />
+                                </p>
                             </div>
 
                             <div className={authStyle.featureCard}>
                                 <div className={authStyle.featureIconWrapper}>
                                     <PartyPopper className={authStyle.featureIcon} />
                                 </div>
-                                <h3 className={authStyle.featureTitle}>Celebrate</h3>
-                                <p className={authStyle.featureText}>Memories Forever</p>
+                                <h3 className={authStyle.featureTitle}>
+                                    <AppText textName="CELEBRATE" textModule="LABEL" />
+                                </h3>
+                                <p className={authStyle.featureText}>
+                                    <AppText textName="MEMORIES_FOREVER" textModule="LABEL" />
+                                </p>
                             </div>
 
                         </div>
@@ -75,51 +129,91 @@ export default function SignupPage() {
                                 <div className={authStyle.avatar} />
                             </div>
 
-                            <h2 className={authStyle.title}>Create Account</h2>
+                            <h2 className={authStyle.title}>
+                                <AppText textName="CREATE_ACCOUNT" textModule="BUTTON" />
+                            </h2>
                             <p className={authStyle.subtitle}>
-                                Start discovering amazing venues today.
+                                <AppText textName="START_DISCOVERING" textModule="LABEL" />
                             </p>
                         </div>
                         <form className={authStyle.form} onSubmit={handleRegistration}>
-                            <input className={authStyle.input} placeholder="Full Name" />
-                            <input className={authStyle.input} placeholder="Email Address" />
-                            <input className={authStyle.input} placeholder="Mobile Number" />
-                            <input className={authStyle.input} placeholder="Password" />
+                            <input
+                                name="name"
+                                value={form.name}
+                                onChange={handleChange}
+                                className={authStyle.input}
+                                placeholder={getText("FULL_NAME", "INPUT_LABELS")}
+                            />
+
+                            <input
+                                name="email"
+                                value={form.email}
+                                onChange={handleChange}
+                                className={authStyle.input}
+                                placeholder={getText("EMAIL_ADDRESS", "INPUT_LABELS")}
+                            />
+
+                            <input
+                                name="mobile"
+                                value={form.mobile}
+                                onChange={handleChange}
+                                className={authStyle.input}
+                                placeholder={getText("MOBILE_NUMBER", "INPUT_LABELS")}
+                            />
+
+                            <input
+                                type="password"
+                                name="password"
+                                value={form.password}
+                                onChange={handleChange}
+                                className={authStyle.input}
+                                placeholder={getText("PASSWORD", "INPUT_LABELS")}
+                            />
                             <button type="submit" className={authStyle.buttonPrimary}>
-                                Create Account
+                                <AppText textName="CREATE_ACCOUNT" textModule="BUTTON" />
                             </button>
                         </form>
 
                         <div className={authStyle.divider}>
                             <div className={authStyle.dividerLine} />
-                            <span className={authStyle.dividerText}>OR</span>
+                            <span className={authStyle.dividerText}>
+                                <AppText textName="OR" textModule="LABEL" />
+                            </span>
                             <div className={authStyle.dividerLine} />
                         </div>
 
                         <button className={authStyle.googleButton}>
-                            Continue with Google
+                            <AppText textName="CONTINUE_GOOGLE" textModule="BUTTON" />
                         </button>
 
                         <div className={authStyle.loginText}>
-                            <span>Already have an account?</span>
+                            <span>
+                                <AppText textName="ALREADY_HAVE_ACCOUNT" textModule="LABEL" />
+                            </span>
                             <button className={authStyle.loginButton} type="button">
-                                Sign In
+                                <AppText textName="SIGN_IN" textModule="BUTTON" />
                             </button>
                         </div>
 
                         <div className={authStyle.trustGrid}>
                             <div className={authStyle.trustItem}>
                                 <ShieldCheck className={authStyle.trustIcon} />
-                                <p className={authStyle.trustText}>Secure</p>
+                                <p className={authStyle.trustText}>
+                                    <AppText textName="SECURE" textModule="LABEL" />
+                                </p>
                             </div>
                             <div className={authStyle.trustItem}>
                                 <ShieldCheck className={authStyle.trustIcon} />
-                                <p className={authStyle.trustText}>Fast</p>
+                                <p className={authStyle.trustText}>
+                                    <AppText textName="FAST" textModule="LABEL" />
+                                </p>
                             </div>
 
                             <div className={authStyle.trustItem}>
                                 <ShieldCheck className={authStyle.trustIcon} />
-                                <p className={authStyle.trustText}>Trusted</p>
+                                <p className={authStyle.trustText}>
+                                    <AppText textName="TRUSTED" textModule="LABEL" />
+                                </p>
                             </div>
                         </div>
                     </div>

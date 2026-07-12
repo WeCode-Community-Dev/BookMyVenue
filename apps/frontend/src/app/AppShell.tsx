@@ -6,7 +6,7 @@ import PerformanceMonitor from "@/components/global/performancemonitor/Performan
 import SidebarWrapper from "@/components/global/SideBarWrapper";
 import { useDevMode } from "@/store/AppConfigReducer";
 import { useSelector } from "react-redux";
-import { authService } from "@/features/auth/services/AuthService";
+import { useAuthService } from "@/features/auth/services/AuthService";
 
 export default function AppShell({
     children,
@@ -14,11 +14,12 @@ export default function AppShell({
     children: React.ReactNode;
 }) {
     const devMode = useSelector(useDevMode);
-    const { fetchProfile } = authService();
+    const { fetchProfile } = useAuthService();
 
     useEffect(() => {
         fetchProfile();
-    }, []);
+    }, [
+    ]);
 
     return (
         <>
