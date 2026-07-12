@@ -1,5 +1,5 @@
 import store from "@/store/Store";
-import { setLogout, setTokenExpiresAt } from "@/features/auth/AuthSlice";
+import { setLogout, setTokenExpiresAt } from "@/features/auth/authSlice";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL
 

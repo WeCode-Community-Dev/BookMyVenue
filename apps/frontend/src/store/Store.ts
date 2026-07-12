@@ -1,5 +1,5 @@
 import { type Action, combineReducers, configureStore } from "@reduxjs/toolkit";
-import AuthReducer from "../features/auth/AuthSlice";
+import AuthReducer from "../features/auth/authSlice";
 
 import AppConfigReducer from "./AppConfigReducer";
 

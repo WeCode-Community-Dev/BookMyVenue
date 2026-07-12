@@ -3,7 +3,7 @@
 import Sidebar from "./sidebar/SideBar";
 import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
-import { selectIsAuthenticated } from "@/features/auth/AuthSlice";
+import { selectIsAuthenticated } from "@/features/auth/authSlice";
 
 export default function SidebarWrapper() {
     const pathname = usePathname();
