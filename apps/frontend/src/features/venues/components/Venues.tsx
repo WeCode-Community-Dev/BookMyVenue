@@ -2,21 +2,36 @@
 
 import Card, { Venue } from "@/components/global/card/Card";
 
-import EventTypeFilter from "@/components/global/EventTypefilter";
+import EventTypeFilter from "@/components/global/eventtypefilter";
 import LoginModal from "@/components/global/login/Login";
 import MapPanel from "@/components/global/mappanel";
 import OfferSection from "@/components/global/offersection";
 import VenueFiltersBar from "@/components/global/venuefilterbar";
 import VenueTypeSection from "@/components/global/venuetypesection";
 import VerifyBooking from "@/components/global/booking/VerifyBooking";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { venueStyle } from "../styles/VenueStyle";
 import { venues } from "../services/VenuService";
 
+import { useSelector } from "react-redux";
+import { selectIsAuthenticated, selectAuthLoading, selectJustLoggedOut } from "@/features/auth/AuthSlice";
+
 export default function Venues() {
+    const isAuthenticated = useSelector(selectIsAuthenticated);
+    const loading = useSelector(selectAuthLoading);
+    const justLoggedOut = useSelector(selectJustLoggedOut);
+
     const [
         loginOpen, setLoginOpen
     ] = useState(false);
+
+    useEffect(() => {
+        if (!loading && !isAuthenticated && !justLoggedOut) {
+            setLoginOpen(true);
+        } else if (isAuthenticated) {
+            setLoginOpen(false);
+        }
+    }, [isAuthenticated, loading, justLoggedOut]);
 
     const [
         selectedVenue, setSelectedVenue

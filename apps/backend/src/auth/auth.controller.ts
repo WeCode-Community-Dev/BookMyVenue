@@ -18,7 +18,7 @@ import type { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('otp/request')
   requestOtp(@Body() dto: RequestOtpDto) {
@@ -107,6 +107,16 @@ export class AuthController {
 
     return {
       message: 'Access token refreshed',
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+    return {
+      message: 'Logged out successfully',
     };
   }
 }

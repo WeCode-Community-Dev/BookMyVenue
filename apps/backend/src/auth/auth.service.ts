@@ -141,16 +141,19 @@ export class AuthService {
       },
     });
 
+    const { password, refreshToken: _, ...safeUser } = user;
+
     return {
       message: 'User verified successfully.',
       accessToken,
       refreshToken,
-      user,
+      user: safeUser,
     };
   }
 
   getMyProfile(user: User) {
-    return user;
+    const { password, refreshToken, ...safeUser } = user;
+    return { user: safeUser };
   }
 
   async googleLogin(googleUser: GoogleUser) {
@@ -202,11 +205,13 @@ export class AuthService {
       },
     });
 
+    const { password, refreshToken: _, ...safeUser } = user;
+
     return {
       message: 'Google login successful.',
       accessToken,
       refreshToken,
-      user,
+      user: safeUser,
     };
   }
 

@@ -7,11 +7,11 @@ import { authService } from "../services/AuthService";
 import { authStyle } from "../styles/AuthStyle";
 
 export default function SignupPage() {
-    const { submitRegistration } = authService();
+    // const { submitRegistration } = authService();
 
     const handleRegistration = (evt: React.FormEvent<HTMLFormElement>) => {
         evt.preventDefault();
-        submitRegistration();
+        // submitRegistration();
     };
 
     return (

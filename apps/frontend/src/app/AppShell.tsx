@@ -1,17 +1,24 @@
 "use client";
 
+import { useEffect } from "react";
 import Header from "@/components/global/header/Header";
 import PerformanceMonitor from "@/components/global/performancemonitor/PerformanceMonitor";
 import SidebarWrapper from "@/components/global/SideBarWrapper";
 import { useDevMode } from "@/store/AppConfigReducer";
 import { useSelector } from "react-redux";
+import { authService } from "@/features/auth/services/AuthService";
 
 export default function AppShell({
     children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) {
     const devMode = useSelector(useDevMode);
+    const { fetchProfile } = authService();
+
+    useEffect(() => {
+        fetchProfile();
+    }, []);
 
     return (
         <>

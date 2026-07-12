@@ -4,16 +4,17 @@
     "INPUT_LABELS": {},
     "TOOLTIP": {},
     "BUTTON": {
-        "GET_STARTED":"Get Started",
-        "COLLAPSE_SIDEBAR":"Collapse Sidebar",
+        "GET_STARTED": "Get Started",
+        "COLLAPSE_SIDEBAR": "Collapse Sidebar",
         "CANCEL": "Cancel",
         "PAY_NOW": "Pay Now",
         "APPROVE_VENUE": "Approve Venue",
-        "OPEN_IN_MAPS": "Open In Maps"
+        "OPEN_IN_MAPS": "Open In Maps",
+        "SIGN_IN": "Sign In / Sign Up"
     },
     "LABEL": {
         "MENU": "Menu",
-        "REACH_CUSTOMERS":"Reach thousands of customers every day.",
+        "REACH_CUSTOMERS": "Reach thousands of customers every day.",
         "PENDING_APPROVAL": "Pending Approval",
         "VENUE_INFORMATION": "Venue Information",
         "CAPACITY": "Capacity",
@@ -49,11 +50,11 @@
         "MY_BOOKINGS": "My Bookings",
         "WISHLIST": "Wishlist",
         "RECENTLY_VIEWED": "Recently Viewed",
-        "DASHBOARD":"Dashboard",
-        "ADD_VENUE":"Add Venue",
-        "MY_VENUE":"My Venue",
-        "BOOKINGS":"Bookings",
-        "HELP_SUPPORT":"Help & Support"
+        "DASHBOARD": "Dashboard",
+        "ADD_VENUE": "Add Venue",
+        "MY_VENUE": "My Venue",
+        "BOOKINGS": "Bookings",
+        "HELP_SUPPORT": "Help & Support"
     },
     "COLUMNS": {},
     "MESSAGES": {

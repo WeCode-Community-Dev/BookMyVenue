@@ -105,6 +105,21 @@ export const headerStyle = {
         "md:gap-4",
     ),
 
+    signInBtn: clsx(
+        "h-10",
+        "px-5",
+        "rounded-full",
+        "bg-teal-600",
+        "font-semibold",
+        "text-white",
+        "text-sm",
+        "transition-all",
+        "duration-200",
+        "hover:bg-teal-700",
+        "shadow-sm",
+        "hover:shadow",
+    ),
+
     notificationBtn: clsx(
         "relative",
         "rounded-lg",
@@ -209,6 +224,18 @@ export const headerStyle = {
         "font-medium",
         "text-foreground/80",
         "hover:bg-muted",
+    ),
+
+    mobileDrawerSignInBtn: clsx(
+        "w-full",
+        "rounded-lg",
+        "px-3",
+        "py-3",
+        "text-left",
+        "font-semibold",
+        "text-teal-600",
+        "hover:bg-teal-50",
+        "dark:hover:bg-teal-950/20",
     ),
 
     mobileDrawerDivider: clsx("my-3", "border-border"),
