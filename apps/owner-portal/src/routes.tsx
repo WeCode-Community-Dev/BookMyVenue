@@ -87,9 +87,6 @@ export const router = createBrowserRouter([
         ]
       },
 
-      // Notifications
-      { path: 'notifications', element: <Placeholder title="Notifications" /> },
-
       // Settings
       {
         path: 'settings',

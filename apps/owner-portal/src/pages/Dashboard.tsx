@@ -116,8 +116,8 @@ export default function Dashboard() {
 
       {/* Header Strip */}
       <section>
-        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Good to see you, {userName}</h1>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Here is what needs your attention today.</p>
+        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Hello, {userName}!</h1>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Track your venue performance and upcoming bookings.</p>
       </section>
 
       {error && (
