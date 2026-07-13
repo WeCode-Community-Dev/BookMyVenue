@@ -1,0 +1,155 @@
+<div class="space-y-6 animate-fade-in">
+
+  <!-- Welcome Banner -->
+  <div class="relative bg-linear-to-r from-surface-dark via-surface-dark2 to-surface-dark3 rounded-2xl px-8 py-7 overflow-hidden">
+    <!-- Subtle dot-grid texture -->
+    <div class="absolute inset-0 opacity-[0.04]"
+      style="background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+    <!-- Gold accent bar -->
+    <div class="absolute left-0 top-6 bottom-6 w-1 rounded-r-full bg-linear-to-b from-accent-500 to-accent-600"></div>
+    <div class="relative">
+      <p class="text-blue-200/60 text-sm font-medium mb-1">Good morning,</p>
+      <h1 class="font-heading text-3xl font-bold text-white">
+        {{ authService.currentUser()?.name }}
+      </h1>
+      <p class="text-blue-200/50 text-sm mt-1">Here's what's happening with your venues today.</p>
+    </div>
+    <a
+      routerLink="/vendor/venues/create"
+      class="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-2 px-5 py-2.5 bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold rounded-xl transition-colors shadow-lg cursor-pointer"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+      </svg>
+      Add Venue
+    </a>
+  </div>
+
+  <!-- Stat Cards -->
+  @if (loading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm animate-pulse">
+          <div class="flex items-center justify-between mb-4">
+            <div class="h-4 w-24 bg-gray-100 rounded-lg"></div>
+            <div class="w-10 h-10 bg-gray-100 rounded-xl"></div>
+          </div>
+          <div class="h-8 w-20 bg-gray-200 rounded-lg"></div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+      <!-- Total Venues -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 group hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-gray-500">Total Venues</span>
+          <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-gray-900">{{ stats().totalVenues }}</p>
+        <p class="text-xs text-gray-400 mt-1">Listed properties</p>
+      </div>
+
+      <!-- Total Bookings -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 group hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-gray-500">Total Bookings</span>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-gray-900">{{ stats().totalBookings }}</p>
+        <p class="text-xs text-gray-400 mt-1">All time reservations</p>
+      </div>
+
+      <!-- Revenue -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 group hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-gray-500">Total Revenue</span>
+          <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-gray-900">₹{{ stats().totalRevenue | number }}</p>
+        <p class="text-xs text-gray-400 mt-1">Lifetime earnings</p>
+      </div>
+
+      <!-- Pending -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 group hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-gray-500">Pending</span>
+          <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-gray-900">{{ stats().pendingBookings }}</p>
+        <p class="text-xs text-gray-400 mt-1">Awaiting confirmation</p>
+        @if (stats().pendingBookings > 0) {
+          <span class="inline-flex items-center gap-1 mt-2 px-2 py-0.5 bg-red-50 text-red-600 text-xs font-semibold rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+            Action needed
+          </span>
+        }
+      </div>
+
+    </div>
+  }
+
+  <!-- Quick Actions -->
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100">
+      <h2 class="font-heading font-bold text-gray-900">Quick Actions</h2>
+      <p class="text-xs text-gray-400 mt-0.5">Jump to common tasks</p>
+    </div>
+    <div class="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      @for (action of quickActions; track action.path) {
+        <a
+          [routerLink]="action.path"
+          class="flex items-center gap-4 p-4 rounded-xl border-2 border-gray-100 transition-all cursor-pointer group"
+          [class]="action.border"
+        >
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors" [class]="action.bg">
+            <svg class="w-5 h-5 transition-colors" [class]="action.color" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="action.icon"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 group-hover:text-gray-700">{{ action.label }}</p>
+            <p class="text-xs text-gray-400">{{ action.desc }}</p>
+          </div>
+          <svg class="w-4 h-4 text-gray-300 ml-auto shrink-0 group-hover:text-gray-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      }
+    </div>
+  </div>
+
+  <!-- Tips banner -->
+  <div class="bg-linear-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-2xl px-6 py-4 flex items-center gap-4">
+    <div class="w-10 h-10 rounded-xl bg-accent-500/15 flex items-center justify-center shrink-0">
+      <svg class="w-5 h-5 text-accent-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+      </svg>
+    </div>
+    <div>
+      <p class="text-sm font-semibold text-gray-800">Tip: Add photos to increase bookings</p>
+      <p class="text-xs text-gray-500 mt-0.5">Venues with 5+ high-quality photos receive 3× more enquiries.</p>
+    </div>
+    <a routerLink="/vendor/venues" class="ml-auto text-xs font-semibold text-accent-600 hover:text-accent-700 whitespace-nowrap cursor-pointer">
+      Manage Venues →
+    </a>
+  </div>
+
+</div>

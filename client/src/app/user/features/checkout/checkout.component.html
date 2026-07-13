@@ -1,0 +1,262 @@
+@if (loading()) {
+  <!-- Skeleton -->
+  <div class="max-w-6xl mx-auto animate-pulse space-y-6">
+    <div class="h-5 w-32 bg-gray-200 rounded-full"></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2 space-y-4">
+        <div class="h-24 bg-gray-200 rounded-2xl"></div>
+        <div class="h-48 bg-gray-200 rounded-2xl"></div>
+        <div class="h-48 bg-gray-200 rounded-2xl"></div>
+      </div>
+      <div class="h-80 bg-gray-200 rounded-2xl"></div>
+    </div>
+  </div>
+
+} @else if (venue(); as v) {
+  <div class="max-w-6xl mx-auto animate-fade-in">
+
+    <!-- Page title -->
+    <div class="mb-8">
+      <h1 class="font-heading text-3xl font-bold text-gray-900">Complete Your Booking</h1>
+      <p class="text-sm text-gray-400 mt-1">{{ v.name }} · {{ v.district }}</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+      <!-- ── LEFT: Steps ─────────────────────────────── -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Venue mini-card -->
+        <div class="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+          @if (v.imageUrls && v.imageUrls.length > 0) {
+            <img [src]="v.imageUrls[0]" [alt]="v.name" class="w-20 h-16 rounded-xl object-cover shrink-0"/>
+          }
+          <div class="min-w-0">
+            <p class="font-heading font-bold text-gray-900 truncate">{{ v.name }}</p>
+            <p class="text-xs text-gray-400 mt-0.5">{{ v.address }}, {{ v.district }}</p>
+            <span class="inline-block mt-1.5 px-2.5 py-0.5 bg-accent-500/10 text-accent-600 text-xs font-semibold rounded-full">{{ v.category }}</span>
+          </div>
+          <div class="ml-auto text-right shrink-0">
+            <p class="font-heading font-bold text-accent-600 text-lg">{{ v.pricePerSlot | currencyFormat }}</p>
+            <p class="text-xs text-gray-400">base / slot</p>
+          </div>
+        </div>
+
+        <!-- ── STEP 1: Date ── -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+            <div class="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center shrink-0">
+              <span class="text-xs font-bold text-white">1</span>
+            </div>
+            <h2 class="font-heading font-bold text-gray-900">Select Date</h2>
+          </div>
+          <div class="px-6 py-5">
+            <form [formGroup]="form">
+              <app-input
+                label="Event Date"
+                type="date"
+                formControlName="eventDate"
+                [required]="true"
+                [error]="form.controls.eventDate.touched && form.controls.eventDate.errors ? 'Please select a future date' : ''"
+              />
+            </form>
+          </div>
+        </div>
+
+        <!-- ── STEP 2: Time Slots ── -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+            <div class="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center shrink-0">
+              <span class="text-xs font-bold text-white">2</span>
+            </div>
+            <h2 class="font-heading font-bold text-gray-900">Choose a Time Slot</h2>
+          </div>
+          <div class="px-6 py-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              @for (slot of slots(); track slot.id) {
+                <button
+                  type="button"
+                  [disabled]="!slot.available"
+                  (click)="selectSlot(slot)"
+                  class="relative text-left p-4 rounded-xl border-2 transition-all"
+                  [class]="!slot.available
+                    ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
+                    : selectedSlotId() === slot.id
+                      ? 'border-brand-500 bg-brand-50 shadow-md shadow-brand-500/10'
+                      : 'border-gray-200 hover:border-brand-300 hover:bg-gray-50 cursor-pointer'"
+                >
+                  <!-- Selected check -->
+                  @if (selectedSlotId() === slot.id) {
+                    <div class="absolute top-3 right-3 w-5 h-5 rounded-full bg-brand-500 flex items-center justify-center">
+                      <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                  }
+
+                  <!-- Booked badge -->
+                  @if (!slot.available) {
+                    <span class="absolute top-3 right-3 px-2 py-0.5 bg-red-100 text-red-500 text-xs font-semibold rounded-full">Booked</span>
+                  }
+
+                  <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ slot.label }}</span>
+                  </div>
+                  <p class="text-sm font-bold text-gray-900 mb-1">{{ slot.startTime }} - {{ slot.endTime }}</p>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-400">{{ slot.duration }}</span>
+                    @if (slot.surcharge > 0) {
+                      <span class="text-xs font-semibold text-accent-600">+{{ slot.surcharge | currencyFormat }}</span>
+                    } @else {
+                      <span class="text-xs font-semibold text-green-600">Base rate</span>
+                    }
+                  </div>
+                </button>
+              }
+            </div>
+            @if (!selectedSlotId()) {
+              <p class="mt-3 text-xs text-gray-400 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Select a slot to continue
+              </p>
+            }
+          </div>
+        </div>
+
+        <!-- ── STEP 3: Guest count + Notes ── -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+            <div class="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center shrink-0">
+              <span class="text-xs font-bold text-white">3</span>
+            </div>
+            <h2 class="font-heading font-bold text-gray-900">Event Details</h2>
+          </div>
+          <div class="px-6 py-5">
+            <form [formGroup]="form" class="space-y-4">
+              <app-input
+                label="Number of Guests"
+                type="number"
+                formControlName="guestCount"
+                [required]="true"
+                [hint]="'Max capacity: ' + v.capacity + ' guests'"
+                [error]="form.controls.guestCount.touched && form.controls.guestCount.errors ? 'At least 1 guest required' : ''"
+              />
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">Special Requests
+                  <span class="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <textarea
+                  formControlName="notes"
+                  rows="3"
+                  class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/40 focus:border-accent-500 resize-none transition-colors"
+                  placeholder="Any special requirements, accessibility needs, or setup preferences..."
+                ></textarea>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── RIGHT: Order Summary (sticky) ─────────── -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-xl shadow-black/5 sticky top-6 overflow-hidden">
+
+          <!-- Header -->
+          <div class="bg-surface-dark px-6 py-5">
+            <h2 class="font-heading font-bold text-white">Order Summary</h2>
+            <p class="text-xs text-blue-200/50 mt-0.5">{{ v.name }}</p>
+          </div>
+
+          <div class="px-6 py-5 space-y-4">
+
+            <!-- Base price -->
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-500">Base venue price</span>
+              <span class="font-semibold text-gray-900">{{ v.pricePerSlot | currencyFormat }}</span>
+            </div>
+
+            <!-- Selected slot -->
+            @if (selectedSlot(); as slot) {
+              <div class="flex items-start justify-between text-sm gap-2">
+                <div>
+                  <p class="text-gray-500">Slot: {{ slot.label }}</p>
+                  <p class="text-xs text-gray-400">{{ slot.startTime }} - {{ slot.endTime }}</p>
+                </div>
+                @if (slot.surcharge > 0) {
+                  <span class="font-semibold text-gray-900 shrink-0">+ {{ slot.surcharge | currencyFormat }}</span>
+                } @else {
+                  <span class="text-xs text-green-600 font-semibold shrink-0">Included</span>
+                }
+              </div>
+            } @else {
+              <div class="flex items-center gap-2 px-3 py-2.5 bg-amber-50 rounded-xl border border-amber-100">
+                <svg class="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-xs text-amber-700">No slot selected yet</p>
+              </div>
+            }
+
+            <!-- Total -->
+            <div class="pt-4 border-t border-gray-100">
+              <div class="flex items-center justify-between">
+                <span class="font-heading font-bold text-gray-900">Total</span>
+                <span class="font-heading text-2xl font-bold text-accent-600">
+                  {{ grandTotal() | currencyFormat }}
+                </span>
+              </div>
+              @if (selectedSlotId()) {
+                <p class="text-xs text-gray-400 mt-1 text-right">All taxes included</p>
+              }
+            </div>
+
+            <!-- CTA -->
+            <div class="pt-2">
+              <app-button
+                label="Confirm Booking"
+                [fullWidth]="true"
+                size="lg"
+                [loading]="submitting()"
+                [disabled]="!selectedSlotId()"
+                (clicked)="onSubmit()"
+              />
+              @if (!selectedSlotId()) {
+                <p class="text-center text-xs text-gray-400 mt-2">Select a time slot to proceed</p>
+              }
+            </div>
+
+            <!-- Trust signals -->
+            <div class="pt-3 border-t border-gray-100 space-y-1.5">
+              <div class="flex items-center gap-2 text-xs text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+                Instant booking confirmation
+              </div>
+              <div class="flex items-center gap-2 text-xs text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+                No hidden charges
+              </div>
+              <div class="flex items-center gap-2 text-xs text-gray-400">
+                <svg class="w-3.5 h-3.5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+                Free cancellation within 24 hrs
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}

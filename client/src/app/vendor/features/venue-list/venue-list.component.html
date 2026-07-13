@@ -1,0 +1,43 @@
+<div>
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">My Venues</h1>
+    <a routerLink="/vendor/venues/create" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+      + Add Venue
+    </a>
+  </div>
+
+  @if (loading()) {
+    <app-loader message="Loading venues..." />
+  } @else if (venues().length === 0) {
+    <app-empty-state title="No venues yet" message="Create your first venue to start receiving bookings." actionLabel="Add Venue" />
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (venue of venues(); track venue.id) {
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="h-40 bg-gray-200">
+           @if (venue.imageUrls && venue.imageUrls.length > 0) {
+              <img [src]="venue.imageUrls[0]" [alt]="venue.name" class="w-full h-full object-cover" />
+            }
+          </div>
+          <div class="p-4">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-semibold text-gray-900">{{ venue.name }}</h3>
+              <span [class]="'px-2 py-0.5 text-xs font-medium rounded-full ' + (venue.status === 'APPROVED' ? 'bg-green-100 text-green-700' : venue.status === 'PENDING_APPROVAL' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600')">
+                {{ venue.status }}
+              </span>
+            </div>
+            <p class="text-sm text-gray-500 mb-3">{{ venue.address }}</p>
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-indigo-600">{{ venue.pricePerSlot }}/slot</span>
+              <div class="flex gap-3" >
+                <a [routerLink]="['/vendor/venues', venue.id, 'edit']" class="text-sm text-indigo-600 hover:text-indigo-500">Edit</a>
+                <button (click)="deleteVenue(venue.id)" class="text-sm text-red-500 hover:text-red-400" >Delete</button>
+                <a [routerLink]="['/vendor/venues', venue.id, 'slots']" class="text-sm text-green-600 hover:text-green-500">Slots</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

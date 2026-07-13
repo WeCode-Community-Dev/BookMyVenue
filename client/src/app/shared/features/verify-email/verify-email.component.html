@@ -1,0 +1,114 @@
+<div class="min-h-screen lg:flex">
+
+  <!-- ── LEFT: Brand Panel ── -->
+  <div class="hidden lg:flex lg:w-[45%] bg-[#0A1628] flex-col justify-between p-12 relative overflow-hidden shrink-0">
+    <!-- Dot grid -->
+    <div class="absolute inset-0" style="background-image: radial-gradient(rgba(201,168,76,0.07) 1px, transparent 1px); background-size: 28px 28px;"></div>
+    <!-- Radial glow -->
+    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[480px] h-[480px] rounded-full pointer-events-none"
+      style="background: radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 68%)"></div>
+
+    <!-- Logo -->
+    <div class="relative flex items-center gap-2.5">
+      <div class="w-9 h-9 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center shadow-lg shadow-accent-500/20">
+        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+      </div>
+      <span class="font-heading font-bold text-white text-lg tracking-tight">BookMyVenue</span>
+    </div>
+
+    <!-- Main content -->
+    <div class="relative">
+      <h2 class="font-heading text-4xl font-bold text-white leading-tight mb-4">
+        Verify your email
+      </h2>
+      <p class="text-blue-200/50 text-sm leading-relaxed mb-10 max-w-xs">
+        We've sent a verification code to your email. Enter the 6-digit code below.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: Form Panel ── -->
+  <div class="flex-1 flex flex-col justify-center min-h-screen bg-white px-6 py-12 lg:px-16">
+
+    <!-- Mobile logo -->
+    <div class="lg:hidden flex items-center gap-2.5 mb-10">
+      <div class="w-8 h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+      </div>
+      <span class="font-heading font-bold text-gray-900">BookMyVenue</span>
+    </div>
+
+    <div class="w-full max-w-sm mx-auto lg:mx-0">
+
+      <!-- Back -->
+      <a routerLink="/signup" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-8 group">
+        <svg class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to signup
+      </a>
+
+      <!-- Heading -->
+      <div class="mb-8">
+        <h1 class="font-heading text-3xl font-bold text-gray-900 mb-1">Verify your email</h1>
+        <p class="text-sm text-gray-500">Enter the 6-digit code sent to <span class="font-medium text-gray-700">{{ email() }}</span></p>
+      </div>
+
+      <!-- Error message -->
+      @if (error()) {
+        <div class="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p class="text-sm text-red-600">{{ error() }}</p>
+        </div>
+      }
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="flex gap-2 justify-center mb-8">
+          @for (control of ['otp1', 'otp2', 'otp3', 'otp4', 'otp5', 'otp6']; track control; let i = $index) {
+            <input
+              #otpInput
+              type="text"
+              [formControlName]="control"
+              maxlength="1"
+              class="w-12 h-14 text-center text-xl font-bold border-2 rounded-lg focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 transition-all"
+              [class.border-red-300]="form.get(control)?.touched && form.get(control)?.invalid"
+              [class.border-gray-200]="!form.get(control)?.invalid || !form.get(control)?.touched"
+              (input)="onInput($event, i)"
+              (paste)="onPaste($event)"
+              (keydown)="onKeyDown($event, i)"
+            />
+          }
+        </div>
+
+        <app-button
+          label="Verify Email"
+          type="submit"
+          [loading]="loading()"
+          [fullWidth]="true"
+          size="lg"
+        />
+      </form>
+
+      <!-- Resend -->
+      <div class="mt-6 text-center">
+        @if (countdown() > 0) {
+          <p class="text-sm text-gray-500">Resend code in <span class="font-medium text-gray-700">{{ countdown() }}s</span></p>
+        } @else {
+          <button
+            type="button"
+            class="text-sm text-accent-600 hover:text-accent-700 font-medium transition-colors"
+            [disabled]="resendLoading()"
+            (click)="onResend()"
+          >
+            {{ resendLoading() ? 'Sending...' : 'Resend verification code' }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+</div>

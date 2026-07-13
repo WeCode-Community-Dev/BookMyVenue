@@ -1,0 +1,287 @@
+<!-- Navbar -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-[#0A1628]/95 backdrop-blur-md border-b border-[#1A3050]">
+  <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <!-- Logo -->
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center shadow-lg shadow-accent-500/20">
+        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+      </div>
+      <span class="font-heading font-bold text-white text-base tracking-tight">BookMyVenue</span>
+    </div>
+
+    <!-- Nav links -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#features" class="text-sm text-blue-200/60 hover:text-white transition-colors">Features</a>
+      <a href="#how-it-works" class="text-sm text-blue-200/60 hover:text-white transition-colors">How It Works</a>
+      <a routerLink="/user/venues" class="text-sm text-blue-200/60 hover:text-white transition-colors">Browse Venues</a>
+    </div>
+
+    <!-- Auth buttons -->
+    <div class="flex items-center gap-3">
+      <a routerLink="/login" class="text-sm font-medium text-blue-200/70 hover:text-white transition-colors">Sign In</a>
+      <a routerLink="/signup" class="px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold rounded-xl transition-all hover:-translate-y-0.5 shadow-md shadow-accent-500/25">
+        Get Started
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────── -->
+<section class="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0A1628] pt-16">
+
+  <!-- Subtle dot-grid texture -->
+  <div class="absolute inset-0" style="background-image: radial-gradient(rgba(201,168,76,0.07) 1px, transparent 1px); background-size: 28px 28px;"></div>
+
+  <!-- Soft radial glow at center — not blobs, just one centered glow -->
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full"
+    style="background: radial-gradient(ellipse, rgba(201,168,76,0.08) 0%, transparent 70%); pointer-events:none">
+  </div>
+
+  <div class="relative max-w-4xl mx-auto px-6 py-24 text-center">
+
+    <!-- Eyebrow -->
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent-500/30 bg-accent-500/8 mb-8">
+      <span class="w-1.5 h-1.5 bg-accent-400 rounded-full"></span>
+      <span class="text-xs font-semibold text-accent-400 tracking-widest uppercase">India's Premier Venue Platform</span>
+    </div>
+
+    <!-- Headline -->
+    <h1 class="font-heading text-5xl md:text-7xl font-bold text-white leading-[1.08] mb-6 tracking-tight">
+      Book Venues That Make<br/>
+      <span class="text-gradient">Moments Unforgettable</span>
+    </h1>
+
+    <!-- Sub-headline -->
+    <p class="max-w-xl mx-auto text-lg text-blue-200/60 mb-10 leading-relaxed">
+      Discover stunning spaces for weddings, corporate events &amp; celebrations. Instant availability. Transparent pricing.
+    </p>
+
+    <!-- Search bar -->
+    <div class="max-w-2xl mx-auto mb-8">
+      <div class="flex items-center bg-white rounded-2xl shadow-2xl shadow-black/30 overflow-hidden p-1.5 gap-1">
+        <div class="flex items-center gap-2 flex-1 px-4 py-2.5 border-r border-gray-100">
+          <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <input type="text" placeholder="City or district..." class="flex-1 text-sm text-gray-800 placeholder-gray-400 outline-none bg-transparent"/>
+        </div>
+        <div class="flex items-center gap-2 flex-1 px-4 py-2.5">
+          <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" placeholder="Venue type or name..." class="flex-1 text-sm text-gray-800 placeholder-gray-400 outline-none bg-transparent"/>
+        </div>
+        <a routerLink="/user/venues"
+          class="shrink-0 px-6 py-3 bg-gradient-to-r from-accent-500 to-accent-600 text-white text-sm font-bold rounded-xl hover:from-accent-600 hover:to-accent-700 transition-all shadow-md shadow-accent-500/30 cursor-pointer">
+          Search
+        </a>
+      </div>
+    </div>
+
+    <!-- Category pills -->
+    <div class="flex flex-wrap items-center justify-center gap-2 mb-16">
+      @for (cat of categories; track cat) {
+        <a routerLink="/user/venues"
+          class="px-4 py-1.5 rounded-full border border-white/10 text-xs font-medium text-blue-200/60 hover:border-accent-500/40 hover:text-accent-400 transition-all cursor-pointer">
+          {{ cat }}
+        </a>
+      }
+    </div>
+
+    <!-- Stats row -->
+    <div class="flex flex-wrap justify-center gap-10 md:gap-16">
+      @for (stat of stats; track stat.label) {
+        <div class="text-center">
+          <p class="text-3xl font-heading font-bold text-white">{{ stat.value }}</p>
+          <p class="text-xs text-blue-200/50 mt-0.5 uppercase tracking-wider">{{ stat.label }}</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-blue-200/30">
+    <span class="text-xs uppercase tracking-widest">Scroll</span>
+    <div class="w-px h-8 bg-gradient-to-b from-blue-200/30 to-transparent"></div>
+  </div>
+</section>
+
+<!-- ── FEATURED VENUES STRIP ─────────────────────── -->
+<section class="py-20 bg-[#fafaf9]">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex items-end justify-between mb-10">
+      <div>
+        <p class="text-xs font-semibold text-accent-600 uppercase tracking-widest mb-2">Handpicked</p>
+        <h2 class="font-heading text-3xl md:text-4xl font-bold text-gray-900">Featured Venues</h2>
+      </div>
+      <a routerLink="/user/venues"
+        class="hidden md:flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-accent-600 transition-colors">
+        View all venues
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (venue of featuredVenues; track venue.name) {
+        <a routerLink="/user/venues" class="group cursor-pointer block card-hover">
+          <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+            <div class="relative h-52 overflow-hidden">
+              <img [src]="venue.image" [alt]="venue.name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"/>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+              <span class="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-sm text-xs font-semibold text-brand-600 rounded-full">{{ venue.category }}</span>
+              <span class="absolute top-3 right-3 bg-accent-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">{{ venue.price }}</span>
+              <div class="absolute bottom-3 left-3 flex items-center gap-1 text-white/90 text-xs">
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                {{ venue.district }}
+              </div>
+            </div>
+            <div class="p-4">
+              <h3 class="font-heading font-semibold text-gray-900 mb-1 group-hover:text-accent-600 transition-colors">{{ venue.name }}</h3>
+              <p class="text-xs text-gray-400">Up to {{ venue.capacity }} guests</p>
+            </div>
+          </div>
+        </a>
+      }
+    </div>
+
+    <div class="mt-8 text-center md:hidden">
+      <a routerLink="/user/venues" class="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:-translate-y-0.5 transition-all shadow-md">
+        View All Venues
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ───────────────────────────────────── -->
+<section id="features" class="py-24 bg-[#0A1628]">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <p class="text-xs font-semibold text-accent-400 uppercase tracking-widest mb-3">Why BookMyVenue</p>
+      <h2 class="font-heading text-3xl md:text-4xl font-bold text-white mb-4">Everything You Need to Plan Your Event</h2>
+      <p class="max-w-xl mx-auto text-blue-200/50 text-sm leading-relaxed">From discovery to booking, we've built the most complete venue experience in India.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (feature of features; track feature.title) {
+        <div class="group p-8 rounded-2xl border border-[#1A3050] hover:border-accent-500/30 bg-[#0F1F3D]/50 hover:bg-[#0F1F3D] transition-all">
+          <div class="w-12 h-12 rounded-xl bg-accent-500/10 flex items-center justify-center mb-5 group-hover:bg-accent-500/20 transition-colors">
+            <svg class="w-6 h-6 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" [attr.d]="feature.icon"/>
+            </svg>
+          </div>
+          <h3 class="text-base font-semibold text-white mb-2">{{ feature.title }}</h3>
+          <p class="text-sm text-blue-200/50 leading-relaxed">{{ feature.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ───────────────────────────────── -->
+<section id="how-it-works" class="py-24 bg-white">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="text-center mb-16">
+      <p class="text-xs font-semibold text-accent-600 uppercase tracking-widest mb-3">Simple Process</p>
+      <h2 class="font-heading text-3xl md:text-4xl font-bold text-gray-900">Book in 3 Simple Steps</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+      <!-- Connecting line (desktop) -->
+      <div class="hidden md:block absolute top-10 left-[20%] right-[20%] h-px bg-gradient-to-r from-accent-500/40 via-accent-400/70 to-accent-500/40"></div>
+
+      @for (step of steps; track step.number) {
+        <div class="text-center relative">
+          <div class="w-20 h-20 rounded-2xl bg-[#0A1628] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-[#0A1628]/20 relative z-10">
+            <span class="font-heading text-2xl font-bold text-accent-400">{{ step.number }}</span>
+          </div>
+          <h3 class="text-lg font-heading font-semibold text-gray-900 mb-3">{{ step.title }}</h3>
+          <p class="text-sm text-gray-500 leading-relaxed max-w-52 mx-auto">{{ step.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA BANNER ─────────────────────────────────── -->
+<section class="bg-gradient-to-br from-[#0A1628] via-[#0F1F3D] to-[#0A1628] py-20 relative overflow-hidden">
+  <div class="absolute inset-0" style="background-image: radial-gradient(rgba(201,168,76,0.06) 1px, transparent 1px); background-size: 28px 28px;"></div>
+  <div class="relative max-w-3xl mx-auto px-6 text-center">
+    <p class="text-xs font-semibold text-accent-400 uppercase tracking-widest mb-4">For Venue Owners</p>
+    <h2 class="font-heading text-3xl md:text-4xl font-bold text-white mb-4">List Your Venue,<br/>Grow Your Business</h2>
+    <p class="text-blue-200/50 text-sm mb-8 max-w-xl mx-auto leading-relaxed">Join hundreds of venue owners earning more with BookMyVenue. Free listing, powerful dashboard, instant notifications.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a routerLink="/signup" class="px-8 py-3.5 bg-accent-500 hover:bg-accent-600 text-white font-bold rounded-xl transition-all hover:-translate-y-0.5 shadow-lg shadow-accent-500/30 text-sm">
+        List Your Venue — It's Free
+      </a>
+      <a routerLink="/login" class="px-8 py-3.5 bg-white/8 hover:bg-white/12 text-white font-semibold rounded-xl border border-white/15 transition-all text-sm">
+        Sign In
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────── -->
+<footer class="bg-[#060f1e] text-blue-200/50">
+  <div class="max-w-7xl mx-auto px-6 pt-16 pb-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+      <!-- Brand -->
+      <div>
+        <div class="flex items-center gap-2.5 mb-4">
+          <div class="w-8 h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <span class="font-heading font-bold text-white text-base">BookMyVenue</span>
+        </div>
+        <p class="text-sm leading-relaxed text-blue-200/40">India's premier venue booking platform. Discover, compare, and book the perfect venue.</p>
+      </div>
+
+      <!-- For Users -->
+      <div>
+        <h4 class="text-white font-semibold text-sm mb-4">For Users</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li><a routerLink="/signup" class="hover:text-white transition-colors">Create Account</a></li>
+          <li><a routerLink="/login" class="hover:text-white transition-colors">Sign In</a></li>
+          <li><a routerLink="/user/venues" class="hover:text-white transition-colors">Browse Venues</a></li>
+          <li><a href="#how-it-works" class="hover:text-white transition-colors">How It Works</a></li>
+        </ul>
+      </div>
+
+      <!-- For Vendors -->
+      <div>
+        <h4 class="text-white font-semibold text-sm mb-4">For Vendors</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li><a routerLink="/signup" class="hover:text-white transition-colors">Register as Vendor</a></li>
+          <li><a routerLink="/login" class="hover:text-white transition-colors">Vendor Login</a></li>
+          <li><a class="cursor-default">List Your Venue</a></li>
+          <li><a class="cursor-default">Vendor Dashboard</a></li>
+        </ul>
+      </div>
+
+      <!-- Company -->
+      <div>
+        <h4 class="text-white font-semibold text-sm mb-4">Company</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li><a class="cursor-default">About Us</a></li>
+          <li><a class="cursor-default">Contact</a></li>
+          <li><a class="cursor-default">Privacy Policy</a></li>
+          <li><a class="cursor-default">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-[#1A3050] pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
+      <p class="text-blue-200/30">&copy; 2026 BookMyVenue. All rights reserved.</p>
+      <a routerLink="/admin/login" class="text-xs text-blue-200/20 hover:text-blue-200/40 transition-colors">Admin Portal</a>
+    </div>
+  </div>
+</footer>

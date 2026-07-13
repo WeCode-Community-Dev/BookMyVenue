@@ -1,0 +1,146 @@
+<div class="min-h-screen lg:flex">
+
+  <!-- ── LEFT: Brand Panel ── -->
+  <div class="hidden lg:flex lg:w-[45%] bg-[#0A1628] flex-col justify-between p-12 relative overflow-hidden shrink-0">
+    <!-- Dot grid -->
+    <div class="absolute inset-0" style="background-image: radial-gradient(rgba(201,168,76,0.07) 1px, transparent 1px); background-size: 28px 28px;"></div>
+    <!-- Radial glow -->
+    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[480px] h-[480px] rounded-full pointer-events-none"
+      style="background: radial-gradient(ellipse, rgba(201,168,76,0.07) 0%, transparent 68%)"></div>
+
+    <!-- Logo -->
+    <div class="relative flex items-center gap-2.5">
+      <div class="w-9 h-9 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center shadow-lg shadow-accent-500/20">
+        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+      </div>
+      <span class="font-heading font-bold text-white text-lg tracking-tight">BookMyVenue</span>
+    </div>
+
+    <!-- Main content -->
+    <div class="relative">
+      <h2 class="font-heading text-4xl font-bold text-white leading-tight mb-4">
+        Your perfect venue<br/>awaits you.
+      </h2>
+      <p class="text-blue-200/50 text-sm leading-relaxed mb-10 max-w-xs">
+        Join thousands of event planners who trust BookMyVenue to find stunning spaces across India.
+      </p>
+
+      <!-- Feature bullets -->
+      <div class="space-y-4">
+        @for (feature of panelFeatures; track feature) {
+          <div class="flex items-center gap-3">
+            <div class="w-5 h-5 rounded-full bg-accent-500/15 flex items-center justify-center shrink-0">
+              <svg class="w-3 h-3 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <span class="text-sm text-blue-200/60">{{ feature }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Bottom stats -->
+    <div class="relative flex gap-10">
+      <div>
+        <p class="font-heading text-2xl font-bold text-white">500+</p>
+        <p class="text-xs text-blue-200/40 uppercase tracking-widest mt-0.5">Venues</p>
+      </div>
+      <div>
+        <p class="font-heading text-2xl font-bold text-white">10K+</p>
+        <p class="text-xs text-blue-200/40 uppercase tracking-widest mt-0.5">Events</p>
+      </div>
+      <div>
+        <p class="font-heading text-2xl font-bold text-white">4.8★</p>
+        <p class="text-xs text-blue-200/40 uppercase tracking-widest mt-0.5">Rating</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: Form Panel ── -->
+  <div class="flex-1 flex flex-col justify-center min-h-screen bg-white px-6 py-12 lg:px-16">
+
+    <!-- Mobile logo -->
+    <div class="lg:hidden flex items-center gap-2.5 mb-10">
+      <div class="w-8 h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+      </div>
+      <span class="font-heading font-bold text-gray-900">BookMyVenue</span>
+    </div>
+
+    <div class="w-full max-w-sm mx-auto lg:mx-0">
+
+      <!-- Back -->
+      <a routerLink="/" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-8 group">
+        <svg class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to home
+      </a>
+
+      <!-- Heading -->
+      <div class="mb-8">
+        <h1 class="font-heading text-3xl font-bold text-gray-900 mb-1">Welcome back</h1>
+        <p class="text-sm text-gray-500">Sign in to continue to BookMyVenue</p>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="space-y-4">
+          <app-input
+            label="Email Address"
+            type="email"
+            placeholder="you@example.com"
+            formControlName="email"
+            [required]="true"
+            [error]="form.controls.email.touched && form.controls.email.errors ? 'Valid email is required' : ''"
+          />
+          <app-input
+            label="Password"
+            type="password"
+            placeholder="Enter your password"
+            formControlName="password"
+            [required]="true"
+            [error]="form.controls.password.touched && form.controls.password.errors ? 'Password must be at least 6 characters' : ''"
+          />
+        </div>
+
+        <div class="flex justify-end mt-4 mb-6">
+          <a routerLink="/forgot-password" class="text-xs text-accent-600 hover:text-accent-700 font-medium transition-colors">
+            Forgot password?
+          </a>
+        </div>
+
+        <app-button
+          label="Sign In"
+          type="submit"
+          [loading]="loading()"
+          [fullWidth]="true"
+          size="lg"
+        />
+
+        @if (showVerifyButton()) {
+          <app-button
+            label="Verify Email"
+            type="button"
+            (clicked)="onVerify()"
+            [fullWidth]="true"
+            size="lg"
+            variant="outline"
+            class="mt-3"
+          />
+        }
+      </form>
+
+      <p class="mt-6 text-center text-sm text-gray-500">
+        Don't have an account?
+        <a routerLink="/signup" class="text-brand-600 font-semibold hover:text-accent-600 transition-colors ml-1">Sign up free</a>
+      </p>
+    </div>
+  </div>
+
+</div>

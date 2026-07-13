@@ -1,0 +1,17 @@
+<div class="max-w-2xl mx-auto">
+  <h1 class="text-2xl font-bold text-gray-900 mb-6">Settings</h1>
+  <div class="bg-white rounded-xl border border-gray-200 p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Business Information</h2>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="space-y-4">
+        <app-input label="Business Name" formControlName="businessName" [required]="true" />
+        <app-input label="Contact Person" formControlName="contactPerson" [required]="true" />
+        <app-input label="Phone" type="tel" formControlName="phone" [required]="true" />
+        <app-input label="Address" formControlName="address" [required]="true" />
+      </div>
+      <div class="mt-6">
+        <app-button label="Save Settings" type="submit" [loading]="saving()" />
+      </div>
+    </form>
+  </div>
+</div>

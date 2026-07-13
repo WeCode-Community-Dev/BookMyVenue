@@ -1,0 +1,49 @@
+<div>
+  <h1 class="text-2xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
+  @if (venueService.dashboard(); as stats) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      @for (stat of [
+        { label: 'Users',           value: stats.totalUsers,    color: 'indigo' },
+        { label: 'Vendors',         value: stats.totalVendors,  color: 'green'  },
+        { label: 'Total Venues',    value: stats.totalVenues,   color: 'blue'   },
+        { label: 'Bookings',        value: stats.totalBookings, color: 'amber'  }
+      ]; track stat.label) {
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <p class="text-sm text-gray-500 mb-1">{{ stat.label }}</p>
+          <p class="text-2xl font-bold text-gray-900">{{ stat.value }}</p>
+        </div>
+      }
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      @for (stat of [
+        { label: 'Pending Approval', value: stats.pendingVenues,  color: 'yellow' },
+        { label: 'Approved Venues',  value: stats.approvedVenues, color: 'green'  },
+        { label: 'Rejected Venues',  value: stats.rejectedVenues, color: 'red'    }
+      ]; track stat.label) {
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <p class="text-sm text-gray-500 mb-1">{{ stat.label }}</p>
+          <p class="text-2xl font-bold text-gray-900">{{ stat.value }}</p>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
+          <div class="h-3 bg-gray-200 rounded w-1/2 mb-3"></div>
+          <div class="h-7 bg-gray-200 rounded w-1/3"></div>
+        </div>
+      }
+    </div>
+  }
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+      <h2 class="font-semibold text-gray-900 mb-4">Recent Activity</h2>
+      <p class="text-sm text-gray-400">Activity feed placeholder</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+      <h2 class="font-semibold text-gray-900 mb-4">System Health</h2>
+      <p class="text-sm text-gray-400">System metrics placeholder</p>
+    </div>
+  </div>
+</div>

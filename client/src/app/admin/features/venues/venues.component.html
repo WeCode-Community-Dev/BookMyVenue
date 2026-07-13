@@ -1,0 +1,55 @@
+<div>
+  <h1 class="text-2xl font-bold text-gray-900 mb-6">Venues Management</h1>
+  @if (venueService.loading()) {
+    <app-loader />
+  } @else if (venueService.venues().length === 0) {
+    <app-empty-state title="No venues" message="Venues will appear here once vendors add them." />
+  } @else {
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <table class="w-full text-sm text-left">
+        <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
+          <tr>
+            <th class="px-4 py-3">Name</th>
+            <th class="px-4 py-3">District</th>
+            <th class="px-4 py-3">Capacity</th>
+            <th class="px-4 py-3">Owner</th>
+            <th class="px-4 py-3">Status</th>
+            <th class="px-4 py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          @for (venue of venueService.venues(); track venue.id) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-3 font-medium">{{ venue.name }}</td>
+              <td class="px-4 py-3 text-gray-600">{{ venue.district }}</td>
+              <td class="px-4 py-3">{{ venue.capacity }}</td>
+              <td class="px-4 py-3 text-gray-600">{{ venue.ownerName }}</td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-1 text-xs rounded-full"
+                  [class]="venue.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                            venue.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                            'bg-yellow-100 text-yellow-700'">
+                  {{ venue.status }}
+                </span>
+              </td>
+              <td class="px-4 py-3 flex gap-2">
+                @if (venue.status === 'PENDING_APPROVAL') {
+                  <button (click)="approve(venue.id)"
+                    [disabled]="actingOnId() !== null"
+                    class="text-sm text-green-600 hover:underline disabled:opacity-40 disabled:cursor-not-allowed">
+                    {{ actingOnId() === venue.id ? '...' : 'Approve' }}
+                  </button>
+                  <button (click)="reject(venue.id)"
+                    [disabled]="actingOnId() !== null"
+                    class="text-sm text-red-600 hover:underline disabled:opacity-40 disabled:cursor-not-allowed">
+                    {{ actingOnId() === venue.id ? '...' : 'Reject' }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

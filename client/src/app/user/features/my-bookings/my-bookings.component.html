@@ -1,0 +1,60 @@
+<div>
+  <h1 class="text-2xl font-bold text-gray-900 mb-6">My Bookings</h1>
+
+  @if (loading()) {
+  <app-loader message="Loading bookings..." />
+  } @else if (!bookings() || bookings().length === 0) {
+  <app-empty-state title="No bookings yet" message="Start exploring venues and make your first booking!" icon="calendar"
+    actionLabel="Browse Venues" />
+  } @else {
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
+          <tr>
+            <th class="px-4 py-3">Venue ID</th>
+            <th class="px-4 py-3">Date</th>
+            <th class="px-4 py-3">Slot ID</th>
+            <th class="px-4 py-3">Amount</th>
+            <th class="px-4 py-3">Status</th>
+            <th class="px-4 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          @for (booking of bookings(); track booking.id) {
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-4 py-3 font-medium text-gray-900">
+              {{ booking.venueId }} 
+            </td>
+            <td class="px-4 py-3 text-gray-600">
+              {{ booking.bookingDate | dateFormat }}
+            </td>
+            <td class="px-4 py-3 text-gray-600">
+              {{ booking.slotTemplateId }}
+            </td>
+            <td class="px-4 py-3 text-gray-900 font-medium">
+              {{ booking.totalAmount | currencyFormat }}
+            </td>
+            <td class="px-4 py-3">
+              <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getStatusClass(booking.status)">
+                {{ booking.status }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-right">
+              <button (click)="onView(booking)" class="text-indigo-600 hover:text-indigo-800 font-medium text-xs mr-3">
+                View
+              </button>
+              @if (booking.status === BookingStatus.CONFIRMED || booking.status === BookingStatus.PENDING) {
+              <button (click)="onCancel(booking)" class="text-red-600 hover:text-red-800 font-medium text-xs">
+                Cancel
+              </button>
+              }
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  }
+</div>

@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+input[type="text"] {
+  -moz-appearance: textfield;
+}
+
+input[type="text"]::-webkit-outer-spin-button,
+input[type="text"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

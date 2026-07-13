@@ -1,0 +1,8 @@
+export const AUTH_ERRORS = {
+  INVALID_OTP: 'INVALID_OTP',
+  EMAIL_NOT_VERIFIED: 'EMAIL_NOT_VERIFIED',
+  OTP_EXPIRED: 'OTP_EXPIRED',
+  EMAIL_ALREADY_EXISTS: 'EMAIL_ALREADY_EXISTS',
+} as const;
+
+export type AuthErrorCode = typeof AUTH_ERRORS[keyof typeof AUTH_ERRORS];

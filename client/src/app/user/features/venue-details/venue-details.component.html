@@ -1,0 +1,276 @@
+@if (loading()) {
+  <!-- Skeleton -->
+  <div class="max-w-6xl mx-auto animate-pulse">
+    <div class="h-5 w-28 bg-gray-200 rounded-full mb-6"></div>
+    <div class="h-[55vh] bg-gray-200 rounded-3xl mb-3"></div>
+    <div class="flex gap-2 mb-8">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="w-20 h-16 bg-gray-200 rounded-xl shrink-0"></div>
+      }
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2 space-y-5">
+        <div class="h-8 bg-gray-200 rounded-full w-2/3"></div>
+        <div class="h-4 bg-gray-200 rounded-full w-1/3"></div>
+        <div class="h-px bg-gray-200 my-4"></div>
+        <div class="h-20 bg-gray-200 rounded-2xl"></div>
+        <div class="space-y-2">
+          <div class="h-4 bg-gray-200 rounded-full"></div>
+          <div class="h-4 bg-gray-200 rounded-full w-5/6"></div>
+          <div class="h-4 bg-gray-200 rounded-full w-4/6"></div>
+        </div>
+      </div>
+      <div class="h-72 bg-gray-200 rounded-2xl"></div>
+    </div>
+  </div>
+
+} @else if (venue(); as v) {
+  <div class="max-w-6xl mx-auto animate-fade-in">
+
+    <!-- Back -->
+    <a routerLink="/user/venues"
+      class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-6 group">
+      <svg class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Back to venues
+    </a>
+
+    <!-- ── IMAGE GALLERY ───────────────────────── -->
+    <div class="mb-6">
+      <!-- Main image -->
+      <div class="relative h-[56vh] min-h-72 rounded-3xl overflow-hidden bg-gray-100 mb-3 group">
+        @if (v.imageUrls && v.imageUrls.length > 0) {
+          <img
+            [src]="v.imageUrls[selectedImage()]"
+            [alt]="v.name"
+            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+          />
+        } @else {
+          <div class="w-full h-full bg-gradient-to-br from-brand-700 to-brand-500 flex items-center justify-center">
+            <svg class="w-20 h-20 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+        }
+
+        <!-- Gradient overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+
+        <!-- Status badge -->
+        <div class="absolute top-4 left-4">
+          @if (v.status === 'APPROVED') {
+            <span class="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-green-700">
+              <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+              Verified &amp; Available
+            </span>
+          } @else {
+            <span class="px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-gray-600">
+              {{ v.status }}
+            </span>
+          }
+        </div>
+
+        <!-- Photo count button -->
+        @if (v.imageUrls && v.imageUrls.length > 1) {
+          <button class="absolute bottom-4 right-4 flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-xl text-xs font-semibold text-gray-800 hover:bg-white transition-colors shadow-md cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+            </svg>
+            All {{ v.imageUrls.length }} photos
+          </button>
+        }
+      </div>
+
+      <!-- Thumbnails -->
+      @if (v.imageUrls && v.imageUrls.length > 1) {
+        <div class="flex gap-2 overflow-x-auto pb-1">
+          @for (img of v.imageUrls; track $index) {
+            <button
+              class="w-20 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer"
+              [class]="selectedImage() === $index
+                ? 'border-accent-500 shadow-md shadow-accent-500/20 opacity-100'
+                : 'border-transparent opacity-55 hover:opacity-90'"
+              (click)="selectImage($index)"
+            >
+              <img [src]="img" [alt]="v.name" class="w-full h-full object-cover"/>
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- ── CONTENT GRID ─────────────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+      <!-- LEFT: Details -->
+      <div class="lg:col-span-2 space-y-8">
+
+        <!-- Header -->
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="px-3 py-1 bg-accent-500/10 text-accent-600 text-xs font-semibold rounded-full border border-accent-500/20">
+              {{ v.category }}
+            </span>
+          </div>
+          <h1 class="font-heading text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-3">{{ v.name }}</h1>
+          <div class="flex items-center gap-1.5 text-gray-500 text-sm">
+            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            {{ v.address }}, {{ v.district }}
+          </div>
+        </div>
+
+        <!-- Info chips -->
+        <div class="flex flex-wrap gap-3 py-6 border-y border-gray-100">
+          <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-2xl">
+            <div class="w-9 h-9 bg-brand-50 rounded-xl flex items-center justify-center shrink-0">
+              <svg class="w-4.5 h-4.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Capacity</p>
+              <p class="text-sm font-semibold text-gray-900">{{ v.capacity }} guests max</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-2xl">
+            <div class="w-9 h-9 bg-brand-50 rounded-xl flex items-center justify-center shrink-0">
+              <svg class="w-4.5 h-4.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Venue Type</p>
+              <p class="text-sm font-semibold text-gray-900">{{ v.category }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-2xl">
+            <div class="w-9 h-9 bg-brand-50 rounded-xl flex items-center justify-center shrink-0">
+              <svg class="w-4.5 h-4.5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">District</p>
+              <p class="text-sm font-semibold text-gray-900">{{ v.district }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div>
+          <h2 class="font-heading text-xl font-bold text-gray-900 mb-3">About this venue</h2>
+          <p class="text-gray-600 leading-relaxed text-sm">{{ v.description }}</p>
+        </div>
+
+        <!-- Details table -->
+        <div class="bg-gray-50 rounded-2xl p-6">
+          <h3 class="font-heading text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Venue Details</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Full Address</p>
+              <p class="text-sm font-medium text-gray-800">{{ v.address }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">District</p>
+              <p class="text-sm font-medium text-gray-800">{{ v.district }}</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Max Capacity</p>
+              <p class="text-sm font-medium text-gray-800">{{ v.capacity }} guests</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-0.5">Pricing</p>
+              <p class="text-sm font-medium text-gray-800">{{ v.pricePerSlot | currencyFormat }} / slot</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Booking Card -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl border border-gray-100 p-6 sticky top-6 shadow-xl shadow-black/6">
+
+          <!-- Price -->
+          <div class="mb-5 pb-5 border-b border-gray-100">
+            <div class="flex items-baseline gap-1.5">
+              <span class="font-heading text-3xl font-bold text-accent-600">{{ v.pricePerSlot | currencyFormat }}</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">per slot · all taxes included</p>
+          </div>
+
+          <!-- Summary rows -->
+          <div class="space-y-3 mb-6">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-500 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Max guests
+              </span>
+              <span class="font-semibold text-gray-800">{{ v.capacity }}</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-500 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Location
+              </span>
+              <span class="font-semibold text-gray-800">{{ v.district }}</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-500 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                Type
+              </span>
+              <span class="font-semibold text-gray-800">{{ v.category }}</span>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <app-button
+            label="Book Now"
+            [fullWidth]="true"
+            size="lg"
+            (clicked)="onBookNow()"
+          />
+
+          <!-- Trust signals -->
+          <div class="mt-4 space-y-2">
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+              <svg class="w-3.5 h-3.5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+              Instant booking confirmation
+            </div>
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+              <svg class="w-3.5 h-3.5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+              No hidden charges
+            </div>
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+              <svg class="w-3.5 h-3.5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+              Verified venue
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+}

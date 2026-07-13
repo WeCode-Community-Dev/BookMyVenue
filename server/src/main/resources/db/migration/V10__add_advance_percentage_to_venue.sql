@@ -1,0 +1,2 @@
+ALTER TABLE venue
+    ADD COLUMN advance_percentage NUMERIC(5,2) NOT NULL DEFAULT 20.00;

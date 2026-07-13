@@ -1,0 +1,44 @@
+<div class="max-w-2xl mx-auto">
+  <h1 class="text-2xl font-bold text-gray-900 mb-6">My Profile</h1>
+
+  <div class="bg-white rounded-xl border border-gray-200 p-6">
+    <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200">
+      <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
+        <span class="text-2xl font-bold text-indigo-600">
+          {{ authService.currentUser()?.name?.charAt(0) || 'U' }}
+        </span>
+      </div>
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900">{{ authService.currentUser()?.name }}</h2>
+        <p class="text-sm text-gray-500">{{ authService.currentUser()?.email }}</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="space-y-4">
+        <app-input
+          label="Full Name"
+          formControlName="name"
+          [required]="true"
+          [error]="form.controls.name.touched && form.controls.name.errors ? 'Name is required' : ''"
+        />
+
+        <app-input
+          label="Phone Number"
+          type="tel"
+          formControlName="phone"
+          [required]="true"
+          [error]="form.controls.phone.touched && form.controls.phone.errors ? 'Valid phone number is required' : ''"
+        />
+      </div>
+
+      <div class="mt-6">
+        <app-button
+          label="Save Changes"
+          type="submit"
+          [loading]="saving()"
+        />
+      </div>
+    </form>
+  </div>
+</div>

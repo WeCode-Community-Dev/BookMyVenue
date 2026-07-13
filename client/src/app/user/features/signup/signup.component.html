@@ -1,0 +1,184 @@
+<div class="min-h-screen lg:flex">
+
+  <!-- ── LEFT: Brand Panel ── -->
+  <div class="hidden lg:flex lg:w-[45%] bg-[#0A1628] flex-col justify-between p-12 relative overflow-hidden shrink-0">
+    <!-- Dot grid -->
+    <div class="absolute inset-0" style="background-image: radial-gradient(rgba(201,168,76,0.07) 1px, transparent 1px); background-size: 28px 28px;"></div>
+    <!-- Radial glow -->
+    <div class="absolute top-0 right-0 w-[480px] h-[480px] rounded-full pointer-events-none"
+      style="background: radial-gradient(ellipse at top right, rgba(201,168,76,0.07) 0%, transparent 65%)"></div>
+
+    <!-- Logo -->
+    <div class="relative flex items-center gap-2.5">
+      <div class="w-9 h-9 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center shadow-lg shadow-accent-500/20">
+        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+      </div>
+      <span class="font-heading font-bold text-white text-lg tracking-tight">BookMyVenue</span>
+    </div>
+
+    <!-- Main content -->
+    <div class="relative">
+      <h2 class="font-heading text-4xl font-bold text-white leading-tight mb-4">
+        Start booking<br/>extraordinary venues.
+      </h2>
+      <p class="text-blue-200/50 text-sm leading-relaxed mb-10 max-w-xs">
+        Create your free account and get access to hundreds of premium venues for every occasion.
+      </p>
+
+      <!-- Venue type chips -->
+      <div class="flex flex-wrap gap-2 mb-10">
+        @for (type of venueTypes; track type) {
+          <span class="px-3 py-1.5 rounded-full border border-accent-500/25 text-xs font-medium text-accent-400/80">
+            {{ type }}
+          </span>
+        }
+      </div>
+
+      <!-- Testimonial -->
+      <div class="bg-white/5 rounded-2xl p-5 border border-white/8">
+        <p class="text-sm text-blue-200/60 leading-relaxed mb-4">
+          "Found and booked our wedding venue in under 10 minutes. The process was incredibly smooth."
+        </p>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-accent-500/30 flex items-center justify-center">
+            <span class="text-xs font-bold text-accent-300">P</span>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-white">Priya Menon</p>
+            <p class="text-xs text-blue-200/40">Booked The Grand Ballroom, Ernakulam</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="relative">
+      <p class="text-xs text-blue-200/30 uppercase tracking-widest">Trusted by 10,000+ event planners across India</p>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: Form Panel ── -->
+  <div class="flex-1 flex flex-col justify-center min-h-screen bg-white px-6 py-12 lg:px-16 overflow-y-auto">
+
+    <!-- Mobile logo -->
+    <div class="lg:hidden flex items-center gap-2.5 mb-10">
+      <div class="w-8 h-8 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+      </div>
+      <span class="font-heading font-bold text-gray-900">BookMyVenue</span>
+    </div>
+
+    <div class="w-full max-w-sm mx-auto lg:mx-0">
+
+      <!-- Back -->
+      <a routerLink="/" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-8 group">
+        <svg class="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to home
+      </a>
+
+      <!-- Heading -->
+      <div class="mb-8">
+        <h1 class="font-heading text-3xl font-bold text-gray-900 mb-1">Create account</h1>
+        <p class="text-sm text-gray-500">Join BookMyVenue — it's free</p>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="space-y-4">
+
+          <div class="grid grid-cols-2 gap-3">
+            <app-input
+              label="First Name"
+              placeholder="John"
+              formControlName="firstName"
+              [required]="true"
+              [error]="form.controls.firstName.touched && form.controls.firstName.errors ? 'Required' : ''"
+            />
+            <app-input
+              label="Last Name"
+              placeholder="Doe"
+              formControlName="lastName"
+              [required]="true"
+              [error]="form.controls.lastName.touched && form.controls.lastName.errors ? 'Required' : ''"
+            />
+          </div>
+
+          <app-input
+            label="Email Address"
+            type="email"
+            placeholder="you@example.com"
+            formControlName="email"
+            [required]="true"
+            [error]="form.controls.email.touched && form.controls.email.errors ? 'Valid email is required' : ''"
+          />
+
+          <app-input
+            label="Phone Number"
+            type="tel"
+            placeholder="10-digit mobile number"
+            formControlName="phone"
+            [required]="true"
+            [error]="form.controls.phone.touched && form.controls.phone.errors ? 'Valid 10-digit number required' : ''"
+          />
+
+          <app-input
+            label="Password"
+            type="password"
+            placeholder="Min. 8 characters"
+            formControlName="password"
+            [required]="true"
+            [error]="form.controls.password.touched && form.controls.password.errors ? 'Min. 8 characters with uppercase, lowercase, number & special character' : ''"
+          />
+
+          <app-input
+            label="Confirm Password"
+            type="password"
+            placeholder="Re-enter your password"
+            formControlName="confirmPassword"
+            [required]="true"
+            [error]="form.controls.confirmPassword.touched && form.controls.confirmPassword.errors ? 'Passwords do not match' : ''"
+          />
+
+          <!-- Vendor toggle -->
+          <label class="flex items-start gap-3 p-4 rounded-xl border border-gray-200 cursor-pointer hover:border-accent-500/40 hover:bg-amber-50/30 transition-all"
+            [class.border-accent-500]="form.controls.isVendor.value"
+            [class.bg-amber-50]="form.controls.isVendor.value"
+          >
+            <input
+              type="checkbox"
+              formControlName="isVendor"
+              class="mt-0.5 w-4 h-4 accent-accent-500 cursor-pointer shrink-0"
+            />
+            <div>
+              <p class="text-sm font-semibold text-gray-800">Register as a Vendor</p>
+              <p class="text-xs text-gray-500 mt-0.5">List and manage your own venues on BookMyVenue</p>
+            </div>
+          </label>
+
+        </div>
+
+        <div class="mt-6">
+          <app-button
+            label="Create Account"
+            type="submit"
+            [loading]="loading()"
+            [fullWidth]="true"
+            size="lg"
+          />
+        </div>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-gray-500">
+        Already have an account?
+        <a routerLink="/login" class="text-brand-600 font-semibold hover:text-accent-600 transition-colors ml-1">Sign in</a>
+      </p>
+    </div>
+  </div>
+
+</div>

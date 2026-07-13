@@ -1,0 +1,31 @@
+<div>
+  <h1 class="text-2xl font-bold text-gray-900 mb-6">Vendors Management</h1>
+  @if (vendorService.loading()) { <app-loader /> }
+  @else if (vendorService.vendors().length === 0) {
+    <app-empty-state title="No vendors" message="Vendors will appear here once they register." />
+  } @else {
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <table class="w-full text-sm text-left">
+        <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
+          <tr>
+            <th class="px-4 py-3">Name</th>
+            <th class="px-4 py-3">Email</th>
+            <th class="px-4 py-3">Phone</th>
+            <th class="px-4 py-3">Joined</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          @for (vendor of vendorService.vendors(); track vendor.id) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-3 font-medium">{{ vendor.name }}</td>
+              <td class="px-4 py-3 text-gray-600">{{ vendor.email }}</td>
+              <td class="px-4 py-3 text-gray-600">{{ vendor.phone }}</td>
+              <td class="px-4 py-3 text-gray-500">{{ vendor.createdAt | date:'mediumDate' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-pagination [currentPage]="1" [totalPages]="vendorService.totalPages()" (pageChanged)="onPageChange($event)" />
+  }
+</div>

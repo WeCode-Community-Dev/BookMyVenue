@@ -1,0 +1,310 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Authentication and account management APIs"
+    }
+  ],
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register a new account",
+        "description": "Creates a new USER or VENDOR account and sets authentication cookies.",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Registration successful",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or ADMIN registration attempted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email or phone already exists",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/refresh-token": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Refresh JWT tokens",
+        "description": "Generates new authentication cookies using a valid refresh token.",
+        "operationId": "refreshToken",
+        "parameters": [
+          {
+            "name": "refreshToken",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tokens refreshed successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired refresh token",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Logout user",
+        "description": "Clears authentication cookies.",
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "Logout successful"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Authenticate user",
+        "description": "Authenticates a user and sets authentication cookies.",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RegisterRequest": {
+        "type": "object",
+        "description": "User registration request",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name of the user",
+            "example": "Ajay",
+            "minLength": 1
+          },
+          "email": {
+            "type": "string",
+            "description": "Unique email address",
+            "example": "ajay@gmail.com",
+            "minLength": 1
+          },
+          "phone": {
+            "type": "string",
+            "description": "10 digit phone number",
+            "example": 9876543210,
+            "minLength": 1,
+            "pattern": "^[0-9]{10}$"
+          },
+          "password": {
+            "type": "string",
+            "description": "Account password",
+            "example": "password123",
+            "minLength": 1
+          },
+          "role": {
+            "type": "string",
+            "description": "Account role",
+            "enum": [
+              "USER",
+              "VENDOR"
+            ],
+            "example": "USER"
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "password",
+          "phone",
+          "role"
+        ]
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "description": "Standard API error response",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "description": "HTTP status code",
+            "example": 401
+          },
+          "error": {
+            "type": "string",
+            "description": "Error type",
+            "example": "Unauthorized"
+          },
+          "message": {
+            "type": "string",
+            "description": "Detailed error message",
+            "example": "Invalid email or password"
+          },
+          "path": {
+            "type": "string",
+            "description": "Request path",
+            "example": "/api/auth/specific path"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the error",
+            "example": "2026-06-04T01:22:49"
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "description": "Authentication response returned after successful login or registration",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier of the authenticated user",
+            "example": "82b45eec-c37b-4ef5-b5fb-921ab399cb13"
+          },
+          "name": {
+            "type": "string",
+            "description": "Full name of the user",
+            "example": "Ajay"
+          },
+          "email": {
+            "type": "string",
+            "description": "Registered email address",
+            "example": "ajay@gmail.com"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role assigned to the user",
+            "enum": [
+              "USER",
+              "VENDOR",
+              "ADMIN"
+            ],
+            "example": "USER"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "description": "User login request",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Registered email address",
+            "example": "ajay@gmail.com",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "description": "Account password",
+            "example": "password123",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      }
+    }
+  }
+}

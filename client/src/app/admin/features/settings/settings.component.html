@@ -1,0 +1,15 @@
+<div class="max-w-2xl mx-auto">
+  <h1 class="text-2xl font-bold text-gray-900 mb-6">Platform Settings</h1>
+  <div class="bg-white rounded-xl border border-gray-200 p-6">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="space-y-4">
+        <app-input label="Site Name" formControlName="siteName" [required]="true" />
+        <app-input label="Support Email" type="email" formControlName="supportEmail" [required]="true" />
+        <app-input label="Commission Rate (%)" type="number" formControlName="commissionRate" [required]="true" />
+      </div>
+      <div class="mt-6">
+        <app-button label="Save Settings" type="submit" [loading]="saving()" />
+      </div>
+    </form>
+  </div>
+</div>
