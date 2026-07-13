@@ -6,7 +6,6 @@ from app.modules.auth.dependencies import AuthContext, get_current_user
 from app.modules.payment import service, webhooks
 from app.modules.payment.schemas import (
     CreatePaymentRequest,
-    LedgerEntryResponse,
     LedgerListResponse,
     OwnerLedgerStatsResponse,
     PaymentIntentResponse,

@@ -448,9 +448,7 @@ def refund_booking(
         # Set payment_status based on whether full amount was refunded or only partial
         total_paid = booking.amount_paid_paise or 0
         booking.payment_status = (
-            PaymentStatus.refunded
-            if refunded >= total_paid
-            else PaymentStatus.partially_refunded
+            PaymentStatus.refunded if refunded >= total_paid else PaymentStatus.partially_refunded
         )
         venue_name = venue.name if venue else "your venue"
         notifications.notify(

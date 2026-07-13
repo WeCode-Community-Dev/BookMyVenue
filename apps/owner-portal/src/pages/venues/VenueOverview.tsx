@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
 import { Card, Button, Skeleton } from '@venue404/ui'
 import {
-  Users, IndianRupee, CalendarDays, ArrowLeft, Info, Loader2, Tag,
+  IndianRupee, CalendarDays, ArrowLeft, Info, Loader2, Tag,
   FileText, Image as ImageIcon, MapPin, Clock, ShieldCheck, Banknote, ShieldAlert,
   ChevronRight, TrendingUp, Star
 } from 'lucide-react'

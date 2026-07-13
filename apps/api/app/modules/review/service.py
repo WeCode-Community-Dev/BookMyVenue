@@ -8,7 +8,6 @@ from app.core.exceptions import APIException
 from app.modules.admin.models import AdminAction
 from app.modules.booking.models import Booking, BookingStatus
 from app.modules.review.models import VenueReview
-from app.modules.venue.models import Venue
 from app.modules.review.schemas import (
     EligibleBookingsResponse,
     ReviewCreate,
@@ -18,6 +17,7 @@ from app.modules.review.schemas import (
     ReviewSummaryResponse,
     ReviewUpdate,
 )
+from app.modules.venue.models import Venue
 
 
 class ReviewService:
@@ -206,7 +206,8 @@ class ReviewService:
         per_page: int = 10,
     ) -> ReviewListResponse:
         """
-        List all public reviews across all venues owned by a specific owner (paginated and filtered).
+        List all public reviews across all venues owned by a specific owner
+        (paginated and filtered).
         """
         query = (
             db.query(VenueReview)

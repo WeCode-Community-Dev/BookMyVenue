@@ -108,6 +108,7 @@ def list_owner_reviews(
     """
     if not auth.is_owner():
         from app.core.exceptions import ForbiddenError
+
         raise ForbiddenError("Only venue owners can access owner reviews")
 
     return ReviewService.list_owner_reviews(db, auth.user_id, venue_id, rating, page, per_page)

@@ -1,11 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Skeleton, Select } from '@venue404/ui'
-import type { SelectOption } from '@venue404/ui'
 import { Pagination } from '../components/Pagination'
 import {
-  Star, MessageSquare, ChevronRight, TrendingUp, Building2,
+  MessageSquare, ChevronRight, TrendingUp, Building2,
   SlidersHorizontal
 } from 'lucide-react'
 import { createClient, venueEndpoints, reviewsEndpoints } from '@venue404/api-client'
@@ -180,7 +179,7 @@ export default function Reviews() {
 
   const reviews = reviewQueries.data?.items ?? []
   const totalReviews = reviewQueries.data?.total ?? 0
-  const totalPages = reviewQueries.data?.total_pages ?? 1
+  const totalPages = Math.ceil(totalReviews / (reviewQueries.data?.per_page ?? 25)) || 1
   const isLoading = venuesLoading || reviewQueries.isLoading
 
   // Avg rating for current page only

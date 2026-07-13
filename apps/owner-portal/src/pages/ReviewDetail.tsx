@@ -1,4 +1,4 @@
-import { useParams, useLocation, Link, useNavigate } from 'react-router-dom'
+import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Skeleton } from '@venue404/ui'
 import {
