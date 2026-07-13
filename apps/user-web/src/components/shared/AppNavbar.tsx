@@ -6,6 +6,10 @@ import { createClient, notificationEndpoints } from '@venue404/api-client'
 import { useAuth } from '../../lib/AuthContext'
 import { useAuthModal } from '../../lib/AuthModalContext'
 
+// Owner Portal is a separate app/deployment — configurable per environment,
+// falls back to its local dev port so this works out of the box.
+const OWNER_PORTAL_URL = import.meta.env.VITE_OWNER_PORTAL_URL ?? 'http://localhost:5398'
+
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/)
   if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
@@ -48,7 +52,7 @@ function UserMenu({ displayName, onSignOut }: { displayName: string; onSignOut: 
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-ink-800 dark:bg-ink-900">
+        <div className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg dark:border-ink-800 dark:bg-ink-900">
           <div className="border-b border-zinc-100 px-4 py-3 dark:border-ink-800">
             <p className="truncate text-xs font-semibold text-zinc-900 dark:text-zinc-100">{displayName}</p>
           </div>
@@ -83,6 +87,31 @@ function UserMenu({ displayName, onSignOut }: { displayName: string; onSignOut: 
               </svg>
               Profile
             </Link>
+          </div>
+          <div className="border-t border-zinc-100 dark:border-ink-800">
+            <a
+              href={OWNER_PORTAL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-zinc-50 dark:hover:bg-ink-800"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  Become a host
+                </span>
+                <span className="block text-xs leading-snug text-zinc-400">
+                  It's easy to start hosting and earn extra income.
+                </span>
+              </span>
+
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-light text-xl dark:bg-brand/15"
+                aria-hidden="true"
+              >
+                🏡
+              </span>
+            </a>
           </div>
           <div className="border-t border-zinc-100 py-1 dark:border-ink-800">
             <button
