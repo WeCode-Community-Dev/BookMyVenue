@@ -17,6 +17,10 @@ const plusJakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
     title: "BookMyVenue",
     description: "Venue booking platform",
+    icons: {
+        icon: "/icon.png",
+        apple: "/apple-icon.png",
+    },
 };
 
 export default function RootLayout({ children, }: { children: React.ReactNode; }) {

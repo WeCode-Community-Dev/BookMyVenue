@@ -1,22 +1,15 @@
 "use client";
 
-import {
-    ArrowLeft,
-    CheckCircle2,
-    Mail,
-    ShieldCheck,
-} from "lucide-react";
-import {
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from "@/components/ui/dialog/Dialog";
+import { AppText, getText } from "@/lib/language/LanguageHelper";
+import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog/Dialog";
+import { SuccessStepContent } from "./SuccessModal";
+import { useEffect, useRef, useState } from "react";
 
 import { LoginStatus } from "@/lib/Constants";
 import NxtImage from "next/image";
 import googleIcon from "../../../../public/assets/images/login/google-color.svg";
 import { loginStyle } from "./LoginStyle";
-import { useEffect, useRef, useState } from "react";
 import { useAuthService } from "@/features/auth/services/AuthService";
 
 type LoginModalProps = {
@@ -24,22 +17,15 @@ type LoginModalProps = {
     onOpenChange: (open: boolean) => void;
 };
 
-export default function LoginModal({
-    isOpen,
-    onOpenChange,
-}: LoginModalProps) {
-    const {
-        loading,
-        error,
-        requestOtp,
-        verifyOtp,
-        changeEmail,
-        clearError
-    } = useAuthService();
+export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
 
+    const { loading, requestOtp, verifyOtp } = useAuthService();
+    const [
+        error, setError
+    ] = useState<string | null>(null);
 
     const [
-        step, setStep
+        step, setStep 
     ] = useState<LoginStatus>(LoginStatus.LOGIN);
 
     const [
@@ -54,12 +40,12 @@ export default function LoginModal({
     ]);
 
     useEffect(() => {
+        
         if (isOpen) {
-            clearError();
+            setError(null);
             setStep(LoginStatus.LOGIN);
             setEmail("");
             setOtpValues(Array(6).fill(""));
-            changeEmail();
         }
     }, [
         isOpen
@@ -78,13 +64,17 @@ export default function LoginModal({
     const handleContinue = async (evt: React.FormEvent) => {
         evt.preventDefault();
         if (!email) return;
+        setError(null);
         const res = await requestOtp(email);
         if (res.success) {
             setStep(LoginStatus.OTP);
+        } else {
+            setError(res.error || "Failed to send OTP");
         }
     };
 
     const triggerAutoVerify = async (otpString: string) => {
+        setError(null);
         const res = await verifyOtp(email, otpString);
         if (res.success) {
             setStep(LoginStatus.SUCCESS);
@@ -94,6 +84,8 @@ export default function LoginModal({
                 setEmail("");
                 setOtpValues(Array(6).fill(""));
             }, 2000);
+        } else {
+            setError(res.error || "Verification failed");
         }
     };
 
@@ -105,13 +97,15 @@ export default function LoginModal({
     };
 
     const handleGoogleLogin = () => {
+        // window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
         console.log("Google login clicked");
     };
+
 
     const handleOtpChange = (index: number, val: string) => {
         if (val && !/^\d$/.test(val)) return;
 
-        clearError();
+        setError(null);
 
         const newOtpValues = [
             ...otpValues
@@ -130,7 +124,7 @@ export default function LoginModal({
     };
 
     const handleOtpKeyDown = (index: number, evt: React.KeyboardEvent<HTMLInputElement>) => {
-        clearError();
+        setError(null);
         if (evt.key === "Backspace") {
             if (!otpValues[ index ] && index > 0) {
                 const newOtpValues = [
@@ -154,13 +148,13 @@ export default function LoginModal({
         const pastedData = evt.clipboardData.getData("text").slice(0, 6);
         if (!/^\d+$/.test(pastedData)) return;
 
-        clearError();
+        setError(null);
 
         const newOtpValues = [
             ...otpValues
         ];
-        for (let i = 0; i < pastedData.length; i++) {
-            newOtpValues[ i ] = pastedData[ i ];
+        for (let index = 0; index < pastedData.length; index++) {
+            newOtpValues[ index ] = pastedData[ index ];
         }
         setOtpValues(newOtpValues);
 
@@ -175,7 +169,7 @@ export default function LoginModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className={loginStyle.dialogContent}>
+            <DialogContent className={loginStyle.dialogContent} showCloseButton={false}>
 
                 {/* LOGIN STEP */}
                 {step === LoginStatus.LOGIN && (
@@ -188,15 +182,15 @@ export default function LoginModal({
                         </div>
 
                         <DialogTitle className={loginStyle.title}>
-                            Welcome Back
+                            <AppText textName="WELCOME_BACK" textModule="LABEL" />
                         </DialogTitle>
 
                         <p className={loginStyle.subtitle}>
-                            Login or sign in to continue
+                            <AppText textName="LOGIN_OR_SIGNIN" textModule="LABEL" />
                         </p>
 
                         {error && (
-                            <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-600 border border-red-100 text-center font-medium">
+                            <div className={loginStyle.errorContainer}>
                                 {error}
                             </div>
                         )}
@@ -211,19 +205,19 @@ export default function LoginModal({
                                 <NxtImage src={googleIcon} alt="Google"
                                     className={loginStyle.googleIcon}
                                 />
-                                Continue with Google
+                                <AppText textName="CONTINUE_GOOGLE" textModule="BUTTON" />
                             </button>
 
                             <div className={loginStyle.separatorWrapper}>
                                 <div className={loginStyle.separatorLine} />
                                 <span className={loginStyle.separatorText}>
-                                    OR
+                                    <AppText textName="OR" textModule="LABEL" />
                                 </span>
                                 <div className={loginStyle.separatorLine} />
                             </div>
 
                             <p className={loginStyle.formPrompt}>
-                                Enter your email address
+                                <AppText textName="ENTER_EMAIL_PROMPT" textModule="LABEL" />
                             </p>
 
                             <div className={loginStyle.inputWrapper}>
@@ -236,7 +230,7 @@ export default function LoginModal({
                                     onChange={(evt) => {
                                         return setEmail(evt.target.value);
                                     }}
-                                    placeholder="Email address"
+                                    placeholder={getText("EMAIL_ADDRESS", "INPUT_LABELS")}
                                     className={loginStyle.inputField}
                                     disabled={loading}
                                 />
@@ -247,12 +241,19 @@ export default function LoginModal({
                                 className={loginStyle.primaryButton}
                                 disabled={loading}
                             >
-                                {loading ? "Sending..." : "Continue"}
+                                {loading ?
+                                    (
+                                        <AppText textName="SENDING" textModule="BUTTON" />
+                                    )
+                                    :
+                                    (
+                                        <AppText textName="CONTINUE" textModule="BUTTON" />
+                                    )}
                             </button>
                         </form>
 
                         <p className={loginStyle.disclaimer}>
-                            We&apos;ll send a one-time password (OTP)
+                            <AppText textName="OTP_DISCLAIMER" textModule="LABEL" />
                         </p>
 
                     </div>
@@ -265,7 +266,6 @@ export default function LoginModal({
                         <button
                             type="button"
                             onClick={() => {
-                                changeEmail();
                                 setStep(LoginStatus.LOGIN);
                             }}
                             className={loginStyle.backButton}
@@ -280,15 +280,15 @@ export default function LoginModal({
                         </div>
 
                         <DialogTitle className={loginStyle.otpTitle}>
-                            Enter OTP
+                            <AppText textName="ENTER_OTP" textModule="LABEL" />
                         </DialogTitle>
 
                         <p className={loginStyle.subtitle}>
-                            We sent a 6-digit OTP to <span className="font-semibold">{email}</span>
+                            <AppText textName="SENT_OTP" textModule="LABEL" append={{ email }} />
                         </p>
 
                         {error && (
-                            <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-600 border border-red-100 text-center font-medium">
+                            <div className={loginStyle.errorContainer}>
                                 {error}
                             </div>
                         )}
@@ -306,10 +306,10 @@ export default function LoginModal({
                                             }}
                                             value={otpValues[ index ]}
                                             onChange={(evt) => {
-                                                return handleOtpChange(index, evt.target.value); 
+                                                return handleOtpChange(index, evt.target.value);
                                             }}
                                             onKeyDown={(evt) => {
-                                                return handleOtpKeyDown(index, evt); 
+                                                return handleOtpKeyDown(index, evt);
                                             }}
                                             onPaste={handleOtpPaste}
                                             maxLength={1}
@@ -328,7 +328,13 @@ export default function LoginModal({
                             }}
                             className={loginStyle.resendOtp}
                         >
-                            {loading ? "Sending..." : "Resend OTP"}
+                            {loading
+                                ? (
+                                    <AppText textName="SENDING" textModule="BUTTON" />
+                                )
+                                : (
+                                    <AppText textName="RESEND_OTP" textModule="BUTTON" />
+                                )}
                         </p>
 
                     </div>
@@ -336,31 +342,7 @@ export default function LoginModal({
 
                 {/* SUCCESS STEP */}
                 {step === LoginStatus.SUCCESS && (
-                    <div className={loginStyle.successStep}>
-
-                        <div className="flex justify-center">
-                            <div className={loginStyle.successIconContainer}>
-                                <CheckCircle2 className={loginStyle.successIcon} />
-                            </div>
-                        </div>
-
-                        <DialogTitle className={loginStyle.successTitle}>
-                            Login Successful!
-                        </DialogTitle>
-
-                        <p className={loginStyle.successSubtitle}>
-                            Welcome back 👋
-                        </p>
-
-                        <div className={loginStyle.progressBarContainer}>
-                            <div className={loginStyle.progressBarFill} />
-                        </div>
-
-                        <p className={loginStyle.redirectText}>
-                            Redirecting...
-                        </p>
-
-                    </div>
+                    <SuccessStepContent titleTextName="LOGIN_SUCCESSFUL" />
                 )}
 
             </DialogContent>

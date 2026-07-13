@@ -1,17 +1,34 @@
 "use client";
 
-import { useState } from "react";
-import { CalendarDays, MapPin, PartyPopper, ShieldCheck } from "lucide-react";
 import { AppText, getText } from "@/lib/language/LanguageHelper";
-import { useRouter } from "next/navigation";
+import { CalendarDays, MapPin, PartyPopper, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
 
+import LoginModal from "@/components/global/login/Login";
 import NextImage from "next/image";
+import SuccessModal from "@/components/global/login/SuccessModal";
 import { authStyle } from "../styles/AuthStyle";
+import googleIcon from "../../../../public/assets/images/login/google-color.svg";
+import { selectIsAuthenticated } from "@/features/auth/AuthSlice";
 import { useAuthService } from "../services/AuthService";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 
 export default function SignupPage() {
     const router = useRouter();
-    const { submitRegistration } = useAuthService();
+    const { submitRegistration, loading } = useAuthService();
+    const [
+        error, setError
+    ] = useState<string | null>(null);
+    const isAuthenticated = useSelector(selectIsAuthenticated);
+
+    const [
+        loginOpen, setLoginOpen
+    ] = useState(false);
+
+    const [
+        showSuccessModal, setShowSuccessModal
+    ] = useState(false);
 
     const [
         form, setForm
@@ -22,11 +39,20 @@ export default function SignupPage() {
         password: "",
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    useEffect(() => {
+        if (isAuthenticated) {
+            router.push("/venues");
+        }
+    }, [
+        isAuthenticated, router
+    ]);
+
+    const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+        setError(null);
         setForm((prev) => {
             return {
                 ...prev,
-                [ e.target.name ]: e.target.value,
+                [ evt.target.name ]: evt.target.value,
             }; 
         });
     };
@@ -35,6 +61,7 @@ export default function SignupPage() {
         evt: React.FormEvent<HTMLFormElement>
     ) => {
         evt.preventDefault();
+        setError(null);
 
         const result = await submitRegistration(
             form.name,
@@ -45,18 +72,32 @@ export default function SignupPage() {
 
         if (result.success) {
             console.log("Registration successful!");
+            setShowSuccessModal(true);
 
             setTimeout(() => {
+                setShowSuccessModal(false);
                 router.push("/venues");
-            }, 1500);
+            }, 1000);
 
         } else {
             console.log("Registration failed");
+            setError(result.error || "Registration failed");
         }
+    };
+
+    const handleGoogleLogin = () => {
+        console.log("Google login clicked");
     };
 
     return (
         <div className={authStyle.pageWrapper}>
+            <LoginModal isOpen={loginOpen} onOpenChange={setLoginOpen} />
+
+            <SuccessModal
+                isOpen={showSuccessModal}
+                onOpenChange={setShowSuccessModal}
+                titleTextName="REGISTRATION_SUCCESSFUL"
+            />
             <div className={authStyle.container}>
                 {/* LEFT SECTION */}
                 <div className={authStyle.leftSection}>
@@ -67,7 +108,7 @@ export default function SignupPage() {
                             width={280}
                             height={80}
                             priority
-                            className="mb-6 h-auto w-[180px] md:w-[220px]"
+                            className="mb-6 h-auto w-45 md:w-55"
                         />
                         <h1 className={authStyle.headingClass}>
                             <AppText textName="EVERY_CELEBRATION" textModule="LABEL" />
@@ -126,7 +167,12 @@ export default function SignupPage() {
 
                         <div className={authStyle.headerWrapper}>
                             <div className={authStyle.avatarWrapper}>
-                                <div className={authStyle.avatar} />
+                                <NextImage
+                                    src="/icon.png"
+                                    alt="App Icon"
+                                    width={40}
+                                    height={40}
+                                />
                             </div>
 
                             <h2 className={authStyle.title}>
@@ -136,6 +182,13 @@ export default function SignupPage() {
                                 <AppText textName="START_DISCOVERING" textModule="LABEL" />
                             </p>
                         </div>
+
+                        {error && (
+                            <div className={authStyle.errorContainer}>
+                                {error}
+                            </div>
+                        )}
+
                         <form className={authStyle.form} onSubmit={handleRegistration}>
                             <input
                                 name="name"
@@ -143,6 +196,7 @@ export default function SignupPage() {
                                 onChange={handleChange}
                                 className={authStyle.input}
                                 placeholder={getText("FULL_NAME", "INPUT_LABELS")}
+                                disabled={loading}
                             />
 
                             <input
@@ -151,6 +205,7 @@ export default function SignupPage() {
                                 onChange={handleChange}
                                 className={authStyle.input}
                                 placeholder={getText("EMAIL_ADDRESS", "INPUT_LABELS")}
+                                disabled={loading}
                             />
 
                             <input
@@ -159,6 +214,7 @@ export default function SignupPage() {
                                 onChange={handleChange}
                                 className={authStyle.input}
                                 placeholder={getText("MOBILE_NUMBER", "INPUT_LABELS")}
+                                disabled={loading}
                             />
 
                             <input
@@ -168,9 +224,20 @@ export default function SignupPage() {
                                 onChange={handleChange}
                                 className={authStyle.input}
                                 placeholder={getText("PASSWORD", "INPUT_LABELS")}
+                                disabled={loading}
                             />
-                            <button type="submit" className={authStyle.buttonPrimary}>
-                                <AppText textName="CREATE_ACCOUNT" textModule="BUTTON" />
+                            <button
+                                type="submit"
+                                className={authStyle.buttonPrimary}
+                                disabled={loading}
+                            >
+                                {loading
+                                    ? (
+                                        <AppText textName="SENDING" textModule="BUTTON" />
+                                    )
+                                    : (
+                                        <AppText textName="CREATE_ACCOUNT" textModule="BUTTON" />
+                                    )}
                             </button>
                         </form>
 
@@ -182,7 +249,17 @@ export default function SignupPage() {
                             <div className={authStyle.dividerLine} />
                         </div>
 
-                        <button className={authStyle.googleButton}>
+                        <button
+                            type="button"
+                            onClick={handleGoogleLogin}
+                            className={`${authStyle.googleButton} flex items-center justify-center gap-3`}
+                        >
+                            <NextImage
+                                src={googleIcon}
+                                alt="Google"
+                                width={20}
+                                height={20}
+                            />
                             <AppText textName="CONTINUE_GOOGLE" textModule="BUTTON" />
                         </button>
 
@@ -190,7 +267,13 @@ export default function SignupPage() {
                             <span>
                                 <AppText textName="ALREADY_HAVE_ACCOUNT" textModule="LABEL" />
                             </span>
-                            <button className={authStyle.loginButton} type="button">
+                            <button
+                                className={authStyle.loginButton}
+                                type="button"
+                                onClick={() => {
+                                    setLoginOpen(true);
+                                }}
+                            >
                                 <AppText textName="SIGN_IN" textModule="BUTTON" />
                             </button>
                         </div>

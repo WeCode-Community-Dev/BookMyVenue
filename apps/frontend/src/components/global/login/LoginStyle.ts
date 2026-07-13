@@ -17,6 +17,19 @@ export const loginStyle = {
 
     successStep: clsx("p-10", "text-center"),
 
+    errorContainer: clsx(
+        "mt-4",
+        "rounded-xl",
+        "bg-red-50",
+        "p-3",
+        "text-sm",
+        "text-red-600",
+        "border",
+        "border-red-100",
+        "text-center",
+        "font-medium"
+    ),
+
     iconContainer: clsx(
         "flex",
         "h-20",
