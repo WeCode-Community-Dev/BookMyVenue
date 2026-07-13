@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+
 import { Injectable } from '@nestjs/common';
 import Razorpay from 'razorpay';
 
@@ -37,6 +39,15 @@ export class RazorpayService {
     console.log(razorpayOrderId);
     console.log(razorpayPaymentId);
     console.log(razorpaySignature);
+
+    const body = `${razorpayOrderId}|${razorpayPaymentId}`;
+
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+      .update(body)
+      .digest('hex');
+
+    return expectedSignature === razorpaySignature;
   }
 
   refundPayment(razorpayPaymentId: string, amount?: number) {
