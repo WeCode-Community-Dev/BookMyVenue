@@ -200,11 +200,13 @@ class ReviewService:
     def list_owner_reviews(
         db: Session,
         owner_id: UUID,
+        venue_id: str | None = None,
+        rating: int | None = None,
         page: int = 1,
         per_page: int = 10,
     ) -> ReviewListResponse:
         """
-        List all public reviews across all venues owned by a specific owner (paginated).
+        List all public reviews across all venues owned by a specific owner (paginated and filtered).
         """
         query = (
             db.query(VenueReview)
@@ -215,8 +217,15 @@ class ReviewService:
                 VenueReview.deleted_at.is_(None),
                 VenueReview.is_hidden.is_(False),
             )
-            .order_by(desc(VenueReview.created_at))
         )
+
+        if venue_id and venue_id != "all":
+            query = query.filter(VenueReview.venue_id == venue_id)
+
+        if rating:
+            query = query.filter(VenueReview.rating == rating)
+
+        query = query.order_by(desc(VenueReview.created_at))
 
         total = query.count()
         offset = (page - 1) * per_page

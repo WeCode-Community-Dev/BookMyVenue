@@ -7,6 +7,7 @@ from app.modules.payment import service, webhooks
 from app.modules.payment.schemas import (
     CreatePaymentRequest,
     LedgerEntryResponse,
+    LedgerListResponse,
     OwnerLedgerStatsResponse,
     PaymentIntentResponse,
     PaymentResponse,
@@ -25,13 +26,15 @@ def get_owner_stats(
     return service.get_owner_ledger_stats(db, user)
 
 
-@router.get("/owner/ledger", response_model=list[LedgerEntryResponse])
+@router.get("/owner/ledger", response_model=LedgerListResponse)
 def get_owner_ledger(
     entry_type: str | None = None,
+    page: int = 1,
+    per_page: int = 20,
     user: AuthContext = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return service.list_owner_ledger_entries(db, user, entry_type)
+    return service.list_owner_ledger_entries(db, user, entry_type, page, per_page)
 
 
 @router.post("/", response_model=PaymentIntentResponse, status_code=201)

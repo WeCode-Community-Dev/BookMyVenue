@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Skeleton, Select } from '@venue404/ui'
 import type { SelectOption } from '@venue404/ui'
+import { Pagination } from '../components/Pagination'
 import {
   Star, MessageSquare, ChevronRight, TrendingUp, Building2,
   SlidersHorizontal
@@ -149,6 +150,7 @@ export default function Reviews() {
   const navigate = useNavigate()
   const [venueFilter, setVenueFilter] = useState<string>('all')
   const [ratingFilter, setRatingFilter] = useState<number | 'all'>('all')
+  const [page, setPage] = useState(1)
 
   // Fetch all owner venues (lightweight options for the dropdown, excludes drafts)
   const { data: venueOptions, isLoading: venuesLoading } = useQuery({
@@ -159,34 +161,31 @@ export default function Reviews() {
 
   // Fetch all reviews for this owner in one single API call!
   const reviewQueries = useQuery({
-    queryKey: ['all-owner-reviews'],
+    queryKey: ['all-owner-reviews', venueFilter, ratingFilter, page],
     queryFn: async () => {
-      const resp = await reviewsEndpoints(createClient()).getOwnerReviews(1, 100)
-      return resp.items.map(r => ({
+      const resp = await reviewsEndpoints(createClient()).getOwnerReviews({
+        venue_id: venueFilter !== 'all' ? venueFilter : undefined,
+        rating: ratingFilter !== 'all' ? ratingFilter : undefined,
+        page,
+        per_page: 25
+      })
+      const items = resp.items.map(r => ({
         ...r,
         venue_name_display: r.venue_name ?? 'Unknown Venue',
         venue_id_display: r.venue_id,
       })) as ReviewWithVenue[]
+      return { ...resp, items }
     },
-    staleTime: 5 * 60 * 1000,
   })
 
-  const allReviews: ReviewWithVenue[] = reviewQueries.data ?? []
+  const reviews = reviewQueries.data?.items ?? []
+  const totalReviews = reviewQueries.data?.total ?? 0
+  const totalPages = reviewQueries.data?.total_pages ?? 1
   const isLoading = venuesLoading || reviewQueries.isLoading
 
-  // Filtered reviews
-  const filtered = useMemo(() => {
-    return allReviews.filter(r => {
-      if (venueFilter !== 'all' && r.venue_id_display !== venueFilter) return false
-      if (ratingFilter !== 'all' && r.rating !== ratingFilter) return false
-      return true
-    })
-  }, [allReviews, venueFilter, ratingFilter])
-
-  // Summary stats
-  const totalReviews = allReviews.length
-  const avgRating = totalReviews > 0
-    ? allReviews.reduce((s, r) => s + r.rating, 0) / totalReviews
+  // Avg rating for current page only
+  const avgRating = reviews.length > 0
+    ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
     : null
 
   const isFiltered = venueFilter !== 'all' || ratingFilter !== 'all'
@@ -223,7 +222,7 @@ export default function Reviews() {
           {isLoading
             ? <Skeleton className="h-7 w-12 mt-1" />
             : <p className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mt-1 tabular-nums">
-                {allReviews.filter(r => r.rating === 5).length}
+                {reviews.filter(r => r.rating === 5).length}
               </p>}
         </div>
         {/* Venues reviewed */}
@@ -232,7 +231,7 @@ export default function Reviews() {
           {isLoading
             ? <Skeleton className="h-7 w-12 mt-1" />
             : <p className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mt-1 tabular-nums">
-                {new Set(allReviews.map(r => r.venue_id_display)).size}
+                {new Set(reviews.map(r => r.venue_id_display)).size}
               </p>}
         </div>
       </div>
@@ -247,7 +246,10 @@ export default function Reviews() {
         {/* Venue filter */}
         <Select
           value={venueFilter}
-          onChange={setVenueFilter}
+          onChange={v => {
+            setVenueFilter(v)
+            setPage(1)
+          }}
           placeholder="All Venues"
           className="w-48"
           options={[
@@ -259,7 +261,10 @@ export default function Reviews() {
         {/* Rating filter */}
         <Select
           value={String(ratingFilter)}
-          onChange={v => setRatingFilter(v === 'all' ? 'all' : Number(v))}
+          onChange={v => {
+            setRatingFilter(v === 'all' ? 'all' : Number(v))
+            setPage(1)
+          }}
           placeholder="All Ratings"
           className="w-40"
           options={[
@@ -274,14 +279,14 @@ export default function Reviews() {
 
         {isFiltered && (
           <button
-            onClick={() => { setVenueFilter('all'); setRatingFilter('all') }}
+            onClick={() => { setVenueFilter('all'); setRatingFilter('all'); setPage(1) }}
             className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 underline underline-offset-2 transition-colors"
           >
             Clear filters
           </button>
         )}
         <span className="ml-auto text-xs text-zinc-400 dark:text-zinc-500 font-medium">
-          {filtered.length} {filtered.length === 1 ? 'review' : 'reviews'}
+          {totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}
         </span>
       </div>
 
@@ -290,11 +295,11 @@ export default function Reviews() {
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => <ReviewSkeleton key={i} />)}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : reviews.length === 0 ? (
         <EmptyState filtered={isFiltered} />
       ) : (
         <div className="space-y-3">
-          {filtered.map(review => (
+          {reviews.map(review => (
             <ReviewRow
               key={review.id}
               review={review}
@@ -304,6 +309,15 @@ export default function Reviews() {
           ))}
         </div>
       )}
+
+      {/* Pagination Controls */}
+      <Pagination
+        page={page}
+        perPage={25}
+        total={reviewQueries.data?.total || 0}
+        totalPages={totalPages}
+        setPage={setPage}
+      />
     </div>
   )
 }

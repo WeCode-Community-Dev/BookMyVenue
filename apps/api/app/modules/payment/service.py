@@ -45,6 +45,7 @@ from app.modules.payment.models import (
 )
 from app.modules.payment.schemas import (
     LedgerEntryResponse,
+    LedgerListResponse,
     OwnerLedgerStatsResponse,
     PaymentIntentResponse,
     PaymentResponse,
@@ -579,8 +580,12 @@ def get_owner_ledger_stats(db: Session, current_user: AuthContext) -> OwnerLedge
 
 
 def list_owner_ledger_entries(
-    db: Session, current_user: AuthContext, entry_type: str | None = None
-) -> list[LedgerEntryResponse]:
+    db: Session,
+    current_user: AuthContext,
+    entry_type: str | None = None,
+    page: int = 1,
+    per_page: int = 20,
+) -> LedgerListResponse:
     if not current_user.is_owner():
         raise ForbiddenError("Must be a venue owner")
 
@@ -594,8 +599,11 @@ def list_owner_ledger_entries(
     if entry_type and entry_type != "all":
         query = query.filter(LedgerEntry.entry_type == entry_type)
 
+    total = query.count()
+    total_pages = (total + per_page - 1) // per_page
+
     query = query.order_by(LedgerEntry.created_at.desc())
-    results = query.all()
+    results = query.offset((page - 1) * per_page).limit(per_page).all()
 
     responses = []
     for ledger, venue, profile in results:
@@ -613,7 +621,13 @@ def list_owner_ledger_entries(
                 created_at=ledger.created_at.isoformat(),
             )
         )
-    return responses
+    return LedgerListResponse(
+        items=responses,
+        total=total,
+        page=page,
+        page_size=per_page,
+        total_pages=total_pages,
+    )
 
 
 # --------------------------------------------------------------------------- #

@@ -96,13 +96,21 @@ def get_eligible_booking_ids(
 
 @router.get("/owner/reviews", response_model=ReviewListResponse)
 def list_owner_reviews(
+    venue_id: str | None = None,
+    rating: int | None = None,
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
     auth: AuthContext = Depends(require_auth),
     db: Session = Depends(get_db),
 ):
-    """List all reviews across all venues for the logged-in owner."""
-    return ReviewService.list_owner_reviews(db, auth.user_id, page, per_page)
+    """
+    Get paginated and filtered reviews across all venues for the authenticated owner.
+    """
+    if not auth.is_owner():
+        from app.core.exceptions import ForbiddenError
+        raise ForbiddenError("Only venue owners can access owner reviews")
+
+    return ReviewService.list_owner_reviews(db, auth.user_id, venue_id, rating, page, per_page)
 
 
 # ────────────────────────────────────────────────────────────────

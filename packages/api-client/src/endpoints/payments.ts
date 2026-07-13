@@ -50,6 +50,14 @@ export type LedgerEntry = {
   created_at: string
 }
 
+export type LedgerListResponse = {
+  items: LedgerEntry[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
 export const paymentEndpoints = (client: ReturnType<typeof createClient>) => ({
   /** Create a Stripe PaymentIntent for a booking's token advance, balance, or full amount. */
   createPaymentIntent: (bookingId: string, params: CreatePaymentIntentRequest) =>
@@ -64,6 +72,12 @@ export const paymentEndpoints = (client: ReturnType<typeof createClient>) => ({
   getOwnerStats: () =>
     client.get<OwnerLedgerStats>('/api/payments/owner/stats'),
   /** Get ledger entries for the owner */
-  getOwnerLedger: (entryType?: string) =>
-    client.get<LedgerEntry[]>(`/api/payments/owner/ledger${entryType ? `?entry_type=${entryType}` : ''}`),
+  getOwnerLedger: (params?: { entry_type?: string, page?: number, per_page?: number }) => {
+    const qs = new URLSearchParams()
+    if (params?.entry_type) qs.append('entry_type', params.entry_type)
+    if (params?.page) qs.append('page', params.page.toString())
+    if (params?.per_page) qs.append('per_page', params.per_page.toString())
+    const qsStr = qs.toString()
+    return client.get<LedgerListResponse>(`/api/payments/owner/ledger${qsStr ? `?${qsStr}` : ''}`)
+  },
 })

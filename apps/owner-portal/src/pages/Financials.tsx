@@ -5,6 +5,7 @@ import { createClient } from '@venue404/api-client'
 import { paymentEndpoints } from '@venue404/api-client/src/endpoints/payments'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { Pagination } from '../components/Pagination'
 
 function formatDateTime(isoString: string): string {
   if (!isoString) return '—'
@@ -24,6 +25,7 @@ const CELL = 'px-4 py-4 text-sm text-zinc-700 dark:text-zinc-300 align-middle'
 
 export default function Financials() {
   const [tab, setTab] = useState('all')
+  const [page, setPage] = useState(1)
 
   const { data: stats = {
     gross_volume_paise: 0,
@@ -47,14 +49,17 @@ export default function Financials() {
     }
   })
 
-  const { data: entries = [], isLoading: loadingLedger } = useQuery({
-    queryKey: ['financial-ledger', tab],
+  const { data: ledgerResponse, isLoading: loadingLedger } = useQuery({
+    queryKey: ['financial-ledger', tab, page],
     queryFn: async () => {
       const apiTab = tab === 'all' ? undefined : tab
-      const data = await paymentEndpoints(createClient()).getOwnerLedger(apiTab)
-      return data || []
+      const data = await paymentEndpoints(createClient()).getOwnerLedger({ entry_type: apiTab, page, per_page: 25 })
+      return data
     }
   })
+
+  const entries = ledgerResponse?.items || []
+  const totalPages = ledgerResponse?.total_pages || 1
 
   const TABS = [
     { id: 'all', label: 'All Transactions' },
@@ -152,7 +157,10 @@ export default function Financials() {
             {TABS.map(t => (
               <button
                 key={t.id}
-                onClick={() => setTab(t.id)}
+                onClick={() => {
+              setTab(t.id)
+              setPage(1)
+            }}
                 className={`flex-1 whitespace-nowrap py-3 border-b-2 font-medium text-sm transition-all ${
                   tab === t.id
                     ? 'border-brand-500 text-brand-600'
@@ -277,6 +285,14 @@ export default function Financials() {
                 })}
                 </tbody>
             </table>
+            {/* Pagination Controls */}
+            <Pagination
+              page={page}
+              perPage={25}
+              total={ledgerResponse?.total || 0}
+              totalPages={totalPages}
+              setPage={setPage}
+            />
           </div>
         )}
       </div>

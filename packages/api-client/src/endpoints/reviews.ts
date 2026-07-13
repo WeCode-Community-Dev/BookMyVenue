@@ -80,11 +80,14 @@ export function reviewsEndpoints(client: ReturnType<typeof createClient>) {
     /**
      * Get all reviews across all venues for the logged-in owner
      */
-    getOwnerReviews: async (
-      page: number = 1,
-      perPage: number = 100
-    ): Promise<ReviewListResponse> => {
-      return client.get(`/api/owner/reviews?page=${page}&per_page=${perPage}`)
+    getOwnerReviews: async (params?: { venue_id?: string, rating?: number | 'all', page?: number, per_page?: number }): Promise<ReviewListResponse> => {
+      const qs = new URLSearchParams()
+      if (params?.venue_id && params.venue_id !== 'all') qs.append('venue_id', params.venue_id)
+      if (params?.rating && params.rating !== 'all') qs.append('rating', params.rating.toString())
+      if (params?.page) qs.append('page', params.page.toString())
+      if (params?.per_page) qs.append('per_page', params.per_page.toString())
+      const qsStr = qs.toString()
+      return client.get(`/api/owner/reviews${qsStr ? `?${qsStr}` : ''}`)
     },
 
     /**

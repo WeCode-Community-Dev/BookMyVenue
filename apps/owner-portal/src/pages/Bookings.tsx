@@ -6,6 +6,7 @@ import { Search, Calendar, Users, ChevronDown } from 'lucide-react'
 import { createClient, venueEndpoints, bookingEndpoints } from '@venue404/api-client'
 import type { Booking } from '@venue404/api-client'
 import { useQuery } from '@tanstack/react-query'
+import { Pagination } from '../components/Pagination'
 
 function timeAgo(dateStr: string): string {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
@@ -54,6 +55,7 @@ export default function Bookings() {
   const [search, setSearch] = useState('')
   const [selectedVenue, setSelectedVenue] = useState(searchParams.get('venue_id') || 'all')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [page, setPage] = useState(1)
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
 
@@ -61,8 +63,9 @@ export default function Bookings() {
     const qTab = searchParams.get('tab')
     if (qTab && qTab !== tab) {
       setTab(qTab)
+      setPage(1)
     }
-  }, [searchParams])
+  }, [searchParams, tab])
 
   useEffect(() => {
     setPortalTarget(document.getElementById('topbar-portal-target'))
@@ -70,7 +73,10 @@ export default function Bookings() {
 
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
-    searchTimeout.current = setTimeout(() => setDebouncedSearch(search), 500)
+    searchTimeout.current = setTimeout(() => {
+      setDebouncedSearch(search)
+      setPage(1)
+    }, 500)
     return () => { if (searchTimeout.current) clearTimeout(searchTimeout.current) }
   }, [search])
 
@@ -82,17 +88,22 @@ export default function Bookings() {
     }
   })
 
-  const { data: bookings = [], isLoading: loading } = useQuery({
-    queryKey: ['owner-bookings', tab, selectedVenue, debouncedSearch],
+  const { data: bookingResponse, isLoading: loading } = useQuery({
+    queryKey: ['owner-bookings', tab, selectedVenue, debouncedSearch, page],
     queryFn: async () => {
       const data = await bookingEndpoints(createClient()).getOwnerBookings({
         tab: tab !== 'all' ? tab : undefined,
         venue_id: selectedVenue !== 'all' ? selectedVenue : undefined,
-        search: debouncedSearch || undefined
+        search: debouncedSearch || undefined,
+        page,
+        per_page: 25
       })
-      return data || []
+      return data
     }
   })
+
+  const bookings = bookingResponse?.items || []
+  const totalPages = bookingResponse?.total_pages || 1
 
   const TABS = [
     { id: 'all', label: 'All Bookings' },
@@ -142,7 +153,10 @@ export default function Bookings() {
         >
           <button
             className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-ink-800 transition-colors ${selectedVenue === 'all' ? 'bg-brand-50 text-brand-700 font-medium' : 'text-zinc-700 dark:text-zinc-300'}`}
-            onClick={() => setSelectedVenue('all')}
+            onClick={() => {
+              setSelectedVenue('all')
+              setPage(1)
+            }}
           >
             All Venues
           </button>
@@ -150,7 +164,10 @@ export default function Bookings() {
             <button
               key={v.id}
               className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-ink-800 transition-colors ${selectedVenue === v.id ? 'bg-brand-50 text-brand-700 font-medium' : 'text-zinc-700 dark:text-zinc-300'}`}
-              onClick={() => setSelectedVenue(v.id)}
+              onClick={() => {
+                setSelectedVenue(v.id)
+                setPage(1)
+              }}
             >
               {v.name}
             </button>
@@ -306,6 +323,14 @@ export default function Bookings() {
               ))}
             </tbody>
           </table>
+          {/* Pagination Controls */}
+          <Pagination
+            page={page}
+            perPage={25}
+            total={bookingResponse?.total || 0}
+            totalPages={totalPages}
+            setPage={setPage}
+          />
         </div>
       )}
     </div>
