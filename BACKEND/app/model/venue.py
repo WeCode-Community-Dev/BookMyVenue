@@ -30,6 +30,7 @@ class Venue(Base):
     is_available = Column(Boolean, nullable=False, default=False)
     not_available_reason = Column(Text, nullable=True, default="")
     is_approved = Column(Boolean, nullable=False, default=False)
+    is_approved_status = Column(String(50), nullable=False, default="pending") 
     rejected_reason = Column(Text, nullable=True, default="")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())

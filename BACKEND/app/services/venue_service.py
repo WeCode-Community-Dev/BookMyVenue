@@ -8,6 +8,7 @@ from app.model.venue_availability import VenueAvailability
 from typing import List
 from sqlalchemy import or_
 from app.services.email_service import send_email
+from typing import Optional
 
 def get_venues(
     db: Session,
@@ -280,9 +281,15 @@ def update_venue_image(
         .filter(VenueImages.id == image_id)
         .first()
     )
-    print(new_image_url, "new_image_url")
+
+    venue = db.query(Venue).filter(Venue.id == image.venue_id).first()
+
     if not image:
         raise Exception("Image not found")
+
+    if venue.is_approved_status == "rejected":
+        venue.is_approved_status = "pending"
+        venue.rejected_reason = None
 
     image.image_url = new_image_url[0]["url"]
     db.commit()
@@ -319,6 +326,7 @@ def update_venue_approval_status(
 
     if status.lower() == "approved":
         venue.is_approved = True
+        venue.is_approved_status = "approved"
 
         send_email(
             to_email=email_id.email,
@@ -329,6 +337,7 @@ def update_venue_approval_status(
     elif status.lower() == "rejected":
         venue.is_approved = False
         venue.rejected_reason = reason
+        venue.is_approved_status = "rejected"
 
         send_email(
             to_email=email_id.email,
@@ -402,6 +411,10 @@ def edit_venue(
     if not venue:
         raise Exception("Venue not found")
 
+    if venue.is_approved_status == "rejected":
+        venue.is_approved_status = "pending"
+        venue.rejected_reason = None
+
     if venue_name is not None:
         venue.venue_name = venue_name
 
@@ -425,12 +438,12 @@ def edit_venue(
 def edit_venue_amenities(
     db: Session,
     venue_id: int,
-    wifi: bool,
-    kitchen: bool,
-    parking: bool,
-    ac: bool,
-    wheel_chair: bool,
-    av_equipements: bool,
+    wifi: Optional[bool] = None,
+    kitchen: Optional[bool] = None,
+    parking: Optional[bool] = None,
+    ac: Optional[bool] = None,
+    wheel_chair: Optional[bool] = None,
+    av_equipements: Optional[bool] = None,
 ):
     
     amenities = (
@@ -439,8 +452,14 @@ def edit_venue_amenities(
         .first()
     )
 
+    venue = db.query(Venue).filter(Venue.id == venue_id).first()
+
     if not amenities:
         raise Exception("Amenities not found")
+
+    if venue.is_approved_status == "rejected":
+        venue.is_approved_status = "pending"
+        venue.rejected_reason = None
 
     if wifi is not None:
         amenities.wifi = wifi
@@ -623,8 +642,14 @@ def update_venue_availability(
         .first()
     )
 
+    venue = db.query(Venue).filter(Venue.id == venue_id).first()
+
     if not availability:
         raise Exception("Venue availability not found")
+
+    if venue.is_approved_status == "rejected":
+        venue.is_approved_status = "pending"
+        venue.rejected_reason = None
 
     if booking_types is not None:
         availability.booking_types = booking_types
