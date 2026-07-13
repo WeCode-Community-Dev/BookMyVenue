@@ -50,9 +50,9 @@ export class RazorpayService {
     return expectedSignature === razorpaySignature;
   }
 
-  refundPayment(razorpayPaymentId: string, amount?: number) {
-    // We'll implement this during the cancellation/refund flow.
-    console.log(razorpayPaymentId);
-    console.log(amount);
+  async refundPayment(razorpayPaymentId: string, amount?: number) {
+    return this.razorpay.payments.refund(razorpayPaymentId, {
+      amount,
+    });
   }
 }

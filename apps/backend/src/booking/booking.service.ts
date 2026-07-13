@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { BookingStatus, VenueStatus } from '@prisma/client';
 
+import { CancelBookingDto } from './dto/cancel-booking.dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { IdempotencyService } from './idempotency/idempotency.service';
 import { Prisma } from '@prisma/client';
@@ -459,6 +460,92 @@ export class BookingService {
       message: 'Payment verified successfully.',
       bookingId: updatedBooking.id,
       paymentId: updatedBooking.razorpayPaymentId,
+      status: updatedBooking.status,
+    };
+  }
+
+  async cancelBooking(dto: CancelBookingDto, userId: string) {
+    // STEP 1
+    // Find booking
+    const booking = await this.prismaService.booking.findUnique({
+      where: {
+        id: dto.bookingId,
+      },
+    });
+
+    if (!booking) {
+      throw new BadRequestException('Booking not found.');
+    }
+    // STEP 2
+    // Verify ownership
+    if (booking.userId !== userId) {
+      throw new ForbiddenException(
+        'You are not authorized to cancel this booking.',
+      );
+    }
+    // STEP 3
+    // Check booking status
+
+    if (booking.status === BookingStatus.CANCELLED) {
+      throw new BadRequestException('Booking is already cancelled.');
+    }
+
+    if (booking.status === BookingStatus.REFUNDED) {
+      throw new BadRequestException('Booking has already been refunded.');
+    }
+
+    if (booking.status === BookingStatus.EXPIRED) {
+      throw new BadRequestException('Booking has already expired.');
+    }
+
+    // ----------------------------------------------------
+    // STEP 4 : Refund payment if booking is confirmed
+    // ----------------------------------------------------
+
+    if (
+      booking.status === BookingStatus.CONFIRMED &&
+      !booking.razorpayPaymentId
+    ) {
+      throw new BadRequestException('Payment information is missing.');
+    }
+
+    const refund =
+      booking.status === BookingStatus.CONFIRMED
+        ? await this.razorpayService.refundPayment(
+            booking.razorpayPaymentId!,
+            Number(booking.totalPrice) * 100,
+          )
+        : null;
+
+    // ----------------------------------------------------
+    // STEP 5 : Update booking status
+    // ----------------------------------------------------
+
+    const updatedBooking = await this.prismaService.booking.update({
+      where: {
+        id: booking.id,
+      },
+      data: {
+        status:
+          booking.status === BookingStatus.CONFIRMED
+            ? BookingStatus.REFUNDED
+            : BookingStatus.CANCELLED,
+
+        cancelledAt: new Date(),
+
+        razorpayRefundId: refund?.id ?? null,
+      },
+    });
+
+    // STEP 6
+    // Return response
+    return {
+      success: true,
+      message:
+        updatedBooking.status === BookingStatus.REFUNDED
+          ? 'Booking cancelled and refunded successfully.'
+          : 'Booking cancelled successfully.',
+      bookingId: updatedBooking.id,
       status: updatedBooking.status,
     };
   }

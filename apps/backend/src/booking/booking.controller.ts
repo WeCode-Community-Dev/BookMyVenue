@@ -12,6 +12,7 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import type { AuthRequest } from 'src/types/auth.request.interface';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
+import { CancelBookingDto } from './dto/cancel-booking.dto';
 
 @Controller('booking')
 export class BookingController {
@@ -31,5 +32,11 @@ export class BookingController {
   @UseGuards(JwtAuthGuard)
   verifyPayment(@Body() dto: VerifyPaymentDto, @Request() req: AuthRequest) {
     return this.bookingService.verifyPayment(dto, req.user.id);
+  }
+
+  @Post('cancel')
+  @UseGuards(JwtAuthGuard)
+  cancelBooking(@Body() dto: CancelBookingDto, @Request() req: AuthRequest) {
+    return this.bookingService.cancelBooking(dto, req.user.id);
   }
 }
