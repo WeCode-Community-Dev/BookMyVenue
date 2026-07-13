@@ -3,8 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.modules.search.schemas import SearchResult
-from app.shared.pagination import Page
+from app.modules.search.schemas import SearchResultPage
 
 
 class QueryUnderstanding(BaseModel):
@@ -27,7 +26,7 @@ class DeepResearchSearchRequest(BaseModel):
 class DeepResearchSearchResponse(BaseModel):
     query_id: UUID
     understanding: QueryUnderstanding
-    internal_results: Page[SearchResult]
+    internal_results: SearchResultPage
 
 
 class TriggerExternalDiscoveryRequest(BaseModel):
