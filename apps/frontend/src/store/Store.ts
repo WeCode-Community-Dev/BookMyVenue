@@ -1,9 +1,11 @@
 import { type Action, combineReducers, configureStore } from "@reduxjs/toolkit";
+import AuthReducer from "../features/auth/AuthSlice";
 
 import AppConfigReducer from "./AppConfigReducer";
 
 const combinedReducer = combineReducers({
     AppConfigReducer,
+    AuthReducer,
 });
 
 const rootReducer = (state: any, action: Action) => {

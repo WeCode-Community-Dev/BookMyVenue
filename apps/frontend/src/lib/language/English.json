@@ -1,19 +1,42 @@
 {
     "english": "English",
     "hindi": "Hindi",
-    "INPUT_LABELS": {},
+    "INPUT_LABELS": {
+        "FULL_NAME": "Full Name",
+        "EMAIL_ADDRESS": "Email Address",
+        "MOBILE_NUMBER": "Mobile Number",
+        "PASSWORD": "Password"
+    },
     "TOOLTIP": {},
     "BUTTON": {
-        "GET_STARTED":"Get Started",
-        "COLLAPSE_SIDEBAR":"Collapse Sidebar",
+        "GET_STARTED": "Get Started",
+        "COLLAPSE_SIDEBAR": "Collapse Sidebar",
         "CANCEL": "Cancel",
         "PAY_NOW": "Pay Now",
         "APPROVE_VENUE": "Approve Venue",
-        "OPEN_IN_MAPS": "Open In Maps"
+        "OPEN_IN_MAPS": "Open In Maps",
+        "SIGN_IN": "Sign In",
+        "SIGN_UP": "Sign Up",
+        "SIGN_IN_SIGN_UP": "Sign In / Sign Up",
+        "CREATE_ACCOUNT": "Create Account",
+        "CONTINUE_GOOGLE": "Continue with Google",
+        "CONTINUE": "Continue",
+        "SENDING": "Sending...",
+        "RESEND_OTP": "Resend OTP"
     },
     "LABEL": {
+        "WELCOME_BACK": "Welcome Back",
+        "LOGIN_OR_SIGNIN": "Login or sign in to continue",
+        "ENTER_EMAIL_PROMPT": "Enter your email address",
+        "OTP_DISCLAIMER": "We'll send a one-time password (OTP)",
+        "ENTER_OTP": "Enter OTP",
+        "SENT_OTP": "We sent a 6-digit OTP to {email}",
+        "LOGIN_SUCCESSFUL": "Login Successful!",
+        "REGISTRATION_SUCCESSFUL": "Registration Successful!",
+        "WELCOME_BACK_EMOJI": "Welcome back 👋",
+        "REDIRECTING": "Redirecting...",
         "MENU": "Menu",
-        "REACH_CUSTOMERS":"Reach thousands of customers every day.",
+        "REACH_CUSTOMERS": "Reach thousands of customers every day.",
         "PENDING_APPROVAL": "Pending Approval",
         "VENUE_INFORMATION": "Venue Information",
         "CAPACITY": "Capacity",
@@ -30,7 +53,21 @@
         "MEMBER_SINCE": "Member Since",
         "SUBMISSION_DETAILS": "Submission Details",
         "SUBMITTED_ON": "Submitted On",
-        "ADDITIONAL_NOTES": "Additional Notes"
+        "ADDITIONAL_NOTES": "Additional Notes",
+        "OR": "OR",
+        "EVERY_CELEBRATION": "Every celebration starts at the",
+        "PERFECT_VENUE": "perfect venue",
+        "DISCOVER": "Discover",
+        "AMAZING_VENUES": "Amazing Venues",
+        "BOOK": "Book",
+        "WITH_EASE": "With Ease",
+        "CELEBRATE": "Celebrate",
+        "MEMORIES_FOREVER": "Memories Forever",
+        "START_DISCOVERING": "Start discovering amazing venues today.",
+        "ALREADY_HAVE_ACCOUNT": "Already have an account?",
+        "SECURE": "Secure",
+        "FAST": "Fast",
+        "TRUSTED": "Trusted"
     },
     "FILTERS": {
         "FILTER": "Filters",
@@ -49,14 +86,15 @@
         "MY_BOOKINGS": "My Bookings",
         "WISHLIST": "Wishlist",
         "RECENTLY_VIEWED": "Recently Viewed",
-        "DASHBOARD":"Dashboard",
-        "ADD_VENUE":"Add Venue",
-        "MY_VENUE":"My Venue",
-        "BOOKINGS":"Bookings",
-        "HELP_SUPPORT":"Help & Support"
+        "DASHBOARD": "Dashboard",
+        "ADD_VENUE": "Add Venue",
+        "MY_VENUE": "My Venue",
+        "BOOKINGS": "Bookings",
+        "HELP_SUPPORT": "Help & Support"
     },
     "COLUMNS": {},
     "MESSAGES": {
-        "VENUE_DESCRIPTION": "A beautiful beachfront venue perfect for weddings, parties and corporate events."
+        "VENUE_DESCRIPTION": "A beautiful beachfront venue perfect for weddings, parties and corporate events.",
+        "AUTH_DESCRIPTION": "Join thousands of people who discover, book and celebrate unforgettable moments."
     }
 }

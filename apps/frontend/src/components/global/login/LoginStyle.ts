@@ -17,6 +17,19 @@ export const loginStyle = {
 
     successStep: clsx("p-10", "text-center"),
 
+    errorContainer: clsx(
+        "mt-4",
+        "rounded-xl",
+        "bg-red-50",
+        "p-3",
+        "text-sm",
+        "text-red-600",
+        "border",
+        "border-red-100",
+        "text-center",
+        "font-medium"
+    ),
+
     iconContainer: clsx(
         "flex",
         "h-20",
@@ -103,7 +116,8 @@ export const loginStyle = {
         "text-primary-text-color",
         "font-medium",
         "transition",
-        "hover:bg-muted/50"
+        "hover:bg-muted/50",
+        "cursor-pointer"
     ),
 
     googleIcon: clsx("h-5", "w-5"),
@@ -171,7 +185,8 @@ export const loginStyle = {
         "transition",
         "hover:bg-teal-700",
         "dark:bg-teal-600",
-        "dark:hover:bg-teal-500"
+        "dark:hover:bg-teal-500",
+        "cursor-pointer"
     ),
 
     otpButton: clsx(
@@ -209,19 +224,23 @@ export const loginStyle = {
         "mb-4",
         "text-primary-text-color",
         "hover:text-teal-600",
-        "transition"
+        "transition",
+        "cursor-pointer"
     ),
 
     otpInputsContainer: clsx(
         "mt-8",
         "flex",
-        "justify-center",
-        "gap-3"
+        "w-full",
+        "justify-between",
+        "gap-2",
+        "sm:gap-3"
     ),
 
     otpInputItem: clsx(
-        "h-12",
-        "w-12",
+        "aspect-square",
+        "w-full",
+        "max-w-[3.5rem]",
         "rounded-xl",
         "border",
         "border-login-btn-border",

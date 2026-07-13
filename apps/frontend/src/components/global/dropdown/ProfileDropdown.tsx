@@ -13,6 +13,7 @@ import {
 import { LANGUAGE, SCREENS, THEME } from "@/lib/Constants";
 import { storeTheme, useConfigTheme, useLanguage } from "@/store/AppConfigReducer";
 import { useDispatch, useSelector } from "react-redux";
+import { useAuthService } from "@/features/auth/services/AuthService";
 
 import NxtImage from "next/image";
 import { profileDropdownStyle } from "./ProfileDropdownStyle";
@@ -27,6 +28,8 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
     const dispatch = useDispatch();
     const theme = useSelector(useConfigTheme);
     const currentLanguage = useSelector(useLanguage);
+    const { logout, user } = useAuthService();
+
     if (!isOpen) return null;
 
     const toggleTheme = () => {
@@ -72,18 +75,18 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
                     <NxtImage
                         height={1}
                         width={1}
-                        src="https://i.pravatar.cc/100?img=12"
+                        src={user?.avatarUrl || "https://i.pravatar.cc/100?img=12"}
                         alt="Profile"
                         className={profileDropdownStyle.avatar}
                     />
 
                     <div>
                         <h3 className={profileDropdownStyle.userName}>
-                            Vishnu Raj
+                            {user?.name || user?.email?.split("@")[ 0 ] || "User"}
                         </h3>
 
                         <p className={profileDropdownStyle.userRole}>
-                            Venue Owner
+                            {user?.role === "VENUE_OWNER" ? "Venue Owner" : user?.role === "ADMIN" ? "Admin" : "User"}
                         </p>
                     </div>
                 </div>
@@ -114,7 +117,7 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
             <div className={profileDropdownStyle.supportContainer}>
                 <button className={profileDropdownStyle.menuItem}>
                     <Headphones className={profileDropdownStyle.menuItemIcon} />
-                    <AppText textName="SUPPORT" textModule="MENUS"/>
+                    <AppText textName="SUPPORT" textModule="MENUS" />
                 </button>
             </div>
 
@@ -122,9 +125,9 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
 
             {/* Logout */}
             <div className={profileDropdownStyle.logoutContainer}>
-                <button className={profileDropdownStyle.logoutItem}>
+                <button className={profileDropdownStyle.logoutItem} onClick={logout}>
                     <LogOut className={profileDropdownStyle.logoutIcon} />
-                    <AppText textName="LOGOUT" textModule="MENUS"/>
+                    <AppText textName="LOGOUT" textModule="MENUS" />
                 </button>
             </div>
         </div>
