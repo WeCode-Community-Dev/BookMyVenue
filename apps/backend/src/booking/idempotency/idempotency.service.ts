@@ -16,8 +16,17 @@ export class IdempotencyService {
       return null;
     }
 
-    const parsed = JSON.parse(cachedResponse) as Record<string, unknown>;
+    return JSON.parse(cachedResponse) as Record<string, unknown>;
+  }
 
-    return parsed;
+  async cacheResponse(
+    idempotencyKey: string,
+    response: Record<string, unknown>,
+  ): Promise<void> {
+    const redis = this.redisService.getClient();
+
+    await redis.set(`idempotency:${idempotencyKey}`, JSON.stringify(response), {
+      EX: 60 * 60, // Cache for 1 hour
+    });
   }
 }

@@ -165,6 +165,7 @@ model VenueSlotTemplate {
   isActive Boolean @default(true)
 
   pricingTiers VenueSlotPricing[]
+  bookedSlots BookedSlot[]
 
   @@index([venueId])
 }
@@ -252,8 +253,12 @@ model BookedSlot {
   bookingId String
   booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
+  slotTemplateId String
+  slotTemplate VenueSlotTemplate @relation(fields: [slotTemplateId], references: [id])
+
+
   slotPricingTierId String
-  slotPricingTier   VenueSlotPricing @relation(fields: [slotPricingTierId], references: [id])
+  slotPricingTier VenueSlotPricing @relation(fields: [slotPricingTierId], references: [id])
 
   eventDate DateTime @db.Date
 
@@ -264,6 +269,6 @@ model BookedSlot {
 
   createdAt DateTime @default(now())
 
-  @@index([slotPricingTierId, eventDate])
+  @@unique([slotTemplateId, eventDate])
   @@index([occupiedFrom, occupiedTo])
 }

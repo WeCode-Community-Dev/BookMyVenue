@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+
 import { Injectable } from '@nestjs/common';
 import Razorpay from 'razorpay';
 
@@ -8,7 +10,7 @@ export class RazorpayService {
   constructor() {
     this.razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
   }
 
@@ -37,11 +39,20 @@ export class RazorpayService {
     console.log(razorpayOrderId);
     console.log(razorpayPaymentId);
     console.log(razorpaySignature);
+
+    const body = `${razorpayOrderId}|${razorpayPaymentId}`;
+
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+      .update(body)
+      .digest('hex');
+
+    return expectedSignature === razorpaySignature;
   }
 
-  refundPayment(razorpayPaymentId: string, amount?: number) {
-    // We'll implement this during the cancellation/refund flow.
-    console.log(razorpayPaymentId);
-    console.log(amount);
+  async refundPayment(razorpayPaymentId: string, amount?: number) {
+    return this.razorpay.payments.refund(razorpayPaymentId, {
+      amount,
+    });
   }
 }
