@@ -1,4 +1,28 @@
-import { Controller } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Headers,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+
+import { BookingService } from './booking.service';
+import { CreateBookingDto } from './dto/create-booking.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import type { AuthRequest } from 'src/types/auth.request.interface';
 
 @Controller('booking')
-export class BookingController {}
+export class BookingController {
+  constructor(private readonly bookingService: BookingService) {}
+
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  createBooking(
+    @Body() dto: CreateBookingDto,
+    @Headers('idempotency-key') idempotencyKey: string,
+    @Request() req: AuthRequest,
+  ) {
+    return this.bookingService.createBooking(dto, req.user.id, idempotencyKey);
+  }
+}
