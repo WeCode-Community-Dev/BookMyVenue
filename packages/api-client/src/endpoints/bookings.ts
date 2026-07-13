@@ -1,17 +1,19 @@
 import { createClient } from '../client'
-import type { Booking } from '../model'
+import type { Booking, BookingListResponse } from '../model'
 
 export const bookingEndpoints = (client: ReturnType<typeof createClient>) => ({
   getBooking: (id: string) => client.get<Booking>(`/api/bookings/${id}`),
   createBooking: (body: unknown) => client.post<Booking>('/api/bookings/', body),
   listBookings: () => client.get<Booking[]>('/api/bookings/'),
-  getOwnerBookings: (params?: { tab?: string, venue_id?: string, search?: string }) => {
+  getOwnerBookings: (params?: { tab?: string, venue_id?: string, search?: string, page?: number, per_page?: number }) => {
     const qs = new URLSearchParams()
     if (params?.tab) qs.append('tab', params.tab)
     if (params?.venue_id) qs.append('venue_id', params.venue_id)
     if (params?.search) qs.append('search', params.search)
+    if (params?.page) qs.append('page', params.page.toString())
+    if (params?.per_page) qs.append('per_page', params.per_page.toString())
     const qsStr = qs.toString()
-    return client.get<Booking[]>(`/api/bookings/owner${qsStr ? `?${qsStr}` : ''}`)
+    return client.get<BookingListResponse>(`/api/bookings/owner${qsStr ? `?${qsStr}` : ''}`)
   },
   getCancellationPreview: (bookingId: string) =>
     client.get<unknown>(`/api/bookings/${bookingId}/cancellation-preview`),

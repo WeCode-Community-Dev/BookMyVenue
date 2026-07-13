@@ -11,12 +11,6 @@ from sqlalchemy.orm import Session, joinedload
 from app.modules.availability.service import validate_booking_request
 
 # Re-expose functions from cancellation module
-from app.modules.booking.cancellation import (
-    get_cancellation_preview,
-    user_cancel_booking,
-    owner_cancel_forfeit,
-    owner_cancel_goodwill,
-)
 from app.modules.booking.helpers import (
     MAX_DEADLINE_EXTENSIONS,
     USER_PAYMENT_HOLD_HOURS,
@@ -35,6 +29,7 @@ from app.modules.booking.models import (
     PaymentStatus,
 )
 from app.modules.booking.schemas import (
+    BookingListResponse,
     BookingOut,
     BookingRequestIn,
     ExtendDeadlineIn,
@@ -203,7 +198,9 @@ def list_all_owner_bookings(
     tab: str | None = None,
     venue_id: str | None = None,
     search: str | None = None,
-) -> list[BookingOut]:
+    page: int = 1,
+    per_page: int = 20,
+) -> BookingListResponse:
     query = (
         db.query(Booking)
         .options(
@@ -264,8 +261,22 @@ def list_all_owner_bookings(
                 )
             )
 
-    bookings = query.order_by(Booking.created_at.desc()).all()
-    return [_booking_out(booking) for booking in bookings]
+    total = query.count()
+    total_pages = (total + per_page - 1) // per_page
+    bookings = (
+        query.order_by(Booking.created_at.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+        .all()
+    )
+
+    return BookingListResponse(
+        items=[_booking_out(booking) for booking in bookings],
+        total=total,
+        page=page,
+        page_size=per_page,
+        total_pages=total_pages,
+    )
 
 
 def list_venue_bookings(

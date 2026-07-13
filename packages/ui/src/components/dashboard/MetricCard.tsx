@@ -41,7 +41,7 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        'rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 p-4 shadow-sm',
+        'rounded-xl border border-zinc-200 dark:border-ink-700 bg-white dark:bg-ink-900 p-4 shadow-sm',
         onClick && 'cursor-pointer transition-shadow duration-150 hover:shadow-md press',
         className,
       )}
@@ -49,12 +49,12 @@ export function MetricCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">{label}</p>
+          <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{label}</p>
           <p className={cn('mt-2 text-2xl font-semibold tabular-nums tracking-tight', colors.value)}>
             {value}
           </p>
           {description && (
-            <p className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-500 truncate">{description}</p>
+            <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400 truncate">{description}</p>
           )}
         </div>
 

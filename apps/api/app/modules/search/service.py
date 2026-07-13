@@ -4,9 +4,8 @@ from datetime import datetime
 from uuid import UUID
 
 import numpy as np
-from sqlalchemy import case, tuple_
+from sqlalchemy import case, or_, text, tuple_
 from sqlalchemy import func as sa_func
-from sqlalchemy import or_, text
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.config import settings
@@ -676,7 +675,9 @@ def search_hybrid(db: Session, params: SearchParams) -> SearchResultPage:
         }.get(params.sort, last_row.hybrid_score)
         if params.sort in ("price_asc", "price_desc") and sort_value is None:
             sort_value = (
-                _PRICE_NULL_ASC_SENTINEL if params.sort == "price_asc" else _PRICE_NULL_DESC_SENTINEL
+                _PRICE_NULL_ASC_SENTINEL
+                if params.sort == "price_asc"
+                else _PRICE_NULL_DESC_SENTINEL
             )
         next_cursor = _encode_cursor(sort_value, last_row.id)
 

@@ -33,6 +33,7 @@ from app.modules.venue.schemas import (
     VenueBlockedDateResponse,
     VenueCategoryResponse,
     VenueListResponse,
+    VenueOptionResponse,
     VenuePhotoResponse,
     VenuePricingRuleResponse,
     VenueResponse,
@@ -53,6 +54,15 @@ def list_my_venues(
 ):
 
     return service.list_owner_venues(db, owner_id=auth.user_id)
+
+
+@router.get("/my/venues/options", response_model=list[VenueOptionResponse])
+def list_my_venues_options(
+    auth: AuthContext = Depends(require_owner),
+    db: Session = Depends(get_db),
+):
+    """Get lightweight venue list for dropdowns (excludes drafts)."""
+    return service.list_owner_venues_options(db, owner_id=auth.user_id)
 
 
 @router.get("/my/venues/{venue_id}", response_model=VenueResponse)

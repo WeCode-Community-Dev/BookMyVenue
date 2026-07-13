@@ -489,16 +489,20 @@ def get_reservation_stats(db: Session) -> dict:
         LeadReservationStatus.VENUE_PENDING_APPROVAL,
         LeadReservationStatus.VENUE_APPROVED,
     )
-    row = db.query(LeadReservation).with_entities(
-        func.count(LeadReservation.id).label("total"),
-        func.count(case((LeadReservation.status == LeadReservationStatus.NEW, 1))).label("new"),
-        func.count(case((LeadReservation.status.in_(in_progress_statuses), 1))).label(
-            "in_progress"
-        ),
-        func.count(
-            case((LeadReservation.status == LeadReservationStatus.BOOKING_CREATED, 1))
-        ).label("booking_created"),
-    ).one()
+    row = (
+        db.query(LeadReservation)
+        .with_entities(
+            func.count(LeadReservation.id).label("total"),
+            func.count(case((LeadReservation.status == LeadReservationStatus.NEW, 1))).label("new"),
+            func.count(case((LeadReservation.status.in_(in_progress_statuses), 1))).label(
+                "in_progress"
+            ),
+            func.count(
+                case((LeadReservation.status == LeadReservationStatus.BOOKING_CREATED, 1))
+            ).label("booking_created"),
+        )
+        .one()
+    )
     return {
         "total": row.total,
         "new": row.new,

@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.modules.auth.dependencies import AuthContext, require_auth, require_owner
 from app.modules.booking import service
 from app.modules.booking.schemas import (
+    BookingListResponse,
     BookingOut,
     BookingRequestIn,
     CancellationPreviewOut,
@@ -35,15 +36,17 @@ def list_my_bookings(
     return service.list_user_bookings(db, auth.user_id)
 
 
-@router.get("/owner", response_model=list[BookingOut])
+@router.get("/owner", response_model=BookingListResponse)
 def list_owner_bookings(
     tab: str | None = None,
     venue_id: str | None = None,
     search: str | None = None,
+    page: int = 1,
+    per_page: int = 20,
     auth: AuthContext = Depends(require_owner),
     db: Session = Depends(get_db),
 ):
-    return service.list_all_owner_bookings(db, auth.user_id, tab, venue_id, search)
+    return service.list_all_owner_bookings(db, auth.user_id, tab, venue_id, search, page, per_page)
 
 
 @router.get("/venues/{venue_id}/bookings", response_model=list[BookingOut])

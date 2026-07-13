@@ -17,6 +17,7 @@ from app.modules.review.schemas import (
     ReviewSummaryResponse,
     ReviewUpdate,
 )
+from app.modules.venue.models import Venue
 
 
 class ReviewService:
@@ -183,6 +184,49 @@ class ReviewService:
             )
             .order_by(desc(VenueReview.created_at))
         )
+
+        total = query.count()
+        offset = (page - 1) * per_page
+        reviews = query.offset(offset).limit(per_page).all()
+
+        return ReviewListResponse(
+            items=[ReviewService._to_response(db, r) for r in reviews],
+            total=total,
+            page=page,
+            per_page=per_page,
+        )
+
+    @staticmethod
+    def list_owner_reviews(
+        db: Session,
+        owner_id: UUID,
+        venue_id: str | None = None,
+        rating: int | None = None,
+        page: int = 1,
+        per_page: int = 10,
+    ) -> ReviewListResponse:
+        """
+        List all public reviews across all venues owned by a specific owner
+        (paginated and filtered).
+        """
+        query = (
+            db.query(VenueReview)
+            .join(Venue, Venue.id == VenueReview.venue_id)
+            .options(joinedload(VenueReview.author), joinedload(VenueReview.venue))
+            .filter(
+                Venue.owner_id == owner_id,
+                VenueReview.deleted_at.is_(None),
+                VenueReview.is_hidden.is_(False),
+            )
+        )
+
+        if venue_id and venue_id != "all":
+            query = query.filter(VenueReview.venue_id == venue_id)
+
+        if rating:
+            query = query.filter(VenueReview.rating == rating)
+
+        query = query.order_by(desc(VenueReview.created_at))
 
         total = query.count()
         offset = (page - 1) * per_page

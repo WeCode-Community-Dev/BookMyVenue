@@ -117,6 +117,11 @@ class BulkUpdateVenuePhotosRequest(BaseModel):
     photos: list[UpdateVenuePhotoItem]
 
 
+class VenueOptionResponse(BaseModel):
+    id: UUID
+    name: str
+
+
 class VenueListResponse(BaseModel):
     id: UUID
     name: str

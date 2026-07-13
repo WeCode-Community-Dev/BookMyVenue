@@ -104,9 +104,9 @@ export default function Dashboard() {
             <Link
               key={i}
               to={action.link}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 rounded-lg hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800 hover:text-zinc-900 dark:text-zinc-100 transition-colors shadow-sm"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-ink-800 transition-colors shadow-sm"
             >
-              <action.icon className="h-4 w-4 text-zinc-500 dark:text-zinc-400 dark:text-zinc-500" />
+              <action.icon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
               {action.label}
             </Link>
           ))}
@@ -116,8 +116,8 @@ export default function Dashboard() {
 
       {/* Header Strip */}
       <section>
-        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Good to see you, {userName}</h1>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Here is what needs your attention today.</p>
+        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Hello, {userName}!</h1>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Track your venue performance and upcoming bookings.</p>
       </section>
 
       {error && (
@@ -160,21 +160,21 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Performance Chart */}
-        <Card className="lg:col-span-2 p-5 flex flex-col border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+        <Card className="lg:col-span-2 p-5 flex flex-col border-zinc-200 dark:border-ink-700 shadow-sm rounded-xl">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Performance Trends</h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                 Last {timeRange === '7D' ? '7 days — daily' : timeRange === '30D' ? '30 days — daily' : timeRange === '3M' ? '3 months — monthly' : timeRange === '12M' ? '12 months — monthly' : '6 months — monthly'}
               </p>
             </div>
-            <div className="flex bg-zinc-100 dark:bg-ink-800 p-1 rounded-lg border border-zinc-200 dark:border-ink-800">
+            <div className="flex bg-zinc-100 dark:bg-ink-800 p-1 rounded-lg border border-zinc-200 dark:border-ink-700">
               {['7D', '30D', '3M', '6M', '12M'].map(p => (
                 <button
                   key={p}
                   onClick={() => setTimeRange(p)}
                   className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    p === timeRange ? "bg-white dark:bg-ink-900 shadow-sm text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:text-zinc-600"
+                    p === timeRange ? "bg-white dark:bg-ink-900 shadow-sm text-zinc-900 dark:text-zinc-100" : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
                   }`}
                 >
                   {p}
@@ -187,21 +187,21 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Enquiries</span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">Enquiries</span>
               </div>
               <p className="font-semibold text-base">{chartTotals.enquiries}</p>
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Completed</span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">Completed</span>
               </div>
               <p className="font-semibold text-base">{chartTotals.completed}</p>
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Cancelled</span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">Cancelled</span>
               </div>
               <p className="font-semibold text-base">{chartTotals.cancelled}</p>
             </div>
@@ -258,7 +258,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Upcoming Events */}
-        <Card className="p-6 flex flex-col border-zinc-200 dark:border-ink-800 shadow-sm rounded-xl">
+        <Card className="p-6 flex flex-col border-zinc-200 dark:border-ink-700 shadow-sm rounded-xl">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">Upcoming Events</h3>
             <Link to="/bookings" className="text-sm text-brand-600 hover:text-brand-700 font-medium">View all</Link>
@@ -266,9 +266,9 @@ export default function Dashboard() {
           <div className="flex-1 space-y-5 overflow-y-auto">
             {upcomingEvents.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full py-8 text-center">
-                <Calendar className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-                <p className="text-sm text-zinc-400 dark:text-zinc-500">No upcoming events</p>
-                <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">Confirmed bookings will appear here</p>
+                <Calendar className="h-8 w-8 text-zinc-300 dark:text-zinc-400 mb-2" />
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">No upcoming events</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Confirmed bookings will appear here</p>
               </div>
             ) : (
               upcomingEvents.map((event) => (
@@ -282,10 +282,10 @@ export default function Dashboard() {
                       <StatusBadge label="Confirmed" variant="success" className="text-[10px] px-1.5 py-0" />
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-1">
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 truncate">{event.venue_name}</p>
-                      <p className="text-xs text-zinc-400 dark:text-zinc-500 whitespace-nowrap">{formatEventDate(event.starts_at)}</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{event.venue_name}</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap">{formatEventDate(event.starts_at)}</p>
                     </div>
-                    <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{event.guest_count} guests</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{event.guest_count} guests</p>
                   </div>
                 </div>
               ))

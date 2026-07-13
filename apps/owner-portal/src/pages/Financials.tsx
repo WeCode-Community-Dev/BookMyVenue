@@ -5,6 +5,7 @@ import { createClient } from '@venue404/api-client'
 import { paymentEndpoints } from '@venue404/api-client/src/endpoints/payments'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { Pagination } from '../components/Pagination'
 
 function formatDateTime(isoString: string): string {
   if (!isoString) return '—'
@@ -19,11 +20,12 @@ function inr(paise: number): string {
   return '₹' + (paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-const COL = 'px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500'
-const CELL = 'px-4 py-4 text-sm text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 align-middle'
+const COL = 'px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-400'
+const CELL = 'px-4 py-4 text-sm text-zinc-700 dark:text-zinc-300 align-middle'
 
 export default function Financials() {
   const [tab, setTab] = useState('all')
+  const [page, setPage] = useState(1)
 
   const { data: stats = {
     gross_volume_paise: 0,
@@ -47,14 +49,17 @@ export default function Financials() {
     }
   })
 
-  const { data: entries = [], isLoading: loadingLedger } = useQuery({
-    queryKey: ['financial-ledger', tab],
+  const { data: ledgerResponse, isLoading: loadingLedger } = useQuery({
+    queryKey: ['financial-ledger', tab, page],
     queryFn: async () => {
       const apiTab = tab === 'all' ? undefined : tab
-      const data = await paymentEndpoints(createClient()).getOwnerLedger(apiTab)
-      return data || []
+      const data = await paymentEndpoints(createClient()).getOwnerLedger({ entry_type: apiTab, page, per_page: 25 })
+      return data
     }
   })
+
+  const entries = ledgerResponse?.items || []
+  const totalPages = ledgerResponse?.total_pages || 1
 
   const TABS = [
     { id: 'all', label: 'All Transactions' },
@@ -68,7 +73,7 @@ export default function Financials() {
     if (type === 'platform_fee' && direction === 'debit') return { bg: 'bg-amber-50 text-amber-700 ring-amber-600/20', label: 'Platform Fee' }
     if (type === 'refund' && direction === 'debit') return { bg: 'bg-red-50 text-red-700 ring-red-600/10', label: 'Refund' }
     if (type === 'payout' && direction === 'debit') return { bg: 'bg-blue-50 text-blue-700 ring-blue-600/20', label: 'Payout' }
-    return { bg: 'bg-zinc-100 dark:bg-ink-800 text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 ring-zinc-500/10', label: type }
+    return { bg: 'bg-zinc-100 dark:bg-ink-800 text-zinc-700 dark:text-zinc-300 ring-zinc-500/10', label: type }
   }
 
   return (
@@ -119,7 +124,7 @@ export default function Financials() {
              {/* Platform Fees */}
             <Card className="relative p-4 border-zinc-200/60 shadow-sm flex items-center justify-between">
                 <div>
-                    <h3 className="text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-medium text-[10px] uppercase tracking-wider flex items-center gap-1.5">
+                    <h3 className="text-zinc-500 dark:text-zinc-400 font-medium text-[10px] uppercase tracking-wider flex items-center gap-1.5">
                         <ArrowDownRight className="w-3 h-3 text-amber-500" /> Service Fees
                     </h3>
                     <div className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 tracking-tight mt-1">
@@ -131,7 +136,7 @@ export default function Financials() {
              {/* Refunds */}
              <Card className="relative p-4 border-zinc-200/60 shadow-sm flex items-center justify-between">
                 <div>
-                    <h3 className="text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-medium text-[10px] uppercase tracking-wider flex items-center gap-1.5">
+                    <h3 className="text-zinc-500 dark:text-zinc-400 font-medium text-[10px] uppercase tracking-wider flex items-center gap-1.5">
                         <TrendingDown className="w-3 h-3 text-red-500" /> Refunds Issued
                     </h3>
                     <div className="text-lg font-semibold text-zinc-800 dark:text-zinc-200 tracking-tight mt-1">
@@ -147,16 +152,19 @@ export default function Financials() {
       <div className="space-y-6">
         
         {/* Tabs */}
-        <div className="border-b border-zinc-200 dark:border-ink-800">
+        <div className="border-b border-zinc-200 dark:border-ink-700">
           <nav className="-mb-px flex w-full overflow-x-auto no-scrollbar" aria-label="Tabs">
             {TABS.map(t => (
               <button
                 key={t.id}
-                onClick={() => setTab(t.id)}
+                onClick={() => {
+              setTab(t.id)
+              setPage(1)
+            }}
                 className={`flex-1 whitespace-nowrap py-3 border-b-2 font-medium text-sm transition-all ${
                   tab === t.id
                     ? 'border-brand-500 text-brand-600'
-                    : 'border-transparent text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'
+                    : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'
                 }`}
               >
                 {t.label}
@@ -167,9 +175,9 @@ export default function Financials() {
 
         {/* Table */}
         {loadingLedger ? (
-          <div className="rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 shadow-sm overflow-hidden">
+          <div className="rounded-xl border border-zinc-200 dark:border-ink-700 bg-white dark:bg-ink-900 shadow-sm overflow-hidden">
             <table className="w-full text-left">
-                <thead className="bg-zinc-50 dark:bg-ink-800 border-b border-zinc-200 dark:border-ink-800">
+                <thead className="bg-zinc-50 dark:bg-ink-800 border-b border-zinc-200 dark:border-ink-700">
                 <tr>
                     {['Date / ID', 'Type', 'Description', 'Reference', 'Amount'].map(h => (
                     <th key={h} className={COL}>{h}</th>
@@ -196,9 +204,9 @@ export default function Financials() {
               description={`There are no ${tab !== 'all' ? tab : 'ledger'} entries to display.`}
           />
         ) : (
-          <div className="rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 shadow-sm overflow-x-auto">
+          <div className="rounded-xl border border-zinc-200 dark:border-ink-700 bg-white dark:bg-ink-900 shadow-sm overflow-x-auto">
             <table className="w-full text-left min-w-[720px]">
-                <thead className="bg-zinc-50 dark:bg-ink-800 border-b border-zinc-200 dark:border-ink-800">
+                <thead className="bg-zinc-50 dark:bg-ink-800 border-b border-zinc-200 dark:border-ink-700">
                 <tr>
                     <th className={COL}>Date & Time</th>
                     <th className={COL}>Type</th>
@@ -218,7 +226,7 @@ export default function Financials() {
                         {/* Date & ID */}
                         <td className={CELL}>
                             <div className="font-medium text-zinc-900 dark:text-zinc-100">{formatDateTime(entry.created_at)}</div>
-                            <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono mt-1 flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                            <div className="text-[11px] text-zinc-400 dark:text-zinc-400 font-mono mt-1 flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
                                 <FileText className="w-3 h-3" />
                                 {entry.id.split('-')[0]}...
                             </div>
@@ -235,12 +243,12 @@ export default function Financials() {
                         <td className={CELL}>
                             {entry.venue_name && (
                                 <div className="flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-medium">
-                                    <Building2 className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500" />
+                                    <Building2 className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" />
                                     {entry.venue_name}
                                 </div>
                             )}
                             {entry.user_full_name && (
-                                <div className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 text-xs mt-1">
+                                <div className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400 text-xs mt-1">
                                     <User className="w-3 h-3" />
                                     {entry.user_full_name}
                                 </div>
@@ -256,7 +264,7 @@ export default function Financials() {
                                 View Booking
                             </Link>
                             {entry.stripe_pi_ref && (
-                                <div className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono mt-1">
+                                <div className="text-[11px] text-zinc-400 dark:text-zinc-400 font-mono mt-1">
                                     {entry.stripe_pi_ref.startsWith('pi_') ? 'Stripe PI' : 'Stripe Ref'}: {entry.stripe_pi_ref.substring(0, 10)}...
                                 </div>
                             )}
@@ -267,7 +275,7 @@ export default function Financials() {
                             <div className={`font-semibold tracking-tight ${isCredit ? 'text-emerald-600' : 'text-zinc-900 dark:text-zinc-100'}`}>
                                 {isCredit ? '+' : '-'}{inr(entry.amount_paise)}
                             </div>
-                            <div className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mt-0.5">
+                            <div className="text-[10px] text-zinc-400 dark:text-zinc-400 uppercase tracking-wider mt-0.5">
                                 {entry.direction}
                             </div>
                         </td>
@@ -277,6 +285,14 @@ export default function Financials() {
                 })}
                 </tbody>
             </table>
+            {/* Pagination Controls */}
+            <Pagination
+              page={page}
+              perPage={25}
+              total={ledgerResponse?.total || 0}
+              totalPages={totalPages}
+              setPage={setPage}
+            />
           </div>
         )}
       </div>

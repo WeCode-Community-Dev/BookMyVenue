@@ -94,7 +94,7 @@ export function TimeSelect({ label, name, value, onChange, required, helperText,
   return (
     <div className="space-y-1 relative" ref={dropdownRef}>
       {label && (
-        <label className="flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
           <span>{label}{required && <span className="text-red-500 ml-1">*</span>}</span>
           {info && <InfoTooltip content={info} />}
         </label>
@@ -107,21 +107,21 @@ export function TimeSelect({ label, name, value, onChange, required, helperText,
         type="button"
         disabled={disabled}
         onClick={toggleOpen}
-        className={`w-full h-10 px-3 py-2 bg-white dark:bg-ink-900 rounded-md border border-zinc-200 dark:border-ink-800 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-brand/20 text-left transition-shadow ${disabled ? 'opacity-50 cursor-not-allowed bg-zinc-50 dark:bg-ink-800' : 'focus:border-brand hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'}`}
+        className={`w-full h-10 px-3 py-2 bg-white dark:bg-ink-900 rounded-md border border-zinc-200 dark:border-ink-700 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-brand/20 text-left transition-shadow ${disabled ? 'opacity-50 cursor-not-allowed bg-zinc-50 dark:bg-ink-800' : 'focus:border-brand hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'}`}
       >
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-          <span className={selectedOption ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400 dark:text-zinc-500'}>
+          <Clock className="w-4 h-4 text-zinc-400 dark:text-zinc-400" />
+          <span className={selectedOption ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'}>
             {selectedOption ? selectedOption.label : 'Select a time…'}
           </span>
         </div>
-        <ChevronDown className={`h-4 w-4 text-zinc-400 dark:text-zinc-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-4 w-4 text-zinc-400 dark:text-zinc-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && typeof document !== 'undefined' && createPortal(
         <div 
           ref={popoverRef}
-          className="absolute z-[9999] bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 rounded-md shadow-lg max-h-[260px] overflow-y-auto"
+          className="absolute z-[9999] bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-700 rounded-md shadow-lg max-h-[260px] overflow-y-auto"
           style={{ top: coords.top, left: coords.left, width: coords.width }}
         >
           {timeOptions.map((opt) => (
@@ -132,7 +132,7 @@ export function TimeSelect({ label, name, value, onChange, required, helperText,
                 setIsOpen(false)
               }}
               className={`px-3 py-2.5 cursor-pointer text-sm hover:bg-brand/5 hover:text-brand transition-colors ${
-                selectedOption?.value === opt.value ? 'selected-time bg-brand/10 text-brand font-semibold' : 'text-zinc-700 dark:text-zinc-300 dark:text-zinc-600'
+                selectedOption?.value === opt.value ? 'selected-time bg-brand/10 text-brand font-semibold' : 'text-zinc-700 dark:text-zinc-300'
               }`}
             >
               {opt.label}
@@ -142,7 +142,7 @@ export function TimeSelect({ label, name, value, onChange, required, helperText,
         document.body
       )}
       
-      {helperText && <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">{helperText}</p>}
+      {helperText && <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{helperText}</p>}
     </div>
   )
 }

@@ -60,3 +60,11 @@ class LedgerEntryResponse(BaseModel):
     direction: str
     stripe_pi_ref: str | None = None
     created_at: str
+
+
+class LedgerListResponse(BaseModel):
+    items: list[LedgerEntryResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int

@@ -195,8 +195,8 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
       className={cn(
         'press group flex w-full items-start gap-3.5 px-5 py-4 text-left transition-colors',
         unread
-          ? 'bg-emerald-50/40 hover:bg-emerald-50/70 dark:bg-emerald-950/20 dark:hover:bg-emerald-950/30'
-          : 'hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800 dark:hover:bg-ink-800'
+          ? 'bg-emerald-50 hover:bg-emerald-100/80 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50'
+          : 'bg-transparent hover:bg-zinc-50 dark:hover:bg-ink-800'
       )}
     >
       <div

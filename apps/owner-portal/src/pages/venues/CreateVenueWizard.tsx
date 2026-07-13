@@ -474,12 +474,12 @@ export default function CreateVenueWizard() {
       <div className="mb-8 flex items-center justify-between">
         <button 
           onClick={handleBack}
-          className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:text-zinc-100 transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-zinc-100 transition-colors"
         >
           <Icons.ArrowLeft className="h-4 w-4" />
           {currentStep === 0 ? 'Cancel' : 'Back'}
         </button>
-        <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">
+        <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
           Step {currentStep + 1} of {STEPS.length}
         </div>
       </div>
@@ -498,11 +498,11 @@ export default function CreateVenueWizard() {
             <div key={step} className="flex items-center gap-2">
               <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
                 isCompleted ? 'bg-emerald-500 text-white' :
-                isCurrent ? 'bg-brand text-white' : 'bg-zinc-100 dark:bg-ink-800 text-zinc-400 dark:text-zinc-500'
+                isCurrent ? 'bg-brand text-white' : 'bg-zinc-100 dark:bg-ink-800 text-zinc-400 dark:text-zinc-400'
               }`}>
                 {isCompleted ? <Icons.Check className="h-3 w-3" /> : index + 1}
               </div>
-              <span className={`text-sm font-medium ${isCurrent ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 dark:text-zinc-500'}`}>
+              <span className={`text-sm font-medium ${isCurrent ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 dark:text-zinc-400'}`}>
                 {step}
               </span>
               {index < STEPS.length - 1 && (
@@ -526,7 +526,7 @@ export default function CreateVenueWizard() {
             <div className="space-y-6">
               <Input label="Venue Name" name="name" value={formData.name} onChange={handleChange} placeholder="e.g. Skyline Rooftop" required />
               <div className="space-y-1">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Venue Category<span className="text-red-500 ml-1">*</span></label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Venue Category<span className="text-red-500 ml-1">*</span></label>
                 <Select
                   value={formData.category_id}
                   onChange={(val) => setFormData(prev => ({ ...prev, category_id: val }))}
@@ -536,13 +536,13 @@ export default function CreateVenueWizard() {
                 />
               </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">Description</label>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Description</label>
               <textarea 
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 rows={4}
-                className="w-full px-3 py-2 rounded-md border border-zinc-200 dark:border-ink-800 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
+                className="w-full px-3 py-2 rounded-md border border-zinc-200 dark:border-ink-700 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                 placeholder="Describe your venue..."
               />
             </div>
@@ -550,7 +550,7 @@ export default function CreateVenueWizard() {
               <Input label="Min Capacity" name="min_capacity" type="number" min={1} value={formData.min_capacity} onChange={handleChange} placeholder="e.g. 50" />
               <Input label="Max Capacity" name="max_capacity" type="number" min={1} required value={formData.max_capacity} onChange={handleChange} placeholder="e.g. 300" />
             </div>
-            <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-ink-800">
+            <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-ink-700">
               <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Location</h4>
               <Input label="Address Line 1" name="address_line1" required value={formData.address_line1} onChange={handleChange} placeholder="Street address" />
               <Input label="Address Line 2" name="address_line2" value={formData.address_line2} onChange={handleChange} placeholder="Suite, floor, etc. (optional)" />
@@ -567,7 +567,7 @@ export default function CreateVenueWizard() {
               </div>
               <div className="pt-2">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Pinpoint Location on Map</label>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Pinpoint Location on Map</label>
                   <Button 
                     variant="secondary" 
                     size="sm" 
@@ -609,7 +609,7 @@ export default function CreateVenueWizard() {
                     })
                   }}
                 />
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Click on the map to set the exact coordinates of your venue.</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Click on the map to set the exact coordinates of your venue.</p>
               </div>
             </div>
           </div>
@@ -617,9 +617,9 @@ export default function CreateVenueWizard() {
 
         {currentStep === 1 && (
           <div className="space-y-6">
-            <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-ink-800 rounded-xl bg-zinc-50 dark:bg-ink-800 relative">
+            <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-ink-700 rounded-xl bg-zinc-50 dark:bg-ink-800 relative">
               <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Upload Photos</h4>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Drag and drop images here, or click to browse.</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Drag and drop images here, or click to browse.</p>
               <input 
                 type="file" 
                 multiple 
@@ -640,7 +640,7 @@ export default function CreateVenueWizard() {
                 <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Already Uploaded</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {existingPhotos.map((photo) => (
-                    <div key={photo.id} className="relative group rounded-lg overflow-hidden border border-zinc-200 dark:border-ink-800 aspect-video bg-zinc-100 dark:bg-ink-800">
+                    <div key={photo.id} className="relative group rounded-lg overflow-hidden border border-zinc-200 dark:border-ink-700 aspect-video bg-zinc-100 dark:bg-ink-800">
                       <img src={photo.image_url} loading="lazy" className="w-full h-full object-cover" alt="Venue Photo" />
                       <button
                         type="button"
@@ -675,7 +675,7 @@ export default function CreateVenueWizard() {
                 <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">New Photos (Ready to upload)</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {photos.map((file, i) => (
-                    <div key={i} className="relative group rounded-lg overflow-hidden border border-zinc-200 dark:border-ink-800 aspect-video bg-zinc-100 dark:bg-ink-800">
+                    <div key={i} className="relative group rounded-lg overflow-hidden border border-zinc-200 dark:border-ink-700 aspect-video bg-zinc-100 dark:bg-ink-800">
                       <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" alt="Preview" />
                       <button
                         type="button"
@@ -698,9 +698,9 @@ export default function CreateVenueWizard() {
               <TimeSelect label="Closing Time" name="close_time" required value={formData.close_time} onChange={handleChange} />
               <label className="flex items-center gap-2">
                 <input type="checkbox" name="spans_next_day" checked={formData.spans_next_day} onChange={handleChange} className="rounded text-brand focus:ring-brand" />
-                <span className="text-sm text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Closes next day</span>
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">Closes next day</span>
               </label>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 italic mt-4">Per-day overrides can be set after creating the venue.</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 italic mt-4">Per-day overrides can be set after creating the venue.</p>
             </div>
         )}
 
@@ -709,18 +709,18 @@ export default function CreateVenueWizard() {
             <div className="space-y-4">
               <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Allowed Booking Types</h4>
               <div className="flex gap-6">
-                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 cursor-pointer">
+                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer">
                   <input type="checkbox" checked={formData.allowed_booking_types.includes('full_day')} onChange={() => handleBookingTypeToggle('full_day')} className="rounded text-brand focus:ring-brand w-4 h-4" />
                   Full Day
                 </label>
-                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 cursor-pointer">
+                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer">
                   <input type="checkbox" checked={formData.allowed_booking_types.includes('time_slot')} onChange={() => handleBookingTypeToggle('time_slot')} className="rounded text-brand focus:ring-brand w-4 h-4" />
                   Time Slot
                 </label>
               </div>
             </div>
 
-            <div className="space-y-8 pt-6 border-t border-zinc-100 dark:border-ink-800">
+            <div className="space-y-8 pt-6 border-t border-zinc-100 dark:border-ink-700">
               <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Booking Limits & Buffers</h4>
               
               <div className="space-y-6 max-w-3xl">
@@ -740,27 +740,27 @@ export default function CreateVenueWizard() {
               </div>
             </div>
 
-            <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+            <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
               <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Booking Mode</h4>
               <div className="flex gap-6 mt-2">
-                <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
+                <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-700 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
                   <input type="radio" name="booking_mode" value="MANUAL" checked={formData.booking_mode === 'MANUAL'} onChange={handleChange} className="mt-1 text-brand focus:ring-brand w-4 h-4" />
                   <div>
                     <span className="block text-sm font-bold text-zinc-900 dark:text-zinc-100">Request to Book (Manual)</span>
-                    <span className="block text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">You must manually review and Accept/Reject each booking request.</span>
+                    <span className="block text-xs text-zinc-500 dark:text-zinc-400 mt-1">You must manually review and Accept/Reject each booking request.</span>
                   </div>
                 </label>
-                <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
+                <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-700 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
                   <input type="radio" name="booking_mode" value="INSTANT" checked={formData.booking_mode === 'INSTANT'} onChange={handleChange} className="mt-1 text-brand focus:ring-brand w-4 h-4" />
                   <div>
                     <span className="block text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">Instant Booking <span className="px-1.5 py-0.5 bg-brand-100 text-brand-700 text-[10px] uppercase rounded font-bold tracking-wider">Recommended</span></span>
-                    <span className="block text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Customers can instantly secure dates. No manual approval required.</span>
+                    <span className="block text-xs text-zinc-500 dark:text-zinc-400 mt-1">Customers can instantly secure dates. No manual approval required.</span>
                   </div>
                 </label>
               </div>
             </div>
 
-            <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+            <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
               <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Approval Settings</h4>
               <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} required={formData.booking_mode === 'MANUAL'} disabled={formData.booking_mode === 'INSTANT'} value={formData.owner_action_window_hours} onChange={handleChange} helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
             </div>
@@ -799,12 +799,12 @@ export default function CreateVenueWizard() {
               <Input label="Tier 3: Cancel before (Hours) (Optional)" name="tier_3_hours" type="number" min={1} value={formData.tier_3_hours} onChange={handleChange} placeholder="e.g. 24" suffix={formData.tier_3_hours && Number(formData.tier_3_hours) > 0 ? `≈ ${parseFloat((Number(formData.tier_3_hours) / 24).toFixed(2))} days` : undefined} />
               <Input label="Refund % (Optional)" name="tier_3_refund_pct" type="number" step="0.01" min={0} max={100} value={formData.tier_3_refund_pct} onChange={handleChange} placeholder="e.g. 25" />
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100 dark:border-ink-800">
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100 dark:border-ink-700">
               <Input label="No Show Refund (%)" name="no_show_refund_pct" type="number" step="0.01" min={0} max={100} required value={formData.no_show_refund_pct} onChange={handleChange} info="The percentage of the collected amount (excluding platform fees) refunded if the customer cancels late or fails to show up." />
               <Input label="Overdue Advance Refund (%)" name="overdue_advance_refund_pct" type="number" step="0.01" min={0} max={100} required value={formData.overdue_advance_refund_pct} onChange={handleChange} info="The percentage of the advance deposit refunded to the customer if you choose to issue a Goodwill Cancellation when they fail to pay their balance on time." />
             </div>
-            <div className="pt-4 border-t border-zinc-100 dark:border-ink-800">
-              <label className="flex items-center text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">
+            <div className="pt-4 border-t border-zinc-100 dark:border-ink-700">
+              <label className="flex items-center text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                 Additional Policy Notes (Optional)
                 <InfoTooltip content="Any extra rules, exceptions, or specific conditions regarding cancellations and refunds (e.g., weather policies, rescheduling rules)." />
               </label>
@@ -813,7 +813,7 @@ export default function CreateVenueWizard() {
                 value={formData.notes}
                 onChange={handleChange}
                 rows={3}
-                className="w-full px-3 py-2 rounded-md border border-zinc-200 dark:border-ink-800 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
+                className="w-full px-3 py-2 rounded-md border border-zinc-200 dark:border-ink-700 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                 placeholder="e.g. In case of severe weather, full refunds are provided regardless of the cancellation window."
               />
             </div>
@@ -824,7 +824,7 @@ export default function CreateVenueWizard() {
           <div className="space-y-4">
             <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Select Amenities</h4>
             {platformAmenities.length === 0 ? (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Loading amenities...</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading amenities...</p>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {platformAmenities.map(amenity => {
@@ -835,7 +835,7 @@ export default function CreateVenueWizard() {
                     <label 
                       key={amenity.id} 
                       className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                        isSelected ? 'border-brand bg-brand/5' : 'border-zinc-200 dark:border-ink-800 hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800'
+                        isSelected ? 'border-brand bg-brand/5' : 'border-zinc-200 dark:border-ink-700 hover:bg-zinc-50 dark:hover:bg-ink-800'
                       }`}
                     >
                       <input 
@@ -850,8 +850,8 @@ export default function CreateVenueWizard() {
                         }}
                         className="rounded text-brand focus:ring-brand sr-only" 
                       />
-                      <Icon className={`h-5 w-5 ${isSelected ? 'text-brand' : 'text-zinc-400 dark:text-zinc-500'}`} />
-                      <span className={`text-sm font-medium ${isSelected ? 'text-brand-hover' : 'text-zinc-700 dark:text-zinc-300 dark:text-zinc-600'}`}>
+                      <Icon className={`h-5 w-5 ${isSelected ? 'text-brand' : 'text-zinc-400 dark:text-zinc-400'}`} />
+                      <span className={`text-sm font-medium ${isSelected ? 'text-brand-hover' : 'text-zinc-700 dark:text-zinc-300'}`}>
                         {amenity.name}
                       </span>
                     </label>

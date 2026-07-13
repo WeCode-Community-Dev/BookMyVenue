@@ -50,12 +50,18 @@ _JOB_CATALOG = [
     },
     {
         "name": "completion",
-        "description": "Marks confirmed, fully-paid bookings completed once the event date has passed.",
+        "description": (
+            "Marks confirmed, fully-paid bookings completed "
+            "once the event date has passed."
+        ),
         "queue_type": "Polling sweep",
     },
     {
         "name": "payment_reminders",
-        "description": "Reminds accepted-but-unpaid users to pay the token advance before their hold expires.",
+        "description": (
+            "Reminds accepted-but-unpaid users to pay the token advance "
+            "before their hold expires."
+        ),
         "queue_type": "Polling sweep",
     },
     {
@@ -65,7 +71,10 @@ _JOB_CATALOG = [
     },
     {
         "name": "overdue_autocancel",
-        "description": "Auto-cancels bookings whose owner action window has expired (forfeits advance).",
+        "description": (
+            "Auto-cancels bookings whose owner action window has expired "
+            "(forfeits advance)."
+        ),
         "queue_type": "Polling sweep",
     },
     {
@@ -122,8 +131,7 @@ def get_platform_settings() -> dict:
 
     schedule_labels = _job_schedule_labels()
     jobs = [
-        {**job, "schedule": schedule_labels.get(job["name"], "Unscheduled")}
-        for job in _JOB_CATALOG
+        {**job, "schedule": schedule_labels.get(job["name"], "Unscheduled")} for job in _JOB_CATALOG
     ]
 
     return {
