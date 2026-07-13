@@ -20,6 +20,10 @@ const Notifications = lazy(() => import('./pages/Notifications'))
 const PaymentResult = lazy(() => import('./pages/PaymentResult'))
 const DeepResearch = lazy(() => import('./pages/DeepResearch'))
 const SavedVenues = lazy(() => import('./pages/SavedVenues'))
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsOfService = lazy(() => import('./pages/TermsOfService'))
+const ContactUs = lazy(() => import('./pages/ContactUs'))
+const HelpCenter = lazy(() => import('./pages/HelpCenter'))
 
 export const router = createBrowserRouter([
   // public routes
@@ -32,6 +36,10 @@ export const router = createBrowserRouter([
   { path: '/register/success', element: <RegisterSuccess /> },
   { path: '/forgot-password', element: <ForgotPassword /> },
   { path: '/reset-password', element: <ResetPassword /> },
+  { path: '/privacy', element: <PrivacyPolicy /> },
+  { path: '/terms', element: <TermsOfService /> },
+  { path: '/contact', element: <ContactUs /> },
+  { path: '/help', element: <HelpCenter /> },
 
   // protected routes — require any authenticated user
   {

@@ -18,11 +18,11 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-def send_email(to: str, subject: str, html: str) -> bool:
+def send_email(to: str, subject: str, html: str, reply_to: str | None = None) -> bool:
     if settings.resend_api_key:
-        return _send_via_resend(to, subject, html)
+        return _send_via_resend(to, subject, html, reply_to)
     if settings.smtp_host:
-        return _send_via_smtp(to, subject, html)
+        return _send_via_smtp(to, subject, html, reply_to)
     logger.warning(
         "No email transport configured (RESEND_API_KEY / SMTP_HOST unset); "
         "skipping email to %s: %r",
@@ -32,29 +32,32 @@ def send_email(to: str, subject: str, html: str) -> bool:
     return False
 
 
-def _send_via_resend(to: str, subject: str, html: str) -> bool:
+def _send_via_resend(to: str, subject: str, html: str, reply_to: str | None = None) -> bool:
     import resend
 
     resend.api_key = settings.resend_api_key
-    resend.Emails.send(
-        {
-            "from": settings.email_from,
-            "to": [to],
-            "subject": subject,
-            "html": html,
-        }
-    )
+    payload = {
+        "from": settings.email_from,
+        "to": [to],
+        "subject": subject,
+        "html": html,
+    }
+    if reply_to:
+        payload["reply_to"] = [reply_to]
+    resend.Emails.send(payload)
     logger.info("Sent email via Resend to %s: %r", to, subject)
     return True
 
 
-def _send_via_smtp(to: str, subject: str, html: str) -> bool:
+def _send_via_smtp(to: str, subject: str, html: str, reply_to: str | None = None) -> bool:
     msg = EmailMessage()
     msg["From"] = settings.email_from
     msg["To"] = to
     msg["Subject"] = subject
     msg["Date"] = formatdate(localtime=True)
     msg["Message-ID"] = make_msgid(domain=settings.smtp_host)
+    if reply_to:
+        msg["Reply-To"] = reply_to
     msg.set_content("This email requires an HTML-capable client.")
     msg.add_alternative(html, subtype="html")
 

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createClient, venueEndpoints } from '@venue404/api-client'
 import { Link, useNavigate } from 'react-router-dom'
 import { AppNavbar } from '../components/shared/AppNavbar'
+import { HomeFooter } from '../components/home/HomeFooter'
 import { VenueCard } from '../components/home/VenueCard'
 import { useLikes } from '../lib/useLikes'
 
@@ -84,6 +85,7 @@ export default function SavedVenues() {
           </div>
         )}
       </main>
+      <HomeFooter />
     </div>
   )
 }

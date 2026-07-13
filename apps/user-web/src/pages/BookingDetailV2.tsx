@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import { createClient, bookingEndpoints, venueEndpoints } from '@venue404/api-client'
 import { AppNavbar } from '../components/shared/AppNavbar'
+import { HomeFooter } from '../components/home/HomeFooter'
 import {
   BookingHeader,
   BookingHero,
@@ -143,6 +144,7 @@ export default function BookingDetailV2() {
           </aside>
         </div>
       </div>
+      <HomeFooter />
     </div>
   )
 }

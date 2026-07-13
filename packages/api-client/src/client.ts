@@ -9,6 +9,28 @@ export class ApiError extends Error {
   }
 }
 
+// FastAPI validation errors (422) send `detail` as a list of
+// { loc: (string | number)[], msg: string, type: string }, not a string —
+// stringify it into something readable instead of "[object Object]".
+function formatErrorDetail(detail: unknown, fallback: string): string {
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    return detail
+      .map((err) => {
+        if (err && typeof err === 'object' && 'msg' in err) {
+          const loc = Array.isArray((err as { loc?: unknown[] }).loc)
+            ? (err as { loc: unknown[] }).loc.filter((p) => p !== 'body').join('.')
+            : undefined
+          const msg = String((err as { msg: unknown }).msg)
+          return loc ? `${loc}: ${msg}` : msg
+        }
+        return String(err)
+      })
+      .join('; ')
+  }
+  return fallback
+}
+
 export function createClient() {
   async function request<T>(method: string, path: string, body?: any): Promise<T> {
     const token = await getAccessToken()
@@ -32,8 +54,9 @@ export function createClient() {
     }
 
     if (!res.ok) {
-      const detail = await res.json().catch(() => ({ detail: res.statusText }))
-      throw new ApiError(res.status, detail?.detail ?? `${method} ${path} → ${res.status}`)
+      const body = await res.json().catch(() => ({ detail: res.statusText }))
+      const fallback = `${method} ${path} → ${res.status}`
+      throw new ApiError(res.status, formatErrorDetail(body?.detail, fallback))
     }
 
     if (res.status === 204 || res.headers.get('content-length') === '0') {

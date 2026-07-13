@@ -9,6 +9,7 @@ import { useEligibleBookings } from '../hooks/useReviews'
 import { toUtcIso } from '../utils'
 
 import { AppNavbar } from '../components/shared/AppNavbar'
+import { HomeFooter } from '../components/home/HomeFooter'
 import { VenueGallery } from '../components/venue/VenueGallery'
 import { VenueInfo } from '../components/venue/VenueInfo'
 import { AmenitiesList } from '../components/venue/AmenitiesList'
@@ -330,6 +331,7 @@ export default function VenueDetails() {
         {(isError || (!isLoading && !venue)) && <VenueNotFound onBack={() => navigate('/')} />}
         {venue && <VenueContent venue={venue} />}
       </main>
+      <HomeFooter />
     </div>
   )
 }

@@ -50,3 +50,15 @@ def enforce_daily_limit(user_id: UUID, action: str, limit: int) -> None:
         ttl_seconds=90_000,  # 25h, covers clock drift across the day boundary
         detail=f"Daily limit of {limit} deep research requests reached — try again tomorrow.",
     )
+
+
+def enforce_ip_hourly_limit(ip: str, action: str, limit: int) -> None:
+    """For public, unauthenticated endpoints with no user_id to key on."""
+    window = int(time.time() // 3600)
+    key = f"rl:{action}:ip:{ip}:{window}"
+    _check(
+        key,
+        limit,
+        ttl_seconds=3600,
+        detail="Too many requests from this address. Please try again later.",
+    )
