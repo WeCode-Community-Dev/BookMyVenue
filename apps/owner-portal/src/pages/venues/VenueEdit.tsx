@@ -389,7 +389,7 @@ export default function VenueEdit() {
   }
 
   if (!venue) {
-    return <div className="text-center py-12 text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Venue not found.</div>
+    return <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">Venue not found.</div>
   }
 
   const portalTarget = typeof document !== 'undefined' ? document.getElementById('topbar-portal-target') : null;
@@ -397,7 +397,7 @@ export default function VenueEdit() {
   return (
     <div className="max-w-4xl mx-auto pb-12 space-y-6 pt-6">
       {portalTarget && createPortal(
-        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors flex items-center gap-1.5 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-ink-800">
+        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors flex items-center gap-1.5 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-700 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-ink-800">
           <ArrowLeft className="h-4 w-4" />
           Back to Overview
         </Link>,
@@ -407,7 +407,7 @@ export default function VenueEdit() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="">
-          <div className="flex items-center justify-between p-5 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
+          <div className="flex items-center justify-between p-5 border-b border-zinc-100 dark:border-ink-700 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
             <div>
               <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{titleMap[editSection] || 'Venue'}</h2>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">Update your venue settings below.</p>
@@ -437,7 +437,7 @@ export default function VenueEdit() {
               <Input label="Venue Name" name="name" defaultValue={venue.name} required />
               
               <div className="space-y-1">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Venue Category<span className="text-red-500 ml-1">*</span></label>
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Venue Category<span className="text-red-500 ml-1">*</span></label>
                 <Select
                   name="category_id"
                   value={venue.category?.id || ''}
@@ -450,12 +450,12 @@ export default function VenueEdit() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">Description</label>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Description</label>
                 <textarea 
                   name="description"
                   rows={4}
                   defaultValue={venue.description || ''}
-                  className="w-full px-3 py-2 rounded-md border border-zinc-200 dark:border-ink-800"
+                  className="w-full px-3 py-2 rounded-md border border-zinc-200 dark:border-ink-700 bg-white dark:bg-ink-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors"
                 />
               </div>
 
@@ -464,7 +464,7 @@ export default function VenueEdit() {
                   <Input label="Max Capacity" name="max_capacity" type="number" min={1} defaultValue={venue.max_capacity} required />
                 </div>
 
-              <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-ink-800">
+              <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-ink-700">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Location</h4>
                 <Input label="Address Line 1" name="address_line1" value={venue.address_line1 || ''} onChange={e => setVenue(prev => prev ? { ...prev, address_line1: e.target.value } : null)} required />
                 <Input label="Address Line 2" name="address_line2" value={venue.address_line2 || ''} onChange={e => setVenue(prev => prev ? { ...prev, address_line2: e.target.value } : null)} />
@@ -481,7 +481,7 @@ export default function VenueEdit() {
                 </div>
                 <div className="pt-2">
                   <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">Pinpoint Location on Map</label>
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Pinpoint Location on Map</label>
                     <Button 
                       variant="secondary" 
                       size="sm" 
@@ -524,7 +524,7 @@ export default function VenueEdit() {
                       })
                     }}
                   />
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Click on the map to set the exact coordinates of your venue.</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Click on the map to set the exact coordinates of your venue.</p>
                 </div>
               </div>
             </div>
@@ -535,7 +535,7 @@ export default function VenueEdit() {
               <div className="space-y-4">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Allowed Booking Types</h4>
                 <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">
+                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     <input 
                       type="checkbox" 
                       name="allow_full_day" 
@@ -545,7 +545,7 @@ export default function VenueEdit() {
                     />
                     Full Day
                   </label>
-                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">
+                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                     <input 
                       type="checkbox" 
                       name="allow_time_slot" 
@@ -558,7 +558,7 @@ export default function VenueEdit() {
                 </div>
               </div>
 
-              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Booking Limits & Buffers</h4>
                 <div className="space-y-6 max-w-3xl">
                   <div className="grid md:grid-cols-2 gap-12">
@@ -577,27 +577,27 @@ export default function VenueEdit() {
                 </div>
               </div>
 
-              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Booking Mode</h4>
                 <div className="flex gap-5 mt-2">
-                  <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
+                  <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-700 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
                     <input type="radio" name="booking_mode" value="MANUAL" checked={venue.booking_mode !== 'INSTANT'} onChange={() => setVenue(prev => prev ? { ...prev, booking_mode: 'MANUAL' } : null)} className="mt-1 text-brand focus:ring-brand w-4 h-4" />
                     <div>
                       <span className="block text-sm font-bold text-zinc-900 dark:text-zinc-100">Request to Book (Manual)</span>
-                      <span className="block text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">You must manually review and Accept/Reject each booking request.</span>
+                      <span className="block text-xs text-zinc-500 dark:text-zinc-400 mt-1">You must manually review and Accept/Reject each booking request.</span>
                     </div>
                   </label>
-                  <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
+                  <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl border border-zinc-200 dark:border-ink-700 bg-white dark:bg-ink-950 flex-1 hover:border-brand-300 transition-colors">
                     <input type="radio" name="booking_mode" value="INSTANT" checked={venue.booking_mode === 'INSTANT'} onChange={() => setVenue(prev => prev ? { ...prev, booking_mode: 'INSTANT' } : null)} className="mt-1 text-brand focus:ring-brand w-4 h-4" />
                     <div>
                       <span className="block text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">Instant Booking <span className="px-1.5 py-0.5 bg-brand-100 text-brand-700 text-[10px] uppercase rounded font-bold tracking-wider">Recommended</span></span>
-                      <span className="block text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">Customers can instantly secure dates. No manual approval required.</span>
+                      <span className="block text-xs text-zinc-500 dark:text-zinc-400 mt-1">Customers can instantly secure dates. No manual approval required.</span>
                     </div>
                   </label>
                 </div>
               </div>
 
-              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Approval Window</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} defaultValue={venue.owner_action_window_hours} required={venue.booking_mode !== 'INSTANT'} disabled={venue.booking_mode === 'INSTANT'} helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
@@ -618,10 +618,10 @@ export default function VenueEdit() {
                     <Input label="Hourly Rate (₹) (Time Slot)" name="hourly_rate" type="number" min={0} defaultValue={(venue.hourly_rate_paise || 0) / 100} disabled={!allowTimeSlot} required={allowTimeSlot} info="The price per hour for short time-slot bookings." />
                   </div>
                 </div>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 italic mt-2">Prices will only be applied if the corresponding booking type is enabled in Booking Settings.</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 italic mt-2">Prices will only be applied if the corresponding booking type is enabled in Booking Settings.</p>
               </div>
 
-              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Payment Terms</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <Input label="Token Advance (%)" name="advance_pct" type="number" step="0.01" min={0.01} max={100} defaultValue={venue.advance_pct} required info="The percentage of the total booking cost required upfront to secure the reservation." />
@@ -681,8 +681,8 @@ export default function VenueEdit() {
               </div>
 
               {(!localPhotos || localPhotos.length === 0) ? (
-                <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-ink-800 rounded-xl bg-zinc-50 dark:bg-ink-800">
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">No photos uploaded yet.</p>
+                <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-ink-700 rounded-xl bg-zinc-50 dark:bg-ink-800">
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">No photos uploaded yet.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -779,10 +779,10 @@ export default function VenueEdit() {
             <div className="space-y-4">
               <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Select Amenities</h4>
               {platformAmenities.length === 0 ? (
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">Loading amenities...</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading amenities...</p>
               ) : !isEditing && selectedAmenities.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-ink-800 rounded-xl bg-zinc-50 dark:bg-ink-800">
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">No amenities selected.</p>
+                <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-ink-700 rounded-xl bg-zinc-50 dark:bg-ink-800">
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">No amenities selected.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -796,7 +796,7 @@ export default function VenueEdit() {
                       <label 
                         key={amenity.id} 
                         className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                          isSelected ? 'border-brand bg-brand/5' : 'border-zinc-200 dark:border-ink-800 hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800'
+                          isSelected ? 'border-brand dark:border-brand-muted bg-brand/5 dark:bg-brand/20' : 'border-zinc-200 dark:border-ink-700 hover:bg-zinc-50 dark:hover:bg-ink-800'
                         }`}
                       >
                         <input 
@@ -811,8 +811,8 @@ export default function VenueEdit() {
                           }}
                           className="rounded text-brand focus:ring-brand sr-only" 
                         />
-                        <Icon className={`h-5 w-5 ${isSelected ? 'text-brand' : 'text-zinc-400 dark:text-zinc-500'}`} />
-                        <span className={`text-sm font-medium ${isSelected ? 'text-brand-hover' : 'text-zinc-700 dark:text-zinc-300 dark:text-zinc-600'}`}>
+                        <Icon className={`h-5 w-5 ${isSelected ? 'text-brand dark:text-brand-muted' : 'text-zinc-400 dark:text-zinc-500'}`} />
+                        <span className={`text-sm font-medium ${isSelected ? 'text-brand-hover dark:text-brand-light' : 'text-zinc-700 dark:text-zinc-300'}`}>
                           {amenity.name}
                         </span>
                       </label>
@@ -831,29 +831,29 @@ export default function VenueEdit() {
               </div>
 
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 dark:bg-ink-800 p-4 rounded-lg border border-zinc-200 dark:border-ink-800">
+                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 dark:bg-ink-800 p-4 rounded-lg border border-zinc-200 dark:border-ink-700">
                   <HoursToDaysInput label="Tier 1: Cancel before (Hours)" name="tier_1_hours" type="number" min={1} defaultValue={venue.cancellation_policy?.tier_1_hours || ''} placeholder="e.g. 168" />
                   <Input label="Refund %" name="tier_1_refund_pct" type="number" step="0.01" min="0" max="100" defaultValue={venue.cancellation_policy?.tier_1_refund_pct || ''} placeholder="e.g. 100" />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 dark:bg-ink-800 p-4 rounded-lg border border-zinc-200 dark:border-ink-800">
+                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 dark:bg-ink-800 p-4 rounded-lg border border-zinc-200 dark:border-ink-700">
                   <HoursToDaysInput label="Tier 2: Cancel before (Hours)" name="tier_2_hours" type="number" min={1} defaultValue={venue.cancellation_policy?.tier_2_hours || ''} placeholder="e.g. 72" />
                   <Input label="Refund %" name="tier_2_refund_pct" type="number" step="0.01" min="0" max="100" defaultValue={venue.cancellation_policy?.tier_2_refund_pct || ''} placeholder="e.g. 50" />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 dark:bg-ink-800 p-4 rounded-lg border border-zinc-200 dark:border-ink-800">
+                <div className="grid grid-cols-2 gap-4 items-end bg-zinc-50 dark:bg-ink-800 p-4 rounded-lg border border-zinc-200 dark:border-ink-700">
                   <HoursToDaysInput label="Tier 3: Cancel before (Hours) (Optional)" name="tier_3_hours" type="number" min={1} defaultValue={venue.cancellation_policy?.tier_3_hours || ''} placeholder="e.g. 24" />
                   <Input label="Refund % (Optional)" name="tier_3_refund_pct" type="number" step="0.01" min="0" max="100" defaultValue={venue.cancellation_policy?.tier_3_refund_pct || ''} placeholder="e.g. 25" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-zinc-100 dark:border-ink-800">
+              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
                 <Input label="No Show Refund (%)" name="no_show_refund_pct" type="number" step="0.01" min="0" max="100" required defaultValue={venue.cancellation_policy?.no_show_refund_pct || '0'} info="The percentage of the collected amount (excluding platform fees) refunded if the customer cancels late or fails to show up." />
                 <Input label="Overdue Advance Refund (%)" name="overdue_advance_refund_pct" type="number" step="0.01" min="0" max="100" required defaultValue={venue.overdue_advance_refund_pct || '0'} info="The percentage of the advance deposit refunded to the customer if you choose to issue a Goodwill Cancellation when they fail to pay their balance on time." />
               </div>
 
-              <div className="pt-4 border-t border-zinc-100 dark:border-ink-800">
-                <label className="flex items-center text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">
+              <div className="pt-4 border-t border-zinc-100 dark:border-ink-700">
+                <label className="flex items-center text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                   Additional Policy Notes (Optional)
                   <InfoTooltip content="Any extra rules, exceptions, or specific conditions regarding cancellations and refunds (e.g., weather policies, rescheduling rules)." />
                 </label>
@@ -861,7 +861,7 @@ export default function VenueEdit() {
                   name="notes"
                   defaultValue={venue.cancellation_policy?.notes || ''}
                   rows={3}
-                  className="w-full px-3 py-2 rounded-md border border-zinc-200 dark:border-ink-800 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
+                  className="w-full px-3 py-2 rounded-md border border-zinc-200 dark:border-ink-700 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
                   placeholder="e.g. In case of severe weather, full refunds are provided regardless of the cancellation window."
                 />
               </div>
@@ -876,7 +876,7 @@ export default function VenueEdit() {
                   <TimeSelect label="Opening Time" name="open_time" value={venue.open_time || ''} onChange={e => setVenue(prev => prev ? { ...prev, open_time: e.target.value } : null)} required />
                   <TimeSelect label="Closing Time" name="close_time" value={venue.close_time || ''} onChange={e => setVenue(prev => prev ? { ...prev, close_time: e.target.value } : null)} required />
                 </div>
-                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">
+                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   <input type="checkbox" name="spans_next_day" defaultChecked={venue.spans_next_day} className="rounded text-brand focus:ring-brand" />
                   Operating hours span into the next day (e.g., closes after midnight)
                 </label>

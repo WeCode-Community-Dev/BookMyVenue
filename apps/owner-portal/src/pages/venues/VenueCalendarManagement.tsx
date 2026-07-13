@@ -196,12 +196,12 @@ export default function VenueCalendarManagement() {
           <Skeleton className="h-8 w-64 mb-2" />
           <Skeleton className="h-4 w-96" />
         </div>
-        <div className="flex gap-4 border-b border-zinc-200 dark:border-ink-800 mb-6 pb-2">
+        <div className="flex gap-4 border-b border-zinc-200 dark:border-ink-700 mb-6 pb-2">
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-6 w-32" />
         </div>
-        <div className="bg-zinc-50 dark:bg-ink-800 rounded-xl border border-zinc-200 dark:border-ink-800 overflow-hidden">
-          <div className="grid grid-cols-12 gap-4 p-4 border-b border-zinc-200 dark:border-ink-800">
+        <div className="bg-zinc-50 dark:bg-ink-800 rounded-xl border border-zinc-200 dark:border-ink-700 overflow-hidden">
+          <div className="grid grid-cols-12 gap-4 p-4 border-b border-zinc-200 dark:border-ink-700">
             <Skeleton className="col-span-3 h-5 w-full" />
             <Skeleton className="col-span-2 h-5 w-full" />
             <Skeleton className="col-span-3 h-5 w-full" />
@@ -209,7 +209,7 @@ export default function VenueCalendarManagement() {
             <Skeleton className="col-span-1 h-5 w-full" />
           </div>
           {[1,2,3,4,5,6,7].map(i => (
-            <div key={i} className="grid grid-cols-12 gap-4 p-4 items-center border-b border-zinc-100 dark:border-ink-800 bg-white dark:bg-ink-900">
+            <div key={i} className="grid grid-cols-12 gap-4 p-4 items-center border-b border-zinc-100 dark:border-ink-700 bg-white dark:bg-ink-900">
               <Skeleton className="col-span-3 h-5 w-24" />
               <div className="col-span-2 flex justify-center"><Skeleton className="h-4 w-4 rounded" /></div>
               <Skeleton className="col-span-3 h-9 w-full rounded-md" />
@@ -227,7 +227,7 @@ export default function VenueCalendarManagement() {
   return (
     <div className="space-y-6 pb-12 max-w-5xl mx-auto pt-6">
       {portalTarget && createPortal(
-        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:text-zinc-100 transition-colors flex items-center gap-1.5 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800">
+        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-zinc-100 transition-colors flex items-center gap-1.5 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-700 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-ink-800">
           <ArrowLeft className="h-4 w-4" />
           Back to Overview
         </Link>,
@@ -242,11 +242,11 @@ export default function VenueCalendarManagement() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b border-zinc-200 dark:border-ink-800 mb-6">
+      <div className="flex gap-4 border-b border-zinc-200 dark:border-ink-700 mb-6">
         <button
           onClick={() => setActiveTab('weekly')}
           className={`pb-3 text-sm font-medium transition-colors relative ${
-            activeTab === 'weekly' ? 'text-brand' : 'text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:text-zinc-600'
+            activeTab === 'weekly' ? 'text-brand' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300'
           }`}
         >
           <div className="flex items-center gap-2">
@@ -260,7 +260,7 @@ export default function VenueCalendarManagement() {
         <button
           onClick={() => setActiveTab('blocked')}
           className={`pb-3 text-sm font-medium transition-colors relative ${
-            activeTab === 'blocked' ? 'text-brand' : 'text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:text-zinc-600'
+            activeTab === 'blocked' ? 'text-brand' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300'
           }`}
         >
           <div className="flex items-center gap-2">
@@ -278,12 +278,12 @@ export default function VenueCalendarManagement() {
         <div className="space-y-6">
           <div>
             <h4 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Manage Weekly Schedule</h4>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
               Set your standard operating hours for each day of the week. Uncheck the "Available" box if your venue is closed on a specific day.
             </p>
           </div>
-          <div className="bg-zinc-50 dark:bg-ink-800 rounded-xl border border-zinc-200 dark:border-ink-800 overflow-hidden">
-            <div className="grid grid-cols-12 gap-4 p-4 border-b border-zinc-200 dark:border-ink-800 bg-zinc-100/50 dark:bg-ink-950/50 font-medium text-sm text-zinc-700 dark:text-zinc-300">
+          <div className="bg-zinc-50 dark:bg-ink-800 rounded-xl border border-zinc-200 dark:border-ink-700 overflow-hidden">
+            <div className="grid grid-cols-12 gap-4 p-4 border-b border-zinc-200 dark:border-ink-700 bg-zinc-100/50 dark:bg-ink-950/50 font-medium text-sm text-zinc-700 dark:text-zinc-300">
               <div className="col-span-3">Day</div>
               <div className="col-span-2 text-center">Available</div>
               <div className="col-span-3">Opening Time</div>
@@ -347,12 +347,12 @@ export default function VenueCalendarManagement() {
         <div className="space-y-10">
           <div className="mb-2">
             <h4 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Manage Blocked Dates</h4>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-1">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
               Block out specific dates and times when your venue will be unavailable for booking (e.g., for maintenance, private events, or holidays). Blocked dates will override your standard weekly schedule.
             </p>
           </div>
           <div className="relative">
-            <form onSubmit={handleAddBlockedDate} className="bg-white dark:bg-ink-900 p-5 rounded-2xl border border-zinc-200 dark:border-ink-800 shadow-sm space-y-6 relative">
+            <form onSubmit={handleAddBlockedDate} className="bg-white dark:bg-ink-900 p-5 rounded-2xl border border-zinc-200 dark:border-ink-700 shadow-sm space-y-6 relative">
               {/* Subtle background gradient blob */}
               <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
@@ -364,14 +364,14 @@ export default function VenueCalendarManagement() {
                 </div>
                 <div className="flex-1">
                   <h4 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Add Blocked Date</h4>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5">Block off specific dates so no new bookings can be requested.</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Block off specific dates so no new bookings can be requested.</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
                 {/* Start Range */}
-                <div className="space-y-5 p-5 bg-gradient-to-br from-zinc-50 to-white dark:from-ink-800 dark:to-ink-900 rounded-xl border border-zinc-100 dark:border-ink-800 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
-                  <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-ink-800 pb-4">
+                <div className="space-y-5 p-5 bg-gradient-to-br from-zinc-50 to-white dark:from-ink-800 dark:to-ink-900 rounded-xl border border-zinc-100 dark:border-ink-700 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+                  <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-ink-700 pb-4">
                     <span className="w-7 h-7 rounded-full bg-brand/10 flex items-center justify-center text-sm font-bold text-brand">1</span>
                     <h5 className="font-semibold text-zinc-900 dark:text-zinc-100">Start Range</h5>
                   </div>
@@ -382,8 +382,8 @@ export default function VenueCalendarManagement() {
                 </div>
 
                 {/* End Range */}
-                <div className="space-y-5 p-5 bg-gradient-to-br from-zinc-50 to-white dark:from-ink-800 dark:to-ink-900 rounded-xl border border-zinc-100 dark:border-ink-800 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
-                  <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-ink-800 pb-4">
+                <div className="space-y-5 p-5 bg-gradient-to-br from-zinc-50 to-white dark:from-ink-800 dark:to-ink-900 rounded-xl border border-zinc-100 dark:border-ink-700 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)]">
+                  <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-ink-700 pb-4">
                     <span className="w-7 h-7 rounded-full bg-brand/10 flex items-center justify-center text-sm font-bold text-brand">2</span>
                     <h5 className="font-semibold text-zinc-900 dark:text-zinc-100">End Range</h5>
                   </div>
@@ -411,12 +411,12 @@ export default function VenueCalendarManagement() {
           <section>
             <h4 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-6">Upcoming Blocked Dates</h4>
             {blockedDates.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 px-4 bg-zinc-50/50 dark:bg-ink-950/20 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-ink-800">
-                <div className="w-16 h-16 bg-white dark:bg-ink-900 rounded-full flex items-center justify-center shadow-sm mb-4 border border-zinc-100 dark:border-ink-800">
+              <div className="flex flex-col items-center justify-center py-16 px-4 bg-zinc-50/50 dark:bg-ink-950/20 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-ink-700">
+                <div className="w-16 h-16 bg-white dark:bg-ink-900 rounded-full flex items-center justify-center shadow-sm mb-4 border border-zinc-100 dark:border-ink-700">
                   <Ban className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
                 </div>
                 <p className="text-zinc-600 dark:text-zinc-400 font-medium">No upcoming blocked dates.</p>
-                <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1 max-w-sm text-center">Dates you block will appear here so you can easily unblock them later.</p>
+                <p className="text-sm text-zinc-400 dark:text-zinc-400 mt-1 max-w-sm text-center">Dates you block will appear here so you can easily unblock them later.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
@@ -427,7 +427,7 @@ export default function VenueCalendarManagement() {
                   const timeOpts: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit' }
                   
                   return (
-                    <div key={block.id} className="group relative flex flex-col md:flex-row justify-between md:items-center p-5 pl-6 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 rounded-xl shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-all duration-300 overflow-hidden">
+                    <div key={block.id} className="group relative flex flex-col md:flex-row justify-between md:items-center p-5 pl-6 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-700 rounded-xl shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-all duration-300 overflow-hidden">
                       {/* Left border accent */}
                       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
 
@@ -437,26 +437,26 @@ export default function VenueCalendarManagement() {
                         </div>
                         <div>
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-zinc-900 dark:text-zinc-100 mb-2">
-                            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-ink-800 px-3 py-1.5 rounded-lg border border-zinc-100 dark:border-ink-800">
+                            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-ink-800 px-3 py-1.5 rounded-lg border border-zinc-100 dark:border-ink-700">
                               <span className="font-semibold">{start.toLocaleString('en-US', dateOpts)}</span>
-                              <span className="text-zinc-400 dark:text-zinc-500 text-sm font-normal">at</span>
+                              <span className="text-zinc-400 dark:text-zinc-400 text-sm font-normal">at</span>
                               <span className="font-medium text-brand">{start.toLocaleString('en-US', timeOpts)}</span>
                             </div>
                             <ArrowRight className="w-4 h-4 text-zinc-300 dark:text-zinc-600 hidden md:block" />
-                            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-ink-800 px-3 py-1.5 rounded-lg border border-zinc-100 dark:border-ink-800">
+                            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-ink-800 px-3 py-1.5 rounded-lg border border-zinc-100 dark:border-ink-700">
                               <span className="font-semibold">{end.toLocaleString('en-US', dateOpts)}</span>
-                              <span className="text-zinc-400 dark:text-zinc-500 text-sm font-normal">at</span>
+                              <span className="text-zinc-400 dark:text-zinc-400 text-sm font-normal">at</span>
                               <span className="font-medium text-brand">{end.toLocaleString('en-US', timeOpts)}</span>
                             </div>
                           </div>
                           
                           {block.reason ? (
-                            <div className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 flex items-center gap-2 mt-2">
+                            <div className="text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-2 mt-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
                               <span>{block.reason}</span>
                             </div>
                           ) : (
-                            <div className="text-sm text-zinc-400 dark:text-zinc-500 italic flex items-center gap-2 mt-2">
+                            <div className="text-sm text-zinc-400 dark:text-zinc-400 italic flex items-center gap-2 mt-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-zinc-200"></span>
                               <span>No specific reason provided</span>
                             </div>
