@@ -235,6 +235,7 @@ export type BookingOut = {
   balance_overdue_at?: string | null
   owner_action_deadline?: string | null
   display: BookingDisplay
+  created_at?: string | null
   payment_required?: boolean
   payment_expires_at?: string | null
   invoice_url?: string | null

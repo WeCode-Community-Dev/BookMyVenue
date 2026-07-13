@@ -1,7 +1,10 @@
+import base64
 import logging
+from datetime import datetime
 from uuid import UUID
 
 import numpy as np
+from sqlalchemy import case, tuple_
 from sqlalchemy import func as sa_func
 from sqlalchemy import or_, text
 from sqlalchemy.orm import Session, joinedload
@@ -15,11 +18,90 @@ from app.modules.search.category_intent import (
     detect_category_intents,
 )
 from app.modules.search.query_normalizer import normalize_query
-from app.modules.search.schemas import SearchParams, SearchResult
-from app.modules.venue.models import Venue, VenueCategory, VenuePhoto, VenueStatus
+from app.modules.search.schemas import SearchParams, SearchResult, SearchResultPage
+from app.modules.venue.models import BookingMode, Venue, VenueCategory, VenuePhoto, VenueStatus
 from app.shared.pagination import Page
 
 logger = logging.getLogger(__name__)
+
+# ── Keyset (cursor) pagination helpers ──────────────────────────────────────
+#
+# Cursors are opaque to the client: base64("<sort value>|<venue id>"). The
+# sort value's shape depends on `sort` (float rank, int price/capacity, or an
+# ISO timestamp for recency) — decoding always happens with the same `sort`
+# the cursor was minted under, so there's no ambiguity about how to parse it.
+
+
+def _encode_cursor(value: object, item_id: UUID) -> str:
+    raw = f"{value}|{item_id}"
+    return base64.urlsafe_b64encode(raw.encode()).decode()
+
+
+def _decode_cursor(cursor: str) -> tuple[str, str]:
+    try:
+        raw = base64.urlsafe_b64decode(cursor.encode()).decode()
+        value, _, item_id = raw.rpartition("|")
+        if not value or not item_id:
+            raise ValueError("malformed cursor")
+        return value, item_id
+    except Exception as exc:
+        raise ValueError("Invalid pagination cursor") from exc
+
+
+def _price_case():
+    return case(
+        (Venue.pricing_mode.in_(["flat", "mixed"]), Venue.starting_price_paise),
+        else_=Venue.hourly_rate_paise,
+    )
+
+
+# NULLS-last sentinels so venues without a price don't jump the queue on
+# price_asc, or get stranded at the front on price_desc.
+_PRICE_NULL_ASC_SENTINEL = 2_147_483_647
+_PRICE_NULL_DESC_SENTINEL = -1
+
+
+def _sort_expr(sort: str):
+    """ORM sort expression + direction for keyset pagination. `sort` is only
+    ever compared against a fixed literal set here — never interpolated into
+    SQL — so an unrecognized value just falls through to the default."""
+    if sort == "price_asc":
+        return sa_func.coalesce(_price_case(), _PRICE_NULL_ASC_SENTINEL), True
+    if sort == "price_desc":
+        return sa_func.coalesce(_price_case(), _PRICE_NULL_DESC_SENTINEL), False
+    if sort == "capacity_desc":
+        return Venue.max_capacity, False
+    return Venue.created_at, False  # "recommended"
+
+
+def _sort_value_from_venue(venue: Venue, sort: str):
+    if sort in ("price_asc", "price_desc"):
+        price = (
+            venue.starting_price_paise
+            if venue.pricing_mode in ("flat", "mixed")
+            else venue.hourly_rate_paise
+        )
+        if price is not None:
+            return price
+        return _PRICE_NULL_ASC_SENTINEL if sort == "price_asc" else _PRICE_NULL_DESC_SENTINEL
+    if sort == "capacity_desc":
+        return venue.max_capacity
+    return venue.created_at.isoformat()
+
+
+def _cast_cursor_value(value: str, sort: str):
+    if sort in ("price_asc", "price_desc", "capacity_desc"):
+        return int(value)
+    return datetime.fromisoformat(value)
+
+
+def _apply_orm_cursor(query, sort_expr, ascending: bool, cursor: str, sort: str):
+    cursor_value, cursor_id = _decode_cursor(cursor)
+    typed_value = _cast_cursor_value(cursor_value, sort)
+    keyset = tuple_(sort_expr, Venue.id)
+    if ascending:
+        return query.filter(keyset > tuple_(typed_value, UUID(cursor_id)))
+    return query.filter(keyset < tuple_(typed_value, UUID(cursor_id)))
 
 
 def _base_query(db: Session, params: SearchParams):
@@ -41,6 +123,8 @@ def _base_query(db: Session, params: SearchParams):
         )
     if params.capacity > 0:
         query = query.filter(Venue.max_capacity >= params.capacity)
+    if params.instant_booking:
+        query = query.filter(Venue.booking_mode == BookingMode.INSTANT)
     return query
 
 
@@ -84,6 +168,7 @@ def _to_results(
                 city=v.city,
                 category=v.category,
                 capacity=v.max_capacity,
+                booking_mode=v.booking_mode,
                 pricing_mode=v.pricing_mode,
                 starting_price_paise=starting_price,
                 display_price_min_paise=v.display_price_min_paise,
@@ -136,6 +221,9 @@ def search(db: Session, params: SearchParams) -> Page[SearchResult]:
     if params.capacity > 0:
         query = query.filter(Venue.max_capacity >= params.capacity)
 
+    if params.instant_booking:
+        query = query.filter(Venue.booking_mode == BookingMode.INSTANT)
+
     total_count = query.count()
 
     offset = (params.page - 1) * params.page_size
@@ -154,34 +242,55 @@ def search(db: Session, params: SearchParams) -> Page[SearchResult]:
 # ── FTS search ────────────────────────────────────────────────────────────────
 
 
-def search_fts(db: Session, params: SearchParams) -> Page[SearchResult]:
-    """Full-text search ranked by ts_rank. Requires search_vector to be populated."""
+def search_fts(db: Session, params: SearchParams) -> SearchResultPage:
+    """Full-text search, keyset-paginated via `sort`/`cursor`.
+
+    Note: when `params.q` is set, "recommended" still orders by recency
+    rather than ts_rank — this function is also hybrid_search's fallback
+    when embeddings are unavailable, and a single keyset scheme (one column
+    + id) keeps that fallback correct without threading a second, rank-based
+    cursor shape through the same code path.
+    """
     query = _base_query(db, params)
 
     if params.q:
         ts_query = sa_func.plainto_tsquery("english", params.q)
-        query = query.filter(
-            Venue.search_vector.op("@@")(ts_query),
-        ).order_by(sa_func.ts_rank(Venue.search_vector, ts_query).desc())
-    else:
-        query = query.order_by(Venue.created_at.desc())
+        query = query.filter(Venue.search_vector.op("@@")(ts_query))
 
     total_count = query.count()
-    offset = (params.page - 1) * params.page_size
-    venues = query.offset(offset).limit(params.page_size).all()
+
+    sort_expr, ascending = _sort_expr(params.sort)
+    query = query.order_by(
+        sort_expr.asc() if ascending else sort_expr.desc(),
+        Venue.id.asc() if ascending else Venue.id.desc(),
+    )
+
+    if params.cursor:
+        query = _apply_orm_cursor(query, sort_expr, ascending, params.cursor, params.sort)
+
+    venues = query.limit(params.page_size + 1).all()
+    has_more = len(venues) > params.page_size
+    venues = venues[: params.page_size]
+
     covers = _cover_photos(db, [v.id for v in venues])
-    return Page(
+
+    next_cursor = None
+    if has_more and venues:
+        last = venues[-1]
+        next_cursor = _encode_cursor(_sort_value_from_venue(last, params.sort), last.id)
+
+    return SearchResultPage(
         items=_to_results(venues, covers),
         total=total_count,
-        page=params.page,
-        page_size=params.page_size,
+        next_cursor=next_cursor,
+        has_more=has_more,
     )
 
 
 # ── Semantic search ───────────────────────────────────────────────────────────
 
 
-def search_semantic(db: Session, params: SearchParams) -> Page[SearchResult]:
+def search_semantic(db: Session, params: SearchParams) -> SearchResultPage:
     """Vector similarity search using Jina embeddings. Requires embedding to be populated."""
     from app.modules.search.indexer import generate_query_embedding
 
@@ -202,13 +311,16 @@ def search_semantic(db: Session, params: SearchParams) -> Page[SearchResult]:
 
     total_count = query.count()
     offset = (params.page - 1) * params.page_size
+    # Vector distance ordering isn't one of the keyset sort modes, so this
+    # branch stays offset-based — only reachable via the unpaginated /semantic
+    # debug route, not the venue listing's "Load more" flow.
     venues = query.offset(offset).limit(params.page_size).all()
     covers = _cover_photos(db, [v.id for v in venues])
-    return Page(
+    return SearchResultPage(
         items=_to_results(venues, covers),
         total=total_count,
-        page=params.page,
-        page_size=params.page_size,
+        next_cursor=None,
+        has_more=offset + len(venues) < total_count,
     )
 
 
@@ -314,7 +426,32 @@ def _log_hybrid_result_scores(rows, limit: int = 20) -> None:
         logger.exception("search_hybrid: result score logging failed")
 
 
-def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
+def _hybrid_sort_column(sort: str) -> str:
+    """SQL fragment for the `ranked` CTE column to sort/paginate by. `sort` is
+    matched against a fixed literal set — never interpolated as-is — so this
+    stays injection-safe regardless of what the caller passes."""
+    if sort == "price_asc":
+        return f"COALESCE(effective_price, {_PRICE_NULL_ASC_SENTINEL})"
+    if sort == "price_desc":
+        return f"COALESCE(effective_price, {_PRICE_NULL_DESC_SENTINEL})"
+    if sort == "capacity_desc":
+        return "max_capacity"
+    return "hybrid_score"
+
+
+def _hybrid_order_and_cast(sort: str) -> tuple[str, str, str]:
+    """Returns (ORDER BY clause, comparison op for the cursor predicate, SQL cast type)."""
+    col = _hybrid_sort_column(sort)
+    if sort == "price_asc":
+        return f"{col} ASC, id ASC", ">", "integer"
+    if sort == "price_desc":
+        return f"{col} DESC, id DESC", "<", "integer"
+    if sort == "capacity_desc":
+        return f"{col} DESC, id DESC", "<", "integer"
+    return f"{col} DESC, id DESC", "<", "double precision"
+
+
+def search_hybrid(db: Session, params: SearchParams) -> SearchResultPage:
     """Hybrid Search using Full-Text Search + Vector Search + Category Boost"""
 
     if not params.q:
@@ -402,21 +539,46 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
         base_filters.append("vc.slug = :venue_type")
         query_params["venue_type"] = params.venue_type
 
+    if params.instant_booking:
+        base_filters.append("v.booking_mode = :booking_mode")
+        query_params["booking_mode"] = BookingMode.INSTANT.value
+
     where_clause = " AND ".join(base_filters)
 
-    query_params["limit"] = params.page_size
-    query_params["offset"] = (params.page - 1) * params.page_size
+    # Fetch one extra row past page_size — its presence means there's another
+    # page, without a second round trip just to check.
+    query_params["limit"] = params.page_size + 1
+
+    order_by_sql, cmp_op, cast_type = _hybrid_order_and_cast(params.sort)
+    cursor_predicate = "TRUE"
+    if params.cursor:
+        # Lets a malformed cursor surface as a 400 at the route layer rather
+        # than silently resetting to page 1.
+        cursor_value, cursor_id = _decode_cursor(params.cursor)
+        sort_col = _hybrid_sort_column(params.sort)
+        query_params["cursor_value"] = cursor_value
+        query_params["cursor_id"] = cursor_id
+        cursor_predicate = (
+            f"({sort_col}, id) {cmp_op} "
+            f"(CAST(:cursor_value AS {cast_type}), CAST(:cursor_id AS uuid))"
+        )
 
     # Boost/score computed once in a CTE (was duplicated inline in both the
-    # `boost` column and `hybrid_score` expression) and total count comes
-    # from a window function on the same query instead of a separate
-    # COUNT(*) round trip over the whole WHERE clause.
+    # `boost` column and `hybrid_score` expression); `ranked` adds the
+    # hybrid_score + price/capacity columns needed for keyset pagination, and
+    # the total count comes from a window function computed before the
+    # cursor predicate is applied, so it reflects the full match set.
     rows_sql = text(f"""
         WITH scored AS (
             SELECT
                 v.id,
                 v.name,
                 vc.slug AS category_slug,
+                v.max_capacity,
+                CASE
+                    WHEN v.pricing_mode IN ('flat', 'mixed') THEN v.starting_price_paise
+                    ELSE v.hourly_rate_paise
+                END AS effective_price,
                 COALESCE(
                     ts_rank(v.search_vector, plainto_tsquery('english', :q)),
                     0
@@ -441,22 +603,28 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
             FROM venues v
             LEFT JOIN venue_categories vc ON vc.id = v.category_id
             WHERE {where_clause}
+        ),
+        ranked AS (
+            SELECT
+                id,
+                name,
+                category_slug,
+                max_capacity,
+                effective_price,
+                fts_score,
+                vector_score,
+                fts_matched,
+                vector_matched,
+                boost,
+                (:fts_weight * fts_score + :vector_weight * vector_score) * boost AS hybrid_score,
+                COUNT(*) OVER() AS total_count
+            FROM scored
         )
-        SELECT
-            id,
-            name,
-            category_slug,
-            fts_score,
-            vector_score,
-            fts_matched,
-            vector_matched,
-            boost,
-            (:fts_weight * fts_score + :vector_weight * vector_score) * boost AS hybrid_score,
-            COUNT(*) OVER() AS total_count
-        FROM scored
-        ORDER BY hybrid_score DESC
+        SELECT *
+        FROM ranked
+        WHERE {cursor_predicate}
+        ORDER BY {order_by_sql}
         LIMIT :limit
-        OFFSET :offset
     """)
 
     rows = db.execute(rows_sql, query_params).fetchall()
@@ -465,9 +633,12 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
         _log_hybrid_result_scores(rows)
 
     if not rows:
-        return Page(items=[], total=0, page=params.page, page_size=params.page_size)
+        return SearchResultPage(items=[], total=0, next_cursor=None, has_more=False)
 
     total = rows[0].total_count
+    has_more = len(rows) > params.page_size
+    rows = rows[: params.page_size]
+
     venue_ids: list[UUID] = [row.id for row in rows]
     scores = {
         row.id: {
@@ -495,9 +666,23 @@ def search_hybrid(db: Session, params: SearchParams) -> Page[SearchResult]:
     venues = [venues_by_id[vid] for vid in venue_ids if vid in venues_by_id]
     covers = _cover_photos(db, venue_ids)
 
-    return Page(
+    next_cursor = None
+    if has_more and rows:
+        last_row = rows[-1]
+        sort_value = {
+            "price_asc": last_row.effective_price,
+            "price_desc": last_row.effective_price,
+            "capacity_desc": last_row.max_capacity,
+        }.get(params.sort, last_row.hybrid_score)
+        if params.sort in ("price_asc", "price_desc") and sort_value is None:
+            sort_value = (
+                _PRICE_NULL_ASC_SENTINEL if params.sort == "price_asc" else _PRICE_NULL_DESC_SENTINEL
+            )
+        next_cursor = _encode_cursor(sort_value, last_row.id)
+
+    return SearchResultPage(
         items=_to_results(venues, covers, scores),
         total=total,
-        page=params.page,
-        page_size=params.page_size,
+        next_cursor=next_cursor,
+        has_more=has_more,
     )

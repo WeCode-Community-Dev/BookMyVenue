@@ -1,5 +1,5 @@
 import { createClient } from '../client'
-import type { Venue, VenuePhoto, Amenity, VenueAvailability, BlockedDate, VenueCategory, CalendarResponse, AvailabilityResponse, PricingQuote, ValidationResponse, SearchPage, PricingRule, PricingPreview, VenueListResponse, VenueStatsResponse, VenueOption } from '../model'
+import type { Venue, VenuePhoto, Amenity, VenueAvailability, BlockedDate, VenueCategory, CalendarResponse, AvailabilityResponse, PricingQuote, ValidationResponse, SearchPage, SearchResultPage, PricingRule, PricingPreview, VenueListResponse, VenueStatsResponse, VenueOption } from '../model'
 
 export const venueEndpoints = (client: ReturnType<typeof createClient>) => ({
   getVenueCategories: () => client.get<VenueCategory[]>('/api/venues/categories'),
@@ -46,7 +46,7 @@ export const venueEndpoints = (client: ReturnType<typeof createClient>) => ({
     const qs = new URLSearchParams(
       Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)]))
     ).toString()
-    return client.get<SearchPage>(`/api/search/hybrid?${qs}`)
+    return client.get<SearchResultPage>(`/api/search/hybrid?${qs}`)
   },
   getCancellationPolicy: (id: string) =>
     client.get<unknown>(`/api/venues/${id}/cancellation-policy`),

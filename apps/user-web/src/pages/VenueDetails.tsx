@@ -8,16 +8,16 @@ import { useAuthModal } from '../lib/AuthModalContext'
 import { useEligibleBookings } from '../hooks/useReviews'
 import { toUtcIso } from '../utils'
 
-import { AppNavbar }                from '../components/shared/AppNavbar'
-import { VenueGallery }             from '../components/venue/VenueGallery'
-import { VenueInfo }                from '../components/venue/VenueInfo'
-import { AmenitiesList }            from '../components/venue/AmenitiesList'
+import { AppNavbar } from '../components/shared/AppNavbar'
+import { VenueGallery } from '../components/venue/VenueGallery'
+import { VenueInfo } from '../components/venue/VenueInfo'
+import { AmenitiesList } from '../components/venue/AmenitiesList'
 import { VenueAvailabilitySection } from '../components/venue/VenueAvailabilitySection'
-import { VenueReserveCard }         from '../components/venue/VenueReserveCard'
-import { VenueReviews }             from '../components/venue/VenueReviews'
-import { VenueWhereYoullBe }        from '../components/venue/VenueWhereYoullBe'
-import { VenueMeetHost }            from '../components/venue/VenueMeetHost'
-import { VenueThingsToKnow }        from '../components/venue/VenueThingsToKnow'
+import { VenueReserveCard } from '../components/venue/VenueReserveCard'
+import { VenueReviews } from '../components/venue/VenueReviews'
+import { VenueWhereYoullBe } from '../components/venue/VenueWhereYoullBe'
+import { VenueMeetHost } from '../components/venue/VenueMeetHost'
+import { VenueThingsToKnow } from '../components/venue/VenueThingsToKnow'
 
 import type { VenueResponse, AvailabilityResponse, PricingQuote, BookingType } from '../types'
 
@@ -37,7 +37,10 @@ function VenueDetailSkeleton() {
           <div className="h-4 w-1/3 rounded bg-zinc-100 dark:bg-ink-800" />
           <div className="h-px w-full bg-zinc-100 dark:bg-ink-800" />
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-start gap-4 py-4 border-b border-zinc-50 dark:border-ink-800">
+            <div
+              key={i}
+              className="flex items-start gap-4 py-4 border-b border-zinc-50 dark:border-ink-800"
+            >
               <div className="h-6 w-6 rounded bg-zinc-100 dark:bg-ink-800" />
               <div className="flex-1 space-y-2">
                 <div className="h-3.5 w-2/3 rounded bg-zinc-100 dark:bg-ink-800" />
@@ -60,13 +63,28 @@ function VenueNotFound({ onBack }: { onBack: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-32 text-center">
       <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-ink-800">
-        <svg className="h-9 w-9 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        <svg
+          className="h-9 w-9 text-zinc-300"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
         </svg>
       </div>
       <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Venue not found</h2>
-      <p className="mt-2 max-w-sm text-sm text-zinc-500">This venue may have been removed or is not yet published.</p>
-      <button onClick={onBack} className="mt-8 inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300">
+      <p className="mt-2 max-w-sm text-sm text-zinc-500">
+        This venue may have been removed or is not yet published.
+      </p>
+      <button
+        onClick={onBack}
+        className="mt-8 inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+      >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
@@ -111,7 +129,6 @@ function useVenueBooking(venue: VenueResponse) {
 
       const computedStart = `${startDate}T${openH}:00`
       const computedEnd = `${endDate}T${closeH}:00`
-
 
       setSelectedStart(computedStart)
       setSelectedEnd(computedEnd)
@@ -208,7 +225,7 @@ function useVenueBooking(venue: VenueResponse) {
     let finalEnd = end
 
     if (finalStart && finalEnd && finalStart > finalEnd) {
-      [finalStart, finalEnd] = [finalEnd, finalStart]
+      ;[finalStart, finalEnd] = [finalEnd, finalStart]
     }
 
     setStartDate(finalStart)
@@ -269,20 +286,21 @@ function useVenueBooking(venue: VenueResponse) {
   }
 }
 
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function VenueDetails() {
-  const { id }   = useParams<{ id: string }>()
+  const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const client   = createClient()
+  const client = createClient()
 
-
-
-  const { data: venue, isLoading, isError } = useQuery({
+  const {
+    data: venue,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['venue', id],
-    queryFn:  () => venueEndpoints(client).getVenue(id!),
-    enabled:  !!id,
+    queryFn: () => venueEndpoints(client).getVenue(id!),
+    enabled: !!id,
   })
 
   return (
@@ -295,12 +313,17 @@ export default function VenueDetails() {
             className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-900 transition-colors dark:hover:text-zinc-100"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
             Back to results
           </button>
-          
-          {venue && <VenueActions venueId={venue.id} />}
+
+          {venue && <VenueActions venueId={venue.id} venueName={venue.name} />}
         </div>
 
         {isLoading && <VenueDetailSkeleton />}
@@ -313,12 +336,22 @@ export default function VenueDetails() {
 
 // ─── Venue Actions ────────────────────────────────────────────────────────────
 
-function VenueActions({ venueId }: { venueId: string }) {
+function VenueActions({ venueId, venueName }: { venueId: string; venueName: string }) {
   const { isLiked, toggleLike } = useLikes()
   const { user } = useAuth()
   const { openLogin } = useAuthModal()
+  const [shareState, setShareState] = useState<'idle' | 'shared' | 'copied' | 'failed'>('idle')
 
   const liked = isLiked(venueId)
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
+  const shareTitle = venueName ? `${venueName} on Venue404` : 'Check out this venue on Venue404'
+
+  useEffect(() => {
+    if (shareState === 'idle') return
+
+    const timeout = window.setTimeout(() => setShareState('idle'), 1600)
+    return () => window.clearTimeout(timeout)
+  }, [shareState])
 
   const handleLike = () => {
     if (!user) {
@@ -328,25 +361,116 @@ function VenueActions({ venueId }: { venueId: string }) {
     toggleLike(venueId)
   }
 
+  const handleShare = async () => {
+    if (!shareUrl) return
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share({
+          title: shareTitle,
+          text: `Check out ${shareTitle}`,
+          url: shareUrl,
+        })
+        setShareState('shared')
+        return
+      }
+
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl)
+        setShareState('copied')
+        return
+      }
+
+      window.prompt('Copy this link:', shareUrl)
+      setShareState('failed')
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
+
+      try {
+        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(shareUrl)
+          setShareState('copied')
+        }
+      } catch {
+        setShareState('failed')
+      }
+    }
+  }
+
+  const handleCopyLink = async () => {
+    if (!shareUrl) return
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl)
+        setShareState('copied')
+      } else {
+        window.prompt('Copy this link:', shareUrl)
+        setShareState('failed')
+      }
+    } catch {
+      setShareState('failed')
+    }
+  }
+
+  const shareLabel =
+    shareState === 'shared'
+      ? 'Shared'
+      : shareState === 'copied'
+        ? 'Copied'
+        : shareState === 'failed'
+          ? 'Copy manually'
+          : 'Share'
+
   return (
     <div className="flex items-center gap-2">
-      <button className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline dark:hover:text-zinc-100">
+      <button
+        type="button"
+        onClick={handleShare}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline dark:hover:text-zinc-100"
+      >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+          />
         </svg>
-        Share
+        {shareLabel}
       </button>
-      <button 
+      <button
+        type="button"
+        onClick={handleCopyLink}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline dark:hover:text-zinc-100"
+      >
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 16h8M8 12h8m-8-4h5"
+          />
+        </svg>
+        Copy link
+      </button>
+      <button
+        type="button"
         onClick={handleLike}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors underline-offset-2 hover:underline dark:hover:text-zinc-100"
       >
         <svg
           className={`h-4 w-4 transition-colors ${liked ? 'text-red-500' : ''}`}
-          fill={liked ? 'currentColor' : 'none'} 
-          stroke="currentColor" 
+          fill={liked ? 'currentColor' : 'none'}
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={liked ? 1 : 2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={liked ? 1 : 2}
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+          />
         </svg>
         {liked ? 'Saved' : 'Save'}
       </button>
@@ -361,14 +485,14 @@ function VenueContent({ venue }: { venue: VenueResponse }) {
   const { eligibleBookingIds } = useEligibleBookings(venue.id)
   const isInstantBooking = venue.booking_mode === 'INSTANT'
 
-    const [, setScrollTrigger] = useState(0)
+  const [, setScrollTrigger] = useState(0)
 
-    function scrollToAvailability() {
-      setScrollTrigger((n) => n + 1)
-      document
-        .getElementById('availability-section')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
+  function scrollToAvailability() {
+    setScrollTrigger((n) => n + 1)
+    document
+      .getElementById('availability-section')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
     <>

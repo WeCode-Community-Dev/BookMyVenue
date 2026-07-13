@@ -60,6 +60,17 @@ export type SearchResult = components['schemas']['SearchResult'] & {
 export type SearchPage = Omit<components['schemas']['Page_SearchResult_'], 'items'> & {
   items: SearchResult[]
 }
+// Hand-written until `pnpm generate` is run — mirrors SearchResultPage in
+// search/schemas.py. /search/hybrid and /search/fts now return this
+// keyset-paginated shape (next_cursor/has_more) instead of Page_SearchResult_
+// (page/page_size), which /search/ and Deep Research's internal_results
+// still use.
+export type SearchResultPage = {
+  items: SearchResult[]
+  total: number
+  next_cursor?: string | null
+  has_more: boolean
+}
 
 // Hand-written until `pnpm generate` is run against a live API (mirrors
 // app/modules/venue/schemas.py — VenuePricingRuleResponse / PricingBreakdownItem).

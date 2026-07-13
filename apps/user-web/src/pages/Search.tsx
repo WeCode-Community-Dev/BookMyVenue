@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { createClient, venueEndpoints } from '@venue404/api-client'
 
 import { HomeNavbar } from '../components/home/HomeNavbar'
@@ -8,13 +8,22 @@ import { FilterHero } from '../components/home/HeroSearch'
 import { VenueGrid } from '../components/home/VenueGrid'
 import { HomeFooter } from '../components/home/HomeFooter'
 
-async function searchVenues(params: URLSearchParams) {
+const PAGE_SIZE = 25
+
+type SortKey = 'recommended' | 'price_asc' | 'price_desc' | 'capacity_desc'
+
+async function fetchVenuePage(params: URLSearchParams, cursor: string | undefined) {
   const client = createClient()
-  const query: Record<string, string> = { page: '1', page_size: '100' }
+  const query: Record<string, string> = {
+    page_size: String(PAGE_SIZE),
+    sort: params.get('sort') || 'recommended',
+  }
   if (params.get('q')) query.q = params.get('q')!
   if (params.get('city')) query.city = params.get('city')!
   if (params.get('venue_type')) query.venue_type = params.get('venue_type')!
   if (params.get('capacity')) query.capacity = params.get('capacity')!
+  if (params.get('instant_booking')) query.instant_booking = params.get('instant_booking')!
+  if (cursor) query.cursor = cursor
   return venueEndpoints(client).hybrid_search(query)
 }
 
@@ -35,29 +44,57 @@ export default function Search() {
   }, [searchParams])
 
   const venueType = searchParams.get('venue_type') ?? ''
+  const instantBooking = searchParams.get('instant_booking') === 'true'
+  const sort = (searchParams.get('sort') as SortKey) ?? 'recommended'
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  // Cursor-paginated via useInfiniteQuery — the query key includes every
+  // filter/sort param, so changing any of them starts a fresh page 1 instead
+  // of appending onto stale results.
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ['venues', 'search', searchParams.toString()],
-    queryFn: () => searchVenues(searchParams),
+    queryFn: ({ pageParam }) => fetchVenuePage(searchParams, pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.has_more ? (lastPage.next_cursor ?? undefined) : undefined,
   })
 
-  const venues = data?.items ?? []
-  const total = data?.total ?? null
+  const venues = data?.pages.flatMap((p) => p.items) ?? []
+  const total = data?.pages[0]?.total ?? null
 
   function buildParams(
-    overrides: Partial<{ q: string; city: string; venue_type: string; capacity: string }> = {}
+    overrides: Partial<{
+      q: string
+      city: string
+      venue_type: string
+      capacity: string
+      instant_booking: boolean
+      sort: SortKey
+    }> = {}
   ) {
     const merged = {
       q: overrides.q ?? q,
       city: overrides.city ?? city,
       venue_type: overrides.venue_type ?? venueType,
       capacity: overrides.capacity ?? capacity,
+      instant_booking: overrides.instant_booking ?? instantBooking,
+      sort: overrides.sort ?? sort,
     }
     const next: Record<string, string> = {}
     if (merged.q) next.q = merged.q
     if (merged.city) next.city = merged.city
     if (merged.venue_type) next.venue_type = merged.venue_type
     if (merged.capacity) next.capacity = merged.capacity
+    if (merged.instant_booking) next.instant_booking = 'true'
+    if (merged.sort && merged.sort !== 'recommended') next.sort = merged.sort
     return next
   }
 
@@ -73,6 +110,14 @@ export default function Search() {
   function handleCapacityChange(value: string) {
     setCapacity(value)
     setSearchParams(buildParams({ capacity: value }))
+  }
+
+  function handleInstantBookingChange(value: boolean) {
+    setSearchParams(buildParams({ instant_booking: value }))
+  }
+
+  function handleSortChange(value: SortKey) {
+    setSearchParams(buildParams({ sort: value }))
   }
 
   function handleClearFilters() {
@@ -103,11 +148,18 @@ export default function Search() {
         hasFilters={true}
         venueType={venueType}
         capacity={capacity}
+        instantBooking={instantBooking}
+        sort={sort}
+        hasMore={!!hasNextPage}
+        loadingMore={isFetchingNextPage}
         onVenueClick={(id) => navigate(`/venues/${id}`)}
         onRetry={refetch}
         onClearFilters={handleClearFilters}
         onVenueTypeChange={handleVenueTypeChange}
         onCapacityChange={handleCapacityChange}
+        onInstantBookingChange={handleInstantBookingChange}
+        onSortChange={handleSortChange}
+        onLoadMore={() => fetchNextPage()}
       />
 
       <HomeFooter />

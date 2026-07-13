@@ -110,21 +110,34 @@ export default function BookingDetail() {
     <div className="page-enter min-h-screen bg-zinc-50 dark:bg-ink-950">
       <AppNavbar />
 
-      <div className="mx-auto max-w-6xl px-6 py-10">
-        <button
-          onClick={() => navigate(-1)}
-          className="press mb-6 inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:border-ink-800 dark:bg-ink-900 dark:text-zinc-300 dark:hover:bg-ink-800 dark:hover:text-zinc-100"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
+      <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mb-5 flex items-center gap-2 text-sm">
+          <button
+            onClick={() => navigate('/my-bookings')}
+            className="inline-flex items-center gap-1 text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            My Bookings
+          </button>
+
+          <svg
+            className="h-3.5 w-3.5 text-zinc-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
-          Back
-        </button>
+
+          <span className="font-medium text-zinc-900 dark:text-zinc-100">Booking Details</span>
+        </div>
 
         <div className="flex flex-col gap-6 lg:flex-row">
           <div className="min-w-0 flex-1 space-y-6">

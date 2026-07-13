@@ -13,7 +13,7 @@ const RegisterSuccess = lazy(() => import('./pages/RegisterSuccess'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
 const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const Checkout = lazy(() => import('./pages/Checkout'))
-const BookingDetails = lazy(() => import('./pages/BookingDetails'))
+const BookingDetailV2 = lazy(() => import('./pages/BookingDetailV2'))
 const Payment = lazy(() => import('./pages/Payment'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Notifications = lazy(() => import('./pages/Notifications'))
@@ -54,7 +54,7 @@ export const router = createBrowserRouter([
     path: '/bookings/:id',
     element: (
       <ProtectedRoute>
-        <BookingDetails />
+        <BookingDetailV2 />
       </ProtectedRoute>
     ),
   },

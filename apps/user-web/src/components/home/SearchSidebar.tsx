@@ -6,8 +6,10 @@ import type { VenueCategory } from '@venue404/api-client'
 type Props = {
   venueType: string
   capacity: string
+  instantBooking: boolean
   onVenueTypeChange: (type: string) => void
   onCapacityChange: (value: string) => void
+  onInstantBookingChange: (value: boolean) => void
   onClearFilters: () => void
   hasFilters: boolean
   totalResults: number | null
@@ -16,8 +18,10 @@ type Props = {
 export function SearchSidebar({
   venueType,
   capacity,
+  instantBooking,
   onVenueTypeChange,
   onCapacityChange,
+  onInstantBookingChange,
   onClearFilters,
   hasFilters,
 }: Props) {
@@ -91,6 +95,34 @@ export function SearchSidebar({
             })}
           </div>
         )}
+      </div>
+
+      <div>
+        <p className="mb-2.5 text-sm font-medium text-zinc-800 dark:text-zinc-200">Booking Type</p>
+        <button
+          type="button"
+          onClick={() => onInstantBookingChange(!instantBooking)}
+          aria-pressed={instantBooking}
+          className="flex w-full cursor-pointer items-center justify-between gap-3"
+        >
+          <span className="min-w-0">
+            <span className="block text-sm text-zinc-700 dark:text-zinc-300">
+              Instant Booking only
+            </span>
+          </span>
+
+          <span
+            role="switch"
+            aria-checked={instantBooking}
+            className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${instantBooking ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-ink-700'
+              }`}
+          >
+            <span
+              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${instantBooking ? 'translate-x-4' : 'translate-x-1'
+                }`}
+            />
+          </span>
+        </button>
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-zinc-900 p-5">
