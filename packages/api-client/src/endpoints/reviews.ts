@@ -78,6 +78,16 @@ export function reviewsEndpoints(client: ReturnType<typeof createClient>) {
     },
 
     /**
+     * Get all reviews across all venues for the logged-in owner
+     */
+    getOwnerReviews: async (
+      page: number = 1,
+      perPage: number = 100
+    ): Promise<ReviewListResponse> => {
+      return client.get(`/api/owner/reviews?page=${page}&per_page=${perPage}`)
+    },
+
+    /**
      * Get rating summary (average, count, distribution) for a venue
      */
     getRatingSummary: async (venueId: string): Promise<ReviewSummary> => {

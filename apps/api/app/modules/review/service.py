@@ -8,6 +8,7 @@ from app.core.exceptions import APIException
 from app.modules.admin.models import AdminAction
 from app.modules.booking.models import Booking, BookingStatus
 from app.modules.review.models import VenueReview
+from app.modules.venue.models import Venue
 from app.modules.review.schemas import (
     EligibleBookingsResponse,
     ReviewCreate,
@@ -178,6 +179,39 @@ class ReviewService:
             .options(joinedload(VenueReview.author), joinedload(VenueReview.venue))
             .filter(
                 VenueReview.venue_id == venue_id,
+                VenueReview.deleted_at.is_(None),
+                VenueReview.is_hidden.is_(False),
+            )
+            .order_by(desc(VenueReview.created_at))
+        )
+
+        total = query.count()
+        offset = (page - 1) * per_page
+        reviews = query.offset(offset).limit(per_page).all()
+
+        return ReviewListResponse(
+            items=[ReviewService._to_response(db, r) for r in reviews],
+            total=total,
+            page=page,
+            per_page=per_page,
+        )
+
+    @staticmethod
+    def list_owner_reviews(
+        db: Session,
+        owner_id: UUID,
+        page: int = 1,
+        per_page: int = 10,
+    ) -> ReviewListResponse:
+        """
+        List all public reviews across all venues owned by a specific owner (paginated).
+        """
+        query = (
+            db.query(VenueReview)
+            .join(Venue, Venue.id == VenueReview.venue_id)
+            .options(joinedload(VenueReview.author), joinedload(VenueReview.venue))
+            .filter(
+                Venue.owner_id == owner_id,
                 VenueReview.deleted_at.is_(None),
                 VenueReview.is_hidden.is_(False),
             )

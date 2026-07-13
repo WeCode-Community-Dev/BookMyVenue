@@ -90,6 +90,22 @@ def get_eligible_booking_ids(
 
 
 # ────────────────────────────────────────────────────────────────
+# OWNER ENDPOINTS
+# ────────────────────────────────────────────────────────────────
+
+
+@router.get("/owner/reviews", response_model=ReviewListResponse)
+def list_owner_reviews(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(10, ge=1, le=100),
+    auth: AuthContext = Depends(require_auth),
+    db: Session = Depends(get_db),
+):
+    """List all reviews across all venues for the logged-in owner."""
+    return ReviewService.list_owner_reviews(db, auth.user_id, page, per_page)
+
+
+# ────────────────────────────────────────────────────────────────
 # ADMIN ENDPOINTS
 # ────────────────────────────────────────────────────────────────
 

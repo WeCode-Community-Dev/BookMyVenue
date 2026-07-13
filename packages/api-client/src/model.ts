@@ -5,6 +5,11 @@ import type { components } from './types'
 export type Booking = components['schemas']['BookingOut']
 export type BookingMode = 'MANUAL' | 'INSTANT'
 
+export interface VenueOption {
+  id: string
+  name: string
+}
+
 export type Venue = components['schemas']['VenueResponse'] & {
   rejection_reason?: string | null
   // Hand-added until `pnpm generate` is run (mirrors VenueResponse in venue/schemas.py).

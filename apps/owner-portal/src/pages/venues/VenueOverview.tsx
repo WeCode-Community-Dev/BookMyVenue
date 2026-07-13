@@ -5,9 +5,10 @@ import { Card, Button, Skeleton } from '@venue404/ui'
 import {
   Users, IndianRupee, CalendarDays, ArrowLeft, Info, Loader2, Tag,
   FileText, Image as ImageIcon, MapPin, Clock, ShieldCheck, Banknote, ShieldAlert,
-  ChevronRight, TrendingUp
+  ChevronRight, TrendingUp, Star
 } from 'lucide-react'
-import { createClient, venueEndpoints } from '@venue404/api-client'
+import { createClient, venueEndpoints, reviewsEndpoints } from '@venue404/api-client'
+import type { ReviewSummary } from '@venue404/api-client'
 
 import { useQuery } from '@tanstack/react-query'
 import { confirmAction } from '../../lib/confirm'
@@ -36,6 +37,13 @@ export default function VenueOverview() {
       return venueEndpoints(createClient()).getVenueStats(venueId).catch(() => null)
     },
     enabled: !!venueId,
+  })
+
+  const { data: reviewSummary } = useQuery<ReviewSummary>({
+    queryKey: ['venue-review-summary', venueId],
+    queryFn: () => reviewsEndpoints(createClient()).getRatingSummary(venueId!),
+    enabled: !!venueId && venue?.status === 'approved',
+    staleTime: 5 * 60 * 1000,
   })
 
   const loading = venueLoading || statsLoading
@@ -204,11 +212,11 @@ export default function VenueOverview() {
                   ₹{((stats?.revenue_this_month_paise || 0) / 100).toLocaleString('en-IN')}
                 </h3>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-900/10 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
                 <IndianRupee className="w-5 h-5" />
               </div>
             </div>
-            <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded-md">
+            <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 w-fit px-2 py-1 rounded-md">
               <TrendingUp className="w-3 h-3" />
               <span>Performance metric</span>
             </div>
@@ -223,30 +231,34 @@ export default function VenueOverview() {
                   {stats?.active_bookings?.toString() || '0'}
                 </h3>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-900/10 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
                 <CalendarDays className="w-5 h-5" />
               </div>
             </div>
-            <div className="mt-4 text-xs font-medium text-zinc-400 dark:text-zinc-400 px-1">
+            <div className="mt-4 text-xs font-medium text-zinc-400 dark:text-zinc-500 px-1">
               Active confirmed events
             </div>
           </div>
 
-          {/* Capacity Card */}
+          {/* Avg Rating Card */}
           <div className="bg-white dark:bg-ink-900 rounded-2xl border border-zinc-200/80 dark:border-ink-700 p-4 shadow-sm hover:shadow-md transition-all duration-300 group">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Max Capacity</p>
-                <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">
-                  {venue.max_capacity?.toString() || '0'}
+                <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Avg. Rating</p>
+                <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight tabular-nums">
+                  {reviewSummary && reviewSummary.total_reviews > 0
+                    ? reviewSummary.average_rating.toFixed(1)
+                    : '—'}
                 </h3>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-100 to-violet-50 text-violet-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                <Users className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900/30 dark:to-amber-900/10 text-amber-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                <Star className="w-5 h-5 fill-current" />
               </div>
             </div>
-            <div className="mt-4 text-xs font-medium text-zinc-400 dark:text-zinc-400 px-1">
-              Registered maximum limits
+            <div className="mt-4 text-xs font-medium text-zinc-400 dark:text-zinc-500 px-1">
+              {reviewSummary && reviewSummary.total_reviews > 0
+                ? `From ${reviewSummary.total_reviews} ${reviewSummary.total_reviews === 1 ? 'review' : 'reviews'}`
+                : 'No reviews yet'}
             </div>
           </div>
         </div>
@@ -269,6 +281,7 @@ export default function VenueOverview() {
           </div>
         </Card>
       )}
+
 
       {/* Management Modules Grid */}
       <div className="bg-white dark:bg-ink-900 rounded-2xl border border-zinc-200/80 dark:border-ink-700 p-5 shadow-sm">

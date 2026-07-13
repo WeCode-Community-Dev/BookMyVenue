@@ -2,14 +2,15 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { AppShell, Logo, type NavItemConfig, Button, ThemeToggle } from '@venue404/ui'
 import {
-  LayoutDashboard, Building2, CalendarDays, Wallet, Plus
+  LayoutDashboard, Building2, CalendarDays, Wallet, Plus, Star
 } from 'lucide-react'
 
 const NAV: NavItemConfig[] = [
-  { label: 'Dashboard',        href: '/',                  icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'My Venues',        href: '/venues',            icon: <Building2 className="h-4 w-4" /> },
-  { label: 'Bookings',         href: '/bookings',          icon: <CalendarDays className="h-4 w-4" /> },
-  { label: 'Financials',       href: '/financials',        icon: <Wallet className="h-4 w-4" /> },
+  { label: 'Dashboard',  href: '/',           icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: 'My Venues',  href: '/venues',     icon: <Building2 className="h-4 w-4" /> },
+  { label: 'Bookings',   href: '/bookings',   icon: <CalendarDays className="h-4 w-4" /> },
+  { label: 'Reviews',    href: '/reviews',    icon: <Star className="h-4 w-4" /> },
+  { label: 'Financials', href: '/financials', icon: <Wallet className="h-4 w-4" /> },
 ]
 
 type OwnerLayoutProps = {
@@ -50,7 +51,7 @@ export function OwnerLayout({ pageTitle, pageSubtitle, children }: OwnerLayoutPr
     )
   } else if (location.pathname.endsWith('/overview')) {
     displayTitle = 'Venue Overview'
-    displaySubtitle = 'Manage your venue\'s performance and settings.'
+    displaySubtitle = "Manage your venue's performance and settings."
   } else if (location.pathname.includes('/edit/')) {
     const editSection = location.pathname.split('/').pop() || 'details'
     const titleMap: Record<string, string> = {
@@ -66,6 +67,12 @@ export function OwnerLayout({ pageTitle, pageSubtitle, children }: OwnerLayoutPr
     displaySubtitle = 'Update your venue settings below. Changes take effect immediately.'
   } else if (location.pathname === '/') {
     displayTitle = 'Dashboard'
+  } else if (location.pathname === '/reviews' || location.pathname === '/reviews/') {
+    displayTitle = 'Reviews'
+    displaySubtitle = 'All guest reviews across your venues.'
+  } else if (location.pathname.startsWith('/reviews/')) {
+    displayTitle = 'Review Detail'
+    displaySubtitle = 'Full review from your guest.'
   } else if (location.pathname.startsWith('/bookings')) {
     displayTitle = 'All Bookings'
     displaySubtitle = 'View and manage all booking requests across your venues.'

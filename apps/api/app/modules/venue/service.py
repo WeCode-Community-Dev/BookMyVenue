@@ -415,6 +415,19 @@ def list_owner_venues(db: Session, owner_id: UUID) -> list[Venue]:
     )
 
 
+def list_owner_venues_options(db: Session, owner_id: UUID) -> list[Venue]:
+    return (
+        db.query(Venue)
+        .filter(
+            Venue.owner_id == owner_id,
+            Venue.status != VenueStatus.draft,
+            Venue.deleted_at.is_(None),
+        )
+        .order_by(Venue.name.asc())
+        .all()
+    )
+
+
 def get_owner_venue(db: Session, venue_id: UUID, owner_id: UUID) -> Venue:
     venue = (
         db.query(Venue)
