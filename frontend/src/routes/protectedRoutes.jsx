@@ -12,12 +12,26 @@ import VenueDetails from "../features/user/VenueDetails";
 import PaymentVerify from "../features/user/PaymentVerify";
 import MyBookings from "../features/user/MyBookings";
 import Favorites from "../features/user/Favorites";
-import AdminLayout from "../features/admin/components/AdminLayout";
-import AdminLogin from "../features/admin/pages/AdminLogin";
-import AdminDashboard from "../features/admin/pages/AdminDashboard";
-import AdminVenueQueue from "../features/admin/pages/AdminVenueQueue";
+import MessagesPage from "../pages/MessagesPage";
+import RoleBasedLayout from "../layouts/RoleBasedLayout";
+import { isChatEnabled } from "../config/featureFlags";
+
+const chatRoutes = isChatEnabled
+  ? [
+      {
+        element: <AuthGuard allowedRoles={['user', 'owner']} />,
+        children: [
+          {
+            element: <RoleBasedLayout />,
+            children: [{ path: '/messages', element: <MessagesPage /> }],
+          },
+        ],
+      },
+    ]
+  : [];
 
 export const protectedRoutes = [
+  ...chatRoutes,
   {
     element: <AuthGuard allowedRoles={['user']} />,
     children: [
@@ -27,7 +41,7 @@ export const protectedRoutes = [
           { path: "/my-bookings", element: <MyBookings /> },
           { path: '/venue/:venueId', element: <VenueDetails/> },
           { path: '/payments/verify', element: <PaymentVerify /> },
-          { path: '/favorites', element: <Favorites /> }
+          { path: '/favorites', element: <Favorites /> },
         ]
       }
 
@@ -45,7 +59,7 @@ export const protectedRoutes = [
           { path: "/owner/venues/:venueId", element: <OwnerVenueDetails /> },
           { path: "/owner/bookings", element: <OwnerBookings /> },
           { path: "/owner/settings", element: <OwnerSettings /> },
-          { path: "/owner/add-venue", element: <OwnerAddVenue /> }
+          { path: "/owner/add-venue", element: <OwnerAddVenue /> },
         ]
       }
     ]

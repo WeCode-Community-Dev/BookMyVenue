@@ -2,11 +2,12 @@ import { db } from '../db/index.js';
 import { bookingsTable } from '../models/bookingModel.js';
 import { venuesTable } from '../models/venueModel.js';
 import { paymentsTable } from '../models/paymentModel.js';
-import { and, eq, ne, lte, gte,inArray } from 'drizzle-orm';
+import { and, eq, ne, lte, gte, inArray } from 'drizzle-orm';
 import pricingServices from './pricingServices.js';
 import { AppError } from '../handlers/error_handlers.js';
-import { StandardCheckoutPayRequest } from '@phonepe-pg/pg-sdk-node'
-import { phonePeClient } from '../utils/phonepe.js'
+import { StandardCheckoutPayRequest } from '@phonepe-pg/pg-sdk-node';
+import { phonePeClient } from '../utils/phonepe.js';
+import notificationService from './notificationService.js';
 
 export default {
   checkAvailability: async function (venueId, monthParam) {
@@ -131,114 +132,132 @@ export default {
     return booking;
   },
 
-  verifyPayment: async function(bookingId) {
+  verifyPayment: async function (bookingId) {
     // 1. fetch payment row
     const payment = await db.query.paymentsTable.findFirst({
-        where: eq(paymentsTable.bookingId, bookingId)
-    })
+      where: eq(paymentsTable.bookingId, bookingId),
+    });
 
-    if (!payment) throw new AppError({
+    if (!payment)
+      throw new AppError({
         message: 'Payment not found',
         statusCode: 404,
-        errorCode: 'PAYMENT_NOT_FOUND'
-    })
+        errorCode: 'PAYMENT_NOT_FOUND',
+      });
 
     // 2. check with PhonePe
-    const statusResponse = await phonePeClient.getOrderStatus(payment.phonePeOrderId)
+    const statusResponse = await phonePeClient.getOrderStatus(payment.phonePeOrderId);
 
     // 3. handle result
     if (statusResponse.state === 'COMPLETED') {
-        await db.transaction(async (tx) => {
-            await tx.update(paymentsTable)
-                .set({
-                    status: 'completed',
-                    phonePeTransactionRef: statusResponse.paymentDetails?.[0]?.transactionId,
-                    paidAt: new Date()
-                })
-                .where(eq(paymentsTable.bookingId, bookingId))
+      await db.transaction(async (tx) => {
+        await tx
+          .update(paymentsTable)
+          .set({
+            status: 'completed',
+            phonePeTransactionRef: statusResponse.paymentDetails?.[0]?.transactionId,
+            paidAt: new Date(),
+          })
+          .where(eq(paymentsTable.bookingId, bookingId));
 
-            await tx.update(bookingsTable)
-                .set({ status: 'confirmed' })
-                .where(eq(bookingsTable.id, bookingId))
-        })
+        await tx
+          .update(bookingsTable)
+          .set({ status: 'confirmed' })
+          .where(eq(bookingsTable.id, bookingId));
+      });
 
-        return { status: 'confirmed' }
+      const booking = await db.query.bookingsTable.findFirst({
+        where: eq(bookingsTable.id, bookingId),
+        with: {
+          venue: true, // gives you venue.ownerId directly
+        },
+      });
+
+      await notificationService.createNotification({
+        recipientId: booking.venue.ownerId,
+        type: 'BOOKING_CONFIRMED',
+        payload: {
+          bookingId: booking.id,
+          venueName: booking.venue.name,
+          startDate: booking.startDate,
+          endDate: booking.endDate,
+          totalAmount: booking.totalAmount,
+        },
+      });
+
+      return { status: 'confirmed' };
     }
 
-   if (statusResponse.state === 'FAILED') {
-    await db.transaction(async (tx) => {
-        await tx.update(paymentsTable)
-            .set({ status: 'failed' })
-            .where(eq(paymentsTable.bookingId, bookingId))
+    if (statusResponse.state === 'FAILED') {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(paymentsTable)
+          .set({ status: 'failed' })
+          .where(eq(paymentsTable.bookingId, bookingId));
 
-        await tx.update(bookingsTable)
-            .set({ status: 'cancelled' })   // ← frees up the dates
-            .where(eq(bookingsTable.id, bookingId))
-    })
+        await tx
+          .update(bookingsTable)
+          .set({ status: 'cancelled' }) // ← frees up the dates
+          .where(eq(bookingsTable.id, bookingId));
+      });
 
-    return { status: 'failed' }
-}
+      return { status: 'failed' };
+    }
 
-    return { status: 'pending' }
-},
+    return { status: 'pending' };
+  },
 
-getUserBookings: async function (userId) {
-  const result = await db.query.bookingsTable.findMany({
-    where: eq(bookingsTable.bookerId, userId),
-    with: {
-      venue: {
-        columns: {
-          id: true,
-          name: true,
-          city: true,
-          images: true,
-          bookingType: true,
+  getUserBookings: async function (userId) {
+    const result = await db.query.bookingsTable.findMany({
+      where: eq(bookingsTable.bookerId, userId),
+      with: {
+        venue: {
+          columns: {
+            id: true,
+            name: true,
+            city: true,
+            images: true,
+            bookingType: true,
+          },
         },
       },
-    },
-    orderBy: (bookingsTable, { desc }) => [desc(bookingsTable.createdAt)],
-  });
-  return result;
-},
+      orderBy: (bookingsTable, { desc }) => [desc(bookingsTable.createdAt)],
+    });
+    return result;
+  },
 
-getOwnerBookings: async function (ownerId) {
-  const venues = await db.query.venuesTable.findMany({
-    where: eq(venuesTable.ownerId, ownerId),
-    columns: { id: true },
-  });
+  getOwnerBookings: async function (ownerId) {
+    const venues = await db.query.venuesTable.findMany({
+      where: eq(venuesTable.ownerId, ownerId),
+      columns: { id: true },
+    });
 
-  const venueIds = venues.map((v) => v.id);
-  if (venueIds.length === 0) return [];
+    const venueIds = venues.map((v) => v.id);
+    if (venueIds.length === 0) return [];
 
-  const bookings = await db.query.bookingsTable.findMany({
-    where: inArray(bookingsTable.venueId, venueIds),
-    with: {
-      venue: {
-        columns: {
-          id: true,
-          name: true,
-          city: true,
-          images: true,
-          bookingType: true,
+    const bookings = await db.query.bookingsTable.findMany({
+      where: inArray(bookingsTable.venueId, venueIds),
+      with: {
+        venue: {
+          columns: {
+            id: true,
+            name: true,
+            city: true,
+            images: true,
+            bookingType: true,
+          },
+        },
+        booker: {
+          columns: {
+            id: true,
+            username: true,
+            email: true,
+          },
         },
       },
-      booker: {
-        columns: {
-          id: true,
-          username: true,
-          email: true,
-        },
-      },
-    },
-    orderBy: (bookingsTable, { desc }) => [desc(bookingsTable.createdAt)],
-  });
+      orderBy: (bookingsTable, { desc }) => [desc(bookingsTable.createdAt)],
+    });
 
-  return bookings;
-},
-
-
-
-
-
-  
+    return bookings;
+  },
 };

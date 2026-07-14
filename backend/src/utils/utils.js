@@ -1,4 +1,9 @@
 import { randomBytes, createHmac } from 'crypto';
+import jwt from 'jsonwebtoken';
+
+export const verifyToken = (token) => {
+  return jwt.verify(token, process.env.JWT_SECRET);
+};
 
 export const hashPassword = async (password, UserSalt) => {
   const salt = UserSalt || randomBytes(256).toString('hex');
@@ -17,3 +22,13 @@ export function findMatchingRow(pricing,dateType){
   return pricing.find((e)=> e.dayType === dateType);
 
 }
+
+export const parseCookies = (req) => {
+  const cookieHeader = req.headers.cookie || '';
+  return Object.fromEntries(
+    cookieHeader.split(';').map(c => {
+      const [key, ...val] = c.trim().split('=');
+      return [key, val.join('=')];
+    })
+  );
+};

@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
+import { FiMessageSquare } from 'react-icons/fi';
 import { selectCurrentUser } from '../../redux/slices/authSlice';
+import { isChatEnabled } from '../../config/featureFlags';
 import { useGetOwnerBookingsQuery } from './ownerApi.js';
+import { useStartConversation } from '../../hooks/useStartConversation';
 
 function OwnerBookings() {
   const currentUser = useSelector(selectCurrentUser);
@@ -8,8 +12,22 @@ function OwnerBookings() {
   const { data, isLoading, isError } = useGetOwnerBookingsQuery(ownerId, {
     skip: !ownerId,
   });
+  const { startConversation, isLoading: isStartingChat } = useStartConversation();
+  const [messagingUserId, setMessagingUserId] = useState(null);
 
   const bookings = data?.data ?? [];
+
+  const handleMessageCustomer = async (bookerId) => {
+    if (!bookerId) return;
+    setMessagingUserId(bookerId);
+    try {
+      await startConversation({ userId: bookerId });
+    } catch (err) {
+      console.error('Failed to start conversation', err);
+    } finally {
+      setMessagingUserId(null);
+    }
+  };
 
   const getStatusBadgeClass = (status) => {
     const baseClass = 'status-pill';
@@ -35,7 +53,9 @@ function OwnerBookings() {
       <div className="bookings-header-row">
         <h1 className="bookings-title">Bookings Manager</h1>
         <p className="bookings-subtitle">
-          View all bookings made for your venues and track customer status.
+          {isChatEnabled
+            ? 'View all bookings made for your venues and message customers directly.'
+            : 'View all bookings made for your venues and track customer status.'}
         </p>
       </div>
 
@@ -59,31 +79,55 @@ function OwnerBookings() {
                 <th>Time Slot</th>
                 <th>Status</th>
                 <th>Amount</th>
+                {isChatEnabled && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
-              {bookings.map((booking) => (
-                <tr key={booking.id}>
-                  <td className="booking-id">{booking.id}</td>
-                  <td className="booking-venue">{booking.venue?.name || 'Unknown Venue'}</td>
-                  <td>{booking.booker?.username || booking.booker?.email || 'Guest'}</td>
-                  <td>
-                    {formatDate(booking.startDate)}
-                    {booking.startDate !== booking.endDate && ` – ${formatDate(booking.endDate)}`}
-                  </td>
-                  <td>
-                    {booking.startTime && booking.endTime
-                      ? `${booking.startTime} – ${booking.endTime}`
-                      : 'All day'}
-                  </td>
-                  <td>
-                    <span className={getStatusBadgeClass(booking.status)}>
-                      {booking.status?.charAt(0).toUpperCase() + booking.status?.slice(1)}
-                    </span>
-                  </td>
-                  <td className="booking-amount">{formatCurrency(booking.totalAmount)}</td>
-                </tr>
-              ))}
+              {bookings.map((booking) => {
+                const bookerId = booking.booker?.id;
+                const isMessaging =
+                  isStartingChat && messagingUserId === bookerId;
+
+                return (
+                  <tr key={booking.id}>
+                    <td className="booking-id">{booking.id}</td>
+                    <td className="booking-venue">{booking.venue?.name || 'Unknown Venue'}</td>
+                    <td>{booking.booker?.username || booking.booker?.email || 'Guest'}</td>
+                    <td>
+                      {formatDate(booking.startDate)}
+                      {booking.startDate !== booking.endDate && ` – ${formatDate(booking.endDate)}`}
+                    </td>
+                    <td>
+                      {booking.startTime && booking.endTime
+                        ? `${booking.startTime} – ${booking.endTime}`
+                        : 'All day'}
+                    </td>
+                    <td>
+                      <span className={getStatusBadgeClass(booking.status)}>
+                        {booking.status?.charAt(0).toUpperCase() + booking.status?.slice(1)}
+                      </span>
+                    </td>
+                    <td className="booking-amount">{formatCurrency(booking.totalAmount)}</td>
+                    {isChatEnabled && (
+                      <td>
+                        {bookerId ? (
+                          <button
+                            type="button"
+                            className="booking-message-btn"
+                            onClick={() => handleMessageCustomer(bookerId)}
+                            disabled={isMessaging}
+                          >
+                            <FiMessageSquare aria-hidden="true" />
+                            {isMessaging ? 'Opening…' : 'Message'}
+                          </button>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
