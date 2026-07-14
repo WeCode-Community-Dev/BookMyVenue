@@ -303,9 +303,8 @@ export default function Reviews() {
       </div>
 
       {/* Hide Modal */}
-      <Modal open={hideTarget !== null} onClose={closeHide}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={hideTarget !== null} onClose={closeHide} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-amber-50">
               <EyeOff className="h-5 w-5 text-amber-600" aria-hidden="true" />
             </div>
@@ -344,13 +343,11 @@ export default function Reviews() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
       {/* Restore Modal */}
-      <Modal open={restoreTarget !== null} onClose={closeRestore}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={restoreTarget !== null} onClose={closeRestore} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50">
               <Eye className="h-5 w-5 text-emerald-600" aria-hidden="true" />
             </div>
@@ -375,13 +372,11 @@ export default function Reviews() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
       {/* Delete Modal */}
-      <Modal open={deleteTarget !== null} onClose={closeDelete}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={deleteTarget !== null} onClose={closeDelete} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
               <Trash2 className="h-5 w-5 text-red-600" aria-hidden="true" />
             </div>
@@ -407,7 +402,6 @@ export default function Reviews() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
     </AdminLayout>

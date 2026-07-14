@@ -289,9 +289,8 @@ export default function Categories() {
         onChange={handleBannerFile} />
 
       {/* Create Modal */}
-      <Modal open={createOpen} onClose={closeCreate}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={createOpen} onClose={closeCreate} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100">
               <Plus className="h-5 w-5 text-zinc-700" />
             </div>
@@ -333,13 +332,11 @@ export default function Categories() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
       {/* Edit Modal */}
-      <Modal open={editTarget !== null} onClose={closeEdit}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={editTarget !== null} onClose={closeEdit} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100">
               <Pencil className="h-5 w-5 text-zinc-700" />
             </div>
@@ -385,13 +382,11 @@ export default function Categories() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
       {/* Archive Modal */}
-      <Modal open={deleteTarget !== null} onClose={closeDelete}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={deleteTarget !== null} onClose={closeDelete} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
               <Trash2 className="h-5 w-5 text-red-600" />
             </div>
@@ -422,7 +417,6 @@ export default function Categories() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
     </AdminLayout>
