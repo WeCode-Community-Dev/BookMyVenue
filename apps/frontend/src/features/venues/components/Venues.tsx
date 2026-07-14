@@ -4,7 +4,7 @@ import Card, { Venue } from "@/components/global/card/Card";
 import { selectAuthLoading, selectIsAuthenticated, selectJustLoggedOut } from "@/features/auth/AuthSlice";
 import { useEffect, useState } from "react";
 
-import EventTypeFilter from "@/components/global/eventtypefilter";
+import EventTypeFilter from "@/components/global/EventTypeFilter";
 import LoginModal from "@/components/global/login/Login";
 import MapPanel from "@/components/global/mappanel";
 import OfferSection from "@/components/global/offersection";

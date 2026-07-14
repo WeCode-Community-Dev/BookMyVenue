@@ -143,6 +143,10 @@ export const useAuthService = () => {
         }
     };
 
+    const googleAuthCallback = async () => {
+        console.log("Google auth callback triggered");
+    };
+
     const verifyOtp = async (email: string, otp: string) => {
         dispatch(setLoading(true));
 
@@ -242,6 +246,7 @@ export const useAuthService = () => {
         verifyOtp,
         submitRegistration,
         fetchProfile,
+        googleAuthCallback,
         logout,
     };
 };
