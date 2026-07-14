@@ -52,6 +52,8 @@ function OwnerAddVenue() {
     state: "",
     pincode: "",
     capacity: "",
+    latitude: null,
+    longitude: null,
     lat: null,
     lng: null,
   });
@@ -257,6 +259,8 @@ function OwnerAddVenue() {
 
       const reqBody = {
         ...basicInfo,
+        latitude: basicInfo.latitude ?? basicInfo.lat,
+        longitude: basicInfo.longitude ?? basicInfo.lng,
         bookingType,
         openDays: availability.openDays,
         openTime: availability.openingTime,
@@ -315,8 +319,14 @@ function OwnerAddVenue() {
     }
   };
 
-  const addCoordinates = (lat, lng) =>
-    setBasicInfo((prev) => ({ ...prev, lat, lng }));
+  const addCoordinates = (latitude, longitude) =>
+    setBasicInfo((prev) => ({
+      ...prev,
+      latitude,
+      longitude,
+      lat: latitude,
+      lng: longitude,
+    }));
 
   const fileInputRef = useRef(null);
 
@@ -434,6 +444,8 @@ function OwnerAddVenue() {
                     <label htmlFor="address">Street Address</label>
                     <LocationPicker
                       address={basicInfo.address}
+                      initialLatitude={basicInfo.latitude ?? basicInfo.lat}
+                      initialLongitude={basicInfo.longitude ?? basicInfo.lng}
                       onLocationChange={addCoordinates}
                     />
                     <input
