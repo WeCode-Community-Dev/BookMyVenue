@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>BookMyVenue Razorpay Test</title>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            max-width: 700px;
+            margin: 80px auto;
+        }
+
+        button {
+            padding: 14px 28px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        pre {
+            background: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Book My Venue</h2>
+
+    <button id="payBtn">
+        Pay Now
+    </button>
+
+    <h3>Verify Payload</h3>
+
+    <pre id="result"></pre>
+
+    <script>
+
+        // =====================================================
+        // Paste your backend response here
+        // =====================================================
+
+        const response = {
+            "paymentId": "fdbd09e0-0f2d-4280-bec8-e0e80fae6fc4",
+            "providerOrderId": "order_T8HDkWbFweRPli",
+            "checkoutData": {
+                "key": "rzp_test_T6EGGXbcJ2q3bX",
+                "orderId": "order_T8HDkWbFweRPli",
+                "amount": 2400000,
+                "currency": "INR"
+            }
+        }
+
+        // =====================================================
+
+        document
+            .getElementById("payBtn")
+            .addEventListener("click", openCheckout);
+
+        function openCheckout() {
+
+            const options = {
+
+                key: response.checkoutData.key,
+
+                amount: response.checkoutData.amount,
+
+                currency: response.checkoutData.currency,
+
+                order_id: response.checkoutData.orderId,
+
+                name: "Book My Venue",
+
+                description: "Venue Booking",
+
+                handler: function (payment) {
+
+                    const verifyPayload = {
+
+                        providerOrderId: payment.razorpay_order_id,
+
+                        providerPaymentId: payment.razorpay_payment_id,
+
+                        signature: payment.razorpay_signature
+
+                    };
+
+                    console.log("Verify Payload");
+
+                    console.log(verifyPayload);
+
+                    document.getElementById("result").textContent =
+                        JSON.stringify(verifyPayload, null, 4);
+
+                    // Example
+                    // fetch("/payments/verify", {
+                    //     method: "POST",
+                    //     headers: {
+                    //         "Content-Type": "application/json"
+                    //     },
+                    //     body: JSON.stringify(verifyPayload)
+                    // });
+
+                },
+                modal: {
+
+                    ondismiss() {
+                        alert("Payment cancelled");
+                    }
+                },
+                theme: {
+                    color: "#1976d2"
+
+                }
+            };
+            const razorpay = new Razorpay(options);
+            razorpay.open();
+        }
+
+    </script>
+
+</body>
+
+</html>

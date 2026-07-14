@@ -1,0 +1,89 @@
+import { ConsoleLogger, Module } from '@nestjs/common';
+import { DatabaseModule } from './database/database.module';
+import { PrismaUserRepository } from './repositories/prisma-user.repository';
+import { PrismaVenueRepository } from './repositories/prisma-venue.repository';
+import { PrismaBookingRepository } from './repositories/prisma-booking.repository';
+import { PrismaRefreshTokenRepository } from './repositories/prisma-refresh-token.repository';
+import { JwtTokenService } from './services/jwt-token.service';
+import { PrismaVenueImageRepository } from './repositories/prisma-venue-image.repository';
+import { LocalFileStorageService } from './storage/local-file.storage';
+import { PrismaDashboardRepository } from './repositories/prisma-dashboard.repository';
+import { PrismaPaymentRepository } from './repositories/prisma-payment.repository';
+import { RazorpayPaymentProvider } from './payment/razorpay-provider';
+import { Argon2PasswordHasher } from './services/argon-password-hasher';
+import { NovuNotificationService } from './notification/novu.notification.service';
+
+@Module({
+  imports: [DatabaseModule],
+  providers: [
+    {
+      provide: 'IUserRepository',
+      useClass: PrismaUserRepository,
+    },
+    {
+      provide: 'IPasswordHasher',
+      useClass: Argon2PasswordHasher,
+    },
+    {
+      provide: 'IFileStorage',
+      useClass: LocalFileStorageService,
+    },
+    {
+      provide: 'ITokenService',
+      useClass: JwtTokenService,
+    },
+    {
+      provide: 'IVenueRepository',
+      useClass: PrismaVenueRepository,
+    },
+    {
+      provide: 'IVenueImageRepository',
+      useClass: PrismaVenueImageRepository,
+    },
+    {
+      provide: 'IBookingRepository',
+      useClass: PrismaBookingRepository,
+    },
+    {
+      provide: 'IRefreshTokenRepository',
+      useClass: PrismaRefreshTokenRepository,
+    },
+    {
+      provide: 'IDashboardRepository',
+      useClass: PrismaDashboardRepository,
+    },
+    {
+      provide: 'IPaymentRepository',
+      useClass: PrismaPaymentRepository,
+      // useClass: PrismaDashboardRepository
+    },
+    {
+      provide: 'IPaymentProvider',
+      useClass: RazorpayPaymentProvider
+    },
+    {
+      provide: 'ILogger',
+      useClass: ConsoleLogger
+    },
+    {
+      provide: 'INotificationService',
+      useClass: NovuNotificationService
+    }
+  ],
+  exports: [
+    'IFileStorage',
+    'IUserRepository',
+    'IPasswordHasher',
+    'ITokenService',
+    'IVenueRepository',
+    'IVenueImageRepository',
+    'IBookingRepository',
+    'IRefreshTokenRepository',
+    'IDashboardRepository',
+    'IPaymentRepository',
+    'IPaymentProvider',
+    'ILogger',
+    'INotificationService'
+  ],
+})
+export class InfraModule { } 

@@ -1,0 +1,167 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/infra/database/prisma/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum role {
+  ADMIN
+  VENUE_OWNER
+  USER
+}
+
+enum user_status {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+enum venue_status {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum booking_status {
+  BOOKED
+  CANCELLED
+}
+
+enum payment_status {
+  PENDING
+  INITIATED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model users {
+  id            String           @id @default(uuid()) @db.Uuid
+  email         String           @unique @db.VarChar(255)
+  password      String?          @db.VarChar(255)
+  first_name    String           @db.VarChar(100)
+  last_name     String?          @db.VarChar(100)
+  phone         String?          @db.VarChar(20)
+  google_id     String?          @unique @db.VarChar(255)
+  role          role
+  status        user_status      @default(ACTIVE)
+  created_at    DateTime         @default(now()) @db.Timestamptz
+  updated_at    DateTime         @updatedAt @db.Timestamptz
+  deleted_at    DateTime?        @db.Timestamptz
+  venues        venues[]
+  bookings      bookings[]
+  refreshTokens refresh_tokens[]
+
+  @@index([role])
+  @@index([status])
+  @@index([created_at])
+}
+
+model venues {
+  id             String         @id @default(uuid()) @db.Uuid
+  owner_id       String         @db.Uuid
+  title          String         @db.VarChar(200)
+  description    String         @db.Text
+  venue_type     String         @db.VarChar(50)
+  address_line_1 String         @db.VarChar(255)
+  city           String         @db.VarChar(100)
+  state          String         @db.VarChar(100)
+  country        String         @db.VarChar(100)
+  postal_code    String         @db.VarChar(20)
+  latitude       Decimal?       @db.Decimal(10, 8)
+  longitude      Decimal?       @db.Decimal(11, 8)
+  capacity       Int            @db.Integer
+  price_per_day  Decimal        @db.Decimal(12, 2)
+  status         venue_status   @default(PENDING)
+  created_at     DateTime       @default(now()) @db.Timestamptz
+  updated_at     DateTime       @updatedAt @db.Timestamptz
+  deleted_at     DateTime?      @db.Timestamptz
+  owner          users          @relation(fields: [owner_id], references: [id])
+  amenities      String[]       @default([])
+  images         venue_images[]
+  bookings       bookings[]
+
+  @@index([owner_id])
+  @@index([status])
+  @@index([city])
+  @@index([state])
+  @@index([venue_type])
+  @@index([capacity])
+  @@index([price_per_day])
+  @@index([city, venue_type])
+  @@index([city, status])
+  @@index([owner_id, status])
+  @@index([created_at])
+}
+
+model venue_images {
+  id         String   @id @default(uuid()) @db.Uuid
+  venue_id   String   @db.Uuid
+  image_url  String   @db.VarChar(500)
+  sort_order Int      @default(0)
+  created_at DateTime @default(now()) @db.Timestamptz
+  venue      venues   @relation(fields: [venue_id], references: [id], onDelete: Cascade)
+
+  @@index([venue_id])
+  @@index([venue_id, sort_order])
+}
+
+model bookings {
+  id             String         @id @default(uuid()) @db.Uuid
+  user_id        String         @db.Uuid
+  venue_id       String         @db.Uuid
+  booking_start  DateTime       @db.Timestamptz
+  booking_end    DateTime       @db.Timestamptz
+  guests_count   Int            @db.Integer
+  total_amount   Decimal        @db.Decimal(12, 2)
+  status         booking_status @default(BOOKED)
+  payment_status payment_status @default(PENDING)
+  created_at     DateTime       @default(now()) @db.Timestamptz
+  updated_at     DateTime       @updatedAt @db.Timestamptz
+  user           users          @relation(fields: [user_id], references: [id])
+  venue          venues         @relation(fields: [venue_id], references: [id])
+  payment        payments?
+
+  @@index([user_id])
+  @@index([venue_id])
+  @@index([booking_start])
+  @@index([booking_end])
+  @@index([venue_id, booking_start, booking_end])
+}
+
+model payments {
+  id                  String         @id @default(uuid()) @db.Uuid
+  booking_id          String         @unique @db.Uuid
+  provider            String         @db.VarChar(50)
+  provider_order_id   String?        @db.VarChar(255)
+  provider_payment_id String?        @db.VarChar(255)
+  amount              Decimal        @db.Decimal(12, 2)
+  currency            String         @default("INR") @db.VarChar(20)
+  status              payment_status @default(INITIATED)
+  failure_reason      String?        @db.VarChar(100)
+  paid_at             DateTime?      @db.Timestamptz
+  created_at          DateTime       @default(now()) @db.Timestamptz
+  updated_at          DateTime       @default(now()) @updatedAt
+  booking             bookings       @relation(fields: [booking_id], references: [id])
+
+  @@index([status])
+  @@index([provider])
+  @@index([paid_at])
+}
+
+model refresh_tokens {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  token_hash String   @db.VarChar(255)
+  expires_at DateTime @db.Timestamptz
+  created_at DateTime @default(now()) @db.Timestamptz
+  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([expires_at])
+}

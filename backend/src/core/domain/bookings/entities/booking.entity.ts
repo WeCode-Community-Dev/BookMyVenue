@@ -1,0 +1,113 @@
+import { AggregateRoot } from '../../_shared/entity/aggregate-root';
+import type { PaymentStatus } from '../../_shared/enum/PaymentStatus.enum';
+import { DomainException } from '../../_shared/exception/domain.exception';
+import type { BookingStatus } from '../enum/booking-status.enum';
+import { DateRange } from '../value-objects/date-range.vo';
+
+export interface BookingProps {
+  userId: string;
+  venueId: string;
+  dateRange: DateRange;
+  guestsCount: number;
+  totalAmount: number;
+  status: BookingStatus
+  paymentStatus: PaymentStatus
+  createdAt?: Date;
+  updatedAt?: Date;
+  venue?: {
+    id: string,
+    title: string
+    ownerId: string
+    images: string[]
+  },
+  user?: {
+    id: string,
+    firstName: string,
+    lastName: string,
+    email: string,
+    phone?: string | null
+  }
+}
+
+export class Booking extends AggregateRoot<string> {
+  private props: BookingProps;
+
+  private constructor(id: string, props: BookingProps) {
+    super(id);
+    this.props = {
+      ...props,
+      createdAt: props.createdAt || new Date(),
+      updatedAt: props.updatedAt || new Date(),
+    };
+  }
+
+  public static create(id: string, props: BookingProps): Booking {
+    if (!props.userId) {
+      throw new DomainException('User ID is required');
+    }
+    if (!props.venueId) {
+      throw new DomainException('Venue ID is required');
+    }
+    if (props.guestsCount <= 0) {
+      throw new DomainException('Guests count must be greater than zero');
+    }
+    return new Booking(id, props);
+  }
+
+  public static restore(id: string, props: BookingProps): Booking {
+    return new Booking(id, props);
+  }
+
+  get userId(): string {
+    return this.props.userId;
+  }
+
+  get venueId(): string {
+    return this.props.venueId;
+  }
+
+  get dateRange(): DateRange {
+    return this.props.dateRange;
+  }
+
+  get guestsCount(): number {
+    return this.props.guestsCount;
+  }
+
+  get totalAmount(): number {
+    return this.props.totalAmount;
+  }
+
+  get status(): BookingStatus {
+    return this.props.status;
+  }
+
+  get paymentStatus(): PaymentStatus {
+    return this.props.paymentStatus;
+  }
+
+  get createdAt(): Date {
+    return this.props.createdAt!;
+  }
+
+  get updatedAt(): Date {
+    return this.props.updatedAt!;
+  }
+
+  get venue(): BookingProps['venue'] {
+    return this.props.venue
+  }
+
+  get user(): BookingProps['user'] {
+    return this.props.user
+  }
+
+  public calculateTotalAmount(pricePerDay: number): void {
+    if (pricePerDay < 0) {
+      throw new DomainException('Price per day cannot be negative');
+    }
+    const days = this.dateRange.getDurationInDays();
+    this.props.totalAmount = pricePerDay * days;
+    this.props.updatedAt = new Date();
+  }
+}

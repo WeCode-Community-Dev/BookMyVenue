@@ -1,0 +1,62 @@
+import { Injectable, Inject } from '@nestjs/common';
+import { type IVenueRepository } from '../../../domain/venues/repositories/venue-repository.interface';
+import { Pagination } from '../../_shared/dto/pagination';
+
+
+export interface VenueResponseDto {
+    id: string;
+    ownerId: string;
+    title: string;
+    description: string;
+    venueType: string;
+    addressLine1: string;
+    city: string;
+    state: string;
+    country: string;
+    postalCode: string;
+    latitude: number | null;
+    longitude: number | null;
+    capacity: number;
+    pricePerDay: number;
+    status: string;
+    createdAt: Date;
+}
+
+@Injectable()
+export class FindMyVenuesQuery {
+    constructor(
+        @Inject('IVenueRepository')
+        private readonly venueRepository: IVenueRepository,
+    ) { }
+
+    async execute(ownerId: string): Promise<Pagination<VenueResponseDto>> {
+        const venues = await this.venueRepository.findAll({ ownerId });
+
+        const docs = venues.map((v) => ({
+            id: v.id,
+            ownerId: v.ownerId,
+            title: v.title,
+            description: v.description,
+            venueType: v.venueType,
+            addressLine1: v.address.addressLine1,
+            city: v.address.city,
+            state: v.address.state,
+            country: v.address.country,
+            postalCode: v.address.postalCode,
+            latitude: v.address.latitude || null,
+            longitude: v.address.longitude || null,
+            capacity: v.capacity,
+            pricePerDay: v.pricePerDay,
+            status: v.status,
+            createdAt: v.createdAt,
+            images: v.images.map(img => img.url)
+        }));
+
+        return new Pagination({
+            data: docs,
+            limit: docs.length,
+            offset: 0,
+            total: docs.length
+        })
+    }
+}
