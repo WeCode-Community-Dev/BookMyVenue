@@ -26,6 +26,7 @@
     "nodemon": "^3.1.14",
     "pg": "^8.21.0",
     "pg-sdk-node": "^2.0.2",
+    "ws": "^8.21.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

@@ -13,6 +13,8 @@ export const baseApi = createApi({
     'AdminVenue',
     'AdminStats',
     'ActiveVenues',
+    'Conversation',
+    'Messages',
   ],
 
   endpoints: () => ({}),

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { FiLogOut, FiCalendar, FiSearch, FiHeart, FiMenu, FiX, FiChevronDown } from 'react-icons/fi';
+import { FiLogOut, FiCalendar, FiSearch, FiHeart, FiMenu, FiX, FiChevronDown, FiMessageSquare } from 'react-icons/fi';
 import './Header.scss';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../redux/slices/authSlice';
@@ -8,6 +8,7 @@ import { useLogoutMutation } from '../../features/auth/authApi';
 import { adminLogout } from '../../redux/slices/adminAuthSlice';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { isChatEnabled } from '../../config/featureFlags';
 
 
 function Header() {
@@ -65,6 +66,17 @@ function Header() {
         <FiHeart className="tab-icon" />
         <span>Favorites</span>
       </NavLink>
+
+      {isChatEnabled && (
+        <NavLink
+          to="/messages"
+          className={({ isActive }) => `nav-tab ${isActive ? 'active' : ''}`}
+          onClick={() => setMobileOpen(false)}
+        >
+          <FiMessageSquare className="tab-icon" />
+          <span>Messages</span>
+        </NavLink>
+      )}
     </>
   );
 

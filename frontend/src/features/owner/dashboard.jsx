@@ -1,8 +1,9 @@
 import React from 'react';
-import { FiUsers, FiTrendingUp, FiCheckCircle, FiDollarSign } from 'react-icons/fi';
+import { FiUsers, FiTrendingUp, FiCheckCircle, FiDollarSign, FiMessageSquare } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../redux/slices/authSlice';
+import { isChatEnabled } from '../../config/featureFlags';
 import PageTransition from '../../components/ui/PageTransition';
 
 const MOCK_STATS = [
@@ -34,12 +35,23 @@ function OwnerDashboard() {
             Here&apos;s what&apos;s happening with your venues today.
           </p>
         </div>
-        <button
-          className="dashboard-quick-btn dashboard-welcome-banner__cta"
-          onClick={() => navigate('/owner/venues')}
-        >
-          Manage Venues
-        </button>
+        <div className="dashboard-welcome-banner__actions">
+          <button
+            className="dashboard-quick-btn dashboard-welcome-banner__cta"
+            onClick={() => navigate('/owner/venues')}
+          >
+            Manage Venues
+          </button>
+          {isChatEnabled && (
+            <button
+              className="dashboard-quick-btn dashboard-quick-btn--secondary"
+              onClick={() => navigate('/messages')}
+            >
+              <FiMessageSquare />
+              Messages
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="dashboard-header-row">

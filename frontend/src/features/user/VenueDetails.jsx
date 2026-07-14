@@ -8,6 +8,13 @@ import {
   useDeleteFavoriteMutation,
 } from "./venueApi";
 import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import {
+  selectIsAuthenticated,
+  selectCurrentUser,
+} from "../../redux/slices/authSlice";
+import { useStartConversation } from "../../hooks/useStartConversation";
+import { isChatEnabled } from "../../config/featureFlags";
 import {
   FiStar,
   FiMapPin,
@@ -18,6 +25,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiMaximize2,
+  FiMessageSquare,
 } from "react-icons/fi";
 import PageTransition from "../../components/ui/PageTransition";
 import MapView from "../../components/map/Mapview.jsx";
@@ -54,6 +62,9 @@ const formatCurrency = (amount) => `₹${Number(amount || 0).toLocaleString()}`;
 
 function VenueDetails() {
   const { venueId } = useParams();
+  const currentUser = useSelector(selectCurrentUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const { startConversation, isLoading: isMessaging } = useStartConversation();
   const { data: response, isLoading, error } = useGetVenueDetailsQuery(venueId);
   const venue = response?.data;
   const isVenueActive = venue?.isActive !== false;
@@ -120,6 +131,22 @@ const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, 
   const [addFavorite] = useAddFavoriteMutation();
   const [deleteFavorite] = useDeleteFavoriteMutation();
   const [createBooking, { isLoading: isBooking }] = useCreateBookingMutation();
+
+  const showMessageOwner =
+    isChatEnabled &&
+    isAuthenticated &&
+    currentUser?.role === "user" &&
+    venue?.ownerId &&
+    venue.ownerId !== currentUser.id;
+
+  const handleMessageOwner = async () => {
+    if (!venue?.ownerId) return;
+    try {
+      await startConversation({ ownerId: venue.ownerId });
+    } catch (err) {
+      console.error("Failed to start conversation", err);
+    }
+  };
 
   const isFavorited = Boolean(
     favoriteIds.has(Number(venueId)) || favoriteIds.has(venue?.id),
@@ -759,6 +786,16 @@ const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, 
             </div>
 
             <div className="booking-card__footer">
+              {showMessageOwner && (
+                <button
+                  type="button"
+                  className="book-btn book-btn--secondary"
+                  onClick={handleMessageOwner}
+                  disabled={isMessaging}
+                >
+                  {isMessaging ? "Opening…" : "Message Owner"}
+                </button>
+              )}
               <button
                 type="button"
                 className="book-btn"

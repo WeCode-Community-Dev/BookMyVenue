@@ -14,6 +14,7 @@ import {
 import {bookingsTable} from './bookingModel.js';
 import {paymentsTable} from './paymentModel.js';
 import {notificationTypeEnum,notificationsTable} from './notificationModel.js'
+import { conversationsTable,messagesTable } from './chatModel.js';
 
 export {
   usersTable,
@@ -33,5 +34,7 @@ export {
   paymentsRelations,
   bookingRelations,
   notificationTypeEnum,
-  notificationsTable
+  notificationsTable,
+  conversationsTable,
+  messagesTable
 };

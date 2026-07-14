@@ -5,6 +5,7 @@ import favoriteRouter from './favouritesRouter.js';
 import bookingRouter from './bookingsRouter.js';
 import adminRouter from './adminRouter.js';
 import notificationRouter from './notificationRouter.js'
+import conversationRouter from './conversationRouter.js';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use(favoriteRouter);
 router.use(bookingRouter);
 router.use('/admin',adminRouter);
 router.use(notificationRouter);
+router.use(conversationRouter);
 
 export default router;
