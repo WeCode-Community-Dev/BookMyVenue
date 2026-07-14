@@ -125,11 +125,11 @@ function MonthGrid({
           // Range background strip (behind the circle)
           let stripClass = 'absolute inset-y-0 hidden '
           if (!isSingleDay) {
-            if (isInRange) stripClass = 'absolute inset-y-0 inset-x-0 bg-brand-light '
+            if (isInRange) stripClass = 'absolute inset-y-0 inset-x-0 bg-brand-light dark:bg-brand/20 '
             else if (isStart && hasRange)
-              stripClass = 'absolute inset-y-0 left-1/2 right-0 bg-brand-light '
+              stripClass = 'absolute inset-y-0 left-1/2 right-0 bg-brand-light dark:bg-brand/20 '
             else if ((isEnd || isHovering) && hasRange)
-              stripClass = 'absolute inset-y-0 left-0 right-1/2 bg-brand-light '
+              stripClass = 'absolute inset-y-0 left-0 right-1/2 bg-brand-light dark:bg-brand/20 '
           }
 
           // Circle button
@@ -186,7 +186,7 @@ function Legend() {
   return (
     <div className="flex items-center gap-4">
       <LegendItem color="bg-zinc-900 dark:bg-zinc-100" label="Selected" />
-      <LegendItem color="bg-brand-light" label="Range" />
+      <LegendItem color="bg-brand-light dark:bg-brand/20" label="Range" />
       <LegendItem dot="bg-amber-400" label="Partial" />
       <LegendItem color="bg-zinc-200 dark:bg-ink-700" label="Unavailable" />
     </div>
