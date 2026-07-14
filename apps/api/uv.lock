@@ -1215,6 +1215,24 @@ wheels = [
 ]
 
 [[package]]
+name = "sentry-sdk"
+version = "2.65.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f1/1f/ed17a390348156ca99fe622b97cd7d2f1969b5f49df89084b0f28e7953e9/sentry_sdk-2.65.0.tar.gz", hash = "sha256:c94dc945d54bad49d4f20448b1e6b217ca2f92f46d05c3e83d41764af685c3d1", size = 932133, upload-time = "2026-07-13T11:33:19.92Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/21/3b/326ad4c03b5da89b5124c8890af66e8119c4d2e10abc0619e0d67d9f7c7f/sentry_sdk-2.65.0-py3-none-any.whl", hash = "sha256:3595169677a808e4d0e1ea6ffb89443459549c7a98392ed71c77c847182ab6bf", size = 503869, upload-time = "2026-07-13T11:33:17.71Z" },
+]
+
+[package.optional-dependencies]
+fastapi = [
+    { name = "fastapi" },
+]
+
+[[package]]
 name = "six"
 version = "1.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1430,6 +1448,7 @@ dependencies = [
     { name = "python-multipart" },
     { name = "rapidfuzz" },
     { name = "reportlab" },
+    { name = "sentry-sdk", extra = ["fastapi"] },
     { name = "sqlalchemy" },
     { name = "stripe" },
     { name = "upstash-redis" },
@@ -1466,6 +1485,7 @@ requires-dist = [
     { name = "rapidfuzz", specifier = ">=3.14.5" },
     { name = "reportlab", specifier = ">=4.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5.0" },
+    { name = "sentry-sdk", extras = ["fastapi"], specifier = ">=2.0.0" },
     { name = "sqlalchemy", specifier = ">=2.0.0" },
     { name = "stripe", specifier = ">=9.0.0" },
     { name = "upstash-redis", specifier = ">=1.0.0" },

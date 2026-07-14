@@ -6,7 +6,8 @@
 # in the Render dashboard with: DATABASE_URL, SUPABASE_URL, SUPABASE_JWT_SECRET,
 # SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
 # RESEND_API_KEY, EMAIL_FROM, FRONTEND_BASE_URL, CORS_ORIGINS (the Vercel URLs),
-# JOB_RUNNER_TOKEN (long random), plus super-admin / Cloudinary vars as needed.
+# JOB_RUNNER_TOKEN (long random), SENTRY_DSN (this service's Sentry project DSN —
+# unset disables error tracking), plus super-admin / Cloudinary vars as needed.
 services:
   - type: web
     name: venue404-api

@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.logging import setup_logging
 from app.core.middleware import register_middleware
+from app.core.sentry import init_sentry
 from app.jobs import scheduler as job_scheduler
 from app.modules.admin.routes import router as admin_router
 from app.modules.admin.service import seed_super_admin
@@ -54,6 +55,8 @@ async def lifespan(_: FastAPI):
     if settings.enable_jobs:
         job_scheduler.shutdown()
 
+
+init_sentry()
 
 # Disable the interactive docs (/docs, /redoc) in production so the full API
 # surface isn't publicly listed; keep them in development.

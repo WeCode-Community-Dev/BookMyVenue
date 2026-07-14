@@ -100,6 +100,11 @@ class Settings(BaseSettings):
     # — rate limit per IP to block spam/mailbombing the support inbox.
     contact_rate_limit_per_hour: int = 5
 
+    # Sentry — unset disables it entirely (no-op), matching the fail-open
+    # pattern used for the other optional integrations in this file.
+    sentry_dsn: str = ""
+    sentry_traces_sample_rate: float = 0.0
+
     log_level: str = "INFO"  # DEBUG / INFO / WARNING / ERROR
 
     class Config:
