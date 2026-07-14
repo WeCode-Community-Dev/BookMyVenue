@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient, notificationEndpoints } from '@venue404/api-client'
 import { AppNavbar } from '../components/shared/AppNavbar'
+import { HomeFooter } from '../components/home/HomeFooter'
 import { NotificationList, NotificationView } from '@venue404/ui'
 import { getNotificationPath } from '@venue404/ui'
 
@@ -182,6 +183,7 @@ export default function Notifications() {
           </div>
         )}
       </div>
+      <HomeFooter />
     </div>
   )
 }

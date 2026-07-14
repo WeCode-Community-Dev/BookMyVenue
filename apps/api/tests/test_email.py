@@ -49,7 +49,7 @@ def test_resend_is_preferred_when_key_set(monkeypatch):
     monkeypatch.setattr(settings, "resend_api_key", "re_test")
     calls = {}
 
-    def fake_resend(to, s, h):
+    def fake_resend(to, s, h, reply_to=None):
         calls["resend"] = (to, s)
         return True
 

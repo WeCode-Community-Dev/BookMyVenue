@@ -7,6 +7,7 @@ import { createClient, bookingEndpoints } from '@venue404/api-client'
 import { EmptyState, ErrorState, Button, LoadingScreen } from '@venue404/ui'
 
 import { AppNavbar } from '../components/shared/AppNavbar'
+import { HomeFooter } from '../components/home/HomeFooter'
 
 import type { BookingOut } from '../types'
 
@@ -235,6 +236,7 @@ export default function MyBookings() {
           </>
         )}
       </div>
+      <HomeFooter />
     </div>
   )
 }

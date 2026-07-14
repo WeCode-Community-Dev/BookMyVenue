@@ -7,12 +7,14 @@ from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.logging import setup_logging
 from app.core.middleware import register_middleware
+from app.core.sentry import init_sentry
 from app.jobs import scheduler as job_scheduler
 from app.modules.admin.routes import router as admin_router
 from app.modules.admin.service import seed_super_admin
 from app.modules.auth.routes import router as auth_router
 from app.modules.availability.routes import router as availability_router
 from app.modules.booking.routes import router as booking_router
+from app.modules.contact.routes import router as contact_router
 from app.modules.deep_research.routes import router as deep_research_router
 from app.modules.internal.routes import router as internal_router
 from app.modules.notification.routes import router as notification_router
@@ -54,6 +56,8 @@ async def lifespan(_: FastAPI):
         job_scheduler.shutdown()
 
 
+init_sentry()
+
 # Disable the interactive docs (/docs, /redoc) in production so the full API
 # surface isn't publicly listed; keep them in development.
 app = FastAPI(
@@ -79,6 +83,7 @@ app.include_router(payment_router, prefix="/api/payments", tags=["payments"])
 app.include_router(internal_router, prefix="/api/internal", tags=["internal"])
 app.include_router(owner_router, prefix="/api/owner", tags=["owner"])
 app.include_router(deep_research_router, prefix="/api/deep-research", tags=["deep-research"])
+app.include_router(contact_router, prefix="/api/contact", tags=["contact"])
 
 
 @app.get("/health", tags=["health"])
