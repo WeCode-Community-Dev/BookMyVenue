@@ -68,7 +68,7 @@ function LocationPicker({
       <MapContainer
         center={defaultCenter}
         zoom={position ? 15 : 7}
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '350px', width: '100%' }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <MapPanner position={position} />
