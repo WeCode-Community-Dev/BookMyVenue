@@ -19,6 +19,7 @@ class VenueAmenitiesCreate(BaseModel):
 
 class VenueApprovalRequest(BaseModel):
     status: Literal["approved", "rejected"]
+    user_id: int = Field(..., gt=0)
     reason: Optional[str] = None
 
 class VenueActiveStatusRequest(BaseModel):
