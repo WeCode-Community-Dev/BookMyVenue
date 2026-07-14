@@ -61,61 +61,6 @@ async function parseResponse(response: Response) {
     }
 }
 
-export async function apiFetch(path: string, options: RequestInit = {}) {
-    const url = `${BASE_URL}${path}`;
-
-    const headers: HeadersInit = {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-    };
-
-    try {
-        const response = await fetch(url, {
-            ...options,
-            headers,
-            credentials: "include",
-        });
-
-        // (if request gets 401, refresh and retry once)
-        if (response.status === 401 && path !== "/auth/refresh") {
-            try {
-                await silentRefresh();
-
-                // Retry with fresh credentials
-                const retryResponse = await fetch(url, {
-                    ...options,
-                    headers,
-                    credentials: "include",
-                });
-
-                return await parseResponse(retryResponse);
-            } catch (error) {
-                store.dispatch(setLogout());
-                console.warn("Session expired or invalid token:", error);
-                throw new Error("Session expired");
-            }
-        }
-
-        if (!response.ok) {
-            let errorMessage = "An error occurred";
-
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.message || errorMessage;
-                console.error("API Error:", errorMessage);
-            } catch (error) {
-                console.error("Failed to parse error response:", error);
-            }
-
-            throw new Error(errorMessage);
-        }
-
-        return await parseResponse(response);
-    } catch (error: any) {
-        throw new Error(error.message || "Network error");
-    }
-}
-
 export const useAuthService = () => {
     const dispatch = useDispatch();
     const router = useRouter();
@@ -123,6 +68,61 @@ export const useAuthService = () => {
     const user = useSelector(selectUser);
     const isAuthenticated = useSelector(selectIsAuthenticated);
     const loading = useSelector(selectAuthLoading);
+
+    async function apiFetch(path: string, options: RequestInit = {}) {
+        const url = `${BASE_URL}${path}`;
+
+        const headers: HeadersInit = {
+            "Content-Type": "application/json",
+            ...(options.headers || {}),
+        };
+
+        try {
+            const response = await fetch(url, {
+                ...options,
+                headers,
+                credentials: "include",
+            });
+
+            // (if request gets 401, refresh and retry once)
+            if (response.status === 401 && path !== "/auth/refresh") {
+                try {
+                    await silentRefresh();
+
+                    // Retry with fresh credentials
+                    const retryResponse = await fetch(url, {
+                        ...options,
+                        headers,
+                        credentials: "include",
+                    });
+
+                    return await parseResponse(retryResponse);
+                } catch (error) {
+                    dispatch(setLogout());
+                    console.warn("Session expired or invalid token:", error);
+                    throw new Error("Session expired");
+                }
+            }
+
+            if (!response.ok) {
+                let errorMessage = "An error occurred";
+
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                    console.error("API Error:", errorMessage);
+                } catch (error) {
+                    console.error("Failed to parse error response:", error);
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            return await parseResponse(response);
+        } catch (error: any) {
+            throw new Error(error.message || "Network error");
+        }
+    }
 
     const requestOtp = async (email: string) => {
         dispatch(setLoading(true));
