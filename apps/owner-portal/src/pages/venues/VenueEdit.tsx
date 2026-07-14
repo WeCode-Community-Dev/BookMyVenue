@@ -187,25 +187,6 @@ export default function VenueEdit() {
       updates.close_time = ct.split(':').length === 2 ? ct + ':00' : ct
       updates.spans_next_day = spansNextDay
     } else if (editSection === 'booking-settings') {
-      const allowFullDay = formData.get('allow_full_day') === 'on'
-      const allowTimeSlot = formData.get('allow_time_slot') === 'on'
-      
-      const newAllowedTypes = []
-      if (allowFullDay) newAllowedTypes.push('full_day')
-      if (allowTimeSlot) newAllowedTypes.push('time_slot')
-
-      if (newAllowedTypes.length === 0) {
-        toast.error("You must allow at least one booking type.")
-        setSaving(false)
-        return
-      }
-      updates.allowed_booking_types = newAllowedTypes
-
-      let calculatedPricingMode = 'mixed'
-      if (allowFullDay && !allowTimeSlot) calculatedPricingMode = 'flat'
-      if (!allowFullDay && allowTimeSlot) calculatedPricingMode = 'hourly'
-
-      updates.pricing_mode = calculatedPricingMode
 
       const minDurStr = formData.get('min_booking_duration_minutes') as string
       const maxDurStr = formData.get('max_booking_duration_minutes') as string
@@ -232,6 +213,26 @@ export default function VenueEdit() {
       const basePrice = formData.get('base_price') as string
       const hourlyRate = formData.get('hourly_rate') as string
 
+      const allowFullDay = formData.get('allow_full_day') === 'on'
+      const allowTimeSlot = formData.get('allow_time_slot') === 'on'
+      
+      const newAllowedTypes = []
+      if (allowFullDay) newAllowedTypes.push('full_day')
+      if (allowTimeSlot) newAllowedTypes.push('time_slot')
+
+      if (newAllowedTypes.length === 0) {
+        toast.error("You must allow at least one booking type.")
+        setSaving(false)
+        return
+      }
+      updates.allowed_booking_types = newAllowedTypes
+
+      let calculatedPricingMode = 'mixed'
+      if (allowFullDay && !allowTimeSlot) calculatedPricingMode = 'flat'
+      if (!allowFullDay && allowTimeSlot) calculatedPricingMode = 'hourly'
+
+      updates.pricing_mode = calculatedPricingMode
+
       if (allowFullDay && !basePrice) {
         toast.error("Please enter a Base Price.")
         setSaving(false)
@@ -243,21 +244,10 @@ export default function VenueEdit() {
         return
       }
 
-      const minPricePct = parseFloat(formData.get('min_price_pct') as string)
-      const maxPricePct = parseFloat(formData.get('max_price_pct') as string)
-
-      if (minPricePct > maxPricePct) {
-        toast.error("Min Price % cannot exceed Max Price %.")
-        setSaving(false)
-        return
-      }
-
-      updates.starting_price_paise = parseInt(basePrice || '0', 10) * 100
-      updates.hourly_rate_paise = parseInt(hourlyRate || '0', 10) * 100
+      updates.starting_price_paise = (calculatedPricingMode === 'flat' || calculatedPricingMode === 'mixed') ? parseInt(basePrice || '0', 10) * 100 : null
+      updates.hourly_rate_paise = (calculatedPricingMode === 'hourly' || calculatedPricingMode === 'mixed') ? parseInt(hourlyRate || '0', 10) * 100 : null
       updates.advance_pct = parseFloat(formData.get('advance_pct') as string)
       updates.balance_due_days_before_event = parseInt(formData.get('balance_due') as string, 10)
-      updates.min_price_pct = minPricePct
-      updates.max_price_pct = maxPricePct
     }
 
     try {
@@ -532,33 +522,9 @@ export default function VenueEdit() {
 
           {editSection === 'booking-settings' && (
             <div className="space-y-6">
-              <div className="space-y-4">
-                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Allowed Booking Types</h4>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    <input 
-                      type="checkbox" 
-                      name="allow_full_day" 
-                      checked={allowFullDay}
-                      onChange={e => setAllowFullDay(e.target.checked)}
-                      className="rounded text-brand focus:ring-brand" 
-                    />
-                    Full Day
-                  </label>
-                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    <input 
-                      type="checkbox" 
-                      name="allow_time_slot" 
-                      checked={allowTimeSlot}
-                      onChange={e => setAllowTimeSlot(e.target.checked)}
-                      className="rounded text-brand focus:ring-brand" 
-                    />
-                    Time Slot
-                  </label>
-                </div>
-              </div>
 
-              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
+
+              <div className="space-y-4">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Booking Limits & Buffers</h4>
                 <div className="space-y-6 max-w-3xl">
                   <div className="grid md:grid-cols-2 gap-12">
@@ -600,7 +566,7 @@ export default function VenueEdit() {
               <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Approval Window</h4>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} defaultValue={venue.owner_action_window_hours} required={venue.booking_mode !== 'INSTANT'} disabled={venue.booking_mode === 'INSTANT'} helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
+                  <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} defaultValue={venue.owner_action_window_hours} required={venue.booking_mode !== 'INSTANT'} disabled={venue.booking_mode === 'INSTANT'} helperText="How long you have to act after a customer misses their balance due date before the booking is auto-cancelled." info="The grace period after a customer misses their balance payment deadline. During this window you can extend their deadline, keep the advance (forfeit), or offer a goodwill refund. If no action is taken, the booking is auto-cancelled and the customer's advance is forfeited." />
                 </div>
               </div>
             </div>
@@ -609,6 +575,32 @@ export default function VenueEdit() {
           {editSection === 'pricing' && (
             <div className="space-y-6">
               <div className="space-y-4">
+                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Allowed Booking Types</h4>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    <input 
+                      type="checkbox" 
+                      name="allow_full_day" 
+                      checked={allowFullDay}
+                      onChange={e => setAllowFullDay(e.target.checked)}
+                      className="rounded text-brand focus:ring-brand" 
+                    />
+                    Full Day
+                  </label>
+                  <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    <input 
+                      type="checkbox" 
+                      name="allow_time_slot" 
+                      checked={allowTimeSlot}
+                      onChange={e => setAllowTimeSlot(e.target.checked)}
+                      className="rounded text-brand focus:ring-brand" 
+                    />
+                    Time Slot
+                  </label>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Pricing</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className={!allowFullDay ? 'opacity-50 pointer-events-none' : ''}>
@@ -618,7 +610,7 @@ export default function VenueEdit() {
                     <Input label="Hourly Rate (₹) (Time Slot)" name="hourly_rate" type="number" min={0} defaultValue={(venue.hourly_rate_paise || 0) / 100} disabled={!allowTimeSlot} required={allowTimeSlot} info="The price per hour for short time-slot bookings." />
                   </div>
                 </div>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 italic mt-2">Prices will only be applied if the corresponding booking type is enabled in Booking Settings.</p>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 italic mt-2">Prices will only be applied if the corresponding booking type is enabled above.</p>
               </div>
 
               <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
@@ -848,7 +840,7 @@ export default function VenueEdit() {
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
-                <Input label="No Show Refund (%)" name="no_show_refund_pct" type="number" step="0.01" min="0" max="100" required defaultValue={venue.cancellation_policy?.no_show_refund_pct || '0'} info="The percentage of the collected amount (excluding platform fees) refunded if the customer cancels late or fails to show up." />
+                <Input label="No Show Refund (%)" name="no_show_refund_pct" type="number" step="0.01" min="0" max="100" required defaultValue={venue.cancellation_policy?.no_show_refund_pct || '0'} info="The percentage of the paid amount (excluding platform fees) refunded if the customer cancels closer to the event than your shortest cancellation window allows, or fails to show up." />
                 <Input label="Overdue Advance Refund (%)" name="overdue_advance_refund_pct" type="number" step="0.01" min="0" max="100" required defaultValue={venue.overdue_advance_refund_pct || '0'} info="The percentage of the advance deposit refunded to the customer if you choose to issue a Goodwill Cancellation when they fail to pay their balance on time." />
               </div>
 
