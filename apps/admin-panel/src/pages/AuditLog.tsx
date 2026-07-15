@@ -272,9 +272,9 @@ function ActionRow({ action }: { action: AdminAction }) {
       </td>
 
       {/* Reason */}
-      <td className="px-5 py-3.5 max-w-xs">
+      <td className="px-5 py-3.5 max-w-sm">
         {action.reason ? (
-          <span className="text-sm text-zinc-600 line-clamp-1" title={action.reason}>
+          <span className="text-sm text-zinc-600 whitespace-normal break-words">
             {action.reason}
           </span>
         ) : (
