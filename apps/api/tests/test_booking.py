@@ -36,7 +36,11 @@ def test_refund_computation_no_policy(monkeypatch):
         slot=BookingSlot(starts_at=datetime.now(UTC) + timedelta(days=2)),
     )
     import app.modules.booking.cancellation as cancellation
-    monkeypatch.setattr(cancellation.settings_store, "get_setting", lambda db, key: 0.0 if "pct" in key else False)
+    monkeypatch.setattr(
+        cancellation.settings_store,
+        "get_setting",
+        lambda db, key: 0.0 if "pct" in key else False,
+    )
 
     # Without policy, refund should default to 0.0% (and match no_show or None tier)
     result = _compute_refund(MagicMock(), booking, None)
@@ -71,13 +75,17 @@ def test_refund_computation_policy_fee_refundable():
     assert result.tier_matched == "tier_1"
 
     # Case 2: 30 hours notice (Tier 2 -> 50% refund of total 1000 = 500)
-    result = _compute_refund(MagicMock(), booking, policy, cancelled_at=starts_at - timedelta(hours=30))
+    result = _compute_refund(
+        MagicMock(), booking, policy, cancelled_at=starts_at - timedelta(hours=30)
+    )
     assert result.refund_amount_paise == 50000
     assert result.refund_pct_applied == 50.0
     assert result.tier_matched == "tier_2"
 
     # Case 3: 5 hours notice (No show -> 10% refund of total 1000 = 100)
-    result = _compute_refund(MagicMock(), booking, policy, cancelled_at=starts_at - timedelta(hours=5))
+    result = _compute_refund(
+        MagicMock(), booking, policy, cancelled_at=starts_at - timedelta(hours=5)
+    )
     assert result.refund_amount_paise == 10000
     assert result.refund_pct_applied == 10.0
     assert result.tier_matched == "no_show"
@@ -107,7 +115,9 @@ def test_refund_computation_policy_fee_non_refundable():
     assert result.tier_matched == "tier_1"
 
     # Case 2: 30 hours notice (Tier 2 -> 50% refund of owner share (900) = 450)
-    result = _compute_refund(MagicMock(), booking, policy, cancelled_at=starts_at - timedelta(hours=30))
+    result = _compute_refund(
+        MagicMock(), booking, policy, cancelled_at=starts_at - timedelta(hours=30)
+    )
     assert result.refund_amount_paise == 45000
     assert result.refund_pct_applied == 50.0
     assert result.tier_matched == "tier_2"
