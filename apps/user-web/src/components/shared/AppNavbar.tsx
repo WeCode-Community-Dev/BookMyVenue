@@ -77,6 +77,16 @@ function UserMenu({ displayName, onSignOut }: { displayName: string; onSignOut: 
               </svg>
               Saved Venues
             </Link>
+<Link
+              to="/messages"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-50 dark:text-zinc-300 dark:hover:bg-ink-800"
+            >
+              <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.41-4.03 7.99-8 7.99-1.12 0-2.2-.2-3.19-.55L5 21V5c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2z" />
+              </svg>
+              Messages
+            </Link>
             <Link
               to="/profile"
               onClick={() => setOpen(false)}

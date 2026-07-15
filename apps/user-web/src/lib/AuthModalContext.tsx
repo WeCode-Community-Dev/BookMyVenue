@@ -9,6 +9,19 @@ type AuthModalState = {
   close: () => void
 }
 
+// Default no-op state for when used outside provider (e.g., during error recovery)
+const DEFAULT_STATE: AuthModalState = {
+  openLogin: () => {
+    console.warn('useAuthModal.openLogin called outside AuthModalProvider')
+  },
+  openRegister: () => {
+    console.warn('useAuthModal.openRegister called outside AuthModalProvider')
+  },
+  close: () => {
+    console.warn('useAuthModal.close called outside AuthModalProvider')
+  },
+}
+
 const AuthModalContext = createContext<AuthModalState | null>(null)
 
 export function AuthModalProvider({ children }: { children: React.ReactNode }) {
@@ -28,6 +41,6 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuthModal(): AuthModalState {
   const ctx = useContext(AuthModalContext)
-  if (!ctx) throw new Error('useAuthModal must be used inside AuthModalProvider')
+  if (!ctx) return DEFAULT_STATE
   return ctx
 }

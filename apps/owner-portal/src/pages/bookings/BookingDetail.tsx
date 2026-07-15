@@ -5,6 +5,7 @@ import { createClient, bookingEndpoints } from '@venue404/api-client'
 import { useQuery } from '@tanstack/react-query'
 
 import { Calendar, MapPin, User, Clock, ArrowLeft, Check, CheckCircle2, X, AlertTriangle, History, AlignLeft, Info, Receipt, MessageSquare, Lock, CalendarDays } from 'lucide-react'
+import { ChatTab } from '../../components/ChatTab'
 import toast from 'react-hot-toast'
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -365,6 +366,7 @@ export default function BookingDetail() {
             { id: 'financials', label: 'Financials', icon: Receipt },
             { id: 'timeline', label: 'Timeline', icon: History },
             { id: 'notes', label: 'Notes', icon: AlignLeft },
+            { id: 'chat', label: 'Chat', icon: MessageSquare },
           ].map(t => {
             const Icon = t.icon
             return (
@@ -1117,6 +1119,12 @@ export default function BookingDetail() {
                 )}
               </div>
             </Card>
+          </div>
+        )}
+
+        {tab === 'chat' && (
+          <div className="max-w-2xl mx-auto">
+            <ChatTab bookingId={bookingId!} />
           </div>
         )}
       </div>

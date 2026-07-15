@@ -20,6 +20,8 @@ const Notifications = lazy(() => import('./pages/Notifications'))
 const PaymentResult = lazy(() => import('./pages/PaymentResult'))
 const DeepResearch = lazy(() => import('./pages/DeepResearch'))
 const SavedVenues = lazy(() => import('./pages/SavedVenues'))
+const MyMessages = lazy(() => import('./pages/MyMessages'))
+const ChatDetail = lazy(() => import('./pages/ChatDetail'))
 
 export const router = createBrowserRouter([
   // public routes
@@ -47,6 +49,22 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <MyBookings />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/messages',
+    element: (
+      <ProtectedRoute>
+        <MyMessages />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/messages/:bookingId',
+    element: (
+      <ProtectedRoute>
+        <ChatDetail />
       </ProtectedRoute>
     ),
   },

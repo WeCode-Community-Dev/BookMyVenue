@@ -155,20 +155,27 @@ const DEFAULT_CONFIG: IconConfig = {
   iconColor: 'text-zinc-400 dark:text-zinc-500',
 }
 
-// Types that need the person to act on a payment
 const ACTIONABLE_TYPES = new Set([
   'request_accepted',
   'balance_payment_overdue',
   'balance_deadline_extended',
 ])
 
+const CHAT_TYPES = new Set(['chat_message'])
+
 export function getNotificationPath(notification: NotificationView): string | null {
   if (!notification.booking_id) return null
-  return ACTIONABLE_TYPES.has(notification.type)
-    ? `/payment/${notification.booking_id}`
-    : `/bookings/${notification.booking_id}`
-}
 
+  if (CHAT_TYPES.has(notification.type)) {
+    return `/messages/${notification.booking_id}`
+  }
+
+  if (ACTIONABLE_TYPES.has(notification.type)) {
+    return `/payment/${notification.booking_id}`
+  }
+
+  return `/bookings/${notification.booking_id}`
+}
 function formatRelativeTime(iso: string): string {
   const date = new Date(iso)
   const diffSec = Math.floor((Date.now() - date.getTime()) / 1000)
