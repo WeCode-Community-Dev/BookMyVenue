@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient, profileEndpoints } from '@venue404/api-client'
 import { useAuth } from '../lib/AuthContext'
 import { AppNavbar } from '../components/shared/AppNavbar'
+import { HomeFooter } from '../components/home/HomeFooter'
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   super_admin: { label: 'Super Admin', color: 'bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-400 dark:border-violet-900/50' },
@@ -237,6 +238,7 @@ export default function Profile() {
 
         </div>
       </div>
+      <HomeFooter />
     </div>
   )
 }

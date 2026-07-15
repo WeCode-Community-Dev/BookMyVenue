@@ -6,6 +6,7 @@ import { Search, Calendar, Users, ChevronDown } from 'lucide-react'
 import { createClient, venueEndpoints, bookingEndpoints } from '@venue404/api-client'
 import type { Booking } from '@venue404/api-client'
 import { useQuery } from '@tanstack/react-query'
+import { Pagination } from '../components/Pagination'
 
 function timeAgo(dateStr: string): string {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
@@ -45,8 +46,8 @@ function statusLabel(status: string): string {
   return map[status] || status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
-const COL = 'px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500'
-const CELL = 'px-4 py-4 text-sm text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 align-middle'
+const COL = 'px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-400'
+const CELL = 'px-4 py-4 text-sm text-zinc-700 dark:text-zinc-300 align-middle'
 
 export default function Bookings() {
   const [searchParams] = useSearchParams()
@@ -54,6 +55,7 @@ export default function Bookings() {
   const [search, setSearch] = useState('')
   const [selectedVenue, setSelectedVenue] = useState(searchParams.get('venue_id') || 'all')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [page, setPage] = useState(1)
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
 
@@ -61,8 +63,9 @@ export default function Bookings() {
     const qTab = searchParams.get('tab')
     if (qTab && qTab !== tab) {
       setTab(qTab)
+      setPage(1)
     }
-  }, [searchParams])
+  }, [searchParams, tab])
 
   useEffect(() => {
     setPortalTarget(document.getElementById('topbar-portal-target'))
@@ -70,7 +73,10 @@ export default function Bookings() {
 
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
-    searchTimeout.current = setTimeout(() => setDebouncedSearch(search), 500)
+    searchTimeout.current = setTimeout(() => {
+      setDebouncedSearch(search)
+      setPage(1)
+    }, 500)
     return () => { if (searchTimeout.current) clearTimeout(searchTimeout.current) }
   }, [search])
 
@@ -82,17 +88,22 @@ export default function Bookings() {
     }
   })
 
-  const { data: bookings = [], isLoading: loading } = useQuery({
-    queryKey: ['owner-bookings', tab, selectedVenue, debouncedSearch],
+  const { data: bookingResponse, isLoading: loading } = useQuery({
+    queryKey: ['owner-bookings', tab, selectedVenue, debouncedSearch, page],
     queryFn: async () => {
       const data = await bookingEndpoints(createClient()).getOwnerBookings({
         tab: tab !== 'all' ? tab : undefined,
         venue_id: selectedVenue !== 'all' ? selectedVenue : undefined,
-        search: debouncedSearch || undefined
+        search: debouncedSearch || undefined,
+        page,
+        per_page: 25
       })
-      return data || []
+      return data
     }
   })
+
+  const bookings = bookingResponse?.items || []
+  const totalPages = bookingResponse?.total_pages || 1
 
   const TABS = [
     { id: 'all', label: 'All Bookings' },
@@ -107,13 +118,13 @@ export default function Bookings() {
   const filtersNode = (
     <div className="flex flex-col sm:flex-row items-center gap-3 w-full shrink-0 justify-end">
       <div className="relative w-full sm:w-64">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-400" />
         <input
           type="text"
           placeholder="Search by venue or user..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 hover:border-zinc-300 dark:hover:border-ink-700 rounded-lg text-sm shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 placeholder:text-zinc-400 dark:text-zinc-500"
+          className="w-full pl-9 pr-4 py-2 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-700 hover:border-zinc-300 dark:hover:border-ink-700 rounded-lg text-sm shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 placeholder:text-zinc-400 dark:text-zinc-400"
         />
       </div>
       <div className="relative w-full sm:w-48">
@@ -129,28 +140,34 @@ export default function Bookings() {
               if (el) el.classList.add('hidden')
             }, 150)
           }}
-          className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 hover:border-zinc-300 dark:hover:border-ink-700 rounded-lg text-sm shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-zinc-700 dark:text-zinc-300 dark:text-zinc-600"
+          className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-700 hover:border-zinc-300 dark:hover:border-ink-700 rounded-lg text-sm shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-zinc-700 dark:text-zinc-300"
         >
           <span className="truncate">
             {selectedVenue === 'all' ? 'All Venues' : venues.find(v => v.id === selectedVenue)?.name || 'All Venues'}
           </span>
-          <ChevronDown className="h-4 w-4 text-zinc-400 dark:text-zinc-500 shrink-0 ml-2" />
+          <ChevronDown className="h-4 w-4 text-zinc-400 dark:text-zinc-400 shrink-0 ml-2" />
         </button>
         <div
           id="venue-dropdown"
-          className="hidden absolute top-full left-0 mt-1 w-full bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 rounded-lg shadow-lg overflow-hidden z-50 py-1"
+          className="hidden absolute top-full left-0 mt-1 w-full bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-700 rounded-lg shadow-lg overflow-hidden z-50 py-1"
         >
           <button
-            className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800 transition-colors ${selectedVenue === 'all' ? 'bg-brand-50 text-brand-700 font-medium' : 'text-zinc-700 dark:text-zinc-300 dark:text-zinc-600'}`}
-            onClick={() => setSelectedVenue('all')}
+            className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-ink-800 transition-colors ${selectedVenue === 'all' ? 'bg-brand-50 text-brand-700 font-medium' : 'text-zinc-700 dark:text-zinc-300'}`}
+            onClick={() => {
+              setSelectedVenue('all')
+              setPage(1)
+            }}
           >
             All Venues
           </button>
           {venues.map(v => (
             <button
               key={v.id}
-              className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800 transition-colors ${selectedVenue === v.id ? 'bg-brand-50 text-brand-700 font-medium' : 'text-zinc-700 dark:text-zinc-300 dark:text-zinc-600'}`}
-              onClick={() => setSelectedVenue(v.id)}
+              className={`w-full text-left px-3 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-ink-800 transition-colors ${selectedVenue === v.id ? 'bg-brand-50 text-brand-700 font-medium' : 'text-zinc-700 dark:text-zinc-300'}`}
+              onClick={() => {
+                setSelectedVenue(v.id)
+                setPage(1)
+              }}
             >
               {v.name}
             </button>
@@ -170,7 +187,7 @@ export default function Bookings() {
       )}
 
       {/* Tabs */}
-      <div className="border-b border-zinc-200 dark:border-ink-800">
+      <div className="border-b border-zinc-200 dark:border-ink-700">
         <nav className="-mb-px flex w-full overflow-x-auto no-scrollbar" aria-label="Tabs">
           {TABS.map(t => (
             <button
@@ -179,7 +196,7 @@ export default function Bookings() {
               className={`flex-1 whitespace-nowrap py-3 border-b-2 font-medium text-sm transition-all ${
                 tab === t.id
                   ? 'border-brand-500 text-brand-600'
-                  : 'border-transparent text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'
+                  : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'
               }`}
             >
               {t.label}
@@ -190,9 +207,9 @@ export default function Bookings() {
 
       {/* Table */}
       {loading ? (
-        <div className="rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-zinc-200 dark:border-ink-700 bg-white dark:bg-ink-900 shadow-sm overflow-hidden">
           <table className="w-full">
-            <thead className="bg-zinc-50 dark:bg-ink-800 border-b border-zinc-200 dark:border-ink-800">
+            <thead className="bg-zinc-50 dark:bg-ink-800 border-b border-zinc-200 dark:border-ink-700">
               <tr>
                 {['Venue', 'Customer', 'Event Date', 'Booking Status', 'Payment', 'Guests', 'Requested', ''].map(h => (
                   <th key={h} className={COL}>{h}</th>
@@ -217,14 +234,14 @@ export default function Bookings() {
         </div>
       ) : bookings.length === 0 ? (
         <EmptyState
-          icon={<Calendar className="h-10 w-10 text-zinc-400 dark:text-zinc-500" />}
+          icon={<Calendar className="h-10 w-10 text-zinc-400 dark:text-zinc-400" />}
           title="No bookings found"
           description="Try adjusting your filters or search query."
         />
       ) : (
-        <div className="rounded-xl border border-zinc-200 dark:border-ink-800 bg-white dark:bg-ink-900 shadow-sm overflow-x-auto">
+        <div className="rounded-xl border border-zinc-200 dark:border-ink-700 bg-white dark:bg-ink-900 shadow-sm overflow-x-auto">
           <table className="w-full min-w-[720px]">
-            <thead className="bg-zinc-50 dark:bg-ink-800 border-b border-zinc-200 dark:border-ink-800">
+            <thead className="bg-zinc-50 dark:bg-ink-800 border-b border-zinc-200 dark:border-ink-700">
               <tr>
                 <th className={COL}>Venue</th>
                 <th className={COL}>Customer</th>
@@ -240,12 +257,12 @@ export default function Bookings() {
               {bookings.map(booking => (
                 <tr
                   key={booking.id}
-                  className="hover:bg-zinc-50/70 transition-colors"
+                  className="hover:bg-zinc-50/70 dark:hover:bg-ink-800 transition-colors"
                 >
                   {/* Venue */}
                   <td className={CELL}>
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-md bg-zinc-100 dark:bg-ink-800 flex items-center justify-center shrink-0 text-zinc-400 dark:text-zinc-500">
+                      <div className="w-7 h-7 rounded-md bg-zinc-100 dark:bg-ink-800 flex items-center justify-center shrink-0 text-zinc-400 dark:text-zinc-400">
                         <Calendar className="h-3.5 w-3.5" />
                       </div>
                       <span className="font-medium text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
@@ -259,13 +276,10 @@ export default function Bookings() {
                     <div className="font-medium text-zinc-800 dark:text-zinc-200 leading-tight">
                       {booking.user_full_name || 'Guest'}
                     </div>
-                    {booking.user_email && (
-                      <div className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{booking.user_email}</div>
-                    )}
                   </td>
 
                   {/* Event Date */}
-                  <td className={`${CELL} whitespace-nowrap text-zinc-600 dark:text-zinc-400 dark:text-zinc-500`}>
+                  <td className={`${CELL} whitespace-nowrap text-zinc-600 dark:text-zinc-400`}>
                     {formatEventDate(booking)}
                   </td>
 
@@ -284,14 +298,14 @@ export default function Bookings() {
 
                   {/* Guests */}
                   <td className={CELL}>
-                    <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">
-                      <Users className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+                    <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
+                      <Users className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-400" />
                       <span>{booking.guest_count ?? '—'}</span>
                     </div>
                   </td>
 
                   {/* Requested */}
-                  <td className={`${CELL} whitespace-nowrap text-zinc-400 dark:text-zinc-500 text-xs`}>
+                  <td className={`${CELL} whitespace-nowrap text-zinc-400 dark:text-zinc-400 text-xs`}>
                     {booking.created_at ? timeAgo(booking.created_at) : '—'}
                   </td>
 
@@ -309,6 +323,14 @@ export default function Bookings() {
               ))}
             </tbody>
           </table>
+          {/* Pagination Controls */}
+          <Pagination
+            page={page}
+            perPage={25}
+            total={bookingResponse?.total || 0}
+            totalPages={totalPages}
+            setPage={setPage}
+          />
         </div>
       )}
     </div>

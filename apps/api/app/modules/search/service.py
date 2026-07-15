@@ -4,12 +4,12 @@ from datetime import datetime
 from uuid import UUID
 
 import numpy as np
-from sqlalchemy import case, tuple_
+from sqlalchemy import case, or_, text, tuple_
 from sqlalchemy import func as sa_func
-from sqlalchemy import or_, text
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.config import settings
+from app.modules.admin import settings_store
 from app.modules.search import search_metadata_cache
 from app.modules.search.category_intent import (
     GROUP_CORPORATE,
@@ -401,7 +401,7 @@ def _log_hybrid_diagnostics(
             normalized_q,
             fts_matches,
             vec_norm,
-            settings.search_min_vector_similarity,
+            settings_store.get_setting(db, "search_min_vector_similarity"),
             fts_top_ids,
             vec_top_ids,
             overlap,
@@ -458,7 +458,7 @@ def search_hybrid(db: Session, params: SearchParams) -> SearchResultPage:
         return search_fts(db, params)
 
     raw_query = params.q
-    normalized_q = normalize_query(raw_query)
+    normalized_q = normalize_query(db, raw_query)
 
     if not _has_any_embeddings(db):
         return search_fts(db, params)
@@ -471,7 +471,7 @@ def search_hybrid(db: Session, params: SearchParams) -> SearchResultPage:
         logger.warning("Embedding generation failed: %s", exc)
         return search_fts(db, params)
 
-    intents = detect_category_intents(normalized_q)
+    intents = detect_category_intents(db, normalized_q)
 
     if settings.search_diagnostics_enabled:
         _log_hybrid_diagnostics(db, raw_query, normalized_q, query_vec, intents)
@@ -509,10 +509,14 @@ def search_hybrid(db: Session, params: SearchParams) -> SearchResultPage:
         """,
     ]
 
+    min_vector_score = settings_store.get_setting(db, "search_min_vector_similarity")
+    fts_weight = settings_store.get_setting(db, "search_fts_weight")
+    vector_weight = settings_store.get_setting(db, "search_vector_weight")
+
     query_params = {
         "q": normalized_q,
         "qvec": str(query_vec),
-        "min_vector_score": settings.search_min_vector_similarity,
+        "min_vector_score": min_vector_score,
         # Boost values and slug lists are now bind params rather than
         # f-string-interpolated literals: the SQL *text* is identical across
         # calls regardless of which intent was detected, so Postgres can
@@ -523,8 +527,8 @@ def search_hybrid(db: Session, params: SearchParams) -> SearchResultPage:
         "wedding_boost": intents.get(GROUP_WEDDING, 1.0),
         "event_boost": intents.get(GROUP_EVENT, 1.0),
         "corporate_boost": intents.get(GROUP_CORPORATE, 1.0),
-        "fts_weight": settings.search_fts_weight,
-        "vector_weight": settings.search_vector_weight,
+        "fts_weight": fts_weight,
+        "vector_weight": vector_weight,
     }
 
     if params.city:
@@ -676,7 +680,9 @@ def search_hybrid(db: Session, params: SearchParams) -> SearchResultPage:
         }.get(params.sort, last_row.hybrid_score)
         if params.sort in ("price_asc", "price_desc") and sort_value is None:
             sort_value = (
-                _PRICE_NULL_ASC_SENTINEL if params.sort == "price_asc" else _PRICE_NULL_DESC_SENTINEL
+                _PRICE_NULL_ASC_SENTINEL
+                if params.sort == "price_asc"
+                else _PRICE_NULL_DESC_SENTINEL
             )
         next_cursor = _encode_cursor(sort_value, last_row.id)
 

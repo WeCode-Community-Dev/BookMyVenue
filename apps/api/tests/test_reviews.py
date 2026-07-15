@@ -250,7 +250,9 @@ class TestReviewService:
 
         action = (
             db.query(AdminAction)
-            .filter(AdminAction.target_id == review.id, AdminAction.action_type == "review_restored")
+            .filter(
+                AdminAction.target_id == review.id, AdminAction.action_type == "review_restored"
+            )
             .first()
         )
         assert action is not None

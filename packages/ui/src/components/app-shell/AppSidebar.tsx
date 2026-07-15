@@ -13,6 +13,8 @@ type AppSidebarProps = {
   className?: string
   mobileOpen?: boolean
   onMobileClose?: () => void
+  secondaryNavItems?: NavItemConfig[]
+  secondaryNavLabel?: string
 }
 
 export function AppSidebar({
@@ -25,6 +27,8 @@ export function AppSidebar({
   className,
   mobileOpen,
   onMobileClose,
+  secondaryNavItems,
+  secondaryNavLabel,
 }: AppSidebarProps) {
   const sidebar = (
     <aside
@@ -49,7 +53,7 @@ export function AppSidebar({
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Main navigation">
-        {/* Optional nav group label */}
+        {/* Primary nav group */}
         <p className="mb-1.5 px-2.5 text-[10.5px] font-semibold uppercase tracking-widest text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">
           Management
         </p>
@@ -71,6 +75,33 @@ export function AppSidebar({
             </li>
           ))}
         </ul>
+
+        {/* Secondary / contextual nav group */}
+        {secondaryNavItems && secondaryNavItems.length > 0 && (
+          <div className="mt-5">
+            <div className="mb-1.5 flex items-center gap-2 px-2.5">
+              <div className="h-px flex-1 bg-zinc-800/60" />
+              <p className="text-[10.5px] font-semibold uppercase tracking-widest text-zinc-600">
+                {secondaryNavLabel ?? 'This Venue'}
+              </p>
+              <div className="h-px flex-1 bg-zinc-800/60" />
+            </div>
+            <ul className="space-y-0.5">
+              {secondaryNavItems.map((item) => (
+                <li key={item.href}>
+                  <NavItem
+                    {...item}
+                    active={activePath === item.href || activePath.startsWith(item.href + '/')}
+                    onClick={() => {
+                      onNavigate(item.href)
+                      onMobileClose?.()
+                    }}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </nav>
 
       {/* User */}

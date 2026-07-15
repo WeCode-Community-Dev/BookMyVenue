@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.modules.admin import settings_store
 from app.modules.booking.helpers import (
     TERMINAL_STATUSES,
     _assert_booking_owner,
@@ -43,6 +44,7 @@ class RefundComputation:
 
 
 def _compute_refund(
+    db: Session,
     booking: Booking,
     policy: VenueCancellationPolicy | None,
     cancelled_at: datetime | None = None,
@@ -71,15 +73,20 @@ def _compute_refund(
                 break
         else:
             refund_pct = float(policy.no_show_refund_pct)
+        platform_fee_refundable = policy.platform_fee_refundable
     else:
         tier = None
+        refund_pct = settings_store.get_setting(db, "default_no_policy_refund_pct")
+        platform_fee_refundable = settings_store.get_setting(
+            db, "default_no_policy_platform_fee_refundable"
+        )
 
-    if policy and not policy.platform_fee_refundable:
+    if platform_fee_refundable:
+        refund_amount = round(paid_amount * refund_pct / 100)
+    else:
         # Calculate refund on the portion excluding platform fee
         base_refundable = max(0, paid_amount - booking.platform_fee_paise)
         refund_amount = round(base_refundable * refund_pct / 100)
-    else:
-        refund_amount = round(paid_amount * refund_pct / 100)
 
     penalty_amount = max(0, paid_amount - refund_amount)
     return RefundComputation(
@@ -118,7 +125,7 @@ def get_cancellation_preview(
             display=CancellationDisplay(refund_amount="₹0", penalty_amount="₹0"),
         )
 
-    refund = _compute_refund(booking, _load_policy(db, booking.venue_id))
+    refund = _compute_refund(db, booking, _load_policy(db, booking.venue_id))
     return CancellationPreviewOut(
         refund_amount_paise=refund.refund_amount_paise,
         penalty_amount_paise=refund.penalty_amount_paise,
@@ -169,7 +176,9 @@ def user_cancel_booking(db: Session, booking_id: UUID, user_id: UUID) -> Booking
         if booking.stripe_advance_payment_intent_id:
             payment_service.cancel_payment_intent(booking.stripe_advance_payment_intent_id)
     else:  # confirmed
-        refund = _compute_refund(booking, _load_policy(db, booking.venue_id), booking.cancelled_at)
+        refund = _compute_refund(
+            db, booking, _load_policy(db, booking.venue_id), booking.cancelled_at
+        )
         if refund.refund_amount_paise > 0:
             payment_service.refund_for_cancellation(
                 db, booking, refund.refund_amount_paise, "user_cancellation"

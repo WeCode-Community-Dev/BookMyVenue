@@ -99,7 +99,7 @@ function RuleForm({
       />
 
       <div>
-        <label className="flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 mb-1">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
           <span>Days of week (optional)</span>
           <InfoTooltip content="Leave blank to apply to any day of the week. Select specific days to restrict the rule (e.g. only Saturdays and Sundays)." />
         </label>
@@ -112,7 +112,7 @@ function RuleForm({
               className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
                 form.days_of_week.includes(idx)
                   ? 'bg-brand text-white border-brand'
-                  : 'bg-white dark:bg-ink-900 text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 border-zinc-200 dark:border-ink-800 hover:border-brand'
+                  : 'bg-white dark:bg-ink-900 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-ink-700 hover:border-brand'
               }`}
             >
               {d}
@@ -166,7 +166,7 @@ function RuleForm({
         />
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300 dark:text-zinc-600">
+      <label className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
         <input
           type="checkbox"
           className="rounded text-brand focus:ring-brand"
@@ -361,7 +361,7 @@ export default function VenuePricingRules() {
   return (
     <div className="max-w-4xl mx-auto pb-12 space-y-4 pt-6">
       {portalTarget && createPortal(
-        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:text-zinc-100 transition-colors flex items-center gap-1.5 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800">
+        <Link to={`/venues/${venueId}/overview`} className="text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-zinc-100 transition-colors flex items-center gap-1.5 bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-700 px-3 py-1.5 rounded-md shadow-sm hover:bg-zinc-50 dark:hover:bg-ink-800">
           <ArrowLeft className="h-4 w-4" />
           Back to Overview
         </Link>,
@@ -374,7 +374,7 @@ export default function VenuePricingRules() {
 
       {/* Bounds panel */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-5 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-5 border-b border-zinc-100 dark:border-ink-700 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl gap-4">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Settings className="w-5 h-5 text-brand" />
@@ -393,7 +393,7 @@ export default function VenuePricingRules() {
             <Input info="The absolute highest limit your price can ever reach. e.g. 200% means the final price will never exceed double your base price, even if a +150% rule is applied." label="Maximum %" type="number" value={maxPct} onChange={e => setMaxPct(e.target.value)} suffix="%" />
           </div>
           {venue && (
-            <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-4 bg-zinc-50 dark:bg-ink-800 p-3 rounded-lg border border-zinc-200 dark:border-ink-800">
+            <p className="text-xs text-zinc-400 dark:text-zinc-400 mt-4 bg-zinc-50 dark:bg-ink-800 p-3 rounded-lg border border-zinc-200 dark:border-ink-700">
               Example: a ₹{((venue.starting_price_paise ?? venue.hourly_rate_paise ?? 0) / 100).toLocaleString('en-IN')} base price
               always stays between {minPct}% and {maxPct}% of that value.
             </p>
@@ -403,7 +403,7 @@ export default function VenuePricingRules() {
 
       {/* Add rule */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-5 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-5 border-b border-zinc-100 dark:border-ink-700 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Tag className="w-5 h-5 text-brand" />
@@ -419,7 +419,7 @@ export default function VenuePricingRules() {
 
       {/* Rules list */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-5 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-5 border-b border-zinc-100 dark:border-ink-700 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <List className="w-5 h-5 text-brand" />
@@ -430,27 +430,27 @@ export default function VenuePricingRules() {
         </div>
         <div className="p-5 pt-4">
           {rules.length === 0 ? (
-            <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-ink-800 rounded-xl bg-zinc-50 dark:bg-ink-800">
+            <div className="text-center py-12 border-2 border-dashed border-zinc-200 dark:border-ink-700 rounded-xl bg-zinc-50 dark:bg-ink-800">
               <Tag className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">No pricing rules yet. Your base price applies to every booking.</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">No pricing rules yet. Your base price applies to every booking.</p>
             </div>
           ) : (
             <div className="space-y-3">
               {rules.map(rule => (
-                <div key={rule.id} className={`group flex items-center justify-between p-4 bg-white dark:bg-ink-900 border rounded-xl shadow-sm transition-all ${rule.is_active ? 'border-zinc-200 dark:border-ink-800' : 'border-zinc-100 dark:border-ink-800 opacity-50'}`}>
+                <div key={rule.id} className={`group flex items-center justify-between p-4 bg-white dark:bg-ink-900 border rounded-xl shadow-sm transition-all ${rule.is_active ? 'border-zinc-200 dark:border-ink-700' : 'border-zinc-100 dark:border-ink-700 opacity-50'}`}>
                   <div>
                     <div className="flex items-center gap-2 font-medium text-zinc-900 dark:text-zinc-100">
                       {rule.name}
-                      <span className="text-xs font-normal text-zinc-400 dark:text-zinc-500">priority {rule.priority}</span>
+                      <span className="text-xs font-normal text-zinc-400 dark:text-zinc-400">priority {rule.priority}</span>
                       {rule.exceeds_bounds && (
                         <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">will be capped</span>
                       )}
-                      {!rule.is_active && <span className="text-xs text-zinc-400 dark:text-zinc-500">(inactive)</span>}
+                      {!rule.is_active && <span className="text-xs text-zinc-400 dark:text-zinc-400">(inactive)</span>}
                     </div>
-                    <div className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 mt-0.5">{ruleSummary(rule)}</div>
+                    <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">{ruleSummary(rule)}</div>
                   </div>
                   <div className="flex items-center gap-2 md:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                    <button onClick={() => openEdit(rule)} className="p-2 text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:text-brand rounded-md hover:bg-zinc-50 dark:hover:bg-ink-800 dark:bg-ink-800" title="Edit rule">
+                    <button onClick={() => openEdit(rule)} className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-brand rounded-md hover:bg-zinc-50 dark:hover:bg-ink-800" title="Edit rule">
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button onClick={() => handleDelete(rule.id)} className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50" title="Delete rule">
@@ -466,7 +466,7 @@ export default function VenuePricingRules() {
 
       {/* Live preview */}
       <Card className="">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 border-b border-zinc-100 dark:border-ink-800 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 border-b border-zinc-100 dark:border-ink-700 bg-zinc-50/50 dark:bg-ink-950/50 rounded-t-xl">
           <div>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-brand" />
@@ -504,9 +504,9 @@ export default function VenuePricingRules() {
           {previewError && <p className="text-sm text-red-600 mt-4 p-3 bg-red-50 rounded border border-red-200">{previewError}</p>}
 
           {preview && (
-            <div className="mt-6 p-5 rounded-xl bg-zinc-50 dark:bg-ink-800 border border-zinc-200 dark:border-ink-800">
-              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-ink-800 pb-3 mb-3">
-                <span className="text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 font-medium">Final Quote</span>
+            <div className="mt-6 p-5 rounded-xl bg-zinc-50 dark:bg-ink-800 border border-zinc-200 dark:border-ink-700">
+              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-ink-700 pb-3 mb-3">
+                <span className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Final Quote</span>
                 <span className="text-xl font-black text-zinc-900 dark:text-zinc-100">{preview.display.quoted_price}</span>
               </div>
               {preview.clamped && (
@@ -516,12 +516,12 @@ export default function VenuePricingRules() {
               )}
               {preview.breakdown.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2">Price Breakdown</p>
+                  <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-400 uppercase tracking-wider mb-2">Price Breakdown</p>
                   {preview.breakdown.map((b, i) => (
-                    <div key={i} className="text-sm text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 flex justify-between bg-white dark:bg-ink-900 p-2 rounded border border-zinc-100 dark:border-ink-800 shadow-sm">
+                    <div key={i} className="text-sm text-zinc-600 dark:text-zinc-400 flex justify-between bg-white dark:bg-ink-900 p-2 rounded border border-zinc-100 dark:border-ink-700 shadow-sm">
                       <span className="font-medium">
                         {b.period_date}{b.start_time ? ` ${b.start_time.slice(0, 5)}-${b.end_time?.slice(0, 5)}` : ''} 
-                        <span className="text-zinc-400 dark:text-zinc-500 font-normal mx-2">—</span>
+                        <span className="text-zinc-400 dark:text-zinc-400 font-normal mx-2">—</span>
                         {b.applied_rule_name ?? 'Base price'}
                       </span>
                       <span className="font-semibold text-zinc-900 dark:text-zinc-100">

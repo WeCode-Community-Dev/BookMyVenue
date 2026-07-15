@@ -108,7 +108,7 @@ export default function Register() {
             <div>
               <label htmlFor="phone">
                 Phone{' '}
-                <span className="font-normal text-zinc-400 dark:text-zinc-500">(optional)</span>
+                <span className="font-normal text-zinc-400 dark:text-zinc-400">(optional)</span>
               </label>
               <input
                 id="phone"
@@ -168,10 +168,10 @@ export default function Register() {
           </form>
 
           <div className="mt-5 flex items-start gap-2 rounded-lg bg-zinc-50 dark:bg-ink-800 px-3.5 py-2.5">
-            <svg className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <svg className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-xs text-zinc-400 dark:text-zinc-500">
+            <p className="text-xs text-zinc-400 dark:text-zinc-400">
               Applications are reviewed by our team. We'll email you once a decision is made.
             </p>
           </div>

@@ -38,10 +38,10 @@
      for any dark: background/border/divide utility. */
   --color-ink-950: #0a1412;  /* page background */
   --color-ink-900: #101d1a;  /* card / surface background */
-  --color-ink-850: #152623;  /* elevated surface */
-  --color-ink-800: #1b302b;  /* hover surface, default borders */
-  --color-ink-700: #253f38;  /* stronger borders / dividers */
-  --color-ink-600: #325146;  /* interactive borders on hover */
+  --color-ink-850: #1a2d29;  /* elevated surface */
+  --color-ink-800: #26403a;  /* hover surface, default borders */
+  --color-ink-700: #385951;  /* stronger borders / dividers */
+  --color-ink-600: #4a7368;  /* interactive borders on hover */
 }
 
 /* ─── Design tokens ─────────────────────────────────────────────────────── */

@@ -26,6 +26,9 @@ const VenueEdit = lazy(() => import('./pages/venues/VenueEdit'))
 const VenueCalendarManagement = lazy(() => import('./pages/venues/VenueCalendarManagement'))
 const VenuePricingRules = lazy(() => import('./pages/venues/VenuePricingRules'))
 const BookingDetail = lazy(() => import('./pages/bookings/BookingDetail'))
+const Reviews = lazy(() => import('./pages/Reviews'))
+const ReviewDetail = lazy(() => import('./pages/ReviewDetail'))
+
 
 // Placeholders for future pages
 const Placeholder = ({ title }: { title: string }) => (
@@ -67,6 +70,10 @@ export const router = createBrowserRouter([
       { path: 'venues/:venueId/calendar', element: <VenueCalendarManagement /> },
       { path: 'venues/:venueId/pricing-rules', element: <VenuePricingRules /> },
 
+      // Reviews
+      { path: 'reviews', element: <Reviews /> },
+      { path: 'reviews/:reviewId', element: <ReviewDetail /> },
+
       // Bookings
       { path: 'bookings', element: <Bookings /> },
       { path: 'bookings/:bookingId', element: <BookingDetail /> },
@@ -84,9 +91,6 @@ export const router = createBrowserRouter([
           { path: 'payouts', element: <Placeholder title="Payouts" /> }
         ]
       },
-
-      // Notifications
-      { path: 'notifications', element: <Placeholder title="Notifications" /> },
 
       // Settings
       {

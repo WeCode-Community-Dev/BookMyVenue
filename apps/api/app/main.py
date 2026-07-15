@@ -7,14 +7,17 @@ from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.logging import setup_logging
 from app.core.middleware import register_middleware
+from app.core.sentry import init_sentry
 from app.jobs import scheduler as job_scheduler
 from app.modules.admin.routes import router as admin_router
 from app.modules.admin.service import seed_super_admin
+from app.modules.admin.settings_store import seed_platform_settings
 from app.modules.auth.routes import router as auth_router
 from app.modules.availability.routes import router as availability_router
 from app.modules.booking.routes import router as booking_router
 from app.modules.chat.routes import router as chat_router
 from app.modules.chat.websocket import router as chat_ws_router
+from app.modules.contact.routes import router as contact_router
 from app.modules.deep_research.routes import router as deep_research_router
 from app.modules.internal.routes import router as internal_router
 from app.modules.notification.routes import router as notification_router
@@ -45,6 +48,8 @@ def _load_search_metadata() -> None:
 async def lifespan(_: FastAPI):
     setup_logging()
     seed_super_admin()
+    with SessionLocal() as db:
+        seed_platform_settings(db)
     _load_search_metadata()
     if settings.enable_jobs:
         logger.info("ENABLE_JOBS=true — starting background scheduler")
@@ -55,6 +60,8 @@ async def lifespan(_: FastAPI):
     if settings.enable_jobs:
         job_scheduler.shutdown()
 
+
+init_sentry()
 
 # Disable the interactive docs (/docs, /redoc) in production so the full API
 # surface isn't publicly listed; keep them in development.
@@ -83,6 +90,7 @@ app.include_router(owner_router, prefix="/api/owner", tags=["owner"])
 app.include_router(chat_router, prefix="/api/chat", tags=["chat"])
 app.include_router(chat_ws_router, prefix="/api/chat", tags=["chat-ws"])
 app.include_router(deep_research_router, prefix="/api/deep-research", tags=["deep-research"])
+app.include_router(contact_router, prefix="/api/contact", tags=["contact"])
 
 
 @app.get("/health", tags=["health"])

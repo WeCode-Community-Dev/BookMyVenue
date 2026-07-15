@@ -59,7 +59,7 @@ export function DurationInput({ label, name, value, defaultValue, onChange, requ
       </label>
       <input type="hidden" name={name} value={totalMinutes} required={required} />
       <div className="grid grid-cols-2 gap-2">
-        <div className="flex items-center border border-zinc-200 dark:border-ink-800 rounded-md focus-within:ring-2 focus-within:ring-brand/20 focus-within:border-brand bg-white dark:bg-ink-900 h-10 w-full transition-shadow overflow-hidden">
+        <div className="flex items-center border border-zinc-200 dark:border-ink-700 rounded-md focus-within:ring-2 focus-within:ring-brand/20 focus-within:border-brand bg-white dark:bg-ink-900 h-10 w-full transition-shadow overflow-hidden">
           <input 
             type="number" 
             min="0" 
@@ -68,9 +68,9 @@ export function DurationInput({ label, name, value, defaultValue, onChange, requ
             value={hours}
             onChange={handleHoursChange}
           />
-          <span className="text-zinc-500 dark:text-zinc-400 text-sm select-none font-medium border-l border-zinc-200 dark:border-ink-800 px-3 h-full flex items-center bg-zinc-50 dark:bg-ink-950/50">hrs</span>
+          <span className="text-zinc-500 dark:text-zinc-400 text-sm select-none font-medium border-l border-zinc-200 dark:border-ink-700 px-3 h-full flex items-center bg-zinc-50 dark:bg-ink-950/50">hrs</span>
         </div>
-        <div className="flex items-center border border-zinc-200 dark:border-ink-800 rounded-md focus-within:ring-2 focus-within:ring-brand/20 focus-within:border-brand bg-white dark:bg-ink-900 h-10 w-full transition-shadow overflow-hidden">
+        <div className="flex items-center border border-zinc-200 dark:border-ink-700 rounded-md focus-within:ring-2 focus-within:ring-brand/20 focus-within:border-brand bg-white dark:bg-ink-900 h-10 w-full transition-shadow overflow-hidden">
           <input 
             type="number" 
             min="0" 
@@ -80,7 +80,7 @@ export function DurationInput({ label, name, value, defaultValue, onChange, requ
             value={minutes}
             onChange={handleMinutesChange}
           />
-          <span className="text-zinc-500 dark:text-zinc-400 text-sm select-none font-medium border-l border-zinc-200 dark:border-ink-800 px-3 h-full flex items-center bg-zinc-50 dark:bg-ink-950/50">mins</span>
+          <span className="text-zinc-500 dark:text-zinc-400 text-sm select-none font-medium border-l border-zinc-200 dark:border-ink-700 px-3 h-full flex items-center bg-zinc-50 dark:bg-ink-950/50">mins</span>
         </div>
       </div>
       {helperText && <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{helperText}</p>}

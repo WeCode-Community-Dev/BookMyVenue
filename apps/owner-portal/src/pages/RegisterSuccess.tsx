@@ -10,7 +10,7 @@ export default function RegisterSuccess() {
           </svg>
         </div>
         <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Account created!</h1>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">
+        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
           Please check your email to confirm your account. Once confirmed, log in — your application
           will be reviewed by our team before you can access the owner portal.
         </p>

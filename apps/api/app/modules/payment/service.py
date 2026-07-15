@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.exceptions import BadRequestError, ForbiddenError, NotFoundError
 from app.core.stripe_client import get_stripe
+from app.modules.admin import settings_store
 from app.modules.auth.dependencies import AuthContext
 from app.modules.booking.models import (
     Booking,
@@ -45,6 +46,7 @@ from app.modules.payment.models import (
 )
 from app.modules.payment.schemas import (
     LedgerEntryResponse,
+    LedgerListResponse,
     OwnerLedgerStatsResponse,
     PaymentIntentResponse,
     PaymentResponse,
@@ -256,7 +258,11 @@ def confirm_payment(db: Session, payment_intent_id: str) -> None:
         )
     )
 
-    fee_pct = float(venue.platform_commission_pct) if venue else settings.platform_fee_pct
+    fee_pct = (
+        float(venue.platform_commission_pct)
+        if venue
+        else settings_store.get_setting(db, "default_platform_commission_pct")
+    )
     fee = booking.platform_fee_paise or round(payment.amount_paise * fee_pct / 100)
     booking.platform_fee_paise = fee
     if fee:
@@ -447,9 +453,7 @@ def refund_booking(
         # Set payment_status based on whether full amount was refunded or only partial
         total_paid = booking.amount_paid_paise or 0
         booking.payment_status = (
-            PaymentStatus.refunded
-            if refunded >= total_paid
-            else PaymentStatus.partially_refunded
+            PaymentStatus.refunded if refunded >= total_paid else PaymentStatus.partially_refunded
         )
         venue_name = venue.name if venue else "your venue"
         notifications.notify(
@@ -579,8 +583,12 @@ def get_owner_ledger_stats(db: Session, current_user: AuthContext) -> OwnerLedge
 
 
 def list_owner_ledger_entries(
-    db: Session, current_user: AuthContext, entry_type: str | None = None
-) -> list[LedgerEntryResponse]:
+    db: Session,
+    current_user: AuthContext,
+    entry_type: str | None = None,
+    page: int = 1,
+    per_page: int = 20,
+) -> LedgerListResponse:
     if not current_user.is_owner():
         raise ForbiddenError("Must be a venue owner")
 
@@ -594,8 +602,11 @@ def list_owner_ledger_entries(
     if entry_type and entry_type != "all":
         query = query.filter(LedgerEntry.entry_type == entry_type)
 
+    total = query.count()
+    total_pages = (total + per_page - 1) // per_page
+
     query = query.order_by(LedgerEntry.created_at.desc())
-    results = query.all()
+    results = query.offset((page - 1) * per_page).limit(per_page).all()
 
     responses = []
     for ledger, venue, profile in results:
@@ -613,7 +624,13 @@ def list_owner_ledger_entries(
                 created_at=ledger.created_at.isoformat(),
             )
         )
-    return responses
+    return LedgerListResponse(
+        items=responses,
+        total=total,
+        page=page,
+        page_size=per_page,
+        total_pages=total_pages,
+    )
 
 
 # --------------------------------------------------------------------------- #

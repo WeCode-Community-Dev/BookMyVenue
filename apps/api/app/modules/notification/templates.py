@@ -4,6 +4,8 @@ render_notification(type, context, booking_id) -> (title, body, html)
 `context` keys are best-effort; missing keys degrade gracefully.
 """
 
+import html as html_lib
+
 from app.core.config import settings
 
 # type -> (title, body template). Body templates use str.format(**context).
@@ -33,7 +35,7 @@ _TEMPLATES: dict[str, tuple[str, str]] = {
         "Your booking for {venue_name} is confirmed. We look forward to your event!",
     ),
     "balance_paid": (
-        "Balance paid — booking fully paid",
+        "Balance paid - booking fully paid",
         "Thanks! Your balance for {venue_name} is paid and your booking is fully settled.",
     ),
     "balance_overdue": (
@@ -74,7 +76,7 @@ _TEMPLATES: dict[str, tuple[str, str]] = {
     ),
     "venue_approved": (
         "Your venue is now live",
-        "Great news — {venue_name} has been approved and is now visible to customers on Venue404.",
+        "Great news, {venue_name} has been approved and is now visible to customers on Venue404.",
     ),
     "venue_rejected": (
         "Venue submission rejected",
@@ -87,7 +89,7 @@ _TEMPLATES: dict[str, tuple[str, str]] = {
     ),
     "venue_reactivated": (
         "Venue reactivated",
-        "Good news — {venue_name} has been reactivated and is visible to customers again.",
+        "Good news, {venue_name} has been reactivated and is visible to customers again.",
     ),
     "user_suspended": (
         "Your account has been suspended",
@@ -95,7 +97,7 @@ _TEMPLATES: dict[str, tuple[str, str]] = {
     ),
     "user_reactivated": (
         "Your account has been reactivated",
-        "Your Venue404 account has been reactivated — you can log in and use Venue404 again.",
+        "Your Venue404 account has been reactivated. You can log in and use Venue404 again.",
     ),
 }
 
@@ -137,12 +139,18 @@ def render_notification(
 
 # ─── Shared branded layout ──────────────────────────────────────────────────
 # One inline-styled, table-based layout (email-client-safe) used by every
-# outbound email — transactional notifications above and the auth emails
-# below — so all of Venue404's mail looks like it came from the same product
+# outbound email, transactional notifications above and the auth emails
+# below, so all of Venue404's mail looks like it came from the same product
 # instead of ad hoc <h2>/<p> fragments.
+#
+# No <img> logo: the icon is served from the frontend's runtime-generated
+# favicon, which isn't a stable public asset email clients can fetch. The
+# wordmark below is pure CSS/text so it always renders.
 
 _BRAND = "#285A48"
 _BRAND_SECONDARY = "#408A71"
+_FONT = "-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif"
+_SUPPORT_EMAIL = "venue404.support@gmail.com"
 
 
 def _email_layout(
@@ -157,13 +165,13 @@ def _email_layout(
     if cta_text and cta_url:
         cta_html = f"""
         <tr>
-          <td style="padding:28px 40px 4px;" align="left">
+          <td style="padding:8px 40px 4px;" align="left">
             <a href="{cta_url}"
                style="display:inline-block;background:{_BRAND};color:#ffffff;
-                      text-decoration:none;
-                      font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:14px;
-                      font-weight:600;
-                      padding:12px 28px;border-radius:8px;">
+                      text-decoration:none;font-family:{_FONT};font-size:14px;
+                      font-weight:600;letter-spacing:-0.01em;
+                      padding:13px 30px;border-radius:10px;
+                      box-shadow:0 1px 2px rgba(40,90,72,0.25);">
               {cta_text}
             </a>
           </td>
@@ -173,9 +181,9 @@ def _email_layout(
     footnote_html = (
         f"""
         <tr>
-          <td style="padding:20px 40px 0;">
-            <p style="margin:0;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:12px;
-                      line-height:1.6;color:#71717a;">
+          <td style="padding:18px 40px 0;">
+            <p style="margin:0;font-family:{_FONT};font-size:12.5px;
+                      line-height:1.65;color:#71717a;">
               {footnote}
             </p>
           </td>
@@ -188,51 +196,70 @@ def _email_layout(
     return f"""\
 <!doctype html>
 <html>
-  <body style="margin:0;padding:0;background:#f4f4f5;">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{title}</title>
+  </head>
+  <body style="margin:0;padding:0;background:#ffffff;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-           style="background:#f4f4f5;padding:32px 16px;">
+           style="background:#ffffff;padding:32px 16px;">
       <tr>
         <td align="center">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-                 style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden;
-                        box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+                 style="max-width:560px;background:#ffffff;border-radius:20px;overflow:hidden;
+                        border:1px solid #e4e4e7;box-shadow:0 4px 16px rgba(24,24,27,0.07);">
             <tr>
               <td align="center"
                   style="background:linear-gradient(135deg,{_BRAND},{_BRAND_SECONDARY});
-                         padding:28px 40px;">
-                <img src="{settings.frontend_base_url}/favicon.png" width="40" height="40"
-                     alt="Venue404"
-                     style="display:block;margin:0 auto 8px;border-radius:9px;" />
-                <span style="font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:18px;
-                             font-weight:700;color:#ffffff;">
-                  Venue<span style="color:#d7ece3;">404</span>
-                </span>
+                         padding:40px 40px 34px;">
+                <div style="font-family:{_FONT};font-size:23px;font-weight:800;
+                            letter-spacing:-0.02em;color:#ffffff;">
+                  Venue<span style="color:#cdeee1;">404</span>
+                </div>
+                <div style="margin-top:8px;font-family:{_FONT};font-size:11px;font-weight:600;
+                            letter-spacing:0.08em;text-transform:uppercase;
+                            color:rgba(255,255,255,0.72);">
+                  Venue Discovery &amp; Booking
+                </div>
               </td>
             </tr>
             <tr>
-              <td style="padding:32px 40px 4px;">
-                <h1 style="margin:0;font-family:Segoe UI,Helvetica,Arial,sans-serif;font-size:20px;
-                           font-weight:700;color:#18181b;">
+              <td style="padding:36px 40px 4px;">
+                <h1 style="margin:0;font-family:{_FONT};font-size:21px;
+                           font-weight:700;letter-spacing:-0.01em;color:#18181b;">
                   {title}
                 </h1>
               </td>
             </tr>
             <tr>
-              <td style="padding:10px 40px 0;font-family:Segoe UI,Helvetica,Arial,sans-serif;
-                         font-size:14px;line-height:1.65;color:#3f3f46;">
+              <td style="padding:10px 40px 0;font-family:{_FONT};
+                         font-size:14.5px;line-height:1.7;color:#3f3f46;">
                 {body_html}
               </td>
             </tr>
             {cta_html}
             {footnote_html}
             <tr>
-              <td style="padding:32px 40px 28px;">
-                <hr style="border:none;border-top:1px solid #f0f0f1;margin:0 0 16px;" />
-                <p style="margin:0;font-family:Segoe UI,Helvetica,Arial,sans-serif;
-                          font-size:12px;color:#a1a1aa;">
-                  Venue404 — venue discovery &amp; booking marketplace.<br />
-                  This is an automated email — please don't reply directly to it.
-                </p>
+              <td style="padding:32px 0 0;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                       style="background:#fafafa;border-top:1px solid #f0f0f1;">
+                  <tr>
+                    <td style="padding:22px 40px 26px;font-family:{_FONT};">
+                      <p style="margin:0 0 4px;font-size:12px;color:#a1a1aa;">
+                        Venue404, venue discovery and booking marketplace.
+                      </p>
+                      <p style="margin:0;font-size:12px;color:#a1a1aa;">
+                        Automated message, please don't reply directly. Need help? Email
+                        <a href="mailto:{_SUPPORT_EMAIL}"
+                           style="color:{_BRAND};text-decoration:none;font-weight:600;">
+                          {_SUPPORT_EMAIL}
+                        </a>
+                      </p>
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
           </table>
@@ -274,8 +301,8 @@ def render_password_reset_email(action_link: str) -> tuple[str, str]:
         cta_text="Set a new password",
         cta_url=action_link,
         footnote=(
-            "If you didn't request this, you can safely ignore this email — "
-            "your password won't change."
+            "If you didn't request this, you can safely ignore this email. "
+            "Your password won't change."
         ),
     )
     return subject, html
@@ -298,15 +325,15 @@ def render_booking_invoice_email(
     fully_paid, so the copy reflects "fully paid" rather than "confirmed".
     """
     if fully_paid:
-        subject = f"Balance paid — your updated Venue404 invoice for {venue_name}"
+        subject = f"Balance paid - your updated Venue404 invoice for {venue_name}"
         title = "Your booking is fully paid"
         body_html = (
             f"<p>{customer_name or 'Hi'}, we've received your balance payment for "
-            f"<strong>{venue_name}</strong> — your booking is now fully paid. "
+            f"<strong>{venue_name}</strong>. Your booking is now fully paid. "
             "Here's your updated invoice.</p>"
         )
     else:
-        subject = f"Booking confirmed — your Venue404 invoice for {venue_name}"
+        subject = f"Booking confirmed - your Venue404 invoice for {venue_name}"
         title = "Your booking is confirmed"
         body_html = (
             f"<p>{customer_name or 'Hi'}, your booking for <strong>{venue_name}</strong> is "
@@ -349,3 +376,42 @@ def render_owner_rejected_email(owner_name: str | None, reason: str = "") -> tup
         ),
     )
     return subject, html
+
+
+def render_contact_message_email(
+    name: str, email: str, subject: str, message: str
+) -> tuple[str, str]:
+    """The "Contact Us" form submission, forwarded to the support inbox.
+    User-supplied fields are HTML-escaped since they're interpolated directly.
+    """
+    safe_name = html_lib.escape(name)
+    safe_email = html_lib.escape(email)
+    safe_subject = html_lib.escape(subject)
+    safe_message = html_lib.escape(message).replace("\n", "<br />")
+
+    email_subject = f"[Contact] {subject}"
+    meta_html = f"""
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="margin:14px 0 18px;background:#fafafa;border:1px solid #f0f0f1;
+                  border-radius:12px;">
+      <tr>
+        <td style="padding:16px 20px;">
+          <p style="margin:0 0 6px;font-size:12.5px;color:#71717a;">
+            <span style="font-weight:600;color:#52525b;">From</span>
+            &nbsp;{safe_name} &lt;{safe_email}&gt;
+          </p>
+          <p style="margin:0;font-size:12.5px;color:#71717a;">
+            <span style="font-weight:600;color:#52525b;">Subject</span>
+            &nbsp;{safe_subject}
+          </p>
+        </td>
+      </tr>
+    </table>
+    """
+    body_html = (
+        "<p>New message submitted through the Venue404 Contact Us form.</p>"
+        f"{meta_html}"
+        f'<p style="white-space:pre-wrap;">{safe_message}</p>'
+    )
+    html = _email_layout(title="New contact form message", body_html=body_html)
+    return email_subject, html

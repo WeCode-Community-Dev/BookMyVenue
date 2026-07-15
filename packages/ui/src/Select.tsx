@@ -56,7 +56,7 @@ export default function Select({ options, value, onChange, placeholder = 'Select
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {label && (
-        <label className="block text-sm font-medium text-zinc-700 mb-1">
+        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
           {label}
         </label>
       )}
@@ -67,20 +67,20 @@ export default function Select({ options, value, onChange, placeholder = 'Select
         type="button"
         disabled={disabled}
         onClick={toggleOpen}
-        className={`w-full h-10 px-3 flex items-center justify-between rounded-md border border-zinc-200 bg-white transition-colors text-sm ${
-          disabled ? 'opacity-50 cursor-not-allowed bg-zinc-50' : 'hover:border-zinc-300 focus:outline-none focus:ring-2 focus:ring-brand/20'
+        className={`w-full h-10 px-3 flex items-center justify-between rounded-md border border-zinc-200 dark:border-ink-700 bg-white dark:bg-ink-900 transition-colors text-sm ${
+          disabled ? 'opacity-50 cursor-not-allowed bg-zinc-50 dark:bg-ink-800' : 'hover:border-zinc-300 dark:hover:border-ink-600 focus:outline-none focus:ring-2 focus:ring-brand/20'
         }`}
       >
-        <span className={selectedOption ? 'text-zinc-900' : 'text-zinc-500'}>
+        <span className={selectedOption ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown className={`w-4 h-4 text-zinc-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-zinc-400 dark:text-zinc-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && typeof document !== 'undefined' && createPortal(
         <div 
           ref={popoverRef}
-          className="absolute z-[9999] bg-white rounded-md border border-zinc-200 shadow-lg py-1 animate-in fade-in zoom-in-95 duration-200 max-h-[300px] overflow-y-auto"
+          className="absolute z-[9999] bg-white dark:bg-ink-900 rounded-md border border-zinc-200 dark:border-ink-700 shadow-lg py-1 animate-in fade-in zoom-in-95 duration-200 max-h-[300px] overflow-y-auto"
           style={{ top: coords.top, left: coords.left, width: coords.width }}
         >
           {options.map((opt) => (
@@ -91,7 +91,7 @@ export default function Select({ options, value, onChange, placeholder = 'Select
                 setIsOpen(false)
               }}
               className={`px-3 py-2 cursor-pointer text-sm transition-colors ${
-                value === opt.value ? 'bg-brand text-white font-medium' : 'text-zinc-700 hover:bg-brand/5 hover:text-brand'
+                value === opt.value ? 'bg-brand text-white font-medium' : 'text-zinc-700 dark:text-zinc-300 hover:bg-brand/5 dark:hover:bg-brand/20 hover:text-brand'
               }`}
             >
               {opt.label}

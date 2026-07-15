@@ -21,10 +21,10 @@ class JobInfo(BaseModel):
 
 class PlatformSettingsResponse(BaseModel):
     """
-    Read-only view of platform-wide booking/commission defaults, operational
-    config, and the background-job catalog. These are code-level constants,
-    not editable — surfaced here so admins can see the rules the platform
-    currently enforces.
+    Platform-wide booking/commission defaults, operational config, and the
+    background-job catalog. The booking/commission/deep-research fields are
+    admin-editable via PATCH /api/admin/settings (stored in platform_settings,
+    Redis-cached); the platform-config fields stay deployment-level (env vars).
     """
 
     # Booking & commission rules
@@ -35,8 +35,23 @@ class PlatformSettingsResponse(BaseModel):
     max_deadline_extensions: int
     payment_reminder_hours_before_expiry: int
     balance_overdue_action_window_hours: int
+    default_no_policy_refund_pct: float
+    default_no_policy_platform_fee_refundable: bool
+
+    # Rate limits
     deep_research_rate_limit_per_minute: int
     deep_research_daily_limit: int
+    contact_rate_limit_per_hour: int
+
+    # Search ranking
+    search_min_vector_similarity: float
+    search_fts_weight: float
+    search_vector_weight: float
+    search_wedding_boost: float
+    search_event_boost: float
+    search_corporate_boost: float
+    search_normalizer_match_threshold: int
+    search_normalizer_min_token_len: int
 
     # Platform config
     environment: str
@@ -47,6 +62,58 @@ class PlatformSettingsResponse(BaseModel):
 
     # Background jobs (static catalog, no live run history)
     jobs: list[JobInfo]
+
+
+class PlatformSettingsUpdateRequest(BaseModel):
+    """Partial update — only fields present are changed. Values are validated
+    and range-checked server-side against app.modules.admin.settings_store.SETTINGS.
+    """
+
+    default_platform_commission_pct: float | None = None
+    token_payment_hold_hours: int | None = None
+    instant_booking_payment_timeout_minutes: int | None = None
+    booking_request_expiry_days: int | None = None
+    max_deadline_extensions: int | None = None
+    payment_reminder_hours_before_expiry: int | None = None
+    balance_overdue_action_window_hours: int | None = None
+    default_no_policy_refund_pct: float | None = None
+    default_no_policy_platform_fee_refundable: bool | None = None
+    deep_research_rate_limit_per_minute: int | None = None
+    deep_research_daily_limit: int | None = None
+    contact_rate_limit_per_hour: int | None = None
+    search_min_vector_similarity: float | None = None
+    search_fts_weight: float | None = None
+    search_vector_weight: float | None = None
+    search_wedding_boost: float | None = None
+    search_event_boost: float | None = None
+    search_corporate_boost: float | None = None
+    search_normalizer_match_threshold: int | None = None
+    search_normalizer_min_token_len: int | None = None
+
+
+class SettingFieldMeta(BaseModel):
+    key: str
+    label: str
+    description: str
+    value_type: Literal["int", "float", "bool"]
+    min_value: float | None
+    max_value: float | None
+
+
+class SettingCategoryMeta(BaseModel):
+    key: str
+    label: str
+    fields: list[SettingFieldMeta]
+
+
+class SettingsMetadataResponse(BaseModel):
+    """Static registry metadata (labels, descriptions, categories, validation
+    ranges) for every admin-editable setting — lets the frontend render a
+    grouped settings form without hardcoding field descriptions that could
+    drift from the backend's validation rules.
+    """
+
+    categories: list[SettingCategoryMeta]
 
 
 class UserSummary(BaseModel):

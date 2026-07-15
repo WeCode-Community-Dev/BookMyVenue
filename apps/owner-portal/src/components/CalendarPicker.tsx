@@ -53,7 +53,7 @@ export function CalendarPicker({ selectedDate, onSelect, minDate }: Props) {
     <div className="w-full">
       <div className="grid grid-cols-7 mb-2">
         {DAY_LABELS.map(label => (
-          <div key={label} className="text-center text-xs font-medium text-zinc-400 dark:text-zinc-500 py-1">
+          <div key={label} className="text-center text-xs font-medium text-zinc-400 dark:text-zinc-400 py-1">
             {label}
           </div>
         ))}
@@ -72,7 +72,7 @@ export function CalendarPicker({ selectedDate, onSelect, minDate }: Props) {
                 onClick={() => onSelect(dateStr)}
                 className={`
                   relative z-10 flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors
-                  ${isPast ? 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed line-through' : 'hover:bg-brand-50 text-zinc-700 dark:text-zinc-300 dark:text-zinc-600 cursor-pointer'}
+                  ${isPast ? 'text-zinc-300 dark:text-zinc-600 cursor-not-allowed line-through' : 'hover:bg-brand-50 text-zinc-700 dark:text-zinc-300 cursor-pointer'}
                   ${isSelected ? 'bg-zinc-900 text-white hover:bg-zinc-800' : ''}
                 `}
               >
@@ -86,18 +86,18 @@ export function CalendarPicker({ selectedDate, onSelect, minDate }: Props) {
   )
 
   return (
-    <div className="w-full bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-800 rounded-xl p-6 shadow-sm select-none">
+    <div className="w-full bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-700 rounded-xl p-6 shadow-sm select-none">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {/* Month 1 */}
         <div>
           <div className="mb-5 flex items-center justify-between">
-            <button onClick={handlePrevMonth} className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-ink-800 dark:bg-ink-800 transition-colors">
+            <button onClick={handlePrevMonth} className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-ink-800 transition-colors">
               <ChevronLeft className="h-4 w-4" />
             </button>
             <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label1}</span>
             <div className="w-8 h-8 md:hidden">
                {/* Mobile only right arrow */}
-               <button onClick={handleNextMonth} className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-ink-800 dark:bg-ink-800 transition-colors">
+               <button onClick={handleNextMonth} className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-ink-800 transition-colors">
                  <ChevronRight className="h-4 w-4" />
                </button>
             </div>
@@ -111,7 +111,7 @@ export function CalendarPicker({ selectedDate, onSelect, minDate }: Props) {
           <div className="mb-5 flex items-center justify-between">
             <div className="w-8 h-8" />
             <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{label2}</span>
-            <button onClick={handleNextMonth} className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 dark:text-zinc-400 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-ink-800 dark:bg-ink-800 transition-colors">
+            <button onClick={handleNextMonth} className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-ink-800 transition-colors">
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
@@ -119,12 +119,12 @@ export function CalendarPicker({ selectedDate, onSelect, minDate }: Props) {
         </div>
       </div>
       
-      <div className="mt-5 flex items-center gap-4 border-t border-zinc-100 dark:border-ink-800 pt-4">
-        <span className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+      <div className="mt-5 flex items-center gap-4 border-t border-zinc-100 dark:border-ink-700 pt-4">
+        <span className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-400">
           <span className="h-3.5 w-3.5 rounded-full bg-zinc-900" />
           Selected
         </span>
-        <span className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+        <span className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-400">
           <span className="h-3.5 w-3.5 rounded-full bg-zinc-200" />
           Unavailable
         </span>

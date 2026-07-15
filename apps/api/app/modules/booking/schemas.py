@@ -21,6 +21,11 @@ class BookingRequestIn(BaseModel):
     expected_total_paise: int | None = None
 
 
+class GuestFeedback(BaseModel):
+    category: str
+    comment: str | None
+
+
 class PaymentOption(BaseModel):
     label: str
     amount_paise: int
@@ -134,3 +139,11 @@ class UpdateOwnerNotesIn(BaseModel):
 
 BookingResponse = BookingOut
 CreateBookingRequest = BookingRequestIn
+
+
+class BookingListResponse(BaseModel):
+    items: list[BookingOut]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int

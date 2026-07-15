@@ -16,6 +16,8 @@ type AppShellProps = {
   topbarActions?: React.ReactNode
   children: React.ReactNode
   className?: string
+  secondaryNavItems?: NavItemConfig[]
+  secondaryNavLabel?: string
 }
 
 export function AppShell({
@@ -30,6 +32,8 @@ export function AppShell({
   topbarActions,
   children,
   className,
+  secondaryNavItems,
+  secondaryNavLabel,
 }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -44,6 +48,8 @@ export function AppShell({
         onSignOut={onSignOut}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
+        secondaryNavItems={secondaryNavItems}
+        secondaryNavLabel={secondaryNavLabel}
       />
 
       <div className="flex flex-col lg:pl-[var(--sidebar-width,248px)]">

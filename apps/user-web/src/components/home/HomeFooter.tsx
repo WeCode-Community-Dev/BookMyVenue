@@ -18,10 +18,10 @@ const ACCOUNT_LINKS = [
 ]
 
 const SUPPORT_LINKS = [
-  { label: 'Help Center',       href: '#' },
-  { label: 'Contact Us',        href: '#' },
-  { label: 'Privacy Policy',    href: '#' },
-  { label: 'Terms of Service',  href: '#' },
+  { label: 'Help Center',       href: '/help' },
+  { label: 'Contact Us',        href: '/contact' },
+  { label: 'Privacy Policy',    href: '/privacy' },
+  { label: 'Terms of Service',  href: '/terms' },
 ]
 
 export function HomeFooter() {
@@ -103,12 +103,12 @@ export function HomeFooter() {
             <ul className="space-y-2.5">
               {SUPPORT_LINKS.map(({ label, href }) => (
                 <li key={label}>
-                  <a
-                    href={href}
+                  <Link
+                    to={href}
                     className="text-sm text-zinc-500 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100"
                   >
                     {label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

@@ -2,6 +2,7 @@ import logging
 from datetime import UTC, datetime, timedelta
 
 from app.core.database import with_session
+from app.modules.admin import settings_store
 from app.modules.booking.models import Booking, BookingStatus
 from app.modules.notification import service as notifications
 from app.modules.notification.models import InAppNotification
@@ -9,27 +10,29 @@ from app.modules.venue.models import Venue
 
 logger = logging.getLogger(__name__)
 
-# The advance hold is only 24h, so reminders are keyed to the hold expiry, not
-# days-before-event. Remind once when the hold is within this window of expiring.
-REMINDER_BEFORE = timedelta(hours=12)
 BATCH = 100
 
 
 def run() -> int:
     """Remind accepted-but-unpaid users to pay the token advance before their
-    24-hour hold expires. Deduped via the in-app notification row so a user gets
-    at most one reminder per booking even if the job runs repeatedly.
+    hold expires — lead time is the admin-configured
+    payment_reminder_hours_before_expiry setting. Deduped via the in-app
+    notification row so a user gets at most one reminder per booking even if
+    the job runs repeatedly.
     """
     now = datetime.now(UTC)
     sent = 0
     with with_session() as db:
+        reminder_before = timedelta(
+            hours=settings_store.get_setting(db, "payment_reminder_hours_before_expiry")
+        )
         rows = (
             db.query(Booking)
             .filter(
                 Booking.status == BookingStatus.owner_accepted,
                 Booking.hold_expires_at.isnot(None),
                 Booking.hold_expires_at > now,
-                Booking.hold_expires_at <= now + REMINDER_BEFORE,
+                Booking.hold_expires_at <= now + reminder_before,
                 Booking.deleted_at.is_(None),
             )
             .with_for_update(skip_locked=True)
