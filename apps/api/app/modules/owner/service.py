@@ -96,6 +96,8 @@ def get_dashboard_stats(db: Session, owner_id: UUID) -> DashboardStats:
             gross_volume += val
         elif entry_type == "platform_fee" and direction == "debit":
             platform_fees += val
+        elif entry_type == "platform_fee_reversal" and direction == "credit":
+            platform_fees -= val  # fee was returned to owner on cancellation
         elif entry_type == "refund" and direction == "debit":
             refunds_issued += val
         elif entry_type == "payout" and direction == "debit":

@@ -53,7 +53,7 @@ from app.modules.payment.schemas import (
     RefundResponse,
 )
 from app.modules.profile.models import Profile
-from app.modules.venue.models import Venue
+from app.modules.venue.models import Venue, VenueCancellationPolicy
 
 logger = logging.getLogger(__name__)
 
@@ -496,6 +496,11 @@ def refund_for_cancellation(db: Session, booking: Booking, amount_paise: int, re
     (full / partial / goodwill) move real money and write ledger entries.
     Does NOT commit and does NOT set booking.payment_status — the caller owns
     both (the caller knows whether the result is a full or partial refund).
+
+    If the venue's cancellation policy (or the platform-level default) marks
+    platform_fee_refundable=True, a `platform_fee_reversal` credit ledger entry
+    is written to the owner's account to reverse the `platform_fee` debit that
+    was posted at booking confirmation.
     """
     if amount_paise <= 0:
         return 0
@@ -508,6 +513,35 @@ def refund_for_cancellation(db: Session, booking: Booking, amount_paise: int, re
         got = _record_refund(db, p, booking, take, reason)
         refunded += got
         remaining -= got
+
+    # Reverse the platform fee on the owner's ledger if the policy says it's refundable.
+    if refunded > 0 and booking.platform_fee_paise:
+        policy = (
+            db.query(VenueCancellationPolicy)
+            .filter(VenueCancellationPolicy.venue_id == booking.venue_id)
+            .first()
+        )
+        platform_fee_refundable = (
+            policy.platform_fee_refundable
+            if policy is not None
+            else settings_store.get_setting(db, "default_no_policy_platform_fee_refundable")
+        )
+        if platform_fee_refundable:
+            venue = db.get(Venue, booking.venue_id)
+            owner_id = venue.owner_id if venue else booking.user_id
+            db.add(
+                LedgerEntry(
+                    booking_id=booking.id,
+                    venue_id=booking.venue_id,
+                    owner_id=owner_id,
+                    user_id=booking.user_id,
+                    entry_type="platform_fee_reversal",
+                    amount_paise=booking.platform_fee_paise,
+                    direction="credit",
+                    stripe_pi_ref=None,
+                )
+            )
+
     return refunded
 
 
@@ -564,6 +598,8 @@ def get_owner_ledger_stats(db: Session, current_user: AuthContext) -> OwnerLedge
             gross_volume += val
         elif entry_type == "platform_fee" and direction == "debit":
             platform_fees += val
+        elif entry_type == "platform_fee_reversal" and direction == "credit":
+            platform_fees -= val  # fee was returned to owner on cancellation
         elif entry_type == "refund" and direction == "debit":
             refunds_issued += val
         elif entry_type == "payout" and direction == "debit":

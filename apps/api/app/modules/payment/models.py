@@ -98,7 +98,7 @@ class LedgerEntry(Base):
     )
     entry_type: Mapped[str] = mapped_column(
         String, nullable=False
-    )  # charge|refund|payout|platform_fee
+    )  # charge|refund|payout|platform_fee|platform_fee_reversal
     amount_paise: Mapped[int] = mapped_column(BigInteger, nullable=False)
     direction: Mapped[str] = mapped_column(String, nullable=False)  # credit|debit
     stripe_pi_ref: Mapped[str | None] = mapped_column(String, nullable=True)
