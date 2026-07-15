@@ -10,7 +10,7 @@ import {
     DialogTitle,
 } from "./ui/dialog";
 import type { Venue } from "../app/actions/venue";
-import { VENUE_STATUS_LABEL, VENUE_STATUS_STYLE } from "../lib/utils";
+import { fromSmallUnit, VENUE_STATUS_LABEL, VENUE_STATUS_STYLE } from "../lib/utils";
 
 interface Props {
     venue: Venue | null;
@@ -165,7 +165,7 @@ export function VenueDetailModal({ venue, onClose }: Props) {
                                                     {s.startTime} – {s.endTime}
                                                 </td>
                                                 <td className="px-4 py-2.5 text-right font-semibold">
-                                                    {"₹" + s.price.toLocaleString()}
+                                                    {"₹" + fromSmallUnit(s.price).toLocaleString()}
                                                 </td>
                                                 <td className="px-4 py-2.5 text-center">
                                                     <span

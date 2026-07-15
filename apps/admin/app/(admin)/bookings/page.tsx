@@ -14,7 +14,7 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "../../../components/ui/pagination";
-import { BOOKING_STATUS_STYLE, fmtAmount } from "../../../lib/utils";
+import { BOOKING_STATUS_STYLE, fmtAmount, fromSmallUnit } from "../../../lib/utils";
 import { Skeleton } from "../../../components/ui/skeleton";
 
 const PAGE_SIZE = 10;
@@ -163,7 +163,7 @@ export default function BookingsPage() {
                                           {b.category}
                                       </TableCell>
                                       <TableCell className="px-5 py-3.5 font-bold text-foreground">
-                                          {fmtAmount(b.amount)}
+                                          {"₹" + fromSmallUnit(b.amount).toLocaleString()}
                                       </TableCell>
                                       <TableCell className="px-5 py-3.5">
                                           <span
