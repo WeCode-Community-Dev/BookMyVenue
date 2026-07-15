@@ -2,6 +2,7 @@ import NavBar from "../components/Navbar";
 import Filters from "../components/Filters";
 import VenueGrid from "../components/VenueGrid";
 import { useState } from "react";
+import DotField from '@/components/DotField';
 
 export default function HomePage() {
     const [searchParams, setSearchParams] = useState({
@@ -29,8 +30,24 @@ export default function HomePage() {
 
 function HeroContent() {
     return (
-        <div className="Hero-Content w-full overflow-hidden flex flex-col items-center justify-center text-center text-[#2a5660] px-4 md:px-8">
-            <video
+        <div className="Hero-Content w-full overflow-hidden flex flex-col items-center justify-center text-center text-[#2a5660] px-4 md:px-8  ">
+            <div className="w-full h-full inset-0 absolute">
+                <DotField
+                    dotRadius={2}
+                    dotSpacing={18}
+                    bulgeStrength={30}
+                    glowRadius={0}
+                    sparkle={true}
+                    waveAmplitude={3}
+                    cursorRadius={100}
+                    cursorForce={1}
+                    bulgeOnly
+                    gradientFrom="#A855F7"
+                    gradientTo="#B497CF"
+                    glowColor="#f4f4f2"
+                />
+            </div>
+            {/* <video
                 className="absolute inset-0 w-full h-full object-cover z-0 [mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_15%,black_85%,transparent)]"
                 autoPlay
                 loop
@@ -39,7 +56,7 @@ function HeroContent() {
                 poster="/poster.png"
             >
                 <source src="/NewHeroVid1.webm" type="video/webm" />
-            </video>
+            </video> */}
             <div className=" z-10 mx-auto">
                 <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4">
                     Find the Perfect Venue for Your Event.
@@ -64,7 +81,7 @@ function Searchbar({ setSearchParams }) {
     }; 
 
     return (
-        <div className="SEARCH-BAR z-50 flex w-[92%] md:w-full max-w-2xl mx-auto mt-4 md:mt-6">
+        <div className="SEARCH-BAR z-40 flex w-[92%] md:w-full max-w-2xl mx-auto mt-4 md:mt-6">
             <input 
                 value={localInput}
                 onChange={(e) => setLocalInput(e.target.value)}

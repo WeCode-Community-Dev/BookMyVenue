@@ -1,15 +1,25 @@
 import NavBar from '../components/Navbar';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import ShinyText from '@/components/ShinyText';
 
 const Hero = () => (
   // Fixed padding for mobile
   <section className="max-w-7xl mx-auto px-4 md:px-8 py-10 md:py-20 grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 items-center">
     <div className="space-y-6 md:pr-10 text-center lg:text-left flex flex-col items-center lg:items-start">
-      <div className="inline-block bg-gray-100 text-gray-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
-        Host Community
-      </div>
       {/* Scaled text for mobile */}
+      <ShinyText className='font-bold'
+        text="✨ Host Community"
+        speed={2}
+        delay={0}
+        color="#314252"
+        shineColor="#ffffff"
+        spread={120}
+        direction="left"
+        yoyo={false}
+        pauseOnHover={false}
+        disabled={false}
+      />
       <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
         Turn your extra space into <span className="text-[#ff6660] italic font-serif">community impact.</span>
       </h1>
