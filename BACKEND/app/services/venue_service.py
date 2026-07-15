@@ -89,6 +89,7 @@ def get_venues_all(
                 "capacity": venue.capacity,
                 "is_available": venue.is_available,
                 "is_approved": venue.is_approved,
+                "is_approved_status": venue.is_approved_status,
                 "not_available_reason": venue.not_available_reason,
                 "created_at": venue.created_at,
                 "updated_at": venue.updated_at,
