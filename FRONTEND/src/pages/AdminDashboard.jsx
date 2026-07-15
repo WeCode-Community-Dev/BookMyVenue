@@ -60,10 +60,10 @@ export default function AdminDashboard() {
       const response = await apiService.GetAllVenuesForAdmin()
       const safeResponse = Array.isArray(response) ? response : []
       setAllVenues(safeResponse);
-      console.log(safeResponse);
       
       const unapproved = safeResponse.filter(venue => venue.is_approved === false);
       SetPendingVenues(unapproved);
+      console.log(unapproved)
       
     } catch (error) {
       console.log("Failed to Fetch Venues:", error);
@@ -105,8 +105,9 @@ export default function AdminDashboard() {
   const handleApproval = async (button, venue_id) => {
     try {
       const payload = {
-        "status": button,
-        "reason": rejectReason
+        "status": "approved",
+        "user_id": Cookies.get('userId'),
+        "reason": "string"
       }
 
       const response = await apiService.updateAdminVenueApproval(payload, venue_id)
@@ -116,10 +117,8 @@ export default function AdminDashboard() {
     } catch (error) {
       console.log("Failed to Approve/Reject the Venue!" ,error);
       toast.error("Failed to Approve/Reject the Venue!")
-      
     }
   }
-
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans overflow-hidden">
       < Toaster />

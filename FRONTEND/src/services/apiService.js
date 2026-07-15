@@ -60,7 +60,7 @@ const apiService = {
         return response.data;
     },
     updateAdminVenueApproval: async (payload, venue_id) => {
-        const response = await axiosInstance.post(`/admin/venue/${venue_id}`, payload);
+        const response = await axiosInstance.post(`/admin/update-venue-approval-status/${venue_id}`, payload);
         return response.data;
     },
     GetUserListForAdmin: async () => {
@@ -103,6 +103,10 @@ const apiService = {
         const response = await axiosInstance.get(`/venues/search`, {
             params: searchParams
         })
+        return response.data;
+    },
+    GetAlreadyBookedSlotsToDisable: async (venue_id) => {
+        const response = await axiosInstance.get(`/booking/already-booked/${venue_id}`)
         return response.data;
     },
 

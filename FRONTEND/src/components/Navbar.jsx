@@ -5,16 +5,26 @@ import Cookies from 'js-cookie';
 
 const LogoutBtn = ({isMobile, handleNavigation, name}) => {
   const handleCookies = () => {
-    Cookies.set('userRole', null, {expires: 30, secure: true, sameSite: 'Lax'})
-    Cookies.set('authToken', null, {expires: 30, secure: true, sameSite: 'Lax'})
-  } 
+    Cookies.remove('userRole')
+    Cookies.remove('authToken')
+    Cookies.remove('userId')
+    Cookies.remove('userEmail')
+    Cookies.remove('userName')
+  }
+
+  const handleClick = () => {
+    if (!isSignUp) {
+      handleCookies(); 
+    }
+    handleNavigation("/auth");
+  };
 
   // Check if this is the Sign Up button or the Sign Out button
   const isSignUp = name === "Sign Up";
 
   return(
-    <button 
-        onClick={() => {handleNavigation("/auth"), handleCookies()}} 
+    <button
+        onClick={handleClick} 
         className={
           isMobile
             ? `w-11/12 max-w-xs px-4 py-3 mt-2 rounded-full font-medium transition-all duration-300 ease-in-out active:scale-95 ${
@@ -99,9 +109,9 @@ function NavBar() {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="relative w-full">
+    <div className="sticky top-0 left-0 z-50 w-full">
       {/* Main Navbar */}
-      <div className="NAVBAR w-full h-16 bg-[#f9f9f7] text-black flex items-center justify-between px-4 md:px-8 relative z-50">
+      <div className="NAVBAR w-full h-16 bg-[#f9f9f7]/70 backdrop-blur-sm text-black flex items-center justify-between px-4 md:px-8 relative z-50">
         
         {/* Logo */}
         <div className="LOGO w-50 md:w-50">
@@ -111,7 +121,7 @@ function NavBar() {
         </div>
 
         {/* Desktop Nav Links (Hidden on Mobile) */}
-        <div className={`NAVLINKS hidden md:flex gap-8 text-sm ${Cookies.get('userRole') !== "" || null ? "pl-30" : "" }`}>
+        <div className={`NAVLINKS hidden md:flex gap-8 text-sm ${Cookies.get('userRole') !== "" || null ? "pl-20" : "" }`}>
           <div className="group relative">
             <Link to="/" className={`font-medium transition-all duration-300 ease-in-out ${
               isActive('/') ? 'text-[#2a5660]' : 'group-hover:text-[#2a5660]'}`}>

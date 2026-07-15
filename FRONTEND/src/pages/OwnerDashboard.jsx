@@ -144,7 +144,6 @@ const RecentBookings = ({allBookings}) => (
       {allBookings.map((item) => {
         const booking = item.booking;
         const venuePrice = item.venue_price;
-        console.log(booking)
 
         return (
           <div key={booking.id} className="relative bg-white border border-gray-100 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm hover:shadow-md transition-shadow">

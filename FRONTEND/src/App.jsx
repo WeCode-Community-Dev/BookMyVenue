@@ -11,7 +11,7 @@ import UserBookings from './pages/UserDashboard'
 function App() {
 
   return (
-    <div className="Main-Container">      
+    <div className="Main-Container overflow-x-hidden">      
       <main>
         <Routes>
           <Route path="/" element={<HomePage />} />

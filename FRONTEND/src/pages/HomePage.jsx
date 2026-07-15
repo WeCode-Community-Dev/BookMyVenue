@@ -2,7 +2,7 @@ import NavBar from "../components/Navbar";
 import Filters from "../components/Filters";
 import VenueGrid from "../components/VenueGrid";
 import { useState } from "react";
-import DotField from './DotField';
+import DotField from '@/components/DotField';
 
 export default function HomePage() {
     const [searchParams, setSearchParams] = useState({
@@ -30,21 +30,21 @@ export default function HomePage() {
 
 function HeroContent() {
     return (
-        <div className="Hero-Content w-full overflow-hidden flex flex-col items-center justify-center text-center text-[#2a5660] px-4 md:px-8">
-            <div style={{ width: '100%', height: '600px', position: 'relative' }}>
+        <div className="Hero-Content w-full overflow-hidden flex flex-col items-center justify-center text-center text-[#2a5660] px-4 md:px-8  ">
+            <div className="w-full h-full inset-0 absolute">
                 <DotField
-                    dotRadius={1.5}
-                    dotSpacing={13}
-                    bulgeStrength={9}
-                    glowRadius={50}
-                    sparkle={false}
+                    dotRadius={2}
+                    dotSpacing={18}
+                    bulgeStrength={30}
+                    glowRadius={0}
+                    sparkle={true}
                     waveAmplitude={3}
-                    cursorRadius={150}
-                    cursorForce={0.07}
+                    cursorRadius={100}
+                    cursorForce={1}
                     bulgeOnly
                     gradientFrom="#A855F7"
                     gradientTo="#B497CF"
-                    glowColor="#120F17"
+                    glowColor="#f4f4f2"
                 />
             </div>
             {/* <video
@@ -81,7 +81,7 @@ function Searchbar({ setSearchParams }) {
     }; 
 
     return (
-        <div className="SEARCH-BAR z-50 flex w-[92%] md:w-full max-w-2xl mx-auto mt-4 md:mt-6">
+        <div className="SEARCH-BAR z-40 flex w-[92%] md:w-full max-w-2xl mx-auto mt-4 md:mt-6">
             <input 
                 value={localInput}
                 onChange={(e) => setLocalInput(e.target.value)}
