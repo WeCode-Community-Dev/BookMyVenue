@@ -105,3 +105,19 @@ def test_patch_settings_happy_path_via_http(client, db):
     )
     assert resp.status_code == 200
     assert resp.json()["balance_overdue_action_window_hours"] == 60
+
+
+def test_settings_metadata_covers_every_registered_key(client, db):
+    _, admin_token = seed_user(db, "super_admin")
+
+    resp = client.get(
+        "/api/admin/settings/metadata",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp.status_code == 200
+
+    body = resp.json()
+    keys_in_metadata = {
+        field["key"] for category in body["categories"] for field in category["fields"]
+    }
+    assert keys_in_metadata == set(settings_store.SETTINGS.keys())

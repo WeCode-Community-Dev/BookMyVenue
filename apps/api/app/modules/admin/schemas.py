@@ -35,8 +35,23 @@ class PlatformSettingsResponse(BaseModel):
     max_deadline_extensions: int
     payment_reminder_hours_before_expiry: int
     balance_overdue_action_window_hours: int
+    default_no_policy_refund_pct: float
+    default_no_policy_platform_fee_refundable: bool
+
+    # Rate limits
     deep_research_rate_limit_per_minute: int
     deep_research_daily_limit: int
+    contact_rate_limit_per_hour: int
+
+    # Search ranking
+    search_min_vector_similarity: float
+    search_fts_weight: float
+    search_vector_weight: float
+    search_wedding_boost: float
+    search_event_boost: float
+    search_corporate_boost: float
+    search_normalizer_match_threshold: int
+    search_normalizer_min_token_len: int
 
     # Platform config
     environment: str
@@ -61,8 +76,44 @@ class PlatformSettingsUpdateRequest(BaseModel):
     max_deadline_extensions: int | None = None
     payment_reminder_hours_before_expiry: int | None = None
     balance_overdue_action_window_hours: int | None = None
+    default_no_policy_refund_pct: float | None = None
+    default_no_policy_platform_fee_refundable: bool | None = None
     deep_research_rate_limit_per_minute: int | None = None
     deep_research_daily_limit: int | None = None
+    contact_rate_limit_per_hour: int | None = None
+    search_min_vector_similarity: float | None = None
+    search_fts_weight: float | None = None
+    search_vector_weight: float | None = None
+    search_wedding_boost: float | None = None
+    search_event_boost: float | None = None
+    search_corporate_boost: float | None = None
+    search_normalizer_match_threshold: int | None = None
+    search_normalizer_min_token_len: int | None = None
+
+
+class SettingFieldMeta(BaseModel):
+    key: str
+    label: str
+    description: str
+    value_type: Literal["int", "float", "bool"]
+    min_value: float | None
+    max_value: float | None
+
+
+class SettingCategoryMeta(BaseModel):
+    key: str
+    label: str
+    fields: list[SettingFieldMeta]
+
+
+class SettingsMetadataResponse(BaseModel):
+    """Static registry metadata (labels, descriptions, categories, validation
+    ranges) for every admin-editable setting — lets the frontend render a
+    grouped settings form without hardcoding field descriptions that could
+    drift from the backend's validation rules.
+    """
+
+    categories: list[SettingCategoryMeta]
 
 
 class UserSummary(BaseModel):

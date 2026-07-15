@@ -35,6 +35,7 @@ from app.modules.admin.schemas import (
     PlatformSettingsResponse,
     PlatformSettingsUpdateRequest,
     ReactivateUserRequest,
+    SettingsMetadataResponse,
     SuspendUserRequest,
     UserListResponse,
     UserSummary,
@@ -45,6 +46,13 @@ from app.modules.auth.dependencies import AuthContext, require_admin
 from app.modules.deep_research import service as reservation_service
 
 router = APIRouter()
+
+
+@router.get("/settings/metadata", response_model=SettingsMetadataResponse)
+def get_settings_metadata(
+    _: AuthContext = Depends(require_admin),
+):
+    return service.get_settings_metadata()
 
 
 @router.get("/settings", response_model=PlatformSettingsResponse)

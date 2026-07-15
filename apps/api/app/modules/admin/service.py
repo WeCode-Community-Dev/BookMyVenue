@@ -137,6 +137,35 @@ def get_platform_settings(db: Session) -> dict:
     }
 
 
+def get_settings_metadata() -> dict:
+    """Static registry metadata, grouped by category, for the admin settings
+    form. Pure code lookup — no DB/cache involved.
+    """
+    by_category: dict[str, list[dict]] = {}
+    for key, spec in settings_store.SETTINGS.items():
+        by_category.setdefault(spec.category, []).append(
+            {
+                "key": key,
+                "label": spec.label,
+                "description": spec.description,
+                "value_type": spec.value_type,
+                "min_value": spec.min_value,
+                "max_value": spec.max_value,
+            }
+        )
+
+    return {
+        "categories": [
+            {
+                "key": category,
+                "label": settings_store.CATEGORY_LABELS[category],
+                "fields": fields,
+            }
+            for category, fields in by_category.items()
+        ]
+    }
+
+
 def update_platform_settings(
     db: Session,
     *,

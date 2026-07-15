@@ -30,6 +30,16 @@ CACHE_PREFIX = "settings:"
 CACHE_TTL_SECONDS = 3600  # backstop only — writes invalidate explicitly
 
 
+SettingCategory = Literal["booking", "cancellation", "search", "rate_limits"]
+
+CATEGORY_LABELS: dict[SettingCategory, str] = {
+    "booking": "Booking & Commission",
+    "cancellation": "Cancellation & Refunds",
+    "search": "Search Ranking",
+    "rate_limits": "Rate Limits",
+}
+
+
 @dataclass(frozen=True)
 class SettingSpec:
     default: float | int | bool
@@ -38,6 +48,7 @@ class SettingSpec:
     max_value: float | None
     label: str
     description: str
+    category: SettingCategory
 
 
 # Business-tunable settings surfaced on the admin Settings page. Keys match
@@ -53,6 +64,7 @@ SETTINGS: dict[str, SettingSpec] = {
             "Applied to every newly created venue. Owners can be given a "
             "different rate per venue afterwards."
         ),
+        category="booking",
     ),
     "token_payment_hold_hours": SettingSpec(
         default=24,
@@ -64,6 +76,7 @@ SETTINGS: dict[str, SettingSpec] = {
             "Time an accepted booking request has to complete the token "
             "advance before its hold expires."
         ),
+        category="booking",
     ),
     "instant_booking_payment_timeout_minutes": SettingSpec(
         default=15,
@@ -72,6 +85,7 @@ SETTINGS: dict[str, SettingSpec] = {
         max_value=1440,
         label="Instant Booking Payment Timeout",
         description="Time window to complete payment on an instant booking before it is released.",
+        category="booking",
     ),
     "booking_request_expiry_days": SettingSpec(
         default=7,
@@ -80,6 +94,7 @@ SETTINGS: dict[str, SettingSpec] = {
         max_value=90,
         label="Booking Request Expiry",
         description="An unanswered booking request automatically expires after this many days.",
+        category="booking",
     ),
     "max_deadline_extensions": SettingSpec(
         default=2,
@@ -88,6 +103,7 @@ SETTINGS: dict[str, SettingSpec] = {
         max_value=10,
         label="Max Deadline Extensions",
         description="Maximum number of times an owner can extend a booking's payment deadline.",
+        category="booking",
     ),
     "payment_reminder_hours_before_expiry": SettingSpec(
         default=12,
@@ -98,6 +114,7 @@ SETTINGS: dict[str, SettingSpec] = {
         description=(
             "Users are reminded to pay the token advance this long before their hold expires."
         ),
+        category="booking",
     ),
     "balance_overdue_action_window_hours": SettingSpec(
         default=48,
@@ -109,6 +126,32 @@ SETTINGS: dict[str, SettingSpec] = {
             "Default time an owner has to act on an overdue balance before "
             "auto-cancellation. Venues can override this."
         ),
+        category="booking",
+    ),
+    "default_no_policy_refund_pct": SettingSpec(
+        default=0.0,
+        value_type="float",
+        min_value=0,
+        max_value=100,
+        label="No-Policy Cancellation Refund",
+        description=(
+            "Refund percentage applied when a venue has no cancellation policy "
+            "configured. Venues with a policy always use their own tiers instead."
+        ),
+        category="cancellation",
+    ),
+    "default_no_policy_platform_fee_refundable": SettingSpec(
+        default=False,
+        value_type="bool",
+        min_value=None,
+        max_value=None,
+        label="No-Policy Refund Includes Platform Fee",
+        description=(
+            "Whether the platform's commission is included when refunding a "
+            "venue with no cancellation policy configured. Matches the "
+            "platform_fee_refundable default (off) used by per-venue policies."
+        ),
+        category="cancellation",
     ),
     "deep_research_rate_limit_per_minute": SettingSpec(
         default=5,
@@ -117,6 +160,7 @@ SETTINGS: dict[str, SettingSpec] = {
         max_value=100,
         label="Deep Research Rate Limit (per minute)",
         description="Per-user limit on external venue-discovery searches per minute.",
+        category="rate_limits",
     ),
     "deep_research_daily_limit": SettingSpec(
         default=4,
@@ -125,6 +169,108 @@ SETTINGS: dict[str, SettingSpec] = {
         max_value=1000,
         label="Deep Research Daily Limit",
         description="Per-user daily cap on external venue-discovery searches.",
+        category="rate_limits",
+    ),
+    "contact_rate_limit_per_hour": SettingSpec(
+        default=5,
+        value_type="int",
+        min_value=1,
+        max_value=100,
+        label="Contact Form Rate Limit",
+        description="Per-IP hourly limit on public contact form submissions, to block spam.",
+        category="rate_limits",
+    ),
+    "search_min_vector_similarity": SettingSpec(
+        default=0.15,
+        value_type="float",
+        min_value=0,
+        max_value=1,
+        label="Minimum Vector Similarity",
+        description=(
+            "Cosine-similarity floor for a venue to match via semantic (embedding) "
+            "search. Lower surfaces more loosely-related results."
+        ),
+        category="search",
+    ),
+    "search_fts_weight": SettingSpec(
+        default=0.3,
+        value_type="float",
+        min_value=0,
+        max_value=1,
+        label="Full-Text Search Weight",
+        description=(
+            "Weight given to keyword (full-text) match score in the hybrid ranking formula."
+        ),
+        category="search",
+    ),
+    "search_vector_weight": SettingSpec(
+        default=0.7,
+        value_type="float",
+        min_value=0,
+        max_value=1,
+        label="Vector Search Weight",
+        description=(
+            "Weight given to semantic (embedding) match score in the hybrid ranking formula."
+        ),
+        category="search",
+    ),
+    "search_wedding_boost": SettingSpec(
+        default=1.85,
+        value_type="float",
+        min_value=1,
+        max_value=5,
+        label="Wedding Intent Boost",
+        description=(
+            "Ranking multiplier applied to wedding/banquet venues when a query "
+            "implies wedding intent."
+        ),
+        category="search",
+    ),
+    "search_event_boost": SettingSpec(
+        default=1.40,
+        value_type="float",
+        min_value=1,
+        max_value=5,
+        label="Event Intent Boost",
+        description=(
+            "Ranking multiplier applied to event-space/rooftop/resort venues "
+            "when a query implies party/event intent."
+        ),
+        category="search",
+    ),
+    "search_corporate_boost": SettingSpec(
+        default=1.40,
+        value_type="float",
+        min_value=1,
+        max_value=5,
+        label="Corporate Intent Boost",
+        description=(
+            "Ranking multiplier applied to conference/meeting venues when a "
+            "query implies corporate intent."
+        ),
+        category="search",
+    ),
+    "search_normalizer_match_threshold": SettingSpec(
+        default=85,
+        value_type="int",
+        min_value=0,
+        max_value=100,
+        label="Typo-Correction Confidence",
+        description=(
+            "Minimum fuzzy-match score (0-100) before a search query token is auto-corrected."
+        ),
+        category="search",
+    ),
+    "search_normalizer_min_token_len": SettingSpec(
+        default=3,
+        value_type="int",
+        min_value=1,
+        max_value=20,
+        label="Typo-Correction Minimum Length",
+        description=(
+            "Query tokens shorter than this are left as-is — too short to fuzzy-match reliably."
+        ),
+        category="search",
     ),
 }
 
