@@ -2650,11 +2650,6 @@ export interface components {
              * @default 0.00
              */
             no_show_refund_pct: number | string;
-            /**
-             * Platform Fee Refundable
-             * @default false
-             */
-            platform_fee_refundable: boolean;
             /** Notes */
             notes?: string | null;
         };
