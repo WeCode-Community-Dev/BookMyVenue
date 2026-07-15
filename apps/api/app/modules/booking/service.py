@@ -12,6 +12,12 @@ from app.modules.admin import settings_store
 from app.modules.availability.service import validate_booking_request
 
 # Re-expose functions from cancellation module
+from app.modules.booking.cancellation import (
+    get_cancellation_preview,
+    owner_cancel_forfeit,
+    owner_cancel_goodwill,
+    user_cancel_booking,
+)
 from app.modules.booking.helpers import (
     _assert_booking_owner,
     _booking_or_404,
