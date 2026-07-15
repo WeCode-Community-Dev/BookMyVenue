@@ -56,7 +56,9 @@ export function ChatWindow({
                   />
                 </svg>
               </div>
-              <p className="text-sm text-zinc-600 dark:text-zinc-300">No messages yet. Start the conversation!</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                No messages yet. Start the conversation!
+              </p>
             </div>
           </div>
         ) : (
@@ -102,13 +104,22 @@ type TypingIndicatorProps = {
 function TypingIndicator({ users }: TypingIndicatorProps) {
   const userCount = users.length
   const text = userCount === 1 ? 'Someone is typing' : `${userCount} people are typing`
-  
+
   return (
     <div className="flex items-center gap-2">
       <div className="flex items-center gap-1">
-        <span className="h-2 w-2 bg-brand rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <span className="h-2 w-2 bg-brand rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <span className="h-2 w-2 bg-brand rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        <span
+          className="h-2 w-2 bg-brand rounded-full animate-bounce"
+          style={{ animationDelay: '0ms' }}
+        />
+        <span
+          className="h-2 w-2 bg-brand rounded-full animate-bounce"
+          style={{ animationDelay: '150ms' }}
+        />
+        <span
+          className="h-2 w-2 bg-brand rounded-full animate-bounce"
+          style={{ animationDelay: '300ms' }}
+        />
       </div>
       <span className="text-xs text-zinc-500 dark:text-zinc-400">{text}</span>
     </div>
@@ -128,7 +139,7 @@ function MessagesList({ messages, currentUserId }: MessagesListProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-// Group consecutive messages from the same sender
+  // Group consecutive messages from the same sender
   const groupedMessages = groupMessages(messages, currentUserId)
 
   return (
@@ -156,7 +167,10 @@ function getInitials(name?: string): string {
 }
 
 // Group messages by consecutive sender
-function groupMessages(messages: ChatMessage[], currentUserId: string): Array<{
+function groupMessages(
+  messages: ChatMessage[],
+  currentUserId: string
+): Array<{
   messages: ChatMessage[]
   isOwn: boolean
   showAvatar: boolean
@@ -215,18 +229,20 @@ type MessageGroupProps = {
 
 function MessageGroup({ messages, isOwn, showAvatar, senderName }: MessageGroupProps) {
   const avatarContent = getInitials(senderName)
-  const avatarColor = isOwn 
-    ? 'bg-brand dark:bg-brand-secondary' 
+  const avatarColor = isOwn
+    ? 'bg-brand dark:bg-brand-secondary'
     : 'bg-zinc-200 dark:bg-ink-700 border border-zinc-300 dark:border-ink-600'
 
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} items-end gap-2`}>
       {!isOwn && showAvatar && (
-        <div className={`h-8 w-8 shrink-0 rounded-full ${avatarColor} flex items-center justify-center text-xs font-semibold text-white dark:text-ink-950`}>
+        <div
+          className={`h-8 w-8 shrink-0 rounded-full ${avatarColor} flex items-center justify-center text-xs font-semibold text-white dark:text-ink-950`}
+        >
           {avatarContent}
         </div>
       )}
-      
+
       <div className="flex flex-col">
         {messages.map((msg, idx) => (
           <MessageBubble
@@ -251,37 +267,70 @@ type MessageBubbleProps = {
   readAt?: string | null
 }
 
-function MessageBubble({ message, isOwn, createdAt, showTimestamp = true, readAt }: MessageBubbleProps) {
+function MessageBubble({
+  message,
+  isOwn,
+  createdAt,
+  showTimestamp = true,
+  readAt,
+}: MessageBubbleProps) {
   const time = new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm transition-all ${
+        className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm transition-all ${
           isOwn
             ? 'bg-brand text-white rounded-br-md shadow-sm dark:bg-brand-secondary'
             : 'bg-zinc-100 text-zinc-900 rounded-bl-md shadow-sm dark:bg-ink-800 dark:text-zinc-100'
         }`}
       >
-        <p className="whitespace-pre-wrap leading-relaxed">{message}</p>
-        {showTimestamp && (
-          <div className={`flex items-center justify-end gap-1.5 mt-1 ${isOwn ? 'text-brand-muted' : 'text-zinc-500 dark:text-zinc-400'}`}>
-            <span className="text-[10px]">{time}</span>
-            {isOwn && (
-              readAt ? (
-                // Double tick for read
-                <svg className="h-3 w-3 text-brand-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L11 17M17 7l-4 4L9 7m13 10l-4-4L15 14M5 7l4 4L9 7" />
-                </svg>
-              ) : (
-                // Single tick for sent
-                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L11 17M17 7l-4 4L9 7" />
-                </svg>
-              )
-            )}
-          </div>
-        )}
+        {/*
+          The timestamp + read-tick are floated to the right *inside* the
+          paragraph, so the message text wraps around them. Short messages
+          ("hello there") stay on a single line with the time tucked at the
+          end; longer messages still wrap normally with the time sitting at
+          the bottom-right of the last line — no more forced second line.
+        */}
+        <p className="whitespace-pre-wrap break-words leading-relaxed [overflow-wrap:anywhere]">
+          {message}
+          {showTimestamp && (
+            <span
+              className={`float-right ml-2 mt-[3px] inline-flex translate-y-[3px] items-center gap-1 whitespace-nowrap select-none ${
+                isOwn ? 'text-brand-muted' : 'text-zinc-500 dark:text-zinc-400'
+              }`}
+            >
+              <span className="text-[10px]">{time}</span>
+              {isOwn &&
+                (readAt ? (
+                  // Double tick for read
+                  <svg
+                    className="h-3 w-3 text-brand-muted"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L11 17M17 7l-4 4L9 7m13 10l-4-4L15 14M5 7l4 4L9 7"
+                    />
+                  </svg>
+                ) : (
+                  // Single tick for sent
+                  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L11 17M17 7l-4 4L9 7"
+                    />
+                  </svg>
+                ))}
+            </span>
+          )}
+        </p>
       </div>
     </div>
   )
