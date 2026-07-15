@@ -36,7 +36,9 @@ def test_refund_computation_no_policy():
         slot=BookingSlot(starts_at=datetime.now(UTC) + timedelta(days=2)),
     )
     # Without policy, refund should default to 0.0% (and match no_show or None tier)
-    result = _compute_refund(booking, None)
+    db = MagicMock()
+    db.get.return_value = None
+    result = _compute_refund(db, booking, None)
     assert result.refund_amount_paise == 0
     assert result.penalty_amount_paise == 100000
     assert result.refund_pct_applied == 0.0
@@ -61,20 +63,22 @@ def test_refund_computation_policy_fee_refundable():
         slot=BookingSlot(starts_at=starts_at),
     )
 
+    db = MagicMock()
+
     # Case 1: > 48 hours notice (Tier 1 -> 100% refund)
-    result = _compute_refund(booking, policy, cancelled_at=datetime.now(UTC))
+    result = _compute_refund(db, booking, policy, cancelled_at=datetime.now(UTC))
     assert result.refund_amount_paise == 100000
     assert result.refund_pct_applied == 100.0
     assert result.tier_matched == "tier_1"
 
     # Case 2: 30 hours notice (Tier 2 -> 50% refund of total 1000 = 500)
-    result = _compute_refund(booking, policy, cancelled_at=starts_at - timedelta(hours=30))
+    result = _compute_refund(db, booking, policy, cancelled_at=starts_at - timedelta(hours=30))
     assert result.refund_amount_paise == 50000
     assert result.refund_pct_applied == 50.0
     assert result.tier_matched == "tier_2"
 
     # Case 3: 5 hours notice (No show -> 10% refund of total 1000 = 100)
-    result = _compute_refund(booking, policy, cancelled_at=starts_at - timedelta(hours=5))
+    result = _compute_refund(db, booking, policy, cancelled_at=starts_at - timedelta(hours=5))
     assert result.refund_amount_paise == 10000
     assert result.refund_pct_applied == 10.0
     assert result.tier_matched == "no_show"
@@ -97,14 +101,16 @@ def test_refund_computation_policy_fee_non_refundable():
         slot=BookingSlot(starts_at=starts_at),
     )
 
+    db = MagicMock()
+
     # Case 1: > 48 hours notice (Tier 1 -> 100% refund of owner share (900) = 900)
-    result = _compute_refund(booking, policy, cancelled_at=datetime.now(UTC))
+    result = _compute_refund(db, booking, policy, cancelled_at=datetime.now(UTC))
     assert result.refund_amount_paise == 90000
     assert result.refund_pct_applied == 100.0
     assert result.tier_matched == "tier_1"
 
     # Case 2: 30 hours notice (Tier 2 -> 50% refund of owner share (900) = 450)
-    result = _compute_refund(booking, policy, cancelled_at=starts_at - timedelta(hours=30))
+    result = _compute_refund(db, booking, policy, cancelled_at=starts_at - timedelta(hours=30))
     assert result.refund_amount_paise == 45000
     assert result.refund_pct_applied == 50.0
     assert result.tier_matched == "tier_2"
