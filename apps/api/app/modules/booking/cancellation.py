@@ -219,7 +219,7 @@ def user_cancel_booking(db: Session, booking_id: UUID, user_id: UUID) -> Booking
         context={"venue_name": booking.venue.name},
         booking_id=booking.id,
     )
-    return _booking_out(booking)
+    return _booking_out(db, booking)
 
 
 def owner_cancel_forfeit(db: Session, booking_id: UUID, owner_id: UUID) -> BookingOut:
@@ -254,7 +254,7 @@ def owner_cancel_forfeit(db: Session, booking_id: UUID, owner_id: UUID) -> Booki
         context={"venue_name": booking.venue.name},
         booking_id=booking.id,
     )
-    return _booking_out(booking)
+    return _booking_out(db, booking)
 
 
 def owner_cancel_goodwill(db: Session, booking_id: UUID, owner_id: UUID) -> BookingOut:
@@ -297,7 +297,7 @@ def owner_cancel_goodwill(db: Session, booking_id: UUID, owner_id: UUID) -> Book
         context={"venue_name": booking.venue.name},
         booking_id=booking.id,
     )
-    return _booking_out(booking)
+    return _booking_out(db, booking)
 
 
 def admin_force_cancel(
@@ -308,7 +308,7 @@ def admin_force_cancel(
 ) -> BookingOut:
     booking = _booking_or_404(db, booking_id, for_update=True)
     if booking.status in TERMINAL_STATUSES:
-        return _booking_out(booking)
+        return _booking_out(db, booking)
 
     old_status = booking.status
     if booking.slot:
@@ -322,4 +322,4 @@ def admin_force_cancel(
     )
     db.flush()
     db.refresh(booking)
-    return _booking_out(booking)
+    return _booking_out(db, booking)

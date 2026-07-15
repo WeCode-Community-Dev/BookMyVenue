@@ -636,7 +636,10 @@ def list_owner_ledger_entries(
     )
 
     if entry_type and entry_type != "all":
-        query = query.filter(LedgerEntry.entry_type == entry_type)
+        if entry_type == "platform_fee":
+            query = query.filter(LedgerEntry.entry_type.in_(["platform_fee", "platform_fee_reversal"]))
+        else:
+            query = query.filter(LedgerEntry.entry_type == entry_type)
 
     total = query.count()
     total_pages = (total + per_page - 1) // per_page

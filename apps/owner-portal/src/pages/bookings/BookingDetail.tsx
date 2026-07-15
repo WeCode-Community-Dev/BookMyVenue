@@ -593,6 +593,7 @@ export default function BookingDetail() {
           const amountPaid = booking.amount_paid_paise || 0;
           const refundAmount = booking.refund_amount_paise || 0;
           const platformFee = booking.platform_fee_paise || 0;
+          const platformFeeReversed = booking.platform_fee_reversed_paise || 0;
           const ownerPayoutProjected = booking.owner_payout_paise || 0; // projected full payout
           const commissionPct = booking.platform_commission_pct || 0;
 
@@ -617,7 +618,7 @@ export default function BookingDetail() {
           // The true "Final Owner Payout" — only set when booking is definitively settled
           // null = still in progress (show projected)
           const finalPayout: number | null = (isTerminated || isCompleted)
-            ? (booking.owner_payout_paise || 0)
+            ? (booking.final_owner_payout_paise ?? booking.owner_payout_paise ?? 0)
             : null;  // still active — show projected
 
           // The actual platform fee charged is always the full platform fee (deducted upfront)
@@ -844,6 +845,12 @@ export default function BookingDetail() {
                         <span className="text-sm text-zinc-500 dark:text-zinc-400">Platform Fee ({commissionPct}%)</span>
                         <span className="text-sm font-semibold text-rose-600">-{fmt(actualPlatformFee)}</span>
                       </div>
+                      {platformFeeReversed > 0 && (
+                        <div className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-ink-700">
+                          <span className="text-sm text-zinc-500 dark:text-zinc-400">Platform Fee Refunded</span>
+                          <span className="text-sm font-semibold text-emerald-600">+{fmt(platformFeeReversed)}</span>
+                        </div>
+                      )}
                       {refundAmount > 0 && (
                         <div className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-ink-700">
                           <span className="text-sm text-zinc-500 dark:text-zinc-400">Refund Issued</span>

@@ -71,6 +71,7 @@ export default function Financials() {
   const getEntryTypeConfig = (type: string, direction: string) => {
     if (type === 'charge' && direction === 'credit') return { bg: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20', label: 'Charge' }
     if (type === 'platform_fee' && direction === 'debit') return { bg: 'bg-amber-50 text-amber-700 ring-amber-600/20', label: 'Platform Fee' }
+    if (type === 'platform_fee_reversal' && direction === 'credit') return { bg: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20', label: 'Fee Reversed' }
     if (type === 'refund' && direction === 'debit') return { bg: 'bg-red-50 text-red-700 ring-red-600/10', label: 'Refund' }
     if (type === 'payout' && direction === 'debit') return { bg: 'bg-blue-50 text-blue-700 ring-blue-600/20', label: 'Payout' }
     return { bg: 'bg-zinc-100 dark:bg-ink-800 text-zinc-700 dark:text-zinc-300 ring-zinc-500/10', label: type }

@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session, selectinload
 
 from app.modules.booking.models import (
@@ -13,6 +14,7 @@ from app.modules.booking.models import (
     BookingStatusHistory,
 )
 from app.modules.booking.schemas import BookingDisplay, BookingOut, PaymentOption, PaymentOptions
+from app.modules.payment.models import LedgerEntry
 from app.modules.venue.models import Venue, VenueCancellationPolicy
 
 logger = logging.getLogger(__name__)
@@ -116,7 +118,7 @@ def _slot_for_update(db: Session, booking_id: UUID) -> BookingSlot:
     return slot
 
 
-def _booking_out(booking: Booking) -> BookingOut:
+def _booking_out(db: Session, booking: Booking) -> BookingOut:
     slot = booking.slot
 
     cover_photo = next(
@@ -207,6 +209,16 @@ def _booking_out(booking: Booking) -> BookingOut:
         platform_commission_pct=float(booking.platform_commission_pct),
         platform_fee_paise=booking.platform_fee_paise,
         owner_payout_paise=booking.owner_payout_paise,
+        platform_fee_reversed_paise=(
+            db.query(LedgerEntry)
+            .filter(
+                LedgerEntry.booking_id == booking.id,
+                LedgerEntry.entry_type == "platform_fee_reversal",
+                LedgerEntry.direction == "credit",
+            )
+            .with_entities(func.sum(LedgerEntry.amount_paise))
+            .scalar() or 0
+        ),
         advance_pct=float(booking.advance_pct),
         advance_due_paise=booking.advance_due_paise,
         balance_due_paise=booking.balance_due_paise,

@@ -70,6 +70,7 @@ class BookingOut(BaseModel):
     quoted_price_paise: int
     platform_commission_pct: float
     platform_fee_paise: int
+    platform_fee_reversed_paise: int = 0  # sum of platform_fee_reversal ledger credits for this booking
     owner_payout_paise: int
     advance_pct: float
     advance_due_paise: int
@@ -98,12 +99,17 @@ class BookingOut(BaseModel):
     @computed_field
     @property
     def final_owner_payout_paise(self) -> int:
-        if self.status in ("user_cancelled", "owner_cancelled", "rejected"):
-            net = (
-                (self.amount_paid_paise or 0)
-                - (self.refund_amount_paise or 0)
-                - (self.platform_fee_paise or 0)
-            )
+        """True cash-in-hand for the owner after settlement.
+
+        For cancelled bookings: what the customer paid minus what was refunded.
+        The platform fee is tracked separately via the ledger (as a `platform_fee`
+        debit and, if applicable, a `platform_fee_reversal` credit) — it must NOT
+        be subtracted here or it would be double-counted.
+        """
+        if self.status in ("user_cancelled", "owner_cancelled", "rejected",
+                           "balance_overdue_cancelled", "admin_cancelled",
+                           "hold_expired", "request_expired", "conflict_cancelled"):
+            net = (self.amount_paid_paise or 0) - (self.refund_amount_paise or 0)
             return max(0, net)
         return self.owner_payout_paise or 0
 

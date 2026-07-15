@@ -178,7 +178,7 @@ def create_booking_request(
         )
 
     db.refresh(booking)
-    return _booking_out(booking)
+    return _booking_out(db, booking)
 
 
 def get_booking(db: Session, booking_id: UUID, user_id: UUID | None = None) -> BookingOut:
@@ -186,7 +186,7 @@ def get_booking(db: Session, booking_id: UUID, user_id: UUID | None = None) -> B
     if user_id is not None and booking.user_id != user_id and booking.venue.owner_id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Booking access denied")
 
-    return _booking_out(booking)
+    return _booking_out(db, booking)
 
 
 def list_user_bookings(db: Session, user_id: UUID) -> list[BookingOut]:
@@ -201,7 +201,7 @@ def list_user_bookings(db: Session, user_id: UUID) -> list[BookingOut]:
         .order_by(Booking.created_at.desc())
         .all()
     )
-    return [_booking_out(booking) for booking in bookings]
+    return [_booking_out(db, booking) for booking in bookings]
 
 
 def list_all_owner_bookings(
@@ -283,7 +283,7 @@ def list_all_owner_bookings(
     )
 
     return BookingListResponse(
-        items=[_booking_out(booking) for booking in bookings],
+        items=[_booking_out(db, booking) for booking in bookings],
         total=total,
         page=page,
         page_size=per_page,
@@ -320,7 +320,7 @@ def list_venue_bookings(
     if pending_only:
         query = query.filter(Booking.status == BookingStatus.requested)
 
-    return [_booking_out(booking) for booking in query.order_by(Booking.requested_at.asc()).all()]
+    return [_booking_out(db, booking) for booking in query.order_by(Booking.requested_at.asc()).all()]
 
 
 def owner_accept_booking(db: Session, booking_id: UUID, owner_id: UUID) -> BookingOut:
@@ -330,7 +330,7 @@ def owner_accept_booking(db: Session, booking_id: UUID, owner_id: UUID) -> Booki
     # Idempotency: If already accepted, return current state
     if booking.status == BookingStatus.owner_accepted:
         db.refresh(booking)
-        return _booking_out(booking)
+        return _booking_out(db, booking)
 
     if booking.status != BookingStatus.requested:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Booking is not pending")
@@ -366,7 +366,7 @@ def owner_accept_booking(db: Session, booking_id: UUID, owner_id: UUID) -> Booki
         context={"venue_name": booking.venue.name},
         booking_id=booking.id,
     )
-    return _booking_out(booking)
+    return _booking_out(db, booking)
 
 
 def owner_reject_booking(
@@ -398,7 +398,7 @@ def owner_reject_booking(
         context={"venue_name": booking.venue.name},
         booking_id=booking.id,
     )
-    return _booking_out(booking)
+    return _booking_out(db, booking)
 
 
 def owner_extend_deadline(
@@ -457,7 +457,7 @@ def owner_extend_deadline(
         context={"venue_name": booking.venue.name},
         booking_id=booking.id,
     )
-    return _booking_out(booking)
+    return _booking_out(db, booking)
 
 
 def update_owner_notes(
@@ -468,7 +468,7 @@ def update_owner_notes(
     booking.owner_notes = notes
     db.flush()
     db.refresh(booking)
-    return _booking_out(booking)
+    return _booking_out(db, booking)
 
 
 def create_booking(user_id: UUID, body: BookingRequestIn, db: Session) -> BookingOut:

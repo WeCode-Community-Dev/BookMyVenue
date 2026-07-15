@@ -1839,8 +1839,12 @@ export interface components {
             platform_commission_pct: number;
             /** Platform Fee Paise */
             platform_fee_paise: number;
+            /** Platform Fee Reversed Paise (sum of platform_fee_reversal ledger credits for this booking) */
+            platform_fee_reversed_paise: number;
             /** Owner Payout Paise */
             owner_payout_paise: number;
+            /** Final Owner Payout Paise (computed: actual cash after cancellation/refund) */
+            final_owner_payout_paise: number;
             /** Advance Pct */
             advance_pct: number;
             /** Advance Due Paise */
