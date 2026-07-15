@@ -31,6 +31,10 @@ export default function SignupPage() {
     ] = useState(false);
 
     const [
+        isRegistered, setIsRegistered
+    ] = useState(false);
+
+    const [
         form, setForm
     ] = useState({
         name: "",
@@ -40,11 +44,11 @@ export default function SignupPage() {
     });
 
     useEffect(() => {
-        if (isAuthenticated) {
+        if (isAuthenticated && !isRegistered) {
             router.push("/venues");
         }
     }, [
-        isAuthenticated, router
+        isAuthenticated, router, isRegistered
     ]);
 
     const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,6 +75,7 @@ export default function SignupPage() {
         );
 
         if (result.success) {
+            setIsRegistered(true);
             console.log("Registration successful!");
             setShowSuccessModal(true);
 
@@ -86,7 +91,7 @@ export default function SignupPage() {
     };
 
     const handleGoogleLogin = () => {
-        console.log("Google login clicked");
+        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
     };
 
     return (

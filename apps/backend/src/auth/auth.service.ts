@@ -11,9 +11,10 @@ import { JwtService } from '@nestjs/jwt';
 import { MailService } from 'src/providers/mail/mail.service';
 import { PrismaService } from 'src/providers/prisma/prisma.service';
 import { RedisService } from 'src/providers/redis/redis.service';
-import { RequestOtpDto } from './dto/request-otp.dto';
-import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RequestOtpDto } from './dto/request-otp.dto';
+import type { Response } from 'express';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 import bcrypt from 'bcrypt';
 
 @Injectable()
@@ -23,7 +24,7 @@ export class AuthService {
     private readonly prismaService: PrismaService,
     private readonly redisService: RedisService,
     private readonly mailService: MailService,
-  ) { }
+  ) {}
 
   private async generateAccessToken(user: User) {
     return this.jwtService.signAsync(
@@ -47,6 +48,22 @@ export class AuthService {
         expiresIn: '7d',
       },
     );
+  }
+
+  setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
   }
 
   async requestOtp(dto: RequestOtpDto) {
@@ -261,18 +278,21 @@ export class AuthService {
 
     const existingUser = await this.prismaService.user.findFirst({
       where: {
-        OR: [
-          { email },
-          { phone: mobile }
-        ]
-      }
+        OR: [{ email }, { phone: mobile }],
+      },
     });
 
     if (existingUser) {
       if (existingUser.email === email) {
-        throw new HttpException('Email already registered', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'Email already registered',
+          HttpStatus.BAD_REQUEST,
+        );
       }
-      throw new HttpException('Phone number already registered', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Phone number already registered',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
