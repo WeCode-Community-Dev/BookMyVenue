@@ -192,6 +192,31 @@ SETTINGS: dict[str, SettingSpec] = {
         ),
         category="rate_limits",
     ),
+    "search_embedding_rate_limit_per_hour": SettingSpec(
+        default=30,
+        value_type="int",
+        min_value=1,
+        max_value=1000,
+        label="Semantic Search Rate Limit",
+        description=(
+            "Per-IP hourly limit on /search/semantic and /search/hybrid, which call "
+            "the paid Jina embeddings API on every request. Blocks cost/DoS abuse "
+            "of an otherwise fully public, unauthenticated endpoint."
+        ),
+        category="rate_limits",
+    ),
+    "payment_intent_rate_limit_per_hour": SettingSpec(
+        default=20,
+        value_type="int",
+        min_value=1,
+        max_value=200,
+        label="Payment Intent Rate Limit",
+        description=(
+            "Per-user hourly limit on creating Stripe PaymentIntents, to block "
+            "scripted spam of a paid external API call."
+        ),
+        category="rate_limits",
+    ),
     "search_min_vector_similarity": SettingSpec(
         default=0.15,
         value_type="float",

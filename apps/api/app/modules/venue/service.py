@@ -164,20 +164,83 @@ def _enrich_venue_with_ratings(db: Session, venue: Venue) -> Venue:
     return venue
 
 
+# ─── Cache-aside for read-heavy public endpoints ────────────────────────────
+# Mirrors app.modules.admin.settings_store: TTL is a backstop only — every
+# write path below explicitly deletes the affected key(s) right after commit.
+
+_CATEGORIES_CACHE_KEY = "venue:categories"
+_AMENITIES_CACHE_KEY = "venue:amenities"
+_CACHE_TTL_SECONDS = 3600
+
+
+def _venue_detail_cache_key(identifier: str) -> str:
+    return f"venue:detail:{identifier}"
+
+
+def invalidate_venue_cache(venue: Venue) -> None:
+    """Call after committing any change to a venue's visible fields, status,
+    amenities, or category (create/update/delete are covered here; approve/
+    reject/suspend/reactivate live in admin/service.py and call this too)."""
+    from app.core.cache import cache_delete
+
+    keys = [_venue_detail_cache_key(str(venue.id))]
+    if venue.slug:
+        keys.append(_venue_detail_cache_key(venue.slug))
+    cache_delete(*keys)
+
+
+def invalidate_categories_cache() -> None:
+    from app.core.cache import cache_delete
+
+    cache_delete(_CATEGORIES_CACHE_KEY)
+
+
+def invalidate_amenities_cache() -> None:
+    from app.core.cache import cache_delete
+
+    cache_delete(_AMENITIES_CACHE_KEY)
+
+
 # Public service functions
 
 
-def get_venue_categories(db: Session) -> list[VenueCategory]:
-    return (
+def get_venue_categories(db: Session) -> list[dict]:
+    import json
+
+    from app.core.cache import cache_get, cache_set
+    from app.modules.venue.schemas import VenueCategoryResponse
+
+    cached = cache_get(_CATEGORIES_CACHE_KEY)
+    if cached is not None:
+        return json.loads(cached)
+
+    rows = (
         db.query(VenueCategory)
         .filter(VenueCategory.is_active.is_(True), VenueCategory.deleted_at.is_(None))
         .order_by(VenueCategory.sort_order.asc(), VenueCategory.label.asc())
         .all()
     )
+    data = [VenueCategoryResponse.model_validate(r).model_dump(mode="json") for r in rows]
+    cache_set(_CATEGORIES_CACHE_KEY, json.dumps(data), _CACHE_TTL_SECONDS)
+    return data
 
 
-def get_platform_amenities(db: Session) -> list[Amenity]:
-    return db.query(Amenity).filter(Amenity.deleted_at.is_(None)).order_by(Amenity.name.asc()).all()
+def get_platform_amenities(db: Session) -> list[dict]:
+    import json
+
+    from app.core.cache import cache_get, cache_set
+    from app.modules.venue.schemas import AmenityResponse
+
+    cached = cache_get(_AMENITIES_CACHE_KEY)
+    if cached is not None:
+        return json.loads(cached)
+
+    rows = (
+        db.query(Amenity).filter(Amenity.deleted_at.is_(None)).order_by(Amenity.name.asc()).all()
+    )
+    data = [AmenityResponse.model_validate(r).model_dump(mode="json") for r in rows]
+    cache_set(_AMENITIES_CACHE_KEY, json.dumps(data), _CACHE_TTL_SECONDS)
+    return data
 
 
 def get_venue(db: Session, identifier: str, user_id: UUID | None = None) -> Venue:
@@ -198,6 +261,29 @@ def get_venue(db: Session, identifier: str, user_id: UUID | None = None) -> Venu
         if not venue:
             raise NotFoundError("Venue not found")
     return venue
+
+
+def get_venue_detail_cached(db: Session, identifier: str, user_id: UUID | None = None) -> dict:
+    """Cache-aside wrapper around get_venue + _enrich_venue_with_ratings, the
+    combination actually serialized as VenueResponse. Safe to cache regardless
+    of requester: neither function branches on user_id today (is_liked always
+    defaults False on this endpoint), so the response is identical for anyone.
+    """
+    import json
+
+    from app.core.cache import cache_get, cache_set
+    from app.modules.venue.schemas import VenueResponse
+
+    cache_key = _venue_detail_cache_key(identifier)
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return json.loads(cached)
+
+    venue = get_venue(db, identifier, user_id=user_id)
+    venue = _enrich_venue_with_ratings(db, venue)
+    data = VenueResponse.model_validate(venue).model_dump(mode="json")
+    cache_set(cache_key, json.dumps(data), _CACHE_TTL_SECONDS)
+    return data
 
 
 def toggle_venue_like(db: Session, venue_id: UUID, user_id: UUID) -> bool:
@@ -554,6 +640,10 @@ def create_venue(db: Session, owner_id: UUID, body: CreateVenueRequest) -> Venue
     db.commit()
     db.refresh(venue)
 
+    from app.modules.admin.service import invalidate_venue_stats_cache
+
+    invalidate_venue_stats_cache()
+
     from app.modules.search.indexer import enqueue_job
 
     enqueue_job(db, venue.id, "create")
@@ -614,6 +704,7 @@ def update_venue(
 
     db.commit()
     db.refresh(venue)
+    invalidate_venue_cache(venue)
 
     from app.modules.search.indexer import enqueue_job
 
@@ -639,6 +730,11 @@ def delete_venue(db: Session, venue_id: UUID, owner_id: UUID) -> None:
 
     venue.deleted_at = datetime.now(UTC)
     db.commit()
+    invalidate_venue_cache(venue)
+
+    from app.modules.admin.service import invalidate_venue_stats_cache
+
+    invalidate_venue_stats_cache()
 
 
 def submit_venue(db: Session, venue_id: UUID, owner_id: UUID) -> Venue:
@@ -667,6 +763,7 @@ def submit_venue(db: Session, venue_id: UUID, owner_id: UUID) -> Venue:
 
     db.commit()
     db.refresh(venue)
+    invalidate_venue_cache(venue)
     return venue
 
 
@@ -1040,6 +1137,7 @@ def put_venue_cancellation_policy(
 
     db.commit()
     db.refresh(policy)
+    invalidate_venue_cache(venue)
     return policy
 
 
@@ -1077,6 +1175,7 @@ def update_venue_amenities(
 
     db.commit()
     db.refresh(venue)
+    invalidate_venue_cache(venue)
 
     from app.modules.search.indexer import enqueue_job
 
@@ -1115,6 +1214,7 @@ def add_venue_photo(
     db.add(photo)
     db.commit()
     db.refresh(photo)
+    invalidate_venue_cache(venue)
     return photo
 
 
@@ -1158,6 +1258,7 @@ def bulk_update_venue_photos(
         photo.is_cover = item.is_cover
 
     db.commit()
+    invalidate_venue_cache(venue)
 
     return sorted(existing_photos, key=lambda p: p.sort_order)
 
@@ -1199,6 +1300,7 @@ def delete_venue_photo(db: Session, venue_id: UUID, photo_id: UUID, owner_id: UU
             db.add(next_photo)
 
     db.commit()
+    invalidate_venue_cache(venue)
 
 
 def get_pricing_quote(

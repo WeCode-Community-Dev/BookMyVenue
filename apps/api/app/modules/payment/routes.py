@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.rate_limit import enforce_user_hourly_limit
+from app.modules.admin import settings_store
 from app.modules.auth.dependencies import AuthContext, get_current_user
 from app.modules.payment import service, webhooks
 from app.modules.payment.schemas import (
@@ -43,6 +45,9 @@ def create_payment(
     db: Session = Depends(get_db),
 ):
     """Create a Stripe PaymentIntent for a booking's token advance or balance."""
+    limit = settings_store.get_setting(db, "payment_intent_rate_limit_per_hour")
+    enforce_user_hourly_limit(user.user_id, "create_payment_intent", limit)
+
     return service.create_payment_intent(db, user.user_id, body.booking_id, body.payment_type)
 
 
