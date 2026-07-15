@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { resendConfirmationEmail } from '@venue404/api-client'
 import { useAuth } from '../lib/AuthContext'
 import { AuthLayout, AuthCard, Logo } from '@venue404/ui'
 import { OwnerFlowPanel } from '../components/OwnerFlowPanel'
@@ -10,6 +11,8 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null)
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent'>('idle')
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -19,13 +22,30 @@ export default function Login() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setUnconfirmedEmail(null)
+    setResendState('idle')
     setSubmitting(true)
     try {
       await signIn({ email, password })
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Sign in failed. Check your credentials.')
+      if (err && typeof err === 'object' && 'code' in err && err.code === 'email_not_confirmed') {
+        setUnconfirmedEmail(email)
+      } else {
+        setError(err instanceof Error ? err.message : 'Sign in failed. Check your credentials.')
+      }
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  async function handleResend() {
+    if (!unconfirmedEmail || resendState === 'sending') return
+    setResendState('sending')
+    try {
+      await resendConfirmationEmail(unconfirmedEmail)
+      setResendState('sent')
+    } catch {
+      setResendState('idle')
     }
   }
 
@@ -59,7 +79,7 @@ export default function Login() {
                 autoComplete="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setError(null); setUnconfirmedEmail(null) }}
                 placeholder="you@example.com"
                 disabled={submitting}
               />
@@ -83,6 +103,35 @@ export default function Login() {
                 disabled={submitting}
               />
             </div>
+
+            {unconfirmedEmail && (
+              <div
+                role="alert"
+                className="space-y-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800"
+              >
+                <div className="flex items-start gap-2.5">
+                  <svg className="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <span>
+                    Confirm your email to sign in. We sent a link to <strong>{unconfirmedEmail}</strong>.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendState === 'sending' || resendState === 'sent'}
+                  className="font-medium text-amber-900 underline underline-offset-2 hover:text-amber-950 disabled:cursor-not-allowed disabled:no-underline disabled:opacity-70"
+                >
+                  {resendState === 'sent'
+                    ? 'Confirmation email sent'
+                    : resendState === 'sending'
+                      ? 'Sending…'
+                      : 'Resend confirmation email'}
+                </button>
+              </div>
+            )}
 
             {error && (
               <div
