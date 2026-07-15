@@ -70,7 +70,8 @@ class BookingOut(BaseModel):
     quoted_price_paise: int
     platform_commission_pct: float
     platform_fee_paise: int
-    platform_fee_reversed_paise: int = 0  # sum of platform_fee_reversal ledger credits for this booking
+    # sum of platform_fee_reversal ledger credits for this booking
+    platform_fee_reversed_paise: int = 0
     owner_payout_paise: int
     advance_pct: float
     advance_due_paise: int

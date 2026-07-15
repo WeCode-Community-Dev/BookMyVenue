@@ -637,7 +637,9 @@ def list_owner_ledger_entries(
 
     if entry_type and entry_type != "all":
         if entry_type == "platform_fee":
-            query = query.filter(LedgerEntry.entry_type.in_(["platform_fee", "platform_fee_reversal"]))
+            query = query.filter(
+                LedgerEntry.entry_type.in_(["platform_fee", "platform_fee_reversal"])
+            )
         else:
             query = query.filter(LedgerEntry.entry_type == entry_type)
 

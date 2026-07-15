@@ -13,10 +13,10 @@ from app.modules.availability.service import validate_booking_request
 
 # Re-expose functions from cancellation module
 from app.modules.booking.cancellation import (
-    get_cancellation_preview,
-    owner_cancel_forfeit,
-    owner_cancel_goodwill,
-    user_cancel_booking,
+    get_cancellation_preview as get_cancellation_preview,
+    owner_cancel_forfeit as owner_cancel_forfeit,
+    owner_cancel_goodwill as owner_cancel_goodwill,
+    user_cancel_booking as user_cancel_booking,
 )
 from app.modules.booking.helpers import (
     _assert_booking_owner,
@@ -320,7 +320,10 @@ def list_venue_bookings(
     if pending_only:
         query = query.filter(Booking.status == BookingStatus.requested)
 
-    return [_booking_out(db, booking) for booking in query.order_by(Booking.requested_at.asc()).all()]
+    return [
+        _booking_out(db, booking)
+        for booking in query.order_by(Booking.requested_at.asc()).all()
+    ]
 
 
 def owner_accept_booking(db: Session, booking_id: UUID, owner_id: UUID) -> BookingOut:
