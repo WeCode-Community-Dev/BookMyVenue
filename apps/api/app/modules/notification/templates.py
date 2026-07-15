@@ -95,6 +95,11 @@ _TEMPLATES: dict[str, tuple[str, str]] = {
         "Your account has been reactivated",
         "Your Venue404 account has been reactivated. You can log in and use Venue404 again.",
     ),
+    "admin_password_reset_requested": (
+        "Security alert: admin password reset requested",
+        "A password reset was requested for the admin account {target_email}. "
+        "If this wasn't expected, investigate immediately.",
+    ),
 }
 
 # Spelling/legacy aliases -> canonical template key. Both British and American

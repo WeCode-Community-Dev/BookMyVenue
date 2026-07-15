@@ -180,6 +180,18 @@ SETTINGS: dict[str, SettingSpec] = {
         description="Per-IP hourly limit on public contact form submissions, to block spam.",
         category="rate_limits",
     ),
+    "forgot_password_rate_limit_per_hour": SettingSpec(
+        default=5,
+        value_type="int",
+        min_value=1,
+        max_value=100,
+        label="Forgot Password Rate Limit",
+        description=(
+            "Per-IP hourly limit on password reset requests, to block mail-bombing "
+            "and enumeration attempts."
+        ),
+        category="rate_limits",
+    ),
     "search_min_vector_similarity": SettingSpec(
         default=0.15,
         value_type="float",
