@@ -90,10 +90,6 @@ export default function SignupPage() {
         }
     };
 
-    const handleGoogleLogin = () => {
-        loginWithGoogle();
-    };
-
     return (
         <div className={authStyle.pageWrapper}>
             <LoginModal isOpen={loginOpen} onOpenChange={setLoginOpen} />
@@ -256,7 +252,7 @@ export default function SignupPage() {
 
                         <button
                             type="button"
-                            onClick={handleGoogleLogin}
+                            onClick={loginWithGoogle}
                             className={`${authStyle.googleButton} flex items-center justify-center gap-3`}
                         >
                             <NextImage

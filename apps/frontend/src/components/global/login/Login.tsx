@@ -93,11 +93,6 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
         await triggerAutoVerify(otpString);
     };
 
-    const handleGoogleLogin = () => {
-        loginWithGoogle();
-    };
-
-
     const handleOtpChange = (index: number, val: string) => {
         if (val && !/^\d$/.test(val)) return;
 
@@ -195,7 +190,7 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
                             {/* Google */}
                             <button
                                 type="button"
-                                onClick={handleGoogleLogin}
+                                onClick={loginWithGoogle}
                                 className={loginStyle.googleButton}
                             >
                                 <NxtImage src={googleIcon} alt="Google"
