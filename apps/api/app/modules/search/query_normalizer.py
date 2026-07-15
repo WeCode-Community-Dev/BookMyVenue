@@ -16,8 +16,9 @@ The vocabulary has two parts:
 """
 
 from rapidfuzz import fuzz, process
+from sqlalchemy.orm import Session
 
-from app.core.config import settings
+from app.modules.admin import settings_store
 
 _STATIC_SYNONYMS = [
     "wedding",
@@ -53,7 +54,7 @@ def _vocabulary() -> list[str]:
     return _STATIC_SYNONYMS + _dynamic_vocabulary
 
 
-def normalize_query(q: str) -> str:
+def normalize_query(db: Session, q: str) -> str:
     """Fuzzy-correct likely typos in each token of a search query.
 
     Falls back to the original token whenever no confident vocabulary match
@@ -70,16 +71,19 @@ def normalize_query(q: str) -> str:
         # silently no-op'ing typo correction entirely.
         vocabulary = _STATIC_SYNONYMS
 
+    min_token_len = settings_store.get_setting(db, "search_normalizer_min_token_len")
+    match_threshold = settings_store.get_setting(db, "search_normalizer_match_threshold")
+
     tokens = q.strip().split()
     corrected_tokens = []
 
     for token in tokens:
-        if len(token) < settings.search_normalizer_min_token_len:
+        if len(token) < min_token_len:
             corrected_tokens.append(token)
             continue
 
         match = process.extractOne(token.lower(), vocabulary, scorer=fuzz.ratio)
-        if match and match[1] >= settings.search_normalizer_match_threshold:
+        if match and match[1] >= match_threshold:
             corrected_tokens.append(match[0])
         else:
             corrected_tokens.append(token)

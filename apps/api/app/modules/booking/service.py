@@ -8,12 +8,11 @@ from sqlalchemy import and_, func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
+from app.modules.admin import settings_store
 from app.modules.availability.service import validate_booking_request
 
 # Re-expose functions from cancellation module
 from app.modules.booking.helpers import (
-    MAX_DEADLINE_EXTENSIONS,
-    USER_PAYMENT_HOLD_HOURS,
     _assert_booking_owner,
     _booking_or_404,
     _booking_out,
@@ -91,7 +90,14 @@ def create_booking_request(
 
     is_instant = venue.booking_mode == "INSTANT"
     initial_status = BookingStatus.payment_pending if is_instant else BookingStatus.requested
-    payment_expires_at = _now() + timedelta(minutes=15) if is_instant else None
+    payment_expires_at = (
+        _now()
+        + timedelta(
+            minutes=settings_store.get_setting(db, "instant_booking_payment_timeout_minutes")
+        )
+        if is_instant
+        else None
+    )
 
     booking = Booking(
         id=uuid.uuid4(),
@@ -328,7 +334,8 @@ def owner_accept_booking(db: Session, booking_id: UUID, owner_id: UUID) -> Booki
     slot.is_blocking = True
     booking.status = BookingStatus.owner_accepted
     booking.owner_responded_at = _now()
-    booking.hold_expires_at = booking.owner_responded_at + timedelta(hours=USER_PAYMENT_HOLD_HOURS)
+    hold_hours = settings_store.get_setting(db, "token_payment_hold_hours")
+    booking.hold_expires_at = booking.owner_responded_at + timedelta(hours=hold_hours)
 
     try:
         db.flush()
@@ -404,7 +411,8 @@ def owner_extend_deadline(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Booking is not balance overdue"
         )
-    if booking.deadline_extension_count >= MAX_DEADLINE_EXTENSIONS:
+    max_extensions = settings_store.get_setting(db, "max_deadline_extensions")
+    if booking.deadline_extension_count >= max_extensions:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Deadline extension limit reached",

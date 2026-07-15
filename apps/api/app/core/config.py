@@ -44,10 +44,6 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
-    # Booking economics (percent of venue price)
-    token_advance_pct: int = 20
-    platform_fee_pct: int = 5
-
     # Only the process that owns scheduling should flip this on
     enable_jobs: bool = False
 
@@ -70,16 +66,7 @@ class Settings(BaseSettings):
     jina_embedding_model: str = "jina-embeddings-v3"
     embedding_dimensions: int = 1024
 
-    search_min_vector_similarity: float = 0.15
-    search_wedding_boost: float = 1.85
-    search_event_boost: float = 1.40
-    search_fts_weight: float = 0.3
-    search_corporate_boost: float = 1.40
-    search_vector_weight: float = 0.7
     search_diagnostics_enabled: bool = False
-
-    search_normalizer_match_threshold: int = 85
-    search_normalizer_min_token_len: int = 3
 
     # Groq — used for Deep Research's query-understanding stage (OpenAI-compatible API).
     groq_api_key: str = ""
@@ -88,17 +75,6 @@ class Settings(BaseSettings):
 
     # Google Places API Key
     google_places_api_key: str = ""
-
-    # Deep Research rate limiting — protects the Groq / Google Places /
-    # Cloudinary calls behind /search and /external from burst abuse and
-    # caps the per-user daily cost. Backed by Upstash Redis; if Upstash isn't
-    # configured, limiting is skipped (fails open, matching indexer.py).
-    deep_research_rate_limit_per_minute: int = 5
-    deep_research_daily_limit: int = 4
-
-    # Contact form is public/unauthenticated and sends an email per submission
-    # — rate limit per IP to block spam/mailbombing the support inbox.
-    contact_rate_limit_per_hour: int = 5
 
     # Sentry — unset disables it entirely (no-op), matching the fail-open
     # pattern used for the other optional integrations in this file.
@@ -109,6 +85,11 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        # Business constants (token_advance_pct, platform_fee_pct,
+        # deep_research_rate_limit_per_minute, deep_research_daily_limit, ...)
+        # moved to the DB-backed platform_settings table — ignore, don't crash
+        # on, leftover .env entries for them during rollout.
+        extra = "ignore"
 
 
 settings = Settings()

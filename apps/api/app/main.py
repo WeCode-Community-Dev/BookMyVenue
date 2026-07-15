@@ -11,6 +11,7 @@ from app.core.sentry import init_sentry
 from app.jobs import scheduler as job_scheduler
 from app.modules.admin.routes import router as admin_router
 from app.modules.admin.service import seed_super_admin
+from app.modules.admin.settings_store import seed_platform_settings
 from app.modules.auth.routes import router as auth_router
 from app.modules.availability.routes import router as availability_router
 from app.modules.booking.routes import router as booking_router
@@ -45,6 +46,8 @@ def _load_search_metadata() -> None:
 async def lifespan(_: FastAPI):
     setup_logging()
     seed_super_admin()
+    with SessionLocal() as db:
+        seed_platform_settings(db)
     _load_search_metadata()
     if settings.enable_jobs:
         logger.info("ENABLE_JOBS=true — starting background scheduler")
