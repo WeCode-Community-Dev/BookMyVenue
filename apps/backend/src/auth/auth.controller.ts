@@ -19,7 +19,7 @@ import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   register(@Body() dto: RegisterDto) {
@@ -38,19 +38,11 @@ export class AuthController {
   ) {
     const result = await this.authService.verifyOtp(dto);
 
-    res.cookie('access_token', result.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
-
-    res.cookie('refresh_token', result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    this.authService.setAuthCookies(
+      res,
+      result.accessToken,
+      result.refreshToken,
+    );
 
     return {
       message: result.message,
@@ -72,30 +64,16 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleCallback(
-    @Req() req: GoogleAuthRequest,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async googleCallback(@Req() req: GoogleAuthRequest, @Res() res: Response) {
     const result = await this.authService.googleLogin(req.user);
 
-    res.cookie('access_token', result.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 15 * 60 * 1000,
-    });
+    this.authService.setAuthCookies(
+      res,
+      result.accessToken,
+      result.refreshToken,
+    );
 
-    res.cookie('refresh_token', result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    return {
-      message: result.message,
-      user: result.user,
-    };
+    return res.redirect(`${process.env.FRONTEND_URL}/venues`);
   }
 
   @Post('refresh')

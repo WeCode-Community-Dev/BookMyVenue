@@ -3,11 +3,11 @@
 import { AppText, getText } from "@/lib/language/LanguageHelper";
 import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog/Dialog";
-import { SuccessStepContent } from "./SuccessModal";
 import { useEffect, useRef, useState } from "react";
 
 import { LoginStatus } from "@/lib/Constants";
 import NxtImage from "next/image";
+import { SuccessStepContent } from "./SuccessModal";
 import googleIcon from "../../../../public/assets/images/login/google-color.svg";
 import { loginStyle } from "./LoginStyle";
 import { useAuthService } from "@/features/auth/services/AuthService";
@@ -97,8 +97,7 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
     };
 
     const handleGoogleLogin = () => {
-        // window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-        console.log("Google login clicked");
+        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
     };
 
 
