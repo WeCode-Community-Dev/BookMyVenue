@@ -17,11 +17,6 @@ from app.modules.venue.models import Venue, VenueCancellationPolicy
 
 logger = logging.getLogger(__name__)
 
-MAX_DEADLINE_EXTENSIONS = 2
-USER_PAYMENT_HOLD_HOURS = 24
-REQUEST_EXPIRY_DAYS = 7
-INSTANT_BOOKING_PAYMENT_TIMEOUT_MINUTES = 15
-
 TERMINAL_STATUSES = {
     BookingStatus.completed,
     BookingStatus.hold_expired,

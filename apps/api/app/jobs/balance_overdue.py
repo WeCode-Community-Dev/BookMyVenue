@@ -2,6 +2,7 @@ import logging
 from datetime import UTC, datetime, timedelta
 
 from app.core.database import with_session
+from app.modules.admin import settings_store
 from app.modules.booking.models import (
     Booking,
     BookingStatus,
@@ -13,7 +14,6 @@ from app.modules.venue.models import Venue
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_ACTION_WINDOW_HOURS = 48
 BATCH = 100
 
 
@@ -39,9 +39,10 @@ def run_flag() -> int:
             .limit(BATCH)
             .all()
         )
+        default_window_hours = settings_store.get_setting(db, "balance_overdue_action_window_hours")
         for b in rows:
             venue = db.get(Venue, b.venue_id)
-            window = venue.owner_action_window_hours if venue else DEFAULT_ACTION_WINDOW_HOURS
+            window = venue.owner_action_window_hours if venue else default_window_hours
             b.balance_overdue_at = now
             b.owner_action_deadline = now + timedelta(hours=window)
             venue_name = venue.name if venue else "your venue"

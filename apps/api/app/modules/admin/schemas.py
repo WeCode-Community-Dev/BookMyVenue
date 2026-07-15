@@ -21,10 +21,10 @@ class JobInfo(BaseModel):
 
 class PlatformSettingsResponse(BaseModel):
     """
-    Read-only view of platform-wide booking/commission defaults, operational
-    config, and the background-job catalog. These are code-level constants,
-    not editable — surfaced here so admins can see the rules the platform
-    currently enforces.
+    Platform-wide booking/commission defaults, operational config, and the
+    background-job catalog. The booking/commission/deep-research fields are
+    admin-editable via PATCH /api/admin/settings (stored in platform_settings,
+    Redis-cached); the platform-config fields stay deployment-level (env vars).
     """
 
     # Booking & commission rules
@@ -47,6 +47,22 @@ class PlatformSettingsResponse(BaseModel):
 
     # Background jobs (static catalog, no live run history)
     jobs: list[JobInfo]
+
+
+class PlatformSettingsUpdateRequest(BaseModel):
+    """Partial update — only fields present are changed. Values are validated
+    and range-checked server-side against app.modules.admin.settings_store.SETTINGS.
+    """
+
+    default_platform_commission_pct: float | None = None
+    token_payment_hold_hours: int | None = None
+    instant_booking_payment_timeout_minutes: int | None = None
+    booking_request_expiry_days: int | None = None
+    max_deadline_extensions: int | None = None
+    payment_reminder_hours_before_expiry: int | None = None
+    balance_overdue_action_window_hours: int | None = None
+    deep_research_rate_limit_per_minute: int | None = None
+    deep_research_daily_limit: int | None = None
 
 
 class UserSummary(BaseModel):

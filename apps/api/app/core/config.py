@@ -44,10 +44,6 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
-    # Booking economics (percent of venue price)
-    token_advance_pct: int = 20
-    platform_fee_pct: int = 5
-
     # Only the process that owns scheduling should flip this on
     enable_jobs: bool = False
 
@@ -89,13 +85,6 @@ class Settings(BaseSettings):
     # Google Places API Key
     google_places_api_key: str = ""
 
-    # Deep Research rate limiting — protects the Groq / Google Places /
-    # Cloudinary calls behind /search and /external from burst abuse and
-    # caps the per-user daily cost. Backed by Upstash Redis; if Upstash isn't
-    # configured, limiting is skipped (fails open, matching indexer.py).
-    deep_research_rate_limit_per_minute: int = 5
-    deep_research_daily_limit: int = 4
-
     # Contact form is public/unauthenticated and sends an email per submission
     # — rate limit per IP to block spam/mailbombing the support inbox.
     contact_rate_limit_per_hour: int = 5
@@ -109,6 +98,11 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        # Business constants (token_advance_pct, platform_fee_pct,
+        # deep_research_rate_limit_per_minute, deep_research_daily_limit, ...)
+        # moved to the DB-backed platform_settings table — ignore, don't crash
+        # on, leftover .env entries for them during rollout.
+        extra = "ignore"
 
 
 settings = Settings()

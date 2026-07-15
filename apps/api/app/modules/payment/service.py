@@ -26,6 +26,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.exceptions import BadRequestError, ForbiddenError, NotFoundError
 from app.core.stripe_client import get_stripe
+from app.modules.admin import settings_store
 from app.modules.auth.dependencies import AuthContext
 from app.modules.booking.models import (
     Booking,
@@ -257,7 +258,11 @@ def confirm_payment(db: Session, payment_intent_id: str) -> None:
         )
     )
 
-    fee_pct = float(venue.platform_commission_pct) if venue else settings.platform_fee_pct
+    fee_pct = (
+        float(venue.platform_commission_pct)
+        if venue
+        else settings_store.get_setting(db, "default_platform_commission_pct")
+    )
     fee = booking.platform_fee_paise or round(payment.amount_paise * fee_pct / 100)
     booking.platform_fee_paise = fee
     if fee:

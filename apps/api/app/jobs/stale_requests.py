@@ -2,22 +2,24 @@ import logging
 from datetime import UTC, datetime, timedelta
 
 from app.core.database import with_session
+from app.modules.admin import settings_store
 from app.modules.booking.models import Booking, BookingStatus, BookingStatusHistory
 from app.modules.notification import service as notifications
 from app.modules.venue.models import Venue
 
 logger = logging.getLogger(__name__)
 
-STALE_AFTER = timedelta(days=7)
 BATCH = 100
 
 
 def run() -> int:
-    """Auto-expire booking requests that have been pending (requested) for 7 days."""
+    """Auto-expire booking requests that have been pending (requested) longer
+    than the admin-configured booking_request_expiry_days setting."""
     now = datetime.now(UTC)
-    cutoff = now - STALE_AFTER
     expired = 0
     with with_session() as db:
+        expiry_days = settings_store.get_setting(db, "booking_request_expiry_days")
+        cutoff = now - timedelta(days=expiry_days)
         rows = (
             db.query(Booking)
             .filter(
