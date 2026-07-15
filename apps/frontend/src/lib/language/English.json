@@ -67,7 +67,8 @@
         "ALREADY_HAVE_ACCOUNT": "Already have an account?",
         "SECURE": "Secure",
         "FAST": "Fast",
-        "TRUSTED": "Trusted"
+        "TRUSTED": "Trusted",
+        "AUTHENTICATING_GOOGLE": "Authenticating with Google"
     },
     "FILTERS": {
         "FILTER": "Filters",
@@ -95,6 +96,7 @@
     "COLUMNS": {},
     "MESSAGES": {
         "VENUE_DESCRIPTION": "A beautiful beachfront venue perfect for weddings, parties and corporate events.",
-        "AUTH_DESCRIPTION": "Join thousands of people who discover, book and celebrate unforgettable moments."
+        "AUTH_DESCRIPTION": "Join thousands of people who discover, book and celebrate unforgettable moments.",
+        "OAUTH_VERIFYING_MSG": "Verifying your credentials and logging you in. Please do not close this window."
     }
 }

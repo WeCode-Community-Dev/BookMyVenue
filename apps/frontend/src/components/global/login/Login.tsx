@@ -19,7 +19,7 @@ type LoginModalProps = {
 
 export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
 
-    const { loading, requestOtp, verifyOtp } = useAuthService();
+    const { loading, requestOtp, verifyOtp, loginWithGoogle } = useAuthService();
     const [
         error, setError
     ] = useState<string | null>(null);
@@ -64,7 +64,6 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
     const handleContinue = async (evt: React.FormEvent) => {
         evt.preventDefault();
         if (!email) return;
-        setError(null);
         const res = await requestOtp(email);
         if (res.success) {
             setStep(LoginStatus.OTP);
@@ -73,15 +72,13 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
         }
     };
 
-    const triggerAutoVerify = async (otpString: string) => {
-        setError(null);
-        const res = await verifyOtp(email, otpString);
+    const triggerAutoVerify = async (otp: string) => {
+        const res = await verifyOtp(email, otp);
         if (res.success) {
             setStep(LoginStatus.SUCCESS);
+            setOtpValues(Array(6).fill(""));
             setTimeout(() => {
                 onOpenChange(false);
-                setStep(LoginStatus.LOGIN);
-                setEmail("");
                 setOtpValues(Array(6).fill(""));
             }, 2000);
         } else {
@@ -97,7 +94,7 @@ export default function LoginModal({ isOpen, onOpenChange }: LoginModalProps) {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+        loginWithGoogle();
     };
 
 
