@@ -33,7 +33,9 @@ from app.modules.admin.schemas import (
     OwnerApprovalRequest,
     OwnerStatsResponse,
     PlatformSettingsResponse,
+    PlatformSettingsUpdateRequest,
     ReactivateUserRequest,
+    SettingsMetadataResponse,
     SuspendUserRequest,
     UserListResponse,
     UserSummary,
@@ -46,11 +48,28 @@ from app.modules.deep_research import service as reservation_service
 router = APIRouter()
 
 
+@router.get("/settings/metadata", response_model=SettingsMetadataResponse)
+def get_settings_metadata(
+    _: AuthContext = Depends(require_admin),
+):
+    return service.get_settings_metadata()
+
+
 @router.get("/settings", response_model=PlatformSettingsResponse)
 def get_platform_settings(
     _: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
 ):
-    return service.get_platform_settings()
+    return service.get_platform_settings(db)
+
+
+@router.patch("/settings", response_model=PlatformSettingsResponse)
+def update_platform_settings(
+    body: PlatformSettingsUpdateRequest,
+    auth: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return service.update_platform_settings(db, admin_id=auth.user_id, body=body)
 
 
 @router.get("/venues/stats", response_model=VenueStatsResponse)
@@ -199,7 +218,7 @@ def list_actions(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     target_type: str | None = Query(
-        None, pattern="^(user|venue|booking|amenity|external_reservation)$"
+        None, pattern="^(user|venue|booking|amenity|external_reservation|settings)$"
     ),
     action_type: str | None = Query(None),
     # Legacy convenience: limit=N returns N items on page 1 (used by dashboard)

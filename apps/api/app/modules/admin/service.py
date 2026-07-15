@@ -13,8 +13,9 @@ from sqlalchemy.orm import Session, contains_eager, joinedload
 
 from app.core.config import settings
 from app.core.database import SessionLocal
-from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
+from app.core.exceptions import BadRequestError, ConflictError, ForbiddenError, NotFoundError
 from app.core.storage import delete_image_from_cloudinary, upload_image_to_cloudinary
+from app.modules.admin import settings_store
 from app.modules.admin.models import AdminAction
 from app.modules.admin.schemas import (
     AmenityUpdateRequest,
@@ -23,6 +24,7 @@ from app.modules.admin.schemas import (
     DeepResearchQueryListResponse,
     DeepResearchQuerySummary,
     DeepResearchStatsResponse,
+    PlatformSettingsUpdateRequest,
 )
 from app.modules.booking.models import Booking, BookingSlot, BookingStatus
 from app.modules.deep_research.models import DeepResearchQuery
@@ -112,38 +114,20 @@ def _job_schedule_labels() -> dict[str, str]:
     return labels
 
 
-def get_platform_settings() -> dict:
+def get_platform_settings(db: Session) -> dict:
     """
-    Read-only snapshot of the platform-wide booking/commission constants,
-    operational config, and background-job catalog. Sourced directly from
-    the modules that enforce them, so this can never drift out of sync with
-    actual behavior. There is no live job-run history — see _JOB_CATALOG.
+    Platform-wide booking/commission rules (admin-editable, DB-backed via
+    settings_store) plus deployment-level operational config (still sourced
+    from env/config.py) and the background-job catalog. There is no live
+    job-run history — see _JOB_CATALOG.
     """
-    from app.jobs.balance_overdue import DEFAULT_ACTION_WINDOW_HOURS
-    from app.jobs.payment_reminders import REMINDER_BEFORE
-    from app.modules.booking.helpers import (
-        INSTANT_BOOKING_PAYMENT_TIMEOUT_MINUTES,
-        MAX_DEADLINE_EXTENSIONS,
-        REQUEST_EXPIRY_DAYS,
-        USER_PAYMENT_HOLD_HOURS,
-    )
-    from app.modules.venue.service import DEFAULT_PLATFORM_COMMISSION_PCT
-
     schedule_labels = _job_schedule_labels()
     jobs = [
         {**job, "schedule": schedule_labels.get(job["name"], "Unscheduled")} for job in _JOB_CATALOG
     ]
 
     return {
-        "default_platform_commission_pct": float(DEFAULT_PLATFORM_COMMISSION_PCT),
-        "token_payment_hold_hours": USER_PAYMENT_HOLD_HOURS,
-        "instant_booking_payment_timeout_minutes": INSTANT_BOOKING_PAYMENT_TIMEOUT_MINUTES,
-        "booking_request_expiry_days": REQUEST_EXPIRY_DAYS,
-        "max_deadline_extensions": MAX_DEADLINE_EXTENSIONS,
-        "payment_reminder_hours_before_expiry": int(REMINDER_BEFORE.total_seconds() // 3600),
-        "balance_overdue_action_window_hours": DEFAULT_ACTION_WINDOW_HOURS,
-        "deep_research_rate_limit_per_minute": settings.deep_research_rate_limit_per_minute,
-        "deep_research_daily_limit": settings.deep_research_daily_limit,
+        **settings_store.get_settings(db),
         "environment": settings.environment,
         "currency": settings.stripe_currency.upper(),
         "background_jobs_enabled": settings.enable_jobs,
@@ -151,6 +135,66 @@ def get_platform_settings() -> dict:
         "search_diagnostics_enabled": settings.search_diagnostics_enabled,
         "jobs": jobs,
     }
+
+
+def get_settings_metadata() -> dict:
+    """Static registry metadata, grouped by category, for the admin settings
+    form. Pure code lookup — no DB/cache involved.
+    """
+    by_category: dict[str, list[dict]] = {}
+    for key, spec in settings_store.SETTINGS.items():
+        by_category.setdefault(spec.category, []).append(
+            {
+                "key": key,
+                "label": spec.label,
+                "description": spec.description,
+                "value_type": spec.value_type,
+                "min_value": spec.min_value,
+                "max_value": spec.max_value,
+            }
+        )
+
+    return {
+        "categories": [
+            {
+                "key": category,
+                "label": settings_store.CATEGORY_LABELS[category],
+                "fields": fields,
+            }
+            for category, fields in by_category.items()
+        ]
+    }
+
+
+def update_platform_settings(
+    db: Session,
+    *,
+    admin_id: uuid.UUID,
+    body: PlatformSettingsUpdateRequest,
+) -> dict:
+    updates = body.model_dump(exclude_unset=True, exclude_none=True)
+    if not updates:
+        return get_platform_settings(db)
+
+    try:
+        coerced = settings_store.validate_settings(updates)
+    except ValueError as exc:
+        raise BadRequestError(str(exc)) from exc
+
+    settings_store.set_settings(db, updated_by=admin_id, updates=coerced)
+
+    db.add(
+        AdminAction(
+            admin_id=admin_id,
+            action_type="settings_updated",
+            target_type="settings",
+            target_id=admin_id,
+            action_metadata={"changed": coerced},
+        )
+    )
+    db.commit()
+
+    return get_platform_settings(db)
 
 
 def _month_start(year: int, month: int) -> datetime:

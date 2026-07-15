@@ -9,8 +9,9 @@ import time
 from datetime import date
 from uuid import UUID
 
+from sqlalchemy.orm import Session
+
 from app.core import redis as redis_client
-from app.core.config import settings
 from app.core.exceptions import RateLimitError
 
 
@@ -31,12 +32,14 @@ def _check(key: str, limit: int, ttl_seconds: int, detail: str) -> None:
         raise RateLimitError(detail)
 
 
-def enforce_per_minute_limit(user_id: UUID, action: str) -> None:
+def enforce_per_minute_limit(db: Session, user_id: UUID, action: str) -> None:
+    from app.modules.admin import settings_store
+
     window = int(time.time() // 60)
     key = f"rl:{action}:min:{user_id}:{window}"
     _check(
         key,
-        settings.deep_research_rate_limit_per_minute,
+        settings_store.get_setting(db, "deep_research_rate_limit_per_minute"),
         ttl_seconds=60,
         detail="Too many requests — please slow down and try again shortly.",
     )

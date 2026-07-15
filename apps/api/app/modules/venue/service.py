@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.exceptions import ConflictError, ForbiddenError, NotFoundError
 from app.core.storage import upload_image_to_cloudinary
+from app.modules.admin import settings_store
 from app.modules.booking.models import Booking, BookingStatus, BookingType
 from app.modules.payment.models import LedgerEntry
 from app.modules.venue import pricing_engine
@@ -46,7 +47,6 @@ from app.modules.venue.schemas import (
 
 # Default platform commission
 
-DEFAULT_PLATFORM_COMMISSION_PCT = Decimal("10.00")
 
 
 # Internal helpers
@@ -468,6 +468,10 @@ def create_venue(db: Session, owner_id: UUID, body: CreateVenueRequest) -> Venue
 
     _get_category_or_400(db, body.category_id)
 
+    default_commission_pct = Decimal(
+        str(settings_store.get_setting(db, "default_platform_commission_pct"))
+    )
+
     venue = Venue(
         id=uuid.uuid4(),
         owner_id=owner_id,
@@ -499,7 +503,7 @@ def create_venue(db: Session, owner_id: UUID, body: CreateVenueRequest) -> Venue
         pricing_mode=body.pricing_mode.value,
         starting_price_paise=body.starting_price_paise,
         hourly_rate_paise=body.hourly_rate_paise,
-        platform_commission_pct=DEFAULT_PLATFORM_COMMISSION_PCT,
+        platform_commission_pct=default_commission_pct,
         advance_pct=body.advance_pct,
         balance_due_days_before_event=body.balance_due_days_before_event,
         owner_action_window_hours=body.owner_action_window_hours,

@@ -18,7 +18,9 @@ The boost *magnitudes* live in settings so they can be tuned without a
 deploy.
 """
 
-from app.core.config import settings
+from sqlalchemy.orm import Session
+
+from app.modules.admin import settings_store
 
 # Must match the values used in VenueCategory.search_boost_group.
 GROUP_WEDDING = "wedding_hall_banquet_hall"
@@ -91,17 +93,27 @@ _CORPORATE_INTENT_TERMS = {
 NO_BOOST = 1.00
 
 
-def detect_category_intents(query: str) -> dict[str, float]:
+def detect_category_intents(db: Session, query: str) -> dict[str, float]:
     """Return the boost multiplier to apply per category group, based on
     whether the (normalized) query's tokens overlap with that group's terms.
     Groups with no signal in the query get a neutral 1.0 — i.e. no boost.
     """
     tokens = set(query.lower().split()) if query else set()
 
-    wedding_boost = settings.search_wedding_boost if tokens & _WEDDING_INTENT_TERMS else NO_BOOST
-    event_boost = settings.search_event_boost if tokens & _EVENT_INTENT_TERMS else NO_BOOST
+    wedding_boost = (
+        settings_store.get_setting(db, "search_wedding_boost")
+        if tokens & _WEDDING_INTENT_TERMS
+        else NO_BOOST
+    )
+    event_boost = (
+        settings_store.get_setting(db, "search_event_boost")
+        if tokens & _EVENT_INTENT_TERMS
+        else NO_BOOST
+    )
     corporate_boost = (
-        settings.search_corporate_boost if tokens & _CORPORATE_INTENT_TERMS else NO_BOOST
+        settings_store.get_setting(db, "search_corporate_boost")
+        if tokens & _CORPORATE_INTENT_TERMS
+        else NO_BOOST
     )
 
     return {
