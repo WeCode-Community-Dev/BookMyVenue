@@ -472,7 +472,7 @@ export default function VenueApprovalModal({
                         {actionType === "pay"
                             ? (
                                 <AppText
-                                    textName="PAY_NOW"
+                                    textName="Book Now"
                                     textModule="BUTTON"
                                 />
                             )
