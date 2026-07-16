@@ -21,6 +21,8 @@ const Notifications = lazy(() => import('./pages/Notifications'))
 const PaymentResult = lazy(() => import('./pages/PaymentResult'))
 const DeepResearch = lazy(() => import('./pages/DeepResearch'))
 const SavedVenues = lazy(() => import('./pages/SavedVenues'))
+const MyMessages = lazy(() => import('./pages/MyMessages'))
+const ChatDetail = lazy(() => import('./pages/ChatDetail'))
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsOfService = lazy(() => import('./pages/TermsOfService'))
 const ContactUs = lazy(() => import('./pages/ContactUs'))
@@ -62,6 +64,22 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+  {
+    path: '/messages',
+    element: (
+      <ProtectedRoute>
+        <MyMessages />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/messages/:bookingId',
+    element: (
+      <ProtectedRoute>
+        <ChatDetail />
+      </ProtectedRoute>
+    ),
+  },
       {
         path: '/bookings/:id',
         element: (

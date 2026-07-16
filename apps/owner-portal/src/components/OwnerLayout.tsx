@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { AppShell, Logo, type NavItemConfig, Button, ThemeToggle } from '@venue404/ui'
 import {
-  LayoutDashboard, Building2, CalendarDays, Wallet, Plus, Star
+  LayoutDashboard, Building2, CalendarDays, Wallet, Plus, MessageSquare, Star
 } from 'lucide-react'
 import { NotificationDropdown } from './NotificationDropdown'
 
@@ -10,6 +10,7 @@ const NAV: NavItemConfig[] = [
   { label: 'Dashboard',  href: '/',           icon: <LayoutDashboard className="h-4 w-4" /> },
   { label: 'My Venues',  href: '/venues',     icon: <Building2 className="h-4 w-4" /> },
   { label: 'Bookings',   href: '/bookings',   icon: <CalendarDays className="h-4 w-4" /> },
+  { label: 'Messages',   href: '/messages',   icon: <MessageSquare className="h-4 w-4" /> },
   { label: 'Reviews',    href: '/reviews',    icon: <Star className="h-4 w-4" /> },
   { label: 'Financials', href: '/financials', icon: <Wallet className="h-4 w-4" /> },
 ]
@@ -82,6 +83,9 @@ export function OwnerLayout({ pageTitle, pageSubtitle, children }: OwnerLayoutPr
   } else if (location.pathname.startsWith('/financials')) {
     displayTitle = 'Financial Ledger'
     displaySubtitle = 'Real-time transaction history and financial metrics.'
+  } else if (location.pathname === '/messages') {
+    displayTitle = 'Messages'
+    displaySubtitle = 'Chat with customers about their bookings.'
   } else if (location.pathname.endsWith('/calendar')) {
     displayTitle = 'Calendar & Availability'
     displaySubtitle = 'Manage your regular weekly hours and set specific dates when your venue is unavailable.'

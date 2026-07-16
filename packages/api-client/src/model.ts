@@ -147,3 +147,13 @@ export type VenueStatsResponse = {
   active_bookings: number
   revenue_this_month_paise: number
 }
+
+// Chat types
+export interface ChatMessage {
+  id: string
+  booking_id: string
+  sender_id: string
+  message: string
+  created_at: string
+  read_at: string | null
+}

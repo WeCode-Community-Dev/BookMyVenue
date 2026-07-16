@@ -327,8 +327,7 @@ def list_venue_bookings(
         query = query.filter(Booking.status == BookingStatus.requested)
 
     return [
-        _booking_out(db, booking)
-        for booking in query.order_by(Booking.requested_at.asc()).all()
+        _booking_out(db, booking) for booking in query.order_by(Booking.requested_at.asc()).all()
     ]
 
 

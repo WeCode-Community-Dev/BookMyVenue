@@ -53,16 +53,14 @@ _JOB_CATALOG = [
     {
         "name": "completion",
         "description": (
-            "Marks confirmed, fully-paid bookings completed "
-            "once the event date has passed."
+            "Marks confirmed, fully-paid bookings completed once the event date has passed."
         ),
         "queue_type": "Polling sweep",
     },
     {
         "name": "payment_reminders",
         "description": (
-            "Reminds accepted-but-unpaid users to pay the token advance "
-            "before their hold expires."
+            "Reminds accepted-but-unpaid users to pay the token advance before their hold expires."
         ),
         "queue_type": "Polling sweep",
     },
@@ -74,8 +72,7 @@ _JOB_CATALOG = [
     {
         "name": "overdue_autocancel",
         "description": (
-            "Auto-cancels bookings whose owner action window has expired "
-            "(forfeits advance)."
+            "Auto-cancels bookings whose owner action window has expired (forfeits advance)."
         ),
         "queue_type": "Polling sweep",
     },

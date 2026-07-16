@@ -107,9 +107,16 @@ class BookingOut(BaseModel):
         debit and, if applicable, a `platform_fee_reversal` credit) — it must NOT
         be subtracted here or it would be double-counted.
         """
-        if self.status in ("user_cancelled", "owner_cancelled", "rejected",
-                           "balance_overdue_cancelled", "admin_cancelled",
-                           "hold_expired", "request_expired", "conflict_cancelled"):
+        if self.status in (
+            "user_cancelled",
+            "owner_cancelled",
+            "rejected",
+            "balance_overdue_cancelled",
+            "admin_cancelled",
+            "hold_expired",
+            "request_expired",
+            "conflict_cancelled",
+        ):
             net = (self.amount_paid_paise or 0) - (self.refund_amount_paise or 0)
             return max(0, net)
         return self.owner_payout_paise or 0

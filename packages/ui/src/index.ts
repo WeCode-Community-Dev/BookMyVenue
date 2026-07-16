@@ -45,6 +45,10 @@ export { ErrorState } from './components/feedback/ErrorState'
 export { ForbiddenState } from './components/feedback/ForbiddenState'
 export { NotFoundState } from './components/feedback/NotFoundState'
 
+// Chat
+export { ChatWindow } from './components/ChatWindow'
+export type { ChatMessage } from './components/ChatWindow'
+
 // Empty state
 export { EmptyState } from './components/empty-state/EmptyState'
 

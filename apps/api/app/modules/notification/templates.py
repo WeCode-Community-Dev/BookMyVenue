@@ -70,6 +70,10 @@ _TEMPLATES: dict[str, tuple[str, str]] = {
         "Booking completed",
         "Your event at {venue_name} is marked complete. Thanks for using Venue404!",
     ),
+    "chat_message": (
+        "New message in booking",
+        "You have a new message in your conversation about {venue_name}.",
+    ),
     "venue_approved": (
         "Your venue is now live",
         "Great news, {venue_name} has been approved and is now visible to customers on Venue404.",

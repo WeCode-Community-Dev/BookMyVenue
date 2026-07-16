@@ -48,7 +48,6 @@ from app.modules.venue.schemas import (
 # Default platform commission
 
 
-
 # Internal helpers
 
 
@@ -235,9 +234,7 @@ def get_platform_amenities(db: Session) -> list[dict]:
     if cached is not None:
         return json.loads(cached)
 
-    rows = (
-        db.query(Amenity).filter(Amenity.deleted_at.is_(None)).order_by(Amenity.name.asc()).all()
-    )
+    rows = db.query(Amenity).filter(Amenity.deleted_at.is_(None)).order_by(Amenity.name.asc()).all()
     data = [AmenityResponse.model_validate(r).model_dump(mode="json") for r in rows]
     cache_set(_AMENITIES_CACHE_KEY, json.dumps(data), _CACHE_TTL_SECONDS)
     return data
