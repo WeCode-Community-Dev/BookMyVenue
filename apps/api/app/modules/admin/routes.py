@@ -44,6 +44,8 @@ from app.modules.admin.schemas import (
 )
 from app.modules.auth.dependencies import AuthContext, require_admin
 from app.modules.deep_research import service as reservation_service
+from app.modules.payment import service as payment_service
+from app.modules.payment.schemas import PlatformLedgerListResponse, PlatformLedgerStatsResponse
 
 router = APIRouter()
 
@@ -366,6 +368,28 @@ def list_bookings(
 ):
     return service.list_admin_bookings(
         db, status=status, search=search, page=page, page_size=page_size
+    )
+
+
+@router.get("/financials/stats", response_model=PlatformLedgerStatsResponse)
+def get_financials_stats(
+    _: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return payment_service.get_platform_ledger_stats(db)
+
+
+@router.get("/financials/ledger", response_model=PlatformLedgerListResponse)
+def get_financials_ledger(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(25, ge=1, le=100),
+    entry_type: str | None = Query(None),
+    search: str | None = Query(None),
+    _: AuthContext = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return payment_service.list_platform_ledger_entries(
+        db, entry_type=entry_type, search=search, page=page, per_page=page_size
     )
 
 
