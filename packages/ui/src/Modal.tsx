@@ -43,6 +43,11 @@ export default function Modal({
     }
   }, [open])
 
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
+
   // Escape-to-close + minimal focus management: move focus into the dialog
   // on open, and return it to whatever triggered the modal on close. Neither
   // existed before — overlay-click was the only way to dismiss it.
@@ -53,7 +58,7 @@ export default function Modal({
     panelRef.current?.focus()
 
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') onCloseRef.current()
     }
     document.addEventListener('keydown', handleKeyDown)
 
@@ -61,7 +66,7 @@ export default function Modal({
       document.removeEventListener('keydown', handleKeyDown)
       previouslyFocused.current?.focus?.()
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 

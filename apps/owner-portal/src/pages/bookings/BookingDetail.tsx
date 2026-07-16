@@ -595,8 +595,12 @@ export default function BookingDetail() {
           const amountPaid = booking.amount_paid_paise || 0;
           const refundAmount = booking.refund_amount_paise || 0;
           const platformFee = booking.platform_fee_paise || 0;
+          const platformFeeReversed = booking.platform_fee_reversed_paise || 0;
           const ownerPayoutProjected = booking.owner_payout_paise || 0; // projected full payout
           const commissionPct = booking.platform_commission_pct || 0;
+
+          // One-time settlement: advance_pct === 100 means full payment upfront, no balance split
+          const isOneTimeSettlement = booking.advance_pct === 100;
 
           // Payment status booleans — match PaymentStatus enum exactly
           const isAdvancePaid = ps === 'advance_paid';
@@ -616,7 +620,7 @@ export default function BookingDetail() {
           // The true "Final Owner Payout" — only set when booking is definitively settled
           // null = still in progress (show projected)
           const finalPayout: number | null = (isTerminated || isCompleted)
-            ? (booking.owner_payout_paise || 0)
+            ? (booking.final_owner_payout_paise ?? booking.owner_payout_paise ?? 0)
             : null;  // still active — show projected
 
           // The actual platform fee charged is always the full platform fee (deducted upfront)
@@ -671,33 +675,50 @@ export default function BookingDetail() {
 
                   {/* Status pills */}
                   <div className="flex flex-wrap gap-2 shrink-0">
-                    {/* Advance pill */}
-                    <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border ${
-                      isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                        : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                    }`}>
-                      {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
-                        ? <CheckCircle2 className="w-4 h-4" />
-                        : <Clock className="w-4 h-4" />
-                      }
-                      Advance {fmt(advanceDue)}
-                    </div>
-                    {/* Balance pill */}
-                    <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border ${
-                      isFullyPaid
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                        : isForfeitCancelled
-                        ? 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400 dark:text-zinc-400'
-                        : isTerminated
-                        ? 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400 dark:text-zinc-400'
-                        : isOverdue
-                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
-                        : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                    }`}>
-                      {isFullyPaid ? <CheckCircle2 className="w-4 h-4" /> : isOverdue ? <AlertTriangle className="w-4 h-4" /> : <CalendarDays className="w-4 h-4" />}
-                      Balance {fmt(balanceDue)}
-                    </div>
+                    {isOneTimeSettlement ? (
+                      /* One-time settlement: single full payment pill */
+                      <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border ${
+                        isFullyPaid || isRefunded || isPartiallyRefunded
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                          : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                      }`}>
+                        {isFullyPaid || isRefunded || isPartiallyRefunded
+                          ? <CheckCircle2 className="w-4 h-4" />
+                          : <Clock className="w-4 h-4" />
+                        }
+                        Full Payment {fmt(totalDue)}
+                      </div>
+                    ) : (
+                      <>
+                        {/* Advance pill */}
+                        <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border ${
+                          isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                            : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                        }`}>
+                          {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
+                            ? <CheckCircle2 className="w-4 h-4" />
+                            : <Clock className="w-4 h-4" />
+                          }
+                          Advance {fmt(advanceDue)}
+                        </div>
+                        {/* Balance pill */}
+                        <div className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border ${
+                          isFullyPaid
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                            : isForfeitCancelled
+                            ? 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400 dark:text-zinc-400'
+                            : isTerminated
+                            ? 'bg-zinc-500/10 border-zinc-500/30 text-zinc-400 dark:text-zinc-400'
+                            : isOverdue
+                            ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                            : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                        }`}>
+                          {isFullyPaid ? <CheckCircle2 className="w-4 h-4" /> : isOverdue ? <AlertTriangle className="w-4 h-4" /> : <CalendarDays className="w-4 h-4" />}
+                          Balance {fmt(balanceDue)}
+                        </div>
+                      </>
+                    )}
                     {/* Commission pill */}
                     <div className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold border bg-rose-500/10 border-rose-500/20 text-rose-400">
                       <Receipt className="w-4 h-4" />
@@ -807,11 +828,16 @@ export default function BookingDetail() {
                       <h3 className="font-bold text-sm text-zinc-700 dark:text-zinc-300">Price Breakdown</h3>
                     </div>
                     <div className="p-5 space-y-0">
-                      {[
-                        { label: 'Quoted Price', value: fmt(totalDue), color: 'text-zinc-800 dark:text-zinc-200' },
-                        { label: `Advance (${booking.advance_pct}%)`, value: fmt(advanceDue), color: 'text-zinc-600 dark:text-zinc-400' },
-                        { label: `Balance (${100 - booking.advance_pct}%)`, value: fmt(balanceDue), color: 'text-zinc-600 dark:text-zinc-400' },
-                      ].map(row => (
+                      {(isOneTimeSettlement
+                        ? [
+                            { label: 'Quoted Price', value: fmt(totalDue), color: 'text-zinc-800 dark:text-zinc-200' },
+                          ]
+                        : [
+                            { label: 'Quoted Price', value: fmt(totalDue), color: 'text-zinc-800 dark:text-zinc-200' },
+                            { label: `Advance (${booking.advance_pct}%)`, value: fmt(advanceDue), color: 'text-zinc-600 dark:text-zinc-400' },
+                            { label: `Balance (${100 - booking.advance_pct}%)`, value: fmt(balanceDue), color: 'text-zinc-600 dark:text-zinc-400' },
+                          ]
+                      ).map(row => (
                         <div key={row.label} className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-ink-700">
                           <span className="text-sm text-zinc-500 dark:text-zinc-400">{row.label}</span>
                           <span className={`text-sm font-semibold ${row.color}`}>{row.value}</span>
@@ -821,6 +847,12 @@ export default function BookingDetail() {
                         <span className="text-sm text-zinc-500 dark:text-zinc-400">Platform Fee ({commissionPct}%)</span>
                         <span className="text-sm font-semibold text-rose-600">-{fmt(actualPlatformFee)}</span>
                       </div>
+                      {platformFeeReversed > 0 && (
+                        <div className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-ink-700">
+                          <span className="text-sm text-zinc-500 dark:text-zinc-400">Platform Fee Refunded</span>
+                          <span className="text-sm font-semibold text-emerald-600">+{fmt(platformFeeReversed)}</span>
+                        </div>
+                      )}
                       {refundAmount > 0 && (
                         <div className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-ink-700">
                           <span className="text-sm text-zinc-500 dark:text-zinc-400">Refund Issued</span>
@@ -855,83 +887,128 @@ export default function BookingDetail() {
                 <div className="lg:col-span-3 space-y-3">
                   <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-400">Payment Milestones</p>
 
-                  {/* Advance */}
-                  <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
-                    isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
-                      ? 'border-emerald-100'
-                      : 'border-zinc-200 dark:border-ink-700'
-                  }`}>
-                    <div className="p-4 flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                  {isOneTimeSettlement ? (
+                    /* One-time settlement: single full payment card */
+                    <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
+                      isFullyPaid || isRefunded || isPartiallyRefunded
+                        ? 'border-emerald-100'
+                        : isTerminated
+                        ? 'border-zinc-100 dark:border-ink-700 opacity-70'
+                        : 'border-zinc-200 dark:border-ink-700'
+                    }`}>
+                      <div className="p-4 flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                          isFullyPaid || isRefunded || isPartiallyRefunded
+                            ? 'bg-emerald-100 text-emerald-600'
+                            : 'bg-amber-100 text-amber-600'
+                        }`}>
+                          {isFullyPaid || isRefunded || isPartiallyRefunded
+                            ? <CheckCircle2 className="w-5 h-5" />
+                            : <Clock className="w-5 h-5" />
+                          }
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Full Payment</h4>
+                            <span className="text-[10px] font-bold bg-zinc-100 dark:bg-ink-800 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded uppercase">One-time</span>
+                          </div>
+                          {booking.stripe_advance_payment_intent_id
+                            ? <p className="text-xs text-zinc-400 dark:text-zinc-400 font-mono mt-0.5 truncate">Ref: {booking.stripe_advance_payment_intent_id}</p>
+                            : <p className="text-xs text-zinc-400 dark:text-zinc-400 mt-0.5">Required to confirm booking</p>
+                          }
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="font-black text-zinc-900 dark:text-zinc-100 text-base">{fmt(totalDue)}</div>
+                          {isFullyPaid || isRefunded || isPartiallyRefunded
+                            ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
+                            : isTerminated
+                            ? <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-wide">Waived</span>
+                            : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
+                          }
+                        </div>
+                      </div>
+                    </Card>
+                  ) : (
+                    <>
+                      {/* Advance */}
+                      <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
                         isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
-                          ? 'bg-emerald-100 text-emerald-600'
-                          : 'bg-amber-100 text-amber-600'
+                          ? 'border-emerald-100'
+                          : 'border-zinc-200 dark:border-ink-700'
                       }`}>
-                        {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
-                          ? <CheckCircle2 className="w-5 h-5" />
-                          : <Clock className="w-5 h-5" />
-                        }
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Advance Deposit</h4>
-                          <span className="text-[10px] font-bold bg-zinc-100 dark:bg-ink-800 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded uppercase">{booking.advance_pct}%</span>
+                        <div className="p-4 flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                            isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
+                              ? 'bg-emerald-100 text-emerald-600'
+                              : 'bg-amber-100 text-amber-600'
+                          }`}>
+                            {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
+                              ? <CheckCircle2 className="w-5 h-5" />
+                              : <Clock className="w-5 h-5" />
+                            }
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Advance Deposit</h4>
+                              <span className="text-[10px] font-bold bg-zinc-100 dark:bg-ink-800 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded uppercase">{booking.advance_pct}%</span>
+                            </div>
+                            {booking.stripe_advance_payment_intent_id
+                              ? <p className="text-xs text-zinc-400 dark:text-zinc-400 font-mono mt-0.5 truncate">Ref: {booking.stripe_advance_payment_intent_id}</p>
+                              : <p className="text-xs text-zinc-400 dark:text-zinc-400 mt-0.5">Required to confirm booking</p>
+                            }
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="font-black text-zinc-900 dark:text-zinc-100 text-base">{fmt(advanceDue)}</div>
+                            {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
+                              ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
+                              : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
+                            }
+                          </div>
                         </div>
-                        {booking.stripe_advance_payment_intent_id
-                          ? <p className="text-xs text-zinc-400 dark:text-zinc-400 font-mono mt-0.5 truncate">Ref: {booking.stripe_advance_payment_intent_id}</p>
-                          : <p className="text-xs text-zinc-400 dark:text-zinc-400 mt-0.5">Required to confirm booking</p>
-                        }
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className="font-black text-zinc-900 dark:text-zinc-100 text-base">{fmt(advanceDue)}</div>
-                        {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
-                          ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
-                          : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
-                        }
-                      </div>
-                    </div>
-                  </Card>
+                      </Card>
 
-                  {/* Balance */}
-                  <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
-                    isBalancePaid ? 'border-emerald-100'
-                    : isOverdue ? 'border-rose-200'
-                    : isForfeitCancelled || isTerminated ? 'border-zinc-100 dark:border-ink-700 opacity-70'
-                    : 'border-zinc-200 dark:border-ink-700'
-                  }`}>
-                    <div className="p-4 flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                        isBalancePaid ? 'bg-emerald-100 text-emerald-600'
-                        : isOverdue ? 'bg-rose-100 text-rose-600'
-                        : 'bg-zinc-100 dark:bg-ink-800 text-zinc-400 dark:text-zinc-400'
+                      {/* Balance */}
+                      <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
+                        isBalancePaid ? 'border-emerald-100'
+                        : isOverdue ? 'border-rose-200'
+                        : isForfeitCancelled || isTerminated ? 'border-zinc-100 dark:border-ink-700 opacity-70'
+                        : 'border-zinc-200 dark:border-ink-700'
                       }`}>
-                        {isBalancePaid ? <CheckCircle2 className="w-5 h-5" /> : isOverdue ? <AlertTriangle className="w-5 h-5" /> : <CalendarDays className="w-5 h-5" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Balance Due</h4>
-                          <span className="text-[10px] font-bold bg-zinc-100 dark:bg-ink-800 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded uppercase">{100 - booking.advance_pct}%</span>
+                        <div className="p-4 flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                            isBalancePaid ? 'bg-emerald-100 text-emerald-600'
+                            : isOverdue ? 'bg-rose-100 text-rose-600'
+                            : 'bg-zinc-100 dark:bg-ink-800 text-zinc-400 dark:text-zinc-400'
+                          }`}>
+                            {isBalancePaid ? <CheckCircle2 className="w-5 h-5" /> : isOverdue ? <AlertTriangle className="w-5 h-5" /> : <CalendarDays className="w-5 h-5" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Balance Due</h4>
+                              <span className="text-[10px] font-bold bg-zinc-100 dark:bg-ink-800 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded uppercase">{100 - booking.advance_pct}%</span>
+                            </div>
+                            {booking.stripe_balance_payment_intent_id
+                              ? <p className="text-xs text-zinc-400 dark:text-zinc-400 font-mono mt-0.5 truncate">Ref: {booking.stripe_balance_payment_intent_id}</p>
+                              : booking.balance_due_date
+                              ? <p className={`text-xs mt-0.5 font-medium ${isOverdue ? 'text-rose-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                  Due {new Date(booking.balance_due_date).toLocaleDateString()}{isOverdue && ' — OVERDUE'}
+                                </p>
+                              : <p className="text-xs text-zinc-400 dark:text-zinc-400 mt-0.5">Paid before event</p>
+                            }
+                          </div>
+                          <div className="text-right shrink-0">
+                            <div className="font-black text-zinc-900 dark:text-zinc-100 text-base">{fmt(balanceDue)}</div>
+                            {isBalancePaid ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
+                            : isForfeitCancelled ? <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-wide">Forfeited</span>
+                            : isTerminated ? <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-wide">Waived</span>
+                            : isOverdue ? <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wide">Overdue</span>
+                            : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
+                            }
+                          </div>
                         </div>
-                        {booking.stripe_balance_payment_intent_id
-                          ? <p className="text-xs text-zinc-400 dark:text-zinc-400 font-mono mt-0.5 truncate">Ref: {booking.stripe_balance_payment_intent_id}</p>
-                          : booking.balance_due_date
-                          ? <p className={`text-xs mt-0.5 font-medium ${isOverdue ? 'text-rose-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
-                              Due {new Date(booking.balance_due_date).toLocaleDateString()}{isOverdue && ' — OVERDUE'}
-                            </p>
-                          : <p className="text-xs text-zinc-400 dark:text-zinc-400 mt-0.5">Paid before event</p>
-                        }
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className="font-black text-zinc-900 dark:text-zinc-100 text-base">{fmt(balanceDue)}</div>
-                        {isBalancePaid ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
-                        : isForfeitCancelled ? <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-wide">Forfeited</span>
-                        : isTerminated ? <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-wide">Waived</span>
-                        : isOverdue ? <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wide">Overdue</span>
-                        : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
-                        }
-                      </div>
-                    </div>
-                  </Card>
+                      </Card>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

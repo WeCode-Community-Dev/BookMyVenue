@@ -223,9 +223,8 @@ export default function ExternalReservations() {
       </div>
 
       {/* Contact modal */}
-      <Modal open={contactTarget !== null} onClose={closeContact}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={contactTarget !== null} onClose={closeContact} className="max-w-md">
+        <div className="p-6">
             <h3 className="mb-1 text-base font-semibold text-zinc-900">Log contact</h3>
             <p className="mb-4 text-sm text-zinc-500">
               Record how you reached out to <span className="font-medium text-zinc-800">{contactTarget?.lead_name}</span>.
@@ -262,13 +261,11 @@ export default function ExternalReservations() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
       {/* Invite owner modal */}
-      <Modal open={inviteTarget !== null} onClose={closeInvite}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={inviteTarget !== null} onClose={closeInvite} className="max-w-md">
+        <div className="p-6">
             {inviteLink ? (
               <>
                 <h3 className="mb-1 text-base font-semibold text-zinc-900">Owner invited</h3>
@@ -331,7 +328,6 @@ export default function ExternalReservations() {
               </>
             )}
           </div>
-        </div>
       </Modal>
 
       {detailTarget && (

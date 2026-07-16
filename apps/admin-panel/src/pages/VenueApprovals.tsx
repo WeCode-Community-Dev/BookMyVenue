@@ -295,9 +295,8 @@ export default function VenueApprovals() {
       </div>
 
       {/* ── Approve Modal ─────────────────────────────────────────────────────── */}
-      <Modal open={approveTarget !== null} onClose={closeApprove}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={approveTarget !== null} onClose={closeApprove} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50">
               <CheckCircle2 className="h-5 w-5 text-emerald-600" />
             </div>
@@ -323,13 +322,11 @@ export default function VenueApprovals() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
       {/* ── Reject Modal ──────────────────────────────────────────────────────── */}
-      <Modal open={rejectTarget !== null} onClose={closeReject}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={rejectTarget !== null} onClose={closeReject} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
               <XCircle className="h-5 w-5 text-red-600" />
             </div>
@@ -368,13 +365,11 @@ export default function VenueApprovals() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
       {/* ── Suspend Modal ─────────────────────────────────────────────────────── */}
-      <Modal open={suspendTarget !== null} onClose={closeSuspend}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={suspendTarget !== null} onClose={closeSuspend} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
               <ShieldOff className="h-5 w-5 text-red-600" />
             </div>
@@ -417,13 +412,11 @@ export default function VenueApprovals() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
       {/* ── Reactivate Modal ──────────────────────────────────────────────────── */}
-      <Modal open={reactivateTarget !== null} onClose={closeReactivate}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={reactivateTarget !== null} onClose={closeReactivate} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50">
               <ShieldCheck className="h-5 w-5 text-emerald-600" />
             </div>
@@ -449,7 +442,6 @@ export default function VenueApprovals() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
     </AdminLayout>

@@ -71,7 +71,7 @@ export default function Select({ options, value, onChange, placeholder = 'Select
           disabled ? 'opacity-50 cursor-not-allowed bg-zinc-50 dark:bg-ink-800' : 'hover:border-zinc-300 dark:hover:border-ink-600 focus:outline-none focus:ring-2 focus:ring-brand/20'
         }`}
       >
-        <span className={selectedOption ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400'}>
+        <span className={`truncate flex-1 text-left mr-2 ${selectedOption ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 dark:text-zinc-400'}`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown className={`w-4 h-4 text-zinc-400 dark:text-zinc-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />

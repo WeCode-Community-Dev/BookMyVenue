@@ -84,7 +84,6 @@ class UpdateCancellationPolicyRequest(BaseModel):
     tier_3_hours: int | None = Field(default=None, gt=0)
     tier_3_refund_pct: Decimal | None = Field(default=None, ge=0, le=100)
     no_show_refund_pct: Decimal = Field(default=Decimal("0.00"), ge=0, le=100)
-    platform_fee_refundable: bool = False
     notes: str | None = None
 
     def model_post_init(self, __context) -> None:
