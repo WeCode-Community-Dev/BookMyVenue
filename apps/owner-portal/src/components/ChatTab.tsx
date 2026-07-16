@@ -11,7 +11,7 @@ type ChatTabProps = {
 export function ChatTab({ bookingId }: ChatTabProps) {
   const { user } = useAuth()
   const currentUserId = user?.id || ''
-  const { messages, isLoading, isConnected, sendMessage } = useChat(bookingId, currentUserId)
+  const { messages, isLoading, isConnected, sendMessage } = useChat(bookingId)
 
   // Get booking info to determine sender names
   const { data: booking } = useQuery({

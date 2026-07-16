@@ -54,8 +54,7 @@ export default function MyMessages() {
   const activeConversation = conversations.find(c => c.booking_id === activeBookingId)
 
   const { messages, isLoading: isChatLoading, isConnected, sendMessage } = useChat(
-    activeBookingId || '',
-    currentUserId
+    activeBookingId || ''
   )
 
   const unreadTotal = conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0)

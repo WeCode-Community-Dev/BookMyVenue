@@ -28,7 +28,7 @@ export default function ChatDetail() {
 
   const { user } = useAuth()
   const currentUserId = user?.id || ''
-  const { messages, isLoading: isChatLoading, isConnected, sendMessage } = useChat(bookingId!, currentUserId)
+  const { messages, isLoading: isChatLoading, isConnected, sendMessage } = useChat(bookingId!)
 
   const bookingQuery = useQuery({
     queryKey: ['booking', bookingId],
