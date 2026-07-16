@@ -22,11 +22,11 @@
     "@typescript-eslint/parser": "^8.57.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^1.21.0",
-    "next": "16.2.6",
+    "lucide-react": "^1.24.0",
+    "next": "^16.2.6",
     "radix-ui": "^1.4.3",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "react-redux": "^9.3.0",
     "shadcn": "^4.10.0",
     "tailwind-merge": "^3.6.0",
@@ -35,8 +35,8 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.6",
     "eslint-import-resolver-typescript": "^3.10.1",
@@ -49,6 +49,6 @@
     "eslint-plugin-unicorn": "^47.0.0",
     "eslint-plugin-unused-imports": "^4.4.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   }
 }
