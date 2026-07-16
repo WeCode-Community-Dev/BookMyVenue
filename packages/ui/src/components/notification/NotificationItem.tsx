@@ -132,8 +132,8 @@ const NOTIFICATION_CONFIG: Record<string, IconConfig> = {
     iconBg: 'bg-emerald-50 dark:bg-emerald-950/30',
     iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
-  balance_paid: { icon: CheckCircleIcon, iconBg: 'bg-emerald-50 dark:bg-emerald-950/30', iconColor: 'text-emerald-600 dark:text-emerald-400' },
-  request_received: { icon: InboxIcon, iconBg: 'bg-zinc-100 dark:bg-ink-800', iconColor: 'text-zinc-500 dark:text-zinc-400 dark:text-zinc-500' },
+balance_paid: { icon: CheckCircleIcon, iconBg: 'bg-emerald-50 dark:bg-emerald-950/30', iconColor: 'text-emerald-600 dark:text-emerald-400' },
+  request_received: { icon: InboxIcon, iconBg: 'bg-zinc-100 dark:bg-ink-800', iconColor: 'text-zinc-500 dark:text-zinc-400' },
   request_accepted: { icon: ThumbUpIcon, iconBg: 'bg-amber-50 dark:bg-amber-950/30', iconColor: 'text-amber-600 dark:text-amber-400' },
   hold_expired: { icon: ClockIcon, iconBg: 'bg-zinc-100 dark:bg-ink-800', iconColor: 'text-zinc-400 dark:text-zinc-500' },
   balance_payment_overdue: {
@@ -223,13 +223,13 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
           <span
             className={cn(
               'truncate text-sm',
-              unread ? 'font-semibold text-zinc-900 dark:text-zinc-100' : 'font-medium text-zinc-700 dark:text-zinc-300 dark:text-zinc-600'
+              unread ? 'font-semibold text-zinc-900 dark:text-zinc-100' : 'font-medium text-zinc-700 dark:text-zinc-300'
             )}
           >
             {notification.title}
           </span>
         </div>
-        <p className="mt-0.5 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400 dark:text-zinc-500">{notification.body}</p>
+        <p className="mt-0.5 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">{notification.body}</p>
         <span className="mt-1 block text-[11px] text-zinc-400 dark:text-zinc-500">
           {formatRelativeTime(notification.created_at)}
         </span>
@@ -237,7 +237,7 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
 
       {navigable && (
         <svg
-          className="mt-2.5 h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-400 dark:text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 dark:group-hover:text-zinc-400 dark:text-zinc-500"
+          className="mt-2.5 h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-400 dark:group-hover:text-zinc-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

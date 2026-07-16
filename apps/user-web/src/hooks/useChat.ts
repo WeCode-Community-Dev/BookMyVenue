@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient, chatEndpoints } from '@venue404/api-client'
 
@@ -11,9 +11,8 @@ export interface ChatMessage {
   read_at: string | null
 }
 
-export function useChat(bookingId: string, currentUserId: string) {
+export function useChat(bookingId: string, _currentUserId: string) {
   const client = createClient()
-  const queryClient = useQueryClient()
   const [ws, setWs] = useState<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])

@@ -11,7 +11,7 @@ export interface ChatMessage {
   read_at: string | null
 }
 
-export function useChat(bookingId: string, currentUserId: string) {
+export function useChat(bookingId: string, _currentUserId: string) {
   const [ws, setWs] = useState<WebSocket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
