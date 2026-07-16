@@ -29,14 +29,21 @@ def test_status_transitions():
     assert can_transition(BookingStatus.owner_rejected, BookingStatus.owner_accepted) is False
 
 
-def test_refund_computation_no_policy():
+def test_refund_computation_no_policy(monkeypatch):
     booking = Booking(
         amount_paid_paise=100000,  # INR 1000
         platform_fee_paise=10000,  # INR 100
         slot=BookingSlot(starts_at=datetime.now(UTC) + timedelta(days=2)),
     )
+    import app.modules.booking.cancellation as cancellation
+    monkeypatch.setattr(
+        cancellation.settings_store,
+        "get_setting",
+        lambda db, key: 0.0 if "pct" in key else False,
+    )
+
     # Without policy, refund should default to 0.0% (and match no_show or None tier)
-    result = _compute_refund(booking, None)
+    result = _compute_refund(MagicMock(), booking, None)
     assert result.refund_amount_paise == 0
     assert result.penalty_amount_paise == 100000
     assert result.refund_pct_applied == 0.0
@@ -62,19 +69,23 @@ def test_refund_computation_policy_fee_refundable():
     )
 
     # Case 1: > 48 hours notice (Tier 1 -> 100% refund)
-    result = _compute_refund(booking, policy, cancelled_at=datetime.now(UTC))
+    result = _compute_refund(MagicMock(), booking, policy, cancelled_at=datetime.now(UTC))
     assert result.refund_amount_paise == 100000
     assert result.refund_pct_applied == 100.0
     assert result.tier_matched == "tier_1"
 
     # Case 2: 30 hours notice (Tier 2 -> 50% refund of total 1000 = 500)
-    result = _compute_refund(booking, policy, cancelled_at=starts_at - timedelta(hours=30))
+    result = _compute_refund(
+        MagicMock(), booking, policy, cancelled_at=starts_at - timedelta(hours=30)
+    )
     assert result.refund_amount_paise == 50000
     assert result.refund_pct_applied == 50.0
     assert result.tier_matched == "tier_2"
 
     # Case 3: 5 hours notice (No show -> 10% refund of total 1000 = 100)
-    result = _compute_refund(booking, policy, cancelled_at=starts_at - timedelta(hours=5))
+    result = _compute_refund(
+        MagicMock(), booking, policy, cancelled_at=starts_at - timedelta(hours=5)
+    )
     assert result.refund_amount_paise == 10000
     assert result.refund_pct_applied == 10.0
     assert result.tier_matched == "no_show"
@@ -98,13 +109,15 @@ def test_refund_computation_policy_fee_non_refundable():
     )
 
     # Case 1: > 48 hours notice (Tier 1 -> 100% refund of owner share (900) = 900)
-    result = _compute_refund(booking, policy, cancelled_at=datetime.now(UTC))
+    result = _compute_refund(MagicMock(), booking, policy, cancelled_at=datetime.now(UTC))
     assert result.refund_amount_paise == 90000
     assert result.refund_pct_applied == 100.0
     assert result.tier_matched == "tier_1"
 
     # Case 2: 30 hours notice (Tier 2 -> 50% refund of owner share (900) = 450)
-    result = _compute_refund(booking, policy, cancelled_at=starts_at - timedelta(hours=30))
+    result = _compute_refund(
+        MagicMock(), booking, policy, cancelled_at=starts_at - timedelta(hours=30)
+    )
     assert result.refund_amount_paise == 45000
     assert result.refund_pct_applied == 50.0
     assert result.tier_matched == "tier_2"
@@ -123,7 +136,7 @@ def test_owner_accept_booking_idempotency(monkeypatch):
     # _booking_out serializes a real Booking to a pydantic model; stub it so the
     # test focuses on the idempotency control flow, not response serialization.
     sentinel = object()
-    monkeypatch.setattr(booking_service, "_booking_out", lambda b: sentinel)
+    monkeypatch.setattr(booking_service, "_booking_out", lambda db, b: sentinel)
 
     # Calling accept on an already accepted booking should return current state
     # and NOT recreate intents or flush.
