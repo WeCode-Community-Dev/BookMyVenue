@@ -115,11 +115,16 @@ export function VenueDetails() {
                                 </h3>
                             </div>
 
-                            <ul className="space-y-2 text-gray-600">
-                                <li>✓ Air Conditioning</li>
-                                <li>✓ Parking</li>
-                                <li>✓ Security</li>
-                                <li>✓ Generator Backup</li>
+                            <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-gray-600">
+                                {venue.amenities.map((amenity) => (
+                                    <li
+                                        key={amenity._id}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <span className="text-green-600">✓</span>
+                                        <span>{amenity.name}</span>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
 
