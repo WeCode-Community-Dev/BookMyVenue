@@ -706,21 +706,7 @@ export default function CreateVenueWizard() {
 
         {currentStep === 3 && (
           <div className="space-y-8">
-            <div className="space-y-4">
-              <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Allowed Booking Types</h4>
-              <div className="flex gap-6">
-                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer">
-                  <input type="checkbox" checked={formData.allowed_booking_types.includes('full_day')} onChange={() => handleBookingTypeToggle('full_day')} className="rounded text-brand focus:ring-brand w-4 h-4" />
-                  Full Day
-                </label>
-                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer">
-                  <input type="checkbox" checked={formData.allowed_booking_types.includes('time_slot')} onChange={() => handleBookingTypeToggle('time_slot')} className="rounded text-brand focus:ring-brand w-4 h-4" />
-                  Time Slot
-                </label>
-              </div>
-            </div>
-
-            <div className="space-y-8 pt-6 border-t border-zinc-100 dark:border-ink-700">
+            <div className="space-y-8">
               <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Booking Limits & Buffers</h4>
               
               <div className="space-y-6 max-w-3xl">
@@ -762,20 +748,46 @@ export default function CreateVenueWizard() {
 
             <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
               <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Approval Settings</h4>
-              <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} required={formData.booking_mode === 'MANUAL'} disabled={formData.booking_mode === 'INSTANT'} value={formData.owner_action_window_hours} onChange={handleChange} helperText="How long you have to accept/reject a pending request before it auto-cancels." info="The maximum time you have to review and Accept/Reject a booking request. If no action is taken, the booking is automatically canceled." />
+              <Input label="Owner Action Window (Hours)" name="owner_action_window_hours" type="number" min={24} max={72} required={formData.booking_mode === 'MANUAL'} disabled={formData.booking_mode === 'INSTANT'} value={formData.owner_action_window_hours} onChange={handleChange} helperText="How long you have to act after a customer misses their balance due date before the booking is auto-cancelled." info="The grace period after a customer misses their balance payment deadline. During this window you can extend their deadline, keep the advance (forfeit), or offer a goodwill refund. If no action is taken, the booking is auto-cancelled and the customer's advance is forfeited." />
             </div>
           </div>
         )}
 
         {currentStep === 4 && (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="Base Price (₹)" name="base_price" type="number" min={0} required={formData.pricing_mode !== 'hourly'} disabled={formData.pricing_mode === 'hourly'} value={formData.base_price} onChange={handleChange} placeholder="e.g. 50000" info="The total price for a full day booking." />
-              <Input label="Hourly Rate (₹)" name="hourly_rate" type="number" min={0} required={formData.pricing_mode !== 'flat'} disabled={formData.pricing_mode === 'flat'} value={formData.hourly_rate} onChange={handleChange} placeholder="e.g. 5000" info="The price per hour for short time-slot bookings." />
+            <div className="space-y-4">
+              <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Allowed Booking Types</h4>
+              <div className="flex gap-6">
+                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer">
+                  <input type="checkbox" checked={formData.allowed_booking_types.includes('full_day')} onChange={() => handleBookingTypeToggle('full_day')} className="rounded text-brand focus:ring-brand w-4 h-4" />
+                  Full Day
+                </label>
+                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 cursor-pointer">
+                  <input type="checkbox" checked={formData.allowed_booking_types.includes('time_slot')} onChange={() => handleBookingTypeToggle('time_slot')} className="rounded text-brand focus:ring-brand w-4 h-4" />
+                  Time Slot
+                </label>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Input label="Token Advance (%)" name="advance_pct" type="number" min={0.01} max={100} step="0.01" required value={formData.advance_pct} onChange={handleChange} info="The percentage of the total booking cost required upfront to secure the reservation." />
-              <Input label="Balance Due (Days before event)" name="balance_due" type="number" min={1} required value={formData.balance_due} onChange={handleChange} info="The number of days prior to the event date when the remaining balance must be paid in full." />
+
+            <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
+              <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Pricing</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className={formData.pricing_mode === 'hourly' ? 'opacity-50 pointer-events-none' : ''}>
+                  <Input label="Base Price (₹) (Full Day)" name="base_price" type="number" min={0} required={formData.pricing_mode !== 'hourly'} disabled={formData.pricing_mode === 'hourly'} value={formData.base_price} onChange={handleChange} placeholder="e.g. 50000" info="The total price for a full day booking." />
+                </div>
+                <div className={formData.pricing_mode === 'flat' ? 'opacity-50 pointer-events-none' : ''}>
+                  <Input label="Hourly Rate (₹) (Time Slot)" name="hourly_rate" type="number" min={0} required={formData.pricing_mode !== 'flat'} disabled={formData.pricing_mode === 'flat'} value={formData.hourly_rate} onChange={handleChange} placeholder="e.g. 5000" info="The price per hour for short time-slot bookings." />
+                </div>
+              </div>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 italic mt-2">Prices will only be applied if the corresponding booking type is enabled above.</p>
+            </div>
+
+            <div className="space-y-4 pt-6 border-t border-zinc-100 dark:border-ink-700">
+              <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Payment Terms</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Token Advance (%)" name="advance_pct" type="number" min={0.01} max={100} step="0.01" required value={formData.advance_pct} onChange={handleChange} info="The percentage of the total booking cost required upfront to secure the reservation." />
+                <Input label="Balance Due (Days before event)" name="balance_due" type="number" min={1} required value={formData.balance_due} onChange={handleChange} info="The number of days prior to the event date when the remaining balance must be paid in full." />
+              </div>
             </div>
           </div>
         )}
@@ -800,7 +812,7 @@ export default function CreateVenueWizard() {
               <Input label="Refund % (Optional)" name="tier_3_refund_pct" type="number" step="0.01" min={0} max={100} value={formData.tier_3_refund_pct} onChange={handleChange} placeholder="e.g. 25" />
             </div>
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-100 dark:border-ink-700">
-              <Input label="No Show Refund (%)" name="no_show_refund_pct" type="number" step="0.01" min={0} max={100} required value={formData.no_show_refund_pct} onChange={handleChange} info="The percentage of the collected amount (excluding platform fees) refunded if the customer cancels late or fails to show up." />
+              <Input label="No Show Refund (%)" name="no_show_refund_pct" type="number" step="0.01" min={0} max={100} required value={formData.no_show_refund_pct} onChange={handleChange} info="The percentage of the paid amount (excluding platform fees) refunded if the customer cancels closer to the event than your shortest cancellation window allows, or fails to show up." />
               <Input label="Overdue Advance Refund (%)" name="overdue_advance_refund_pct" type="number" step="0.01" min={0} max={100} required value={formData.overdue_advance_refund_pct} onChange={handleChange} info="The percentage of the advance deposit refunded to the customer if you choose to issue a Goodwill Cancellation when they fail to pay their balance on time." />
             </div>
             <div className="pt-4 border-t border-zinc-100 dark:border-ink-700">

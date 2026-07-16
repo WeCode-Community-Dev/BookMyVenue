@@ -433,9 +433,8 @@ export default function Users() {
       </div>
 
       {/* Suspend Modal */}
-      <Modal open={suspendTarget !== null} onClose={closeSuspendModal}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={suspendTarget !== null} onClose={closeSuspendModal} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
               <ShieldOff className="h-5 w-5 text-red-600" aria-hidden="true" />
             </div>
@@ -478,13 +477,11 @@ export default function Users() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
       {/* Reactivate Modal */}
-      <Modal open={reactivateTarget !== null} onClose={closeReactivateModal}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={reactivateTarget !== null} onClose={closeReactivateModal} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50">
               <ShieldCheck className="h-5 w-5 text-emerald-600" aria-hidden="true" />
             </div>
@@ -514,13 +511,11 @@ export default function Users() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
       {/* Approve Modal */}
-      <Modal open={approveTarget !== null} onClose={closeApproveModal}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={approveTarget !== null} onClose={closeApproveModal} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50">
               <CheckCircle2 className="h-5 w-5 text-emerald-600" aria-hidden="true" />
             </div>
@@ -550,13 +545,11 @@ export default function Users() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
       {/* Reject Modal */}
-      <Modal open={rejectTarget !== null} onClose={closeRejectModal}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-zinc-900/5">
+      <Modal open={rejectTarget !== null} onClose={closeRejectModal} className="max-w-md">
+        <div className="p-6">
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
               <XCircle className="h-5 w-5 text-red-600" aria-hidden="true" />
             </div>
@@ -597,7 +590,6 @@ export default function Users() {
               </button>
             </div>
           </div>
-        </div>
       </Modal>
 
     </AdminLayout>

@@ -193,7 +193,7 @@ export default function Reviews() {
     <div className="space-y-6 pb-12 max-w-5xl mx-auto">
 
       {/* Summary stat strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {/* Total */}
         <div className="bg-white dark:bg-ink-900 rounded-xl border border-zinc-200/80 dark:border-ink-700 p-4 shadow-sm">
           <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Reviews</p>
@@ -224,15 +224,7 @@ export default function Reviews() {
                 {reviews.filter(r => r.rating === 5).length}
               </p>}
         </div>
-        {/* Venues reviewed */}
-        <div className="bg-white dark:bg-ink-900 rounded-xl border border-zinc-200/80 dark:border-ink-700 p-4 shadow-sm">
-          <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Venues Reviewed</p>
-          {isLoading
-            ? <Skeleton className="h-7 w-12 mt-1" />
-            : <p className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mt-1 tabular-nums">
-                {new Set(reviews.map(r => r.venue_id_display)).size}
-              </p>}
-        </div>
+
       </div>
 
       {/* Filters bar */}

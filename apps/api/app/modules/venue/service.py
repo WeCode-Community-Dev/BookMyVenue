@@ -615,7 +615,9 @@ def create_venue(db: Session, owner_id: UUID, body: CreateVenueRequest) -> Venue
             tier_3_hours=body.cancellation_policy.tier_3_hours,
             tier_3_refund_pct=body.cancellation_policy.tier_3_refund_pct,
             no_show_refund_pct=body.cancellation_policy.no_show_refund_pct,
-            platform_fee_refundable=body.cancellation_policy.platform_fee_refundable,
+            platform_fee_refundable=settings_store.get_setting(
+                db, "default_no_policy_platform_fee_refundable"
+            ),
             notes=body.cancellation_policy.notes,
         )
         db.add(policy)
@@ -1132,7 +1134,9 @@ def put_venue_cancellation_policy(
     policy.tier_3_hours = body.tier_3_hours
     policy.tier_3_refund_pct = body.tier_3_refund_pct
     policy.no_show_refund_pct = body.no_show_refund_pct
-    policy.platform_fee_refundable = body.platform_fee_refundable
+    policy.platform_fee_refundable = settings_store.get_setting(
+        db, "default_no_policy_platform_fee_refundable"
+    )
     policy.notes = body.notes
 
     db.commit()
