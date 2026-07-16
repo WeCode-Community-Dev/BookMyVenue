@@ -134,27 +134,28 @@ export default function BookingDetailV2() {
             <BookingDetailsSection booking={booking} venue={venue} />
 
             {/* Chat Navigation Section */}
-            <div className="bg-white dark:bg-ink-900 rounded-xl p-6 border border-zinc-200 dark:border-ink-800 shadow-sm">
-              <div className="flex items-center justify-between">
+            <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-ink-800 dark:bg-ink-900 sm:p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-zinc-100 dark:bg-ink-800 rounded-full flex items-center justify-center">
-                    <MessageSquare className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-light text-brand dark:bg-brand/15 dark:text-brand-secondary">
+                    <MessageSquare className="h-5 w-5" />
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                      Chat with venue owner
+                      Message the venue owner
                     </h2>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                      Discuss booking details, ask questions, or request changes
+                      Ask about setup, timings, or special requests for this booking
                     </p>
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => navigate(`/messages/${id}`)}
-                  className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-hover flex items-center gap-2"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-hover"
                 >
                   <MessageSquare className="h-4 w-4" />
-                  Go to Chat
+                  Open chat
                 </button>
               </div>
             </div>

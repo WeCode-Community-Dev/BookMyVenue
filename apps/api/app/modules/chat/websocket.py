@@ -72,8 +72,13 @@ def send_message_ws_with_session(
         if sender_id not in (customer_id, owner_id):
             raise ForbiddenError("Not authorized to send messages to this chat")
 
-        # Create the message
-        chat_message = create_message(db, booking_id, sender_id, message.strip())
+        cleaned = (message or "").strip()
+        if not cleaned:
+            raise ValueError("Message cannot be empty")
+        if len(cleaned) > 2000:
+            raise ValueError("Message exceeds 2000 characters")
+
+        chat_message = create_message(db, booking_id, sender_id, cleaned)
 
         result = {
             "id": str(chat_message.id),
@@ -165,8 +170,9 @@ async def websocket_endpoint(
                 )
                 continue
 
-            if msg.get("type") == "send_message":
-                # Validate and send message
+            msg_type = msg.get("type")
+
+            if msg_type == "send_message":
                 content = msg.get("message", "")
                 try:
                     validated = SendMessageIn(message=content)
@@ -175,7 +181,7 @@ async def websocket_endpoint(
                     # Broadcast to other participants
                     await broadcast_message(booking_id, user_id, result)
 
-                    # Send confirmation to sender
+                    # Confirmation to sender (same payload shape as broadcast)
                     await websocket.send_text(
                         json.dumps(
                             {
@@ -202,7 +208,34 @@ async def websocket_endpoint(
                             }
                         )
                     )
-            elif msg.get("type") == "ping":
+            elif msg_type == "mark_read":
+                try:
+                    from app.modules.chat.manager import broadcast_read_receipt
+                    from app.modules.chat.service import mark_as_read
+
+                    with with_session() as db:
+                        mark_as_read(db, booking_id, user_id)
+
+                    await broadcast_read_receipt(booking_id, user_id)
+                    await websocket.send_text(
+                        json.dumps(
+                            {
+                                "type": "read_ack",
+                                "payload": {"booking_id": str(booking_id)},
+                            }
+                        )
+                    )
+                except Exception as e:
+                    logger.warning(f"mark_read failed: {e}")
+                    await websocket.send_text(
+                        json.dumps(
+                            {
+                                "type": "error",
+                                "payload": {"message": "Failed to mark messages as read"},
+                            }
+                        )
+                    )
+            elif msg_type == "ping":
                 await websocket.send_text(
                     json.dumps(
                         {

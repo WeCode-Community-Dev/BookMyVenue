@@ -8,7 +8,6 @@ const ManageVenues = lazy(() => import('./pages/ManageVenues'))
 const Bookings = lazy(() => import('./pages/Bookings'))
 const Financials = lazy(() => import('./pages/Financials'))
 const Messages = lazy(() => import('./pages/Messages'))
-const ChatDetail = lazy(() => import('./pages/ChatDetail'))
 
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
@@ -78,9 +77,9 @@ export const router = createBrowserRouter([
       { path: 'bookings', element: <Bookings /> },
       { path: 'bookings/:bookingId', element: <BookingDetail /> },
 
-      // Messages (Inbox)
+      // Messages (Inbox) — split-pane list + thread
       { path: 'messages', element: <Messages /> },
-      { path: 'messages/:bookingId', element: <ChatDetail /> },
+      { path: 'messages/:bookingId', element: <Messages /> },
 
       // Financials
       {

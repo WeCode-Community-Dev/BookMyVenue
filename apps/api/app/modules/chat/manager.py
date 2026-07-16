@@ -46,38 +46,65 @@ def is_user_connected(booking_id: UUID, user_id: UUID) -> bool:
     return booking_key in _connections and user_key in _connections[booking_key]
 
 
+async def _broadcast_to_room(
+    booking_id: UUID,
+    ws_message: str,
+    *,
+    exclude_user_id: UUID | None = None,
+) -> None:
+    """Send a raw WebSocket payload to all connected users in a booking room."""
+    booking_key = str(booking_id)
+
+    if booking_key not in _connections:
+        return
+
+    exclude_key = str(exclude_user_id) if exclude_user_id else None
+    disconnected_users: list[str] = []
+
+    for user_key, websocket in _connections[booking_key].items():
+        if exclude_key and user_key == exclude_key:
+            continue
+        try:
+            await websocket.send_text(ws_message)
+        except Exception as e:
+            logger.warning(f"Failed to send to user {user_key}: {e}")
+            disconnected_users.append(user_key)
+
+    for user_key in disconnected_users:
+        _connections[booking_key].pop(user_key, None)
+
+
 async def broadcast_message(
     booking_id: UUID,
     sender_id: UUID,
     message_data: dict,
 ) -> None:
     """Broadcast a message to all connected participants in the booking room."""
-    booking_key = str(booking_id)
-
-    if booking_key not in _connections:
-        return
-
-    # Prepare the WebSocket message
     ws_message = json.dumps(
         {
             "type": "message_created",
             "payload": message_data,
         }
     )
+    await _broadcast_to_room(booking_id, ws_message, exclude_user_id=sender_id)
 
-    # Send to all connected users in this booking (except sender)
-    disconnected_users = []
-    for user_key, websocket in _connections[booking_key].items():
-        if user_key != str(sender_id):
-            try:
-                await websocket.send_text(ws_message)
-            except Exception as e:
-                logger.warning(f"Failed to send to user {user_key}: {e}")
-                disconnected_users.append(user_key)
 
-    # Clean up disconnected websockets
-    for user_key in disconnected_users:
-        _connections[booking_key].pop(user_key, None)
+async def broadcast_read_receipt(
+    booking_id: UUID,
+    reader_id: UUID,
+) -> None:
+    """Notify room participants that messages were marked read by a user."""
+    ws_message = json.dumps(
+        {
+            "type": "messages_read",
+            "payload": {
+                "booking_id": str(booking_id),
+                "reader_id": str(reader_id),
+            },
+        }
+    )
+    # Tell everyone else in the room (typically the original sender)
+    await _broadcast_to_room(booking_id, ws_message, exclude_user_id=reader_id)
 
 
 def notify_offline_participant(

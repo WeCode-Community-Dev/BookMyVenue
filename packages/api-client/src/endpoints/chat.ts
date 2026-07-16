@@ -15,24 +15,42 @@ export interface Conversation {
   unread_count: number
 }
 
-export const chatEndpoints = (client: { get: <T>(path: string) => Promise<T>, post: <T>(path: string, body: unknown) => Promise<T>, patch: <T>(path: string, body: unknown) => Promise<T> }) => ({
+export interface ChatMessageDto {
+  id: string
+  booking_id: string
+  sender_id: string
+  message: string
+  created_at: string
+  read_at: string | null
+}
+
+export const chatEndpoints = (client: {
+  get: <T>(path: string) => Promise<T>
+  post: <T>(path: string, body: unknown) => Promise<T>
+  patch: <T>(path: string, body: unknown) => Promise<T>
+}) => ({
   listConversations: () => client.get<Conversation[]>('/api/chat/conversations'),
-  listMessages: (bookingId: string, params?: { cursor?: string, limit?: number }) => {
+  listMessages: (bookingId: string, params?: { cursor?: string; limit?: number }) => {
     const qs = new URLSearchParams()
     if (params?.cursor) qs.append('cursor', params.cursor)
     if (params?.limit) qs.append('limit', params.limit.toString())
     const qsStr = qs.toString()
-    return client.get(`/api/chat/bookings/${bookingId}/messages${qsStr ? `?${qsStr}` : ''}`)
+    return client.get<ChatMessageDto[]>(
+      `/api/chat/bookings/${bookingId}/messages${qsStr ? `?${qsStr}` : ''}`,
+    )
   },
   sendMessage: (bookingId: string, message: string) =>
-    client.post(`/api/chat/bookings/${bookingId}/messages`, { message }),
+    client.post<ChatMessageDto>(`/api/chat/bookings/${bookingId}/messages`, { message }),
   markRead: (bookingId: string) =>
-    client.patch(`/api/chat/bookings/${bookingId}/read`, {}),
-  
-  // WebSocket connection helper
+    client.patch<{ success: boolean }>(`/api/chat/bookings/${bookingId}/read`, {}),
+
+  /** Open an authenticated WebSocket for real-time chat on a booking */
   connectWebSocket: async (bookingId: string) => {
     const token = await getAccessToken()
-    const wsUrl = `${BASE_URL.replace(/^http/, 'ws')}/api/chat/bookings/${bookingId}/ws?token=${token}`
+    if (!token) {
+      throw new Error('Not authenticated')
+    }
+    const wsUrl = `${BASE_URL.replace(/^http/, 'ws')}/api/chat/bookings/${bookingId}/ws?token=${encodeURIComponent(token)}`
     return new WebSocket(wsUrl)
   },
 })

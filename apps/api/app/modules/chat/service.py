@@ -76,21 +76,15 @@ def send_message(
     if sender_id not in (customer_id, owner_id):
         raise ForbiddenError("Not authorized to send messages to this chat")
 
-    # Validate message length
-    if not message or len(message.strip()) == 0:
+    # Normalize + validate message body
+    cleaned = (message or "").strip()
+    if not cleaned:
         raise ValueError("Message cannot be empty")
 
-    if len(message) > MAX_MESSAGE_LENGTH:
+    if len(cleaned) > MAX_MESSAGE_LENGTH:
         raise ValueError(f"Message exceeds {MAX_MESSAGE_LENGTH} characters")
 
-    # Create the message
-    chat_message = create_message(db, booking_id, sender_id, message.strip())
-
-    # Notify the other participant if they're not connected via WebSocket
-    recipient_id = owner_id if sender_id == customer_id else customer_id
-
-    # Get booking context for notification (async notification will be triggered by caller)
-    # We need to get venue name for the notification context
+    chat_message = create_message(db, booking_id, sender_id, cleaned)
 
     return _to_output(chat_message)
 
@@ -141,7 +135,7 @@ def mark_as_read(
     if count > 0:
         db.commit()
 
-    return MarkReadOut()
+    return MarkReadOut(updated_count=count)
 
 
 def _to_output(msg) -> ChatMessageOut:

@@ -46,29 +46,36 @@ def list_messages(
     "/bookings/{booking_id}/messages",
     response_model=ChatMessageOut,
 )
-def send_message(
+async def send_message(
     booking_id: UUID,
     body: SendMessageIn,
     auth: AuthContext = Depends(require_auth),
     db: Session = Depends(get_db),
 ):
-    """Send a message to a booking chat."""
+    """Send a message to a booking chat (REST). Also fans out over WebSocket when possible."""
     result = service.send_message(db, booking_id, auth.user_id, body.message)
 
-    # Get recipient and send notification if offline
     customer_id, owner_id = service.get_booking_participants_for_ws(db, booking_id)
     recipient_id = owner_id if auth.user_id == customer_id else customer_id
 
-    # Get venue name for notification context
     venue_name = None
     booking = db.execute(select(Booking).where(Booking.id == booking_id)).scalar_one_or_none()
     if booking:
         venue = db.execute(select(Venue).where(Venue.id == booking.venue_id)).scalar_one_or_none()
         venue_name = venue.name if venue else None
 
-    # Notify offline recipient via sync wrapper
-    # The notification system will check if user is connected
-    from app.modules.chat.manager import is_user_connected
+    from app.modules.chat.manager import broadcast_message, is_user_connected
+
+    # Fan-out to any live WebSocket listeners (e.g. other party already in chat)
+    payload = {
+        "id": str(result.id),
+        "booking_id": str(result.booking_id),
+        "sender_id": str(result.sender_id),
+        "message": result.message,
+        "created_at": result.created_at,
+        "read_at": result.read_at,
+    }
+    await broadcast_message(booking_id, auth.user_id, payload)
 
     if recipient_id and not is_user_connected(booking_id, recipient_id):
         notify_offline_participant(db, booking_id, recipient_id, {"venue_name": venue_name})
@@ -80,10 +87,16 @@ def send_message(
     "/bookings/{booking_id}/read",
     response_model=MarkReadOut,
 )
-def mark_read(
+async def mark_read(
     booking_id: UUID,
     auth: AuthContext = Depends(require_auth),
     db: Session = Depends(get_db),
 ):
-    """Mark all messages in a booking as read."""
-    return service.mark_as_read(db, booking_id, auth.user_id)
+    """Mark all messages in a booking as read and notify the other participant."""
+    result = service.mark_as_read(db, booking_id, auth.user_id)
+
+    if result.updated_count > 0:
+        from app.modules.chat.manager import broadcast_read_receipt
+
+        await broadcast_read_receipt(booking_id, auth.user_id)
+    return result
