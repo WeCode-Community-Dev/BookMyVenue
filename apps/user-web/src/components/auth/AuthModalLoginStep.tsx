@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { resendConfirmationEmail } from '@venue404/api-client'
 import { useAuth } from '../../lib/AuthContext'
 
 type Props = {
@@ -13,9 +14,22 @@ export function AuthModalLoginStep({ onSuccess }: Props) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null)
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent'>('idle')
   const [submitting, setSubmitting] = useState(false)
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
+
+  async function handleResend() {
+    if (!unconfirmedEmail || resendState === 'sending') return
+    setResendState('sending')
+    try {
+      await resendConfirmationEmail(unconfirmedEmail)
+      setResendState('sent')
+    } catch {
+      setResendState('idle')
+    }
+  }
 
   function handleContinue(e: React.FormEvent) {
     e.preventDefault()
@@ -35,6 +49,8 @@ export function AuthModalLoginStep({ onSuccess }: Props) {
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setUnconfirmedEmail(null)
+    setResendState('idle')
     setSubmitting(true)
     try {
       const currentEmail = emailRef.current?.value ?? email
@@ -42,7 +58,11 @@ export function AuthModalLoginStep({ onSuccess }: Props) {
       await signIn({ email: currentEmail, password: currentPassword })
       onSuccess()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Sign in failed. Check your credentials.')
+      if (err && typeof err === 'object' && 'code' in err && err.code === 'email_not_confirmed') {
+        setUnconfirmedEmail(emailRef.current?.value ?? email)
+      } else {
+        setError(err instanceof Error ? err.message : 'Sign in failed. Check your credentials.')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -59,7 +79,7 @@ export function AuthModalLoginStep({ onSuccess }: Props) {
           required
           autoFocus={step === 'email'}
           value={email}
-          onChange={(e) => { setEmail(e.target.value); setError(null) }}
+          onChange={(e) => { setEmail(e.target.value); setError(null); setUnconfirmedEmail(null) }}
           placeholder="Email"
           readOnly={step === 'password'}
           className="py-3"
@@ -84,7 +104,7 @@ export function AuthModalLoginStep({ onSuccess }: Props) {
           <div className="mt-3 flex items-center justify-between text-xs">
             <button
               type="button"
-              onClick={() => { setStep('email'); setPassword(''); setError(null) }}
+              onClick={() => { setStep('email'); setPassword(''); setError(null); setUnconfirmedEmail(null) }}
               className="font-medium text-zinc-400 hover:text-zinc-600"
             >
               ← Use a different email
@@ -93,6 +113,35 @@ export function AuthModalLoginStep({ onSuccess }: Props) {
               Forgot password?
             </a>
           </div>
+        </div>
+      )}
+
+      {unconfirmedEmail && (
+        <div
+          role="alert"
+          className="space-y-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-400"
+        >
+          <div className="flex items-start gap-2.5">
+            <svg className="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span>
+              Confirm your email to sign in. We sent a link to <strong>{unconfirmedEmail}</strong>.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={resendState === 'sending' || resendState === 'sent'}
+            className="font-medium text-amber-900 underline underline-offset-2 hover:text-amber-950 disabled:cursor-not-allowed disabled:no-underline disabled:opacity-70 dark:text-amber-300 dark:hover:text-amber-200"
+          >
+            {resendState === 'sent'
+              ? 'Confirmation email sent'
+              : resendState === 'sending'
+                ? 'Sending…'
+                : 'Resend confirmation email'}
+          </button>
         </div>
       )}
 

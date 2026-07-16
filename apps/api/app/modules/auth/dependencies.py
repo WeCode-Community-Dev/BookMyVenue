@@ -67,6 +67,14 @@ def get_current_user(
     if profile.status == ProfileStatus.suspended:
         raise ForbiddenError("Account suspended")
 
+    # Defense in depth: Supabase itself refuses to issue a session for an
+    # unconfirmed email (see CLAUDE.md — Supabase owns email verification).
+    # This only catches a session minted while that project setting was
+    # briefly misconfigured/off; it never fires for accounts that existed
+    # before this check shipped (backfilled in migration 7f3a1c9d2b4e).
+    if profile.email_confirmed_at is None:
+        raise ForbiddenError("email_not_confirmed")
+
     # Keep email in profiles in sync with the authoritative JWT value
     if provider_user.email and profile.email != provider_user.email:
         profile.email = provider_user.email

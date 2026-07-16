@@ -347,9 +347,7 @@ def get_venue(
     auth: AuthContext | None = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
-
-    venue = service.get_venue(db, identifier, user_id=auth.user_id if auth else None)
-    return service._enrich_venue_with_ratings(db, venue)
+    return service.get_venue_detail_cached(db, identifier, user_id=auth.user_id if auth else None)
 
 
 @router.get("/{venue_id}/pricing", response_model=PricingPreviewResponse)

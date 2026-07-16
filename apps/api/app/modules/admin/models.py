@@ -31,8 +31,11 @@ class AdminAction(Base):
     __tablename__ = "admin_actions"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    admin_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="RESTRICT"), nullable=False
+    # Nullable: a handful of action_types (e.g. admin_password_reset_requested)
+    # are system-detected security events with no acting admin — everything
+    # admin-initiated (venue_approved, user_suspended, ...) still always sets this.
+    admin_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="RESTRICT"), nullable=True
     )
     action_type: Mapped[str] = mapped_column(String, nullable=False)
     target_type: Mapped[str] = mapped_column(String, nullable=False)

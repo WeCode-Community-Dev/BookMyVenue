@@ -65,3 +65,17 @@ def enforce_ip_hourly_limit(ip: str, action: str, limit: int) -> None:
         ttl_seconds=3600,
         detail="Too many requests from this address. Please try again later.",
     )
+
+
+def enforce_user_hourly_limit(user_id: UUID, action: str, limit: int) -> None:
+    """For authenticated endpoints that call a paid/rate-limited external API
+    (Stripe, etc.) — caps retries/abuse per user without the day-long lockout
+    a daily limit would impose on a legitimate user hitting a transient error."""
+    window = int(time.time() // 3600)
+    key = f"rl:{action}:user:{user_id}:{window}"
+    _check(
+        key,
+        limit,
+        ttl_seconds=3600,
+        detail="Too many requests — please slow down and try again shortly.",
+    )

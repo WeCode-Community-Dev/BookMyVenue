@@ -207,8 +207,55 @@ def _add_months(dt: datetime, n: int) -> datetime:
     return _month_start(y, m + 1)
 
 
+# ─── Dashboard stats cache-aside ─────────────────────────────────────────────
+# Short TTL only (no explicit invalidation) for booking/growth stats — the
+# number of booking-status-transition call sites across the codebase makes
+# exhaustive invalidation impractical, and a dashboard chart being up to a
+# minute stale is an acceptable tradeoff. Venue/owner stats DO get explicit
+# invalidation (see invalidate_venue_stats_cache/invalidate_owner_stats_cache)
+# since their write paths are few and well-defined (approve/reject/suspend/
+# reactivate), so those stay always-fresh.
+_STATS_CACHE_TTL_SECONDS = 60
+
+
+def invalidate_venue_stats_cache() -> None:
+    from app.core.cache import cache_delete
+
+    cache_delete("admin:stats:venues")
+
+
+def invalidate_owner_stats_cache() -> None:
+    from app.core.cache import cache_delete
+
+    cache_delete("admin:stats:owners")
+
+
+def _invalidate_venue_caches(venue: Venue) -> None:
+    """Call after any commit that changes a venue's status — invalidates both
+    its public detail cache and the admin venue-stats aggregate."""
+    from app.modules.venue import service as venue_service
+
+    venue_service.invalidate_venue_cache(venue)
+    invalidate_venue_stats_cache()
+
+
+def _invalidate_amenities_cache() -> None:
+    from app.modules.venue import service as venue_service
+
+    venue_service.invalidate_amenities_cache()
+
+
+def _invalidate_categories_cache() -> None:
+    from app.modules.venue import service as venue_service
+
+    venue_service.invalidate_categories_cache()
+
+
 def get_growth_stats(db: Session, period: str = "6m") -> dict:
+    import json
     from datetime import timedelta
+
+    from app.core.cache import cache_get, cache_set
 
     now = datetime.now(UTC)
 
@@ -216,6 +263,11 @@ def get_growth_stats(db: Session, period: str = "6m") -> dict:
     VALID = {"7d", "30d", "3m", "6m", "12m"}
     if period not in VALID:
         period = "6m"
+
+    cache_key = f"admin:stats:growth:{period}"
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return json.loads(cached)
 
     use_days = period.endswith("d")
     buckets: list[tuple[datetime, datetime, str]] = []
@@ -284,7 +336,7 @@ def get_growth_stats(db: Session, period: str = "6m") -> dict:
         venues_s.append(cum_v)
         bookings_s.append(cum_b)
 
-    return {
+    result = {
         "labels": labels,
         "users": users_s,
         "owners": owners_s,
@@ -297,9 +349,19 @@ def get_growth_stats(db: Session, period: str = "6m") -> dict:
             "bookings": bookings_s[-1] if bookings_s else 0,
         },
     }
+    cache_set(cache_key, json.dumps(result), _STATS_CACHE_TTL_SECONDS)
+    return result
 
 
 def get_venue_stats(db: Session) -> dict:
+    import json
+
+    from app.core.cache import cache_get, cache_set
+
+    cached = cache_get("admin:stats:venues")
+    if cached is not None:
+        return json.loads(cached)
+
     row = (
         db.query(Venue)
         .filter(Venue.deleted_at.is_(None))
@@ -315,7 +377,7 @@ def get_venue_stats(db: Session) -> dict:
         )
         .one()
     )
-    return {
+    result = {
         "total": row.total,
         "pending_approval": row.pending_approval,
         "approved": row.approved,
@@ -323,6 +385,8 @@ def get_venue_stats(db: Session) -> dict:
         "suspended": row.suspended,
         "draft": row.draft,
     }
+    cache_set("admin:stats:venues", json.dumps(result), _STATS_CACHE_TTL_SECONDS)
+    return result
 
 
 def list_admin_venues(
@@ -497,6 +561,7 @@ def approve_venue(
     )
 
     db.commit()
+    _invalidate_venue_caches(venue)
 
     from app.modules.search.indexer import enqueue_job
 
@@ -535,6 +600,7 @@ def reject_venue(
     )
 
     db.commit()
+    _invalidate_venue_caches(venue)
 
 
 def suspend_venue(
@@ -574,6 +640,7 @@ def suspend_venue(
     )
 
     db.commit()
+    _invalidate_venue_caches(venue)
 
 
 def reactivate_venue(
@@ -608,6 +675,7 @@ def reactivate_venue(
     )
 
     db.commit()
+    _invalidate_venue_caches(venue)
 
     from app.modules.search.indexer import enqueue_job
 
@@ -645,6 +713,7 @@ def approve_owner(
         )
     )
     db.commit()
+    invalidate_owner_stats_cache()
 
     # Best-effort — email delivery must never undo the approval above, which
     # already succeeded and is committed by this point.
@@ -692,6 +761,7 @@ def reject_owner(
         )
     )
     db.commit()
+    invalidate_owner_stats_cache()
 
     # Best-effort — email delivery must never undo the rejection above, which
     # already succeeded and is committed by this point.
@@ -726,6 +796,14 @@ def _build_user_dict(
 
 
 def get_owner_stats(db: Session) -> dict:
+    import json
+
+    from app.core.cache import cache_get, cache_set
+
+    cached = cache_get("admin:stats:owners")
+    if cached is not None:
+        return json.loads(cached)
+
     owner_subq = (
         db.query(UserRoleAssignment.user_id)
         .filter(UserRoleAssignment.role == UserRole.venue_owner)
@@ -742,13 +820,15 @@ def get_owner_stats(db: Session) -> dict:
         func.count(case((Profile.status == ProfileStatus.rejected, 1))).label("rejected"),
         func.count(case((Profile.status == ProfileStatus.suspended, 1))).label("suspended"),
     ).one()
-    return {
+    result = {
         "total": row.total,
         "pending": row.pending,
         "active": row.active,
         "rejected": row.rejected,
         "suspended": row.suspended,
     }
+    cache_set("admin:stats:owners", json.dumps(result), _STATS_CACHE_TTL_SECONDS)
+    return result
 
 
 def list_users(
@@ -903,6 +983,7 @@ def suspend_user(
     )
 
     db.commit()
+    invalidate_owner_stats_cache()
 
 
 def reactivate_user(
@@ -943,6 +1024,7 @@ def reactivate_user(
     notifications.notify(db, user_id, NotificationType.USER_REACTIVATED)
 
     db.commit()
+    invalidate_owner_stats_cache()
 
 
 def _get_amenity_or_404(db: Session, amenity_id: uuid.UUID) -> Amenity:
@@ -1020,6 +1102,7 @@ def create_amenity(
     )
     db.commit()
     db.refresh(amenity)
+    _invalidate_amenities_cache()
     return _amenity_to_dict(amenity, 0)
 
 
@@ -1057,6 +1140,7 @@ def update_amenity(
     )
     db.commit()
     db.refresh(amenity)
+    _invalidate_amenities_cache()
     active_count = _count_active_venues(db, amenity.id)
     return _amenity_to_dict(amenity, active_count)
 
@@ -1083,6 +1167,7 @@ def delete_amenity(
         )
     )
     db.commit()
+    _invalidate_amenities_cache()
     return {"deleted": True, "active_venue_count": active_count}
 
 
@@ -1166,6 +1251,7 @@ def create_category(
     )
     db.commit()
     db.refresh(cat)
+    _invalidate_categories_cache()
     return _category_to_dict(cat, 0)
 
 
@@ -1199,6 +1285,7 @@ def update_category(
     )
     db.commit()
     db.refresh(cat)
+    _invalidate_categories_cache()
     venue_count = _count_category_venues(db, cat.id)
     return _category_to_dict(cat, venue_count)
 
@@ -1233,6 +1320,7 @@ def upload_category_banner(
     )
     db.commit()
     db.refresh(cat)
+    _invalidate_categories_cache()
     return {"banner_image": cat.banner_image}
 
 
@@ -1258,6 +1346,7 @@ def delete_category_banner(
             )
         )
         db.commit()
+        _invalidate_categories_cache()
     return {"banner_image": None}
 
 
@@ -1284,6 +1373,7 @@ def delete_category(
         )
     )
     db.commit()
+    _invalidate_categories_cache()
     return {"deleted": True, "venue_count": venue_count}
 
 
@@ -1484,6 +1574,14 @@ _CANCELLED_STATUSES = (
 
 
 def get_booking_stats(db: Session) -> dict:
+    import json
+
+    from app.core.cache import cache_get, cache_set
+
+    cached = cache_get("admin:stats:bookings")
+    if cached is not None:
+        return json.loads(cached)
+
     row = (
         db.query(
             func.count(Booking.id).label("total"),
@@ -1495,13 +1593,15 @@ def get_booking_stats(db: Session) -> dict:
         .filter(Booking.deleted_at.is_(None))
         .one()
     )
-    return {
+    result = {
         "total": row.total,
         "requested": row.requested,
         "confirmed": row.confirmed,
         "completed": row.completed,
         "cancelled": row.cancelled,
     }
+    cache_set("admin:stats:bookings", json.dumps(result), _STATS_CACHE_TTL_SECONDS)
+    return result
 
 
 def list_admin_bookings(

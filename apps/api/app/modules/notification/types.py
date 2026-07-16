@@ -29,3 +29,4 @@ class NotificationType:
     VENUE_REACTIVATED = "venue_reactivated"
     USER_SUSPENDED = "user_suspended"
     USER_REACTIVATED = "user_reactivated"
+    ADMIN_PASSWORD_RESET_REQUESTED = "admin_password_reset_requested"

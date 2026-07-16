@@ -1,5 +1,5 @@
 import time
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from datetime import time as dt_time
 from uuid import UUID, uuid4
 
@@ -91,6 +91,7 @@ def seed_auth_user(
     full_name: str | None = None,
     phone: str | None = None,
     status: str = "active",
+    email_confirmed: bool = True,
 ) -> Profile:
     """Insert the auth.users row a profiles.id FK requires, then patch the
     profile row the on_auth_user_created trigger auto-creates.
@@ -101,10 +102,20 @@ def seed_auth_user(
     ON CONFLICT DO NOTHING. The trigger never sets email, so every caller
     needs this patch step. Callers must NOT also `db.add(Profile(...))` —
     that duplicates what the trigger already inserted.
+
+    email_confirmed defaults to True since most tests represent an already
+    active user — pass False to exercise the email_not_confirmed gate itself.
     """
     db.execute(
-        text("INSERT INTO auth.users (id, email) VALUES (:id, :email)"),
-        {"id": user_id, "email": email},
+        text(
+            "INSERT INTO auth.users (id, email, email_confirmed_at) "
+            "VALUES (:id, :email, :confirmed_at)"
+        ),
+        {
+            "id": user_id,
+            "email": email,
+            "confirmed_at": datetime.now(UTC) if email_confirmed else None,
+        },
     )
     db.execute(
         text(

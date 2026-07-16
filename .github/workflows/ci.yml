@@ -23,7 +23,10 @@ jobs:
       - name: Build (tsc type-check + vite build — the merge gate)
         run: pnpm build
       - name: Security audit
+        # npm retired the legacy audit endpoints pnpm audit relies on (410 Gone);
+        # pnpm hasn't shipped a fix yet (pnpm/pnpm#11265). Non-blocking until it does.
         run: pnpm audit --audit-level=high
+        continue-on-error: true
 
   api:
     runs-on: ubuntu-latest
