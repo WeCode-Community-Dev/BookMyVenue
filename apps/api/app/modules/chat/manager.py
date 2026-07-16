@@ -1,8 +1,8 @@
 """WebSocket connection manager for chat rooms."""
+
 import json
 import logging
 from uuid import UUID
-from typing import Optional
 
 from app.modules.notification.service import notify
 
@@ -58,10 +58,12 @@ async def broadcast_message(
         return
 
     # Prepare the WebSocket message
-    ws_message = json.dumps({
-        "type": "message_created",
-        "payload": message_data,
-    })
+    ws_message = json.dumps(
+        {
+            "type": "message_created",
+            "payload": message_data,
+        }
+    )
 
     # Send to all connected users in this booking (except sender)
     disconnected_users = []

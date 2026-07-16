@@ -66,7 +66,7 @@ _TEMPLATES: dict[str, tuple[str, str]] = {
         "Refund issued",
         "A refund of ₹{amount_rupees} has been issued for {venue_name}.",
     ),
-"booking_completed": (
+    "booking_completed": (
         "Booking completed",
         "Your event at {venue_name} is marked complete. Thanks for using Venue404!",
     ),

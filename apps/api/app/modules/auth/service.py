@@ -98,11 +98,7 @@ def _alert_if_admin_target(db: Session, email: str) -> None:
     from app.modules.notification import service as notifications
     from app.modules.notification.types import NotificationType
 
-    target = (
-        db.query(Profile)
-        .filter(Profile.email == email, Profile.deleted_at.is_(None))
-        .first()
-    )
+    target = db.query(Profile).filter(Profile.email == email, Profile.deleted_at.is_(None)).first()
     if target is None:
         return
 

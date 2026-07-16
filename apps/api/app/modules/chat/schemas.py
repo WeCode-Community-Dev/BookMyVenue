@@ -1,4 +1,3 @@
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -10,7 +9,7 @@ class ChatMessageOut(BaseModel):
     sender_id: UUID
     message: str
     created_at: str
-    read_at: Optional[str] = None
+    read_at: str | None = None
 
     class Config:
         from_attributes = True

@@ -1,4 +1,5 @@
 """WebSocket endpoint for real-time chat."""
+
 import json
 import logging
 from uuid import UUID
@@ -50,6 +51,7 @@ def get_booking_participants_for_auth(booking_id: UUID) -> tuple[UUID, UUID] | t
     """Get booking participants for auth check. Uses its own session."""
     with with_session() as db:
         from app.modules.chat.repository import get_booking_participants
+
         return get_booking_participants(db, booking_id)
 
 
@@ -138,10 +140,12 @@ async def websocket_endpoint(
     try:
         # Send connection confirmation
         await websocket.send_text(
-            json.dumps({
-                "type": "connected",
-                "payload": {"booking_id": str(booking_id)},
-            })
+            json.dumps(
+                {
+                    "type": "connected",
+                    "payload": {"booking_id": str(booking_id)},
+                }
+            )
         )
 
         # Message loop
@@ -152,10 +156,12 @@ async def websocket_endpoint(
                 msg = json.loads(data)
             except json.JSONDecodeError:
                 await websocket.send_text(
-                    json.dumps({
-                        "type": "error",
-                        "payload": {"message": "Invalid JSON"},
-                    })
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "payload": {"message": "Invalid JSON"},
+                        }
+                    )
                 )
                 continue
 
@@ -164,49 +170,55 @@ async def websocket_endpoint(
                 content = msg.get("message", "")
                 try:
                     validated = SendMessageIn(message=content)
-                    result = send_message_ws_with_session(
-                        booking_id, user_id, validated.message
-                    )
+                    result = send_message_ws_with_session(booking_id, user_id, validated.message)
 
                     # Broadcast to other participants
-                    await broadcast_message(
-                        booking_id, user_id, result
-                    )
+                    await broadcast_message(booking_id, user_id, result)
 
                     # Send confirmation to sender
                     await websocket.send_text(
-                        json.dumps({
-                            "type": "message_sent",
-                            "payload": result,
-                        })
+                        json.dumps(
+                            {
+                                "type": "message_sent",
+                                "payload": result,
+                            }
+                        )
                     )
                 except ValueError as e:
                     await websocket.send_text(
-                        json.dumps({
-                            "type": "error",
-                            "payload": {"message": str(e)},
-                        })
+                        json.dumps(
+                            {
+                                "type": "error",
+                                "payload": {"message": str(e)},
+                            }
+                        )
                     )
                 except ForbiddenError as e:
                     await websocket.send_text(
-                        json.dumps({
-                            "type": "error",
-                            "payload": {"message": str(e)},
-                        })
+                        json.dumps(
+                            {
+                                "type": "error",
+                                "payload": {"message": str(e)},
+                            }
+                        )
                     )
             elif msg.get("type") == "ping":
                 await websocket.send_text(
-                    json.dumps({
-                        "type": "pong",
-                        "payload": {},
-                    })
+                    json.dumps(
+                        {
+                            "type": "pong",
+                            "payload": {},
+                        }
+                    )
                 )
             else:
                 await websocket.send_text(
-                    json.dumps({
-                        "type": "error",
-                        "payload": {"message": "Unknown message type"},
-                    })
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "payload": {"message": "Unknown message type"},
+                        }
+                    )
                 )
 
     except WebSocketDisconnect:

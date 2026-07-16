@@ -217,7 +217,8 @@ def _booking_out(db: Session, booking: Booking) -> BookingOut:
                 LedgerEntry.direction == "credit",
             )
             .with_entities(func.sum(LedgerEntry.amount_paise))
-            .scalar() or 0
+            .scalar()
+            or 0
         ),
         advance_pct=float(booking.advance_pct),
         advance_due_paise=booking.advance_due_paise,

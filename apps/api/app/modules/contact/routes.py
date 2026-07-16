@@ -22,8 +22,6 @@ def submit_contact_message(
     limit = settings_store.get_setting(db, "contact_rate_limit_per_hour")
     enforce_ip_hourly_limit(client_ip, "contact", limit)
 
-    subject, html = render_contact_message_email(
-        body.name, body.email, body.subject, body.message
-    )
+    subject, html = render_contact_message_email(body.name, body.email, body.subject, body.message)
     sent = send_email(SUPPORT_INBOX, subject, html, reply_to=body.email)
     return ContactMessageResponse(sent=sent)

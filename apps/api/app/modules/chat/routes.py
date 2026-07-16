@@ -22,7 +22,7 @@ router = APIRouter()
 def list_conversations(
     auth: AuthContext = Depends(require_auth),
     db: Session = Depends(get_db),
-): 
+):
     """Get all conversations for the authenticated user with aggregated message data."""
     return service.list_conversations(db, auth.user_id)
 
@@ -69,6 +69,7 @@ def send_message(
     # Notify offline recipient via sync wrapper
     # The notification system will check if user is connected
     from app.modules.chat.manager import is_user_connected
+
     if recipient_id and not is_user_connected(booking_id, recipient_id):
         notify_offline_participant(db, booking_id, recipient_id, {"venue_name": venue_name})
 

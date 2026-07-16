@@ -36,6 +36,7 @@ def test_refund_computation_no_policy(monkeypatch):
         slot=BookingSlot(starts_at=datetime.now(UTC) + timedelta(days=2)),
     )
     import app.modules.booking.cancellation as cancellation
+
     monkeypatch.setattr(
         cancellation.settings_store,
         "get_setting",

@@ -1,4 +1,3 @@
-from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -12,7 +11,6 @@ from app.modules.chat.repository import (
     mark_messages_read,
 )
 from app.modules.chat.schemas import ChatMessageOut, ConversationOut, MarkReadOut
-from app.modules.chat.manager import notify_offline_participant
 
 # Max message length config - will be read from settings when available
 MAX_MESSAGE_LENGTH = 2000
@@ -50,16 +48,16 @@ def list_conversations(
 def _conversation_to_output(row: dict) -> ConversationOut:
     """Convert conversation row to output schema."""
     return ConversationOut(
-        booking_id=row['booking_id'],
-        venue_name=row['venue_name'],
-        venue_city=row.get('venue_city'),
-        booking_status=row['booking_status'],
-        booking_date=row['booking_date'].isoformat() if row.get('booking_date') else None,
-        other_party_name=row['other_party_name'],
-        last_message=row['last_message'],
-        last_message_at=row['last_message_at'].isoformat() if row.get('last_message_at') else None,
-        last_sender_id=row['last_sender_id'],
-        unread_count=row['unread_count'],
+        booking_id=row["booking_id"],
+        venue_name=row["venue_name"],
+        venue_city=row.get("venue_city"),
+        booking_status=row["booking_status"],
+        booking_date=row["booking_date"].isoformat() if row.get("booking_date") else None,
+        other_party_name=row["other_party_name"],
+        last_message=row["last_message"],
+        last_message_at=row["last_message_at"].isoformat() if row.get("last_message_at") else None,
+        last_sender_id=row["last_sender_id"],
+        unread_count=row["unread_count"],
     )
 
 
@@ -105,21 +103,22 @@ def send_message_and_notify(
 ) -> ChatMessageOut:
     """Send message and trigger notification for offline recipient (async)."""
     result = send_message(db, booking_id, sender_id, message)
-    
+
     customer_id, owner_id = get_booking_participants(db, booking_id)
     recipient_id = owner_id if sender_id == customer_id else customer_id
-    
+
     # Get venue name for notification context
+    from sqlalchemy import select
+
     from app.modules.booking.models import Booking
     from app.modules.venue.models import Venue
-    from sqlalchemy import select
-    
+
     booking = db.execute(select(Booking).where(Booking.id == booking_id)).scalar_one_or_none()
     venue_name = None
     if booking:
         venue = db.execute(select(Venue).where(Venue.id == booking.venue_id)).scalar_one_or_none()
         venue_name = venue.name if venue else None
-    
+
     # Note: notify_offline_participant will be called in websocket.py async context
     return result
 
@@ -159,9 +158,10 @@ def _to_output(msg) -> ChatMessageOut:
 
 def _getVenueNameForNotification(db: Session, booking_id: UUID) -> str | None:
     """Get venue name for notification context. Used by WebSocket sender."""
+    from sqlalchemy import select
+
     from app.modules.booking.models import Booking
     from app.modules.venue.models import Venue
-    from sqlalchemy import select
 
     booking = db.execute(select(Booking).where(Booking.id == booking_id)).scalar_one_or_none()
     if not booking:
