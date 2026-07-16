@@ -1,6 +1,6 @@
 "use client";
 
-import BookingLayout from "@/features/booking/components/BookingLayout";
+import BookingLayout from "@/features/bookings/bookingLayout";
 
 const page = () => {
     return (
