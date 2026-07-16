@@ -1,0 +1,30 @@
+{
+  "name": "bookmyvenue",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "Client",
+    "Server"
+  ],
+  "description": "BookMyVenue is a 100% open-source initiative built by the **WeCode community**, designed to simplify the process of finding and booking venues in local areas. This is a platform built for the community, by the community. Whether you're looking for a cozy cafe for a quick meetup, a spacious auditorium for a community event, or a scenic outdoor space for a personal celebration, BookMyVenue aims to connect people with the perfect space—without the commercial overhead.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=Client\" \"npm run dev --workspace=Server\"",
+    "install-all": "npm install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abdulsmdpm786-code/BookMyVenue.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/abdulsmdpm786-code/BookMyVenue/issues"
+  },
+  "homepage": "https://github.com/abdulsmdpm786-code/BookMyVenue#readme",
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
