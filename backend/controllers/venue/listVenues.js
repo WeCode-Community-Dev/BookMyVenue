@@ -6,6 +6,7 @@ const {
    CATEGORY_POPULATE,
    parsePageParam,
    buildVenueFilter,
+   parseSortParam,
 } = require("./shared");
 
 // GET /venues — public, paginated, filterable list of APPROVED venues.
@@ -23,15 +24,16 @@ async function listVenues(req, res) {
       const limit = parsePageParam(req.query.limit, DEFAULT_LIMIT);
       const skip = (page - 1) * limit;
 
-      const { district, category, minPrice, maxPrice } = req.query;
+      const { district, category, minPrice, maxPrice, sort } = req.query;
 
       const filter = await buildVenueFilter({ district, category, minPrice, maxPrice });
+      const sortSpec = parseSortParam(sort);
 
       const [venues, total] = await Promise.all([
          Venues.find(filter)
             .select(PUBLIC_FIELDS)
             .populate(CATEGORY_POPULATE)
-            .sort({ createdAt: -1 })
+            .sort(sortSpec)
             .skip(skip)
             .limit(limit)
             .lean(),

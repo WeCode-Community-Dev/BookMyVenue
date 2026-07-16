@@ -84,7 +84,7 @@ async function buildVenueFilter({ district, category, minPrice, maxPrice } = {})
 const STATUS_GATE_BY_ACTION = {
    submit: { statuses: SUBMITTABLE_STATUSES, verb: "submitted" },
    delete: { statuses: DELETABLE_STATUSES, verb: "deleted" },
-   edit:   { statuses: IN_PLACE_EDIT_STATUSES, verb: "edited" },
+   edit: { statuses: IN_PLACE_EDIT_STATUSES, verb: "edited" },
    reEdit: { statuses: REEDITABLE_STATUSES, verb: "re-edited" },
 };
 
@@ -156,6 +156,17 @@ function buildEditDraftSeed(original) {
    return seed;
 }
 
+const DEFAULT_SORT = "newest";
+const SORT_OPTIONS = {
+   newest: { createdAt: -1 },
+   priceAsc: { basePrice: 1 },
+   priceDesc: { basePrice: -1 },
+};
+
+function parseSortParam(rawValue) {
+   return SORT_OPTIONS[rawValue] || SORT_OPTIONS[DEFAULT_SORT];
+}
+
 module.exports = {
    DEFAULT_PAGE,
    DEFAULT_LIMIT,
@@ -172,4 +183,5 @@ module.exports = {
    statusNotAllowedMessage,
    parsePageParam,
    buildVenueFilter,
+   parseSortParam,
 };
