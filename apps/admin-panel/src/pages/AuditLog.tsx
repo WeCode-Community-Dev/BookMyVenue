@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  CheckCircle2, XCircle, ShieldOff,
+  CheckCircle2, XCircle, ShieldOff, ShieldAlert,
   Sparkles, User, Building2, CalendarDays, ClipboardList,
 } from 'lucide-react'
 import { createClient, adminActionEndpoints } from '@venue404/api-client'
@@ -32,6 +32,8 @@ type ActionMeta = {
 }
 
 function getActionMeta(type: string): ActionMeta {
+  if (type === 'admin_password_reset_requested')
+    return { label: fmtType(type), icon: <ShieldAlert className="h-3.5 w-3.5" />, color: 'text-red-600', bg: 'bg-red-50' }
   if (type.endsWith('approved') || type.endsWith('reactivated'))
     return { label: fmtType(type), icon: <CheckCircle2 className="h-3.5 w-3.5" />, color: 'text-emerald-700', bg: 'bg-emerald-50' }
   if (type.endsWith('rejected') || type.endsWith('deleted'))
@@ -270,9 +272,9 @@ function ActionRow({ action }: { action: AdminAction }) {
       </td>
 
       {/* Reason */}
-      <td className="px-5 py-3.5 max-w-xs">
+      <td className="px-5 py-3.5 max-w-sm">
         {action.reason ? (
-          <span className="text-sm text-zinc-600 line-clamp-1" title={action.reason}>
+          <span className="text-sm text-zinc-600 whitespace-normal break-words">
             {action.reason}
           </span>
         ) : (

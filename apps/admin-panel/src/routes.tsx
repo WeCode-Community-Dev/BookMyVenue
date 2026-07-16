@@ -16,6 +16,7 @@ const Settings = lazy(() => import('./pages/Settings'))
 const Amenities = lazy(() => import('./pages/Amenities'))
 const Categories = lazy(() => import('./pages/Categories'))
 const AuditLog = lazy(() => import('./pages/AuditLog'))
+const Financials = lazy(() => import('./pages/Financials'))
 const DeepResearchInsights = lazy(() => import('./pages/DeepResearchInsights'))
 const ExternalReservations = lazy(() => import('./pages/ExternalReservations'))
 
@@ -84,6 +85,10 @@ export const router = createBrowserRouter([
   {
     path: '/audit-log',
     element: <ProtectedRoute><AuditLog /></ProtectedRoute>,
+  },
+  {
+    path: '/financials',
+    element: <ProtectedRoute><Financials /></ProtectedRoute>,
   },
   {
     path: '/deep-research-insights',

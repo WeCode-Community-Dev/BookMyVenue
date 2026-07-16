@@ -99,6 +99,11 @@ _TEMPLATES: dict[str, tuple[str, str]] = {
         "Your account has been reactivated",
         "Your Venue404 account has been reactivated. You can log in and use Venue404 again.",
     ),
+    "admin_password_reset_requested": (
+        "Security alert: admin password reset requested",
+        "A password reset was requested for the admin account {target_email}. "
+        "If this wasn't expected, investigate immediately.",
+    ),
 }
 
 # Spelling/legacy aliases -> canonical template key. Both British and American
@@ -289,6 +294,21 @@ def render_owner_invite_email(
         cta_text="Set your password and get started",
         cta_url=action_link,
         footnote="If you weren't expecting this, you can safely ignore this email.",
+    )
+    return subject, html
+
+
+def render_signup_confirmation_email(action_link: str) -> tuple[str, str]:
+    subject = "Confirm your Venue404 email address"
+    html = _email_layout(
+        title="Confirm your email",
+        body_html=(
+            "<p>Thanks for signing up! Confirm your email address to finish "
+            "creating your Venue404 account.</p>"
+        ),
+        cta_text="Confirm email address",
+        cta_url=action_link,
+        footnote="If you didn't create this account, you can safely ignore this email.",
     )
     return subject, html
 

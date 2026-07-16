@@ -68,3 +68,37 @@ class LedgerListResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+
+class PlatformLedgerStatsResponse(BaseModel):
+    """Platform-wide (all owners/venues) equivalent of OwnerLedgerStatsResponse.
+    platform_fees_paise IS the platform's actual earned revenue — there's no
+    owner-style "available balance" concept at the platform level."""
+
+    gross_volume_paise: int
+    platform_fees_paise: int
+    refunds_issued_paise: int
+    payouts_completed_paise: int
+
+
+class PlatformLedgerEntryResponse(BaseModel):
+    id: str
+    booking_id: str
+    venue_id: str
+    venue_name: str | None = None
+    owner_id: str
+    owner_name: str | None = None
+    user_full_name: str | None = None
+    entry_type: str
+    amount_paise: int
+    direction: str
+    stripe_pi_ref: str | None = None
+    created_at: str
+
+
+class PlatformLedgerListResponse(BaseModel):
+    items: list[PlatformLedgerEntryResponse]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int

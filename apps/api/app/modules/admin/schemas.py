@@ -156,7 +156,7 @@ class ReactivateUserRequest(BaseModel):
 
 class AdminActionResponse(BaseModel):
     id: uuid.UUID
-    admin_id: uuid.UUID
+    admin_id: uuid.UUID | None
     admin_name: str | None
     action_type: str
     target_type: str

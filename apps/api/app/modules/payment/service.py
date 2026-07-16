@@ -50,6 +50,9 @@ from app.modules.payment.schemas import (
     OwnerLedgerStatsResponse,
     PaymentIntentResponse,
     PaymentResponse,
+    PlatformLedgerEntryResponse,
+    PlatformLedgerListResponse,
+    PlatformLedgerStatsResponse,
     RefundResponse,
 )
 from app.modules.profile.models import Profile
@@ -666,6 +669,128 @@ def list_owner_ledger_entries(
             )
         )
     return LedgerListResponse(
+        items=responses,
+        total=total,
+        page=page,
+        page_size=per_page,
+        total_pages=total_pages,
+    )
+
+
+_PLATFORM_STATS_CACHE_KEY = "admin:financials:stats"
+_PLATFORM_STATS_CACHE_TTL_SECONDS = 60
+
+
+def get_platform_ledger_stats(db: Session) -> PlatformLedgerStatsResponse:
+    """Admin-wide equivalent of get_owner_ledger_stats — same bucketing, no
+    owner_id filter, so this sums across every venue/owner on the platform.
+
+    TTL-only (no explicit invalidation): ledger rows are written from many
+    call sites across the booking/payment lifecycle (webhook confirmations,
+    cancellations, refunds, payouts), so exhaustively wiring invalidation at
+    every write site isn't practical — a 60s-stale dashboard number is an
+    acceptable tradeoff, same call made for booking/growth stats.
+    """
+    import json
+
+    from app.core.cache import cache_get, cache_set
+
+    cached = cache_get(_PLATFORM_STATS_CACHE_KEY)
+    if cached is not None:
+        return PlatformLedgerStatsResponse(**json.loads(cached))
+
+    entries = (
+        db.query(
+            LedgerEntry.entry_type,
+            LedgerEntry.direction,
+            func.sum(LedgerEntry.amount_paise).label("total"),
+        )
+        .group_by(LedgerEntry.entry_type, LedgerEntry.direction)
+        .all()
+    )
+
+    gross_volume = 0
+    platform_fees = 0
+    refunds_issued = 0
+    payouts_completed = 0
+
+    for entry_type, direction, total in entries:
+        val = int(total or 0)
+        if entry_type == "charge" and direction == "credit":
+            gross_volume += val
+        elif entry_type == "platform_fee" and direction == "debit":
+            platform_fees += val
+        elif entry_type == "refund" and direction == "debit":
+            refunds_issued += val
+        elif entry_type == "payout" and direction == "debit":
+            payouts_completed += val
+
+    result = PlatformLedgerStatsResponse(
+        gross_volume_paise=gross_volume,
+        platform_fees_paise=platform_fees,
+        refunds_issued_paise=refunds_issued,
+        payouts_completed_paise=payouts_completed,
+    )
+    cache_set(
+        _PLATFORM_STATS_CACHE_KEY, result.model_dump_json(), _PLATFORM_STATS_CACHE_TTL_SECONDS
+    )
+    return result
+
+
+def list_platform_ledger_entries(
+    db: Session,
+    entry_type: str | None = None,
+    search: str | None = None,
+    page: int = 1,
+    per_page: int = 20,
+) -> PlatformLedgerListResponse:
+    """Admin-wide equivalent of list_owner_ledger_entries — no owner_id filter,
+    plus an owner-name column (an admin needs to know WHICH owner, unlike the
+    owner's own view of their own ledger) and a venue/owner name search.
+    """
+    from sqlalchemy.orm import aliased
+
+    Owner = aliased(Profile)
+
+    query = (
+        db.query(LedgerEntry, Venue, Profile, Owner)
+        .outerjoin(Venue, LedgerEntry.venue_id == Venue.id)
+        .outerjoin(Profile, LedgerEntry.user_id == Profile.id)
+        .outerjoin(Owner, LedgerEntry.owner_id == Owner.id)
+    )
+
+    if entry_type and entry_type != "all":
+        query = query.filter(LedgerEntry.entry_type == entry_type)
+
+    if search:
+        safe = search.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        pattern = f"%{safe}%"
+        query = query.filter(Venue.name.ilike(pattern) | Owner.full_name.ilike(pattern))
+
+    total = query.count()
+    total_pages = (total + per_page - 1) // per_page
+
+    query = query.order_by(LedgerEntry.created_at.desc())
+    results = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    responses = [
+        PlatformLedgerEntryResponse(
+            id=str(ledger.id),
+            booking_id=str(ledger.booking_id),
+            venue_id=str(ledger.venue_id),
+            venue_name=venue.name if venue else None,
+            owner_id=str(ledger.owner_id),
+            owner_name=owner.full_name if owner else None,
+            user_full_name=user.full_name if user else None,
+            entry_type=ledger.entry_type,
+            amount_paise=ledger.amount_paise,
+            direction=ledger.direction,
+            stripe_pi_ref=ledger.stripe_pi_ref,
+            created_at=ledger.created_at.isoformat(),
+        )
+        for ledger, venue, user, owner in results
+    ]
+    return PlatformLedgerListResponse(
         items=responses,
         total=total,
         page=page,

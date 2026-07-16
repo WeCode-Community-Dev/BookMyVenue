@@ -1,9 +1,11 @@
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.rate_limit import enforce_ip_hourly_limit
+from app.modules.admin import settings_store
 from app.modules.search import service
 from app.modules.search.schemas import SearchParams, SearchResult, SearchResultPage
 from app.shared.pagination import Page
@@ -56,19 +58,32 @@ def search_fts(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+def _enforce_embedding_rate_limit(request: Request, db: Session) -> None:
+    """/semantic and /hybrid both call the paid Jina embeddings API on every
+    request and are fully public — shared budget so alternating between the
+    two endpoints can't be used to double the effective limit."""
+    client_ip = request.client.host if request.client else "unknown"
+    limit = settings_store.get_setting(db, "search_embedding_rate_limit_per_hour")
+    enforce_ip_hourly_limit(client_ip, "search_embedding", limit)
+
+
 @router.get("/semantic", response_model=SearchResultPage)
 def search_semantic(
+    request: Request,
     params: SearchParams = Depends(_params),
     db: Session = Depends(get_db),
 ):
+    _enforce_embedding_rate_limit(request, db)
     return service.search_semantic(db, params)
 
 
 @router.get("/hybrid", response_model=SearchResultPage)
 def search_hybrid(
+    request: Request,
     params: SearchParams = Depends(_params),
     db: Session = Depends(get_db),
 ):
+    _enforce_embedding_rate_limit(request, db)
     try:
         return service.search_hybrid(db, params)
     except ValueError as exc:

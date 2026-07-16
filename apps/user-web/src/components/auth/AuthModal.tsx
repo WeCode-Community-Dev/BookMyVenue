@@ -19,17 +19,6 @@ export function AuthModal({ mode, onSwitchMode, onClose }: Props) {
       overlayClassName="bg-black/10 dark:bg-black/30"
     >
       <div className="relative px-6 py-10 sm:px-10 sm:py-12 min-h-[60dvh]">
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute right-5 top-5 flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-ink-800 dark:hover:text-zinc-200"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
         {mode === 'login' ? (
           <div className="text-center">
             <div className="mb-8 flex justify-center">
