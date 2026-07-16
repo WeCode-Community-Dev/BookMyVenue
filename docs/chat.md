@@ -109,19 +109,21 @@ WS /api/chat/bookings/{booking_id}/ws
 3. Join booking room
 4. Receive real-time message events
 
-**Message Protocol**:
+**Server → client events**:
 ```json
-{
-  "type": "message_created",
-  "payload": {
-    "id": "uuid",
-    "booking_id": "uuid",
-    "sender_id": "uuid",
-    "message": "text",
-    "created_at": "iso-datetime",
-    "read_at": "iso-datetime | null"
-  }
-}
+{ "type": "connected", "payload": { "booking_id": "uuid" } }
+{ "type": "message_created", "payload": { "id": "uuid", "booking_id": "uuid", "sender_id": "uuid", "message": "text", "created_at": "iso-datetime", "read_at": null } }
+{ "type": "message_sent", "payload": { /* same as message_created — ack to sender */ } }
+{ "type": "messages_read", "payload": { "booking_id": "uuid", "reader_id": "uuid" } }
+{ "type": "pong", "payload": {} }
+{ "type": "error", "payload": { "message": "..." } }
+```
+
+**Client → server events**:
+```json
+{ "type": "send_message", "message": "text" }
+{ "type": "mark_read" }
+{ "type": "ping" }
 ```
 
 ## Offline Notifications
@@ -146,23 +148,20 @@ Recipient Connected? -- No --> Create Notification --> Email Pipeline
 ## Frontend Integration
 
 ### User Web
-- Chat appears as a "Chat" tab on booking detail pages
-- Real-time updates via WebSocket connection
-- Auto-scroll to newest messages
-- Unread indicator in tab
+- Split-pane inbox at `/messages` and `/messages/:bookingId`
+- Booking detail page links into the thread (works even before the first message)
+- Real-time updates via WebSocket with REST fallback when the socket is down
+- Auto mark-as-read on open; unread badges on the conversation list
+- Auto-scroll, day separators, optimistic send, jump-to-latest
 
 ### Owner Portal
-- Same shared components reused
-- Chat tab on booking detail page
+- Same split-pane inbox UX at `/messages` and `/messages/:bookingId`
+- Embedded `ChatTab` on booking detail with a fixed-height chat window
 
 ### Shared UI Components (packages/ui)
-- `ChatWindow` - Complete chat interface
-- `MessageList` - List of messages
-- `MessageBubble` - Individual message display
-- `MessageInput` - Text input with send button
-- `EmptyState` - No messages yet
-- `LoadingState` - Loading skeleton
-- `ConnectionStatus` - Online/offline indicator
+- `ChatWindow` — full chat surface (list, input, connection banner, typing)
+- Day separators, grouped bubbles, read ticks, multi-line textarea input
+- Loading skeleton + empty state + jump-to-latest control
 
 ## Business Rules
 

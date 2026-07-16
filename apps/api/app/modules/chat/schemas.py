@@ -21,6 +21,7 @@ class SendMessageIn(BaseModel):
 
 class MarkReadOut(BaseModel):
     success: bool = True
+    updated_count: int = 0
 
 
 class ConversationOut(BaseModel):
