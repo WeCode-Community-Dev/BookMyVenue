@@ -9,26 +9,20 @@ import {
     Star,
     Users,
 } from "lucide-react";
+import {
+    getVenueAmenities,
+    getVenueCapacity,
+    getVenueLocation,
+    getVenuePrice,
+    getVenuePrimaryImage,
+    getVenueVerified,
+} from "@/features/venues/services/VenuService";
 
+import { AppText } from "@/lib/language/LanguageHelper";
 import { Button } from "@/components/ui/button/Button";
 import NxtImage from "next/image";
+import { Venue } from "@/types/Venue";
 import { cardStyle } from "./CardStyle";
-
-export type Venue = {
-  id: number;
-  name: string;
-  image: string;
-  location: string;
-  distance: string;
-  rating: number;
-  reviews: number;
-  verified: boolean;
-  guests: number;
-  amenities: string[];
-  moreAmenities: number;
-  availability: string;
-  price: number;
-};
 
 type CardProps = {
   venue: Venue;
@@ -36,6 +30,14 @@ type CardProps = {
 };
 
 export default function Card({ venue, onViewDetails }: CardProps) {
+    const image = getVenuePrimaryImage(venue);
+    const VenueLocation = getVenueLocation(venue);
+    const price = getVenuePrice(venue);
+    const amenities = getVenueAmenities(venue);
+    const capacity = getVenueCapacity(venue);
+    const verified = getVenueVerified(venue);
+    const moreAmenities = amenities.length > 2 ? amenities.length - 2 : 0;
+
     return (
         <div className={cardStyle.cardWrapper}>
 
@@ -44,14 +46,18 @@ export default function Card({ venue, onViewDetails }: CardProps) {
                 <NxtImage
                     height={220}
                     width={340}
-                    src={venue.image}
+                    src={image}
                     alt={venue.name}
                     className={cardStyle.image}
                 />
 
                 {/* Availability Badge */}
                 <div className={cardStyle.availabilityBadge}>
-                    {venue.availability}
+                    {venue.isActive ? (
+                        <AppText textName="AVAILABLE" textModule="LABEL" />
+                    ) : (
+                        <AppText textName="UNAVAILABLE" textModule="LABEL" />
+                    )}
                 </div>
 
                 {/* Wishlist */}
@@ -76,11 +82,11 @@ export default function Card({ venue, onViewDetails }: CardProps) {
                     <div className={cardStyle.ratingContainer}>
                         <Star className={cardStyle.ratingIcon} />
                         <span className={cardStyle.ratingText}>
-                            {venue.rating}
+                            {4.5}
                         </span>
 
                         <span className={cardStyle.reviewsCount}>
-              ({venue.reviews})
+              ({24})
                         </span>
                     </div>
 
@@ -91,21 +97,21 @@ export default function Card({ venue, onViewDetails }: CardProps) {
 
                     <MapPin className={cardStyle.locationIcon} />
 
-                    <span>{venue.location}</span>
+                    <span>{VenueLocation}</span>
 
                     <span>•</span>
 
-                    <span>{venue.distance}</span>
+                    <span>1.5 km</span>
 
                 </div>
 
                 {/* Verified */}
-                {venue.verified && (
+                {verified && (
                     <div className={cardStyle.verifiedBadge}>
 
                         <BadgeCheck className={cardStyle.verifiedIcon} />
                         <span className={cardStyle.verifiedText}>
-              Verified Venue
+                            <AppText textName="VERIFIED_VENUE" textModule="LABEL" />
                         </span>
 
                     </div>
@@ -116,25 +122,27 @@ export default function Card({ venue, onViewDetails }: CardProps) {
 
                     <div className={cardStyle.amenityItem}>
                         <Users className={cardStyle.amenityIcon} />
-                        <span>{venue.guests} Guests</span>
+                        <span>
+                            <AppText textName="GUEST_COUNT" textModule="LABEL" append={{ count: capacity }} />
+                        </span>
                     </div>
 
-                    {venue.amenities[ 0 ] && (
+                    {amenities[ 0 ] && (
                         <div className={cardStyle.amenityItem}>
                             <Snowflake className={cardStyle.amenityIcon} />
-                            <span>{venue.amenities[ 0 ]}</span>
+                            <span>{amenities[ 0 ]}</span>
                         </div>
                     )}
 
-                    {venue.amenities[ 1 ] && (
+                    {amenities[ 1 ] && (
                         <div className={cardStyle.amenityItem}>
                             <Car className={cardStyle.amenityIcon} />
-                            <span>{venue.amenities[ 1 ]}</span>
+                            <span>{amenities[ 1 ]}</span>
                         </div>
                     )}
 
                     <div className={cardStyle.moreAmenitiesText}>
-            +{venue.moreAmenities} More
+                        <AppText textName="MORE" textModule="LABEL" append={{ count: moreAmenities }} />
                     </div>
 
                 </div>
@@ -147,11 +155,11 @@ export default function Card({ venue, onViewDetails }: CardProps) {
                         <div className={cardStyle.priceContainer}>
 
                             <span className={cardStyle.priceText}>
-                ₹{venue.price.toLocaleString()}
+                ₹{price.toLocaleString()}
                             </span>
 
                             <span className={cardStyle.priceUnit}>
-                / day onwards
+                                <AppText textName="PRICE_UNIT" textModule="LABEL" />
                             </span>
 
                         </div>
@@ -164,7 +172,7 @@ export default function Card({ venue, onViewDetails }: CardProps) {
                             onViewDetails?.(venue);
                         }}
                     >
-            View Details
+                        <AppText textName="VIEW_DETAILS" textModule="BUTTON" />
                     </Button>
 
                 </div>

@@ -255,4 +255,9 @@ export const venueStyle = {
         "gap-4",
         "[grid-template-columns:repeat(auto-fill,minmax(280px,1fr))]",
     ),
+    flexContainer: clsx("flex"),
+    mainSection: clsx("flex-1"),
+    loadingText: clsx("text-center", "py-10", "w-full", "text-gray-500"),
+    errorText: clsx("text-center", "py-10", "w-full", "text-red-500"),
+    emptyText: clsx("text-center", "py-10", "w-full", "text-gray-500"),
 };
