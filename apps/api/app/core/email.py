@@ -10,12 +10,45 @@ Returns True if an email was actually dispatched, False if it was a dev no-op.
 
 import logging
 import smtplib
+import socket
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+def _create_ipv4_connection(host: str, port: int, timeout) -> socket.socket:
+    """Some hosts (observed on Render) resolve smtp.gmail.com's IPv6 address
+    first with no IPv6 route at all, failing instantly with "Network is
+    unreachable" before ever trying the IPv4 address that would have worked.
+    Restrict resolution to IPv4 to sidestep that.
+    """
+    last_exc: OSError = OSError(f"No IPv4 address found for {host}:{port}")
+    for family, socktype, proto, _, sockaddr in socket.getaddrinfo(
+        host, port, socket.AF_INET, socket.SOCK_STREAM
+    ):
+        sock = socket.socket(family, socktype, proto)
+        try:
+            # smtplib passes its own default (socket._GLOBAL_DEFAULT_TIMEOUT, a
+            # sentinel object, not a number) when no timeout= was given to the
+            # constructor — settimeout() can't take that directly. Mirror what
+            # socket.create_connection itself does: skip the call entirely and
+            # let the socket keep its default (blocking, no timeout).
+            if timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
+                sock.settimeout(timeout)
+            sock.connect(sockaddr)
+            return sock
+        except OSError as exc:
+            sock.close()
+            last_exc = exc
+    raise last_exc
+
+
+class _IPv4SMTP(smtplib.SMTP):
+    def _get_socket(self, host, port, timeout):
+        return _create_ipv4_connection(host, port, timeout)
 
 
 def send_email(to: str, subject: str, html: str, reply_to: str | None = None) -> bool:
@@ -61,7 +94,7 @@ def _send_via_smtp(to: str, subject: str, html: str, reply_to: str | None = None
     msg.set_content("This email requires an HTML-capable client.")
     msg.add_alternative(html, subtype="html")
 
-    with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
+    with _IPv4SMTP(settings.smtp_host, settings.smtp_port, timeout=10) as server:
         server.starttls()
         if settings.smtp_user:
             server.login(settings.smtp_user, settings.smtp_password)

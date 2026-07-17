@@ -1,5 +1,3 @@
-import smtplib
-
 from app.core import email as email_mod
 from app.core.config import settings
 
@@ -18,9 +16,10 @@ def test_smtp_fallback_is_used(monkeypatch):
     captured = {}
 
     class FakeSMTP:
-        def __init__(self, host, port):
+        def __init__(self, host, port, timeout=None):
             captured["host"] = host
             captured["port"] = port
+            captured["timeout"] = timeout
 
         def __enter__(self):
             return self
@@ -37,7 +36,7 @@ def test_smtp_fallback_is_used(monkeypatch):
         def send_message(self, msg):
             captured["to"] = msg["To"]
 
-    monkeypatch.setattr(smtplib, "SMTP", FakeSMTP)
+    monkeypatch.setattr(email_mod, "_IPv4SMTP", FakeSMTP)
 
     assert email_mod.send_email("guest@example.com", "Hi", "<p>hi</p>") is True
     assert captured["host"] == "smtp.example.com"
