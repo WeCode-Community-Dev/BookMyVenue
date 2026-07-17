@@ -431,9 +431,16 @@ def get_availability_for_date(
         .all()
     )
 
+    venue_blocked_ranges = [
+        BlockedRange(starts_at=block.starts_at, ends_at=block.ends_at)
+        for block in getattr(venue, "blocked_dates", [])
+        if block.deleted_at is None
+        and _has_overlap(block.starts_at, block.ends_at, window_start, window_end)
+    ]
+
     if booking_type == "full_day":
-        # Full day is blocked if there's ANY existing booking
-        if blocked_slots_db:
+        # Full day is blocked if there's ANY existing booking or venue block
+        if blocked_slots_db or venue_blocked_ranges:
             return AvailabilityResponse(
                 date=booking_date,
                 operating_window=operating_window,
@@ -453,18 +460,12 @@ def get_availability_for_date(
         blocked_slots=[
             BlockedRange(starts_at=slot.effective_starts_at, ends_at=slot.effective_ends_at)
             for slot in blocked_slots_db
-        ],
+        ]
+        + venue_blocked_ranges,
     )
 
 
-def _build_calendar_for_venue(
-    db: Session,
-    venue,
-    start_date: date,
-    end_date: date,
-    booking_type: str = "time_slot",
-    include_owner_details: bool = False,
-) -> CalendarResponse:
+def _validate_calendar_date_range(start_date: date, end_date: date) -> None:
     if end_date < start_date:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -476,6 +477,17 @@ def _build_calendar_for_venue(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Calendar range cannot exceed 370 days",
         )
+
+
+def _build_calendar_for_venue(
+    db: Session,
+    venue,
+    start_date: date,
+    end_date: date,
+    booking_type: str = "time_slot",
+    include_owner_details: bool = False,
+) -> CalendarResponse:
+    _validate_calendar_date_range(start_date, end_date)
 
     # Load data for the entire range
     range_start, _ = _local_day_bounds(venue, start_date)
@@ -670,6 +682,8 @@ def get_calendar(
     end_date: date,
     booking_type: str = "time_slot",
 ) -> CalendarResponse:
+    _validate_calendar_date_range(start_date, end_date)
+
     venue = _get_active_venue_or_404(
         db,
         venue_id,
@@ -692,6 +706,8 @@ def get_owner_calendar(
     end_date: date,
     allow_admin: bool = False,
 ) -> CalendarResponse:
+    _validate_calendar_date_range(start_date, end_date)
+
     venue = _get_venue_or_404(
         db,
         venue_id,
