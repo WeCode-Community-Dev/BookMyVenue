@@ -514,7 +514,7 @@ export default function CreateVenueWizard() {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+        <div className="mb-4 p-4 rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 text-sm">
           {error}
         </div>
       )}

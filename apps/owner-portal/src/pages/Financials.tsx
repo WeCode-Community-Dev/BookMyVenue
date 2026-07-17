@@ -69,11 +69,11 @@ export default function Financials() {
   ]
 
   const getEntryTypeConfig = (type: string, direction: string) => {
-    if (type === 'charge' && direction === 'credit') return { bg: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20', label: 'Charge' }
-    if (type === 'platform_fee' && direction === 'debit') return { bg: 'bg-amber-50 text-amber-700 ring-amber-600/20', label: 'Platform Fee' }
-    if (type === 'platform_fee_reversal' && direction === 'credit') return { bg: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20', label: 'Fee Reversed' }
-    if (type === 'refund' && direction === 'debit') return { bg: 'bg-red-50 text-red-700 ring-red-600/10', label: 'Refund' }
-    if (type === 'payout' && direction === 'debit') return { bg: 'bg-blue-50 text-blue-700 ring-blue-600/20', label: 'Payout' }
+    if (type === 'charge' && direction === 'credit') return { bg: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 ring-emerald-600/20 dark:ring-emerald-500/20', label: 'Charge' }
+    if (type === 'platform_fee' && direction === 'debit') return { bg: 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 ring-amber-600/20 dark:ring-amber-500/20', label: 'Platform Fee' }
+    if (type === 'platform_fee_reversal' && direction === 'credit') return { bg: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 ring-emerald-600/20 dark:ring-emerald-500/20', label: 'Fee Reversed' }
+    if (type === 'refund' && direction === 'debit') return { bg: 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 ring-red-600/10 dark:ring-red-500/20', label: 'Refund' }
+    if (type === 'payout' && direction === 'debit') return { bg: 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 ring-blue-600/20 dark:ring-blue-500/20', label: 'Payout' }
     return { bg: 'bg-zinc-100 dark:bg-ink-800 text-zinc-700 dark:text-zinc-300 ring-zinc-500/10', label: type }
   }
 
@@ -83,7 +83,7 @@ export default function Financials() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Main Metric: Net Earnings */}
-        <Card className="lg:col-span-2 relative overflow-hidden p-5 border-zinc-200/60 shadow-sm bg-zinc-950 text-white">
+        <Card className="lg:col-span-2 relative overflow-hidden p-5 border-zinc-200/60 dark:border-ink-700 shadow-sm bg-zinc-950 text-white">
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
             <IndianRupee className="w-40 h-40" />
           </div>
@@ -102,12 +102,12 @@ export default function Financials() {
         </Card>
 
         {/* Gross Sales */}
-        <Card className="relative overflow-hidden p-5 border-zinc-200/60 shadow-sm flex flex-col">
+        <Card className="relative overflow-hidden p-5 border-zinc-200/60 dark:border-ink-700 shadow-sm flex flex-col">
           <div className="absolute -bottom-4 -right-4 p-4 opacity-[0.03] pointer-events-none text-zinc-900 dark:text-zinc-100">
             <ArrowUpRight className="w-32 h-32" />
           </div>
           <div className="flex items-center gap-3 mb-4 relative z-10">
-            <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner shrink-0">
+            <div className="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-inner shrink-0">
               <ArrowUpRight className="h-4 w-4" />
             </div>
             <div>
@@ -123,7 +123,7 @@ export default function Financials() {
         {/* Deductions Stack */}
         <div className="grid grid-rows-2 gap-4 col-span-1">
              {/* Platform Fees */}
-            <Card className="relative p-4 border-zinc-200/60 shadow-sm flex items-center justify-between">
+            <Card className="relative p-4 border-zinc-200/60 dark:border-ink-700 shadow-sm flex items-center justify-between">
                 <div>
                     <h3 className="text-zinc-500 dark:text-zinc-400 font-medium text-[10px] uppercase tracking-wider flex items-center gap-1.5">
                         <ArrowDownRight className="w-3 h-3 text-amber-500" /> Service Fees
@@ -135,7 +135,7 @@ export default function Financials() {
             </Card>
 
              {/* Refunds */}
-             <Card className="relative p-4 border-zinc-200/60 shadow-sm flex items-center justify-between">
+             <Card className="relative p-4 border-zinc-200/60 dark:border-ink-700 shadow-sm flex items-center justify-between">
                 <div>
                     <h3 className="text-zinc-500 dark:text-zinc-400 font-medium text-[10px] uppercase tracking-wider flex items-center gap-1.5">
                         <TrendingDown className="w-3 h-3 text-red-500" /> Refunds Issued
@@ -165,7 +165,7 @@ export default function Financials() {
                 className={`flex-1 whitespace-nowrap py-3 border-b-2 font-medium text-sm transition-all ${
                   tab === t.id
                     ? 'border-brand-500 text-brand-600'
-                    : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'
+                    : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:border-zinc-300 dark:hover:border-ink-700'
                 }`}
               >
                 {t.label}
@@ -273,7 +273,7 @@ export default function Financials() {
 
                         {/* Amount */}
                         <td className={`${CELL} text-right`}>
-                            <div className={`font-semibold tracking-tight ${isCredit ? 'text-emerald-600' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                            <div className={`font-semibold tracking-tight ${isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
                                 {isCredit ? '+' : '-'}{inr(entry.amount_paise)}
                             </div>
                             <div className="text-[10px] text-zinc-400 dark:text-zinc-400 uppercase tracking-wider mt-0.5">

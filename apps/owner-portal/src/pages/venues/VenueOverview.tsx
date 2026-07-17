@@ -106,7 +106,7 @@ export default function VenueOverview() {
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start gap-3">
+        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 text-rose-700 dark:text-rose-400 text-sm flex items-start gap-3">
           <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
           <p>{error}</p>
         </div>
@@ -114,14 +114,14 @@ export default function VenueOverview() {
 
       {/* Draft Banner */}
       {venue.status === 'draft' && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/60 p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
-          <div className="flex gap-4 text-blue-900">
-            <div className="w-10 h-10 rounded-full bg-blue-100/80 flex items-center justify-center shrink-0">
-              <Info className="h-5 w-5 text-blue-600" />
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/20 border border-blue-200/60 dark:border-blue-900/40 p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
+          <div className="flex gap-4 text-blue-900 dark:text-blue-300">
+            <div className="w-10 h-10 rounded-full bg-blue-100/80 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
+              <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <h4 className="font-bold text-base">Your venue is in Draft mode</h4>
-              <p className="text-sm mt-1 text-blue-800/80 leading-relaxed max-w-2xl">Take your time to add photos, configure pricing, and review your policies. When you are fully satisfied and ready to accept bookings, submit it for review to make it live.</p>
+              <p className="text-sm mt-1 text-blue-800/80 dark:text-blue-400/80 leading-relaxed max-w-2xl">Take your time to add photos, configure pricing, and review your policies. When you are fully satisfied and ready to accept bookings, submit it for review to make it live.</p>
             </div>
           </div>
           <Button
@@ -164,13 +164,13 @@ export default function VenueOverview() {
           <div className="flex flex-wrap items-center gap-3 mb-2">
             <h1 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">{venue.name}</h1>
             {venue.status === 'approved' && (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 text-xs font-bold tracking-wide shadow-sm mt-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-xs font-bold tracking-wide shadow-sm mt-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 LIVE
               </div>
             )}
             {venue.status === 'pending_approval' && (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200/60 text-amber-700 text-xs font-bold tracking-wide shadow-sm mt-1">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-amber-700 dark:text-amber-400 text-xs font-bold tracking-wide shadow-sm mt-1">
                 <Clock className="w-3 h-3" />
                 PENDING REVIEW
               </div>
@@ -185,7 +185,7 @@ export default function VenueOverview() {
         {venue.status === 'approved' && (
           <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
             <Link to={`/venues/${venueId}/calendar`} className="w-full sm:w-auto">
-              <Button variant="primary" className="bg-white dark:bg-ink-900 hover:bg-emerald-50 text-emerald-700 border border-emerald-200 w-full flex items-center justify-center gap-2 shadow-sm hover:shadow hover:-translate-y-0.5 transition-all duration-300">
+              <Button variant="primary" className="bg-white dark:bg-ink-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 w-full flex items-center justify-center gap-2 shadow-sm hover:shadow hover:-translate-y-0.5 transition-all duration-300">
                 <CalendarDays className="h-4 w-4" />
                 Manage Calendar
               </Button>

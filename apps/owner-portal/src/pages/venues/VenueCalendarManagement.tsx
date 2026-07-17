@@ -236,7 +236,7 @@ export default function VenueCalendarManagement() {
 
 
       {error && (
-        <div className="p-4 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+        <div className="p-4 rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 text-sm">
           {error}
         </div>
       )}
@@ -432,7 +432,7 @@ export default function VenueCalendarManagement() {
                       <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
 
                       <div className="flex items-start gap-5">
-                        <div className="hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-red-50 border border-red-100 text-red-500 shrink-0">
+                        <div className="hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 text-red-500 dark:text-red-400 shrink-0">
                           <Ban className="w-5 h-5" />
                         </div>
                         <div>
@@ -452,12 +452,12 @@ export default function VenueCalendarManagement() {
                           
                           {block.reason ? (
                             <div className="text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-2 mt-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-ink-600"></span>
                               <span>{block.reason}</span>
                             </div>
                           ) : (
                             <div className="text-sm text-zinc-400 dark:text-zinc-400 italic flex items-center gap-2 mt-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-zinc-200"></span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-zinc-200 dark:bg-ink-700"></span>
                               <span>No specific reason provided</span>
                             </div>
                           )}
@@ -467,7 +467,7 @@ export default function VenueCalendarManagement() {
                       {/* Subtly visible Unblock button (not hidden on mobile) */}
                       <button 
                         onClick={() => handleDeleteBlockedDate(block.id)}
-                        className="mt-5 md:mt-0 self-start md:self-center flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50/50 hover:bg-red-50 border border-transparent hover:border-red-100 px-4 py-2.5 rounded-lg transition-all shrink-0"
+                        className="mt-5 md:mt-0 self-start md:self-center flex items-center gap-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-red-50/50 dark:bg-red-950/20 hover:bg-red-50 dark:hover:bg-red-950/40 border border-transparent hover:border-red-100 dark:hover:border-red-900/40 px-4 py-2.5 rounded-lg transition-all shrink-0"
                         title="Unblock date"
                       >
                         <Trash2 className="h-4 w-4" />
