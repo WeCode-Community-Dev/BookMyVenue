@@ -13,7 +13,6 @@ import {
   getAdminRevenueChart,
   getAdminBookingChart,
   getAdminCategoryPerformance,
-  getAdminRecentActivity,
   getAdminPlatformLeaders,
   getAdminAlerts,
 } from '@/repositories/dashboard.repository';
@@ -230,27 +229,7 @@ export async function adminDashboardService() {
     };
   });
 
-  // 4. Recent activities
-  const { recentUsers, recentVenues } = await getAdminRecentActivity();
 
-  const recentActivity: any[] = [];
-  recentUsers.forEach((u) => {
-    recentActivity.push({
-      title: 'New user registered',
-      description: `${u.fullName} signed up on the platform`,
-      time: formatTimeAgo(u.createdAt),
-      type: u.role === 'owner' ? 'owner_register' : 'booking_confirm',
-    });
-  });
-
-  recentVenues.forEach((v) => {
-    recentActivity.push({
-      title: 'Venue submitted',
-      description: `"${v.name}" was submitted for review`,
-      time: formatTimeAgo(v.createdAt),
-      type: 'venue_submit',
-    });
-  });
 
   // 5. Platform Leaders
   const platformLeaders = await getAdminPlatformLeaders();
@@ -294,7 +273,6 @@ export async function adminDashboardService() {
     revenueChart,
     bookingChart,
     categoryPerformance,
-    recentActivity,
     platformLeaders,
     alerts,
   };
