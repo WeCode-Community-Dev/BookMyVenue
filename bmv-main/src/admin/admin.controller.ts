@@ -15,6 +15,7 @@ import { Role } from '@prisma/client';
 import { UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -74,20 +75,45 @@ export class AdminController {
   }
 
   @Patch('venues/:venueId/reject')
-@ApiOperation({
-  summary: 'Reject a venue',
-})
-@ApiResponse({
-  status: 200,
-  description: 'Venue rejected successfully.',
-})
-rejectVenue(
-  @Param('venueId') venueId: string,
-  @Body() rejectVenueDto: RejectVenueDto,
-) {
-  return this.adminService.rejectVenue(
-    venueId,
-    rejectVenueDto,
-  );
-}
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Reject a pending venue application',
+    description:
+      'Rejects the specified pending venue by recording the admin-provided rejection reason.',
+  })
+  @ApiParam({
+    name: 'venueId',
+    required: true,
+    description: 'Unique identifier of the venue application to reject',
+    example: 'f4d8b0a6-2f5d-4c90-9c7b-b8c8d4c6a1fd',
+  })
+  @ApiBody({ type: RejectVenueDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Venue rejected successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation failed or rejection reason is missing.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden. Requires admin privileges.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Venue not found.',
+  })
+  rejectVenue(
+    @Param('venueId') venueId: string,
+    @Body() rejectVenueDto: RejectVenueDto,
+  ) {
+    return this.adminService.rejectVenue(venueId, rejectVenueDto);
+  }
 }

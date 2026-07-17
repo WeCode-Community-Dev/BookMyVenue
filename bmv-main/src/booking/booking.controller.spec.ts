@@ -4,11 +4,20 @@ import { BookingService } from './booking.service';
 
 describe('BookingController', () => {
   let controller: BookingController;
+  const bookingServiceMock = {
+    getMyBookings: jest.fn(),
+    getBookingDetails: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [BookingController],
-      providers: [BookingService],
+      providers: [
+        {
+          provide: BookingService,
+          useValue: bookingServiceMock,
+        },
+      ],
     }).compile();
 
     controller = module.get<BookingController>(BookingController);

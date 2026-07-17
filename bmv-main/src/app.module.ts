@@ -13,6 +13,7 @@ import { AdminModule } from './admin/admin.module';
 import { MailModule } from './mail/mail.module';
 import { SearchModule } from './search/search.module';
 import { BookingModule } from './booking/booking.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { BookingModule } from './booking/booking.module';
     MailModule,
     SearchModule,
     BookingModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
