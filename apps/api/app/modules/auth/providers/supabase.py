@@ -1,4 +1,5 @@
 import json
+import threading
 import urllib.error
 import urllib.request
 from uuid import UUID
@@ -9,6 +10,50 @@ from app.core.config import settings
 from app.core.exceptions import BadRequestError, ConflictError, UnauthorizedError
 from app.modules.auth.providers.base import AuthProvider, ProviderUser
 
+_ADMIN_API_TIMEOUT_SECONDS = 10
+_JWKS_TIMEOUT_SECONDS = 5
+
+
+class _HangTimeout(Exception):
+    """Raised when a blocking call doesn't finish within the deadline."""
+
+
+def _run_with_hard_timeout(fn, timeout_seconds: float):
+    """Run `fn` (a zero-arg blocking callable) on a daemon thread and wait
+    up to `timeout_seconds` wall-clock. `urlopen`'s own `timeout` argument
+    only bounds the socket connect/read — it does NOT cover DNS resolution,
+    a separate blocking OS call with no timeout at all. A stalled
+    resolver/connect on the host network (observed on Render — forgot-password
+    hung indefinitely with the request thread stuck and no response ever sent
+    to the client) can hang `fn` forever with nothing downstream able to stop
+    it. This guarantees the caller always gets control back within
+    `timeout_seconds`, no matter what's stuck underneath.
+
+    Uses a plain daemon thread rather than ThreadPoolExecutor: the latter
+    registers an atexit hook that joins ALL its worker threads — including
+    ones already abandoned via shutdown(wait=False) — before the process can
+    exit, so a single hang would leak a thread that later blocks graceful
+    shutdown/redeploy. A daemon thread carries no such obligation.
+    """
+    result: dict = {}
+    error: list[BaseException] = []
+    done = threading.Event()
+
+    def _target():
+        try:
+            result["value"] = fn()
+        except BaseException as exc:  # noqa: BLE001 -- re-raised on the caller's thread below
+            error.append(exc)
+        finally:
+            done.set()
+
+    threading.Thread(target=_target, daemon=True).start()
+    if not done.wait(timeout=timeout_seconds):
+        raise _HangTimeout()
+    if error:
+        raise error[0]
+    return result["value"]
+
 
 class SupabaseAuthProvider(AuthProvider):
     def __init__(self) -> None:
@@ -17,8 +62,12 @@ class SupabaseAuthProvider(AuthProvider):
     def _get_jwks(self) -> list:
         if self._jwks_cache is None:
             url = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
-            with urllib.request.urlopen(url, timeout=5) as resp:  # noqa: S310
-                self._jwks_cache = json.loads(resp.read()).get("keys", [])
+
+            def _do_request() -> list:
+                with urllib.request.urlopen(url, timeout=_JWKS_TIMEOUT_SECONDS) as resp:  # noqa: S310
+                    return json.loads(resp.read()).get("keys", [])
+
+            self._jwks_cache = _run_with_hard_timeout(_do_request, _JWKS_TIMEOUT_SECONDS)
         return self._jwks_cache
 
     def verify_token(self, token: str) -> ProviderUser:
@@ -50,7 +99,7 @@ class SupabaseAuthProvider(AuthProvider):
                 )
         except JWTError as exc:
             raise UnauthorizedError(f"JWT error: {exc}")
-        except (urllib.error.URLError, TimeoutError) as exc:
+        except (urllib.error.URLError, TimeoutError, _HangTimeout) as exc:
             # JWKS fetch failed (network blip, Supabase briefly unreachable, etc.) —
             # this must surface as a normal 401, not an uncaught 500 that takes
             # every authenticated request down with it. Cache stays empty, so the
@@ -66,6 +115,7 @@ class SupabaseAuthProvider(AuthProvider):
     def _generate_link(self, body: dict) -> dict:
         """POST /admin/generate_link — creates the account/token but sends no
         email itself, unlike /invite or the client SDK's resetPasswordForEmail.
+        See _run_with_hard_timeout for why this is wrapped in a hard deadline.
         """
         url = f"{settings.supabase_url}/auth/v1/admin/generate_link"
         req = urllib.request.Request(
@@ -78,8 +128,15 @@ class SupabaseAuthProvider(AuthProvider):
                 "Content-Type": "application/json",
             },
         )
-        with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
-            return json.loads(resp.read())
+
+        def _do_request() -> dict:
+            with urllib.request.urlopen(req, timeout=_ADMIN_API_TIMEOUT_SECONDS) as resp:  # noqa: S310
+                return json.loads(resp.read())
+
+        try:
+            return _run_with_hard_timeout(_do_request, _ADMIN_API_TIMEOUT_SECONDS)
+        except _HangTimeout:
+            raise BadRequestError("Could not reach Supabase — request timed out.")
 
     def create_invite_link(
         self,
