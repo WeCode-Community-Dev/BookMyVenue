@@ -97,22 +97,6 @@ def send_message_and_notify(
 ) -> ChatMessageOut:
     """Send message and trigger notification for offline recipient (async)."""
     result = send_message(db, booking_id, sender_id, message)
-
-    customer_id, owner_id = get_booking_participants(db, booking_id)
-    recipient_id = owner_id if sender_id == customer_id else customer_id
-
-    # Get venue name for notification context
-    from sqlalchemy import select
-
-    from app.modules.booking.models import Booking
-    from app.modules.venue.models import Venue
-
-    booking = db.execute(select(Booking).where(Booking.id == booking_id)).scalar_one_or_none()
-    venue_name = None
-    if booking:
-        venue = db.execute(select(Venue).where(Venue.id == booking.venue_id)).scalar_one_or_none()
-        venue_name = venue.name if venue else None
-
     # Note: notify_offline_participant will be called in websocket.py async context
     return result
 
@@ -150,7 +134,7 @@ def _to_output(msg) -> ChatMessageOut:
     )
 
 
-def _getVenueNameForNotification(db: Session, booking_id: UUID) -> str | None:
+def get_venue_name_for_notification(db: Session, booking_id: UUID) -> str | None:
     """Get venue name for notification context. Used by WebSocket sender."""
     from sqlalchemy import select
 
@@ -170,21 +154,3 @@ def get_booking_participants_for_ws(
 ) -> tuple[UUID, UUID]:
     """Get booking participants for WebSocket auth (no exceptions, returns None for missing)."""
     return get_booking_participants(db, booking_id)
-
-
-def send_message_ws(
-    db: Session,
-    booking_id: UUID,
-    sender_id: UUID,
-    message: str,
-) -> dict:
-    """Send message via WebSocket (returns dict for JSON serialization)."""
-    result = send_message(db, booking_id, sender_id, message)
-    return {
-        "id": str(result.id),
-        "booking_id": str(result.booking_id),
-        "sender_id": str(result.sender_id),
-        "message": result.message,
-        "created_at": result.created_at,
-        "read_at": result.read_at,
-    }
