@@ -6,8 +6,14 @@ import VenueDetailsForm from "@/presentation/components/vendor/addVenue/VenueDet
 import AmenitiesForm from "@/presentation/components/vendor/addVenue/AmenitiesForm";
 import PricingForm from "@/presentation/components/vendor/addVenue/PricingForm";
 import ReviewForm from "@/presentation/components/vendor/addVenue/ReviewForm";
-import api from "@/lib/axios";
-import { API_ROUTES } from "@/constants/apiRoutes";
+import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import {
+  fetchVendorProfile,
+  createVenue,
+  clearVenueState,
+} from "@/redux/slices/VendorVenueSlice";
+
 
 const AddVenue = () => {
   const [venueName, setVenueName] = useState("");
@@ -33,22 +39,60 @@ const AddVenue = () => {
   });
   const [errors, setErrors] = useState({});
   const [submissionError, setSubmissionError] = useState("");
-  const [ownerId, setOwnerId] = useState("");
+  const [license,setLicense] = useState(null);
 
-  const fetchVendorProfile = async () => {
-    try {
-      const response = await api.get(API_ROUTES.VENDOR.PROFILE);
-      setOwnerId(response?.data?.data?.id || "");
-    } catch (err) {
-      console.error("Unable to load vendor profile", err);
-    }
-  };
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    fetchVendorProfile();
-  }, []);
+  const {
+    ownerId,
+    loading,
+    success,
+    error,
+  } = useSelector((state) => state.vendorVenue);
+  
 
-  const validateForm = () => {
+useEffect(() => {
+  dispatch(fetchVendorProfile());
+}, [dispatch]);
+
+useEffect(() => {
+if (success) {
+  toast.success("Venue created successfully!");
+
+  setVenueName("");
+  setCategory("");
+  setDescription("");
+  setAddressLine1("");
+  setCity("");
+  setState("");
+  setCountry("");
+  setPhone("");
+  setPincode("");
+  setWebsiteUrl("");
+  setGoogleMapLink("");
+  setImages([]);
+  setAmenities([]);
+  setLicense(null);
+  setPricing({
+    seatingCapacity: "",
+    standingCapacity: "",
+    pricePerDay: "",
+    securityDeposit: "",
+    weekendSurcharge: "",
+    minimumBookingHours: "",
+  });
+
+  dispatch(clearVenueState());
+}
+  if (error) {
+    toast.error(error);
+
+    dispatch(clearVenueState());
+  }
+}, [success, error, dispatch]);
+
+
+const validateForm = () => {
     setSubmissionError("");
     const newErrors = {};
 
@@ -64,6 +108,10 @@ const AddVenue = () => {
     if (websiteUrl.trim() && !/^https?:\/\/.+/.test(websiteUrl.trim())) newErrors.websiteUrl = "Website URL must be valid.";
     if (googleMapLink.trim() && !/^https?:\/\/.+/.test(googleMapLink.trim())) newErrors.googleMapLink = "Google Map link must be valid.";
     if (images.length < 3) newErrors.images = "Upload at least 3 images.";
+    if (license && license.type !== "application/pdf") {
+  newErrors.license = "Only PDF files are allowed.";
+}
+    
     if (!pricing.seatingCapacity || Number(pricing.seatingCapacity) < 0) newErrors.seatingCapacity = "Seating capacity must be a non-negative number.";
     if (!pricing.standingCapacity || Number(pricing.standingCapacity) < 0) newErrors.standingCapacity = "Standing capacity must be a non-negative number.";
     if (!pricing.pricePerDay || Number(pricing.pricePerDay) < 0) newErrors.pricePerDay = "Price per day must be a non-negative number.";
@@ -102,22 +150,19 @@ const AddVenue = () => {
       setSubmissionError("Unable to create venue before profile loads.");
       return;
     }
+    if (license) {
+  formData.append("license", license);
+}
 
     formData.append("vendorId", ownerId);
     formData.append("ownerId", ownerId);
     images.forEach((image) => formData.append("images", image));
 
-    try {
-      const res = await api.post(API_ROUTES.VENDOR.CREATE_VENUE, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      alert("Venue created successfully!");
-      console.log(res?.data?.data);
-    } catch (err) {
-      const serverMessage = err?.response?.data?.message || err?.message || "Failed to create venue";
-      setSubmissionError(serverMessage);
-      console.error(err);
-    }
+try {
+  await dispatch(createVenue(formData)).unwrap();
+} catch (err) {
+  setSubmissionError(err);
+}
   };
 
   return (
@@ -159,6 +204,8 @@ const AddVenue = () => {
             setGoogleMapLink={setGoogleMapLink}
             images={images}
             setImages={setImages}
+            license={license}
+            setLicense={setLicense}
             errors={errors}
           />
 
@@ -176,6 +223,8 @@ const AddVenue = () => {
             pricing={pricing}
             amenities={amenities}
             onPublish={handleSubmit}
+            loading={loading}
+            submitLabel="Publish Venue"
           />
         </main>
       </div>

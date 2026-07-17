@@ -5,9 +5,14 @@ import VendorNavbar from "@/presentation/components/vendor/VendorNavbar";
 import VenueHeader from "@/presentation/components/vendor/VenueHeader";
 import VenueFilters from "@/presentation/components/vendor/VenueFilters";
 import VenueGrid from "@/presentation/components/vendor/VenueGrid";
-import api from "@/lib/axios";
-import { API_ROUTES } from "@/constants/apiRoutes";
+import DeleteVenueDialog from "@/presentation/components/vendor/DeleteVenueDialog";
 import { ROUTES } from "@/constants/routes";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchVenues,
+  deleteVenue,
+} from "@/redux/slices/VendorVenueSlice";
+import toast from "react-hot-toast";
 
 const initialFilters = {
   search: "",
@@ -23,17 +28,48 @@ const initialFilters = {
   limit: 20,
 };
 
+
 const VenueList = () => {
-  const [venues, setVenues] = useState([]);
+
+  const dispatch = useDispatch();
+
+const {
+  venues,
+  loading,
+  error,
+} = useSelector((state) => state.vendorVenue);
+
   const [filters, setFilters] = useState(initialFilters);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [viewMode, setViewMode] = useState("grid");
   const navigate = useNavigate();
+const [deleteOpen, setDeleteOpen] = useState(false);
 
+const [selectedVenueId, setSelectedVenueId] = useState(null);
   const handleEditVenue = (venueId) => {
     navigate(ROUTES.VENDOR.EDIT_VENUE.replace(":venueId", venueId));
   };
+
+const handleDeleteVenue = (venueId) => {
+  setSelectedVenueId(venueId);
+  setDeleteOpen(true);
+};
+
+const confirmDeleteVenue = async () => {
+  try {
+    await dispatch(deleteVenue(selectedVenueId)).unwrap();
+
+    toast.success("Venue deleted successfully");
+
+    setDeleteOpen(false);
+
+    setSelectedVenueId(null);
+
+    dispatch(fetchVenues(queryParams));
+
+  } catch (err) {
+    toast.error(err);
+  }
+};
 
   const queryParams = useMemo(() => {
     const sanitized = { ...filters };
@@ -56,27 +92,10 @@ const VenueList = () => {
     return venues.filter((venue) => venue.approvalStatus === filters.status);
   }, [venues, filters.status]);
 
-  useEffect(() => {
-    const fetchVenues = async () => {
-      setLoading(true);
-      setError("");
+useEffect(() => {
+  dispatch(fetchVenues(queryParams));
+}, [dispatch, queryParams]);
 
-      try {
-        const response = await api.get(API_ROUTES.VENDOR.VENUES, {
-          params: queryParams,
-        });
-        const payload = response?.data?.data || {};
-        setVenues(payload.data || []);
-      } catch (err) {
-        console.error(err);
-        setError("Unable to load venues.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVenues();
-  }, [queryParams]);
 
   return (
     <div className="flex bg-slate-100 min-h-screen">
@@ -104,8 +123,22 @@ const VenueList = () => {
             </p>
           )}
 
-          <VenueGrid venues={visibleVenues} loading={loading} error={error} viewMode={viewMode} onEdit={handleEditVenue} />
-        </main>
+    <VenueGrid
+      venues={visibleVenues}
+      loading={loading}
+      error={error}
+      viewMode={viewMode}
+      onEdit={handleEditVenue}
+      onDelete={handleDeleteVenue}
+    /> 
+
+    <DeleteVenueDialog
+  open={deleteOpen}
+  onOpenChange={setDeleteOpen}
+  onConfirm={confirmDeleteVenue}
+  loading={loading}
+/>       
+  </main>
       </div>
     </div>
   );

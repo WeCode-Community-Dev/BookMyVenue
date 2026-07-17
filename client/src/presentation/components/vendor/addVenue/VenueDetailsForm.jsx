@@ -28,6 +28,8 @@ const VenueDetailsForm = ({
   setGoogleMapLink,
   images,
   setImages,
+  license,
+  setLicense,
   existingImages = [],
   onRemoveExistingImage,
   errors = {},
@@ -36,6 +38,20 @@ const VenueDetailsForm = ({
     const files = Array.from(e.target.files || []);
     setImages(files);
   };
+const handleLicenseChange = (e) => {
+  const file = e.target.files?.[0];
+
+  if (!file) return;
+
+  if (file.type !== "application/pdf") {
+    toast.error("Only PDF files are allowed.");
+    e.target.value="";
+    setLicense(null);
+    return;
+  }
+
+  setLicense(file);
+};
 
   const newImagePreviews = useMemo(() => {
     return images.map((file) => ({
@@ -158,6 +174,33 @@ const VenueDetailsForm = ({
           {errors.images && <p className="mt-2 text-sm text-red-600">{errors.images}</p>}
         </div>
       </div>
+    <div className="col-span-2">
+  <label className="block mb-2 text-sm font-medium">
+    Business License (PDF)
+  </label>
+
+  <input
+    type="file"
+    accept=".pdf"
+    onChange={handleLicenseChange}
+    className="block w-full text-sm"
+    aria-invalid={Boolean(errors.license)}
+  />
+
+  {license && (
+    <div className="mt-2 rounded-lg border bg-slate-50 p-3">
+      <p className="text-sm text-green-700">
+        📄 {license.name}
+      </p>
+    </div>
+  )}
+
+  {errors.license && (
+    <p className="mt-2 text-sm text-red-600">
+      {errors.license}
+    </p>
+  )}
+</div>  
 
       <div className="mt-6">
         <label className="block mb-2 text-sm font-medium">Description</label>

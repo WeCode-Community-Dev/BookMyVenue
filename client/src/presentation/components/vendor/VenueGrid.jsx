@@ -1,7 +1,15 @@
 import React from "react";
 import VenueCard from "./VenueCard";
 
-const VenueGrid = ({ venues = [], loading = false, error = "", viewMode = "grid", onEdit }) => {
+const VenueGrid = ({ 
+  venues = [], 
+  loading = false, 
+  error = "",
+  viewMode = "grid",
+  onEdit,
+  onDelete,
+
+}) => {
   if (loading) {
     return null;
   }
@@ -82,6 +90,7 @@ const VenueGrid = ({ venues = [], loading = false, error = "", viewMode = "grid"
             category={venue.category}
             status={venue.approvalStatus}
             onEdit={() => onEdit?.(venue.id)}
+            onDelete={() => onDelete?.(venue.id)}
           />
         );
       })}
