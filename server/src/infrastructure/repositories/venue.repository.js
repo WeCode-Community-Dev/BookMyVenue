@@ -1,6 +1,6 @@
 import { VenueMapper } from "../../application/mapper/Venue.mapper.js";
 import { IVenueRepository } from "../../domain/repositories/IVenue.repository.js";
-import { VenueModel } from "../database/Venue.model.js";
+import { VenueModel } from '../database/models/Venue.model.js'
 import { VenueStatus } from "../../domain/enums/Venue.enum.js";
 
 export class VenueRepository extends IVenueRepository {

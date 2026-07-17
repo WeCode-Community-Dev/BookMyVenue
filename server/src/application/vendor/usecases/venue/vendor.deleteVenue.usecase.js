@@ -1,26 +1,28 @@
 import { VenueMessages } from '../../../../shared/constants/messages/venueMessages.js'
 import { NotFoundError } from '../../../../domain/errors/NotFoundError.js'
 import { ForbiddenError } from '../../../../domain/errors/forbidden.error.js'
+import { UnauthorizedError } from '../../../../domain/errors/UnauthorizedError.js'
+import { authMessages } from '../../../../shared/constants/messages/authMessages.js'
 
 export class VendorDeleteVenueUsecase {
     constructor (
         venueRepository,
-        // ownerRepository
+        vendorRepository
     ) {
         this._venueRepository = venueRepository
-        // this._ownerRepository = ownerRepository
+        this._vendorRepository = vendorRepository
     }
 
-    async execute(ownerId, venueId) {
-        // const owner = await this._ownerRepository.findById(ownerId)
-        // if(!owner){
-        //     throw new AppError(authMessages.error.OWNER_NOT_FOUND, statusCode.NOT_FOUND)
-        // }
+    async execute(vendorId, venueId) {
+        const vendor = await this._vendorRepository.findById(vendorId)
+        if(!vendor){
+            throw new UnauthorizedError(authMessages.error.VENDOR_NOT_FOUND)
+        }
         const venue = await this._venueRepository.findById(venueId)
         if(!venue){
             throw new NotFoundError(VenueMessages.error.VENUE_NOT_FOUND)
         }
-        if(venue.ownerId !== ownerId){
+        if(venue.vendorId !== vendorId){
             throw new ForbiddenError(VenueMessages.error.FORBIDDEN)
         }
 

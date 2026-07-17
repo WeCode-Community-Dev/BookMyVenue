@@ -10,7 +10,9 @@ export const getAllVendorsQuerySchema =
         status:
             z.nativeEnum(VendorApprovalStatus)
                 .optional(),
-
+            isBlocked: z
+        .enum(["true", "false"])
+        .optional(),
         page:
             z.coerce.number()
                 .min(1)

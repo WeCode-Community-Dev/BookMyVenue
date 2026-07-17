@@ -1,5 +1,5 @@
 import { ROUTES } from "@/constants/routes";
-import { CalendarDays, Heart, Settings, User } from "lucide-react";
+import { CalendarDays, Heart, Key, Settings, User } from "lucide-react";
 import React from "react";
 import { NavLink } from "react-router-dom";
 
@@ -21,9 +21,9 @@ const UserSidebar = () => {
       icon: CalendarDays,
     },
     {
-      name: "Settings",
-      path: ROUTES.USER.ACCOUNT_SETTINGS,
-      icon: Settings,
+      name: "Change Password",
+      path: ROUTES.USER.CHANGE_PASSWORD,
+      icon: Key,
     },
   ];
 

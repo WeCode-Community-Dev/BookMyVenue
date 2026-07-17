@@ -30,10 +30,28 @@ export const ROUTES = {
             GET_ALL:'/payments',
             GET_BY_ID:'/payments/:paymentId',
             GET_STATISTICS:'/payments/statistics',
-        }
+        },
+        AUTH: {
+            LOGIN: "/admin/login",
+            REFRESH: '/admin/refresh',
+            LOGOUT: '/admin/logout'
+        },
 
     },
     OWNER: {
+        AUTH: {
+            LOGIN: "/vendor/login",
+            REGISTER: "/vendor/register",
+            VERIFY_OTP: "/vendor/verifyotp",
+            GOOGLE: "/vendor/googlelogin",
+            RESEND_OTP: "/vendor/resendotp",
+            FORGOT_PASSWORD: '/vendor/forgotpassword',
+            RESET_PASSWORD: '/vendor/resetpassword',
+            // VERIFY_EMAIL: "/vendor/verifyemail",
+            // VERIFY_OTP_RESET: '/vendor/verifyotpforforgotpassword',
+            REFRESH: '/vendor/refresh',
+            LOGOUT: '/vendor/logout'
+        },
         VENUE: {
             CREATE: '/venue',
             EDIT: '/venue/:venueId',
@@ -54,25 +72,38 @@ export const ROUTES = {
         DASHBOARD: '/dashboard'
     },
     USER: {
-    VENUE: {
-        GET_ALL: "/venues",
-        GET_BY_ID: "/venue/:venueId",
-        TOP_VENUES: "/top-venues",
-    },
-    PROFILE: {
-        PROFILE: "/profile",
-        REQUEST_EMAIL_CHANGE_OTP: "/profile/email/request-otp",
-        VERIFY_EMAIL_CHANGE_OTP: "/profile/email/verify-otp",
-        RESEND_EMAIL_CHANGE_OTP: "/profile/email/resend-otp",
-        PROFILE_IMAGE: "/profile/image",
-    },
-    WISHLIST: {
-        WISHLIST: "/wishlist/:venueId",
-        GET: "/wishlist",
-    },
-    ACCOUNT: {
-        UPDATE_STATUS: "/account/status",
-    },
-}
+        AUTH: {
+            LOGIN: "/user/login",
+            REGISTER: "/user/register",
+            VERIFY_OTP: "/user/verifyotp",
+            GOOGLE: "/user/googlelogin",
+            RESEND_OTP: "/user/resendotp",
+            FORGOT_PASSWORD: '/user/forgotpassword',
+            RESET_PASSWORD: '/user/resetpassword',
+            // VERIFY_EMAIL: "/user/verifyemail",
+            // VERIFY_OTP_RESET: '/user/verifyotpforforgotpassword',
+            REFRESH: '/user/refresh',
+            LOGOUT: '/user/logout'
+        },
+        VENUE: {
+            GET_ALL: "/venues",
+            GET_BY_ID: "/venue/:venueId",
+            TOP_VENUES: "/top-venues",
+        },
+        PROFILE: {
+            PROFILE: "/profile",
+            REQUEST_EMAIL_CHANGE_OTP: "/profile/email/request-otp",
+            VERIFY_EMAIL_CHANGE_OTP: "/profile/email/verify-otp",
+            RESEND_EMAIL_CHANGE_OTP: "/profile/email/resend-otp",
+            PROFILE_IMAGE: "/profile/image",
+        },
+        WISHLIST: {
+            WISHLIST: "/wishlist/:venueId",
+            GET: "/wishlist",
+        },
+        ACCOUNT: {
+            UPDATE_STATUS: "/account/status",
+        },
+    }
    
 }

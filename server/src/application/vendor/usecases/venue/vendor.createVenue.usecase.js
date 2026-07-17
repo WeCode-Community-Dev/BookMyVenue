@@ -2,15 +2,18 @@ import { VenueMessages } from '../../../../shared/constants/messages/venueMessag
 import { VenueEntity } from '../../../../domain/entities/Venue.js'
 import { VenueStatus } from '../../../../domain/enums/Venue.enum.js'
 import { ValidationError } from '../../../../domain/errors/ValidationError.js'
+import { UnauthorizedError } from '../../../../domain/errors/UnauthorizedError.js'
 import { ConflictError } from '../../../../domain/errors/ConflictError.js'
+import { authMessages } from '../../../../shared/constants/messages/authMessages.js'
+import { UserRole } from '../../../../domain/enums/UserRole.enum.js'
 
 export class VendorCreateVenueUsecase {
     constructor (
         venueRepository,
-        // ownerRepository,
+        vendorRepository
     ) {
         this._venueRepository = venueRepository;
-        // this._ownerRepository = ownerRepository;
+        this._vendorRepository = vendorRepository;
     }
 
     async execute({
@@ -39,14 +42,14 @@ export class VendorCreateVenueUsecase {
         license = []
 
     }) {
-        // const owner = await this._ownerRepository.findById(ownerId)
-        // if(!owner){
-        //     throw new AppError(authMessages.error.OWNER_NOT_FOUND, statusCode.NOT_FOUND)
-        // }
-        // if(owner.role !== 'OWNER'){
-        //     throw new AppError(VenueMessages.error.CANNOT_ADD_VENUE, statusCode.BAD_REQUEST)
-        // }
-        const existing = await this._venueRepository.findByOwnerAndName(vendorId, name)
+        const vendor = await this._vendorRepository.findById(vendorId)
+        if(!vendor){
+            throw new UnauthorizedError(authMessages.error.OWNER_NOT_FOUND)
+        }
+        if(vendor.role !== UserRole.VENDOR){
+            throw new UnauthorizedError(VenueMessages.error.CANNOT_ADD_VENUE)
+        }
+        const existing = await this._venueRepository.findByVendorAndName(vendorId, name)
         if(existing){
             throw new ConflictError(VenueMessages.error.ALREADY_EXISTING)
         }

@@ -11,10 +11,9 @@ class VendorRepositoryImpl extends IVendorRepository {
     }
 
     async findById(id) {
-        const document = await VendorModel.findById(id)
-
-        if (!document) return null
-        return VendorMapper.mapToEntity(document)
+        const document = await VendorModel.findById(id);
+        if (!document) return null;
+        return VendorMapper.mapToEntity(document);
     }
 
     async findAll() {
@@ -23,99 +22,104 @@ class VendorRepositoryImpl extends IVendorRepository {
     }
 
     async findAllFiltered(query = {}) {
+        const filter = {};
 
-        const filter = {}
+            // Search
+    if (query.search) {
+        filter.$or = [
+            {
+                fullName: {
+                    $regex: query.search,
+                    $options: "i",
+                },
+            },
+            {
+                email: {
+                    $regex: query.search,
+                    $options: "i",
+                },
+            },
+            {
+                companyName: {
+                    $regex: query.search,
+                    $options: "i",
+                },
+            },
+        ];
+    }
 
-        if (query.search) {
-            filter.$or = [
-                {
-                    name: {
-                        $regex: query.search,
-                        $options: "i"
-                    }
-                }
-            ]
-        }
+    // Approval Status
+    if (query.status) {
+        filter.approvalStatus = query.status;
+    }
 
-        if (query.status) {
-            filter.approvalStatus = query.status
-        }
+    // Block / Unblock Filter
+    if (query.isBlocked !== undefined) {
+        filter.isBlocked =
+            query.isBlocked === true ||
+            query.isBlocked === "true";
+    }
+            console.log("Query:", query);
+            console.log("Filter:", filter);
 
-        const skip =
-            query.limit * (query.page - 1)
-
-        const totalCount =
-            await VendorModel.countDocuments(filter)
-
-        const totalPages =
-            Math.ceil(totalCount / query.limit)
-
-        const documents =
-            await VendorModel.find(filter)
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(query.limit)
+        const skip = query.limit * (query.page - 1);
+        const totalCount = await VendorModel.countDocuments(filter);
+        const totalPages = Math.ceil(totalCount / query.limit);
+        const documents = await VendorModel.find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(query.limit);
 
         return {
-            data: documents.map(doc =>
-                VendorMapper.mapToEntity(doc)
-            ),
+            data: documents.map(doc => VendorMapper.mapToEntity(doc)),
             totalCount,
             totalPages
-        }
+        };
+    }
+
+    async verifyOtp(vendorId) {
+        const document = await VendorModel.findByIdAndUpdate(
+            vendorId,
+            {
+                isVerified: true,
+            },
+            {
+                new: true
+            }
+        );
+
+        if (!document) return null;
+
+        return VendorMapper.mapToEntity(document);
     }
 
     async approveVendor(vendorId) {
-    const updatedVendor =
-        await VendorModel.findByIdAndUpdate(
+        const updatedVendor = await VendorModel.findByIdAndUpdate(
             vendorId,
-            {
-                approvalStatus:VendorApprovalStatus.APPROVED,
-                rejectionReason: null
-            },
-            {
-                new: true
-            }
+            { approvalStatus: VendorApprovalStatus.APPROVED, rejectionReason: null },
+            { new: true }
         );
+        if (!updatedVendor) return null;
+        return VendorMapper.mapToEntity(updatedVendor);
+    }
 
-    if (!updatedVendor) return null;
-
-    return VendorMapper.mapToEntity(updatedVendor);
-}
-
-async rejectVendor(vendorId, reason) {
-    const updatedVendor =
-        await VendorModel.findByIdAndUpdate(
+    async rejectVendor(vendorId, reason) {
+        const updatedVendor = await VendorModel.findByIdAndUpdate(
             vendorId,
-            {
-                approvalStatus: VendorApprovalStatus.REJECTED,
-                rejectionReason: reason
-            },
-            {
-                new: true
-            }
+            { approvalStatus: VendorApprovalStatus.REJECTED, rejectionReason: reason },
+            { new: true }
         );
-
-    if (!updatedVendor) return null;
-
-    return VendorMapper.mapToEntity(updatedVendor);
-}
+        if (!updatedVendor) return null;
+        return VendorMapper.mapToEntity(updatedVendor);
+    }
 
     async updateBlockStatus(vendorId, isBlocked) {
-        const document =
-            await VendorModel.findByIdAndUpdate(
-                vendorId,
-                {
-                    isBlocked:isBlocked
-                },
-                {
-                    new: true
-                }
-            );
-
+        const document = await VendorModel.findByIdAndUpdate(
+            vendorId,
+            { isBlocked },
+            { new: true }
+        );
         if (!document) return null;
-        console.log(document)
-
         return VendorMapper.mapToEntity(document);
     }
 
@@ -125,6 +129,7 @@ async rejectVendor(vendorId, reason) {
             VendorMapper.mapToPersistence(entity),
             { new: true }
         );
+        if (!doc) return null;
         return VendorMapper.mapToEntity(doc);
     }
 
@@ -138,19 +143,48 @@ async rejectVendor(vendorId, reason) {
             { isDeleted: true },
             { new: true }
         );
-        return VendorMapper.mapToEntity(doc);
+        return doc ? VendorMapper.mapToEntity(doc) : null;
     }
 
-    async findByEmail(email, includePassword = false) {
-        const query = VendorModel.findOne({ email, isDeleted: false });
-        if (includePassword) query.select("+password");
-        const doc = await query;
-        return doc ? VendorMapper.mapToEntity(doc) : null;
+    async findByEmail(email) {
+        const doc = await VendorModel.findOne({ 
+            email, 
+            isDeleted: {$ne: true}
+        });
+        if(!doc){
+            return null
+        }
+
+        return VendorMapper.mapToEntity(doc)
     }
 
     async findByPhone(phone) {
         const doc = await VendorModel.findOne({ phone, isDeleted: false });
         return doc ? VendorMapper.mapToEntity(doc) : null;
+    }
+
+    async findByRefreshToken(refreshToken) {
+        const doc = await VendorModel.findOne({ refreshToken, isDeleted: false }).select("+password");
+        if (!doc) return null;
+        return VendorMapper.mapToEntity(doc);
+    }
+
+    async updateRefreshToken(vendorId, refreshToken) {
+        const doc = await VendorModel.findByIdAndUpdate(
+            vendorId,
+            { $push: {refreshToken} },
+            { new: true }
+        );
+        if (!doc) return null;
+        return VendorMapper.mapToEntity(doc);
+    }
+
+    async clearRefreshToken(token) {
+        await VendorModel.findByOneAndUpdate(
+            {refreshToken: token},
+            { $pull: {refreshToken: token } },
+            { new: true }
+        );
     }
 }
 

@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types } from 'mongoose'
-import { VenueCategory, VenueStatus } from '../../domain/enums/Venue.enum.js'
+import { VenueCategory, VenueStatus } from '../../../domain/enums/Venue.enum.js'
 
 const VenueSchema = new Schema({
     name: {

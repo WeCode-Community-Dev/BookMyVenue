@@ -21,6 +21,10 @@ export class IUserRepository {
         throw new Error("Method not implemented");
     }
 
+    async verifyOtp(userId) {
+        throw new Error('Method not implemented');
+    }
+
     async delete(id) {
         throw new Error("Method not implemented");
     }
@@ -29,20 +33,32 @@ export class IUserRepository {
         throw new Error("Method not implemented");
     }
 
-    async findByEmail(email, includePassword = false) {
-        throw new Error("Method not implemented");
+    // includeOtp needed for VerifyOtpUseCase
+    async findByEmail(email, includePassword = false, includeOtp = false) {
+        throw new Error('Method not implemented');
     }
 
-    async findByPhone(phone) {
-        throw new Error("Method not implemented");
+    // async findByPhone(phone) {
+    //     throw new Error("Method not implemented");
+    // }
+
+    async findByRefreshToken(refreshToken) {
+        throw new Error('Method not implemented');
     }
 
     async updateRefreshToken(userId, refreshToken) {
         throw new Error("Method not implemented");
     }
 
-//user/profile
+    async clearRefreshToken(token) {
+        throw new Error('Method not implemented');
+    }
 
+    async findByGoogleId(googleId) {
+        throw new Error('Method not implemented');
+    }
+
+    // user profile
     async saveEmailChangeOtp(userId, pendingEmail, otpCode, otpExpiresAt) {
         throw new Error("Method not implemented");
     }

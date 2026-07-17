@@ -1,4 +1,9 @@
 import { useState } from "react";
+import {
+  updateProfileSchema,
+  RequestEmailChangeOtpSchema,
+  verifyEmailOtpSchema,
+} from "@/lib/validation/userProfileValidation";
 
 const UserEditProfileForm = ({
   user,
@@ -21,11 +26,37 @@ const UserEditProfileForm = ({
       ...prev,
       [name]: value,
     }));
+
+    setErrors((prev) => ({
+      ...prev,
+      [name === "name" ? "fullName" : name]: "",
+    }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(formData);
+
+    const result = updateProfileSchema.safeParse({
+      fullName: formData.name,
+      phone: formData.phone,
+    });
+
+    if (!result.success) {
+      const fieldErrors = {};
+
+      result.error.issues.forEach((issue) => {
+        fieldErrors[issue.path[0]] = issue.message;
+      });
+
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setErrors({});
+
+    try {
+      await onSave(formData);
+    } catch (error) {}
   };
 
   const [showEmailSection, setShowEmailSection] = useState(false);
@@ -34,16 +65,32 @@ const UserEditProfileForm = ({
   const [otpSent, setOtpSent] = useState(false);
 
   const handleSendOtp = async () => {
-    if (!newEmail.trim()) return;
-  
+    const result = RequestEmailChangeOtpSchema.safeParse({
+      newEmail,
+    });
+
+    if (!result.success) {
+      setErrors((prev) => ({
+        ...prev,
+        newEmail: result.error.issues[0].message,
+      }));
+
+      return;
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      newEmail: "",
+    }));
+
     try {
       setOtpLoading(true);
-  
+
       await onRequestEmailOtp(newEmail);
-  
+
       setOtpSent(true);
     } catch (error) {
-      // Parent already shows the toast
+      // Parent already shows toast
     } finally {
       setOtpLoading(false);
     }
@@ -52,9 +99,18 @@ const UserEditProfileForm = ({
   const [otp, setOtp] = useState("");
 
   const handleVerifyOtp = async () => {
+    const result = verifyEmailOtpSchema.safeParse({
+      otp,
+    });
+
+    if (!result.success) {
+      setOtpError(result.error.issues[0].message);
+      return;
+    }
+
     try {
       await onVerifyOtp(otp);
-  
+
       setOtpError("");
     } catch (error) {
       setOtpError(error);
@@ -64,7 +120,7 @@ const UserEditProfileForm = ({
   const handleResendOtp = async () => {
     try {
       setOtpLoading(true);
-  
+
       await onResendOtp();
     } catch (error) {
       // Parent already shows the toast
@@ -74,6 +130,7 @@ const UserEditProfileForm = ({
   };
 
   const [otpError, setOtpError] = useState("");
+  const [errors, setErrors] = useState({});
 
   return (
     <div className="bg-white rounded-3xl shadow-md p-8">
@@ -93,6 +150,9 @@ const UserEditProfileForm = ({
             onChange={handleChange}
             className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:border-amber-500"
           />
+          {errors.fullName && (
+            <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>
+          )}
         </div>
 
         {/* Email */}
@@ -128,10 +188,20 @@ const UserEditProfileForm = ({
                 <input
                   type="email"
                   value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
+                  onChange={(e) => {
+                    setNewEmail(e.target.value);
+
+                    setErrors((prev) => ({
+                      ...prev,
+                      newEmail: "",
+                    }));
+                  }}
                   placeholder="Enter new email"
                   className="w-full rounded-xl border border-gray-300 px-4 py-3"
                 />
+                {errors.newEmail && (
+                  <p className="mt-1 text-sm text-red-500">{errors.newEmail}</p>
+                )}
               </div>
 
               <button
@@ -202,6 +272,9 @@ const UserEditProfileForm = ({
             onChange={handleChange}
             className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:border-amber-500"
           />
+          {errors.phone && (
+            <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+          )}
         </div>
 
         {/* Buttons */}

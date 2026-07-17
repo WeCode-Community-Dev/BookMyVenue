@@ -1,34 +1,55 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import { jwtConfig } from '../config/jwt.config.js'
 import { UnauthorizedError } from "../../domain/errors/UnauthorizedError.js";
+import { ITokenService } from "../../application/services/tokenService.js";
+import { authMessages } from "../../shared/constants/messages/authMessages.js";
+import { redisClient } from '../config/redis.config.js'
 
-class TokenService {
-    generateAccessToken(payload) {
-        return jwt.sign(payload, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m"
-        });
+export class TokenService extends ITokenService{
+    generateAccessToken(id, email, role) {
+        const accessTokenSecret = jwtConfig.accessToken.secret
+        return jwt.sign({id, email, role}, accessTokenSecret, { expiresIn: jwtConfig.accessToken.expiresIn });
     }
 
-    generateRefreshToken(payload) {
-        return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
-            expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d"
-        });
+    generateRefreshToken(id, role) {
+        const refreshTokenSecret = jwtConfig.refreshToken.secret
+        return jwt.sign({id, role}, refreshTokenSecret, { expiresIn: jwtConfig.refreshToken.expiresIn });
+    }
+
+    generateResetToken() {
+        return crypto.randomBytes(32).toString('hex');
+    }
+
+    getResetTokenExpiry() {
+        return new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     }
 
     verifyRefreshToken(token) {
         try {
-            return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+            const accessTokenSecret = jwtConfig.accessToken.secret
+            return jwt.verify(token, accessTokenSecret);
         } catch {
-            throw new UnauthorizedError("Invalid or expired refresh token");
+            throw new UnauthorizedError(authMessages.error.INVALID_REFRESH_TOKEN);
         }
     }
 
     verifyAccessToken(token) {
         try {
-            return jwt.verify(token, process.env.JWT_SECRET);
+            const refreshTokenSecret = jwtConfig.refreshToken.secret
+            return jwt.verify(token, refreshTokenSecret);
         } catch {
-            throw new UnauthorizedError("Invalid or expired access token");
+            throw new UnauthorizedError(authMessages.error.INVALID_ACCESS_TOKEN);
         }
+    }
+
+    async blackListToken(token, expiresInSeconds) {
+        await redisClient.set(`bl_${token}`, "true", "EX",  expiresInSeconds)
+    }
+
+    async isTokenBlacklisted(token) {
+        const result = await redisClient.exists(`bl_${token}`)
+        return result === 1
     }
 }
 
-export default new TokenService();

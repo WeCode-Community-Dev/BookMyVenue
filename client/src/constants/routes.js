@@ -8,9 +8,10 @@ export const ROUTES = {
         PROFILE: '/user/profile',
         BROWSE_VENUES: '/user/venues',
         VENUE_DETAILS: '/user/venue/:id',
-        ACCOUNT_SETTINGS: '/user/accountsettings',
+        CHANGE_PASSWORD: '/user/changepassword',
         WISHLIST: '/user/wishlist',
-        BOOKINGS: '/user/bookings'
+        BOOKINGS: '/user/bookings',
+        BOOKING_DETAIL: '/user/bookings/:bookingId'
     },
     VENDOR: {
         DASHBOARD: '/vendor/dashboard',
@@ -23,8 +24,8 @@ export const ROUTES = {
     ADMIN: {
         ROOT: "/admin", 
         DASHBOARD: "/admin/dashboard",
-        USERS: "/admin/users",
-        VENDORS: "/admin/vendors",
+        USERS: "users",
+        VENDORS: "vendors",
         VENUES: "/admin/venues",
         BOOKINGS: "/admin/bookings",
         PAYMENTS: "/admin/payments",

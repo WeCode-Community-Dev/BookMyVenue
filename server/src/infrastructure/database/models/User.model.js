@@ -12,12 +12,17 @@ const userSchema = new mongoose.Schema({
     },
     phone: {
         type: String,
-        required: true,
-        unique: true
+        unique: true,
+        sparse: true,
+        default: null
     },
     password: {
         type: String,
-        required: true,
+        required: false,
+    },
+    googleId: {
+        type: String,
+        default: null,
         select: false
     },
     role: {
@@ -29,16 +34,38 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    otpCode: {
+        type: String,
+        default: null,
+        select: false
+    },
+    otpExpiresAt: {
+        type: Date,
+        default: null
+    },
     isBlocked: {
+        type: Boolean,
+        default: false
+    },
+    isDeleted: {
         type: Boolean,
         default: false
     },
     refreshToken: {
         type: [String],
         default: [],
-        select: false
     },
-   profileImage: {
+    resetToken: {
+        type: String,
+    },
+    resetTokenExpiry: {
+        type: Date,
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    profileImage: {
         publicId: {
             type: String,
             default: ""
@@ -48,46 +75,22 @@ const userSchema = new mongoose.Schema({
             default: ""
         }
     },
-
-    pendingEmail: {
+    pedingEmail: {
         type: String,
         default: null
     },
-
-    otpCode: {
-        type: String,
-        default: null,
-        select: false
-    },
-
-    otpExpiresAt: {
-        type: Date,
-        default: null
-    },
-
-    isVerified: {
-        type: Boolean,
-        default: false
-    },
-
     isActive: {
         type: Boolean,
         default: true
     },
-    isDeleted: {
-        type: Boolean,
-        default: false
-    },
-
     wishlist: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Venue"
-        }],
-
-    },
-    {
+        ref: "Venue",
+    }]
+},
+{
         timestamps: true
-    })
+})
 
 
 export const UserModel = mongoose.model("User", userSchema)

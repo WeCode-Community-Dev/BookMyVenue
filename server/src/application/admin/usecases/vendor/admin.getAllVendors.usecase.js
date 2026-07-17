@@ -8,6 +8,7 @@ export class AdminGetAllVendorsUsecase {
     async execute(
         search,
         status,
+        isBlocked,
         page,
         limit
     ){
@@ -17,6 +18,7 @@ export class AdminGetAllVendorsUsecase {
                 .findAllFiltered({
                     search,
                     status,
+                    isBlocked,
                     page,
                     limit
                 })
