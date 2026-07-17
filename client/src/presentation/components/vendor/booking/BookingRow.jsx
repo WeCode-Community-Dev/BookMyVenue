@@ -2,7 +2,7 @@ import React from "react";
 import BookingStatusBadge from "./BookingStatusBadge";
 import BookingActions from "./BookingActions";
 
-const BookingRow = ({ booking }) => {
+const BookingRow = ({ booking,onView }) => {
   const customerName = booking.customer || booking.user?.fullName || "-";
   const venueName = booking.venue || booking.venueId?.name || "-";
   const eventName = booking.eventName || booking.eventType || "-";
@@ -41,7 +41,11 @@ const BookingRow = ({ booking }) => {
       <td className="px-6 py-5">{guests}</td>
       <td className="px-6 py-5 font-semibold">{amount}</td>
       <td className="px-6 py-5"><BookingStatusBadge status={status} /></td>
-      <td className="px-6 py-5"><BookingActions status={status} /></td>
+      <td className="px-6 py-5"><BookingActions 
+      status={booking.status} 
+      bookingId={booking.id ||booking._id}
+      onView={onView}
+                /></td>
     </tr>
   );
 };

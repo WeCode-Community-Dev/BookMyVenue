@@ -1,7 +1,11 @@
 import React from "react";
 import BookingRow from "./BookingRow";
 
-const BookingTable = ({ bookings = [], loading = false, error = "" }) => {
+const BookingTable = ({ 
+  bookings = [],
+   loading = false, 
+   error = "",
+  onView, }) => {
   if (loading) {
     return null;
   }
@@ -33,7 +37,10 @@ const BookingTable = ({ bookings = [], loading = false, error = "" }) => {
             </tr>
           ) : (
             bookings.map((booking) => (
-              <BookingRow key={booking.id || booking._id} booking={booking} />
+              <BookingRow 
+              key={booking.id || booking._id}
+               booking={booking} 
+               onView={onView}/>
             ))
           )}
         </tbody>

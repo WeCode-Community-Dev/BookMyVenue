@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchBookings,fetchBookingById } from "@/redux/slices/VendorBookingSlice";
 import VendorSidebar from "@/presentation/components/vendor/VendorSidebar";
 import VendorNavbar from "@/presentation/components/vendor/VendorNavbar";
 import BookingHeader from "@/presentation/components/vendor/booking/BookingHeader";
@@ -6,32 +8,27 @@ import BookingStats from "@/presentation/components/vendor/booking/BookingStats"
 import BookingFilters from "@/presentation/components/vendor/booking/BookingFilters";
 import BookingTable from "@/presentation/components/vendor/booking/BookingTable";
 import BookingPagination from "@/presentation/components/vendor/booking/BookingPagination";
-import api from "@/lib/axios";
-import { API_ROUTES } from "@/constants/apiRoutes";
-
+import BookingDetailsModal from "@/presentation/components/vendor/booking/BookingDetailsModal";
 const Bookings = () => {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+const dispatch = useDispatch();
+const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const response = await api.get(API_ROUTES.VENDOR.BOOKINGS, {
-          params: { page: 1, limit: 20 },
-        });
-        const payload = response?.data?.data || {};
-        setBookings(payload.bookings || []);
-      } catch (err) {
-        console.error(err);
-        setError("Unable to load bookings.");
-      } finally {
-        setLoading(false);
-      }
-    };
+const {
+  bookings,
+  loading,
+  error,
+  pagination,
+} = useSelector((state) => state.vendorBooking);
 
-    fetchBookings();
-  }, []);
+const handleViewBooking = (bookingId) => {
+  dispatch(fetchBookingById(bookingId));
+  setIsModalOpen(true);
+};
+
+
+useEffect(() => {
+  dispatch(fetchBookings({ page: 1, limit: 20 }));
+}, [dispatch]);
 
   return (
     <div className="flex bg-slate-100 min-h-screen">
@@ -48,8 +45,20 @@ const Bookings = () => {
           {error && <p className="my-4 text-sm text-red-500">{error}</p>}
           {loading && <p className="my-4 text-sm text-gray-500">Loading bookings...</p>}
 
-          <BookingTable bookings={bookings} loading={loading} error={error} />
-          <BookingPagination />
+          <BookingTable 
+          bookings={bookings} 
+          loading={loading} 
+          error={error}
+          onView={handleViewBooking} />
+          <BookingPagination pagination={pagination} />
+
+          <BookingDetailsModal
+  open={isModalOpen}
+  onClose={() => {
+    setIsModalOpen(false);
+    dispatch(clearBookingDetails());
+  }}
+/>
         </main>
       </div>
     </div>

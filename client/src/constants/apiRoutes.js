@@ -61,6 +61,9 @@ export const API_ROUTES = {
     DASHBOARD: "/vendor/dashboard",
     PROFILE: "/vendor/profile",
     BOOKINGS: "/vendor/bookings",
+    BOOKING_BY_ID: (bookingId) =>
+                `/vendor/bookings/${bookingId}`,
+
     VENUES: "/vendor/venues",
     CREATE_VENUE: "/vendor/venue",
     VENUE_BY_ID: (venueId) =>
