@@ -307,11 +307,7 @@ export async function getAdminCategoryPerformance() {
   ]);
 }
 
-export async function getAdminRecentActivity() {
-  const recentUsers = await User.find().sort({ createdAt: -1 }).limit(5);
-  const recentVenues = await Venue.find().sort({ createdAt: -1 }).limit(5);
-  return { recentUsers, recentVenues };
-}
+
 
 export async function getAdminPlatformLeaders() {
   const topRev = await Booking.aggregate([
