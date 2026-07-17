@@ -61,6 +61,19 @@ async function parseResponse(response: Response) {
     }
 }
 
+function getCookie(cookieName: string): string | null {
+    if (typeof document === "undefined") return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${cookieName}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+    return null;
+}
+
+function deleteCookie(cookieName: string) {
+    if (typeof document === "undefined") return;
+    document.cookie = `${cookieName}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+}
+
 export const useAuthService = () => {
     const dispatch = useDispatch();
     const router = useRouter();
@@ -198,6 +211,14 @@ export const useAuthService = () => {
     };
 
     const fetchProfile = async () => {
+        if (typeof window !== "undefined") {
+            const oauthLogin = getCookie("oauth_login");
+            if (oauthLogin === "true") {
+                localStorage.setItem("isAuthenticated", "true");
+                deleteCookie("oauth_login");
+            }
+        }
+
         if (
             typeof window !== "undefined" &&
       localStorage.getItem("isAuthenticated") !== "true"
@@ -211,8 +232,8 @@ export const useAuthService = () => {
         try {
             const userProfile = await apiFetch("/auth/myprofile");
 
-            if (userProfile) {
-                dispatch(setAuthSuccess(userProfile));
+            if (userProfile && userProfile.user) {
+                dispatch(setAuthSuccess(userProfile.user));
             }
         } catch (apiError: any) {
             console.warn(
@@ -238,6 +259,12 @@ export const useAuthService = () => {
         }
     };
 
+    const loginWithGoogle = () => {
+        if (typeof window !== "undefined") {
+            window.location.href = `${BASE_URL}/auth/google`;
+        }
+    };
+
     return {
         user,
         isAuthenticated,
@@ -247,6 +274,7 @@ export const useAuthService = () => {
         submitRegistration,
         fetchProfile,
         googleAuthCallback,
+        loginWithGoogle,
         logout,
     };
 };

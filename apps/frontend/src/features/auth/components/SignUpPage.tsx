@@ -16,7 +16,7 @@ import { useSelector } from "react-redux";
 
 export default function SignupPage() {
     const router = useRouter();
-    const { submitRegistration, loading } = useAuthService();
+    const { submitRegistration, loading, loginWithGoogle } = useAuthService();
     const [
         error, setError
     ] = useState<string | null>(null);
@@ -88,10 +88,6 @@ export default function SignupPage() {
             console.log("Registration failed");
             setError(result.error || "Registration failed");
         }
-    };
-
-    const handleGoogleLogin = () => {
-        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
     };
 
     return (
@@ -256,7 +252,7 @@ export default function SignupPage() {
 
                         <button
                             type="button"
-                            onClick={handleGoogleLogin}
+                            onClick={loginWithGoogle}
                             className={`${authStyle.googleButton} flex items-center justify-center gap-3`}
                         >
                             <NextImage
