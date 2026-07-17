@@ -300,7 +300,6 @@ function MessagesList({
   // Initial jump without animation
   useEffect(() => {
     scrollToBottom(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
