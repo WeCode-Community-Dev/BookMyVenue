@@ -1,5 +1,7 @@
 # Chat Feature
 
+**Status:** Shipped — verified against code, 2026-07-17
+
 A booking-scoped messaging system enabling real-time communication between customers and venue owners.
 
 ## Overview
@@ -61,7 +63,6 @@ app/modules/chat/
 | created_at| TIMESTAMP | Auto-set                 |
 | updated_at| TIMESTAMP | Nullable                 |
 | read_at   | TIMESTAMP | Nullable                 |
-| metadata  | JSONB     | Nullable                 |
 
 ### Indexes
 - `booking_id` - Efficient message history queries
@@ -176,11 +177,7 @@ Recipient Connected? -- No --> Create Notification --> Email Pipeline
 
 ## Configuration
 
-Add to `apps/api/app/core/config.py`:
-
-```python
-chat_message_max_length: int = 2000
-```
+`MAX_MESSAGE_LENGTH = 2000` is a module constant in `chat/service.py` (enforced again in `schemas.py` and `websocket.py`), not an admin-configurable `platform_settings` value.
 
 ## Error Handling
 

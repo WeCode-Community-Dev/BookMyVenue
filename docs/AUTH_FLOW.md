@@ -1,5 +1,7 @@
 # Venue404 — Authentication Flow
 
+**Status:** Shipped — verified against code, 2026-07-17
+
 ## Architecture Summary
 
 Venue404 is a **pnpm monorepo** with a **FastAPI (Python)** backend and **three React + Vite

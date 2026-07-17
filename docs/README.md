@@ -1,35 +1,43 @@
-# venue404
- 
-A venue booking platform, Owners list venues, users browse and book, admins approve.
- 
-Built as a modular monolith MVP with a focus on shipping fast on free-tier infrastructure.
- 
+# Venue404 docs
+
+**Status:** Shipped — verified against code, 2026-07-17
+
+A venue booking platform. Owners list venues, customers browse and book, admins approve. Read this after the root [`README.md`](../README.md) — this folder is the deeper "why and how."
+
+Built as a modular monolith with a focus on shipping fast on low-tier infrastructure (Render + Vercel + Supabase).
+
 ## Stack
- 
-- **Frontend:** React 18 + Vite + TypeScript (3 SPAs: user, owner, admin)
-- **Backend:** FastAPI (modular monolith) + SQLAlchemy + Alembic
-- **Database:** PostgreSQL 16 (local via Docker; Supabase in production)
-- **Images:** Cloudinary (Free Plan)
-- **Payments:** Stripe (test mode)
-- **Email:** Resend (Free Plan)
-- **Maps:** OpenStreetMap + Leaflet.js (Free)
-- **Logs:** Better Stack / Logtail (Free Plan)
+
+- **Frontend:** React 18 + Vite + TypeScript (3 SPAs: user-web, owner-portal, admin-panel)
+- **Backend:** FastAPI (modular monolith, 15 modules) + SQLAlchemy + Alembic
+- **Database:** PostgreSQL (local via Docker; Supabase + pgvector in production)
+- **Auth:** Supabase Auth — JWT, session refresh; backend never stores passwords
+- **Images:** Cloudinary
+- **Payments:** Stripe
+- **Email:** Resend / SMTP
+- **Maps:** OpenStreetMap + Leaflet.js
+- **LLM / Embeddings:** Groq (Deep Research query understanding) · Jina AI (search embeddings)
+- **Cache / queue (optional, fail-open):** Upstash Redis — search-index queue, rate limiting, Deep Research query cache
+- **Monitoring:** Sentry
+- **Hosting:** Render (API) + Vercel (3 SPAs)
 - **Monorepo:** pnpm workspaces
+
 ## Project structure
- 
+
 ```
 venue404/
 ├── apps/
 │   ├── user-web/         React SPA — browse & book venues
 │   ├── owner-portal/     React SPA — manage venues & bookings
-│   ├── admin-panel/      React SPA — approve venues, audit
+│   ├── admin-panel/      React SPA — approve venues, audit, Deep Research leads
 │   └── api/              FastAPI modular monolith
-│       └── app/modules/  → auth, profile, venue, search, booking,
-│                           availability, notification, admin, payment ...
+│       └── app/modules/  → auth, profile, venue, search, booking, availability,
+│                           payment, notification, admin, review, chat,
+│                           deep_research, contact, owner, internal
 ├── packages/
 │   ├── ui/               Shared React component library
 │   └── api-client/       Typed FastAPI client (auto-generated from OpenAPI)
-├── docs/                 Architecture, commands, decisions
+├── docs/                 Architecture, subsystem docs, deployment
 ├── docker-compose.yml    Local Postgres + API
 └── pnpm-workspace.yaml
 ```
@@ -137,15 +145,26 @@ pnpm lint
 ```
  
 ## Documentation
- 
-- [`docs/architecture.md`](./docs/architecture.md) — system architecture, modular monolith rules
+
+| Doc | Covers |
+|---|---|
+| [`architecture.md`](./architecture.md) | System architecture, modular monolith rules, module table, data model |
+| [`AUTH_FLOW.md`](./AUTH_FLOW.md) | Supabase-backed auth: signup, login, session, logout |
+| [`booking-lifecycle.md`](./booking-lifecycle.md) | The booking state machine — single source of truth |
+| [`payments.md`](./payments.md) | Stripe payments, refunds, ledger, notifications, background jobs |
+| [`search.md`](./search.md) | Hybrid full-text + semantic venue search |
+| [`deep-research.md`](./deep-research.md) | Prompt search + external venue discovery + lead onboarding |
+| [`dynamic-pricing.md`](./dynamic-pricing.md) | Rule-based owner pricing |
+| [`instant-booking.md`](./instant-booking.md) | Pay-and-confirm booking mode |
+| [`chat.md`](./chat.md) | Booking-scoped messaging |
+| [`reviews.md`](./reviews.md) | Venue review system |
+| [`DEPLOY.md`](./DEPLOY.md) | Deployment runbook — Render, Vercel, CI gate, background jobs |
 
 ## Environment
- 
-| Environment | Database                              | Hosting                   |
-|-------------|---------------------------------------|---------------------------|
-| Local       | Docker Postgres                       | Your machine              |
-| Staging     | Supabase (project #1)                 | Vercel + Fly.io (staging) |
-| Production  | Supabase (project #2)                 | Vercel + Fly.io (prod)    |
- 
-Same migration files apply across all three, only `DATABASE_URL` changes.
+
+| Environment | Database | Hosting |
+|---|---|---|
+| Local | Docker Postgres | Your machine |
+| Production | Supabase Postgres | Render (API) + Vercel (3 SPAs) |
+
+Same migration files apply across environments — only `DATABASE_URL` changes. Migrations are applied manually (`alembic upgrade head`), never automated in CI or deploy.
