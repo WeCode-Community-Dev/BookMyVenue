@@ -217,7 +217,6 @@ export function useChat(bookingId: string, currentUserId?: string) {
       }
       setIsConnected(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId])
 
   const sendMessage = useCallback(

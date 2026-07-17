@@ -1,5 +1,3 @@
-"""WebSocket endpoint for real-time chat."""
-
 import json
 import logging
 from uuid import UUID
@@ -15,7 +13,7 @@ from app.modules.chat.manager import (
     unregister_connection,
 )
 from app.modules.chat.schemas import SendMessageIn
-from app.modules.chat.service import _getVenueNameForNotification
+from app.modules.chat.service import get_venue_name_for_notification
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +91,7 @@ def send_message_ws_with_session(
         recipient_id = owner_id if sender_id == customer_id else customer_id
 
         # Get venue name for notification context
-        venue_name = _getVenueNameForNotification(db, booking_id)
+        venue_name = get_venue_name_for_notification(db, booking_id)
 
         # Notify offline recipient if needed (pass session since it may need DB)
         notify_offline_participant(
