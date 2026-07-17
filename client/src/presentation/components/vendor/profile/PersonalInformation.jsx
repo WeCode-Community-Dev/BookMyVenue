@@ -1,43 +1,80 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 
-const PersonalInformation = ({ isEditing, profile, setProfile }) => {
+const PersonalInformation = ({
+  isEditing,
+  profile,
+  setProfile,
+}) => {
   const updateField = (field, value) => {
-    setProfile((prev) => ({ ...prev, [field]: value }));
+    setProfile((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   return (
     <div className="bg-white rounded-2xl border p-6 mb-6">
-      <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
+      <h2 className="text-xl font-semibold mb-6">
+        Personal Information
+      </h2>
 
       {!isEditing ? (
         <div className="grid grid-cols-2 gap-6">
+
           <div>
-            <p className="text-sm text-gray-500">Full Name</p>
-            <p className="font-medium">{profile.fullName || "-"}</p>
+            <p className="text-sm text-gray-500">
+              Full Name
+            </p>
+            <p className="font-medium">
+              {profile.fullName || "-"}
+            </p>
           </div>
 
           <div>
-            <p className="text-sm text-gray-500">Email Address</p>
-            <p className="font-medium">{profile.email || "-"}</p>
+            <p className="text-sm text-gray-500">
+              Email Address
+            </p>
+            <p className="font-medium">
+              {profile.email || "-"}
+            </p>
           </div>
 
           <div>
-            <p className="text-sm text-gray-500">Phone Number</p>
-            <p className="font-medium">{profile.phone || "-"}</p>
+            <p className="text-sm text-gray-500">
+              Phone Number
+            </p>
+            <p className="font-medium">
+              {profile.phone || "-"}
+            </p>
           </div>
 
-          <div>
-            <p className="text-sm text-gray-500">Business Name</p>
-            <p className="font-medium">{profile.companyName || "-"}</p>
-          </div>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4">
-          <Input value={profile.fullName || ""} onChange={(e) => updateField("fullName", e.target.value)} />
-          <Input value={profile.companyName || ""} onChange={(e) => updateField("companyName", e.target.value)} />
-          <Input value={profile.email || ""} onChange={(e) => updateField("email", e.target.value)} />
-          <Input value={profile.phone || ""} onChange={(e) => updateField("phone", e.target.value)} />
+
+          <Input
+            placeholder="Full Name"
+            value={profile.fullName || ""}
+            onChange={(e) =>
+              updateField("fullName", e.target.value)
+            }
+          />
+
+          <Input
+            placeholder="Email Address"
+            value={profile.email || ""}
+            disabled
+          />
+
+          <Input
+            placeholder="Phone Number"
+            value={profile.phone || ""}
+            onChange={(e) =>
+              updateField("phone", e.target.value)
+            }
+          />
+
         </div>
       )}
     </div>

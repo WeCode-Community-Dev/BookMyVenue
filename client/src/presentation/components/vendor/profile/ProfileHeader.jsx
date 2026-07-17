@@ -2,9 +2,18 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 
 const ProfileHeader = ({
+  profile,
   isEditing,
   setIsEditing,
 }) => {
+  const initials =
+    profile?.fullName
+      ?.split(" ")
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "--";
+
   return (
     <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white mb-6">
 
@@ -13,12 +22,12 @@ const ProfileHeader = ({
         <div className="flex items-center gap-4">
 
           <div className="w-20 h-20 rounded-full bg-white text-blue-600 flex items-center justify-center text-3xl font-bold">
-            AK
+            {initials}
           </div>
 
           <div>
             <h2 className="text-2xl font-bold">
-              Arjun Kapoor
+              {profile?.fullName || "-"}
             </h2>
 
             <p className="text-blue-100">
@@ -26,7 +35,7 @@ const ProfileHeader = ({
             </p>
 
             <p className="text-blue-100 text-sm">
-              arjun@email.com
+              {profile?.email || "-"}
             </p>
           </div>
 

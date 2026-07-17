@@ -1,16 +1,26 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 
-const ProfileActions = () => {
+const ProfileActions = ({
+  onSave,
+  onCancel,
+  updating,
+}) => {
   return (
     <div className="flex justify-end gap-4">
 
-      <Button variant="outline">
+      <Button
+        variant="outline"
+        onClick={onCancel}
+      >
         Cancel
       </Button>
 
-      <Button>
-        Save Changes
+      <Button
+        onClick={onSave}
+        disabled={updating}
+      >
+        {updating ? "Saving..." : "Save Changes"}
       </Button>
 
     </div>

@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import VendorSidebar from "@/presentation/components/vendor/VendorSidebar";
 import VendorNavbar from "@/presentation/components/vendor/VendorNavbar";
+
 import ProfileHeader from "@/presentation/components/vendor/profile/ProfileHeader";
 import ProfileStats from "@/presentation/components/vendor/profile/ProfileStats";
 import PersonalInformation from "@/presentation/components/vendor/profile/PersonalInformation";
@@ -8,40 +11,46 @@ import BusinessInformation from "@/presentation/components/vendor/profile/Busine
 import ChangePassword from "@/presentation/components/vendor/profile/ChangePassword";
 import NotificationSettings from "@/presentation/components/vendor/profile/NotificationSettings";
 import ProfileActions from "@/presentation/components/vendor/profile/ProfileActions";
-import api from "@/lib/axios";
-import { API_ROUTES } from "@/constants/apiRoutes";
+
+import {
+  fetchVendorProfile,
+  updateVendorProfile,
+} from "@/redux/slices/VendorProfileSlice";
 
 const Profile = () => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const dispatch = useDispatch();
 
-  const fetchProfile = async () => {
-    try {
-      const response = await api.get(API_ROUTES.VENDOR.PROFILE);
-      setProfile(response?.data?.data || {});
-    } catch (err) {
-      console.error(err);
-      setError("Unable to load profile.");
-    } finally {
-      setLoading(false);
+  const {
+    profile,
+    loading,
+    updating,
+    error,
+  } = useSelector((state) => state.vendorProfile);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
+
+  useEffect(() => {
+    dispatch(fetchVendorProfile());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (profile) {
+      setFormData(profile);
+    }
+  }, [profile]);
+
+  const handleSave = async () => {
+    const result = await dispatch(updateVendorProfile(formData));
+
+    if (updateVendorProfile.fulfilled.match(result)) {
+      setIsEditing(false);
     }
   };
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const handleSave = async () => {
-    try {
-      await api.patch(API_ROUTES.VENDOR.PROFILE, profile);
-      setIsEditing(false);
-      await fetchProfile();
-    } catch (err) {
-      console.error(err);
-      setError("Unable to update profile.");
-    }
+  const handleCancel = () => {
+    setFormData(profile);
+    setIsEditing(false);
   };
 
   return (
@@ -52,29 +61,49 @@ const Profile = () => {
         <VendorNavbar />
 
         <main className="p-6">
-          <ProfileHeader isEditing={isEditing} setIsEditing={setIsEditing} />
+          <ProfileHeader
+            profile={profile}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+          />
 
-          {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
-          {loading && <p className="mb-4 text-sm text-gray-500">Loading profile...</p>}
+          {error && (
+            <p className="mb-4 text-sm text-red-500">
+              {error}
+            </p>
+          )}
 
-          <ProfileStats />
+          {loading && (
+            <p className="mb-4 text-sm text-gray-500">
+              Loading profile...
+            </p>
+          )}
+
+          <ProfileStats profile={profile} />
 
           <PersonalInformation
             isEditing={isEditing}
-            profile={profile}
-            setProfile={setProfile}
+            profile={formData}
+            setProfile={setFormData}
           />
 
           <BusinessInformation
             isEditing={isEditing}
-            profile={profile}
-            setProfile={setProfile}
+            profile={formData}
+            setProfile={setFormData}
           />
 
           <ChangePassword isEditing={isEditing} />
+
           <NotificationSettings isEditing={isEditing} />
 
-          {isEditing && <ProfileActions setIsEditing={setIsEditing} onSave={handleSave} />}
+          {isEditing && (
+            <ProfileActions
+              onSave={handleSave}
+              onCancel={handleCancel}
+              updating={updating}
+            />
+          )}
         </main>
       </div>
     </div>
