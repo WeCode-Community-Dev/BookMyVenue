@@ -12,3 +12,15 @@ services:
     volumes:
       - ./apps/api:/app
       - /app/.venv
+    depends_on:
+      - db
+
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: venue404_test
+    ports:
+      - "5435:5432"

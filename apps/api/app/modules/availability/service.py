@@ -431,9 +431,20 @@ def get_availability_for_date(
         .all()
     )
 
+    venue_blocks = (
+        db.query(VenueBlockedDate)
+        .filter(
+            VenueBlockedDate.venue_id == venue.id,
+            VenueBlockedDate.deleted_at.is_(None),
+            VenueBlockedDate.starts_at < window_end,
+            VenueBlockedDate.ends_at > window_start,
+        )
+        .all()
+    )
+
     if booking_type == "full_day":
-        # Full day is blocked if there's ANY existing booking
-        if blocked_slots_db:
+        # Full day is blocked if there's ANY existing booking or venue block
+        if blocked_slots_db or venue_blocks:
             return AvailabilityResponse(
                 date=booking_date,
                 operating_window=operating_window,
@@ -447,13 +458,20 @@ def get_availability_for_date(
             )
 
     # TIME SLOT: Allow multiple slots per day (partial availability)
+    blocked_slots = []
+    for slot in blocked_slots_db:
+        blocked_slots.append(
+            BlockedRange(starts_at=slot.effective_starts_at, ends_at=slot.effective_ends_at)
+        )
+    for block in venue_blocks:
+        blocked_slots.append(
+            BlockedRange(starts_at=block.starts_at, ends_at=block.ends_at)
+        )
+
     return AvailabilityResponse(
         date=booking_date,
         operating_window=operating_window,
-        blocked_slots=[
-            BlockedRange(starts_at=slot.effective_starts_at, ends_at=slot.effective_ends_at)
-            for slot in blocked_slots_db
-        ],
+        blocked_slots=blocked_slots,
     )
 
 
@@ -670,6 +688,18 @@ def get_calendar(
     end_date: date,
     booking_type: str = "time_slot",
 ) -> CalendarResponse:
+    if end_date < start_date:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="end_date must be on or after start_date",
+        )
+
+    if (end_date - start_date).days > 370:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Calendar range cannot exceed 370 days",
+        )
+
     venue = _get_active_venue_or_404(
         db,
         venue_id,
@@ -692,6 +722,18 @@ def get_owner_calendar(
     end_date: date,
     allow_admin: bool = False,
 ) -> CalendarResponse:
+    if end_date < start_date:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="end_date must be on or after start_date",
+        )
+
+    if (end_date - start_date).days > 370:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Calendar range cannot exceed 370 days",
+        )
+
     venue = _get_venue_or_404(
         db,
         venue_id,

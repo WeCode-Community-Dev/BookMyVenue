@@ -195,19 +195,32 @@ def get_booking(db: Session, booking_id: UUID, user_id: UUID | None = None) -> B
     return _booking_out(db, booking)
 
 
-def list_user_bookings(db: Session, user_id: UUID) -> list[BookingOut]:
-    bookings = (
+def list_user_bookings(
+    db: Session, user_id: UUID, page: int = 1, per_page: int = 100
+) -> BookingListResponse:
+    query = (
         db.query(Booking)
         .options(
             joinedload(Booking.slot),
-            joinedload(Booking.user),
-            joinedload(Booking.venue).selectinload(Venue.photos),
+            joinedload(Booking.venue),
         )
         .filter(Booking.user_id == user_id, Booking.deleted_at.is_(None))
-        .order_by(Booking.created_at.desc())
+    )
+    total = query.count()
+    total_pages = (total + per_page - 1) // per_page
+    bookings = (
+        query.order_by(Booking.created_at.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
         .all()
     )
-    return [_booking_out(db, booking) for booking in bookings]
+    return BookingListResponse(
+        items=[_booking_out(db, booking) for booking in bookings],
+        total=total,
+        page=page,
+        page_size=per_page,
+        total_pages=total_pages,
+    )
 
 
 def list_all_owner_bookings(

@@ -91,6 +91,10 @@ def test_calendar_shows_fully_booked_for_full_day(client, db, category_id):
         headers={"Authorization": f"Bearer {customer_token}"},
     )
     assert resp.status_code == 201
+    booking_id = resp.json()["id"]
+    from app.modules.booking.service import owner_accept_booking
+    owner_accept_booking(db, booking_id, owner_id)
+    db.commit()
 
     # Now check calendar - day should show fully_booked
     resp = client.get(
@@ -126,10 +130,11 @@ def test_date_availability_shows_blocked_for_blocked_date(client, db, category_i
     venue_id = seed_approved_venue(db, owner_id, category_id)
 
     # Create a blocked date
-    blocked_start = datetime.now(UTC) + timedelta(days=30)
+    check_date = _future_date(30)
+    blocked_start = datetime.combine(check_date, dt_time(0, 0)).replace(tzinfo=UTC)
     blocked_end = blocked_start + timedelta(days=5)
 
-    client.post(
+    resp = client.post(
         f"/api/venues/{venue_id}/blocked-dates",
         json={
             "starts_at": _iso(blocked_start),
@@ -138,9 +143,9 @@ def test_date_availability_shows_blocked_for_blocked_date(client, db, category_i
         },
         headers={"Authorization": f"Bearer {owner_token}"},
     )
+    assert resp.status_code == 201
 
     # Check a date within the blocked period
-    check_date = blocked_start.date()
     resp = client.get(
         f"/api/availability/venues/{venue_id}/date/{check_date.isoformat()}?booking_type=full_day"
     )
@@ -235,7 +240,7 @@ def test_validate_slot_returns_409_for_conflicting_booking(client, db, category_
     booking_date = _future_date(30)
 
     # Create a booking
-    client.post(
+    resp = client.post(
         "/api/bookings/",
         json={
             "venue_id": str(venue_id),
@@ -246,6 +251,11 @@ def test_validate_slot_returns_409_for_conflicting_booking(client, db, category_
         },
         headers={"Authorization": f"Bearer {seed_user(db, 'customer')[1]}"},
     )
+    assert resp.status_code == 201
+    booking_id = resp.json()["id"]
+    from app.modules.booking.service import owner_accept_booking
+    owner_accept_booking(db, booking_id, owner_id)
+    db.commit()
 
     # Try to validate same date - should conflict
     resp = client.post(
@@ -258,6 +268,10 @@ def test_validate_slot_accepts_valid_request(client, db, category_id):
     """A valid slot should return valid=true with effective times."""
     owner_id, _ = seed_user(db, "venue_owner")
     venue_id = seed_approved_venue(db, owner_id, category_id)
+    from app.modules.venue.models import Venue
+    venue = db.query(Venue).get(venue_id)
+    venue.allowed_booking_types = ["full_day", "time_slot"]
+    db.commit()
 
     start = _future_datetime()
     end = start + timedelta(hours=4)
@@ -356,6 +370,11 @@ def test_buffer_times_block_adjacent_slots(client, db, category_id):
     """Post-buffer time should prevent adjacent bookings."""
     owner_id, _ = seed_user(db, "venue_owner")
     venue_id = seed_approved_venue(db, owner_id, category_id)
+    from app.modules.venue.models import Venue
+    venue = db.query(Venue).get(venue_id)
+    venue.allowed_booking_types = ["full_day", "time_slot"]
+    venue.post_buffer_minutes = 60
+    db.commit()
 
     # Venue with 60min post-buffer
     # Book 9-12, next booking should start at 13:00 earliest
@@ -364,7 +383,7 @@ def test_buffer_times_block_adjacent_slots(client, db, category_id):
     start_time = datetime.combine(booking_date, dt_time(9, 0)).replace(tzinfo=UTC)
     end_time = datetime.combine(booking_date, dt_time(12, 0)).replace(tzinfo=UTC)
 
-    client.post(
+    resp = client.post(
         "/api/bookings/",
         json={
             "venue_id": str(venue_id),
@@ -376,6 +395,11 @@ def test_buffer_times_block_adjacent_slots(client, db, category_id):
         },
         headers={"Authorization": f"Bearer {seed_user(db, 'customer')[1]}"},
     )
+    assert resp.status_code == 201
+    booking_id = resp.json()["id"]
+    from app.modules.booking.service import owner_accept_booking
+    owner_accept_booking(db, booking_id, owner_id)
+    db.commit()
 
     # Try to book 12:30-14:00 - should conflict due to buffer
     adjacent_start = datetime.combine(booking_date, dt_time(12, 30)).replace(tzinfo=UTC)

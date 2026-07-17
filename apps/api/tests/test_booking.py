@@ -80,7 +80,7 @@ def test_refund_computation_policy_fee_refundable():
     assert result.tier_matched == "tier_1"
 
     # Case 2: 30 hours notice (Tier 2 -> 50% refund of total 1000 = 500)
-    result = _compute_refund(booking, policy, cancelled_at=starts_at - timedelta(hours=30))
+    result = _compute_refund(db, booking, policy, cancelled_at=starts_at - timedelta(hours=30))
     assert result.refund_amount_paise == 50000
     assert result.refund_pct_applied == 50.0
     assert result.tier_matched == "tier_2"
@@ -118,7 +118,7 @@ def test_refund_computation_policy_fee_non_refundable():
     assert result.tier_matched == "tier_1"
 
     # Case 2: 30 hours notice (Tier 2 -> 50% refund of owner share (900) = 450)
-    result = _compute_refund(booking, policy, cancelled_at=starts_at - timedelta(hours=30))
+    result = _compute_refund(db, booking, policy, cancelled_at=starts_at - timedelta(hours=30))
     assert result.refund_amount_paise == 45000
     assert result.refund_pct_applied == 50.0
     assert result.tier_matched == "tier_2"

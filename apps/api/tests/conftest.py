@@ -1,3 +1,12 @@
+import os
+import dotenv
+
+if "CI" not in os.environ and "GITHUB_ACTIONS" not in os.environ:
+    dotenv.load_dotenv(".env.test", override=True)
+else:
+    # Load other test settings without overwriting the pre-configured DATABASE_URL in CI
+    dotenv.load_dotenv(".env.test", override=False)
+
 import time
 from datetime import UTC, date, datetime, timedelta
 from datetime import time as dt_time
@@ -17,7 +26,7 @@ _db_url = settings.database_url
 assert "supabase.co" not in _db_url, (
     "Tests must not run against Supabase. Set DATABASE_URL in apps/api/.env.test."
 )
-assert any(h in _db_url for h in ("localhost", "127.0.0.1", "0.0.0.0")), (
+assert any(h in _db_url for h in ("localhost", "127.0.0.1", "0.0.0.0", "db")), (
     "Tests must use a local database. Set DATABASE_URL in apps/api/.env.test."
 )
 from app.core.database import SessionLocal  # noqa: E402 -- must follow the DB safety check above
