@@ -18,4 +18,6 @@ export const authEndpoints = (client: ReturnType<typeof createClient>) => ({
   reapplyOwner: () => client.post<void>('/api/auth/reapply-owner', {}),
   forgotPassword: (email: string, redirectTo: string) =>
     client.post<void>('/api/auth/forgot-password', { email, redirect_to: redirectTo }),
+  sendConfirmation: (email: string, redirectTo: string) =>
+    client.post<void>('/api/auth/send-confirmation', { email, redirect_to: redirectTo }),
 })

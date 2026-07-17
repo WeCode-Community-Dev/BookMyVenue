@@ -192,6 +192,18 @@ SETTINGS: dict[str, SettingSpec] = {
         ),
         category="rate_limits",
     ),
+    "send_confirmation_rate_limit_per_hour": SettingSpec(
+        default=5,
+        value_type="int",
+        min_value=1,
+        max_value=100,
+        label="Send Confirmation Email Rate Limit",
+        description=(
+            "Per-IP hourly limit on signup-confirmation email requests (initial "
+            "send and resend), to block mail-bombing and enumeration attempts."
+        ),
+        category="rate_limits",
+    ),
     "search_embedding_rate_limit_per_hour": SettingSpec(
         default=30,
         value_type="int",

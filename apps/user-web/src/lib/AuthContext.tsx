@@ -63,6 +63,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signUp(input: SignUpInput) {
     await signUpWithEmail(input)
     // onAuthStateChange SIGNED_IN fires automatically and calls loadUser
+    await authEndpoints(createClient()).sendConfirmation(
+      input.email,
+      `${window.location.origin}/login`,
+    )
   }
 
   async function signOut() {

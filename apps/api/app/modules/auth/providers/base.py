@@ -44,3 +44,15 @@ class AuthProvider(ABC):
         avoid leaking which emails are registered.
         """
         ...
+
+    @abstractmethod
+    def create_signup_confirmation_link(
+        self, email: str, *, redirect_to: str | None = None
+    ) -> str | None:
+        """Generate a fresh signup-confirmation URL for an existing,
+        not-yet-confirmed account. Does NOT send any email or require the
+        account's password. Returns None if no account exists for `email`
+        or it's already confirmed — callers must still respond as if it
+        succeeded, to avoid leaking account state.
+        """
+        ...

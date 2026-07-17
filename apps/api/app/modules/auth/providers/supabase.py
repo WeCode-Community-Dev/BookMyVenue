@@ -130,3 +130,27 @@ class SupabaseAuthProvider(AuthProvider):
             )
 
         return payload["action_link"]
+
+    def create_signup_confirmation_link(
+        self, email: str, *, redirect_to: str | None = None
+    ) -> str | None:
+        body = {"type": "signup", "email": email}
+        if redirect_to:
+            body["redirect_to"] = redirect_to
+
+        try:
+            payload = self._generate_link(body)
+        except urllib.error.HTTPError as exc:
+            if exc.code in (400, 404, 422):
+                return None
+            error_body = exc.read().decode()
+            raise BadRequestError(
+                f"Supabase could not create the confirmation link "
+                f"(HTTP {exc.code}): {error_body or exc.reason}"
+            )
+        except urllib.error.URLError as exc:
+            raise BadRequestError(
+                f"Could not reach Supabase to create the confirmation link: {exc.reason}"
+            )
+
+        return payload["action_link"]

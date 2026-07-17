@@ -60,6 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signUp(input: SignUpInput) {
     await signUpWithEmail(input)
+    await authEndpoints(createClient()).sendConfirmation(
+      input.email,
+      `${window.location.origin}/login`,
+    )
   }
 
   async function signOut() {

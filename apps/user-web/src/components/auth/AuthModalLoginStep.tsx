@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { resendConfirmationEmail } from '@venue404/api-client'
+import { authEndpoints, createClient } from '@venue404/api-client'
 import { useAuth } from '../../lib/AuthContext'
 
 type Props = {
@@ -24,7 +24,10 @@ export function AuthModalLoginStep({ onSuccess }: Props) {
     if (!unconfirmedEmail || resendState === 'sending') return
     setResendState('sending')
     try {
-      await resendConfirmationEmail(unconfirmedEmail)
+      await authEndpoints(createClient()).sendConfirmation(
+        unconfirmedEmail,
+        `${window.location.origin}/login`,
+      )
       setResendState('sent')
     } catch {
       setResendState('idle')

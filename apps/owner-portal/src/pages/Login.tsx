@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { resendConfirmationEmail } from '@venue404/api-client'
+import { authEndpoints, createClient } from '@venue404/api-client'
 import { useAuth } from '../lib/AuthContext'
 import { AuthLayout, AuthCard, Logo } from '@venue404/ui'
 import { OwnerFlowPanel } from '../components/OwnerFlowPanel'
@@ -42,7 +42,10 @@ export default function Login() {
     if (!unconfirmedEmail || resendState === 'sending') return
     setResendState('sending')
     try {
-      await resendConfirmationEmail(unconfirmedEmail)
+      await authEndpoints(createClient()).sendConfirmation(
+        unconfirmedEmail,
+        `${window.location.origin}/login`,
+      )
       setResendState('sent')
     } catch {
       setResendState('idle')
