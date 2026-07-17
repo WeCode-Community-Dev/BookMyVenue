@@ -14,11 +14,19 @@ import {
     Users,
     X,
 } from "lucide-react";
+import {
+    getVenueAmenities,
+    getVenueCapacity,
+    getVenueImages,
+    getVenueLocation,
+    getVenuePrice,
+    getVenuePrimaryImage,
+} from "@/features/venues/services/VenuService";
 
 import { AppText } from "@/lib/language/LanguageHelper";
 import { Button } from "@/components/ui/button/Button";
 import NxtImage from "next/image";
-import { Venue } from "../card/Card";
+import { Venue } from "@/types/Venue";
 import { verifyBookingStyle } from "./VerifyBookingStyle";
 
 interface VenueApprovalModalProps {
@@ -57,33 +65,41 @@ export default function VenueApprovalModal({
     venue,
     actionType,
 }: VenueApprovalModalProps) {
-    if (!isOpen) return null;
+    if (!isOpen || !venue) return null;
 
-    const mainImage = venue
-        ? venue.image
-        : "https://images.unsplash.com/photo-1566073771259-6a8506099945";
+    const mainImage = getVenuePrimaryImage(venue);
 
-    const galleryImages = [
-        mainImage,
+    const defaultImages = [
+        "https://images.unsplash.com/photo-1566073771259-6a8506099945",
         "https://images.unsplash.com/photo-1511578314322-379afb476865",
         "https://images.unsplash.com/photo-1511578314322-379afb476865",
         "https://images.unsplash.com/photo-1566073771259-6a8506099945",
         "https://images.unsplash.com/photo-1566073771259-6a8506099945",
     ];
 
-    const amenitiesList = venue
-        ? [
-            ...venue.amenities, `+${venue.moreAmenities} More`
-        ]
+    const mappedImages = getVenueImages(venue);
+
+    const venueImages = mappedImages.length > 0
+        ? mappedImages
         : [
-            "AC", "Parking", "WiFi", "+5 More"
+            mainImage
         ];
 
-    const mapSrc = venue
-        ? `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(venue.location)
-        }&zoom=13&size=800x500&key=YOUR_GOOGLE_MAPS_API_KEY`
-        : "https://maps.googleapis.com/maps/api/staticmap?center=" +
-        "Cherai,Kochi&zoom=13&size=800x500&key=YOUR_GOOGLE_MAPS_API_KEY";
+    const galleryImages = [
+        ...venueImages
+    ];
+    while (galleryImages.length < 5) {
+        galleryImages.push(defaultImages[ galleryImages.length % defaultImages.length ]);
+    }
+
+    const rawAmenities = getVenueAmenities(venue);
+    const moreAmenities = rawAmenities.length > 2 ? rawAmenities.length - 2 : 0;
+    const amenitiesList = [
+        ...rawAmenities, `+${moreAmenities} More`
+    ];
+
+    const mapSrc = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(getVenueLocation(venue))
+        }&zoom=13&size=800x500&key=YOUR_GOOGLE_MAPS_API_KEY`;
 
     return (
         <div className={verifyBookingStyle.overlay}>
@@ -92,12 +108,12 @@ export default function VenueApprovalModal({
                 <div className={verifyBookingStyle.header}>
                     <div>
                         <h2 className={verifyBookingStyle.title}>
-                            {venue ? venue.name : "Lagoona Beach Resort"}
+                            {venue.name}
                         </h2>
 
                         <div className={verifyBookingStyle.locationWrapper}>
                             <MapPin className="h-4 w-4" />
-                            {venue ? venue.location : "Cherai, Kochi"}
+                            {getVenueLocation(venue)}
                         </div>
                     </div>
 
@@ -133,7 +149,7 @@ export default function VenueApprovalModal({
                     </div>
 
                     <div className={verifyBookingStyle.sideImageGrid}>
-                        {galleryImages.slice(1).map((img, index) => {
+                        {galleryImages.slice(1, 5).map((img, index) => {
                             return (
                                 <div
                                     key={index}
@@ -147,13 +163,13 @@ export default function VenueApprovalModal({
                                         className={verifyBookingStyle.sideImage}
                                     />
 
-                                    {index === 3 && (
+                                    {index === 3 && galleryImages.length > 5 && (
                                         <div
                                             className={
                                                 verifyBookingStyle.moreImagesOverlay
                                             }
                                         >
-                                            +6
+                                            +{galleryImages.length - 5}
                                         </div>
                                     )}
                                 </div>
@@ -189,9 +205,7 @@ export default function VenueApprovalModal({
                                         textModule="LABEL"
                                     />
                                 }
-                                value={
-                                    venue ? `${venue.guests} Guests` : "200 Guests"
-                                }
+                                value={`${getVenueCapacity(venue)} Guests`}
                             />
 
                             <InfoRow
@@ -206,11 +220,7 @@ export default function VenueApprovalModal({
                                         textModule="LABEL"
                                     />
                                 }
-                                value={
-                                    venue
-                                        ? `₹${venue.price.toLocaleString()} / day`
-                                        : "₹18,000 / day"
-                                }
+                                value={`₹${getVenuePrice(venue).toLocaleString()} / day`}
                             />
 
                             <InfoRow
@@ -225,11 +235,7 @@ export default function VenueApprovalModal({
                                         textModule="LABEL"
                                     />
                                 }
-                                value={
-                                    venue
-                                        ? `${venue.rating} (${venue.reviews} reviews)`
-                                        : "4.8 (88 reviews)"
-                                }
+                                value="4.5 (24 reviews)"
                             />
 
                             <InfoRow
@@ -244,11 +250,7 @@ export default function VenueApprovalModal({
                                         textModule="LABEL"
                                     />
                                 }
-                                value={
-                                    venue
-                                        ? venue.availability
-                                        : "Available This Weekend"
-                                }
+                                value={venue.isActive ? "Available Today" : "Unavailable"}
                             />
 
                             <div>
@@ -288,10 +290,12 @@ export default function VenueApprovalModal({
                                 </p>
 
                                 <p className={verifyBookingStyle.descriptionText}>
-                                    <AppText
-                                        textName="VENUE_DESCRIPTION"
-                                        textModule="MESSAGES"
-                                    />
+                                    {venue.description || (
+                                        <AppText
+                                            textName="VENUE_DESCRIPTION"
+                                            textModule="MESSAGES"
+                                        />
+                                    )}
                                 </p>
                             </div>
                         </div>
@@ -317,9 +321,7 @@ export default function VenueApprovalModal({
 
                         <div className={verifyBookingStyle.locationFooter}>
                             <p className={verifyBookingStyle.addressText}>
-                                {venue
-                                    ? venue.location
-                                    : "Cherai, Kochi, Kerala, India"}
+                                {getVenueLocation(venue)}
                             </p>
 
                             <Button

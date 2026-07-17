@@ -22,7 +22,8 @@
         "CONTINUE_GOOGLE": "Continue with Google",
         "CONTINUE": "Continue",
         "SENDING": "Sending...",
-        "RESEND_OTP": "Resend OTP"
+        "RESEND_OTP": "Resend OTP",
+        "VIEW_DETAILS": "View Details"
     },
     "LABEL": {
         "WELCOME_BACK": "Welcome Back",
@@ -68,7 +69,13 @@
         "SECURE": "Secure",
         "FAST": "Fast",
         "TRUSTED": "Trusted",
-        "AUTHENTICATING_GOOGLE": "Authenticating with Google"
+        "AUTHENTICATING_GOOGLE": "Authenticating with Google",
+        "VERIFIED_VENUE": "Verified Venue",
+        "AVAILABLE": "Available",
+        "UNAVAILABLE": "Unavailable",
+        "GUEST_COUNT": "{count} Guests",
+        "MORE": "+{count} More",
+        "PRICE_UNIT": "/ day onwards"
     },
     "FILTERS": {
         "FILTER": "Filters",
@@ -97,6 +104,9 @@
     "MESSAGES": {
         "VENUE_DESCRIPTION": "A beautiful beachfront venue perfect for weddings, parties and corporate events.",
         "AUTH_DESCRIPTION": "Join thousands of people who discover, book and celebrate unforgettable moments.",
-        "OAUTH_VERIFYING_MSG": "Verifying your credentials and logging you in. Please do not close this window."
+        "OAUTH_VERIFYING_MSG": "Verifying your credentials and logging you in. Please do not close this window.",
+        "LOADING_VENUES": "Loading venues...",
+        "ERROR_LOADING_VENUES": "Error: {error}",
+        "NO_VENUES_FOUND": "No venues found."
     }
 }
