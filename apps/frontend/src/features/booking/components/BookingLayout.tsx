@@ -1,6 +1,7 @@
 /* eslint-disable */
 
 import BookingHeader from "./BookingHeader";
+import BookingSummary from "./BookingSummary";
 import BookingVenueCard from "./BookingVenueCard";
 
 type SectionPlaceholderProps = {
@@ -49,11 +50,13 @@ const BookingLayout = () => {
                     <section className="min-w-0 space-y-5">
                         <BookingVenueCard />
 
+
+
                         <SectionPlaceholder
                             title="When is your event?"
                             description="Calendar date selection component will come here."
                         />
-                     
+
                         <SectionPlaceholder
                             title="Choose your booking package"
                             description="Package cards component will come here."
@@ -61,17 +64,8 @@ const BookingLayout = () => {
                     </section>
 
                     <aside className="min-w-0 space-y-5 lg:sticky lg:top-6 lg:self-start">
-                        <RightCardPlaceholder
-                            title="Booking Summary"
-                            description="Booking summary card will come here."
-                            heightClassName="min-h-[420px]"
-                        />
-
-                        <RightCardPlaceholder
-                            title="Reservation Status"
-                            description="Reservation status card will come here."
-                            heightClassName="min-h-[220px]"
-                        />
+                        <BookingSummary />
+                        
                     </aside>
                 </div>
             </div>
