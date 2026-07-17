@@ -19,6 +19,7 @@ export class BookingRepositoryImpl extends BookingRepository {
             BookingMapper.mapToPersistence(entity)
 
         );
+        return BookingMapper.mapToEntity(doc);
     }
 
     async findById(id) {
