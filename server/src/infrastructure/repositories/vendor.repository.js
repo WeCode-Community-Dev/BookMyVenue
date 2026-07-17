@@ -21,6 +21,30 @@ class VendorRepositoryImpl extends IVendorRepository {
         return docs.map((doc) => VendorMapper.mapToEntity(doc));
     }
 
+    async findByIdWithPassword(id) {
+
+        const document =
+            await VendorModel
+                .findById(id)
+                .select("+password");
+        if (!document) {
+            return null;
+        }
+        return document;
+    }
+
+    async updatePassword(
+        vendorId,
+        hashedPassword
+    ) {
+        await VendorModel.findByIdAndUpdate(
+            vendorId,
+            {
+                password: hashedPassword
+            }
+        );
+    }
+
     async findAllFiltered(query = {}) {
         const filter = {};
 

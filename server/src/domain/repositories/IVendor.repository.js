@@ -15,6 +15,14 @@ export class IVendorRepository {
         throw new Error('Method not implemented');
     }
 
+    async findByIdWithPassword(id) {
+        throw new Error("Method not implemented");
+    }
+    
+    async updatePassword(id, password) {
+        throw new Error("Method not implemented");
+    }
+
     async verifyOtp(vendorId) {
         throw new Error('Method not implemented');
     }

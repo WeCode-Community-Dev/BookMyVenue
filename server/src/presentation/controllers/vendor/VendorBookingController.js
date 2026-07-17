@@ -29,7 +29,7 @@ export class VendorBookingController {
             return sendSuccess(
                 res,
                 statusCode.OK,
-                BookingMessages.success.BOOKINGS_FETCHED,
+                BookingMessages.success.BOOKING_FETCHED,
                 bookings
             )
         }

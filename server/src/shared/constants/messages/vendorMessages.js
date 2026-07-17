@@ -7,6 +7,7 @@ export const VendorMessages = {
         VENDOR_UNBLOCKED:"Vendor unblocked successfully",
         VENDOR_APPROVED:"Vendor approved successfully",
         VENDOR_REJECTED:"Vendor rejected successfully",
+        PASSWORD_CHANGED:"Password changed successfully",
     },
 
     error: {
@@ -17,7 +18,9 @@ export const VendorMessages = {
         REJECTION_REASON_REQUIRED:'Rejection reason is required',
         VENDOR_NOT_APPROVED_FOR_BLOCK_ACTION:"Only approved vendor can be blocked or unblocked",
         VENDOR_ALREADY_APPROVED:"Vendor already approved",
-        VENDOR_ALREADY_REJECTED:"Vendor already rejected"
-
+        VENDOR_ALREADY_REJECTED:"Vendor already rejected",
+        INVALID_CURRENT_PASSWORD:"Current password is incorrect",
+        PASSWORD_MISMATCH:"New password and confirm password do not match",
+        SAME_PASSWORD:"New password cannot be the same as the current password",
     }
 };
