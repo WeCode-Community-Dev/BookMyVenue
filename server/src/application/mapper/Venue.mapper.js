@@ -8,7 +8,17 @@ export class VenueMapper {
         const venue = new VenueEntity({
             id: doc._id.toString(),
             name: doc.name,
-            vendorId: doc.vendorId ? doc.vendorId.toString() : null,
+           //vendorId: doc.vendorId ? doc.vendorId.toString() : null,
+           vendorId: doc.vendorId
+  ? {
+      id: doc.vendorId._id?.toString(),
+      fullName: doc.vendorId.fullName,
+      email: doc.vendorId.email,
+      phone: doc.vendorId.phone,
+      companyName: doc.vendorId.companyName,
+    }
+  : null,
+            
             description: doc.description,
             category: doc.category,
             websiteUrl: doc.websiteUrl,
