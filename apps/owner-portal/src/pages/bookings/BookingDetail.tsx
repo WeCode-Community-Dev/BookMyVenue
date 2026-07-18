@@ -316,7 +316,7 @@ export default function BookingDetail() {
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           {booking.status === 'requested' && (
             <>
-              <Button variant="secondary" className="text-rose-600 border-rose-200 hover:bg-rose-50" onClick={() => setRejectModalOpen(true)} disabled={actionLoading}>
+              <Button variant="secondary" className="text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/30" onClick={() => setRejectModalOpen(true)} disabled={actionLoading}>
                 <X className="h-4 w-4 mr-2" /> Reject
               </Button>
               <Button variant="primary" className="bg-brand-600 hover:bg-brand-700" onClick={() => handleAction('accept')} disabled={actionLoading}>
@@ -329,7 +329,7 @@ export default function BookingDetail() {
               <Button variant="secondary" className="text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-ink-700 hover:bg-zinc-100 dark:hover:bg-ink-800 bg-white dark:bg-ink-900" onClick={() => setExtendModalOpen(true)} disabled={actionLoading}>
                 <Calendar className="h-4 w-4 mr-2" /> Extend Deadline
               </Button>
-              <Button variant="secondary" className="text-rose-600 border-rose-200 hover:bg-rose-50 bg-white dark:bg-ink-900 shadow-sm" onClick={() => { setCancelType(null); setCancelModalOpen(true); }} disabled={actionLoading}>
+              <Button variant="secondary" className="text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/30 bg-white dark:bg-ink-900 shadow-sm" onClick={() => { setCancelType(null); setCancelModalOpen(true); }} disabled={actionLoading}>
                 <X className="h-4 w-4 mr-2" /> Cancel Overdue Booking
               </Button>
             </div>
@@ -340,8 +340,8 @@ export default function BookingDetail() {
       {/* Dynamic Lifecycle Alerts */}
       <div className="space-y-3 mb-6">
         {booking.status === 'requested' && booking.owner_action_deadline && (
-          <div className="bg-amber-50 border border-amber-200/60 text-amber-800 px-5 py-3.5 rounded-xl flex items-center gap-3 shadow-sm">
-            <Clock className="h-5 w-5 text-amber-600 shrink-0" />
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/30 text-amber-800 dark:text-amber-400 px-5 py-3.5 rounded-xl flex items-center gap-3 shadow-sm">
+            <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
             <div className="text-sm font-medium">
               Action Required: Please accept or reject this request by <span className="font-bold">{new Date(booking.owner_action_deadline).toLocaleString()}</span>.
             </div>
@@ -349,8 +349,8 @@ export default function BookingDetail() {
         )}
         
         {booking.status === 'owner_accepted' && booking.hold_expires_at && (
-          <div className="bg-blue-50/80 border border-blue-200/60 text-blue-800 px-5 py-3.5 rounded-xl flex items-center gap-3 shadow-sm">
-            <Clock className="h-5 w-5 text-blue-600 shrink-0" />
+          <div className="bg-blue-50/80 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/30 text-blue-800 dark:text-blue-400 px-5 py-3.5 rounded-xl flex items-center gap-3 shadow-sm">
+            <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
             <div className="text-sm font-medium">
               Waiting for advance payment. This hold automatically expires at <span className="font-bold">{new Date(booking.hold_expires_at).toLocaleString()}</span>.
             </div>
@@ -376,7 +376,7 @@ export default function BookingDetail() {
                 className={`flex-1 min-w-fit flex items-center justify-center gap-2 whitespace-nowrap pt-2 pb-3 px-2 border-b-2 font-medium text-sm transition-all ${
                   tab === t.id 
                     ? 'border-brand-500 text-brand-600' 
-                    : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'
+                    : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:border-zinc-300 dark:hover:border-ink-700'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -456,11 +456,11 @@ export default function BookingDetail() {
                       </div>
 
                       <div className="p-5 pb-8">
-                        <div className="relative space-y-8 before:absolute before:left-0 before:top-2 before:bottom-2 before:ml-[5px] before:w-px before:bg-zinc-200">
+                        <div className="relative space-y-8 before:absolute before:left-0 before:top-2 before:bottom-2 before:ml-[5px] before:w-px before:bg-zinc-200 dark:before:bg-ink-700">
                           {/* Setup */}
                           {setupMins > 0 && (
                             <div className="relative flex items-start group">
-                              <div className="absolute left-0 mt-1.5 w-3 h-3 rounded-full border-2 border-white bg-amber-400 z-10 shadow-sm ring-1 ring-zinc-200" />
+                              <div className="absolute left-0 mt-1.5 w-3 h-3 rounded-full border-2 border-white dark:border-ink-900 bg-amber-400 z-10 shadow-sm ring-1 ring-zinc-200 dark:ring-ink-700" />
                               <div className="w-full pl-8 flex justify-between items-start gap-4">
                                 <div>
                                   <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Setup</div>
@@ -473,7 +473,7 @@ export default function BookingDetail() {
 
                           {/* Event */}
                           <div className="relative flex items-start group z-10">
-                            <div className="absolute left-0 -ml-[1px] mt-8 w-3.5 h-3.5 rounded-full border-[3px] border-white bg-zinc-800 shadow-sm ring-1 ring-zinc-300" />
+                            <div className="absolute left-0 -ml-[1px] mt-8 w-3.5 h-3.5 rounded-full border-[3px] border-white dark:border-ink-900 bg-zinc-800 dark:bg-zinc-300 shadow-sm ring-1 ring-zinc-300 dark:ring-ink-700" />
                             <div className="w-full pl-8">
                                <div className="bg-white dark:bg-ink-900 border border-zinc-200 dark:border-ink-700 rounded-xl p-4 shadow-sm transition-all hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700">
                                   <div className="flex justify-between items-center mb-4">
@@ -497,7 +497,7 @@ export default function BookingDetail() {
                           {/* Teardown */}
                           {teardownMins > 0 && (
                             <div className="relative flex items-start group">
-                              <div className="absolute left-0 mt-1.5 w-3 h-3 rounded-full border-2 border-white bg-amber-400 z-10 shadow-sm ring-1 ring-zinc-200" />
+                              <div className="absolute left-0 mt-1.5 w-3 h-3 rounded-full border-2 border-white dark:border-ink-900 bg-amber-400 z-10 shadow-sm ring-1 ring-zinc-200 dark:ring-ink-700" />
                               <div className="w-full pl-8 flex justify-between items-start gap-4">
                                 <div>
                                   <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Teardown</div>
@@ -750,18 +750,18 @@ export default function BookingDetail() {
               {isTerminated && (
                 <div className={`rounded-xl border p-5 flex items-start gap-4 ${
                   isForfeitCancelled
-                    ? 'bg-amber-50 border-amber-200'
+                    ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/30'
                     : refundAmount > 0
-                    ? 'bg-rose-50 border-rose-200'
+                    ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/30'
                     : 'bg-zinc-50 dark:bg-ink-800 border-zinc-200 dark:border-ink-700'
                 }`}>
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
-                    isForfeitCancelled ? 'bg-amber-100 text-amber-700' : refundAmount > 0 ? 'bg-rose-100 text-rose-600' : 'bg-zinc-200 text-zinc-600 dark:text-zinc-400'
+                    isForfeitCancelled ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400' : refundAmount > 0 ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400' : 'bg-zinc-200 dark:bg-ink-700 text-zinc-600 dark:text-zinc-400'
                   }`}>
                     {isForfeitCancelled ? <Lock className="w-4 h-4" /> : refundAmount > 0 ? <AlertTriangle className="w-4 h-4" /> : <X className="w-4 h-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`font-bold text-sm ${isForfeitCancelled ? 'text-amber-900' : refundAmount > 0 ? 'text-rose-900' : 'text-zinc-800 dark:text-zinc-200'}`}>
+                    <p className={`font-bold text-sm ${isForfeitCancelled ? 'text-amber-900 dark:text-amber-300' : refundAmount > 0 ? 'text-rose-900 dark:text-rose-300' : 'text-zinc-800 dark:text-zinc-200'}`}>
                       {isForfeitCancelled && 'Balance Overdue — Deposit Forfeited'}
                       {isUserCancelled && refundAmount > 0 && 'User Cancelled — Refund Issued'}
                       {isUserCancelled && refundAmount === 0 && 'User Cancelled — No Refund'}
@@ -769,7 +769,7 @@ export default function BookingDetail() {
                       {(s === 'hold_expired' || s === 'request_expired') && 'Booking Expired'}
                       {s === 'conflict_cancelled' && 'Cancelled — Conflict'}
                     </p>
-                    <p className={`text-sm mt-0.5 leading-relaxed ${isForfeitCancelled ? 'text-amber-800/80' : refundAmount > 0 ? 'text-rose-700/80' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                    <p className={`text-sm mt-0.5 leading-relaxed ${isForfeitCancelled ? 'text-amber-800/80 dark:text-amber-400/80' : refundAmount > 0 ? 'text-rose-700/80 dark:text-rose-400/80' : 'text-zinc-500 dark:text-zinc-400'}`}>
                       {isForfeitCancelled && `Customer missed the balance payment deadline. Advance of ${fmt(advanceDue)} is forfeited. Your net share after ${commissionPct}% commission: ${fmt(ownerPayoutProjected)}.`}
                       {isUserCancelled && refundAmount > 0 && `${fmt(refundAmount)} was refunded to the customer based on your cancellation policy. You retain ${fmt(amountPaid - refundAmount)} minus platform commission.`}
                       {isUserCancelled && refundAmount === 0 && `No refund was issued to the customer based on your cancellation policy. You retain the full collected amount.`}
@@ -786,27 +786,27 @@ export default function BookingDetail() {
 
               {/* ── OVERDUE ALERT (active confirmed bookings only) ── */}
               {s === 'confirmed' && isAdvancePaid && balanceDatePassed && !isTerminated && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 p-5 flex items-start gap-4">
-                  <div className="w-9 h-9 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center shrink-0">
+                <div className="rounded-xl border border-rose-200 dark:border-rose-900/30 bg-rose-50 dark:bg-rose-950/20 p-5 flex items-start gap-4">
+                  <div className="w-9 h-9 bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center shrink-0">
                     <AlertTriangle className="w-4 h-4" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-bold text-rose-900 text-sm">Balance Payment Overdue</p>
-                    <p className="text-sm text-rose-700/80 mt-0.5 leading-relaxed">
+                    <p className="font-bold text-rose-900 dark:text-rose-300 text-sm">Balance Payment Overdue</p>
+                    <p className="text-sm text-rose-700/80 dark:text-rose-400/80 mt-0.5 leading-relaxed">
                       Due date was {booking.balance_due_date && new Date(booking.balance_due_date).toLocaleDateString()}.
                       {isOverdue && ` Marked overdue at ${new Date(booking.balance_overdue_at!).toLocaleString()}.`}
-                      {' '}Customer has used <strong className="text-rose-900">{booking.deadline_extension_count}</strong> of 2 allowed extension(s).
+                      {' '}Customer has used <strong className="text-rose-900 dark:text-rose-300">{booking.deadline_extension_count}</strong> of 2 allowed extension(s).
                     </p>
                     {booking.owner_action_deadline && (
-                      <p className="text-xs text-rose-700 mt-1.5 font-medium">
+                      <p className="text-xs text-rose-700 dark:text-rose-400 mt-1.5 font-medium">
                         Action window closes: {new Date(booking.owner_action_deadline).toLocaleString()}
                       </p>
                     )}
                     {isOverdue && (
-                      <div className="mt-3 pt-3 border-t border-rose-200">
+                      <div className="mt-3 pt-3 border-t border-rose-200 dark:border-rose-900/30">
                         <Button
                           variant="secondary"
-                          className="bg-white dark:bg-ink-900 text-rose-700 border-rose-200 hover:bg-rose-100 font-semibold shadow-sm text-sm"
+                          className="bg-white dark:bg-ink-900 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/30 font-semibold shadow-sm text-sm"
                           onClick={() => setExtendModalOpen(true)}
                         >
                           Extend Deadline
@@ -845,25 +845,25 @@ export default function BookingDetail() {
                       ))}
                       <div className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-ink-700">
                         <span className="text-sm text-zinc-500 dark:text-zinc-400">Platform Fee ({commissionPct}%)</span>
-                        <span className="text-sm font-semibold text-rose-600">-{fmt(actualPlatformFee)}</span>
+                        <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">-{fmt(actualPlatformFee)}</span>
                       </div>
                       {platformFeeReversed > 0 && (
                         <div className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-ink-700">
                           <span className="text-sm text-zinc-500 dark:text-zinc-400">Platform Fee Refunded</span>
-                          <span className="text-sm font-semibold text-emerald-600">+{fmt(platformFeeReversed)}</span>
+                          <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">+{fmt(platformFeeReversed)}</span>
                         </div>
                       )}
                       {refundAmount > 0 && (
                         <div className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-ink-700">
                           <span className="text-sm text-zinc-500 dark:text-zinc-400">Refund Issued</span>
-                          <span className="text-sm font-semibold text-rose-600">-{fmt(refundAmount)}</span>
+                          <span className="text-sm font-semibold text-rose-600 dark:text-rose-400">-{fmt(refundAmount)}</span>
                         </div>
                       )}
                       <div className="flex justify-between items-center pt-3 pb-1">
                         <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
                           {finalPayout !== null ? 'Final Payout' : 'Projected Payout'}
                         </span>
-                        <span className="font-black text-emerald-600 text-base">{fmt(finalPayout !== null ? finalPayout : ownerPayoutProjected)}</span>
+                        <span className="font-black text-emerald-600 dark:text-emerald-400 text-base">{fmt(finalPayout !== null ? finalPayout : ownerPayoutProjected)}</span>
                       </div>
                       {amountPaid > 0 && amountPaid < totalDue && (
                         <div className="mt-2 pt-3 border-t border-dashed border-zinc-200 dark:border-ink-700 space-y-1.5">
@@ -874,7 +874,7 @@ export default function BookingDetail() {
                           {refundAmount > 0 && (
                             <div className="flex justify-between">
                               <span className="text-xs text-zinc-400 dark:text-zinc-400">Refunded to customer</span>
-                              <span className="text-xs text-rose-500 font-medium">-{fmt(refundAmount)}</span>
+                              <span className="text-xs text-rose-500 dark:text-rose-400 font-medium">-{fmt(refundAmount)}</span>
                             </div>
                           )}
                         </div>
@@ -891,7 +891,7 @@ export default function BookingDetail() {
                     /* One-time settlement: single full payment card */
                     <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
                       isFullyPaid || isRefunded || isPartiallyRefunded
-                        ? 'border-emerald-100'
+                        ? 'border-emerald-100 dark:border-emerald-900/30'
                         : isTerminated
                         ? 'border-zinc-100 dark:border-ink-700 opacity-70'
                         : 'border-zinc-200 dark:border-ink-700'
@@ -899,8 +899,8 @@ export default function BookingDetail() {
                       <div className="p-4 flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                           isFullyPaid || isRefunded || isPartiallyRefunded
-                            ? 'bg-emerald-100 text-emerald-600'
-                            : 'bg-amber-100 text-amber-600'
+                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
                         }`}>
                           {isFullyPaid || isRefunded || isPartiallyRefunded
                             ? <CheckCircle2 className="w-5 h-5" />
@@ -920,10 +920,10 @@ export default function BookingDetail() {
                         <div className="text-right shrink-0">
                           <div className="font-black text-zinc-900 dark:text-zinc-100 text-base">{fmt(totalDue)}</div>
                           {isFullyPaid || isRefunded || isPartiallyRefunded
-                            ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
+                            ? <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Paid</span>
                             : isTerminated
                             ? <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-wide">Waived</span>
-                            : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
+                            : <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">Pending</span>
                           }
                         </div>
                       </div>
@@ -933,14 +933,14 @@ export default function BookingDetail() {
                       {/* Advance */}
                       <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
                         isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
-                          ? 'border-emerald-100'
+                          ? 'border-emerald-100 dark:border-emerald-900/30'
                           : 'border-zinc-200 dark:border-ink-700'
                       }`}>
                         <div className="p-4 flex items-center gap-4">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                             isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
-                              ? 'bg-emerald-100 text-emerald-600'
-                              : 'bg-amber-100 text-amber-600'
+                              ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
                           }`}>
                             {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
                               ? <CheckCircle2 className="w-5 h-5" />
@@ -960,8 +960,8 @@ export default function BookingDetail() {
                           <div className="text-right shrink-0">
                             <div className="font-black text-zinc-900 dark:text-zinc-100 text-base">{fmt(advanceDue)}</div>
                             {isAdvancePaid || isFullyPaid || isRefunded || isPartiallyRefunded
-                              ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
-                              : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
+                              ? <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Paid</span>
+                              : <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">Pending</span>
                             }
                           </div>
                         </div>
@@ -969,15 +969,15 @@ export default function BookingDetail() {
 
                       {/* Balance */}
                       <Card className={`p-0 overflow-hidden border shadow-sm rounded-xl ${
-                        isBalancePaid ? 'border-emerald-100'
-                        : isOverdue ? 'border-rose-200'
+                        isBalancePaid ? 'border-emerald-100 dark:border-emerald-900/30'
+                        : isOverdue ? 'border-rose-200 dark:border-rose-900/30'
                         : isForfeitCancelled || isTerminated ? 'border-zinc-100 dark:border-ink-700 opacity-70'
                         : 'border-zinc-200 dark:border-ink-700'
                       }`}>
                         <div className="p-4 flex items-center gap-4">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                            isBalancePaid ? 'bg-emerald-100 text-emerald-600'
-                            : isOverdue ? 'bg-rose-100 text-rose-600'
+                            isBalancePaid ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                            : isOverdue ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'
                             : 'bg-zinc-100 dark:bg-ink-800 text-zinc-400 dark:text-zinc-400'
                           }`}>
                             {isBalancePaid ? <CheckCircle2 className="w-5 h-5" /> : isOverdue ? <AlertTriangle className="w-5 h-5" /> : <CalendarDays className="w-5 h-5" />}
@@ -990,7 +990,7 @@ export default function BookingDetail() {
                             {booking.stripe_balance_payment_intent_id
                               ? <p className="text-xs text-zinc-400 dark:text-zinc-400 font-mono mt-0.5 truncate">Ref: {booking.stripe_balance_payment_intent_id}</p>
                               : booking.balance_due_date
-                              ? <p className={`text-xs mt-0.5 font-medium ${isOverdue ? 'text-rose-600' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                              ? <p className={`text-xs mt-0.5 font-medium ${isOverdue ? 'text-rose-600 dark:text-rose-400' : 'text-zinc-500 dark:text-zinc-400'}`}>
                                   Due {new Date(booking.balance_due_date).toLocaleDateString()}{isOverdue && ' — OVERDUE'}
                                 </p>
                               : <p className="text-xs text-zinc-400 dark:text-zinc-400 mt-0.5">Paid before event</p>
@@ -998,11 +998,11 @@ export default function BookingDetail() {
                           </div>
                           <div className="text-right shrink-0">
                             <div className="font-black text-zinc-900 dark:text-zinc-100 text-base">{fmt(balanceDue)}</div>
-                            {isBalancePaid ? <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">Paid</span>
+                            {isBalancePaid ? <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Paid</span>
                             : isForfeitCancelled ? <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-wide">Forfeited</span>
                             : isTerminated ? <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-400 uppercase tracking-wide">Waived</span>
-                            : isOverdue ? <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wide">Overdue</span>
-                            : <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">Pending</span>
+                            : isOverdue ? <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide">Overdue</span>
+                            : <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide">Pending</span>
                             }
                           </div>
                         </div>
@@ -1056,7 +1056,7 @@ export default function BookingDetail() {
                             <div
                               className={[
                                 'h-4 w-4 rounded-full transition-all',
-                                isCompleted ? 'bg-[#2B5C4E]' : isCurrent ? 'bg-[#E2ECE9] ring-4 ring-[#E9F0EE]' : 'bg-zinc-200',
+                                isCompleted ? 'bg-brand' : isCurrent ? 'bg-brand-light ring-4 ring-brand-light-strong dark:bg-ink-800 dark:ring-ink-700' : 'bg-zinc-200 dark:bg-ink-700',
                               ].join(' ')}
                             />
 
@@ -1064,7 +1064,7 @@ export default function BookingDetail() {
                               <div
                                 className={[
                                   'min-h-[48px] w-px flex-1',
-                                  isCompleted ? 'bg-[#B3C8C1]' : 'bg-zinc-200',
+                                  isCompleted ? 'bg-brand-muted dark:bg-brand-secondary/60' : 'bg-zinc-200 dark:bg-ink-700',
                                 ].join(' ')}
                               />
                             )}
@@ -1089,9 +1089,9 @@ export default function BookingDetail() {
                 </div>
 
                 {booking.cancelled_at && (
-                  <div className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 mt-6">
-                    <div className="text-sm font-medium text-rose-800">Booking Cancelled</div>
-                    <div className="mt-1 text-xs text-rose-700">Cancelled on {new Date(booking.cancelled_at).toLocaleString()}</div>
+                  <div className="rounded-xl border border-rose-100 dark:border-rose-900/30 bg-rose-50 dark:bg-rose-950/20 px-4 py-3 mt-6">
+                    <div className="text-sm font-medium text-rose-800 dark:text-rose-300">Booking Cancelled</div>
+                    <div className="mt-1 text-xs text-rose-700 dark:text-rose-400">Cancelled on {new Date(booking.cancelled_at).toLocaleString()}</div>
                   </div>
                 )}
                 {booking.expired_at && (
@@ -1208,7 +1208,7 @@ export default function BookingDetail() {
           onClose={() => setRejectModalOpen(false)}
         >
           <div className="p-8">
-            <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mb-5 border border-rose-100 shadow-sm">
+            <div className="w-12 h-12 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mb-5 border border-rose-100 dark:border-rose-900/40 shadow-sm">
               <X className="h-6 w-6" />
             </div>
             <div className="mb-6">
@@ -1216,9 +1216,9 @@ export default function BookingDetail() {
               <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">Please provide a reason for rejecting this booking. The user will be notified.</p>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Reason for rejection <span className="text-rose-500">*</span></label>
-              <textarea 
-                className="w-full border border-zinc-200 dark:border-ink-700 rounded-xl p-4 text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all shadow-inner bg-zinc-50/50 resize-none"
+              <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Reason for rejection <span className="text-rose-500 dark:text-rose-400">*</span></label>
+              <textarea
+                className="w-full border border-zinc-200 dark:border-ink-700 rounded-xl p-4 text-sm focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all shadow-inner bg-zinc-50/50 dark:bg-ink-950 resize-none"
                 rows={4}
                 placeholder="e.g. Venue is under maintenance, dates unavailable..."
                 value={rejectReason}
@@ -1241,15 +1241,15 @@ export default function BookingDetail() {
           className="max-w-3xl"
         >
           <div className="p-8">
-            <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mb-5 border border-amber-100 shadow-sm">
+            <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mb-5 border border-amber-100 dark:border-amber-900/40 shadow-sm">
               <Calendar className="h-6 w-6" />
             </div>
             <div className="mb-6">
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Extend Balance Deadline</h2>
               <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">Select a new due date for the balance payment. This gives the customer more time to pay.</p>
             </div>
-            
-            <div className="bg-zinc-50/50 p-2 rounded-lg border border-zinc-100 dark:border-ink-700">
+
+            <div className="bg-zinc-50/50 dark:bg-ink-800/50 p-2 rounded-lg border border-zinc-100 dark:border-ink-700">
               <DoubleMonthCalendar 
                 value={newDeadlineDate}
                 minDate={new Date().toISOString().split('T')[0]}
@@ -1279,7 +1279,7 @@ export default function BookingDetail() {
           className="max-w-xl"
         >
           <div className="p-8">
-            <div className="w-12 h-12 bg-zinc-100 dark:bg-ink-800 text-zinc-600 dark:text-zinc-400 rounded-full flex items-center justify-center mb-5 border border-zinc-200/50 shadow-sm">
+            <div className="w-12 h-12 bg-zinc-100 dark:bg-ink-800 text-zinc-600 dark:text-zinc-400 rounded-full flex items-center justify-center mb-5 border border-zinc-200/50 dark:border-ink-700 shadow-sm">
               <AlertTriangle className="h-6 w-6" />
             </div>
             <div className="mb-6">
@@ -1292,9 +1292,9 @@ export default function BookingDetail() {
                 type="button"
                 onClick={() => setCancelType('forfeit')}
                 className={`text-left p-5 rounded-lg border-2 transition-all ${
-                  cancelType === 'forfeit' 
-                    ? 'border-brand-500 bg-brand-50/50 shadow-sm' 
-                    : 'border-zinc-200 dark:border-ink-700 bg-zinc-50/30 hover:border-brand-200 hover:bg-zinc-50 dark:hover:bg-ink-800'
+                  cancelType === 'forfeit'
+                    ? 'border-brand-500 bg-brand-50/50 dark:bg-brand/10 shadow-sm'
+                    : 'border-zinc-200 dark:border-ink-700 bg-zinc-50/30 dark:bg-ink-800/30 hover:border-brand-200 dark:hover:border-ink-600 hover:bg-zinc-50 dark:hover:bg-ink-800'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -1314,9 +1314,9 @@ export default function BookingDetail() {
                 type="button"
                 onClick={() => setCancelType('goodwill')}
                 className={`text-left p-5 rounded-lg border-2 transition-all ${
-                  cancelType === 'goodwill' 
-                    ? 'border-rose-500 bg-rose-50/50 shadow-sm' 
-                    : 'border-zinc-200 dark:border-ink-700 bg-zinc-50/30 hover:border-rose-200 hover:bg-zinc-50 dark:hover:bg-ink-800'
+                  cancelType === 'goodwill'
+                    ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 shadow-sm'
+                    : 'border-zinc-200 dark:border-ink-700 bg-zinc-50/30 dark:bg-ink-800/30 hover:border-rose-200 dark:hover:border-rose-900/50 hover:bg-zinc-50 dark:hover:bg-ink-800'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">

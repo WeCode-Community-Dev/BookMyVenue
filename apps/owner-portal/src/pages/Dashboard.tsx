@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '../lib/AuthContext'
-import { MetricCard, StatusBadge, Card, Skeleton } from '@venue404/ui'
+import { MetricCard, StatusBadge, Card, Skeleton, useTheme } from '@venue404/ui'
 import { CalendarDays, Clock, FileEdit, Calendar, Wallet, Store } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
@@ -34,6 +34,13 @@ function eventTypeLabel(type: string | null): string {
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const { resolved: themeMode } = useTheme()
+  const isDark = themeMode === 'dark'
+  const gridStroke = isDark ? '#26403a' : '#f4f4f5'
+  const tickFill = isDark ? '#71717a' : '#a1a1aa'
+  const cursorStroke = isDark ? '#385951' : '#d4d4d8'
+  const tooltipBg = isDark ? '#101d1a' : '#18181b'
+  const tooltipItem = isDark ? '#d4d4d8' : '#e4e4e7'
   const userName = user?.profile?.full_name?.split(' ')[0] || 'Owner'
   const [timeRange, setTimeRange] = useState('6M')
   const [portalTarget, setPortalTarget] = useState<Element | null>(null)
@@ -121,7 +128,7 @@ export default function Dashboard() {
       </section>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 px-4 py-3 text-sm text-red-700 dark:text-red-400">{error}</div>
       )}
 
       {/* KPI Stats */}
@@ -227,26 +234,26 @@ export default function Dashboard() {
                       <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid vertical={false} stroke="#f4f4f5" strokeDasharray="4 4" />
+                  <CartesianGrid vertical={false} stroke={gridStroke} strokeDasharray="4 4" />
                   <XAxis
                     dataKey="month"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#a1a1aa', fontSize: 12, fontWeight: 500 }}
+                    tick={{ fill: tickFill, fontSize: 12, fontWeight: 500 }}
                     dy={10}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#a1a1aa', fontSize: 12, fontWeight: 500 }}
+                    tick={{ fill: tickFill, fontSize: 12, fontWeight: 500 }}
                     dx={-10}
                     allowDecimals={false}
                   />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#18181b', borderRadius: '12px', border: 'none', color: '#fff', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' }}
-                    itemStyle={{ color: '#e4e4e7', fontSize: '13px', fontWeight: 500, padding: '2px 0' }}
+                    contentStyle={{ backgroundColor: tooltipBg, borderRadius: '12px', border: 'none', color: '#fff', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3)' }}
+                    itemStyle={{ color: tooltipItem, fontSize: '13px', fontWeight: 500, padding: '2px 0' }}
                     labelStyle={{ color: '#a1a1aa', fontSize: '12px', marginBottom: '8px' }}
-                    cursor={{ stroke: '#d4d4d8', strokeWidth: 1, strokeDasharray: '4 4' }}
+                    cursor={{ stroke: cursorStroke, strokeWidth: 1, strokeDasharray: '4 4' }}
                   />
                   <Area type="monotone" dataKey="enquiries" name="Enquiries" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorRequests)" activeDot={{ r: 5, strokeWidth: 0, fill: '#f59e0b' }} />
                   <Area type="monotone" dataKey="completed" name="Completed" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorCompleted)" activeDot={{ r: 5, strokeWidth: 0, fill: '#10b981' }} />
@@ -273,8 +280,8 @@ export default function Dashboard() {
             ) : (
               upcomingEvents.map((event) => (
                 <div key={event.booking_id} className="flex items-start gap-4">
-                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50">
-                    <Calendar className="h-4 w-4 text-blue-500" />
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/30">
+                    <Calendar className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">

@@ -120,7 +120,7 @@ def pricing_quote(
 )
 def validate_slot(
     venue_id: str,
-    booking_type: BookingType,
+    booking_type: str,
     starts_at: datetime | None = Query(None),
     ends_at: datetime | None = Query(None),
     booking_date: date | None = Query(None),
@@ -130,7 +130,7 @@ def validate_slot(
     return service.validate_slot(
         db=db,
         venue_id=venue_id,
-        booking_type=booking_type.value,
+        booking_type=booking_type,
         starts_at=starts_at,
         ends_at=ends_at,
         booking_date=booking_date,

@@ -196,7 +196,7 @@ export default function Bookings() {
               className={`flex-1 whitespace-nowrap py-3 border-b-2 font-medium text-sm transition-all ${
                 tab === t.id
                   ? 'border-brand-500 text-brand-600'
-                  : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'
+                  : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:border-zinc-300 dark:hover:border-ink-700'
               }`}
             >
               {t.label}

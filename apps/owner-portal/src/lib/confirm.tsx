@@ -13,7 +13,7 @@ export function confirmAction(message: string): Promise<boolean> {
             Cancel
           </button>
           <button 
-            className="px-4 py-1.5 text-sm font-medium text-white bg-[#2d6a4f] hover:bg-[#1b4332] rounded-md shadow-sm transition-colors"
+            className="px-4 py-1.5 text-sm font-medium text-white bg-brand hover:bg-brand-hover rounded-md shadow-sm transition-colors"
             onClick={() => { toast.dismiss(t.id); resolve(true); }}
           >
             Confirm

@@ -86,6 +86,32 @@ def request_password_reset(db: Session, email: str, redirect_to: str) -> None:
     _alert_if_admin_target(db, email)
 
 
+def send_signup_confirmation(email: str, redirect_to: str) -> None:
+    """Public, unauthenticated — never reveals whether `email` is registered
+    or already confirmed. Generates a Supabase signup-confirmation link and
+    sends the email ourselves (Resend), same reasoning as
+    request_password_reset. Called both right after signup and by the
+    "resend confirmation" action — it's the same operation either way.
+    """
+    from urllib.parse import urlparse
+
+    from app.core.config import settings
+    from app.core.email import send_email
+    from app.modules.auth.dependencies import get_auth_provider
+    from app.modules.notification.templates import render_signup_confirmation_email
+
+    origin = f"{urlparse(redirect_to).scheme}://{urlparse(redirect_to).netloc}"
+    if origin not in settings.cors_origins_list:
+        return  # not one of our frontends — silently no-op, same as "email not found"
+
+    link = get_auth_provider().create_signup_confirmation_link(email, redirect_to=redirect_to)
+    if link is None:
+        return  # no account, or already confirmed — don't leak
+
+    subject, html = render_signup_confirmation_email(link)
+    send_email(email, subject, html)
+
+
 def _alert_if_admin_target(db: Session, email: str) -> None:
     """Password reset itself stays role-agnostic (that's the correct, standard
     behavior), but a reset targeting a super_admin account is high-value enough

@@ -8,8 +8,11 @@ displays correct availability information.
 from datetime import UTC, date, datetime, timedelta
 from datetime import time as dt_time
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 from tests.conftest import seed_approved_venue, seed_user
+
+_VENUE_TZ = ZoneInfo("Asia/Kolkata")
 
 
 def _future_date(days: int = 30) -> date:
@@ -18,8 +21,17 @@ def _future_date(days: int = 30) -> date:
 
 
 def _future_datetime(hours: int = 48) -> datetime:
-    """Helper to get a future datetime for testing."""
-    return datetime.now(UTC) + timedelta(hours=hours)
+    """Helper to get a future datetime for testing.
+
+    Pinned to a fixed local hour (14:00 Asia/Kolkata, within every seeded
+    venue's 9:00-21:00 operating window) instead of `now + hours`, so the
+    result isn't sensitive to what time of day the suite happens to run.
+    """
+    days_ahead = max(1, hours // 24)
+    local = datetime.combine(date.today() + timedelta(days=days_ahead), dt_time(14, 0)).replace(
+        tzinfo=_VENUE_TZ
+    )
+    return local.astimezone(UTC)
 
 
 def _iso(dt: datetime) -> str:
@@ -72,12 +84,18 @@ def test_calendar_returns_available_for_empty_venue(client, db, category_id):
 
 
 def test_calendar_shows_fully_booked_for_full_day(client, db, category_id):
-    """A venue with an existing booking should show fully_booked for full_day type."""
+    """A venue with an accepted booking should show fully_booked for full_day type.
+
+    Per the booking lifecycle (requested -> accepted -> confirmed), merely
+    requesting a slot never blocks it -- multiple customers may request the
+    same slot until the owner accepts one. The calendar can only show
+    fully_booked once the owner has accepted a request, which starts the
+    24-hour payment hold.
+    """
     owner_id, owner_token = seed_user(db, "venue_owner")
     customer_id, customer_token = seed_user(db, "customer")
     venue_id = seed_approved_venue(db, owner_id, category_id)
 
-    # Create a booking that blocks the venue
     booking_date = _future_date(15)
     resp = client.post(
         "/api/bookings/",
@@ -92,11 +110,21 @@ def test_calendar_shows_fully_booked_for_full_day(client, db, category_id):
     )
     assert resp.status_code == 201
     booking_id = resp.json()["id"]
-    from app.modules.booking.service import owner_accept_booking
-    owner_accept_booking(db, booking_id, owner_id)
-    db.commit()
 
-    # Now check calendar - day should show fully_booked
+    # A merely-requested booking must not block the slot yet.
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/calendar?start_date={booking_date.isoformat()}&end_date={booking_date.isoformat()}&booking_type=full_day"
+    )
+    assert resp.status_code == 200
+    assert resp.json()["days"][0]["status"] == "available"
+
+    # Owner accepting the request starts the hold, which does block the slot.
+    accept_resp = client.post(
+        f"/api/bookings/{booking_id}/accept",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert accept_resp.status_code == 200
+
     resp = client.get(
         f"/api/availability/venues/{venue_id}/calendar?start_date={booking_date.isoformat()}&end_date={booking_date.isoformat()}&booking_type=full_day"
     )
@@ -129,12 +157,12 @@ def test_date_availability_shows_blocked_for_blocked_date(client, db, category_i
     owner_id, owner_token = seed_user(db, "venue_owner")
     venue_id = seed_approved_venue(db, owner_id, category_id)
 
-    # Create a blocked date
-    check_date = _future_date(30)
-    blocked_start = datetime.combine(check_date, dt_time(0, 0)).replace(tzinfo=UTC)
+    # Create a blocked date. Pinned to a daytime local hour so it reliably
+    # overlaps `check_date`'s operating window regardless of wall-clock time.
+    blocked_start = _future_datetime(hours=30 * 24)
     blocked_end = blocked_start + timedelta(days=5)
 
-    resp = client.post(
+    block_resp = client.post(
         f"/api/venues/{venue_id}/blocked-dates",
         json={
             "starts_at": _iso(blocked_start),
@@ -143,7 +171,7 @@ def test_date_availability_shows_blocked_for_blocked_date(client, db, category_i
         },
         headers={"Authorization": f"Bearer {owner_token}"},
     )
-    assert resp.status_code == 201
+    assert block_resp.status_code == 201
 
     # Check a date within the blocked period
     resp = client.get(
@@ -233,13 +261,17 @@ def test_validate_slot_rejects_unsupported_booking_type(client, db, category_id)
 
 
 def test_validate_slot_returns_409_for_conflicting_booking(client, db, category_id):
-    """Validation must return 409 Conflict when slot overlaps existing booking."""
-    owner_id, _ = seed_user(db, "venue_owner")
+    """Validation must return 409 Conflict when slot overlaps an accepted booking.
+
+    A merely-requested booking doesn't block the slot (see
+    test_calendar_shows_fully_booked_for_full_day) -- the owner must accept
+    it first, which is what actually starts the exclusivity hold.
+    """
+    owner_id, owner_token = seed_user(db, "venue_owner")
     venue_id = seed_approved_venue(db, owner_id, category_id)
 
     booking_date = _future_date(30)
 
-    # Create a booking
     resp = client.post(
         "/api/bookings/",
         json={
@@ -253,9 +285,12 @@ def test_validate_slot_returns_409_for_conflicting_booking(client, db, category_
     )
     assert resp.status_code == 201
     booking_id = resp.json()["id"]
-    from app.modules.booking.service import owner_accept_booking
-    owner_accept_booking(db, booking_id, owner_id)
-    db.commit()
+
+    accept_resp = client.post(
+        f"/api/bookings/{booking_id}/accept",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert accept_resp.status_code == 200
 
     # Try to validate same date - should conflict
     resp = client.post(
@@ -367,13 +402,20 @@ def test_closed_day_shows_unavailable(client, db, category_id):
 
 
 def test_buffer_times_block_adjacent_slots(client, db, category_id):
-    """Post-buffer time should prevent adjacent bookings."""
-    owner_id, _ = seed_user(db, "venue_owner")
-    venue_id = seed_approved_venue(db, owner_id, category_id)
+    """Post-buffer time should prevent adjacent bookings.
+
+    Buffers are baked into a slot's effective range at booking-creation time
+    (see compute_effective_range), so post_buffer_minutes must be set on the
+    venue *before* the first booking is made. And -- as with the other
+    conflict tests -- only an accepted booking blocks the slot, so the first
+    booking must be accepted before the adjacent slot is validated.
+    """
     from app.modules.venue.models import Venue
-    venue = db.query(Venue).get(venue_id)
-    venue.allowed_booking_types = ["full_day", "time_slot"]
-    venue.post_buffer_minutes = 60
+
+    owner_id, owner_token = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    db.query(Venue).filter(Venue.id == venue_id).update({"post_buffer_minutes": 60})
     db.commit()
 
     # Venue with 60min post-buffer
@@ -397,9 +439,12 @@ def test_buffer_times_block_adjacent_slots(client, db, category_id):
     )
     assert resp.status_code == 201
     booking_id = resp.json()["id"]
-    from app.modules.booking.service import owner_accept_booking
-    owner_accept_booking(db, booking_id, owner_id)
-    db.commit()
+
+    accept_resp = client.post(
+        f"/api/bookings/{booking_id}/accept",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert accept_resp.status_code == 200
 
     # Try to book 12:30-14:00 - should conflict due to buffer
     adjacent_start = datetime.combine(booking_date, dt_time(12, 30)).replace(tzinfo=UTC)

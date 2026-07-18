@@ -369,7 +369,7 @@ export default function VenuePricingRules() {
       )}
 
       {error && (
-        <div className="p-4 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm mb-6">{error}</div>
+        <div className="p-4 rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 text-sm mb-6">{error}</div>
       )}
 
       {/* Bounds panel */}
@@ -443,7 +443,7 @@ export default function VenuePricingRules() {
                       {rule.name}
                       <span className="text-xs font-normal text-zinc-400 dark:text-zinc-400">priority {rule.priority}</span>
                       {rule.exceeds_bounds && (
-                        <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">will be capped</span>
+                        <span className="text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded px-1.5 py-0.5">will be capped</span>
                       )}
                       {!rule.is_active && <span className="text-xs text-zinc-400 dark:text-zinc-400">(inactive)</span>}
                     </div>
@@ -453,7 +453,7 @@ export default function VenuePricingRules() {
                     <button onClick={() => openEdit(rule)} className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-brand rounded-md hover:bg-zinc-50 dark:hover:bg-ink-800" title="Edit rule">
                       <Pencil className="h-4 w-4" />
                     </button>
-                    <button onClick={() => handleDelete(rule.id)} className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50" title="Delete rule">
+                    <button onClick={() => handleDelete(rule.id)} className="p-2 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30" title="Delete rule">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
@@ -501,7 +501,7 @@ export default function VenuePricingRules() {
             </Button>
           </div>
 
-          {previewError && <p className="text-sm text-red-600 mt-4 p-3 bg-red-50 rounded border border-red-200">{previewError}</p>}
+          {previewError && <p className="text-sm text-red-600 dark:text-red-400 mt-4 p-3 bg-red-50 dark:bg-red-950/30 rounded border border-red-200 dark:border-red-900/40">{previewError}</p>}
 
           {preview && (
             <div className="mt-6 p-5 rounded-xl bg-zinc-50 dark:bg-ink-800 border border-zinc-200 dark:border-ink-700">
@@ -510,7 +510,7 @@ export default function VenuePricingRules() {
                 <span className="text-xl font-black text-zinc-900 dark:text-zinc-100">{preview.display.quoted_price}</span>
               </div>
               {preview.clamped && (
-                <p className="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded inline-block mb-3">
+                <p className="text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2 py-1 rounded inline-block mb-3">
                   ⚠️ A rule was capped by your price bounds for this quote.
                 </p>
               )}
