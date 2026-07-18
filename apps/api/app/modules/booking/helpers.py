@@ -118,7 +118,37 @@ def _slot_for_update(db: Session, booking_id: UUID) -> BookingSlot:
     return slot
 
 
-def _booking_out(db: Session, booking: Booking) -> BookingOut:
+def _platform_fee_reversed_map(db: Session, booking_ids: list[UUID]) -> dict[UUID, int]:
+    """Batch-load summed platform_fee_reversal credits for many bookings (avoids N+1)."""
+    if not booking_ids:
+        return {}
+
+    rows = (
+        db.query(
+            LedgerEntry.booking_id,
+            func.coalesce(func.sum(LedgerEntry.amount_paise), 0),
+        )
+        .filter(
+            LedgerEntry.booking_id.in_(booking_ids),
+            LedgerEntry.entry_type == "platform_fee_reversal",
+            LedgerEntry.direction == "credit",
+        )
+        .group_by(LedgerEntry.booking_id)
+        .all()
+    )
+    return {booking_id: int(total or 0) for booking_id, total in rows}
+
+
+def _platform_fee_reversed_paise(db: Session, booking_id: UUID) -> int:
+    return _platform_fee_reversed_map(db, [booking_id]).get(booking_id, 0)
+
+
+def _booking_out(
+    db: Session,
+    booking: Booking,
+    *,
+    platform_fee_reversed_paise: int | None = None,
+) -> BookingOut:
     slot = booking.slot
 
     cover_photo = next(
@@ -184,6 +214,9 @@ def _booking_out(db: Session, booking: Booking) -> BookingOut:
             if invoice:
                 invoice_url = invoice.pdf_url
 
+    if platform_fee_reversed_paise is None:
+        platform_fee_reversed_paise = _platform_fee_reversed_paise(db, booking.id)
+
     return BookingOut(
         id=booking.id,
         venue_id=booking.venue_id,
@@ -209,17 +242,7 @@ def _booking_out(db: Session, booking: Booking) -> BookingOut:
         platform_commission_pct=float(booking.platform_commission_pct),
         platform_fee_paise=booking.platform_fee_paise,
         owner_payout_paise=booking.owner_payout_paise,
-        platform_fee_reversed_paise=(
-            db.query(LedgerEntry)
-            .filter(
-                LedgerEntry.booking_id == booking.id,
-                LedgerEntry.entry_type == "platform_fee_reversal",
-                LedgerEntry.direction == "credit",
-            )
-            .with_entities(func.sum(LedgerEntry.amount_paise))
-            .scalar()
-            or 0
-        ),
+        platform_fee_reversed_paise=platform_fee_reversed_paise,
         advance_pct=float(booking.advance_pct),
         advance_due_paise=booking.advance_due_paise,
         balance_due_paise=booking.balance_due_paise,
@@ -251,6 +274,19 @@ def _booking_out(db: Session, booking: Booking) -> BookingOut:
         confirmed_by=booking.confirmed_by,
         invoice_url=invoice_url,
     )
+
+
+def _bookings_out(db: Session, bookings: list[Booking]) -> list[BookingOut]:
+    """Serialize many bookings with a single ledger aggregation query."""
+    fee_map = _platform_fee_reversed_map(db, [booking.id for booking in bookings])
+    return [
+        _booking_out(
+            db,
+            booking,
+            platform_fee_reversed_paise=fee_map.get(booking.id, 0),
+        )
+        for booking in bookings
+    ]
 
 
 def _load_policy(db: Session, venue_id: UUID) -> VenueCancellationPolicy | None:

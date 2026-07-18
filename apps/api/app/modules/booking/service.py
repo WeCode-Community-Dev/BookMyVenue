@@ -28,6 +28,7 @@ from app.modules.booking.helpers import (
     _assert_booking_owner,
     _booking_or_404,
     _booking_out,
+    _bookings_out,
     _history,
     _now,
     _slot_for_update,
@@ -216,7 +217,7 @@ def list_user_bookings(
         .all()
     )
     return BookingListResponse(
-        data=[_booking_out(db, booking) for booking in bookings],
+        data=_bookings_out(db, bookings),
         meta=PaginatedMeta(
             page=page,
             per_page=per_page,
@@ -305,7 +306,7 @@ def list_all_owner_bookings(
     )
 
     return BookingListResponse(
-        data=[_booking_out(db, booking) for booking in bookings],
+        data=_bookings_out(db, bookings),
         meta=PaginatedMeta(
             page=page,
             per_page=per_page,
@@ -344,9 +345,8 @@ def list_venue_bookings(
     if pending_only:
         query = query.filter(Booking.status == BookingStatus.requested)
 
-    return [
-        _booking_out(db, booking) for booking in query.order_by(Booking.requested_at.asc()).all()
-    ]
+    bookings = query.order_by(Booking.requested_at.asc()).all()
+    return _bookings_out(db, bookings)
 
 
 def owner_accept_booking(db: Session, booking_id: UUID, owner_id: UUID) -> BookingOut:
