@@ -44,6 +44,7 @@ from app.modules.booking.schemas import (
     BookingOut,
     BookingRequestIn,
     ExtendDeadlineIn,
+    PaginatedMeta,
 )
 from app.modules.notification import service as notifications
 from app.modules.notification.types import NotificationType
@@ -215,11 +216,13 @@ def list_user_bookings(
         .all()
     )
     return BookingListResponse(
-        items=[_booking_out(db, booking) for booking in bookings],
-        total=total,
-        page=page,
-        page_size=per_page,
-        total_pages=total_pages,
+        data=[_booking_out(db, booking) for booking in bookings],
+        meta=PaginatedMeta(
+            page=page,
+            per_page=per_page,
+            total=total,
+            total_pages=total_pages,
+        ),
     )
 
 
@@ -302,11 +305,13 @@ def list_all_owner_bookings(
     )
 
     return BookingListResponse(
-        items=[_booking_out(db, booking) for booking in bookings],
-        total=total,
-        page=page,
-        page_size=per_page,
-        total_pages=total_pages,
+        data=[_booking_out(db, booking) for booking in bookings],
+        meta=PaginatedMeta(
+            page=page,
+            per_page=per_page,
+            total=total,
+            total_pages=total_pages,
+        ),
     )
 
 

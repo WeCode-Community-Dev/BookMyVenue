@@ -102,8 +102,8 @@ export default function Bookings() {
     }
   })
 
-  const bookings = bookingResponse?.items || []
-  const totalPages = bookingResponse?.total_pages || 1
+  const bookings = bookingResponse?.data || []
+  const totalPages = bookingResponse?.meta?.total_pages || 1
 
   const TABS = [
     { id: 'all', label: 'All Bookings' },

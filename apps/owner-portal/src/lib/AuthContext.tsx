@@ -9,6 +9,7 @@ import {
   type SignUpInput,
 } from '@venue404/api-client'
 import { authEndpoints, type AuthUser } from '@venue404/api-client'
+import { queryClient } from './queryClient'
 
 type AuthState = {
   user: AuthUser | null
@@ -27,7 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function loadUser() {
     try {
       const client = createClient()
-      const authUser = await authEndpoints(client).me()
+      const authUser = await queryClient.fetchQuery({
+        queryKey: ['me'],
+        queryFn: () => authEndpoints(client).me(),
+      })
       setUser(authUser)
     } catch {
       setUser(null)
@@ -68,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signOut() {
     await supabaseSignOut()
+    queryClient.removeQueries({ queryKey: ['me'] })
   }
 
   return (

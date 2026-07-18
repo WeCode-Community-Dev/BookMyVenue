@@ -12,3 +12,16 @@ class NotificationResponse(BaseModel):
     body: str
     read_at: datetime | None
     created_at: datetime
+
+
+class PaginatedMeta(BaseModel):
+    page: int
+    per_page: int
+    total: int
+    total_pages: int
+
+
+class NotificationListResponse(BaseModel):
+    data: list[NotificationResponse]
+    meta: PaginatedMeta
+

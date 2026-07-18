@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -32,8 +32,10 @@ def create_booking(
 def list_my_bookings(
     auth: AuthContext = Depends(require_auth),
     db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(100, ge=1, le=100),
 ):
-    return service.list_user_bookings(db, auth.user_id)
+    return service.list_user_bookings(db, auth.user_id, page, per_page)
 
 
 @router.get("/owner", response_model=BookingListResponse)

@@ -68,15 +68,19 @@ export default function MyBookings() {
 
   const [activeTab, setActiveTab] = useState<BookingTab>('upcoming')
 
+  const [page, setPage] = useState(1)
   const {
-    data: bookings = [],
+    data,
     isLoading,
     isError,
     refetch,
-  } = useQuery<BookingOut[]>({
-    queryKey: ['my-bookings'],
-    queryFn: () => bookingEndpoints(client).listBookings(),
+  } = useQuery({
+    queryKey: ['my-bookings', page],
+    queryFn: () => bookingEndpoints(client).listBookings({ page, per_page: 10 }),
   })
+
+  const bookings = data?.data || []
+  const meta = data?.meta
 
   const now = new Date()
 
@@ -231,6 +235,34 @@ export default function MyBookings() {
                 {filteredBookings.map((booking) => (
                   <BookingCard key={booking.id} booking={booking} />
                 ))}
+              </div>
+            )}
+
+            {meta && meta.total_pages > 1 && (
+              <div className="mt-8 flex items-center justify-between border-t border-zinc-200 pt-4 dark:border-ink-700">
+                <button
+                  onClick={() => {
+                    setPage((p) => Math.max(p - 1, 1))
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  disabled={page === 1}
+                  className="press rounded-lg border border-zinc-200 px-3.5 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-ink-700 dark:text-zinc-300 dark:hover:bg-ink-800"
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-zinc-500">
+                  Page {page} of {meta.total_pages}
+                </span>
+                <button
+                  onClick={() => {
+                    setPage((p) => Math.min(p + 1, meta.total_pages))
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  disabled={page === meta.total_pages}
+                  className="press rounded-lg border border-zinc-200 px-3.5 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-ink-700 dark:text-zinc-300 dark:hover:bg-ink-800"
+                >
+                  Next
+                </button>
               </div>
             )}
           </>

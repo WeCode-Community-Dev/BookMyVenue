@@ -142,12 +142,13 @@ function UserMenu({ displayName, onSignOut }: { displayName: string; onSignOut: 
 
 function NotificationBell() {
   const client = createClient()
-  const { data: notifications = [] } = useQuery({
+  const { data } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => notificationEndpoints(client).list(),
     staleTime: 30 * 1000,
     refetchInterval: 30 * 1000,
   })
+  const notifications = data?.data || []
   const unreadCount = notifications.filter((n) => n.read_at == null).length
 
   return (
