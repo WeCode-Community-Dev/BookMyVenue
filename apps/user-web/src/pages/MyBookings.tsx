@@ -9,8 +9,6 @@ import { EmptyState, ErrorState, Button, LoadingScreen } from '@venue404/ui'
 import { AppNavbar } from '../components/shared/AppNavbar'
 import { HomeFooter } from '../components/home/HomeFooter'
 
-import type { BookingOut } from '../types'
-
 import BookingCard from '../components/booking/BookingCard'
 
 import { UserReservations } from '../components/booking/UserReservations'
