@@ -25,7 +25,7 @@ export class TokenService extends ITokenService{
         return new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     }
 
-    verifyRefreshToken(token) {
+    verifyAccessToken(token) {
         try {
             const accessTokenSecret = jwtConfig.accessToken.secret
             return jwt.verify(token, accessTokenSecret);
@@ -34,7 +34,7 @@ export class TokenService extends ITokenService{
         }
     }
 
-    verifyAccessToken(token) {
+    verifyRefreshToken(token) {
         try {
             const refreshTokenSecret = jwtConfig.refreshToken.secret
             return jwt.verify(token, refreshTokenSecret);

@@ -16,7 +16,7 @@ export const createVenueSchema = z.object({
         .max(2000, "Description cannot exceed 2000 characters"),
 
     category: z.nativeEnum(VenueCategory),
-    vendorId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid owner ID'),
+    // vendorId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid owner ID'),
 
     websiteUrl: z
         .string()
@@ -121,7 +121,7 @@ export const editVenueSchema = z.object({
         .min(10, "Description must be at least 10 characters")
         .max(2000, "Description cannot exceed 2000 characters"),
     category: z.nativeEnum(VenueCategory),
-    ownerId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid owner ID'),
+    vendorId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid owner ID'),
     websiteUrl: z
         .string()
         .url("Invalid website URL")

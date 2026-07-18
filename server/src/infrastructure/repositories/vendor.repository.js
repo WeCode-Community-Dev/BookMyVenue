@@ -180,7 +180,7 @@ class VendorRepositoryImpl extends IVendorRepository {
     }
 
     async clearRefreshToken(token) {
-        await VendorModel.findByOneAndUpdate(
+        await VendorModel.findOneAndUpdate(
             {refreshToken: token},
             { $pull: {refreshToken: token } },
             { new: true }
