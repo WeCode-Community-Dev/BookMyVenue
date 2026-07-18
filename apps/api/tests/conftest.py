@@ -1,4 +1,5 @@
 import os
+
 import dotenv
 
 if "CI" not in os.environ and "GITHUB_ACTIONS" not in os.environ:
