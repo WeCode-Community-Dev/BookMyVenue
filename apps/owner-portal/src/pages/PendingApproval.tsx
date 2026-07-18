@@ -1,7 +1,10 @@
 import { useAuth } from '../lib/AuthContext'
+import { Navigate } from 'react-router-dom'
 
 export default function PendingApproval() {
-  const { signOut } = useAuth()
+  const { user, signOut } = useAuth()
+
+  if (!user) return <Navigate to="/login" replace />
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-ink-800 p-4">

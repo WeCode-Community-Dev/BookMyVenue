@@ -17,29 +17,23 @@ export default function LoginSuccess() {
           queryFn: () => authEndpoints(client).me(),
         })
 
+        // Check status first so pending/rejected users always land
+        // on the right page regardless of whether the role was assigned.
+        if (user.profile.status === 'pending') {
+          navigate('/pending-approval', { replace: true })
+          return
+        }
+        if (user.profile.status === 'rejected') {
+          navigate('/rejected', { replace: true })
+          return
+        }
+
         if (!user.roles.includes('venue_owner') && !user.roles.includes('super_admin')) {
           navigate('/403', { replace: true })
           return
         }
 
-        // if (user.roles.includes('super_admin')) {
-        //   navigate('/', { replace: true })
-        //   return
-        // }
-
-        switch (user.profile.status) {
-          case 'active':
-            navigate('/', { replace: true })
-            break
-          case 'pending':
-            navigate('/pending-approval', { replace: true })
-            break
-          case 'rejected':
-            navigate('/rejected', { replace: true })
-            break
-          default:
-            navigate('/403', { replace: true })
-        }
+        navigate('/', { replace: true })
       } catch {
         setError('Session verification failed. Please sign in again.')
       }
