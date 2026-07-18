@@ -4,7 +4,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { StatusBadge, PaymentStatusBadge, EmptyState, Skeleton } from '@venue404/ui'
 import { Search, Calendar, Users, ChevronDown } from 'lucide-react'
 import { createClient, venueEndpoints, bookingEndpoints } from '@venue404/api-client'
-import type { Booking } from '@venue404/api-client'
+import type { Booking, BookingListResponse } from '@venue404/api-client'
 import { useQuery } from '@tanstack/react-query'
 import { Pagination } from '../components/Pagination'
 
@@ -88,7 +88,7 @@ export default function Bookings() {
     }
   })
 
-  const { data: bookingResponse, isLoading: loading } = useQuery({
+  const { data: bookingResponse, isLoading: loading } = useQuery<BookingListResponse>({
     queryKey: ['owner-bookings', tab, selectedVenue, debouncedSearch, page],
     queryFn: async () => {
       const data = await bookingEndpoints(createClient()).getOwnerBookings({
@@ -327,7 +327,7 @@ export default function Bookings() {
           <Pagination
             page={page}
             perPage={25}
-            total={bookingResponse?.total || 0}
+            total={bookingResponse?.meta?.total || 0}
             totalPages={totalPages}
             setPage={setPage}
           />
