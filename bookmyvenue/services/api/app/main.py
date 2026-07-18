@@ -12,7 +12,7 @@ from models.booking_slot import BookingSlot
 
 
 from database import Base, engine
-from routes import auth, venue_category, venue, availability, booking
+from routes import auth, venue_category, venue, availability, booking, admin
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,6 +28,7 @@ app.include_router(availability.router,
                    prefix="/api/availability", tags=["Availability"])
 app.include_router(booking.router,
                    prefix="/api/bookings", tags=["Bookings"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 
 app.add_middleware(
     CORSMiddleware,

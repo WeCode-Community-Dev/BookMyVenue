@@ -4,6 +4,8 @@ from pydantic import BaseModel, Field, PositiveInt, model_validator
 from typing import Optional, List
 from .venue_image import VenueImageOut
 from .venue_category import VenueCategoryOut
+from models.venue import StatusEnum
+from pydantic import field_serializer
 
 
 class VenueCreate(BaseModel):
@@ -70,6 +72,7 @@ class VenueOut(BaseModel):
     daily_price: Optional[float] = None
     amenities: str
     cancellation_policy: Optional[str] = None
+    status: str = "active"
     images: list[VenueImageOut] = Field(default_factory=list)
 
     model_config = {"from_attributes": True}
@@ -91,3 +94,7 @@ class HomePageResponse(BaseModel):
     top_rated: list[VenueOut]
     recently_added: list[VenueOut]
     categories: list[CategoryWithVenues]
+
+
+class VenueStatusUpdate(BaseModel):
+    status: StatusEnum

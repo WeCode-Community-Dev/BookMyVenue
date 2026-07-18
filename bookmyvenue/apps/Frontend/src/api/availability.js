@@ -1,10 +1,19 @@
-import axios from "./axios";
+import api from "./axios";
 
+export async function getAvailability(venueId, date = null) {
+    const response = await api.get(
+        `/api/availability/${venueId}`, {
+            params: date ? {
+                date
+            } : {},
+        }
+    );
 
-// Owner creates availability
+    return response.data;
+}
+
 export async function createAvailability(data, token) {
-
-    const response = await axios.post(
+    const response = await api.post(
         "/api/availability/",
         data, {
             headers: {
@@ -16,21 +25,10 @@ export async function createAvailability(data, token) {
     return response.data;
 }
 
-
-
-// Public availability fetch
-export async function getAvailability(
-    venueId,
-    date = null
-) {
-
-    const response = await axios.get(
-        `/api/availability/${venueId}`, {
-            params: date ? {
-                date
-            } : {}
-        }
-    );
-
-    return response.data;
+export async function deleteAvailability(id, token) {
+    await api.delete(`/api/availability/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
 }

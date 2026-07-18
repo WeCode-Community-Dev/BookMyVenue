@@ -13,6 +13,7 @@
     "@tailwindcss/vite": "^4.3.2",
     "axios": "^1.17.0",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^1.24.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.17.0",

@@ -1,550 +1,153 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
+import Header from "../../components/common/Header";
+import Footer from "../../components/common/Footer";
+import Loading from "../../components/common/Loading";
 
-import OwnerHeader from "../../pages/owner/OwnerHeader";
+import { useAuth } from "../../context/AuthContext";
 
 import {
-    getVenueById
+  getMyVenues,
+  deleteVenue,
 } from "../../api/venues";
 
-
-
 function ManageVenue() {
+  const navigate = useNavigate();
+  const { token } = useAuth();
 
+  const [venues, setVenues] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    const { id } = useParams();
+  useEffect(() => {
+    loadVenues();
+  }, []);
 
-    const navigate = useNavigate();
+  async function loadVenues() {
+    try {
+      setLoading(true);
 
+      const data = await getMyVenues(token);
 
+      setVenues(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    const [venue, setVenue] = useState(null);
-
-    const [loading, setLoading] = useState(true);
-
-    const [error, setError] = useState("");
-
-
-
-
-
-    async function loadVenue() {
-
-
-        try {
-
-
-            const data =
-                await getVenueById(id);
-
-
-            setVenue(data);
-
-
-
-        } catch(err) {
-
-
-            setError(
-                err.response?.data?.detail ||
-                "Failed to load venue"
-            );
-
-
-        }
-        finally {
-
-            setLoading(false);
-
-        }
-
-
+  async function handleDelete(id) {
+      alert("Deletion is not available yet.");
     }
 
+  if (loading) {
+    return <Loading message="Loading venues..." />;
+  }
 
+  return (
+    <>
+      <Header />
 
+      <main className="min-h-screen bg-gray-50">
+        <div className="mx-auto max-w-6xl px-4 py-10">
 
+          <div className="mb-8 flex items-center justify-between">
 
-    useEffect(()=>{
+            <h1 className="text-3xl font-bold">
+              My Venues
+            </h1>
 
-        loadVenue();
+            <button
+              onClick={() =>
+                navigate("/owner/create-venue")
+              }
+              className="rounded-lg bg-red-600 px-5 py-2 text-white hover:bg-red-700"
+            >
+              Create Venue
+            </button>
 
-    }, []);
+          </div>
 
-
-
-
-
-
-    if(loading){
-
-        return (
-
-            <div className="min-h-screen bg-gray-50">
-
-                <OwnerHeader />
-
-                <div className="
-                    flex
-                    h-[60vh]
-                    items-center
-                    justify-center
-                ">
-
-                    Loading...
-
-                </div>
-
+          {venues.length === 0 ? (
+            <div className="rounded-lg bg-white p-8 text-center shadow">
+              <p className="text-gray-500">
+                No venues found.
+              </p>
             </div>
+          ) : (
+            <div className="space-y-5">
 
-        );
-
-    }
-
-
-
-
-
-    if(error || !venue){
-
-        return (
-
-            <div className="min-h-screen bg-gray-50">
-
-                <OwnerHeader />
-
-                <div className="p-10 text-red-600">
-
-                    {error || "Venue not found"}
-
-                </div>
-
-            </div>
-
-        );
-
-    }
-
-
-
-
-
-
-
-    return (
-
-        <div className="min-h-screen bg-gray-50">
-
-
-            <OwnerHeader />
-
-
-
-            <main className="
-                mx-auto
-                max-w-6xl
-                px-6
-                py-10
-            ">
-
-
-
-                {/* Header */}
-
-                <div className="flex justify-between items-center">
-
+              {venues.map((venue) => (
+                <div
+                  key={venue.id}
+                  className="rounded-xl bg-white p-5 shadow"
+                >
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
                     <div>
+                      <h2 className="text-xl font-semibold">
+                        {venue.name}
+                      </h2>
 
-                        <h1 className="
-                            text-3xl
-                            font-bold
-                        ">
-
-                            Manage Venue
-
-                        </h1>
-
-
-                        <p className="
-                            mt-2
-                            text-gray-600
-                        ">
-
-                            {venue.name}
-
-                        </p>
-
-
+                      <p className="text-gray-500">
+                        {venue.city}
+                      </p>
                     </div>
 
+                    <div className="flex flex-wrap gap-2">
 
-
-                    <span className="
-                        rounded-full
-                        bg-green-100
-                        px-4
-                        py-2
-                        text-sm
-                        font-semibold
-                        text-green-700
-                    ">
-
-                        {venue.status}
-
-                    </span>
-
-
-                </div>
-
-
-
-
-
-
-
-
-
-                <section className="
-                    mt-8
-                    grid
-                    gap-8
-                    lg:grid-cols-3
-                ">
-
-
-
-                    {/* Images */}
-
-
-                    <div className="
-                        rounded-2xl
-                        bg-white
-                        p-5
-                        shadow-sm
-                        lg:col-span-1
-                    ">
-
-
-
-                        <h2 className="
-                            font-bold
-                        ">
-
-                            Images
-
-                        </h2>
-
-
-
-
-                        {
-                            venue.images?.length > 0
-
-                            ?
-
-                            <div className="
-                                mt-4
-                                space-y-3
-                            ">
-
-
-                                {
-                                    venue.images.map(
-                                        image=>(
-
-                                        <img
-
-                                            key={image.id}
-
-                                            src={
-                                                image.image_url
-                                            }
-
-                                            alt={venue.name}
-
-                                            className="
-                                                h-40
-                                                w-full
-                                                rounded-xl
-                                                object-cover
-                                            "
-
-                                        />
-
-                                    ))
-
-                                }
-
-
-                            </div>
-
-
-                            :
-
-                            <div className="
-                                mt-4
-                                flex
-                                h-40
-                                items-center
-                                justify-center
-                                rounded-xl
-                                bg-gray-100
-                                text-gray-400
-                            ">
-
-                                No images
-
-                            </div>
-
+                      <button
+                        onClick={() =>
+                          navigate(`/owner/edit-venue/${venue.id}`)
                         }
+                        className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                      >
+                        Edit
+                      </button>
 
+                      <button
+                        onClick={() =>
+                          navigate(`/owner/availability/${venue.id}`)
+                        }
+                        className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                      >
+                        Availability
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          navigate("/owner/bookings")
+                        }
+                        className="rounded bg-yellow-600 px-4 py-2 text-white hover:bg-yellow-700"
+                      >
+                        Bookings
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          handleDelete(venue.id)
+                        }
+                        className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
 
                     </div>
 
-
-
-
-
-
-
-                    {/* Details */}
-
-                    <div className="
-                        rounded-2xl
-                        bg-white
-                        p-6
-                        shadow-sm
-                        lg:col-span-2
-                    ">
-
-
-                        <h2 className="
-                            text-xl
-                            font-bold
-                        ">
-
-                            Venue Information
-
-                        </h2>
-
-
-
-
-                        <div className="
-                            mt-5
-                            space-y-4
-                        ">
-
-
-
-                            <p>
-                                <b>Name:</b>{" "}
-                                {venue.name}
-                            </p>
-
-
-
-
-                            <p>
-                                <b>Description:</b>{" "}
-                                {venue.description}
-                            </p>
-
-
-
-
-                            <p>
-                                <b>Location:</b>{" "}
-                                {venue.address_line},
-                                {" "}
-                                {venue.city}
-                                -
-                                {" "}
-                                {venue.pincode}
-                            </p>
-
-
-
-
-                            <p>
-                                <b>Capacity:</b>{" "}
-                                {venue.capacity} people
-                            </p>
-
-
-
-                        </div>
-
-
-
-
-
-                        <div className="
-                            mt-6
-                            grid
-                            gap-4
-                            sm:grid-cols-2
-                        ">
-
-
-
-                            {
-                                venue.supports_hourly && (
-
-                                <div className="
-                                    rounded-xl
-                                    bg-red-50
-                                    p-4
-                                ">
-
-                                    <p className="text-sm">
-                                        Hourly Booking
-                                    </p>
-
-
-                                    <p className="
-                                        mt-1
-                                        font-bold
-                                        text-red-600
-                                    ">
-
-                                        ₹{venue.hourly_price}/hr
-
-                                    </p>
-
-
-                                </div>
-
-                            )}
-
-
-
-
-                            {
-                                venue.supports_daily && (
-
-                                <div className="
-                                    rounded-xl
-                                    bg-red-50
-                                    p-4
-                                ">
-
-                                    <p className="text-sm">
-                                        Daily Booking
-                                    </p>
-
-
-                                    <p className="
-                                        mt-1
-                                        font-bold
-                                        text-red-600
-                                    ">
-
-                                        ₹{venue.daily_price}/day
-
-                                    </p>
-
-
-                                </div>
-
-                            )}
-
-
-
-                        </div>
-
-
-
-
-
-
-
-
-                        {/* Actions */}
-
-                        <div className="
-                            mt-8
-                            flex
-                            flex-wrap
-                            gap-3
-                        ">
-
-
-
-                            <button
-
-                                onClick={() =>
-                                    navigate(
-                                      `/owner/venues/${id}/availability`
-                                    )
-                                }
-
-                                className="
-                                    rounded-full
-                                    bg-red-600
-                                    px-5
-                                    py-2
-                                    text-white
-                                "
-
-                            >
-
-                                Manage Availability
-
-                            </button>
-
-
-
-
-
-                            <button
-
-                                onClick={() =>
-                                    navigate(
-                                      `/owner/venues/${id}/bookings`
-                                    )
-                                }
-
-                                className="
-                                    rounded-full
-                                    border
-                                    px-5
-                                    py-2
-                                "
-
-                            >
-
-                                View Bookings
-
-                            </button>
-
-
-
-                        </div>
-
-
-
-
-                    </div>
-
-
-
-                </section>
-
-
-
-
-            </main>
-
+                  </div>
+                </div>
+              ))}
+
+            </div>
+          )}
 
         </div>
+      </main>
 
-    );
-
-
+      <Footer />
+    </>
+  );
 }
-
 
 export default ManageVenue;
