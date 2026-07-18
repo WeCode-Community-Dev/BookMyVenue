@@ -1,10 +1,12 @@
 /* eslint-disable */
 
 import BookingCalendar from "./BookingCalender";
+import BookingExtras from "./BookingExtras";
 import BookingHeader from "./BookingHeader";
 import BookingPackages from "./BookingPackages";
 import BookingSummary from "./BookingSummary";
 import BookingVenueCard from "./BookingVenueCard";
+import ReservationStatus from "./ReservationStatus";
 
 export default function BookingLayout() {
     return (
@@ -25,6 +27,8 @@ export default function BookingLayout() {
                         
 
                         <BookingPackages/>
+                        
+                        <BookingExtras/>
 
                     </div>
 
@@ -34,7 +38,7 @@ export default function BookingLayout() {
 
                         <BookingSummary />
 
-                        {/* ReservationStatus */}
+                        <ReservationStatus/>
 
                     </div>
 
