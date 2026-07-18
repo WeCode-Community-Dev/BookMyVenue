@@ -15,7 +15,10 @@ import {
   VenueUpdateStatusSchema,
 } from "../../validators/VenderVenue.validator.js";
 
-import { UpdateVendorProfileSchema } from "../../validators/vendorProfile.validator.js";
+import {
+  UpdateVendorProfileSchema,
+  ChangeVendorPasswordSchema,
+} from "../../validators/vendorProfile.validator.js";
 
 import {
   BookingParamsSchema,
@@ -31,8 +34,8 @@ const uploadVenue = cloudinaryUpload("venues");
 router.post(
   ROUTES.OWNER.VENUE.CREATE,
   uploadVenue.fields([
-    {name: "images", maxCount: 10},
-    {name: "license", maxCount: 5}
+    { name: "images", maxCount: 10 },
+    { name: "license", maxCount: 5 },
   ]),
   validate(createVenueSchema, "body"),
   iVendorVenueController.createVenue
@@ -40,8 +43,8 @@ router.post(
 router.patch(
   ROUTES.OWNER.VENUE.EDIT,
   uploadVenue.fields([
-    {name: "images", maxCount: 10},
-    {name: "license", maxCount: 5}
+    { name: "images", maxCount: 10 },
+    { name: "license", maxCount: 5 },
   ]),
   validate(createVenueSchema, "body"),
   validate(VenueParamsSchema, "params"),
@@ -78,6 +81,12 @@ router.patch(
   iVendorProfileController.updateProfile
 );
 
+router.patch(
+  ROUTES.OWNER.PROFILE.CHANGE_PASSWORD,
+  validate(ChangeVendorPasswordSchema, "body"),
+  iVendorProfileController.changePassword
+);
+
 // booking
 
 router.get(
@@ -92,9 +101,6 @@ router.get(
   iVendorBookingController.getBookingById
 );
 
-router.get(
-  ROUTES.OWNER.DASHBOARD,
-  iVendorDashboardController.getDashboard
-);
+router.get(ROUTES.OWNER.DASHBOARD, iVendorDashboardController.getDashboard);
 
 export default router;
