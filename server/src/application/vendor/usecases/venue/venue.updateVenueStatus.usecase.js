@@ -28,14 +28,14 @@ export class VendorUpdateVenueStatusUsecase {
         if(venue.isDeleted){
             throw new NotFoundError(VenueMessages.error.VENUE_NOT_FOUND)
         }
-        if(venue.vendorId !== vendorId) {
+        if(venue.vendorId.id.toString() !== vendorId) {
             throw new ForbiddenError(VenueMessages.error.FORBIDDEN)
         }
 
-        if(venue.status === status) {
+        if(venue.approvalStatus === status) {
             throw new ConflictError(VenueMessages.error.STATUS_ALREADY_SET)
         }
-        venue.status = status
+        venue.approvalStatus = status
         return await this._venueRepository.update(venue.id, venue)
     }
 }

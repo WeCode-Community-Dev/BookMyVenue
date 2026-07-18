@@ -8,7 +8,7 @@ export class IVenueRepository {
     async update(id, data){
         throw new Error('Method not implemented')
     }
-    async findByOwnerAndName(query = {}){
+    async findByVendorAndName(query = {}){
         throw new Error('Method not implemented')
     }
     async delete(id){

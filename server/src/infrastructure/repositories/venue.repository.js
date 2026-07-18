@@ -37,7 +37,7 @@ async findById(id) {
         return VenueMapper.mapToEntity(document)
     }
 
-    async findByOwnerAndName(vendorId, name) {
+    async findByVendorAndName(vendorId, name) {
         const document = await VenueModel.findOne({
             vendorId,
             name

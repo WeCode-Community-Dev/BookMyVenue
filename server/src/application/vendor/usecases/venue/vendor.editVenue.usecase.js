@@ -56,14 +56,14 @@ export class VendorEditVenueUsecase  {
                 throw new NotFoundError(VenueMessages.error.VENUE_NOT_FOUND)
             }
 
-            if(venue.vendorId !== vendorId){
+            if(venue.vendorId.id.toString() !== vendorId){
                 throw new ForbiddenError(VenueMessages.error.FORBIDDEN)
             }
 
             if(venue.isDeleted){
                 throw new NotFoundError(VenueMessages.error.CANNOT_UPDATE_DELETED_VENUE)
             }
-            if(venue.status !== VenueStatus.ACTIVE && venue.status !== VenueStatus.DRAFT){
+            if(venue.approvalStatus !== VenueStatus.ACTIVE && venue.approvalStatus !== VenueStatus.DRAFT){
                 throw new ConflictError(VenueMessages.error.CANNOT_UPDATE_INACTIVE_VENUE)
             }
 
