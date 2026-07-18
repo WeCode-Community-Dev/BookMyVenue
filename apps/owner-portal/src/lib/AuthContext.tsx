@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (event === 'SIGNED_OUT') {
         setUser(null)
         setLoading(false)
+        setTimeout(() => queryClient.clear(), 10)
         return
       }
 
@@ -72,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signOut() {
     await supabaseSignOut()
-    queryClient.removeQueries({ queryKey: ['me'] })
+    setTimeout(() => queryClient.clear(), 10)
   }
 
   return (
