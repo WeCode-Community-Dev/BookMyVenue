@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import case, desc, func, or_, select
@@ -10,13 +11,13 @@ def get_messages(
     db: Session,
     booking_id: UUID,
     limit: int = 50,
-    cursor: UUID | None = None,
+    cursor: datetime | None = None,
 ) -> list[ChatMessage]:
-    """Get messages for a booking with cursor-based pagination."""
+    """Get messages for a booking with time-based cursor pagination."""
     query = select(ChatMessage).where(ChatMessage.booking_id == booking_id)
 
     if cursor:
-        query = query.where(ChatMessage.id > cursor)
+        query = query.where(ChatMessage.created_at > cursor)
 
     query = query.order_by(ChatMessage.created_at.asc()).limit(limit)
 
@@ -117,6 +118,7 @@ def get_conversations(
         BookingStatus.request_expired,
         BookingStatus.owner_rejected,
         BookingStatus.completed,
+        BookingStatus.balance_overdue_cancelled,
     ]
 
     # Subquery to get max created_at per booking
