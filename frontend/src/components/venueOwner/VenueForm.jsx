@@ -89,6 +89,7 @@ export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, on
         trigger,
         subscribe,
         setError,
+        setValue,
         getValues,
         formState: { errors },
     } = useForm({
@@ -119,6 +120,13 @@ export default function VenueForm({ initialValues = {}, onAutosave, onSubmit, on
             try {
                 const data = await getVenueCategories();
                 setCategories(data);
+                // The category <select>'s options don't exist until this resolves, so
+                // the default value RHF set at mount had nothing to match — re-apply it
+                // now that the matching <option> is in the DOM.
+                setValue(
+                    "venueCategory",
+                    initialValues.venueCategory?._id || initialValues.venueCategory || ""
+                );
             } catch (err) {
                 console.error(err);
             } finally {
