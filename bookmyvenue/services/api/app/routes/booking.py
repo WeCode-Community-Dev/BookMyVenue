@@ -138,7 +138,10 @@ def get_my_bookings(db: Annotated[Session, Depends(get_db)],
 
     all_bookings = db.execute(
         select(Booking)
-        .options(selectinload(Booking.slots))
+        .options(
+            selectinload(Booking.slots).selectinload(BookingSlot.availability),
+            selectinload(Booking.venue)
+        )
         .where(Booking.booker_id == current_user.id)
         .order_by(desc(Booking.created_at))
     ).scalars().all()
@@ -159,10 +162,15 @@ def get_owner_bookings(db: Annotated[Session, Depends(get_db)],
         return []
 
     owner_bookings = db.execute(select(Booking)
-                                .options(selectinload(Booking.slots))
-                                .where(Booking.venue_id.in_(list(owned_venue_ids)))
-                                .order_by(desc(Booking.created_at))
-                                ).scalars().all()
+                                .options(
+        selectinload(Booking.slots).selectinload(
+            BookingSlot.availability),
+        selectinload(Booking.venue),
+        selectinload(Booking.booker)
+    )
+        .where(Booking.venue_id.in_(list(owned_venue_ids)))
+        .order_by(desc(Booking.created_at))
+    ).scalars().all()
 
     return owner_bookings
 
@@ -178,8 +186,13 @@ def booking_status_update(id: int,
                           current_user: Annotated[User, Depends(require_role(RoleEnum.OWNER))]):
 
     current_booking = db.execute(select(Booking)
-                                 .options(selectinload(Booking.slots))
-                                 .where(Booking.id == id)).scalars().first()
+                                 .options(
+                                     selectinload(Booking.slots).selectinload(
+                                         BookingSlot.availability),
+                                     selectinload(Booking.venue),
+                                     selectinload(Booking.booker),
+    )
+        .where(Booking.id == id)).scalars().first()
 
     if not current_booking:
         raise HTTPException(
@@ -187,13 +200,12 @@ def booking_status_update(id: int,
             detail="Booking not found"
         )
 
-    booked_venue = db.execute(select(Venue).where(
-        Venue.id == current_booking.venue_id)).scalars().first()
+    booked_venue = current_booking.venue
 
     if not booked_venue:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="No Venue assosiated with this booking"
+            detail="No Venue associated with this booking"
         )
     if booked_venue.owner_id != current_user.id:
         raise HTTPException(
@@ -209,11 +221,10 @@ def booking_status_update(id: int,
     current_booking.status = booking_status_update.status
 
     if booking_status_update.status == BookingStatusEnum.REJECTED:
-        slots = db.execute(select(BookingSlot).where(
-            BookingSlot.booking_id == current_booking.id)).scalars().all()
+        for slot in current_booking.slots:
+            if slot.availability:
+                slot.availability.is_booked = False
 
-        for slot in slots:
-            slot.availabiliy.is_booked = False
     db.commit()
     db.refresh(current_booking)
     return current_booking

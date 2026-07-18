@@ -82,7 +82,7 @@ def seed_venues(db: Session):
 
         for i in range(number_of_venues):
 
-            venue_name = f"{random.choice(VENUE_NAMES)} {owner.id}-{i}"
+            venue_name = random.choice(VENUE_NAMES)
 
             if (
                 db.query(Venue)

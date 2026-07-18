@@ -160,7 +160,7 @@ def get_homepage_venues(db: Annotated[Session, Depends(get_db)]):
         .options(selectinload(Venue.images))
         .where(Venue.status == StatusEnum.ACTIVE)
         .order_by(desc(Venue.created_at))
-        .limit(4)
+        .limit(12)
     ).scalars().all()
 
     recently_added_query = db.execute(
@@ -168,7 +168,7 @@ def get_homepage_venues(db: Annotated[Session, Depends(get_db)]):
         .options(selectinload(Venue.images))
         .where(Venue.status == StatusEnum.ACTIVE)
         .order_by(desc(Venue.created_at))
-        .limit(4)
+        .limit(12)
     ).scalars().all()
 
     active_categories_query = db.execute(
@@ -189,7 +189,6 @@ def get_homepage_venues(db: Annotated[Session, Depends(get_db)]):
                 Venue.category_id == category.id
             )
             .order_by(desc(Venue.created_at))
-            .limit(4)
         ).scalars().all()
 
         category_sections.append(

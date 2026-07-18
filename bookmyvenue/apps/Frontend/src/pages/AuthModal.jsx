@@ -120,13 +120,13 @@ function LoginForm({ onSwitch, onClose }) {
       const token = response.data.access_token;
       login(token);
       const decodedToken = jwtDecode(token);
-      const role = decodedToken.role;
+            const role = decodedToken.role;
 
       onClose?.();
 
-      if (role === "RoleEnum.BOOKER") navigate("/dashboard");
-      else if (role === "RoleEnum.OWNER") navigate("/owner/dashboard");
-      else if (role === "RoleEnum.ADMIN") navigate("/admin/dashboard");
+      if (role === "booker") navigate("/dashboard");
+      else if (role === "owner") navigate("/owner/dashboard");
+      else if (role === "admin") navigate("/admin/dashboard");
     } catch (err) {
       setError(err.response?.data?.detail || "Login failed");
     } finally {

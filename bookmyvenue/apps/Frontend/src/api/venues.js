@@ -33,7 +33,7 @@ export async function getMyVenues(token) {
 }
 
 export async function updateVenue(id, data, token) {
-    const response = await api.put(`/api/venues/${id}`, data, {
+    const response = await api.put(`/api/venues/update/${id}`, data, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -56,4 +56,24 @@ export async function getHomepageData() {
     const response = await api.get("/api/venues/homepage");
 
     return response.data;
+}
+
+export async function getOwnerVenues(token) {
+    const response = await api.get(
+        "/api/venues/owner", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+
+    return response.data;
+}
+
+export async function deleteVenue(id, token) {
+    await api.delete(`/api/venues/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
 }

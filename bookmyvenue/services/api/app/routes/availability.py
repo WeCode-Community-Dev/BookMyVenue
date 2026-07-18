@@ -1,4 +1,4 @@
-from datetime import date as date_type, datetime, UTC
+﻿from datetime import date as date_type, datetime, UTC
 from fastapi import APIRouter, status, Depends, HTTPException
 from typing import Annotated
 from sqlalchemy.orm import Session
@@ -41,27 +41,47 @@ def availability_create(
         )
 
     if create_availability.booking_type == BookingTypeEnum.HOURLY and not venue_query.supports_hourly:
-
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This venue does not support hourly booking"
         )
 
     if create_availability.booking_type == BookingTypeEnum.DAILY and not venue_query.supports_daily:
-
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This venue does not support daily booking"
         )
 
-    already_existing_availability = db.execute(select(Availability).where(
-        Availability.venue_id == create_availability.venue_id,
-        Availability.date == create_availability.date)).scalars().first()
-    if already_existing_availability:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Availability already set for this date"
-        )
+    # For daily: check if same date and daily type already exists
+    if create_availability.booking_type == BookingTypeEnum.DAILY:
+        already_exists = db.execute(select(Availability).where(
+            Availability.venue_id == create_availability.venue_id,
+            Availability.date == create_availability.date,
+            Availability.booking_type == BookingTypeEnum.DAILY.value
+        )).scalars().first()
+        if already_exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Daily availability already set for this date"
+            )
+
+    # For hourly: check if any of the time slots overlap with existing ones
+    if create_availability.booking_type == BookingTypeEnum.HOURLY and create_availability.slots:
+        existing_slots = db.execute(select(Availability).where(
+            Availability.venue_id == create_availability.venue_id,
+            Availability.date == create_availability.date,
+            Availability.booking_type == BookingTypeEnum.HOURLY.value
+        )).scalars().all()
+
+        for new_slot in create_availability.slots:
+            for existing in existing_slots:
+                if existing.start_time and existing.end_time and new_slot.start_time and new_slot.end_time:
+                    # Check overlap: existing start < new end AND existing end > new start
+                    if existing.start_time < new_slot.end_time and existing.end_time > new_slot.start_time:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Time slot {new_slot.start_time}-{new_slot.end_time} overlaps with existing slot {existing.start_time}-{existing.end_time}"
+                        )
 
     new_availability = []
 
@@ -94,6 +114,47 @@ def availability_create(
         db.refresh(row)
 
     return new_availability
+
+
+@router.delete(
+    "/{availability_id}",
+    status_code=status.HTTP_200_OK
+)
+def delete_availability(
+    availability_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(require_role(RoleEnum.OWNER))]
+):
+    availability = db.execute(select(Availability).where(
+        Availability.id == availability_id
+    )).scalars().first()
+
+    if not availability:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Availability not found"
+        )
+
+    venue = db.execute(select(Venue).where(
+        Venue.id == availability.venue_id
+    )).scalars().first()
+
+    if not venue or venue.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized"
+        )
+
+    if availability.is_booked:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete a booked availability slot"
+        )
+
+    db.delete(availability)
+    db.commit()
+
+    return {"message": "Availability deleted"}
 
 
 @router.get(
