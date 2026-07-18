@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -21,7 +22,7 @@ def list_messages(
     booking_id: UUID,
     user_id: UUID,
     limit: int = 50,
-    cursor: UUID | None = None,
+    cursor: datetime | None = None,
 ) -> list[ChatMessageOut]:
     """Get message history for a booking. Validates access first."""
     customer_id, owner_id = get_booking_participants(db, booking_id)
@@ -68,13 +69,31 @@ def send_message(
     message: str,
 ) -> ChatMessageOut:
     """Send a message to a booking chat. Validates access and creates notification."""
-    customer_id, owner_id = get_booking_participants(db, booking_id)
+    from sqlalchemy import select
 
-    if customer_id is None:
+    from app.modules.booking.helpers import TERMINAL_STATUSES
+    from app.modules.booking.models import Booking
+    from app.modules.venue.models import Venue
+
+    # Lock the booking row to prevent race conditions with cancellations
+    booking = (
+        db.execute(select(Booking).where(Booking.id == booking_id).with_for_update())
+        .scalars()
+        .first()
+    )
+
+    if not booking:
         raise NotFoundError("Booking not found")
+
+    venue = db.execute(select(Venue).where(Venue.id == booking.venue_id)).scalars().first()
+    customer_id = booking.user_id
+    owner_id = venue.owner_id if venue else None
 
     if sender_id not in (customer_id, owner_id):
         raise ForbiddenError("Not authorized to send messages to this chat")
+
+    if booking.status in TERMINAL_STATUSES:
+        raise ForbiddenError("Cannot send messages for a booking in a terminal status")
 
     # Normalize + validate message body
     cleaned = (message or "").strip()

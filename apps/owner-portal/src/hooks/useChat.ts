@@ -16,7 +16,7 @@ type WsEvent =
   | { type: 'connected'; payload?: { booking_id: string } }
   | { type: 'message_created' | 'message_sent'; payload: ChatMessage }
   | { type: 'messages_read'; payload?: { reader_id?: string; booking_id?: string } }
-  | { type: 'error'; payload?: { message?: string } }
+  | { type: 'error'; payload?: { message?: string; client_msg_id?: string } }
   | { type: 'pong'; payload?: Record<string, unknown> }
 
 function mergeById(existing: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] {
@@ -42,6 +42,11 @@ export function useChat(bookingId: string, currentUserId?: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [sendError, setSendError] = useState<string | null>(null)
 
+  useEffect(() => {
+    setMessages([])
+    setSendError(null)
+  }, [bookingId])
+
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
   const pingIntervalRef = useRef<ReturnType<typeof setInterval>>()
@@ -62,11 +67,11 @@ export function useChat(bookingId: string, currentUserId?: string) {
   useEffect(() => {
     if (messageQuery.data) {
       setMessages((prev) => {
-        const pending = prev.filter((m) => m.status === 'sending' || m.status === 'failed')
+        const pending = prev.filter((m) => (m.status === 'sending' || m.status === 'failed') && m.booking_id === bookingId)
         return mergeById(messageQuery.data as ChatMessage[], pending)
       })
     }
-  }, [messageQuery.data])
+  }, [messageQuery.data, bookingId])
 
   const invalidateConversations = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['chat-conversations'] })
@@ -148,6 +153,12 @@ export function useChat(bookingId: string, currentUserId?: string) {
         )
       } else if (data.type === 'error') {
         setSendError(data.payload?.message || 'Chat error')
+        const clientMsgId = data.payload?.client_msg_id
+        if (clientMsgId) {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === clientMsgId ? { ...m, status: 'failed' as const } : m)),
+          )
+        }
       }
     }
 
@@ -186,6 +197,9 @@ export function useChat(bookingId: string, currentUserId?: string) {
           setIsConnected(false)
           clearPing()
           scheduleReconnect()
+          setMessages((prev) =>
+            prev.map((m) => (m.status === 'sending' ? { ...m, status: 'failed' as const } : m)),
+          )
         }
 
         websocket.onerror = () => {
@@ -243,7 +257,7 @@ export function useChat(bookingId: string, currentUserId?: string) {
       const socket = wsRef.current
       if (socket && socket.readyState === WebSocket.OPEN) {
         try {
-          socket.send(JSON.stringify({ type: 'send_message', message: trimmed }))
+          socket.send(JSON.stringify({ type: 'send_message', message: trimmed, client_msg_id: tempId }))
           return
         } catch {
           // fall through to REST

@@ -235,7 +235,7 @@ def owner_cancel_forfeit(db: Session, booking_id: UUID, owner_id: UUID) -> Booki
     booking.status = BookingStatus.balance_overdue_cancelled
     booking.cancelled_at = _now()
     booking.refund_amount_paise = 0
-    booking.payment_status = PaymentStatus.refunded
+    # Advance is forfeited (not refunded) — keep current payment_status (advance_paid)
     db.add(
         _history(
             booking,

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
@@ -16,16 +16,6 @@ import { UserReservations } from '../components/booking/UserReservations'
 
 
 type BookingTab = 'upcoming' | 'pending' | 'past' | 'cancelled'
-
-const CANCELLED_STATUSES = [
-  'user_cancelled',
-  'admin_cancelled',
-  'owner_rejected',
-  'conflict_cancelled',
-  'hold_expired',
-  'request_expired',
-  'balance_overdue_cancelled',
-]
 
 
 function TabButton({
@@ -65,59 +55,36 @@ export default function MyBookings() {
   )
 
   const [activeTab, setActiveTab] = useState<BookingTab>('upcoming')
-
   const [page, setPage] = useState(1)
+
   const {
     data,
     isLoading,
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['my-bookings', page],
-    queryFn: () => bookingEndpoints(client).listBookings({ page, per_page: 10 }),
+    queryKey: ['my-bookings', activeTab, page],
+    queryFn: () =>
+      bookingEndpoints(client).listBookings({
+        tab: activeTab,
+        page,
+        per_page: 10,
+      }),
   })
 
   const bookings = data?.data || []
   const meta = data?.meta
+  const tabCounts = data?.tab_counts
 
-  const now = new Date()
+  const handleTabChange = (tab: BookingTab) => {
+    setActiveTab(tab)
+    setPage(1)
+  }
 
-  const upcomingBookings = bookings.filter(
-    (booking) => booking.status === 'confirmed' && new Date(booking.ends_at) > now
-  )
-
-  const pendingBookings = bookings.filter(
-    (booking) =>
-      booking.status === 'requested' ||
-      booking.status === 'payment_pending' ||
-      booking.status === 'owner_accepted'
-  )
-
-  const pastBookings = bookings.filter((booking) => booking.status === 'completed')
-
-  const cancelledBookings = bookings.filter((booking) =>
-    CANCELLED_STATUSES.includes(booking.status)
-  )
-
-  
-  const filteredBookings = useMemo(() => {
-    switch (activeTab) {
-      case 'upcoming':
-        return upcomingBookings
-
-      case 'pending':
-        return pendingBookings
-
-      case 'past':
-        return pastBookings
-
-      case 'cancelled':
-        return cancelledBookings
-
-      default:
-        return []
-    }
-  }, [activeTab, upcomingBookings, pendingBookings, pastBookings, cancelledBookings])
+  const upcomingCount = tabCounts?.upcoming ?? 0
+  const pendingCount = tabCounts?.pending ?? 0
+  const pastCount = tabCounts?.past ?? 0
+  const cancelledCount = tabCounts?.cancelled ?? 0
 
   if (isLoading) {
     return <LoadingScreen />
@@ -191,46 +158,46 @@ export default function MyBookings() {
               <div className="flex gap-8 overflow-x-auto">
                 <TabButton
                   active={activeTab === 'upcoming'}
-                  count={upcomingBookings.length}
-                  onClick={() => setActiveTab('upcoming')}
+                  count={upcomingCount}
+                  onClick={() => handleTabChange('upcoming')}
                 >
                   Upcoming
                 </TabButton>
 
                 <TabButton
                   active={activeTab === 'pending'}
-                  count={pendingBookings.length}
-                  onClick={() => setActiveTab('pending')}
+                  count={pendingCount}
+                  onClick={() => handleTabChange('pending')}
                 >
                   Pending
                 </TabButton>
 
                 <TabButton
                   active={activeTab === 'past'}
-                  count={pastBookings.length}
-                  onClick={() => setActiveTab('past')}
+                  count={pastCount}
+                  onClick={() => handleTabChange('past')}
                 >
                   Past
                 </TabButton>
 
                 <TabButton
                   active={activeTab === 'cancelled'}
-                  count={cancelledBookings.length}
-                  onClick={() => setActiveTab('cancelled')}
+                  count={cancelledCount}
+                  onClick={() => handleTabChange('cancelled')}
                 >
                   Cancelled
                 </TabButton>
               </div>
             </div>
 
-            {filteredBookings.length === 0 ? (
+            {bookings.length === 0 ? (
               <EmptyState
                 title={`No ${activeTab} bookings`}
                 description="Bookings will appear here once available."
               />
             ) : (
               <div className="space-y-6">
-                {filteredBookings.map((booking) => (
+                {bookings.map((booking) => (
                   <BookingCard key={booking.id} booking={booking} />
                 ))}
               </div>
