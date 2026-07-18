@@ -71,9 +71,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(
-        title: 'Booking History',
-      ),
+      appBar: const CustomAppBar(title: 'Booking History'),
       body: Column(
         children: <Widget>[
           const SizedBox(height: 16),
@@ -83,9 +81,8 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
             child: BlocBuilder<BookingBloc, BookingState>(
               builder: (BuildContext context, BookingState state) {
                 return state.maybeWhen(
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   failure: (String message) => Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24.0),
@@ -98,10 +95,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
                             color: AppColors.error,
                           ),
                           const SizedBox(height: 16),
-                          AppText(
-                            message,
-                            textAlign: TextAlign.center,
-                          ),
+                          AppText(message, textAlign: TextAlign.center),
                           const SizedBox(height: 24),
                           AppButton(
                             label: 'Retry',
@@ -113,12 +107,15 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
                     ),
                   ),
                   myBookingsSuccess: (List<BookingDetailsEntity> bookings) {
-                    final List<BookingDetailsEntity> filteredList = bookings.where((BookingDetailsEntity booking) {
-                      if (_selectedFilter.toLowerCase() == 'all') {
-                        return true;
-                      }
-                      return booking.status.toLowerCase() == _selectedFilter.toLowerCase();
-                    }).toList();
+                    final List<BookingDetailsEntity> filteredList = bookings
+                        .where((BookingDetailsEntity booking) {
+                          if (_selectedFilter.toLowerCase() == 'all') {
+                            return true;
+                          }
+                          return booking.status.toLowerCase() ==
+                              _selectedFilter.toLowerCase();
+                        })
+                        .toList();
 
                     if (filteredList.isEmpty) {
                       return Center(
@@ -156,9 +153,12 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
                                 )
                               else
                                 AppButton(
-                                  label: 'Book a Venue Now',
+                                  label: 'Refresh',
                                   onPressed: () {
-                                    context.go('/${AppRouteNames.listVenue}');
+                                    // context.go('/${AppRouteNames.listVenue}');
+                                    context.read<BookingBloc>().add(
+                                      const BookingEvent.fetchMyBookings(),
+                                    );
                                   },
                                 ),
                             ],
@@ -168,8 +168,11 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
                     }
 
                     // Sort bookings descending by creation date or date
-                    final List<BookingDetailsEntity> sortedList = List<BookingDetailsEntity>.from(filteredList)
-                      ..sort((BookingDetailsEntity a, BookingDetailsEntity b) => b.createdAt.compareTo(a.createdAt));
+                    final List<BookingDetailsEntity> sortedList =
+                        List<BookingDetailsEntity>.from(filteredList)..sort(
+                          (BookingDetailsEntity a, BookingDetailsEntity b) =>
+                              b.createdAt.compareTo(a.createdAt),
+                        );
 
                     return RefreshIndicator(
                       onRefresh: () async {
@@ -180,15 +183,15 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
                         padding: const EdgeInsets.only(bottom: 24),
                         itemCount: sortedList.length,
                         itemBuilder: (BuildContext context, int index) {
-                          final BookingDetailsEntity booking = sortedList[index];
+                          final BookingDetailsEntity booking =
+                              sortedList[index];
                           return _buildBookingCard(booking);
                         },
                       ),
                     );
                   },
-                  orElse: () => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  orElse: () =>
+                      const Center(child: CircularProgressIndicator()),
                 );
               },
             ),
@@ -199,7 +202,12 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
   }
 
   Widget _buildFilterChips() {
-    final List<String> statuses = <String>['All', 'Confirmed', 'Pending', 'Cancelled'];
+    final List<String> statuses = <String>[
+      'All',
+      'Confirmed',
+      'Pending',
+      'Cancelled',
+    ];
     return SizedBox(
       height: 40,
       child: ListView.builder(
@@ -208,7 +216,8 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
         itemCount: statuses.length,
         itemBuilder: (BuildContext context, int index) {
           final String status = statuses[index];
-          final bool isSelected = _selectedFilter.toLowerCase() == status.toLowerCase();
+          final bool isSelected =
+              _selectedFilter.toLowerCase() == status.toLowerCase();
           return Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: ChoiceChip(
@@ -284,7 +293,10 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: _getStatusBgColor(booking.status),
                   borderRadius: BorderRadius.circular(12),
@@ -310,7 +322,8 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
           ...booking.slots.map((BookingSlotEntity slot) {
             final String formattedStartTime = slot.startTime.to12HourTime;
             final String formattedEndTime = slot.endTime.to12HourTime;
-            final String slotTimeRange = '$formattedStartTime - $formattedEndTime';
+            final String slotTimeRange =
+                '$formattedStartTime - $formattedEndTime';
             return Padding(
               padding: const EdgeInsets.only(bottom: 6.0),
               child: Row(

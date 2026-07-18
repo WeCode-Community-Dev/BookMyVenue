@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../enums/approval_status.dart';
 import '../enums/role_base.dart';
 
 // =========== Request Otp Entity ================
@@ -80,6 +81,7 @@ class UserEntity extends Equatable {
     required this.emailVerified,
     required this.role,
     required this.status,
+    required this.approvalStatus,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -92,6 +94,7 @@ class UserEntity extends Equatable {
   final bool emailVerified;
   final UserRole role;
   final String status;
+  final ApprovalStatus? approvalStatus;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -105,6 +108,7 @@ class UserEntity extends Equatable {
     emailVerified,
     role,
     status,
+    approvalStatus,
     createdAt,
     updatedAt,
   ];

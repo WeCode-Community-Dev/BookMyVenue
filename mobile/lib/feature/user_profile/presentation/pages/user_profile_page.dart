@@ -134,13 +134,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                   ),
                                 ),
                                 child: const ClipOval(
-                                  child: Image(
-                                    image: NetworkImage(
-                                      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200',
-                                    ),
-                                    width: 90,
-                                    height: 90,
-                                    fit: BoxFit.cover,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 100,
+                                    color: AppColors.primaryDark,
                                   ),
                                 ),
                               ),
@@ -218,8 +215,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             titleColor: AppColors.primary,
                             onTap: () {
                               context.read<UserProfileBloc>().add(
-                                    const UserProfileEvent.logout(),
-                                  );
+                                const UserProfileEvent.logout(),
+                              );
                             },
                           ),
                         ],

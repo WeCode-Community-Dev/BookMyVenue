@@ -115,10 +115,19 @@ class _OwnerProfileSettingsScreenState
               spacing: AppSpacing.spaceMd,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Center(
-                  child: CircleAvatar(
-                    radius: 48,
-                    backgroundImage: NetworkImage('https://i.pravatar.cc/300'),
+                Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.outline, width: 3),
+                    ),
+                    child: const ClipOval(
+                      child: Icon(
+                        Icons.person,
+                        size: 100,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
                   ),
                 ),
                 Center(
@@ -235,8 +244,8 @@ class _OwnerProfileSettingsScreenState
                 OutlinedButton.icon(
                   onPressed: () {
                     context.read<OwnerProfileBloc>().add(
-                          const OwnerProfileEvent.logout(),
-                        );
+                      const OwnerProfileEvent.logout(),
+                    );
                   },
                   icon: const Icon(Icons.logout),
                   label: const AppText(

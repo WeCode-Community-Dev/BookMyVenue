@@ -31,6 +31,10 @@ _User _$UserFromJson(Map<String, dynamic> json) => _User(
   emailVerified: json['email_verified'] as bool,
   role: $enumDecode(_$UserRoleEnumMap, json['role']),
   status: json['status'] as String,
+  approvalStatus: $enumDecodeNullable(
+    _$ApprovalStatusEnumMap,
+    json['approval_status'],
+  ),
   createdAt: DateTime.parse(json['created_at'] as String),
   updatedAt: DateTime.parse(json['updated_at'] as String),
 );
@@ -44,6 +48,7 @@ Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
   'email_verified': instance.emailVerified,
   'role': _$UserRoleEnumMap[instance.role]!,
   'status': instance.status,
+  'approval_status': _$ApprovalStatusEnumMap[instance.approvalStatus],
   'created_at': instance.createdAt.toIso8601String(),
   'updated_at': instance.updatedAt.toIso8601String(),
 };
@@ -52,4 +57,11 @@ const _$UserRoleEnumMap = {
   UserRole.customer: 'customer',
   UserRole.venueOwner: 'venue_owner',
   UserRole.admin: 'admin',
+};
+
+const _$ApprovalStatusEnumMap = {
+  ApprovalStatus.pending: 'pending',
+  ApprovalStatus.approved: 'approved',
+  ApprovalStatus.rejected: 'rejected',
+  ApprovalStatus.suspended: 'suspended',
 };

@@ -35,6 +35,7 @@ extension UserMapper on User {
       emailVerified: emailVerified,
       role: role,
       status: status,
+      approvalStatus: approvalStatus,
       createdAt: createdAt,
       updatedAt: updatedAt,
     );

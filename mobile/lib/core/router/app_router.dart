@@ -361,7 +361,10 @@ class AppRouter {
         builder: (BuildContext context, GoRouterState state) {
           final BookingDetailsEntity details =
               state.extra! as BookingDetailsEntity;
-          return BookingSuccessScreen(bookingDetails: details);
+          return BlocProvider<BookingBloc>(
+            create: (BuildContext context) => sl<BookingBloc>(),
+            child: BookingSuccessScreen(bookingDetails: details),
+          );
         },
       ),
       GoRoute(

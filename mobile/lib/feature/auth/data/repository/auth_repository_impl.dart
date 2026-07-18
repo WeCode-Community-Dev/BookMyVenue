@@ -66,6 +66,7 @@ class AuthRepositoryImpl extends BaseRepository implements IAuthRepository {
           accessToken: response.data!.accessToken,
           refreshToken: response.data!.refreshToken,
           role: response.data!.user.role,
+          status: response.data!.user.approvalStatus,
           userId: response.data!.user.id,
         );
         await localDatasource.saveToken(sessionModel);

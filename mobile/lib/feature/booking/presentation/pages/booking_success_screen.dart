@@ -45,7 +45,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen> {
   }
 
   void _redirectToBookingHistory() {
-    context.read<BookingBloc>().add(const BookingEvent.fetchMyBookings());
+    // context.read<BookingBloc>().add(const BookingEvent.fetchMyBookings());
     context.go('/${AppRouteNames.bookingHistory}');
   }
 
