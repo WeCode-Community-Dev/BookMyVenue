@@ -28,7 +28,7 @@ def create_booking(
     return service.create_booking_request(db, auth.user_id, body)
 
 
-@router.get("/", response_model=list[BookingOut])
+@router.get("/", response_model=BookingListResponse)
 def list_my_bookings(
     auth: AuthContext = Depends(require_auth),
     db: Session = Depends(get_db),

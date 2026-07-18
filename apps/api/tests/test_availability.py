@@ -174,6 +174,7 @@ def test_date_availability_shows_blocked_for_blocked_date(client, db, category_i
     assert block_resp.status_code == 201
 
     # Check a date within the blocked period
+    check_date = blocked_start.date()
     resp = client.get(
         f"/api/availability/venues/{venue_id}/date/{check_date.isoformat()}?booking_type=full_day"
     )

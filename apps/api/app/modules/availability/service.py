@@ -454,16 +454,6 @@ def get_availability_for_date(
             )
 
     # TIME SLOT: Allow multiple slots per day (partial availability)
-    blocked_slots = []
-    for slot in blocked_slots_db:
-        blocked_slots.append(
-            BlockedRange(starts_at=slot.effective_starts_at, ends_at=slot.effective_ends_at)
-        )
-    for block in venue_blocks:
-        blocked_slots.append(
-            BlockedRange(starts_at=block.starts_at, ends_at=block.ends_at)
-        )
-
     return AvailabilityResponse(
         date=booking_date,
         operating_window=operating_window,
