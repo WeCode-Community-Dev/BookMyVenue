@@ -22,7 +22,7 @@ export class VendorDeleteVenueUsecase {
         if(!venue){
             throw new NotFoundError(VenueMessages.error.VENUE_NOT_FOUND)
         }
-        if(venue.vendorId !== vendorId){
+        if(venue.vendorId.id.toString() !== vendorId){
             throw new ForbiddenError(VenueMessages.error.FORBIDDEN)
         }
 

@@ -77,7 +77,7 @@ const UserProfile = () => {
       setIsEditing(false);
   
     } catch (error) {
-      throw error;
+      toast.error(typeof error === 'string' ? error : "Failed to update email")
     }
   };
 

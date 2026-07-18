@@ -1,4 +1,4 @@
-import { TokenExpiredError } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { UnauthorizedError } from "../../domain/errors/UnauthorizedError.js";
 import { authMessages } from "../../shared/constants/messages/authMessages.js";
 
@@ -21,7 +21,7 @@ export const authHandler = (tokenService) => {
             console.log('decoded user: ', decoded)
             next();
         } catch (error) {
-            if(error instanceof TokenExpiredError){
+            if(error instanceof jwt.TokenExpiredError){
                throw new UnauthorizedError(authMessages.error.ACCESS_TOKEN_EXPIRED)
             }else{
                throw new UnauthorizedError(authMessages.error.UNAUTHORIZED)

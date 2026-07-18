@@ -9,7 +9,10 @@ import { redisClient } from '../config/redis.config.js'
 export class TokenService extends ITokenService{
     generateAccessToken(id, email, role) {
         const accessTokenSecret = jwtConfig.accessToken.secret
-        return jwt.sign({id, email, role}, accessTokenSecret, { expiresIn: jwtConfig.accessToken.expiresIn });
+        const token = jwt.sign({id, email, role}, accessTokenSecret, { expiresIn: jwtConfig.accessToken.expiresIn });
+        console.log("Generated Access Token:");
+    console.log(jwt.decode(token));
+    return token
     }
 
     generateRefreshToken(id, role) {
@@ -25,21 +28,18 @@ export class TokenService extends ITokenService{
         return new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     }
 
-    verifyRefreshToken(token) {
-        try {
-            const accessTokenSecret = jwtConfig.accessToken.secret
-            return jwt.verify(token, accessTokenSecret);
-        } catch {
-            throw new UnauthorizedError(authMessages.error.INVALID_REFRESH_TOKEN);
-        }
+    verifyAccessToken(token) {
+        const accessTokenSecret = jwtConfig.accessToken.secret
+        return jwt.verify(token, accessTokenSecret);
+
     }
 
-    verifyAccessToken(token) {
+    verifyRefreshToken(token) {
         try {
             const refreshTokenSecret = jwtConfig.refreshToken.secret
             return jwt.verify(token, refreshTokenSecret);
         } catch {
-            throw new UnauthorizedError(authMessages.error.INVALID_ACCESS_TOKEN);
+            throw new UnauthorizedError(authMessages.error.INVALID_REFRESH_TOKEN);
         }
     }
 

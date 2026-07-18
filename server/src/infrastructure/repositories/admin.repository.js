@@ -87,7 +87,7 @@ export class AdminRepository extends IAdminRepository {
     }
 
     async clearRefreshToken(token) {
-        await AdminModel.findByOneAndUpdate(
+        await AdminModel.findOneAndUpdate(
             {refreshToken: token},
             { $pull: {refreshToken: token } },
             { new: true }

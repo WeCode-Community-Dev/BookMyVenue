@@ -169,7 +169,7 @@ export class UserRepository extends IUserRepository {
     }
 
     async clearRefreshToken(token) {
-        await UserModel.findByOneAndUpdate(
+        await UserModel.findOneAndUpdate(
             {refreshToken: token},
             { $pull: {refreshToken: token } },
             { new: true }

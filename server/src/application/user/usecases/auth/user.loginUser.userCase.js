@@ -28,15 +28,22 @@ export default class LoginUserUseCase {
             throw new UnauthorizedError(authMessages.error.OTP_VERIFICATION_REQUIRED);
         }
 
-        const accessToken = this._tokenService.generateAccessToken({id: user.id, email: user.email, role: UserRole.CUSTOMER});
-        const refreshToken = this._tokenService.generateRefreshToken({id: user.id, role: UserRole.CUSTOMER});
+        const accessToken = this._tokenService.generateAccessToken( user.id, user.email, UserRole.CUSTOMER);
+        const refreshToken = this._tokenService.generateRefreshToken( user.id, UserRole.CUSTOMER);
         const hashedToken = await this._hashService.hashToken(refreshToken)
         await this._userRepository.updateRefreshToken(user.id, hashedToken);
 
         return {
             accessToken,
             refreshToken,
-            user
+            user:{
+                id: user.id,
+                name: user.fullName,
+                email: user.email,
+                role: user.role,
+                isVerified: user.isVerified,
+                profileImage: user.profileImage.url
+            }
         };
     }
 }
