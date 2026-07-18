@@ -62,7 +62,8 @@ export const ROUTES = {
         },
         PROFILE: {
             GET: '/profile',
-            UPDATE: '/profile'
+            UPDATE: '/profile',
+            CHANGE_PASSWORD: '/change-password'
         },
         BOOKING: {
 
@@ -104,6 +105,7 @@ export const ROUTES = {
         ACCOUNT: {
             UPDATE_STATUS: "/account/status",
         },
+
     }
    
 }

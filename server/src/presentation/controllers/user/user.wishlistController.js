@@ -50,7 +50,6 @@ export class UserWishlistController {
     removeWishlist = asyncHandler(async(req,res)=>{
 
         const userId = req.user.userId;
-
         const { venueId } = req.params;
 
         const wishlist = await this._userRemoveWishlistUsecase.execute(
