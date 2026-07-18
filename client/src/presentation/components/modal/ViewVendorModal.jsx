@@ -24,17 +24,17 @@ const ViewVendorModal = ({
 
                 <div className="flex items-center gap-4">
 
-                   {vendor.profileImage?.url ? (
-    <img
-        src={vendor.profileImage.url}
-        alt={vendor.fullName}
-        className="w-20 h-20 rounded-full object-cover border"
-    />
-) : (
-    <div className="w-20 h-20 rounded-full border bg-gray-100 flex items-center justify-center">
-        <UserCircle className="w-12 h-12 text-gray-400" />
-    </div>
-)}
+                    {vendor.profileImage?.url ? (
+                        <img
+                            src={vendor.profileImage.url}
+                            alt={vendor.fullName}
+                            className="w-20 h-20 rounded-full object-cover border"
+                        />
+                    ) : (
+                        <div className="w-20 h-20 rounded-full border bg-gray-100 flex items-center justify-center">
+                            <UserCircle className="w-12 h-12 text-gray-400" />
+                        </div>
+                    )}
                     <div>
 
                         <h2 className="text-xl font-semibold">
