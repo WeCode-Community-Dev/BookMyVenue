@@ -9,10 +9,11 @@
     "api:migrate": "docker compose exec api alembic upgrade head",
     "api:migrate:new": "docker compose exec api alembic revision --autogenerate -m",
     "api:migrate:down": "docker compose exec api alembic downgrade -1",
-    "build": "pnpm -r --filter \"./apps/*\" --filter \"!./apps/api\" build",
-    "lint": "pnpm -r --filter \"./apps/*\" --filter \"!./apps/api\" lint",
-    "typecheck": "pnpm -r --filter \"./apps/*\" --filter \"!./apps/api\" typecheck",
-    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\""
+    "build": "pnpm -r --filter \"./apps/user-web\" --filter \"./apps/owner-portal\" --filter \"./apps/admin-panel\" build",
+    "lint": "pnpm -r --filter \"./apps/user-web\" --filter \"./apps/owner-portal\" --filter \"./apps/admin-panel\" lint",
+    "typecheck": "pnpm -r --filter \"./apps/user-web\" --filter \"./apps/owner-portal\" --filter \"./apps/admin-panel\" typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "check:all": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-all.ps1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.0.0",
