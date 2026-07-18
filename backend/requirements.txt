@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+email-validator
+sqlalchemy
+pyjwt[crypto]
+redis
+pytest
+httpx
+python-multipart
+psycopg2-binary
+cloudinary
+razorpay

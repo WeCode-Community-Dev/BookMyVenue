@@ -1,0 +1,173 @@
+from datetime import datetime
+import re
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+
+from app.config.constant import PHONE_REGEX
+from app.model.owner_profile import ApprovalStatus
+from app.model.user import UserRole, UserStatus
+
+
+## Venue owner Auth Schema
+class VenueOwnerOTPRequest(BaseModel):
+    """
+    Request OTP for Venue Owner Registration
+    """
+
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        extra="forbid",  # Reject unexpected fields
+    )
+
+    full_name: str = Field(
+        ...,
+        min_length=3,
+        max_length=50,
+        description="Venue owner full name",
+        examples=["Sanju Samson"],
+    )
+
+    business_name: str = Field(
+        ...,
+        min_length=3,
+        max_length=50,
+        description="Venue owner full name",
+        examples=["Samson Auditorium International"],
+    )
+
+    email: EmailStr = Field(
+        ...,
+        description="Valid email address",
+        examples=["abc@example.com"],
+    )
+
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=128,
+        description="Strong password",
+        examples=["MyStrong@123"],
+    )
+
+    mobile_number: str = Field(
+        ...,
+        description="Indian mobile number with +91 country code",
+        examples=["+919876543210"],
+    )
+
+    @field_validator("full_name")
+    @classmethod
+    def validate_full_name(cls, value: str) -> str:
+        value = " ".join(value.split())
+
+        if not re.match(r"^[A-Za-z\s.'-]+$", value):
+            raise ValueError(
+                "Full name can only contain letters, spaces, apostrophes, dots and hyphens."
+            )
+
+        return value
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: EmailStr) -> str:
+        return value.lower().strip()
+
+    @field_validator("mobile_number")
+    @classmethod
+    def validate_mobile_number(cls, value: str) -> str:
+        cleaned = "".join(value.split())
+
+        if not PHONE_REGEX.match(cleaned):
+            raise ValueError("Invalid mobile number. Format should be +919876543210.")
+
+        return cleaned
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        return value
+
+
+class VenueOwnerOTPResponse(BaseModel):
+    full_name: str
+    email: str
+    mobile_number: str
+    otp: str = Field(
+        ...,
+        description="Returned for development/testing convenience. In production, this goes only to SMS.",
+    )
+    expires_in_seconds: int
+    message: str
+
+
+# ====================================================================
+
+
+class CreateOwnerProfileRequest(BaseModel):
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        extra="forbid",
+    )
+
+    business_name: str = Field(
+        ...,
+        min_length=3,
+        max_length=150,
+    )
+
+    @field_validator("business_name")
+    @classmethod
+    def validate_business_name(cls, value: str) -> str:
+        value = " ".join(value.split())
+        return value
+
+
+class OwnerProfileResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+
+    business_name: str
+
+    approval_status: ApprovalStatus
+
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VenueOwnerResponse(BaseModel):
+    id: UUID
+
+    mobile_number: str
+
+    full_name: str | None = None
+    email: str | None = None
+
+    mobile_verified: bool
+    email_verified: bool
+
+    role: UserRole
+    status: UserStatus
+
+    created_at: datetime
+    updated_at: datetime
+
+    owner_profile: OwnerProfileResponse | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UpdateOwnerStatusRequest(BaseModel):
+    owner_id: str
+    status: int
+
+
+class UpdateOwnerStatusResponse(BaseModel):
+    owner_id: UUID
+    status_message: str
+    status_code: int  # 0:APPROVED,1: REJECTED, 2: SUSPENDED, 3 PENDING
+    reject_reason: str | None
+    approval_status: ApprovalStatus

@@ -1,0 +1,47 @@
+services:
+  api:
+    build: .
+    container_name: book_my_venue_app
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:bookmyvenueapp123@db:5432/book_my_venue_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=production_ready_extremely_secure_jwt_secret_key_change_me
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=15
+      - REFRESH_TOKEN_EXPIRE_DAYS=30
+      - OTP_EXPIRE_SECONDS=300
+      - OTP_LENGTH=6
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:16-alpine
+    container_name: book_my_venue_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: bookmyvenueapp123
+      POSTGRES_DB: book_my_venue_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: book_my_venue_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
