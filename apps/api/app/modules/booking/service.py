@@ -151,7 +151,16 @@ def create_booking_request(
     )
     db.add(slot)
     db.add(_history(booking, None, initial_status, changed_by=user_id))
-    db.flush()
+    try:
+        db.flush()
+    except IntegrityError as exc:
+        db.rollback()
+        if "booking_slots_no_overlap" in str(exc.orig):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Selected slot just became unavailable",
+            ) from exc
+        raise
 
     if is_instant:
         from app.modules.payment.service import create_payment_intent
@@ -364,12 +373,12 @@ def list_all_owner_bookings(
                 or_(
                     and_(
                         Booking.status == BookingStatus.confirmed,
-                        Booking.balance_overdue_at is not None,
+                        Booking.balance_overdue_at.isnot(None),
                         Booking.balance_overdue_at < func.now(),
                     ),
                     and_(
                         Booking.status == BookingStatus.owner_accepted,
-                        Booking.hold_expires_at is not None,
+                        Booking.hold_expires_at.isnot(None),
                         Booking.hold_expires_at < func.now(),
                     ),
                 )
