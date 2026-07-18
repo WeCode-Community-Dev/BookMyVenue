@@ -13,6 +13,7 @@ export interface BookingListResponse {
     total: number
     total_pages: number
   }
+  tab_counts?: Record<string, number>
 }
 
 export interface VenueOption {

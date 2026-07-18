@@ -198,16 +198,94 @@ def get_booking(db: Session, booking_id: UUID, user_id: UUID | None = None) -> B
 
 
 def list_user_bookings(
-    db: Session, user_id: UUID, page: int = 1, per_page: int = 100
+    db: Session,
+    user_id: UUID,
+    tab: str | None = None,
+    page: int = 1,
+    per_page: int = 100,
 ) -> BookingListResponse:
-    query = (
-        db.query(Booking)
-        .options(
-            joinedload(Booking.slot),
-            joinedload(Booking.venue),
-        )
-        .filter(Booking.user_id == user_id, Booking.deleted_at.is_(None))
+    base_query = db.query(Booking).filter(Booking.user_id == user_id, Booking.deleted_at.is_(None))
+
+    now = func.now()
+
+    # Calculate counts for each tab across the full user dataset
+    upcoming_count = (
+        base_query.join(BookingSlot)
+        .filter(Booking.status == BookingStatus.confirmed, BookingSlot.ends_at > now)
+        .count()
     )
+
+    pending_count = base_query.filter(
+        Booking.status.in_(
+            [
+                BookingStatus.requested,
+                BookingStatus.payment_pending,
+                BookingStatus.owner_accepted,
+            ]
+        )
+    ).count()
+
+    past_count = base_query.filter(Booking.status == BookingStatus.completed).count()
+
+    cancelled_count = base_query.filter(
+        Booking.status.in_(
+            [
+                BookingStatus.conflict_cancelled,
+                BookingStatus.user_cancelled,
+                BookingStatus.admin_cancelled,
+                BookingStatus.owner_rejected,
+                BookingStatus.balance_overdue_cancelled,
+                BookingStatus.hold_expired,
+                BookingStatus.request_expired,
+            ]
+        )
+    ).count()
+
+    tab_counts = {
+        "upcoming": upcoming_count,
+        "pending": pending_count,
+        "past": past_count,
+        "cancelled": cancelled_count,
+    }
+
+    # Apply the active tab filter on the query
+    query = base_query.options(
+        joinedload(Booking.slot),
+        joinedload(Booking.venue),
+    )
+
+    if tab and tab != "all":
+        if tab == "upcoming":
+            query = query.join(BookingSlot).filter(
+                Booking.status == BookingStatus.confirmed, BookingSlot.ends_at > now
+            )
+        elif tab == "pending":
+            query = query.filter(
+                Booking.status.in_(
+                    [
+                        BookingStatus.requested,
+                        BookingStatus.payment_pending,
+                        BookingStatus.owner_accepted,
+                    ]
+                )
+            )
+        elif tab == "past":
+            query = query.filter(Booking.status == BookingStatus.completed)
+        elif tab == "cancelled":
+            query = query.filter(
+                Booking.status.in_(
+                    [
+                        BookingStatus.conflict_cancelled,
+                        BookingStatus.user_cancelled,
+                        BookingStatus.admin_cancelled,
+                        BookingStatus.owner_rejected,
+                        BookingStatus.balance_overdue_cancelled,
+                        BookingStatus.hold_expired,
+                        BookingStatus.request_expired,
+                    ]
+                )
+            )
+
     total = query.count()
     total_pages = (total + per_page - 1) // per_page
     bookings = (
@@ -224,6 +302,7 @@ def list_user_bookings(
             total=total,
             total_pages=total_pages,
         ),
+        tab_counts=tab_counts,
     )
 
 

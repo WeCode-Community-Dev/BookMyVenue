@@ -70,16 +70,17 @@ def send_message(
 ) -> ChatMessageOut:
     """Send a message to a booking chat. Validates access and creates notification."""
     from sqlalchemy import select
-    from app.modules.booking.models import Booking
+
     from app.modules.booking.helpers import TERMINAL_STATUSES
+    from app.modules.booking.models import Booking
     from app.modules.venue.models import Venue
 
     # Lock the booking row to prevent race conditions with cancellations
-    booking = db.execute(
-        select(Booking)
-        .where(Booking.id == booking_id)
-        .with_for_update()
-    ).scalars().first()
+    booking = (
+        db.execute(select(Booking).where(Booking.id == booking_id).with_for_update())
+        .scalars()
+        .first()
+    )
 
     if not booking:
         raise NotFoundError("Booking not found")

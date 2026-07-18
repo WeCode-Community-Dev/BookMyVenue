@@ -165,3 +165,4 @@ class PaginatedMeta(BaseModel):
 class BookingListResponse(BaseModel):
     data: list[BookingOut]
     meta: PaginatedMeta
+    tab_counts: dict[str, int] | None = None

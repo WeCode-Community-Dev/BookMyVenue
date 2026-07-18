@@ -32,10 +32,11 @@ def create_booking(
 def list_my_bookings(
     auth: AuthContext = Depends(require_auth),
     db: Session = Depends(get_db),
+    tab: str | None = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(100, ge=1, le=100),
 ):
-    return service.list_user_bookings(db, auth.user_id, page, per_page)
+    return service.list_user_bookings(db, auth.user_id, tab, page, per_page)
 
 
 @router.get("/owner", response_model=BookingListResponse)

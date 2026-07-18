@@ -16,7 +16,7 @@ type WsEvent =
   | { type: 'connected'; payload?: { booking_id: string } }
   | { type: 'message_created' | 'message_sent'; payload: ChatMessage }
   | { type: 'messages_read'; payload?: { reader_id?: string; booking_id?: string } }
-  | { type: 'error'; payload?: { message?: string } }
+  | { type: 'error'; payload?: { message?: string; client_msg_id?: string } }
   | { type: 'pong'; payload?: Record<string, unknown> }
 
 function mergeById(existing: ChatMessage[], incoming: ChatMessage[]): ChatMessage[] {
@@ -153,7 +153,7 @@ export function useChat(bookingId: string, currentUserId?: string) {
         )
       } else if (data.type === 'error') {
         setSendError(data.payload?.message || 'Chat error')
-        const clientMsgId = (data.payload as any)?.client_msg_id
+        const clientMsgId = data.payload?.client_msg_id
         if (clientMsgId) {
           setMessages((prev) =>
             prev.map((m) => (m.id === clientMsgId ? { ...m, status: 'failed' as const } : m)),

@@ -1,8 +1,7 @@
-from datetime import datetime, UTC, timedelta
 from urllib.parse import quote
-import pytest
+
 from app.modules.booking.models import Booking, BookingStatus
-from tests.conftest import seed_user, seed_approved_venue, create_booking
+from tests.conftest import create_booking, seed_approved_venue, seed_user
 
 
 def test_send_message_auth_and_terminal_status(client, db, category_id):
@@ -93,7 +92,6 @@ def test_time_based_cursor_pagination(client, db, category_id):
         headers={"Authorization": f"Bearer {customer_token}"},
     )
     assert resp3.status_code == 200
-    msg3 = resp3.json()
 
     # Get history without cursor (should return all 3)
     list_resp = client.get(

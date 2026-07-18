@@ -60,18 +60,19 @@ def send_message_ws_with_session(
 ) -> dict:
     """Send message via WebSocket with proper session management."""
     from sqlalchemy import select
-    from app.modules.booking.models import Booking
+
     from app.modules.booking.helpers import TERMINAL_STATUSES
-    from app.modules.venue.models import Venue
+    from app.modules.booking.models import Booking
     from app.modules.chat.repository import create_message
+    from app.modules.venue.models import Venue
 
     with with_session() as db:
         # Lock the booking row to prevent race conditions with cancellations
-        booking = db.execute(
-            select(Booking)
-            .where(Booking.id == booking_id)
-            .with_for_update()
-        ).scalars().first()
+        booking = (
+            db.execute(select(Booking).where(Booking.id == booking_id).with_for_update())
+            .scalars()
+            .first()
+        )
 
         if not booking:
             raise ForbiddenError("Booking not found")
