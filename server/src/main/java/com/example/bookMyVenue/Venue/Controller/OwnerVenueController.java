@@ -56,8 +56,8 @@ public class OwnerVenueController {
 //    }
 
     @PutMapping("/{id}")
-    public ResponseEntity<VenueResponse> updateVenue(@RequestParam Long id,
-                                                     @Valid @ModelAttribute VenueRequest venueRequest){
+    public ResponseEntity<VenueResponse> updateVenue(@PathVariable("id") Long id,
+                                                     @Valid @RequestBody VenueRequest venueRequest){
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ownerVenueService.updateVenue(id,venueRequest));
@@ -65,13 +65,13 @@ public class OwnerVenueController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<VenueResponse> getVenueByParam(@RequestParam Long id){
+    public ResponseEntity<VenueResponse> getVenueByParam(@PathVariable("id") Long id){
         return ResponseEntity
                 .ok(ownerVenueService.getVenueReponseById(id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteVenueByParam(@RequestParam Long id){
+    public ResponseEntity<?> deleteVenueByParam(@PathVariable("id") Long id){
         ownerVenueService.deleteById(id);
         return ResponseEntity.ok().build();
     }
