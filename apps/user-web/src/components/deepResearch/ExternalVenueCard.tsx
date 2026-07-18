@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { createClient, deepResearchEndpoints, venueEndpoints } from '@venue404/api-client'
+import { createClient, deepResearchEndpoints } from '@venue404/api-client'
+import { useCategories } from '../../hooks/useCategories'
 import type { ExternalLeadPublic } from '@venue404/api-client'
 import { Info } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -19,12 +19,7 @@ export function ExternalVenueCard({ lead }: Props) {
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
 
-  const { data: categories = [] } = useQuery({
-    queryKey: ['venue-categories'],
-    queryFn: () => venueEndpoints(createClient()).getVenueCategories(),
-    enabled: isModalOpen,
-    staleTime: 5 * 60 * 1000,
-  })
+  const { data: categories = [] } = useCategories({ enabled: isModalOpen })
 
   async function handleReserve(e: React.FormEvent) {
     e.preventDefault()

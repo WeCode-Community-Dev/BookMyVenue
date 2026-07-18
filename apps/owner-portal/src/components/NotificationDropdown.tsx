@@ -111,9 +111,12 @@ export function NotificationDropdown() {
     isLoading,
     isError,
     refetch,
-  } = useQuery({
+  } = useQuery<NotificationView[]>({
     queryKey: ['notifications'],
-    queryFn: () => notificationEndpoints(client).list(),
+    queryFn: () =>
+      notificationEndpoints(client)
+        .list()
+        .then((res) => res.data),
     staleTime: 30 * 1000,
   })
 

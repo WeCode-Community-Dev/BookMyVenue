@@ -155,9 +155,13 @@ BookingResponse = BookingOut
 CreateBookingRequest = BookingRequestIn
 
 
-class BookingListResponse(BaseModel):
-    items: list[BookingOut]
-    total: int
+class PaginatedMeta(BaseModel):
     page: int
-    page_size: int
+    per_page: int
+    total: int
     total_pages: int
+
+
+class BookingListResponse(BaseModel):
+    data: list[BookingOut]
+    meta: PaginatedMeta

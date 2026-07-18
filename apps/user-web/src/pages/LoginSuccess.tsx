@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createClient, authEndpoints } from '@venue404/api-client'
 import { LoadingScreen, ErrorState } from '@venue404/ui'
+import { queryClient } from '../lib/queryClient'
 
 export default function LoginSuccess() {
   const navigate = useNavigate()
@@ -10,7 +11,10 @@ export default function LoginSuccess() {
   useEffect(() => {
     async function verify() {
       try {
-        const user = await authEndpoints(createClient()).me()
+        const user = await queryClient.fetchQuery({
+          queryKey: ['me'],
+          queryFn: () => authEndpoints(createClient()).me(),
+        })
 
         // Any authenticated user (customer, venue_owner, super_admin, or a
         // combination) can use user-web — 'customer' is the baseline role

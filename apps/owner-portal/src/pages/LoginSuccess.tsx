@@ -1,7 +1,8 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createClient, authEndpoints } from '@venue404/api-client'
 import { LoadingScreen, ErrorState } from '@venue404/ui'
+import { queryClient } from '../lib/queryClient'
 
 export default function LoginSuccess() {
   const navigate = useNavigate()
@@ -11,7 +12,10 @@ export default function LoginSuccess() {
     async function verify() {
       try {
         const client = createClient()
-        const user = await authEndpoints(client).me()
+        const user = await queryClient.fetchQuery({
+          queryKey: ['me'],
+          queryFn: () => authEndpoints(client).me(),
+        })
 
         if (!user.roles.includes('venue_owner') && !user.roles.includes('super_admin')) {
           navigate('/403', { replace: true })

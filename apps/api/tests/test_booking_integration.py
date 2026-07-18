@@ -132,3 +132,55 @@ def test_wrong_owner_cannot_accept_booking(client, db, category_id):
         headers={"Authorization": f"Bearer {other_owner_token}"},
     )
     assert resp.status_code in (403, 404)
+
+
+def test_list_my_bookings_pagination(client, db, category_id):
+    owner_id, _ = seed_user(db, "venue_owner")
+    _, customer_token = seed_user(db, "customer")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    # Create 3 bookings
+    for i in range(3):
+        resp = client.post(
+            "/api/bookings/",
+            json={
+                "venue_id": str(venue_id),
+                "venue_name": f"Test Venue {i}",
+                "booking_type": "full_day",
+                "booking_date": (date.today() + timedelta(days=30 + i)).isoformat(),
+                "guest_count": 10,
+            },
+            headers={"Authorization": f"Bearer {customer_token}"},
+        )
+        assert resp.status_code == 201
+
+    # List bookings page 1, per_page 2
+    resp = client.get(
+        "/api/bookings/",
+        params={"page": 1, "per_page": 2},
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    print("REDIRECT HISTORY:", resp.history)
+    print("RESPONSE STATUS:", resp.status_code)
+    print("MY BOOKINGS DATA:", resp.json())
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "data" in data
+    assert "meta" in data
+    assert len(data["data"]) == 2
+    assert data["meta"]["page"] == 1
+    assert data["meta"]["per_page"] == 2
+    assert data["meta"]["total"] == 3
+    assert data["meta"]["total_pages"] == 2
+
+    # List bookings page 2, per_page 2
+    resp = client.get(
+        "/api/bookings/",
+        params={"page": 2, "per_page": 2},
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["data"]) == 1
+    assert data["meta"]["page"] == 2
+    assert data["meta"]["total_pages"] == 2

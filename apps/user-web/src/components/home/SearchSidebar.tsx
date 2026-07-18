@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createClient, venueEndpoints } from '@venue404/api-client'
-import type { VenueCategory } from '@venue404/api-client'
+import { useCategories } from '../../hooks/useCategories'
 
 type Props = {
   venueType: string
@@ -28,17 +26,7 @@ export function SearchSidebar({
   // FIX #SearchSidebar: pull categories from the same API CategorySection uses,
   // instead of the hardcoded CATEGORIES constant which can drift out of sync
   const navigate = useNavigate()
-  const [categories, setCategories] = useState<VenueCategory[]>([])
-  const [loadingCategories, setLoadingCategories] = useState(true)
-
-  useEffect(() => {
-    const client = createClient()
-    venueEndpoints(client)
-      .getVenueCategories()
-      .then(setCategories)
-      .catch(() => { })
-      .finally(() => setLoadingCategories(false))
-  }, [])
+  const { data: categories = [], isLoading: loadingCategories } = useCategories()
 
   return (
     <div className="space-y-6 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-ink-700 dark:bg-ink-900">

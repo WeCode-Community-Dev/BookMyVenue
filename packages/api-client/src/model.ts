@@ -6,11 +6,13 @@ export type Booking = components['schemas']['BookingOut']
 export type BookingMode = 'MANUAL' | 'INSTANT'
 
 export interface BookingListResponse {
-  items: Booking[]
-  total: number
-  page: number
-  page_size: number
-  total_pages: number
+  data: Booking[]
+  meta: {
+    page: number
+    per_page: number
+    total: number
+    total_pages: number
+  }
 }
 
 export interface VenueOption {

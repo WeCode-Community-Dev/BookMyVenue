@@ -65,6 +65,7 @@ OR
 
 
 def upgrade() -> None:
+    op.execute("COMMIT")
     op.drop_constraint(
         "ck_booking_status_history_transition",
         "booking_status_history",

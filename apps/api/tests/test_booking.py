@@ -6,6 +6,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.modules.booking.cancellation import _compute_refund
+from app.modules.booking.helpers import _bookings_out, _platform_fee_reversed_map
 from app.modules.booking.models import Booking, BookingSlot, BookingStatus, PaymentStatus
 from app.modules.booking.schemas import ExtendDeadlineIn
 from app.modules.booking.service import (
@@ -122,6 +123,61 @@ def test_refund_computation_policy_fee_non_refundable():
     assert result.refund_amount_paise == 45000
     assert result.refund_pct_applied == 50.0
     assert result.tier_matched == "tier_2"
+
+
+def test_platform_fee_reversed_map_empty_ids():
+    db = MagicMock()
+    assert _platform_fee_reversed_map(db, []) == {}
+    db.query.assert_not_called()
+
+
+def test_platform_fee_reversed_map_batches_sums():
+    db = MagicMock()
+    booking_a = uuid4()
+    booking_b = uuid4()
+    booking_c = uuid4()
+
+    # SQLAlchemy chain: query(...).filter(...).group_by(...).all()
+    db.query.return_value.filter.return_value.group_by.return_value.all.return_value = [
+        (booking_a, 1500),
+        (booking_c, 0),
+    ]
+
+    result = _platform_fee_reversed_map(db, [booking_a, booking_b, booking_c])
+    assert result == {booking_a: 1500, booking_c: 0}
+    # Only one aggregation query for the whole batch
+    assert db.query.call_count == 1
+
+
+def test_bookings_out_uses_single_fee_query(monkeypatch):
+    """List serialization must not issue one ledger query per booking."""
+    import app.modules.booking.helpers as helpers
+
+    booking_ids = [uuid4(), uuid4(), uuid4()]
+    bookings = []
+    for bid in booking_ids:
+        booking = MagicMock()
+        booking.id = bid
+        bookings.append(booking)
+
+    fee_map = {booking_ids[0]: 500, booking_ids[2]: 1200}
+    monkeypatch.setattr(helpers, "_platform_fee_reversed_map", lambda db, ids: fee_map)
+
+    calls: list[tuple] = []
+
+    def fake_booking_out(db, booking, *, platform_fee_reversed_paise=None):
+        calls.append((booking.id, platform_fee_reversed_paise))
+        return f"out-{booking.id}"
+
+    monkeypatch.setattr(helpers, "_booking_out", fake_booking_out)
+
+    result = _bookings_out(MagicMock(), bookings)
+    assert result == [f"out-{bid}" for bid in booking_ids]
+    assert calls == [
+        (booking_ids[0], 500),
+        (booking_ids[1], 0),
+        (booking_ids[2], 1200),
+    ]
 
 
 def test_owner_accept_booking_idempotency(monkeypatch):

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient, notificationEndpoints } from '@venue404/api-client'
@@ -96,16 +97,20 @@ export default function Notifications() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
+  const [page, setPage] = useState(1)
   const {
-    data: notifications = [],
+    data,
     isLoading,
     isError,
     refetch,
   } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: () => notificationEndpoints(client).list(),
+    queryKey: ['notifications', page],
+    queryFn: () => notificationEndpoints(client).list({ page, per_page: 10 }),
     staleTime: 30 * 1000,
   })
+
+  const notifications = data?.data || []
+  const meta = data?.meta
 
   const markReadMutation = useMutation({
     mutationFn: (id: string) => notificationEndpoints(client).markRead(id),
@@ -178,8 +183,32 @@ export default function Notifications() {
         {notifications.length === 0 ? (
           <NotificationsEmpty />
         ) : (
-          <div className="rounded-2xl border border-zinc-100 bg-white shadow-sm overflow-hidden dark:border-ink-800 dark:bg-ink-900">
-            <NotificationList notifications={notifications} onOpen={handleOpen} />
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-zinc-100 bg-white shadow-sm overflow-hidden dark:border-ink-800 dark:bg-ink-900">
+              <NotificationList notifications={notifications} onOpen={handleOpen} />
+            </div>
+
+            {meta && meta.total_pages > 1 && (
+              <div className="flex items-center justify-between border-t border-zinc-100 pt-4 dark:border-ink-800">
+                <button
+                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                  disabled={page === 1}
+                  className="press rounded-lg border border-zinc-200 px-3.5 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-ink-700 dark:text-zinc-300 dark:hover:bg-ink-800"
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-zinc-500">
+                  Page {page} of {meta.total_pages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(p + 1, meta.total_pages))}
+                  disabled={page === meta.total_pages}
+                  className="press rounded-lg border border-zinc-200 px-3.5 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 dark:border-ink-700 dark:text-zinc-300 dark:hover:bg-ink-800"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

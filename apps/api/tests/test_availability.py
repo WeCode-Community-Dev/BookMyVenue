@@ -304,6 +304,11 @@ def test_validate_slot_accepts_valid_request(client, db, category_id):
     """A valid slot should return valid=true with effective times."""
     owner_id, _ = seed_user(db, "venue_owner")
     venue_id = seed_approved_venue(db, owner_id, category_id)
+    from app.modules.venue.models import Venue
+
+    venue = db.query(Venue).get(venue_id)
+    venue.allowed_booking_types = ["full_day", "time_slot"]
+    db.commit()
 
     start = _future_datetime()
     end = start + timedelta(hours=4)
