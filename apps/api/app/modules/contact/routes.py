@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
@@ -7,6 +9,8 @@ from app.core.rate_limit import enforce_ip_hourly_limit
 from app.modules.admin import settings_store
 from app.modules.contact.schemas import ContactMessageCreate, ContactMessageResponse
 from app.modules.notification.templates import render_contact_message_email
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -23,5 +27,9 @@ def submit_contact_message(
     enforce_ip_hourly_limit(client_ip, "contact", limit)
 
     subject, html = render_contact_message_email(body.name, body.email, body.subject, body.message)
-    sent = send_email(SUPPORT_INBOX, subject, html, reply_to=body.email)
+    try:
+        sent = send_email(SUPPORT_INBOX, subject, html, reply_to=body.email)
+    except Exception:
+        logger.exception("Failed to send contact message email from %s", body.email)
+        sent = False
     return ContactMessageResponse(sent=sent)
