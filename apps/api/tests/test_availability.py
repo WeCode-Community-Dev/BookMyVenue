@@ -506,3 +506,79 @@ def test_owner_calendar_includes_bookings(client, db, category_id):
     assert resp.status_code == 200
     day = resp.json()["days"][0]
     assert len(day["bookings"]) > 0
+
+
+def test_buffer_times_stacking_validation_and_availability(client, db, category_id):
+    """If a booking exists at 9:00-10:00 with 30m buffers:
+    - Booking at 10:30 should fail validation (overlaps with A's cleanup and its own prep).
+    - Availability API should return 8:00-11:00 as blocked.
+    - Booking at 11:00 should pass validation.
+    """
+    from app.modules.venue.models import Venue
+
+    owner_id, owner_token = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    db.query(Venue).filter(Venue.id == venue_id).update(
+        {"pre_buffer_minutes": 30, "post_buffer_minutes": 30}
+    )
+    db.commit()
+
+    booking_date = _future_date(25)
+    start_time = datetime.combine(booking_date, dt_time(9, 0)).replace(tzinfo=UTC)
+    end_time = datetime.combine(booking_date, dt_time(10, 0)).replace(tzinfo=UTC)
+
+    # Make the first booking 9:00 - 10:00
+    resp = client.post(
+        "/api/bookings/",
+        json={
+            "venue_id": str(venue_id),
+            "venue_name": "Test Venue",
+            "booking_type": "time_slot",
+            "starts_at": _iso(start_time),
+            "ends_at": _iso(end_time),
+            "guest_count": 10,
+        },
+        headers={"Authorization": f"Bearer {seed_user(db, 'customer')[1]}"},
+    )
+    assert resp.status_code == 201
+    booking_id = resp.json()["id"]
+
+    # Accept the booking so it blocks the slot
+    accept_resp = client.post(
+        f"/api/bookings/{booking_id}/accept",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert accept_resp.status_code == 200
+
+    # 1. Booking at 10:30-11:30 should fail validation
+    invalid_start = datetime.combine(booking_date, dt_time(10, 30)).replace(tzinfo=UTC)
+    invalid_end = datetime.combine(booking_date, dt_time(11, 30)).replace(tzinfo=UTC)
+    validate_resp1 = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=time_slot&starts_at={_iso(invalid_start)}&ends_at={_iso(invalid_end)}"
+    )
+    assert validate_resp1.status_code == 409
+
+    # 2. Check the availability calendar blocked slots
+    avail_resp = client.get(
+        f"/api/availability/venues/{venue_id}/date/{booking_date.isoformat()}?booking_type=time_slot"
+    )
+    assert avail_resp.status_code == 200
+    blocked_slots = avail_resp.json()["blocked_slots"]
+
+    found = False
+    for slot in blocked_slots:
+        if "08:00:00" in slot["starts_at"] and "11:00:00" in slot["ends_at"]:
+            found = True
+            break
+    assert found, (
+        f"Expected blocked range 08:00:00 - 11:00:00 in blocked_slots, got: {blocked_slots}"
+    )
+
+    # 3. Booking at 11:00-12:00 should pass validation
+    valid_start = datetime.combine(booking_date, dt_time(11, 0)).replace(tzinfo=UTC)
+    valid_end = datetime.combine(booking_date, dt_time(12, 0)).replace(tzinfo=UTC)
+    validate_resp2 = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=time_slot&starts_at={_iso(valid_start)}&ends_at={_iso(valid_end)}"
+    )
+    assert validate_resp2.status_code == 200
