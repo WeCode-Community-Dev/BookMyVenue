@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -34,7 +35,7 @@ def list_conversations(
 def list_messages(
     booking_id: UUID,
     limit: int = 50,
-    cursor: UUID | None = None,
+    cursor: datetime | None = None,
     auth: AuthContext = Depends(require_auth),
     db: Session = Depends(get_db),
 ):

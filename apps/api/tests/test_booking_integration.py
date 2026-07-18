@@ -132,3 +132,195 @@ def test_wrong_owner_cannot_accept_booking(client, db, category_id):
         headers={"Authorization": f"Bearer {other_owner_token}"},
     )
     assert resp.status_code in (403, 404)
+
+
+def test_list_my_bookings_pagination(client, db, category_id):
+    owner_id, _ = seed_user(db, "venue_owner")
+    _, customer_token = seed_user(db, "customer")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    # Create 3 bookings
+    for i in range(3):
+        resp = client.post(
+            "/api/bookings/",
+            json={
+                "venue_id": str(venue_id),
+                "venue_name": f"Test Venue {i}",
+                "booking_type": "full_day",
+                "booking_date": (date.today() + timedelta(days=30 + i)).isoformat(),
+                "guest_count": 10,
+            },
+            headers={"Authorization": f"Bearer {customer_token}"},
+        )
+        assert resp.status_code == 201
+
+    # List bookings page 1, per_page 2
+    resp = client.get(
+        "/api/bookings/",
+        params={"page": 1, "per_page": 2},
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    print("REDIRECT HISTORY:", resp.history)
+    print("RESPONSE STATUS:", resp.status_code)
+    print("MY BOOKINGS DATA:", resp.json())
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "data" in data
+    assert "meta" in data
+    assert len(data["data"]) == 2
+    assert data["meta"]["page"] == 1
+    assert data["meta"]["per_page"] == 2
+    assert data["meta"]["total"] == 3
+    assert data["meta"]["total_pages"] == 2
+
+    # List bookings page 2, per_page 2
+    resp = client.get(
+        "/api/bookings/",
+        params={"page": 2, "per_page": 2},
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["data"]) == 1
+    assert data["meta"]["page"] == 2
+    assert data["meta"]["total_pages"] == 2
+
+
+def test_list_my_bookings_tab_filtering(client, db, category_id):
+    owner_id, owner_token = seed_user(db, "venue_owner")
+    customer_id, customer_token = seed_user(db, "customer")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    # 1. Create a requested booking (Pending status)
+    resp = client.post(
+        "/api/bookings/",
+        json={
+            "venue_id": str(venue_id),
+            "venue_name": "Test Venue 1",
+            "booking_type": "full_day",
+            "booking_date": (date.today() + timedelta(days=30)).isoformat(),
+            "guest_count": 10,
+        },
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 201
+    booking1_id = resp.json()["id"]
+
+    # 2. Create another requested booking and confirm it (Upcoming status)
+    resp = client.post(
+        "/api/bookings/",
+        json={
+            "venue_id": str(venue_id),
+            "venue_name": "Test Venue 2",
+            "booking_type": "full_day",
+            "booking_date": (date.today() + timedelta(days=31)).isoformat(),
+            "guest_count": 10,
+        },
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 201
+    booking2_id = resp.json()["id"]
+
+    # Accept the second booking
+    accept_resp = client.post(
+        f"/api/bookings/{booking2_id}/accept",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert accept_resp.status_code == 200
+
+    booking2 = db.get(Booking, booking2_id)
+    booking2.status = BookingStatus.confirmed
+    db.commit()
+
+    # 3. Create a third booking and transition to completed (Past status)
+    resp = client.post(
+        "/api/bookings/",
+        json={
+            "venue_id": str(venue_id),
+            "venue_name": "Test Venue 3",
+            "booking_type": "full_day",
+            "booking_date": (date.today() + timedelta(days=32)).isoformat(),
+            "guest_count": 10,
+        },
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 201
+    booking3_id = resp.json()["id"]
+
+    booking3 = db.get(Booking, booking3_id)
+    booking3.status = BookingStatus.completed
+    db.commit()
+
+    # 4. Create a fourth booking and transition to user_cancelled (Cancelled status)
+    resp = client.post(
+        "/api/bookings/",
+        json={
+            "venue_id": str(venue_id),
+            "venue_name": "Test Venue 4",
+            "booking_type": "full_day",
+            "booking_date": (date.today() + timedelta(days=33)).isoformat(),
+            "guest_count": 10,
+        },
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 201
+    booking4_id = resp.json()["id"]
+
+    booking4 = db.get(Booking, booking4_id)
+    booking4.status = BookingStatus.user_cancelled
+    db.commit()
+
+    # Query without tab filter
+    resp = client.get(
+        "/api/bookings/",
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 200
+    res_data = resp.json()
+    assert res_data["tab_counts"] == {
+        "upcoming": 1,
+        "pending": 1,
+        "past": 1,
+        "cancelled": 1,
+    }
+    assert len(res_data["data"]) == 4
+
+    # Query with tab="upcoming"
+    resp = client.get(
+        "/api/bookings/?tab=upcoming",
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 200
+    res_data = resp.json()
+    assert len(res_data["data"]) == 1
+    assert res_data["data"][0]["id"] == str(booking2_id)
+
+    # Query with tab="pending"
+    resp = client.get(
+        "/api/bookings/?tab=pending",
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 200
+    res_data = resp.json()
+    assert len(res_data["data"]) == 1
+    assert res_data["data"][0]["id"] == str(booking1_id)
+
+    # Query with tab="past"
+    resp = client.get(
+        "/api/bookings/?tab=past",
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 200
+    res_data = resp.json()
+    assert len(res_data["data"]) == 1
+    assert res_data["data"][0]["id"] == str(booking3_id)
+
+    # Query with tab="cancelled"
+    resp = client.get(
+        "/api/bookings/?tab=cancelled",
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 200
+    res_data = resp.json()
+    assert len(res_data["data"]) == 1
+    assert res_data["data"][0]["id"] == str(booking4_id)

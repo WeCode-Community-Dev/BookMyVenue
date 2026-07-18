@@ -12,7 +12,11 @@ from app.core.database import SessionLocal
 from app.core.email import send_email
 from app.core.exceptions import ForbiddenError, NotFoundError
 from app.modules.notification.models import InAppNotification
-from app.modules.notification.schemas import NotificationResponse
+from app.modules.notification.schemas import (
+    NotificationListResponse,
+    NotificationResponse,
+    PaginatedMeta,
+)
 from app.modules.notification.templates import render_notification
 
 logger = logging.getLogger(__name__)
@@ -91,14 +95,27 @@ def _mark_email_sent(notification_id) -> None:
 event.listen(SessionLocal, "after_commit", _send_pending_emails)
 
 
-def list_notifications(db: Session, user_id) -> list[NotificationResponse]:
+def list_notifications(
+    db: Session, user_id, page: int = 1, per_page: int = 20
+) -> NotificationListResponse:
+    query = db.query(InAppNotification).filter(InAppNotification.user_id == user_id)
+    total = query.count()
+    total_pages = (total + per_page - 1) // per_page if per_page > 0 else 0
     rows = (
-        db.query(InAppNotification)
-        .filter(InAppNotification.user_id == user_id)
-        .order_by(InAppNotification.created_at.desc())
+        query.order_by(InAppNotification.created_at.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
         .all()
     )
-    return [_to_response(r) for r in rows]
+    return NotificationListResponse(
+        data=[_to_response(r) for r in rows],
+        meta=PaginatedMeta(
+            page=page,
+            per_page=per_page,
+            total=total,
+            total_pages=total_pages,
+        ),
+    )
 
 
 def mark_read(db: Session, notification_id: str, user_id) -> None:

@@ -171,7 +171,7 @@ Notes:
 | Param | Default | Description |
 |-------|---------|-------------|
 | `limit` | `50` | Max rows |
-| `cursor` | — | Optional message UUID; returns rows with `id > cursor` |
+| `cursor` | — | Optional message ISO datetime string; returns rows with `created_at > cursor` |
 
 **Response:** `ChatMessageOut[]` ordered by `created_at` ascending.
 
@@ -321,7 +321,8 @@ notify(
 | Immutable messages | No update/delete endpoints |
 | Read = all unread from others | `mark_messages_read` sets `read_at` on each |
 | Text only | No attachment fields or upload routes |
-| Cursor pagination | Optional `cursor` UUID on list messages (`id > cursor`) |
+| Cursor pagination | Optional `cursor` datetime string on list messages (`created_at > cursor`) |
+| No chat on terminal bookings | ForbiddenError raised if status is in completed/cancelled/rejected/expired |
 
 Constants live in `service.py` (`MAX_MESSAGE_LENGTH = 2000`); not yet wired to `app.core.config` settings.
 
@@ -491,7 +492,7 @@ Implemented architecture supports these extensions; **not** built yet unless not
 | Typing indicators (server events) | UI stub only |
 | Message edit / soft delete | Not implemented |
 | Cross-instance WS (Redis pub/sub) | Not implemented |
-| Cursor pagination by time (vs UUID compare) | Cursor uses `id > cursor` |
+| Cursor pagination by time (vs UUID compare) | Implemented |
 | Admin moderation / chat search | Not implemented |
 | Read-only chat after booking completion | Inbox hides completed; deep-link policy not fully productized |
 | Config-driven max length via settings | Hardcoded `2000` |

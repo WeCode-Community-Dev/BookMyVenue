@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react'
-import { createClient, venueEndpoints } from '@venue404/api-client'
-import type { VenueCategory } from '@venue404/api-client'
+import { useCategories } from '../../hooks/useCategories'
 
 type Props = {
   onCategoryClick: (slug: string) => void
@@ -31,17 +29,7 @@ function CategorySkeleton() {
 }
 
 export function CategorySection({ onCategoryClick }: Props) {
-  const [categories, setCategories] = useState<VenueCategory[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const client = createClient()
-    venueEndpoints(client)
-      .getVenueCategories()
-      .then(setCategories)
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: categories = [], isLoading: loading } = useCategories()
 
   if (!loading && categories.length === 0) return null
 

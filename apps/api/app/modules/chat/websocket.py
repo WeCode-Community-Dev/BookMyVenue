@@ -59,16 +59,33 @@ def send_message_ws_with_session(
     message: str,
 ) -> dict:
     """Send message via WebSocket with proper session management."""
-    from app.modules.chat.repository import create_message, get_booking_participants
+    from sqlalchemy import select
+
+    from app.modules.booking.helpers import TERMINAL_STATUSES
+    from app.modules.booking.models import Booking
+    from app.modules.chat.repository import create_message
+    from app.modules.venue.models import Venue
 
     with with_session() as db:
-        # Validate access and send message
-        customer_id, owner_id = get_booking_participants(db, booking_id)
-        if customer_id is None:
+        # Lock the booking row to prevent race conditions with cancellations
+        booking = (
+            db.execute(select(Booking).where(Booking.id == booking_id).with_for_update())
+            .scalars()
+            .first()
+        )
+
+        if not booking:
             raise ForbiddenError("Booking not found")
+
+        venue = db.execute(select(Venue).where(Venue.id == booking.venue_id)).scalars().first()
+        customer_id = booking.user_id
+        owner_id = venue.owner_id if venue else None
 
         if sender_id not in (customer_id, owner_id):
             raise ForbiddenError("Not authorized to send messages to this chat")
+
+        if booking.status in TERMINAL_STATUSES:
+            raise ForbiddenError("Cannot send messages for a booking in a terminal status")
 
         cleaned = (message or "").strip()
         if not cleaned:
@@ -172,6 +189,7 @@ async def websocket_endpoint(
 
             if msg_type == "send_message":
                 content = msg.get("message", "")
+                client_msg_id = msg.get("client_msg_id")
                 try:
                     validated = SendMessageIn(message=content)
                     result = send_message_ws_with_session(booking_id, user_id, validated.message)
@@ -180,29 +198,38 @@ async def websocket_endpoint(
                     await broadcast_message(booking_id, user_id, result)
 
                     # Confirmation to sender (same payload shape as broadcast)
+                    confirmation_payload = result.copy()
+                    if client_msg_id:
+                        confirmation_payload["client_msg_id"] = client_msg_id
                     await websocket.send_text(
                         json.dumps(
                             {
                                 "type": "message_sent",
-                                "payload": result,
+                                "payload": confirmation_payload,
                             }
                         )
                     )
                 except ValueError as e:
+                    error_payload = {"message": str(e)}
+                    if client_msg_id:
+                        error_payload["client_msg_id"] = client_msg_id
                     await websocket.send_text(
                         json.dumps(
                             {
                                 "type": "error",
-                                "payload": {"message": str(e)},
+                                "payload": error_payload,
                             }
                         )
                     )
                 except ForbiddenError as e:
+                    error_payload = {"message": str(e)}
+                    if client_msg_id:
+                        error_payload["client_msg_id"] = client_msg_id
                     await websocket.send_text(
                         json.dumps(
                             {
                                 "type": "error",
-                                "payload": {"message": str(e)},
+                                "payload": error_payload,
                             }
                         )
                     )

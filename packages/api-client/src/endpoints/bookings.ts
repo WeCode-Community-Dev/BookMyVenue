@@ -4,7 +4,14 @@ import type { Booking, BookingListResponse } from '../model'
 export const bookingEndpoints = (client: ReturnType<typeof createClient>) => ({
   getBooking: (id: string) => client.get<Booking>(`/api/bookings/${id}`),
   createBooking: (body: unknown) => client.post<Booking>('/api/bookings/', body),
-  listBookings: () => client.get<Booking[]>('/api/bookings/'),
+  listBookings: (params?: { tab?: string; page?: number; per_page?: number }) => {
+    const qs = new URLSearchParams()
+    if (params?.tab) qs.append('tab', params.tab)
+    if (params?.page) qs.append('page', params.page.toString())
+    if (params?.per_page) qs.append('per_page', params.per_page.toString())
+    const qsStr = qs.toString()
+    return client.get<BookingListResponse>(`/api/bookings/${qsStr ? `?${qsStr}` : ''}`)
+  },
   getOwnerBookings: (params?: { tab?: string, venue_id?: string, search?: string, page?: number, per_page?: number }) => {
     const qs = new URLSearchParams()
     if (params?.tab) qs.append('tab', params.tab)

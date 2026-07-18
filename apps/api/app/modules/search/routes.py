@@ -1,6 +1,6 @@
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -80,10 +80,12 @@ def search_semantic(
 @router.get("/hybrid", response_model=SearchResultPage)
 def search_hybrid(
     request: Request,
+    response: Response,
     params: SearchParams = Depends(_params),
     db: Session = Depends(get_db),
 ):
     _enforce_embedding_rate_limit(request, db)
+    response.headers["Cache-Control"] = "public, max-age=300"
     try:
         return service.search_hybrid(db, params)
     except ValueError as exc:
