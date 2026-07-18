@@ -11,11 +11,38 @@ export class BookingMapper {
 
             id: doc._id ? doc._id.toString() : null,
 
-            userId: doc.userId ? doc.userId.toString() : null,
+            // userId: doc.userId ? doc.userId.toString() : null,
 
-            venueId: doc.venueId ? doc.venueId.toString() : null,
+            //venueId: doc.venueId ? doc.venueId.toString() : null,
 
-            vendorId: doc. vendorId  ? doc.vendorId.toString() : null,
+            // vendorId: doc. vendorId? doc.vendorId.toString() : null,
+            userId: doc.userId
+                ? {
+                    id: doc.userId._id?.toString(),
+                    fullName: doc.userId.fullName,
+                    email: doc.userId.email,
+                    phone: doc.userId.phone,
+                }
+                : null,
+            vendorId: doc.vendorId
+                ? {
+                    id: doc.vendorId._id?.toString(),
+                    fullName: doc.vendorId.fullName,
+                    email: doc.vendorId.email,
+                    phone: doc.vendorId.phone,
+                    companyName: doc.vendorId.companyName,
+                }
+                : null,
+            venueId: doc.venueId
+  ? {
+      id: doc.venueId._id?.toString(),
+      name: doc.venueId.name,
+      category: doc.venueId.category,
+      address: doc.venueId.address,
+      seatingCapacity: doc.venueId.seatingCapacity,
+      standingCapacity: doc.venueId.standingCapacity,
+    }
+  : null,
 
             bookingDate: doc.bookingDate,
 
@@ -38,8 +65,6 @@ export class BookingMapper {
             paymentStatus: doc.paymentStatus,
 
             cancellationReason: doc.cancellationReason,
-
-            rejectionReason: doc.rejectionReason,
 
             createdAt: doc.createdAt,
 
@@ -81,10 +106,11 @@ export class BookingMapper {
             paymentStatus: entity.paymentStatus,
 
             cancellationReason: entity.cancellationReason,
-
-            rejectionReason: entity.rejectionReason
+            createdAt:entity.createdAt,
+            updatedAt:entity.updatedAt
 
         };
+
 
     }
 
