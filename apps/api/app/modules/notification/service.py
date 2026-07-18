@@ -12,7 +12,11 @@ from app.core.database import SessionLocal
 from app.core.email import send_email
 from app.core.exceptions import ForbiddenError, NotFoundError
 from app.modules.notification.models import InAppNotification
-from app.modules.notification.schemas import NotificationListResponse, NotificationResponse, PaginatedMeta
+from app.modules.notification.schemas import (
+    NotificationListResponse,
+    NotificationResponse,
+    PaginatedMeta,
+)
 from app.modules.notification.templates import render_notification
 
 logger = logging.getLogger(__name__)
@@ -94,10 +98,7 @@ event.listen(SessionLocal, "after_commit", _send_pending_emails)
 def list_notifications(
     db: Session, user_id, page: int = 1, per_page: int = 20
 ) -> NotificationListResponse:
-    query = (
-        db.query(InAppNotification)
-        .filter(InAppNotification.user_id == user_id)
-    )
+    query = db.query(InAppNotification).filter(InAppNotification.user_id == user_id)
     total = query.count()
     total_pages = (total + per_page - 1) // per_page if per_page > 0 else 0
     rows = (

@@ -24,4 +24,3 @@ class PaginatedMeta(BaseModel):
 class NotificationListResponse(BaseModel):
     data: list[NotificationResponse]
     meta: PaginatedMeta
-

@@ -1,6 +1,6 @@
-from datetime import date
-from tests.conftest import seed_user
 from app.modules.notification.service import notify
+from tests.conftest import seed_user
+
 
 def test_list_notifications_pagination(client, db):
     user_id, token = seed_user(db, "customer")
