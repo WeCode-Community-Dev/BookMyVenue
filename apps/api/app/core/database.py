@@ -17,10 +17,11 @@ engine = create_engine(
     # Recycle connections before Supabase's server-side idle timeout can
     # close them out from under us.
     pool_recycle=1800,
-    # Explicit pool sizing to handle concurrent WebSocket connections and API requests.
-    # Default is 5, which is too small for production load.
-    pool_size=20,
-    max_overflow=30,
+    # Explicit pool sizing, kept under Supabase's session-mode pooler client cap
+    # (currently 15) — pool_size + max_overflow must leave headroom for other
+    # consumers (migrations, dashboard, scripts) on the same project.
+    pool_size=5,
+    max_overflow=5,
     pool_timeout=30,
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
