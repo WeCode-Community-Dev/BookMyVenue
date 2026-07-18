@@ -18,6 +18,7 @@ const Rejected = lazy(() => import('./pages/Rejected'))
 const AcceptInvite = lazy(() => import('./pages/AcceptInvite'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
 const ResetPassword = lazy(() => import('./pages/ResetPassword'))
+const Forbidden = lazy(() => import('./pages/Forbidden'))
 
 const CreateVenueWizard = lazy(() => import('./pages/venues/CreateVenueWizard'))
 const VenueOverview = lazy(() => import('./pages/venues/VenueOverview'))
@@ -47,7 +48,7 @@ export const router = createBrowserRouter([
   { path: '/reset-password', element: <ResetPassword /> },
   { path: '/pending-approval', element: <PendingApproval /> },
   { path: '/rejected', element: <Rejected /> },
-  { path: '/403', element: <div>Access denied. You need a venue owner account.</div> },
+  { path: '/403', element: <Forbidden /> },
 
   {
     path: '/',

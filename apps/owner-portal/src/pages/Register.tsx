@@ -1,9 +1,10 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { createClient, authEndpoints } from '@venue404/api-client'
 import { AuthLayout, AuthCard, Logo } from '@venue404/ui'
 import { OwnerFlowPanel } from '../components/OwnerFlowPanel'
+import { queryClient } from '../lib/queryClient'
 
 function isAlreadyRegisteredError(err: unknown): boolean {
   const code = (err as { code?: string })?.code
@@ -23,8 +24,10 @@ export default function Register() {
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    if (!loading && user) navigate('/login/success', { replace: true })
-  }, [user, loading, navigate])
+    // Don't redirect mid-submit — registerOwner() must finish first
+    // so the user has the venue_owner role before LoginSuccess checks it.
+    if (!loading && !submitting && user) navigate('/login/success', { replace: true })
+  }, [user, loading, submitting, navigate])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -43,6 +46,7 @@ export default function Register() {
         }
       }
       await authEndpoints(createClient()).registerOwner()
+      await queryClient.invalidateQueries({ queryKey: ['me'] })
       navigate('/register/success', { replace: true })
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')

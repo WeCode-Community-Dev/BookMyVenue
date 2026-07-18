@@ -10,13 +10,13 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) return <Navigate to="/login" replace />
 
+  // Check status first — pending/rejected users go to their own pages
+  // regardless of whether the role assignment completed.
+  if (user.profile.status === 'pending') return <Navigate to="/pending-approval" replace />
+  if (user.profile.status === 'rejected') return <Navigate to="/rejected" replace />
+
   if (!ALLOWED_ROLES.some(r => user.roles.includes(r))) {
     return <Navigate to="/403" replace />
-  }
-
-  if (!user.roles.includes('super_admin')) {
-    if (user.profile.status === 'pending') return <Navigate to="/pending-approval" replace />
-    if (user.profile.status === 'rejected') return <Navigate to="/rejected" replace />
   }
 
   return <>{children}</>

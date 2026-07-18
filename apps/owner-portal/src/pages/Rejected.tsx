@@ -1,11 +1,13 @@
-﻿import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { createClient, authEndpoints } from '@venue404/api-client'
 
 export default function Rejected() {
-  const { signOut } = useAuth()
+  const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  
+  if (!user) return <Navigate to="/login" replace />
   const [reapplying, setReapplying] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
