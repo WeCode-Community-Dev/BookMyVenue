@@ -81,7 +81,10 @@ def request_password_reset(db: Session, email: str, redirect_to: str) -> None:
         return  # no account for this email — don't leak that
 
     subject, html = render_password_reset_email(link)
-    send_email(email, subject, html)
+    try:
+        send_email(email, subject, html)
+    except Exception:
+        logger.exception("Failed to send password reset email to %s", email)
 
     _alert_if_admin_target(db, email)
 
@@ -109,7 +112,10 @@ def send_signup_confirmation(email: str, redirect_to: str) -> None:
         return  # no account, or already confirmed — don't leak
 
     subject, html = render_signup_confirmation_email(link)
-    send_email(email, subject, html)
+    try:
+        send_email(email, subject, html)
+    except Exception:
+        logger.exception("Failed to send signup confirmation email to %s", email)
 
 
 def _alert_if_admin_target(db: Session, email: str) -> None:
