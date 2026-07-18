@@ -14,18 +14,18 @@ import {
     TableRow,
 } from "@/components/ui/table";
 
-const VendorTableRow = ({
-    vendor,
+const VenueTableRow = ({
+    venue,
     onView,
     onApprove,
     onReject,
     onBlock,
     onUnblock,
 }) => {
-    
-    const isBlocked = vendor.isBlocked;
 
-    const approvalStatus = vendor.approvalStatus;
+    const isBlocked = venue.isBlocked;
+
+    const approvalStatus = venue.approvalStatus;
 
     // Display Status
     let displayStatus = "";
@@ -42,7 +42,7 @@ const VendorTableRow = ({
 
     }
 
-    // Badge Variant
+    //Badge Variant
     let badgeVariant = "secondary";
 
     if (isBlocked) {
@@ -63,43 +63,43 @@ const VendorTableRow = ({
 
         <TableRow>
 
-            {/* Vendor ID */}
+            {/* Venue ID */}
 
             <TableCell>
 
-                {vendor.id.slice(-6)}
+                {venue.id.slice(-6)}
 
             </TableCell>
 
-            {/* Company */}
+            {/* name */}
 
             <TableCell>
 
-                {vendor.companyName}
+                {venue.name}
 
             </TableCell>
 
-            {/* Owner */}
+            {/* category */}
 
             <TableCell>
 
-                {vendor.fullName}
+                {venue.category}
 
             </TableCell>
 
-            {/* Email */}
+            {/* Address */}
 
             <TableCell>
 
-                {vendor.email}
+                {venue.address?.city}
 
             </TableCell>
 
-            {/* Phone */}
+            {/* Price */}
 
             <TableCell>
 
-                {vendor.phone}
+                ₹{venue.pricePerDay.toLocaleString()}
 
             </TableCell>
 
@@ -111,7 +111,7 @@ const VendorTableRow = ({
                     className={
                         isBlocked
                             ? "bg-red-600 text-white"
-                            : approvalStatus === "APPROVED"
+                            : approvalStatus === "ACTIVE"
                                 ? "bg-green-600 text-white"
                                 : approvalStatus === "REJECTED"
                                     ? "bg-red-100 text-red-700 border border-red-300"
@@ -134,7 +134,7 @@ const VendorTableRow = ({
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onView(vendor)}
+                       onClick={() => onView(venue)}
                     >
 
                         <Eye className="w-4 h-4 mr-1" />
@@ -153,7 +153,7 @@ const VendorTableRow = ({
                                 <Button
                                     className="bg-green-600 hover:bg-green-700 text-white"
                                     size="sm"
-                                    onClick={() => onApprove(vendor)}
+                                    onClick={() => onApprove(venue)}
                                 >
 
                                     <CheckCircle className="w-4 h-4 mr-1" />
@@ -165,7 +165,7 @@ const VendorTableRow = ({
                                 <Button
                                     className="bg-red-600 hover:bg-red-700 text-white"
                                     size="sm"
-                                    onClick={() => onReject(vendor)}
+                                    onClick={() => onReject(venue)}
                                 >
 
                                     <XCircle className="w-4 h-4 mr-1" />
@@ -183,12 +183,12 @@ const VendorTableRow = ({
 
                     {
                         !isBlocked &&
-                        approvalStatus === "APPROVED" && (
+                        approvalStatus === "ACTIVE" && (
 
                             <Button
                                 variant="destructive"
                                 size="sm"
-                                onClick={() => onBlock(vendor)}
+                                onClick={() => onBlock(venue)}
                             >
 
                                 <Ban className="w-4 h-4 mr-1" />
@@ -208,7 +208,7 @@ const VendorTableRow = ({
                             <Button
                                 className="bg-green-600 hover:bg-green-700 text-white"
                                 size="sm"
-                                onClick={() => onUnblock(vendor)}
+                                onClick={() => onUnblock(venue)}
                             >
 
                                 <ShieldCheck className="w-4 h-4 mr-1" />
@@ -230,4 +230,4 @@ const VendorTableRow = ({
 
 };
 
-export default VendorTableRow;
+export default VenueTableRow;

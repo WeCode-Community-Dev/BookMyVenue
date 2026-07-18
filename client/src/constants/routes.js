@@ -23,11 +23,13 @@ export const ROUTES = {
     },
     ADMIN: {
         ROOT: "/admin", 
-        DASHBOARD: "/admin/dashboard",
+        DASHBOARD: "dashboard",
         USERS: "users",
         VENDORS: "vendors",
-        VENUES: "/admin/venues",
-        BOOKINGS: "/admin/bookings",
+        VENUES: "venues",
+        VENUE_DETAILS: "venues/:venueId",
+        BOOKINGS: "bookings",
+        BOOKING_DETAIL: "bookings/:bookingId",
         PAYMENTS: "/admin/payments",
         CATEGORIES: "/admin/categories",
     }
