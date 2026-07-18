@@ -380,8 +380,8 @@ def validate_booking_request(
     conflict_exists = is_slot_blocked(
         db=db,
         venue_id=venue.id,
-        effective_starts_at=starts_at,
-        effective_ends_at=ends_at,
+        effective_starts_at=effective_starts_at,
+        effective_ends_at=effective_ends_at,
     )
 
     if conflict_exists:
@@ -454,14 +454,26 @@ def get_availability_for_date(
             )
 
     # TIME SLOT: Allow multiple slots per day (partial availability)
+    blocked_slots = [
+        BlockedRange(
+            starts_at=slot.effective_starts_at - timedelta(minutes=venue.post_buffer_minutes),
+            ends_at=slot.effective_ends_at + timedelta(minutes=venue.pre_buffer_minutes),
+        )
+        for slot in blocked_slots_db
+    ] + [
+        BlockedRange(
+            starts_at=block.starts_at - timedelta(minutes=venue.post_buffer_minutes),
+            ends_at=block.ends_at + timedelta(minutes=venue.pre_buffer_minutes),
+        )
+        for block in getattr(venue, "blocked_dates", [])
+        if block.deleted_at is None
+        and _has_overlap(block.starts_at, block.ends_at, window_start, window_end)
+    ]
+
     return AvailabilityResponse(
         date=booking_date,
         operating_window=operating_window,
-        blocked_slots=[
-            BlockedRange(starts_at=slot.effective_starts_at, ends_at=slot.effective_ends_at)
-            for slot in blocked_slots_db
-        ]
-        + venue_blocked_ranges,
+        blocked_slots=blocked_slots,
     )
 
 
