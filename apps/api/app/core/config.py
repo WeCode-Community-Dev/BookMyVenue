@@ -3,6 +3,10 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     database_url: str
+    # Used only by Alembic. Point this at a direct/session-mode connection
+    # (not the transaction pooler) since DDL can misbehave under transaction
+    # pooling. Falls back to database_url if unset.
+    migrations_database_url: str = ""
     supabase_url: str
     supabase_jwt_secret: str
     supabase_service_role_key: str
