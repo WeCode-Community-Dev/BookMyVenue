@@ -163,8 +163,19 @@ const SORT_OPTIONS = {
    priceDesc: { basePrice: -1 },
 };
 
+// Resolves a sort query value to a MongoDB sort spec. An omitted value uses the
+// default; a provided but unrecognized value is a client error and throws, so
+// the caller can surface a 400 rather than silently sorting by something else.
 function parseSortParam(rawValue) {
-   return SORT_OPTIONS[rawValue] || SORT_OPTIONS[DEFAULT_SORT];
+   if (rawValue === undefined || rawValue === "") return SORT_OPTIONS[DEFAULT_SORT];
+   const sortSpec = SORT_OPTIONS[rawValue];
+   if (!sortSpec) {
+      const allowed = Object.keys(SORT_OPTIONS).map((option) => `"${option}"`).join(", ");
+      const err = new Error(`Invalid sort option "${rawValue}". Allowed values are ${allowed}`);
+      err.status = 400;
+      throw err;
+   }
+   return sortSpec;
 }
 
 module.exports = {

@@ -50,9 +50,9 @@ async function listVenues(req, res) {
          },
       });
    } catch (err) {
-      return res
-         .status(500)
-         .json({ error: err.message, message: "Failed to fetch venues" });
+      const status = err.status || 500;
+      const message = status === 500 ? "Failed to fetch venues" : err.message;
+      return res.status(status).json({ error: err.message, message });
    }
 }
 
