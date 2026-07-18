@@ -30,15 +30,23 @@ export class LoginVendorUsecase {
             throw new UnauthorizedError(authMessages.error.OTP_VERIFICATION_REQUIRED)
         }
 
-        const accessToken = this._tokenService.generateAccessToken({id: vendor.id, email: vendor.email, role: UserRole.VENDOR});
-        const refreshToken = this._tokenService.generateRefreshToken({id: vendor.id, role: UserRole.VENDOR})
+        const accessToken = this._tokenService.generateAccessToken( vendor.id, vendor.email, UserRole.VENDOR );
+        const refreshToken = this._tokenService.generateRefreshToken(vendor.id, UserRole.VENDOR)
         const hashedToken = await this._hashService.hashToken(refreshToken)
         await this._vendorRepository.updateRefreshToken(vendor.id, hashedToken)
 
         return { 
             accessToken, 
             refreshToken,
-            vendor 
+            vendor:{
+                id: vendor.id,
+                name: vendor.fullName,
+                email: vendor.email,
+                role: vendor.role,
+                isVerified: vendor.isVerified,
+                profileImage: vendor.profileImage.url,
+                approvalStatus: vendor.approvalStatus
+            }
         };
     }
 }

@@ -89,6 +89,7 @@ import { AdminRepository } from '../../infrastructure/repositories/admin.reposit
 import { AdminAuthController } from './admin/admin.authController.js'
 import { AdminLogoutUseCase } from '../../application/admin/usecases/auth/admin.logOut.usecase.js'
 import { AdminRefreshTokenUseCase } from '../../application/admin/usecases/auth/admin.refreshToken.usecase.js'
+import { ChangeVendorPasswordUsecase } from '../../application/vendor/usecases/profile/changeVendorPassword.usecase.js'
 
 //repository
 const iVenueRepository = new VenueRepository();
@@ -269,6 +270,7 @@ const iUpdateVendorProfileUsecase = new VendorUpdateProfileUsecase(iVendorReposi
 const getVendorBookingsUsecase = new GetVendorBookingsUsecase(bookingRepository)
 const getBookingByIdUsecase = new GetBookingByIdUsecase(bookingRepository)
 const getDashboardStatsUsecase = new GetDashboardStatsUsecase(iVenueRepository, bookingRepository)
+const changeVendorPasswordUsecase = new ChangeVendorPasswordUsecase(iVendorRepository, iHashService)
 
 // --- user usecases ---
 const iUserGetAllVenues = new UserGetAllVenuesUsecase(iVenueRepository)
@@ -354,7 +356,8 @@ export const iUserVenueController = new UserVenueController (
 )
 export const iVendorProfileController = new VendorProfileController(
     iGetVendorProfileUsecase,
-    iUpdateVendorProfileUsecase
+    iUpdateVendorProfileUsecase,
+    changeVendorPasswordUsecase
 )
 
 //--

@@ -22,12 +22,13 @@ export class VendorLogoutUseCase {
             throw new UnauthorizedError(authMessages.error.NO_REFRESH_TOKEN);
         }
 
-        const { id, role } = this._tokenService.verifyRefreshToken(refreshToken)
-        if(!id || !role){
+        const payload = this._tokenService.verifyRefreshToken(refreshToken)
+
+        if(!payload){
             throw new UnauthorizedError(authMessages.error.UNAUTHORIZED)
         }
 
-        const vendor = await this._vendorRepository.findById(id);
+        const vendor = await this._vendorRepository.findById(payload.id);
 
         if (!vendor) {
             throw new UnauthorizedError(authMessages.error.INVALID_REFRESH_TOKEN);

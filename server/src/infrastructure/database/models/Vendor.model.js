@@ -8,7 +8,7 @@ const vendorSchema = new mongoose.Schema(
         email: { type: String, required: true, unique: true },
         phone: { type: String, required: true, unique: true },
         // businessName: { type: String, required: false },
-        password: { type: String, required: true, },
+        password: { type: String, required: true },
         profileImage: {
             publicId: { type: String, default: "" },
             url: { type: String, default: "" }

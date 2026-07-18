@@ -26,4 +26,35 @@ export const UpdateVendorProfileSchema = z.object({
 
 })
 
+export const ChangeVendorPasswordSchema = z.object({
+
+    currentPassword: z
+        .string()
+        .min(6, "Current password is required"),
+
+    newPassword: z
+        .string()
+        .min(6, "Password must contain at least 6 characters")
+        .regex(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+            "Password must contain uppercase, lowercase, number, and special character"
+        ),
+
+    confirmPassword: z
+        .string()
+
+}).refine(
+
+    data => data.newPassword === data.confirmPassword,
+
+    {
+
+        message: "Passwords do not match",
+
+        path: ["confirmPassword"]
+
+    }
+
+);
+
 export const GetVendorProfileSchema = z.object({})
