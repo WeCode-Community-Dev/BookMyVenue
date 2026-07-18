@@ -133,10 +133,12 @@ class UserAuthService:
             refresh_token = create_refresh_token(subject=user.id)
 
             # Return full serialized profile + token payload
+            user_response = UserResponse.model_validate(user)
+            self._add_approval_status(db, user, user_response)
             return TokenResponse(
                 access_token=access_token,
                 refresh_token=refresh_token,
-                user=UserResponse.model_validate(user),
+                user=user_response,
             )
         except HTTPException:
             raise
@@ -182,10 +184,12 @@ class UserAuthService:
         access_token = create_access_token(subject=user.id)
         new_refresh_token = create_refresh_token(subject=user.id)
 
+        user_response = UserResponse.model_validate(user)
+        self._add_approval_status(db, user, user_response)
         return TokenResponse(
             access_token=access_token,
             refresh_token=new_refresh_token,
-            user=UserResponse.model_validate(user),
+            user=user_response,
         )
 
     def get_all_users(
@@ -222,7 +226,9 @@ class UserAuthService:
                 db=db,
                 user_id=user_id,
             )
-            return UserResponse.model_validate(user)
+            user_response = UserResponse.model_validate(user)
+            self._add_approval_status(db, user, user_response)
+            return user_response
         except HTTPException:
             raise
 
@@ -254,7 +260,9 @@ class UserAuthService:
                 user.email = data.email
             db.commit()
             db.refresh(user)
-            return UserResponse.model_validate(user)
+            user_response = UserResponse.model_validate(user)
+            self._add_approval_status(db, user, user_response)
+            return user_response
         except HTTPException:
             raise
         except Exception as e:
@@ -263,6 +271,19 @@ class UserAuthService:
                 status_code=500,
                 detail=str(e),
             )
+
+    def _add_approval_status(
+        self, db: Session, user: User, user_response: UserResponse
+    ) -> None:
+        if user.role == UserRole.VENUE_OWNER:
+            from app.model.owner_profile import OwnerProfile
+            profile = db.query(OwnerProfile).filter(OwnerProfile.user_id == user.id).first()
+            if profile:
+                user_response.approval_status = profile.approval_status
+            else:
+                user_response.approval_status = None
+        else:
+            user_response.approval_status = None
 
 
 # Singleton instance

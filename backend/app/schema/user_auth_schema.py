@@ -5,6 +5,7 @@ from datetime import datetime
 
 from app.config.constant import PHONE_REGEX
 from app.model.user import UserRole, UserStatus
+from app.model.owner_profile import ApprovalStatus
 
 
 ## Admin Auth Schema
@@ -105,6 +106,7 @@ class UserResponse(BaseModel):
 
     created_at: datetime
     updated_at: datetime
+    approval_status: ApprovalStatus | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
