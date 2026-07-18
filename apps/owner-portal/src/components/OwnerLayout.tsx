@@ -46,7 +46,7 @@ export function OwnerLayout({ pageTitle, pageSubtitle, children }: OwnerLayoutPr
     displaySubtitle = 'Manage your listed properties and their settings.'
     topbarActions = (
       <div className="flex items-center gap-3">
-        <Button variant="primary" onClick={() => navigate('/venues/new')} className="gap-2 h-9 px-4 text-sm font-medium bg-[#2d6a4f] hover:bg-[#1b4332] border-none text-white shadow-sm rounded-md flex items-center mr-2">
+        <Button variant="primary" onClick={() => navigate('/venues/new')} className="gap-2 h-9 px-4 text-sm font-medium rounded-md flex items-center mr-2">
           <Plus className="h-4 w-4" /> Add New Venue
         </Button>
         <NotificationDropdown />

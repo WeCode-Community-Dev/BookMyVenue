@@ -75,7 +75,7 @@ export default function ManageVenues() {
               className={`flex-1 whitespace-nowrap py-3 border-b-2 font-medium text-sm transition-all flex items-center justify-center gap-1.5 ${
                 filter === t.id
                   ? 'border-brand-500 text-brand-600'
-                  : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:border-ink-700 dark:hover:border-ink-700'
+                  : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:border-zinc-300 dark:hover:border-ink-700'
               }`}
             >
               {t.label}
@@ -213,9 +213,9 @@ export default function ManageVenues() {
 
                   {/* Rejection reason */}
                   {venue.status === 'rejected' && venue.rejection_reason && (
-                    <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-100 px-3 py-2">
-                      <AlertCircle className="h-3.5 w-3.5 text-red-400 shrink-0 mt-px" />
-                      <p className="text-xs text-red-600 leading-relaxed">
+                    <div className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 px-3 py-2">
+                      <AlertCircle className="h-3.5 w-3.5 text-red-400 dark:text-red-400 shrink-0 mt-px" />
+                      <p className="text-xs text-red-600 dark:text-red-400 leading-relaxed">
                         {venue.rejection_reason}
                       </p>
                     </div>

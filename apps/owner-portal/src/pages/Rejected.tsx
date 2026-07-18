@@ -26,7 +26,7 @@ export default function Rejected() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-ink-800 p-4">
       <div className="w-full max-w-md rounded-2xl bg-white dark:bg-ink-900 p-8 shadow-sm ring-1 ring-zinc-900/5 text-center">
-        <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+        <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/30">
           <svg className="h-6 w-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -38,7 +38,7 @@ export default function Rejected() {
         </p>
 
         {error && (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
             {error}
           </div>
         )}

@@ -52,17 +52,23 @@ def get_current_user(
     token = _extract_bearer_token(authorization)
     provider_user = _auth_provider.verify_token(token)
 
-    profile = (
-        db.query(Profile)
+    # Single round trip for both profile and roles (outer join — a profile
+    # with no role rows yet still comes back as one row with a null role).
+    rows = (
+        db.query(Profile, UserRoleAssignment.role)
+        .outerjoin(UserRoleAssignment, UserRoleAssignment.user_id == Profile.id)
         .filter(
             Profile.id == provider_user.id,
             Profile.deleted_at.is_(None),
         )
-        .first()
+        .all()
     )
 
-    if not profile:
+    if not rows:
         raise ForbiddenError("Account not found")
+
+    profile = rows[0][0]
+    roles = [role.value for _, role in rows if role is not None]
 
     if profile.status == ProfileStatus.suspended:
         raise ForbiddenError("Account suspended")
@@ -78,12 +84,6 @@ def get_current_user(
     # Keep email in profiles in sync with the authoritative JWT value
     if provider_user.email and profile.email != provider_user.email:
         profile.email = provider_user.email
-
-    role_rows = (
-        db.query(UserRoleAssignment).filter(UserRoleAssignment.user_id == provider_user.id).all()
-    )
-
-    roles = [r.role.value for r in role_rows]
 
     # Every account carries 'customer' as a baseline role (see CLAUDE.md role
     # model). Accounts created before the signup trigger existed, or via

@@ -180,7 +180,7 @@ def seed_approved_venue(db: Session, owner_id: UUID, category_id: UUID) -> UUID:
             max_capacity=100,
             open_time=dt_time(9, 0),
             close_time=dt_time(21, 0),
-            allowed_booking_types=["full_day"],
+            allowed_booking_types=["full_day", "time_slot"],
             min_booking_duration_minutes=60,
             max_booking_duration_minutes=1440,
             slot_interval_minutes=30,

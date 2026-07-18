@@ -1,5 +1,7 @@
 # Deployment
 
+**Status:** Shipped — verified against code, 2026-07-17 (`render.yaml` confirmed present in the repo root; no `fly.toml` exists — Render is the current, live hosting target, superseding an earlier Fly.io plan referenced in older docs)
+
 API → **Render**, the three React apps → **Vercel**. Both deploy automatically on
 push to `main` via each platform's native Git integration. CI
 (`.github/workflows/ci.yml`) runs on every PR and is the merge gate — enable
@@ -66,7 +68,8 @@ One-time:
    FRONTEND_BASE_URL=https://app.yourdomain.com
    CORS_ORIGINS=https://user-web.vercel.app,https://owner-portal.vercel.app,https://admin-panel.vercel.app
    JOB_RUNNER_TOKEN=<long random secret>
-   # plus super-admin / Cloudinary vars as needed
+   SENTRY_DSN=https://...@sentry.io/...
+   # plus super-admin / Cloudinary / Groq / Jina / Upstash vars as needed
    ```
    `ENABLE_JOBS` is set to `false` in `render.yaml` — the in-process scheduler
    stays off; jobs run via the scheduled workflow below.

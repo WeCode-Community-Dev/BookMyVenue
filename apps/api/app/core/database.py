@@ -1,5 +1,7 @@
+from collections.abc import Generator
 from contextlib import contextmanager
 
+from fastapi import Request
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
@@ -28,12 +30,24 @@ class Base(DeclarativeBase):
     pass
 
 
-def get_db():
-    """FastAPI request-scoped session dependency."""
+def get_db(request: Request) -> Generator[Session, None, None]:
+    """FastAPI request-scoped session dependency.
+
+    Commits unconditionally for mutating HTTP verbs (unchanged behavior).
+    For GET/HEAD/OPTIONS, skips the commit — and the WAL-flushing round trip
+    that comes with it — as long as the session tracked no ORM writes;
+    routes that mutate state from a GET (there shouldn't be any, but this
+    guards against it) still get committed.
+    """
     db = SessionLocal()
     try:
         yield db
-        db.commit()
+        is_read_only_verb = request.method in ("GET", "HEAD", "OPTIONS")
+        session_is_clean = not (db.dirty or db.new or db.deleted)
+        if is_read_only_verb and session_is_clean:
+            db.rollback()
+        else:
+            db.commit()
     except Exception:
         db.rollback()
         raise

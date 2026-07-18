@@ -20,3 +20,8 @@ class AuthMeResponse(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     email: str
     redirect_to: str
+
+
+class SendConfirmationRequest(BaseModel):
+    email: str
+    redirect_to: str

@@ -1,5 +1,7 @@
 # Chat Feature
 
+**Status:** Shipped — verified against code, 2026-07-17
+
 Booking-scoped real-time messaging between customers and venue owners.
 
 This document describes the **current implementation** (API, WebSocket protocol, data model, and frontends).

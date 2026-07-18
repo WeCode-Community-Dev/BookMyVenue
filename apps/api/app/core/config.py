@@ -14,13 +14,6 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""
     stripe_currency: str = "inr"
 
-    # Signing secret for Supabase's "Send Email" Auth Hook (Standard Webhooks
-    # format, e.g. "v1,whsec_..."). Configured in supabase/config.toml
-    # ([auth.hook.send_email]) to point at /api/auth/hooks/send-email, so we
-    # send confirmation/recovery emails ourselves instead of via Supabase's
-    # own mailer (same reason as request_password_reset).
-    supabase_auth_hook_secret: str = ""
-
     @property
     def is_production(self) -> bool:
         return self.environment.lower() == "production"

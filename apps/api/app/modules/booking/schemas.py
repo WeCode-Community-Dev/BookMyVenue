@@ -10,7 +10,7 @@ BookingTypeValue = Literal["full_day", "time_slot"]
 class BookingRequestIn(BaseModel):
     venue_id: UUID
     venue_name: str
-    venue_cover_image: str | None
+    venue_cover_image: str | None = None
     booking_type: BookingTypeValue
     starts_at: datetime | None = None
     ends_at: datetime | None = None
