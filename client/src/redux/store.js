@@ -8,8 +8,6 @@ import VendorVenueSlice from './slices/VendorVenueSlice';
 import VendorDashboardSlice from './slices/VendorDashboardSlice'
 import VendorBookingSlice from './slices/VendorBookingSlice'
 import VendorProfileSlice from './slices/VendorProfileSlice'
-import adminUserSlice from './slices/AdminUserSlice'
-import adminVendorSlice from './slices/AdminvendorSlice'
 import adminVenueSlice from './slices/AdminVenueSlice'
 
 export const store = configureStore({
