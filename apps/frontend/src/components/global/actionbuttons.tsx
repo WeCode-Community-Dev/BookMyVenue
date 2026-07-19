@@ -1,5 +1,6 @@
 "use client";
 
+import { AppText } from "@/lib/language/LanguageHelper";
 import { venueStyle } from "@/features/venues/styles/VenueStyle";
 
 export default function ActionButtons() {
@@ -10,14 +11,14 @@ export default function ActionButtons() {
                     type="button"
                     className={venueStyle.buttonSaveDraft}
                 >
-                    Save Draft
+                    {AppText({ textName: "SAVE_DRAFT", textModule: "BUTTON" })}
                 </button>
 
                 <button
                     type="submit"
                     className={venueStyle.buttonSaveContinue}
                 >
-                    Save & Continue
+                    {AppText({ textName: "SUBMIT_CONTINUE", textModule: "BUTTON" })}
                 </button>
             </div>
         </div>

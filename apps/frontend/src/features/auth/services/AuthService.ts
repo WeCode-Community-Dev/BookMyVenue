@@ -86,7 +86,7 @@ export const useAuthService = () => {
         const url = `${BASE_URL}${path}`;
 
         const headers: HeadersInit = {
-            "Content-Type": "application/json",
+            ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
             ...(options.headers || {}),
         };
 
@@ -276,5 +276,6 @@ export const useAuthService = () => {
         googleAuthCallback,
         loginWithGoogle,
         logout,
+        apiFetch,
     };
 };
