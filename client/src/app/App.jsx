@@ -66,6 +66,9 @@ const BookingManagement = lazy(() =>
 const PaymentManagement = lazy(() =>
   import("@/presentation/pages/admin/PaymentManagement")
 );
+const PaymentDetails = lazy(() => 
+  import("@/presentation/pages/admin/PaymentDetails")
+)
 
 const CategoryManagement = lazy(() =>
   import("@/presentation/pages/admin/CategoryManagement")
@@ -131,8 +134,12 @@ function App() {
             />
 
             <Route
-              path="payments"
+              path={ROUTES.ADMIN.PAYMENTS}
               element={<PaymentManagement />}
+            />
+            <Route
+              path={ROUTES.ADMIN.PAYMENT_DETAILS}
+              element={<PaymentDetails />}
             />
 
             <Route

@@ -30,7 +30,8 @@ export const ROUTES = {
         VENUE_DETAILS: "venues/:venueId",
         BOOKINGS: "bookings",
         BOOKING_DETAIL: "bookings/:bookingId",
-        PAYMENTS: "/admin/payments",
+        PAYMENTS: "payments",
+        PAYMENT_DETAILS:"payments/:paymentId",
         CATEGORIES: "/admin/categories",
     }
 }
