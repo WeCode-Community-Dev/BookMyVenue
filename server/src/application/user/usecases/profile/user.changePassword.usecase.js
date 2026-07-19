@@ -17,22 +17,22 @@ export class UserChangePasswordUsecase {
 
     const isPasswordCorrect = await this._hashService.compare(
       currentPassword,
-      newPassword
+      user.password
     );
     if (!isPasswordCorrect) {
       throw new ValidationError(UserMessage.error.INVALID_CURRENT_PASSWORD);
     }
 
-    const samePassword = await this._hashService.compare({
-      currentPassword,
+    const samePassword = await this._hashService.compare(
       newPassword,
-    });
+      user.password,
+    );
     if (samePassword) {
       throw new ValidationError(UserMessage.error.SAME_PASSWORD);
     }
 
     const hashedPassword = await this._hashService.hash(newPassword);
-    await this.userRepository.upadatePassword(userId, hashedPassword);
+    await this._userRepository.updatePassword(userId, hashedPassword);
     return null;
   }
 }
