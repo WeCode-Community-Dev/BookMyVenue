@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 import Header from "@/presentation/components/common/Header";
 import UserSidebar from "@/presentation/components/user/UserSidebar";
@@ -11,8 +12,11 @@ import {
   removeWishlist,
 } from "@/redux/slices/UserWishlistSlice";
 
+
 const Wishlist = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
 
   const { wishlist, loading, error } = useSelector(
     (state) => state.userWishlist
@@ -107,6 +111,14 @@ const Wishlist = () => {
                 <p className="text-gray-500 mt-2">
                   Save your favourite venues here.
                 </p>
+
+                <button
+      onClick={() => navigate("/user/venues")}
+      className="mt-8 rounded-xl bg-amber-500 px-8 py-3 font-semibold text-white transition hover:bg-amber-600"
+    >
+      Browse Venues
+    </button>
+
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">

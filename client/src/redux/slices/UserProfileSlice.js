@@ -72,6 +72,24 @@ export const updateProfileImage = createAsyncThunk(
   }
 );
 
+export const removeProfileImage = createAsyncThunk(
+  "userProfile/removeProfileImage",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(
+        API_ROUTES.USER.PROFILE.PROFILE_IMAGE
+      );
+
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+        "Failed to remove profile image"
+      );
+    }
+  }
+);
+
 export const requestEmailChangeOtp = createAsyncThunk(
   "user/requestEmailChangeOtp",
   async (newEmail, { rejectWithValue }) => {
@@ -183,6 +201,22 @@ const UserProfileSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
+      //REMOVE PROFILE IMAGE
+      .addCase(removeProfileImage.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+    })
+    
+    .addCase(removeProfileImage.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+    })
+    
+    .addCase(removeProfileImage.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+    })
 
       // Verify OTP
 
