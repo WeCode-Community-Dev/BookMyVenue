@@ -54,6 +54,9 @@ const VenueManagement = lazy(() =>
 /*const VenueDetails = lazy(() => 
   import("@/presentation/pages/admin/VenueDetails")
 )*/
+const BookingDetails = lazy(() => 
+  import("@/presentation/pages/admin/BookingDetails")
+)
 
 const BookingManagement = lazy(() =>
   import("@/presentation/pages/admin/BookingManagement")
@@ -62,6 +65,9 @@ const BookingManagement = lazy(() =>
 const PaymentManagement = lazy(() =>
   import("@/presentation/pages/admin/PaymentManagement")
 );
+const PaymentDetails = lazy(() => 
+  import("@/presentation/pages/admin/PaymentDetails")
+)
 
 const CategoryManagement = lazy(() =>
   import("@/presentation/pages/admin/CategoryManagement")
@@ -93,7 +99,7 @@ function App() {
           <Route path="/admin" element={<AdminLayout />}>
 
             <Route
-              path="dashboard"
+              path={ROUTES.ADMIN.DASHBOARD}
               element={<AdminDashboard />}
             />
 
@@ -118,13 +124,21 @@ function App() {
             />
 
             <Route
-              path="bookings"
+              path={ROUTES.ADMIN.BOOKINGS}
               element={<BookingManagement />}
+            />
+            <Route
+              path={ROUTES.ADMIN.BOOKING_DETAIL}
+              element={<BookingDetails />}
             />
 
             <Route
-              path="payments"
+              path={ROUTES.ADMIN.PAYMENTS}
               element={<PaymentManagement />}
+            />
+            <Route
+              path={ROUTES.ADMIN.PAYMENT_DETAILS}
+              element={<PaymentDetails />}
             />
 
             <Route

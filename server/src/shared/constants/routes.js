@@ -55,14 +55,15 @@ export const ROUTES = {
         VENUE: {
             CREATE: '/venue',
             EDIT: '/venue/:venueId',
-            GET_BY_ID: '/venue/:venueId/:ownerId',
+            GET_BY_ID: '/venue/:venueId/:vendorId',
             GET_ALL: '/venues',
-            DELETE: '/venue/:venueId/:ownerId',
-            UPDATE_STATUS: '/venue/:venueId/:ownerId/status'
+            DELETE: '/venue/:venueId/:vendorId',
+            UPDATE_STATUS: '/venue/:venueId/:vendorId/status'
         },
         PROFILE: {
             GET: '/profile',
-            UPDATE: '/profile'
+            UPDATE: '/profile',
+            CHANGE_PASSWORD: '/change-password'
         },
         BOOKING: {
 
@@ -96,6 +97,7 @@ export const ROUTES = {
             VERIFY_EMAIL_CHANGE_OTP: "/profile/email/verify-otp",
             RESEND_EMAIL_CHANGE_OTP: "/profile/email/resend-otp",
             PROFILE_IMAGE: "/profile/image",
+            CHANGE_PASSWORD: "/profile/change-password"
         },
         WISHLIST: {
             WISHLIST: "/wishlist/:venueId",
@@ -104,6 +106,7 @@ export const ROUTES = {
         ACCOUNT: {
             UPDATE_STATUS: "/account/status",
         },
+
     }
    
 }

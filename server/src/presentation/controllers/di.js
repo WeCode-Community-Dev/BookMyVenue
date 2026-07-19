@@ -89,6 +89,8 @@ import { AdminRepository } from '../../infrastructure/repositories/admin.reposit
 import { AdminAuthController } from './admin/admin.authController.js'
 import { AdminLogoutUseCase } from '../../application/admin/usecases/auth/admin.logOut.usecase.js'
 import { AdminRefreshTokenUseCase } from '../../application/admin/usecases/auth/admin.refreshToken.usecase.js'
+import { ChangeVendorPasswordUsecase } from '../../application/vendor/usecases/profile/changeVendorPassword.usecase.js'
+import { UserChangePasswordUsecase } from '../../application/user/usecases/profile/user.changePassword.usecase.js'
 
 //repository
 const iVenueRepository = new VenueRepository();
@@ -269,6 +271,7 @@ const iUpdateVendorProfileUsecase = new VendorUpdateProfileUsecase(iVendorReposi
 const getVendorBookingsUsecase = new GetVendorBookingsUsecase(bookingRepository)
 const getBookingByIdUsecase = new GetBookingByIdUsecase(bookingRepository)
 const getDashboardStatsUsecase = new GetDashboardStatsUsecase(iVenueRepository, bookingRepository)
+const changeVendorPasswordUsecase = new ChangeVendorPasswordUsecase(iVendorRepository, iHashService)
 
 // --- user usecases ---
 const iUserGetAllVenues = new UserGetAllVenuesUsecase(iVenueRepository)
@@ -319,6 +322,7 @@ const iUserUpdateProfileImage = new UserUpdateProfileImageUsecase(
 const iUserRemoveProfileImage = new UserRemoveProfileImageUsecase(
     iUserRepository
 )
+const userChangePasswordUsecase = new UserChangePasswordUsecase(iUserRepository, iHashService)
 
 // --- controllers ---
 export const iVendorVenueController = new VendorVenueController(
@@ -354,7 +358,8 @@ export const iUserVenueController = new UserVenueController (
 )
 export const iVendorProfileController = new VendorProfileController(
     iGetVendorProfileUsecase,
-    iUpdateVendorProfileUsecase
+    iUpdateVendorProfileUsecase,
+    changeVendorPasswordUsecase
 )
 
 //--
@@ -369,7 +374,8 @@ export const iUserProfileController = new UserProfileController(
     iVerifyEmailChangeOtp,
     iResendEmailChangeOtp,
     iUserUpdateProfileImage,
-    iUserRemoveProfileImage
+    iUserRemoveProfileImage,
+    userChangePasswordUsecase
    
 )
 export const iUserWishlistController = new UserWishlistController(

@@ -3,7 +3,7 @@ import { ROUTES } from '../../../shared/constants/routes.js'
 import { VenueParamsSchema, VenueQuerySchema } from '../../validators/VenderVenue.validator.js'
 import { iUserVenueController, iUserProfileController } from '../../controllers/di.js'
 import { validate } from '../../middlewares/validator.js'
-import { updateProfileSchema } from '../../validators/UserProfie.validator.js'
+import { updateProfileSchema, userChangePasswordSchema  } from '../../validators/UserProfie.validator.js'
 import { RequestEmailChangeOtpSchema,verifyEmailOtpSchema } from '../../validators/UserProfie.validator.js'
 import { WishlistParamsSchema } from "../../validators/UserWishlist.validator.js";
 import { iUserWishlistController } from "../../controllers/di.js";
@@ -56,6 +56,11 @@ router.patch(
 router.delete(
     ROUTES.USER.PROFILE.PROFILE_IMAGE,
     iUserProfileController.removeProfileImage
+)
+router.patch(
+    ROUTES.USER.PROFILE.CHANGE_PASSWORD,
+    validate(userChangePasswordSchema, "body"),
+    iUserProfileController.changePassword
 )
 
 //wishlist
