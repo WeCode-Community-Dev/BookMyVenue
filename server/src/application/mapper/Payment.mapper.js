@@ -9,7 +9,17 @@ export class PaymentMapper {
 
             id: document._id.toString(),
 
-            bookingId: document.bookingId,
+            bookingId: document.bookingId
+                ? {
+                    id: document.bookingId._id?.toString(),
+                    bookingDate: document.bookingId.bookingDate,
+                    startTime: document.bookingId.startTime,
+                    endTime: document.bookingId.endTime,
+                    totalAmount: document.bookingId.totalAmount,
+                    status: document.bookingId.status,
+                    paymentStatus: document.bookingId.paymentStatus,
+                }
+                : null,
 
             userId: document.userId,
 
@@ -59,7 +69,9 @@ export class PaymentMapper {
 
             refundReason: entity.refundReason,
 
-            refundedAt: entity.refundedAt
+            refundedAt: entity.refundedAt,
+            createdAt: entity.createdAt,
+            updatedAt: entity.updatedAt
 
         };
 
