@@ -1,5 +1,6 @@
 "use client";
 
+import { SCREENS } from "@/lib/Constants";
 import { getText } from "@/lib/language/LanguageHelper";
 import { useLanguage } from "@/store/AppConfigReducer";
 import { useRouter } from "next/navigation";
@@ -18,7 +19,7 @@ export default function ActionButtons({ onCancel }: ActionButtonsProps) {
         if (onCancel) {
             onCancel();
         } else {
-            router.push("/venues");
+            router.push(SCREENS.VENUES);
         }
     };
 

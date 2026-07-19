@@ -8,6 +8,7 @@ import BasicInfo from "./BasicInfo";
 import CapacityAndPricing from "./CapacityAndPricing";
 import LocationForm from "@/components/global/LocationForm";
 import PhotoUpload from "@/components/global/PhotoUpload";
+import { SCREENS } from "@/lib/Constants";
 import VenueHeader from "@/components/global/venueheader";
 import VerifyBooking from "@/components/global/booking/VerifyBooking";
 import { getText } from "@/lib/language/LanguageHelper";
@@ -239,7 +240,7 @@ const AddVenue = () => {
                 body: formData,
             });
 
-            router.push("/venues");
+            router.push(SCREENS.VENUES);
         } catch (errorObj: any) {
             console.error(errorObj);
             setErrorMsg(errorObj.message || tv("ERR_CREATE_FAILED"));

@@ -3,6 +3,7 @@
 import { ArrowLeft, Check } from "lucide-react";
 
 import Link from "next/link";
+import { SCREENS } from "@/lib/Constants";
 import clsx from "clsx";
 
 const steps = [
@@ -24,7 +25,7 @@ export default function BookingStepper({
             {/* Back Button */}
             <div className="ml-0">
                 <Link
-                    href="/venues"
+                    href={SCREENS.VENUES}
                     className="ml-0 flex items-center gap-2 text-sm font-medium text-teal-700 hover:text-teal-800"
                 >
                     <ArrowLeft size={18} />

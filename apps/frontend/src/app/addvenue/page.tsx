@@ -3,6 +3,7 @@
 import { selectAuthLoading, selectIsAuthenticated } from "@/features/auth/AuthSlice";
 
 import AddVenue from "@/features/venues/components/AddVenue";
+import { SCREENS } from "@/lib/Constants";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
@@ -14,7 +15,7 @@ const AddVenuePage = () => {
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
-            router.replace("/venues");
+            router.replace(SCREENS.VENUES);
         }
     }, [
         loading, isAuthenticated, router

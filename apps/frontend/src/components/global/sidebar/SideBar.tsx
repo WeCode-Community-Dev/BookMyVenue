@@ -32,7 +32,7 @@ export default function Sidebar() {
             icon: LayoutDashboard,
             label: "DASHBOARD",
             active: false,
-            path: ""
+            path: SCREENS.VENUES
         },
         {
             icon: CirclePlus,
