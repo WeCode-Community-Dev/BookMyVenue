@@ -1,5 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getDashboardStatsService } from "@/services/vendor/dashboardService";
+import api from "@/lib/axios";
+import { API_ROUTES } from "@/constants/apiRoutes";
+
+// ==============================
+// INITIAL STATE
+// ==============================
 
 const initialState = {
   loading: false,
@@ -7,19 +12,32 @@ const initialState = {
   error: null,
 };
 
+// ==============================
+// GET VENDOR DASHBOARD
+// ==============================
+
 export const fetchDashboard = createAsyncThunk(
   "vendorDashboard/fetchDashboard",
+
   async (_, { rejectWithValue }) => {
     try {
-      const response = await getDashboardStatsService();
-      return response.data;
+      const response = await api.get(
+        API_ROUTES.VENDOR.DASHBOARD
+      );
+
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch dashboard"
+        error.response?.data?.message ||
+          "Failed to fetch dashboard"
       );
     }
   }
 );
+
+// ==============================
+// SLICE
+// ==============================
 
 const VendorDashboardSlice = createSlice({
   name: "vendorDashboard",
@@ -30,6 +48,11 @@ const VendorDashboardSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
+
+      // ==========================
+      // GET DASHBOARD
+      // ==========================
+
       .addCase(fetchDashboard.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -37,7 +60,9 @@ const VendorDashboardSlice = createSlice({
 
       .addCase(fetchDashboard.fulfilled, (state, action) => {
         state.loading = false;
-        state.dashboard = action.payload;
+
+        state.dashboard =
+          action.payload;
       })
 
       .addCase(fetchDashboard.rejected, (state, action) => {
@@ -48,3 +73,4 @@ const VendorDashboardSlice = createSlice({
 });
 
 export default VendorDashboardSlice.reducer;
+

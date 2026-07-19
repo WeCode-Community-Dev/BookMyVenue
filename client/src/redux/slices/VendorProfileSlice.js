@@ -1,41 +1,67 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import {
-  getVendorProfileService,
-  updateVendorProfileService,
-} from "@/services/vendor/profileService";
+import api from "@/lib/axios";
+import { API_ROUTES } from "@/constants/apiRoutes";
+
+// ==============================
+// INITIAL STATE
+// ==============================
 
 const initialState = {
   loading: false,
-  updating: false,
   profile: null,
   error: null,
 };
 
+// ==============================
+// FETCH VENDOR PROFILE
+// ==============================
+
 export const fetchVendorProfile = createAsyncThunk(
   "vendorProfile/fetchVendorProfile",
+
   async (_, { rejectWithValue }) => {
     try {
-      return await getVendorProfileService();
+      const response = await api.get(
+        API_ROUTES.VENDOR.PROFILE
+      );
+
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch profile"
+        error.response?.data?.message ||
+          "Failed to fetch profile"
       );
     }
   }
 );
 
+// ==============================
+// UPDATE VENDOR PROFILE
+// ==============================
+
 export const updateVendorProfile = createAsyncThunk(
   "vendorProfile/updateVendorProfile",
+
   async (profileData, { rejectWithValue }) => {
     try {
-      return await updateVendorProfileService(profileData);
+      const response = await api.patch(
+        API_ROUTES.VENDOR.PROFILE,
+        profileData
+      );
+
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to update profile"
+        error.response?.data?.message ||
+          "Failed to update profile"
       );
     }
   }
 );
+
+// ==============================
+// SLICE
+// ==============================
 
 const vendorProfileSlice = createSlice({
   name: "vendorProfile",
@@ -47,7 +73,10 @@ const vendorProfileSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // Fetch Profile
+      // ==========================
+      // FETCH PROFILE
+      // ==========================
+
       .addCase(fetchVendorProfile.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -55,7 +84,9 @@ const vendorProfileSlice = createSlice({
 
       .addCase(fetchVendorProfile.fulfilled, (state, action) => {
         state.loading = false;
-        state.profile = action.payload.data;
+
+        state.profile =
+          action.payload;
       })
 
       .addCase(fetchVendorProfile.rejected, (state, action) => {
@@ -63,19 +94,24 @@ const vendorProfileSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Update Profile
+      // ==========================
+      // UPDATE PROFILE
+      // ==========================
+
       .addCase(updateVendorProfile.pending, (state) => {
-        state.updating = true;
+        state.loading = true;
         state.error = null;
       })
 
       .addCase(updateVendorProfile.fulfilled, (state, action) => {
-        state.updating = false;
-        state.profile = action.payload.data;
+        state.loading = false;
+
+        state.profile =
+          action.payload;
       })
 
       .addCase(updateVendorProfile.rejected, (state, action) => {
-        state.updating = false;
+        state.loading = false;
         state.error = action.payload;
       });
   },
