@@ -38,7 +38,7 @@ export default function ActionButtons({ onCancel }: ActionButtonsProps) {
                     type="submit"
                     className={venueStyle.buttonSaveContinue}
                 >
-                    {getText("SUBMIT_CONTINUE", "BUTTON")}
+                    {getText("SUBMIT", "BUTTON")}
                 </button>
             </div>
         </div>
