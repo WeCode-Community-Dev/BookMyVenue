@@ -16,6 +16,7 @@ export const UserMessage = {
         WISHLIST_REMOVED: "Venue removed from wishlist successfully",
         PROFILE_FETCHED: "Profile fetched successfully",
         WISHLIST_FETCHED: "Wishlist fetched successfully",
+        PASSWORD_CHANGED:"Password changed successfully",
     },
 
     error: {
@@ -40,6 +41,9 @@ export const UserMessage = {
         USER_BLOCKED_UPDATE_ACCOUNT_STATUS:"Blocked users cannot update account status",
         ACCOUNT_ALREADY_ACTIVE: "Account is already active",
         ACCOUNT_ALREADY_INACTIVE: "Account is already inactive",
+        INVALID_CURRENT_PASSWORD:"Current password is incorrect",
+        PASSWORD_MISMATCH:"New password and confirm password do not match",
+        SAME_PASSWORD:"New password cannot be the same as the current password",
         
     }
 };
