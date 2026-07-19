@@ -1,7 +1,9 @@
 "use client";
 
-import { AppText } from "@/lib/language/LanguageHelper";
+import { getText } from "@/lib/language/LanguageHelper";
+import { useLanguage } from "@/store/AppConfigReducer";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 import { venueStyle } from "@/features/venues/styles/VenueStyle";
 
 interface ActionButtonsProps {
@@ -10,6 +12,7 @@ interface ActionButtonsProps {
 
 export default function ActionButtons({ onCancel }: ActionButtonsProps) {
     const router = useRouter();
+    useSelector(useLanguage);
 
     const handleCancel = () => {
         if (onCancel) {
@@ -27,14 +30,14 @@ export default function ActionButtons({ onCancel }: ActionButtonsProps) {
                     onClick={handleCancel}
                     className={venueStyle.buttonSaveDraft}
                 >
-                    {AppText({ textName: "CANCEL", textModule: "BUTTON" })}
+                    {getText("CANCEL", "BUTTON")}
                 </button>
 
                 <button
                     type="submit"
                     className={venueStyle.buttonSaveContinue}
                 >
-                    {AppText({ textName: "SUBMIT_CONTINUE", textModule: "BUTTON" })}
+                    {getText("SUBMIT_CONTINUE", "BUTTON")}
                 </button>
             </div>
         </div>

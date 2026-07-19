@@ -3,7 +3,7 @@
 import { CheckSquare, Plus } from "lucide-react";
 
 import { AmmenitiesProps } from "@/types/AddVenue";
-import { AppText } from "@/lib/language/LanguageHelper";
+import { getText } from "@/lib/language/LanguageHelper";
 import { useLanguage } from "@/store/AppConfigReducer";
 import { useSelector } from "react-redux";
 import { venueStyle } from "@/features/venues/styles/VenueStyle";
@@ -48,7 +48,7 @@ export default function Ammenities({
                 <CheckSquare className={venueStyle.headerIcon} />
 
                 <h2 className={venueStyle.headerTitle}>
-                    {AppText({ textName: "HEADING", textModule: "AMENITIES" })}
+                    {getText("HEADING", "AMENITIES")}
                 </h2>
             </div>
 
@@ -70,7 +70,7 @@ export default function Ammenities({
                             />
 
                             <span>
-                                {AppText({ textName: key, textModule: "AMENITIES" })}
+                                {getText(key, "AMENITIES")}
                             </span>
                         </label>
                     );
@@ -83,7 +83,7 @@ export default function Ammenities({
                 className={venueStyle.buttonSecondary}
             >
                 <Plus className="h-4 w-4" />
-                {AppText({ textName: "ADD_MORE_AMENITIES", textModule: "BUTTON" })}
+                {getText("ADD_MORE_AMENITIES", "BUTTON")}
             </button>
         </div>
     );

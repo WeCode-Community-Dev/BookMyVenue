@@ -1,14 +1,14 @@
 "use client";
 
-import { AppText } from "@/lib/language/LanguageHelper";
 import { BasicInfoProps } from "@/types/AddVenue";
 import { Info } from "lucide-react";
+import { getText } from "@/lib/language/LanguageHelper";
 import { useLanguage } from "@/store/AppConfigReducer";
 import { useSelector } from "react-redux";
 import { venueStyle } from "../styles/VenueStyle";
 
 const txt = (textName: string) => {
-    return AppText({ textName, textModule: "BASIC_INFO" }); 
+    return getText(textName, "BASIC_INFO"); 
 };
 
 const MAX_DESC_LENGTH = 2000;

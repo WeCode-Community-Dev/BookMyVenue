@@ -2,14 +2,14 @@
 
 import { MapPin, Search } from "lucide-react";
 
-import { AppText } from "@/lib/language/LanguageHelper";
 import { LocationFormProps } from "@/types/AddVenue";
+import { getText } from "@/lib/language/LanguageHelper";
 import { useLanguage } from "@/store/AppConfigReducer";
 import { useSelector } from "react-redux";
 import { venueStyle } from "@/features/venues/styles/VenueStyle";
 
 const txt = (textName: string) => {
-    return AppText({ textName, textModule: "LOCATION" }); 
+    return getText(textName, "LOCATION"); 
 };
 
 export default function LocationForm({

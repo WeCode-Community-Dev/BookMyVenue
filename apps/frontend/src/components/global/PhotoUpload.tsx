@@ -2,16 +2,16 @@
 
 import { Plus, Upload } from "lucide-react";
 
-import { AppText } from "@/lib/language/LanguageHelper";
 import NextImage from "next/image";
 import { PhotoUploadProps } from "@/types/AddVenue";
+import { getText } from "@/lib/language/LanguageHelper";
 import { useLanguage } from "@/store/AppConfigReducer";
 import { useRef } from "react";
 import { useSelector } from "react-redux";
 import { venueStyle } from "@/features/venues/styles/VenueStyle";
 
 const txt = (textName: string) => {
-    return AppText({ textName, textModule: "PHOTOS" }); 
+    return getText(textName, "PHOTOS"); 
 };
 
 export default function PhotoUpload({ files, setFiles }: PhotoUploadProps) {

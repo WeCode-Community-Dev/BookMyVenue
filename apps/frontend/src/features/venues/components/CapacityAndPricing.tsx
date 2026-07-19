@@ -3,14 +3,14 @@
 import { CapacityAndPricingProps, PricingTier, SlotTemplate } from "@/types/AddVenue";
 import { Clock, Plus, Trash2, Users } from "lucide-react";
 
-import { AppText } from "@/lib/language/LanguageHelper";
 import React from "react";
+import { getText } from "@/lib/language/LanguageHelper";
 import { useLanguage } from "@/store/AppConfigReducer";
 import { useSelector } from "react-redux";
 import { venueStyle } from "@/features/venues/styles/VenueStyle";
 
 const txt = (textName: string) => {
-    return AppText({ textName, textModule: "CAPACITY_PRICING" }); 
+    return getText(textName, "CAPACITY_PRICING"); 
 };
 
 export default function CapacityAndPricing({

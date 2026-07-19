@@ -6,6 +6,7 @@ import {
     Menu,
     X,
 } from "lucide-react";
+import { selectIsAuthenticated, selectUser } from "@/features/auth/AuthSlice";
 import { useEffect, useRef, useState } from "react";
 
 import { AppText } from "@/lib/language/LanguageHelper";
@@ -13,10 +14,8 @@ import { Button } from "@/components/ui/button/Button";
 import NxtImage from "next/image";
 import ProfileDropdown from "../dropdown/ProfileDropdown";
 import { headerStyle } from "./HeaderStyles";
-
-import { useSelector } from "react-redux";
-import { selectIsAuthenticated, selectUser } from "@/features/auth/AuthSlice";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 
 export default function Header() {
     const user = useSelector(selectUser);
@@ -78,6 +77,7 @@ export default function Header() {
                                 alt="BookMyVenue Logo"
                                 fill
                                 priority
+                                sizes="(max-width: 768px) 100vw, 280px"
                                 className="object-contain"
                             />
                         </div>
@@ -106,60 +106,63 @@ export default function Header() {
                     {/* Right */}
                     <div className={headerStyle.rightSection}>
 
-                        {isAuthenticated ? (
-                            <>
-                                {/* Notification */}
-                                <button className={headerStyle.notificationBtn}>
-                                    <Bell className="h-5 w-5 text-slate-700" />
+                        {isAuthenticated ?
+                            (
+                                <>
+                                    {/* Notification */}
+                                    <button className={headerStyle.notificationBtn}>
+                                        <Bell className="h-5 w-5 text-slate-700" />
 
-                                    <span
-                                        className={headerStyle.notificationBadge}
-                                        style={{ backgroundColor: "#FF6B6B" }}
+                                        <span
+                                            className={headerStyle.notificationBadge}
+                                            style={{ backgroundColor: "#FF6B6B" }}
+                                        >
+                                            3
+                                        </span>
+                                    </button>
+
+                                    {/* Profile */}
+                                    <div
+                                        ref={dropdownRef}
+                                        className={headerStyle.profileContainer}
                                     >
-                                        3
-                                    </span>
-                                </button>
+                                        <Button
+                                            onClick={() => {
+                                                return setProfileOpen((prev) => {
+                                                    return !prev;
+                                                });
+                                            }}
+                                            className={headerStyle.profileBtn}
+                                        >
+                                            <NxtImage
+                                                height={1}
+                                                width={1}
+                                                src={user?.avatarUrl || "https://i.pravatar.cc/100?img=12"}
+                                                alt="Profile"
+                                                className={headerStyle.avatar}
+                                            />
 
-                                {/* Profile */}
-                                <div
-                                    ref={dropdownRef}
-                                    className={headerStyle.profileContainer}
+                                            <ChevronDown
+                                                className={`${headerStyle.chevron} ${profileOpen ? "rotate-180" : ""
+                                                }`}
+                                            />
+                                        </Button>
+
+                                        <ProfileDropdown isOpen={profileOpen} />
+                                    </div>
+                                </>
+                            )
+                            :
+                            (
+                                <Button
+                                    onClick={() => {
+                                        return router.push("/register");
+                                    }}
+                                    className={headerStyle.signInBtn}
                                 >
-                                    <Button
-                                        onClick={() => {
-                                            return setProfileOpen((prev) => {
-                                                return !prev;
-                                            });
-                                        }}
-                                        className={headerStyle.profileBtn}
-                                    >
-                                        <NxtImage
-                                            height={1}
-                                            width={1}
-                                            src={user?.avatarUrl || "https://i.pravatar.cc/100?img=12"}
-                                            alt="Profile"
-                                            className={headerStyle.avatar}
-                                        />
-
-                                        <ChevronDown
-                                            className={`${headerStyle.chevron} ${profileOpen ? "rotate-180" : ""
-                                            }`}
-                                        />
-                                    </Button>
-
-                                    <ProfileDropdown isOpen={profileOpen} />
-                                </div>
-                            </>
-                        ) : (
-                            <Button
-                                onClick={() => {
-                                    return router.push("/register"); 
-                                }}
-                                className={headerStyle.signInBtn}
-                            >
-                                <AppText textName="SIGN_IN_SIGN_UP" textModule="BUTTON" />
-                            </Button>
-                        )}
+                                    <AppText textName="SIGN_IN_SIGN_UP" textModule="BUTTON" />
+                                </Button>
+                            )}
                     </div>
                 </div>
             </header>
