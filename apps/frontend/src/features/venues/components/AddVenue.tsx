@@ -5,7 +5,7 @@ import Ammenities from "@/components/global/Ammenities";
 import BasicInfo from "./BasicInfo";
 import CapacityAndPricing from "./CapacityAndPricing";
 import LocationForm from "@/components/global/LocationForm";
-import PhotoUpload from "@/components/global/PhotoUpload";
+import PhotoUpload from "@/components/global/PhotouUpload";
 import VenueHeader from "@/components/global/venueheader";
 import VerifyBooking from "@/components/global/booking/VerifyBooking";
 import { useState } from "react";
