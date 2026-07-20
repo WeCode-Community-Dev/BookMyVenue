@@ -1,5 +1,3 @@
-// VenueStats.jsx
-
 import React from "react";
 
 const VenueStats = ({ guests, price, bookings }) => {

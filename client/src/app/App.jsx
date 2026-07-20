@@ -22,14 +22,13 @@ const VenueList = lazy(() =>
 const Bookings = lazy(() =>
   import("@/presentation/pages/vendor/Bookings"))
 
-const Profile = lazy(() =>
-  import("@/presentation/pages/vendor/Profile"))
+const Profile = lazy(() => import("@/presentation/pages/vendor/Profile"));
 
-const AddVenue = lazy(() =>
-  import("@/presentation/pages/vendor/AddVenue"))
+const AddVenue = lazy(() => import("@/presentation/pages/vendor/AddVenue"));
 
-const Settings = lazy(() =>
-  import("@/presentation/pages/vendor/Settings"))
+const EditVenue = lazy(() => import("@/presentation/pages/vendor/EditVenue"));
+
+const Settings = lazy(() => import("@/presentation/pages/vendor/Settings"));
 
 // Admin Layout
 const AdminLayout = lazy(() =>

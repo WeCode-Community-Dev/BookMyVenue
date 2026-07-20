@@ -8,6 +8,10 @@ export class IUserRepository {
         throw new Error("Method not implemented");
     }
 
+    async updatePassword(id, password){
+        throw new Error("Methos not implemented");
+    }
+
     // Admin block/unblock user
     async updateBlockStatus(id, isBlocked) {
         throw new Error("Method not implemented");

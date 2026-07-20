@@ -1,29 +1,11 @@
 import { Button } from "@/components/ui/button";
 
-const FormActions = () => {
+const FormActions = ({ onPublish }) => {
   return (
-    <div className="flex justify-between mt-8">
-
-      <Button
-        variant="outline"
-      >
-        Back
+    <div className="flex justify-end mt-8">
+      <Button onClick={onPublish} className="bg-blue-600 text-white">
+        Publish Venue
       </Button>
-
-      <div className="flex gap-3">
-
-        <Button
-          variant="secondary"
-        >
-          Save Draft
-        </Button>
-
-        <Button>
-          Continue
-        </Button>
-
-      </div>
-
     </div>
   );
 };
