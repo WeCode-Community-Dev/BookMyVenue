@@ -47,4 +47,12 @@ export class UsersService {
   async findAll(): Promise<User[]> {
     return this.userModel.find().exec();
   }
+
+  async updateStatus(id: string, status: string): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(id, { status }, { new: true }).exec();
+  }
+
+  async updateProfile(id: string, name: string, phoneNumber: string): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(id, { name, phoneNumber }, { new: true }).exec();
+  }
 }

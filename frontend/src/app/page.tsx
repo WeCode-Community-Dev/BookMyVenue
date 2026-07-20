@@ -5,6 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/axios";
+import CustomerPage from "./(customer)/page";
+import { LoginPromptModal } from "@/components/auth/login-prompt-modal";
+import { VenueSlotsModal } from "@/components/booking/venue-slots-modal";
+
 
 interface Venue {
   id: string;
@@ -19,6 +23,133 @@ interface Venue {
   amenities: string[];
   featured?: boolean;
 }
+
+const packagePriceCache = new Map<string, number | null>();
+
+const getMinPackagePrice = (venue: any): number | null => {
+  const venueId = venue.id || venue._id || '';
+  if (venueId && packagePriceCache.has(venueId)) {
+    return packagePriceCache.get(venueId)!;
+  }
+
+  const avail = venue.availability || venue.weeklyAvailability;
+  if (!avail) {
+    if (venueId) packagePriceCache.set(venueId, null);
+    return null;
+  }
+  
+  let minPrice: number | null = null;
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  
+  for (const day of days) {
+    const dayData = avail[day];
+    if (dayData && dayData.isOpen && dayData.slots && Array.isArray(dayData.slots)) {
+      for (const slot of dayData.slots) {
+        if (slot && typeof slot.price === 'number' && slot.price > 0) {
+          if (minPrice === null || slot.price < minPrice) {
+            minPrice = slot.price;
+          }
+        }
+      }
+    }
+  }
+
+  if (venueId) packagePriceCache.set(venueId, minPrice);
+  return minPrice;
+};
+
+const renderPricingSection = (venue: any) => {
+  const bookingModes = venue.bookingModes || {};
+  const hasAnyModeDefined = 'hourlyBooking' in bookingModes || 'fixedSlots' in bookingModes || 'customRequests' in bookingModes;
+  
+  const isHourly = hasAnyModeDefined 
+    ? !!bookingModes.hourlyBooking 
+    : !!(venue.pricePerHour || venue.hourlyBookingConfiguration?.pricePerHour);
+  
+  const isPackages = hasAnyModeDefined
+    ? !!bookingModes.fixedSlots
+    : !!(venue.availability || venue.weeklyAvailability);
+
+  const isCustom = hasAnyModeDefined
+    ? !!bookingModes.customRequests
+    : !!venue.customBookingConfiguration?.enabled;
+
+  const hourlyPrice = venue.hourlyBookingConfiguration?.pricePerHour ?? venue.pricePerHour;
+  const minPackagePrice = getMinPackagePrice(venue);
+
+  const elements = [];
+
+  if (isHourly && hourlyPrice !== undefined && hourlyPrice !== null) {
+    elements.push(
+      <div key="hourly" className="flex items-center gap-1.5 text-xs text-slate-700 font-semibold">
+        <span>💰</span>
+        <span>Starts from ₹{hourlyPrice.toLocaleString('en-IN')}/hr</span>
+      </div>
+    );
+  }
+
+  if (isPackages && minPackagePrice !== null) {
+    elements.push(
+      <div key="packages" className="flex items-center gap-1.5 text-xs text-slate-700 font-semibold">
+        <span>📦</span>
+        <span>Packages from ₹{minPackagePrice.toLocaleString('en-IN')}</span>
+      </div>
+    );
+  }
+
+  if (isCustom) {
+    const customOnly = !isHourly && !isPackages;
+    elements.push(
+      <div key="custom" className="flex items-center gap-1.5 text-xs text-slate-700 font-semibold">
+        <span>💬</span>
+        <span>{customOnly ? "Custom Quote Required" : "Custom Quote Available"}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1.5 py-1">
+      {elements}
+    </div>
+  );
+};
+
+const renderBookingModeBadges = (venue: any) => {
+  const bookingModes = venue.bookingModes || {};
+  const hasAnyModeDefined = 'hourlyBooking' in bookingModes || 'fixedSlots' in bookingModes || 'customRequests' in bookingModes;
+  
+  const isHourly = hasAnyModeDefined 
+    ? !!bookingModes.hourlyBooking 
+    : !!(venue.pricePerHour || venue.hourlyBookingConfiguration?.pricePerHour);
+  
+  const isPackages = hasAnyModeDefined
+    ? !!bookingModes.fixedSlots
+    : !!(venue.availability || venue.weeklyAvailability);
+
+  const isCustom = hasAnyModeDefined
+    ? !!bookingModes.customRequests
+    : !!venue.customBookingConfiguration?.enabled;
+
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      {isHourly && (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-150">
+          🕒 Hourly
+        </span>
+      )}
+      {isPackages && (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-150">
+          📦 Packages
+        </span>
+      )}
+      {isCustom && (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-150">
+          💬 Custom
+        </span>
+      )}
+    </div>
+  );
+};
 
 export default function Home() {
   const router = useRouter();
@@ -72,6 +203,7 @@ export default function Home() {
     setLoading(true);
     setErrorMsg("");
     try {
+      packagePriceCache.clear();
       const response = await api.get(`/venues?search=${encodeURIComponent(query)}`);
       setVenues(response.data);
       setBackendStatus("connected");
@@ -112,17 +244,15 @@ export default function Home() {
     fetchVenues("");
   };
 
-  const openBookingModal = (venue: Venue) => {
-    setSelectedVenue(venue);
-    setBookingSuccess(false);
-    setCustomerName("");
-    setCustomerEmail("");
-    
-    // Set default date to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    setBookingDate(tomorrow.toISOString().split("T")[0]);
-    setBookingHours(4);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [promptVenueName, setPromptVenueName] = useState("");
+
+  const [showSlotsModal, setShowSlotsModal] = useState(false);
+  const [slotsVenue, setSlotsVenue] = useState<Venue | null>(null);
+
+  const openSlotsModal = (venue: Venue) => {
+    setSlotsVenue(venue);
+    setShowSlotsModal(true);
   };
 
   const handleConfirmBooking = (e: React.FormEvent) => {
@@ -143,6 +273,10 @@ export default function Home() {
   const filteredVenues = selectedType === "All" 
     ? venues 
     : venues.filter((v) => v.type === selectedType);
+
+  if (isClient && currentUser && currentUser.role === 'User') {
+    return <CustomerPage />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
@@ -189,16 +323,22 @@ export default function Home() {
                 {currentUser.role === 'User' ? (
                   <>
                     <Link 
-                      href="/profile" 
-                      className="text-slate-600 hover:text-indigo-600 font-semibold text-sm transition-colors duration-200 px-4 py-2 rounded-xl cursor-pointer"
+                      href="/" 
+                      className="text-indigo-600 font-semibold text-sm transition-colors duration-200 px-4 py-2 rounded-xl cursor-pointer"
                     >
-                      Profile
+                      Dashboard
                     </Link>
                     <Link 
                       href="/bookings" 
                       className="text-slate-600 hover:text-indigo-600 font-semibold text-sm transition-colors duration-200 px-4 py-2 rounded-xl cursor-pointer"
                     >
                       Bookings
+                    </Link>
+                    <Link 
+                      href="/profile" 
+                      className="text-slate-600 hover:text-indigo-600 font-semibold text-sm transition-colors duration-200 px-4 py-2 rounded-xl cursor-pointer"
+                    >
+                      Profile
                     </Link>
                   </>
                 ) : null}
@@ -311,7 +451,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-4 border-b border-slate-200">
             <div>
               <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Available Venues</h2>
-              <p className="text-sm text-slate-500 mt-1">Showing {filteredVenues.length} spaces matching your criteria</p>
+              <p className="text-sm text-slate-500 mt-1">Showing spaces matching your criteria</p>
             </div>
             
             <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/50">
@@ -364,25 +504,28 @@ export default function Home() {
                 className="group bg-white rounded-3xl overflow-hidden border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col shadow-sm"
               >
                 {/* Image Section */}
-                <div className="h-56 relative overflow-hidden bg-slate-100">
-                  <img
-                    src={venue.imageUrl}
-                    alt={venue.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+                <div className="h-56 relative overflow-hidden bg-slate-100 flex items-center justify-center">
+                  {venue.imageUrl ? (
+                    <img
+                      src={venue.imageUrl}
+                      alt={venue.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <svg className="w-12 h-12 text-slate-350" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  )}
                   {/* Glassmorphic tags over image */}
                   <div className="absolute top-4 left-4 flex gap-2">
                     <span className="px-3 py-1.5 rounded-full text-xs font-bold text-white bg-slate-900/60 backdrop-blur-md border border-white/20">
                       {venue.type}
                     </span>
-                    {venue.featured && (
+                    {/* {venue.featured && (
                       <span className="px-3 py-1.5 rounded-full text-xs font-bold text-indigo-100 bg-indigo-600/80 backdrop-blur-md border border-indigo-500/20">
                         ★ Featured
                       </span>
-                    )}
-                  </div>
-                  <div className="absolute bottom-4 right-4 bg-white/95 text-slate-900 px-3 py-1.5 rounded-xl font-bold text-sm shadow-md backdrop-blur-sm">
-                    ${venue.pricePerHour}<span className="text-slate-500 font-normal text-xs">/hr</span>
+                    )} */}
                   </div>
                 </div>
 
@@ -398,12 +541,12 @@ export default function Home() {
                         </svg>
                         {venue.location}
                       </div>
-                      <div className="flex items-center text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
+                      {/* <div className="flex items-center text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
                         <svg className="w-3.5 h-3.5 fill-amber-500 text-amber-500 mr-0.5" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                         {venue.rating}
-                      </div>
+                      </div> */}
                     </div>
 
                     <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
@@ -419,6 +562,13 @@ export default function Home() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                       Capacity: <span className="text-slate-950 font-bold">{venue.capacity} guests</span>
+                    </div>
+
+                    {/* Redesigned Pricing Section */}
+                    <div className="mt-4 pt-3 border-t border-slate-100/80">
+                      <span className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Pricing</span>
+                      {renderPricingSection(venue)}
+                      {renderBookingModeBadges(venue)}
                     </div>
 
                     {/* Amenities pills */}
@@ -438,10 +588,10 @@ export default function Home() {
 
                   <div className="mt-6 pt-4 border-t border-slate-100">
                     <button
-                      onClick={() => openBookingModal(venue)}
-                      className="w-full bg-slate-900 hover:bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm tracking-wide transition-all shadow-sm duration-200 active:scale-[0.98]"
+                      onClick={() => openSlotsModal(venue)}
+                      className="w-full bg-slate-900 hover:bg-indigo-650 text-white py-3 rounded-xl font-bold text-sm tracking-wide transition-all shadow-sm duration-200 active:scale-[0.98] cursor-pointer"
                     >
-                      Book Space
+                      View Booking Slots
                     </button>
                   </div>
                 </div>
@@ -592,6 +742,23 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      <LoginPromptModal
+        isOpen={showLoginPrompt}
+        onClose={() => setShowLoginPrompt(false)}
+        venueName={promptVenueName}
+      />
+
+      <VenueSlotsModal
+        isOpen={showSlotsModal}
+        onClose={() => setShowSlotsModal(false)}
+        venue={slotsVenue}
+        currentUser={currentUser}
+        onGuestBookAttempt={(venueName) => {
+          setPromptVenueName(venueName);
+          setShowLoginPrompt(true);
+        }}
+      />
 
       {/* Footer */}
       {/* <footer className="bg-slate-900 text-slate-400 py-12 mt-auto border-t border-slate-800">

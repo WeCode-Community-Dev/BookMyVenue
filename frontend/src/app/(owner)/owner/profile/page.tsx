@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { api } from '@/lib/axios';
 import { User, Phone, CheckCircle, AlertCircle, Save, Loader2 } from 'lucide-react';
 
-export default function CustomerProfilePage() {
+export default function OwnerProfilePage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isClient, setIsClient] = useState(false);
@@ -31,8 +31,12 @@ export default function CustomerProfilePage() {
     }
     try {
       const user = JSON.parse(userStr);
-      setCurrentUser(user);
-      fetchUserProfile(user.id || user._id);
+      if (user.role !== 'Venue owner') {
+        router.push('/');
+      } else {
+        setCurrentUser(user);
+        fetchUserProfile(user.id || user._id);
+      }
     } catch (e) {
       router.push('/login');
     }
@@ -107,8 +111,8 @@ export default function CustomerProfilePage() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-4 border-indigo-650 border-t-transparent animate-spin"></div>
-          <p className="text-slate-650 font-medium">Loading...</p>
+          <div className="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
+          <p className="text-slate-600 font-medium">Loading...</p>
         </div>
       </div>
     );
@@ -116,43 +120,40 @@ export default function CustomerProfilePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
-      {/* Premium Header */}
-      <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-200">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">BookMyVenue</span>
+          <div className="flex items-center gap-8">
+            <Link href="/" className="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+              BookMyVenue
             </Link>
+            <nav className="hidden md:flex items-center gap-6">
+              <Link href="/owner/dashboard" className="text-slate-600 hover:text-indigo-600 font-semibold text-sm transition-colors duration-200">
+                Dashboard
+              </Link>
+              <Link href="/owner/venues" className="text-slate-600 hover:text-indigo-600 font-semibold text-sm transition-colors duration-200">
+                My Venues
+              </Link>
+              <Link href="/owner/bookings" className="text-slate-600 hover:text-indigo-600 font-semibold text-sm transition-colors duration-200">
+                Bookings
+              </Link>
+              <Link href="/owner/profile" className="text-indigo-600 font-semibold text-sm">
+                Profile
+              </Link>
+            </nav>
           </div>
 
           <div className="flex items-center gap-4">
-            <Link 
-              href="/" 
-              className="text-slate-600 hover:text-indigo-600 font-semibold text-sm transition-colors duration-200 px-3 py-2 rounded-xl"
-            >
-              Dashboard
-            </Link>
-            <Link 
-              href="/bookings" 
-              className="text-slate-600 hover:text-indigo-600 font-semibold text-sm transition-colors duration-200 px-3 py-2 rounded-xl"
-            >
-              Bookings
-            </Link>
-            <Link 
-              href="/profile" 
-              className="text-indigo-600 font-semibold text-sm transition-colors duration-200 px-3 py-2 rounded-xl"
-            >
-              Profile
-            </Link>
-            
-            {/* User welcome message */}
-            <span className="hidden md:inline-block text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
-              👋 Hi, <span className="text-slate-800 font-bold">{currentUser.name}</span>
-            </span>
-
-            <button 
+            <div className="hidden sm:flex flex-col items-end">
+              <span className="text-sm font-semibold text-slate-700">{currentUser.name}</span>
+              <span className="text-xs text-slate-500 font-medium capitalize">{currentUser.role}</span>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-inner uppercase">
+              {currentUser.name.charAt(0)}
+            </div>
+            <button
               onClick={handleLogout}
-              className="bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-semibold text-sm transition-all duration-200 px-4 py-2 rounded-xl border border-rose-200 cursor-pointer"
+              className="bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold text-sm transition-all duration-200 px-4 py-2 rounded-xl border border-rose-200 cursor-pointer"
             >
               Logout
             </button>
@@ -163,8 +164,8 @@ export default function CustomerProfilePage() {
       {/* Main Content */}
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-slate-850 tracking-tight">Account Profile</h1>
-          <p className="text-slate-500 text-sm mt-1">Update your personal account details below.</p>
+          <h1 className="text-3xl font-extrabold text-slate-850 tracking-tight">Account Settings</h1>
+          <p className="text-slate-550 text-sm mt-1">Update your personal account profile details below.</p>
         </div>
 
         {/* Feedback Banners */}
@@ -183,20 +184,20 @@ export default function CustomerProfilePage() {
 
         {loading ? (
           <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm flex flex-col items-center justify-center min-h-[280px]">
-            <Loader2 className="w-8 h-8 text-indigo-650 animate-spin" />
+            <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
             <p className="mt-4 text-slate-500 text-sm font-medium">Fetching profile details...</p>
           </div>
         ) : (
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-            {/* Branding Header Strip */}
+            {/* Header branding strip */}
             <div className="bg-gradient-to-r from-indigo-600 to-violet-650 px-8 py-6 text-white">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-extrabold text-2xl uppercase border border-white/10 shadow-inner">
-                  {name.charAt(0) || 'U'}
+                  {name.charAt(0)}
                 </div>
                 <div>
                   <h3 className="font-extrabold text-lg leading-tight">{name}</h3>
-                  <span className="text-indigo-200 text-xs font-semibold uppercase tracking-wider">Customer</span>
+                  <span className="text-indigo-200 text-xs font-semibold uppercase tracking-wider">{currentUser.role}</span>
                 </div>
               </div>
             </div>
@@ -212,7 +213,7 @@ export default function CustomerProfilePage() {
                     type="email"
                     value={email}
                     disabled
-                    className="w-full px-4 py-3 rounded-2xl border border-slate-205 bg-slate-50 text-slate-500 text-xs font-semibold cursor-not-allowed outline-none"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-500 text-xs font-semibold cursor-not-allowed outline-none"
                   />
                   <p className="text-[10px] text-slate-400 font-semibold mt-1.5">Registered account email cannot be changed.</p>
                 </div>
@@ -221,7 +222,7 @@ export default function CustomerProfilePage() {
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-450 mb-2">Full Name</label>
                   <div className="relative flex items-center">
-                    <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-450">
+                    <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
                       <User className="w-4 h-4" />
                     </span>
                     <input
@@ -230,7 +231,7 @@ export default function CustomerProfilePage() {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your full name"
                       required
-                      className="pl-11 pr-4 py-3 w-full border border-slate-200 rounded-2xl text-xs bg-slate-50/50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-650 focus:bg-white transition-all h-[44px] font-semibold"
+                      className="pl-11 pr-4 py-3 w-full border border-slate-200 rounded-2xl text-xs bg-slate-50/50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all h-[44px] font-semibold"
                     />
                   </div>
                 </div>
@@ -239,7 +240,7 @@ export default function CustomerProfilePage() {
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-450 mb-2">Phone Number</label>
                   <div className="relative flex items-center">
-                    <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-455">
+                    <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
                       <Phone className="w-4 h-4" />
                     </span>
                     <input
@@ -248,7 +249,7 @@ export default function CustomerProfilePage() {
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       placeholder="Enter phone number"
                       required
-                      className="pl-11 pr-4 py-3 w-full border border-slate-200 rounded-2xl text-xs bg-slate-50/50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-650 focus:bg-white transition-all h-[44px] font-semibold"
+                      className="pl-11 pr-4 py-3 w-full border border-slate-200 rounded-2xl text-xs bg-slate-50/50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all h-[44px] font-semibold"
                     />
                   </div>
                 </div>
@@ -258,8 +259,8 @@ export default function CustomerProfilePage() {
               {/* Form Buttons */}
               <div className="flex justify-end gap-3 border-t border-slate-100 pt-6 mt-4">
                 <Link
-                  href="/"
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-700 text-xs font-bold rounded-xl transition-all h-10 flex items-center justify-center cursor-pointer"
+                  href="/owner/dashboard"
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-650 hover:text-slate-700 text-xs font-bold rounded-xl transition-all h-10 flex items-center justify-center cursor-pointer"
                 >
                   Cancel
                 </Link>
@@ -287,13 +288,11 @@ export default function CustomerProfilePage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-8 mt-auto border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div>
-            <div className="flex items-center justify-center sm:justify-start gap-2 text-white font-bold text-sm">
-              BookMyVenue
-            </div>
-          </div>
+      <footer className="bg-white border-t border-slate-200 mt-16 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-500">
+            BookMyVenue.
+          </p>
         </div>
       </footer>
     </div>

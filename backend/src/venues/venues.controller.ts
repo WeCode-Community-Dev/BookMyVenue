@@ -1,6 +1,7 @@
-import { Controller, Get, Param, Post, Body, Query, NotFoundException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Put, Delete, Body, Query, NotFoundException, UseGuards } from '@nestjs/common';
 import { VenuesService } from './venues.service';
 import { CreateVenueDto } from './dto/create-venue.dto';
+import { UpdateVenueDto } from './dto/update-venue.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../users/decorators/roles.decorator';
@@ -42,5 +43,34 @@ export class VenuesController {
       throw new NotFoundException(`Venue with ID ${id} not found`);
     }
     return venue;
+  }
+
+  @Put(':id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.VENUE_OWNER)
+  async update(
+    @Param('id') id: string,
+    @Body() updateVenueDto: UpdateVenueDto,
+    @GetUser() user: JWTUserInterface,
+  ) {
+    const venue = await this.venuesService.update(id, updateVenueDto, user.id.toString(), user.role);
+    if (!venue) {
+      throw new NotFoundException(`Venue with ID ${id} not found`);
+    }
+    return venue;
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.VENUE_OWNER)
+  async remove(
+    @Param('id') id: string,
+    @GetUser() user: JWTUserInterface,
+  ) {
+    const result = await this.venuesService.remove(id, user.id.toString(), user.role);
+    if (!result) {
+      throw new NotFoundException(`Venue with ID ${id} not found`);
+    }
+    return { success: true };
   }
 }

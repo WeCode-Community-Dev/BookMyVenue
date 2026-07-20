@@ -6,7 +6,6 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { VenuesModule } from './venues/venues.module';
 import { BookingsModule } from './bookings/bookings.module';
-import { BookingLocksModule } from './booking-locks/booking-locks.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { PaymentsModule } from './payments/payments.module';
 
@@ -27,7 +26,6 @@ import { PaymentsModule } from './payments/payments.module';
     UsersModule,
     VenuesModule,
     BookingsModule,
-    BookingLocksModule,
     ReviewsModule,
     PaymentsModule,
   ],

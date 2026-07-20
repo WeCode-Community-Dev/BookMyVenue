@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/axios';
 
-interface User {
+interface Owner {
   id: string;
   _id?: string;
   name: string;
@@ -16,13 +16,13 @@ interface User {
   createdAt?: string;
 }
 
-export default function AdminUsersPage() {
+export default function AdminOwnersPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isClient, setIsClient] = useState(false);
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [owners, setOwners] = useState<Owner[]>([]);
+  const [filteredOwners, setFilteredOwners] = useState<Owner[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -53,22 +53,23 @@ export default function AdminUsersPage() {
         router.push('/');
       } else {
         setCurrentUser(user);
-        fetchUsers();
+        fetchOwners();
       }
     } catch (e) {
       router.push('/login');
     }
   }, [router]);
 
-  const fetchUsers = async () => {
+  const fetchOwners = async () => {
     setLoading(true);
     setErrorMsg('');
     try {
       const response = await api.get('/users');
       const data = response.data || [];
       
+      // Filter only Venue Owners
       const filtered = data
-        .filter((u: any) => u.role === 'User')
+        .filter((u: any) => u.role === 'Venue owner')
         .map((u: any) => ({
           id: u.id || u._id,
           name: u.name,
@@ -79,59 +80,60 @@ export default function AdminUsersPage() {
           createdAt: u.createdAt,
         }));
 
-      setUsers(filtered);
-      setFilteredUsers(filtered);
+      setOwners(filtered);
+      setFilteredOwners(filtered);
       calculateStats(filtered);
     } catch (err: any) {
-      console.error('Failed to fetch users:', err);
-      setErrorMsg('Failed to load customers. Please refresh.');
+      console.error('Failed to fetch owners:', err);
+      setErrorMsg('Failed to load venue owners. Please refresh.');
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateStats = (userList: User[]) => {
+  const calculateStats = (ownerList: Owner[]) => {
     setStats({
-      total: userList.length,
-      active: userList.filter(u => u.status === 'Active').length,
-      pending: userList.filter(u => u.status === 'Pending').length,
-      suspended: userList.filter(u => u.status === 'Suspended').length,
+      total: ownerList.length,
+      active: ownerList.filter(o => o.status === 'Active').length,
+      pending: ownerList.filter(o => o.status === 'Pending').length,
+      suspended: ownerList.filter(o => o.status === 'Suspended').length,
     });
   };
-  
+
+  // Apply filters whenever search query or status filter change
   useEffect(() => {
-    let result = [...users];
+    let result = [...owners];
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
-        u =>
-          u.name.toLowerCase().includes(q) ||
-          u.email.toLowerCase().includes(q) ||
-          u.phoneNumber.toLowerCase().includes(q)
+        o =>
+          o.name.toLowerCase().includes(q) ||
+          o.email.toLowerCase().includes(q) ||
+          o.phoneNumber.toLowerCase().includes(q)
       );
     }
 
     if (statusFilter !== 'All') {
-      result = result.filter(u => u.status === statusFilter);
+      result = result.filter(o => o.status === statusFilter);
     }
 
-    setFilteredUsers(result);
-  }, [searchQuery, statusFilter, users]);
+    setFilteredOwners(result);
+  }, [searchQuery, statusFilter, owners]);
 
-  const handleStatusToggle = async (userId: string, currentStatus: string) => {
-    setActionLoading(userId);
+  const handleStatusToggle = async (ownerId: string, currentStatus: string) => {
+    setActionLoading(ownerId);
     setErrorMsg('');
     const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
     try {
-      await api.patch(`/users/${userId}/status`, { status: newStatus });
+      await api.patch(`/users/${ownerId}/status`, { status: newStatus });
       
       // Update local state
-      const updated = users.map(u => (u.id === userId ? { ...u, status: newStatus } : u));
-      setUsers(updated);
+      const updated = owners.map(o => (o.id === ownerId ? { ...o, status: newStatus } : o));
+      setOwners(updated);
       calculateStats(updated);
     } catch (err: any) {
-      console.error('Failed to toggle user status:', err);
+      console.error('Failed to toggle owner status:', err);
       setErrorMsg('Failed to update status. Please try again.');
     } finally {
       setActionLoading(null);
@@ -149,7 +151,7 @@ export default function AdminUsersPage() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
-          <p className="text-slate-600 font-medium">Loading user console...</p>
+          <p className="text-slate-600 font-medium">Loading venue owners console...</p>
         </div>
       </div>
     );
@@ -168,10 +170,10 @@ export default function AdminUsersPage() {
               <Link href="/admin/dashboard" className="text-slate-655 hover:text-indigo-600 font-semibold text-sm transition-colors">
                 Dashboard
               </Link>
-              <Link href="/admin/users" className="text-indigo-600 font-semibold text-sm">
+              <Link href="/admin/users" className="text-slate-655 hover:text-indigo-600 font-semibold text-sm transition-colors">
                 Users
               </Link>
-              <Link href="/admin/owners" className="text-slate-655 hover:text-indigo-600 font-semibold text-sm transition-colors">
+              <Link href="/admin/owners" className="text-indigo-600 font-semibold text-sm">
                 Owners
               </Link>
               <Link href="/admin/venues" className="text-slate-655 hover:text-indigo-600 font-semibold text-sm transition-colors">
@@ -207,9 +209,9 @@ export default function AdminUsersPage() {
         
         {/* Title Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Customer (User) Management</h1>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Venue Owners Management</h1>
           <p className="text-slate-500 mt-1 text-sm sm:text-base">
-            Moderate normal customer accounts, activate or suspend user accounts.
+            Moderate listed property owners, activate or suspend owner accounts.
           </p>
         </div>
 
@@ -222,7 +224,7 @@ export default function AdminUsersPage() {
         {/* Mini Stats Banner */}
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-            <span className="text-2xs font-bold text-slate-450 uppercase tracking-wider block">Total Customers</span>
+            <span className="text-2xs font-bold text-slate-450 uppercase tracking-wider block">Total Owners</span>
             <span className="text-2xl font-extrabold text-slate-800 mt-1 block">{loading ? '...' : stats.total}</span>
           </div>
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
@@ -271,16 +273,16 @@ export default function AdminUsersPage() {
           </div>
         </section>
 
-        {/* Users Table / List */}
+        {/* Owners Table / List */}
         <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center gap-4">
               <div className="w-10 h-10 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
-              <p className="text-slate-500 font-semibold text-sm">Fetching customer records...</p>
+              <p className="text-slate-500 font-semibold text-sm">Fetching owner records...</p>
             </div>
-          ) : filteredUsers.length === 0 ? (
+          ) : filteredOwners.length === 0 ? (
             <div className="py-16 text-center text-slate-500">
-              <p className="font-semibold text-lg">No Customers Match Filters</p>
+              <p className="font-semibold text-lg">No Owners Match Filters</p>
               <p className="text-xs text-slate-400 mt-1">Try adapting your search keyword or selection filters.</p>
             </div>
           ) : (
@@ -288,61 +290,61 @@ export default function AdminUsersPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50/75 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="px-6 py-4">Customer Details</th>
+                    <th className="px-6 py-4">Owner Details</th>
                     <th className="px-6 py-4">Phone Number</th>
                     <th className="px-6 py-4">Account Status</th>
                     <th className="px-6 py-4 text-right">Moderation Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
-                  {filteredUsers.map((user) => {
-                    const isLoading = actionLoading === user.id;
+                  {filteredOwners.map((owner) => {
+                    const isLoading = actionLoading === owner.id;
 
                     return (
-                      <tr key={user.id} className="hover:bg-slate-50/40 transition-colors">
-                        {/* User Details */}
+                      <tr key={owner.id} className="hover:bg-slate-50/40 transition-colors">
+                        {/* Owner Details */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-50 to-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm uppercase shadow-sm">
-                              {user.name.charAt(0)}
+                              {owner.name.charAt(0)}
                             </div>
                             <div>
-                              <h4 className="font-bold text-slate-800">{user.name}</h4>
-                              <p className="text-xs text-slate-400 mt-0.5">{user.email}</p>
+                              <h4 className="font-bold text-slate-800">{owner.name}</h4>
+                              <p className="text-xs text-slate-400 mt-0.5">{owner.email}</p>
                             </div>
                           </div>
                         </td>
 
                         {/* Phone */}
                         <td className="px-6 py-4 text-slate-600 font-medium whitespace-nowrap">
-                          {user.phoneNumber || 'N/A'}
+                          {owner.phoneNumber || 'N/A'}
                         </td>
 
                         {/* Status */}
                         <td className="px-6 py-4">
                           <span className={`px-3 py-1 text-xs font-bold rounded-full border ${
-                            user.status === 'Active'
+                            owner.status === 'Active'
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                              : user.status === 'Pending'
+                              : owner.status === 'Pending'
                               ? 'bg-amber-50 text-amber-700 border-amber-100'
                               : 'bg-rose-50 text-rose-700 border-rose-100'
                           }`}>
-                            {user.status || 'Active'}
+                            {owner.status || 'Active'}
                           </span>
                         </td>
 
                         {/* Actions */}
                         <td className="px-6 py-4 text-right">
                           <button
-                            onClick={() => handleStatusToggle(user.id, user.status)}
+                            onClick={() => handleStatusToggle(owner.id, owner.status)}
                             disabled={isLoading}
                             className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors ${
-                              user.status === 'Active'
+                              owner.status === 'Active'
                                 ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-200'
                                 : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border-indigo-200'
                             } disabled:opacity-50 cursor-pointer`}
                           >
-                            {isLoading ? '...' : (user.status === 'Active' ? 'Suspend' : 'Activate')}
+                            {isLoading ? '...' : (owner.status === 'Active' ? 'Suspend' : 'Activate')}
                           </button>
                         </td>
                       </tr>
