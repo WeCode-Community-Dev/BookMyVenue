@@ -24,6 +24,10 @@ export const API_ROUTES = {
         }
     },
    ADMIN: {
+    DASHBOARD:{
+      STATISTICS: "/admin/dashboard/statistics",
+
+    },
     USER: {
       USERS: "/admin/users",
       UPDATE_STATUS: (userId) => `/admin/users/${userId}/status`,
