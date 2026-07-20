@@ -16,6 +16,7 @@
     "dotenv": "^17.0.0",
     "express": "^5.0.0",
     "jsonwebtoken": "^9.0.0",
+    "jwt-decode": "^4.0.0",
     "multer": "^2.2.0",
     "pg": "^8.0.0"
   },
