@@ -75,7 +75,7 @@ const userSchema = new mongoose.Schema({
             default: ""
         }
     },
-    pedingEmail: {
+    pendingEmail: {
         type: String,
         default: null
     },
