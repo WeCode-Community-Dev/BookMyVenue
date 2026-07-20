@@ -57,5 +57,19 @@ export const API_ROUTES = {
       STATISTICS: "/admin/payments/statistics",
     },
   },
+  VENDOR: {
+    DASHBOARD: "/vendor/dashboard",
+    PROFILE: "/vendor/profile",
+    BOOKINGS: "/vendor/bookings",
+    BOOKING_BY_ID: (bookingId) =>
+                `/vendor/bookings/${bookingId}`,
+
+    VENUES: "/vendor/venues",
+    CREATE_VENUE: "/vendor/venue",
+    VENUE_BY_ID: (venueId) =>
+              `/vendor/venues/${venueId}`,
+    UPDATE_VENUE_STATUS: (venueId) =>
+          `/vendor/venues/${venueId}/status`,
+},
 
 }

@@ -1,15 +1,23 @@
 import React from "react";
 import { LayoutGrid, List } from "lucide-react";
 
-const ViewToggle = () => {
+const ViewToggle = ({ viewMode = "grid", onToggle }) => {
   return (
     <div className="flex border border-slate-200 rounded-xl overflow-hidden">
 
-      <button className="p-2 bg-blue-600 text-white">
+      <button
+        type="button"
+        onClick={() => onToggle("grid")}
+        className={`p-2 transition-all ${viewMode === "grid" ? "bg-blue-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}
+      >
         <LayoutGrid size={18} />
       </button>
 
-      <button className="p-2 bg-white text-slate-600 hover:bg-slate-50">
+      <button
+        type="button"
+        onClick={() => onToggle("list")}
+        className={`p-2 transition-all ${viewMode === "list" ? "bg-blue-600 text-white" : "bg-white text-slate-600 hover:bg-slate-50"}`}
+      >
         <List size={18} />
       </button>
 
