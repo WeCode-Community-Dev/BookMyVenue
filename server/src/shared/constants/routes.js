@@ -3,6 +3,10 @@ export const ROUTES = {
         LOGOUT: '/logout'
     },
     ADMIN: {
+        DASHBOARD:{
+            GET_STATISTICS:'/dashboard/statistics'
+
+        },
         USER:{
             GET_ALL:'/users',
             UPDATE_STATUS: '/users/:userId/status',
