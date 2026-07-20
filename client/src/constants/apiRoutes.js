@@ -10,6 +10,7 @@ export const API_ROUTES = {
           REQUEST_EMAIL_CHANGE_OTP: "/user/profile/email/request-otp",
           VERIFY_EMAIL_CHANGE_OTP: "/user/profile/email/verify-otp",
           RESEND_EMAIL_CHANGE_OTP: "/user/profile/email/resend-otp",
+          CHANGE_PASSWORD: "/user/profile/change-password"
         },
         CHANGE_PASSWORD: {
           CHANGE_PASSWORD: "user/changepassword",

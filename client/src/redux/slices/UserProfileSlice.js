@@ -76,15 +76,30 @@ export const removeProfileImage = createAsyncThunk(
   "userProfile/removeProfileImage",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.delete(
-        API_ROUTES.USER.PROFILE.PROFILE_IMAGE
-      );
+      const response = await api.delete(API_ROUTES.USER.PROFILE.PROFILE_IMAGE);
 
       return response.data.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message ||
-        "Failed to remove profile image"
+        error.response?.data?.message || "Failed to remove profile image"
+      );
+    }
+  }
+);
+
+export const changePassword = createAsyncThunk(
+  "user/changePassword",
+  async (passwordData, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(
+        API_ROUTES.USER.PROFILE.CHANGE_PASSWORD,
+        passwordData
+      );
+
+      return response.data.message;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to change password"
       );
     }
   }
@@ -206,20 +221,34 @@ const UserProfileSlice = createSlice({
       .addCase(removeProfileImage.pending, (state) => {
         state.loading = true;
         state.error = null;
-    })
-    
-    .addCase(removeProfileImage.fulfilled, (state, action) => {
+      })
+
+      .addCase(removeProfileImage.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
-    })
-    
-    .addCase(removeProfileImage.rejected, (state, action) => {
+      })
+
+      .addCase(removeProfileImage.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-    })
+      })
+
+      //CHANGE PASSWORD
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      .addCase(changePassword.fulfilled, (state) => {
+        state.loading = false;
+      })
+
+      .addCase(changePassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
       // Verify OTP
-
       .addCase(verifyEmailOtp.fulfilled, (state, action) => {
         state.user = action.payload;
       });
