@@ -25,57 +25,11 @@ export class UserProfileController {
     this._userChangePasswordUsecase = userChangePasswordUsecase;
   }
 
+  getProfile = asyncHandler(async (req, res) => {
+    // const userId = req.user.userId;
+    const userId = "6a5c82d2a4cb28be7d10521f";
 
-    getProfile=asyncHandler(async(req,res)=>{
-        
-        const userId = req.user.userId;
-
-        const user=await this._userGetProfileUsecase.execute(userId);
-
-        return sendSuccess(res,statusCode.OK,UserMessage.success.PROFILE_FETCHED,user)
-    })
-
-    updateProfile=asyncHandler(async(req,res)=>{
-        const userId = req.user.userId;
-        const {fullName,phone}=req.body
-        const updatedUser=await this._userUpdateProfileUsecase.execute(
-            userId,
-            fullName,
-            phone
-        )
-
-        return sendSuccess(
-            res,statusCode.OK,UserMessage.success.PROFILE_UPDATED,
-            updatedUser
-        )
-    })
-
-    requestEmailChangeOtp=asyncHandler(
-        async(req,res)=>{
-            const userId = req.user.userId;
-            const {newEmail}=req.body
-            const result=await this._requestEmailChangeOtpUsecase.execute(userId,newEmail)
-            return sendSuccess(res,statusCode.OK,result.message)
-        }
-    )
-    verifyEmailChangeOtp=asyncHandler(async(req,res)=>{
-        const userId = req.user.userId;
-        const {otp}=req.body
-        const updatedUser=await this._verifyEmailChangeOtpUsecase.execute(userId,otp)
-
-
-        return sendSuccess(
-            res,
-            statusCode.OK,
-            UserMessage.success.EMAIL_UPDATED,
-            updatedUser
-        )
-    })
-    resendEmailChangeOtp=asyncHandler(async(req,res)=>{
-
-    const userId = req.user.userId;
-
-    const result=await this._resendEmailChangeOtpUsecase.execute(userId)
+    const user = await this._userGetProfileUsecase.execute(userId);
 
     return sendSuccess(
       res,
@@ -86,7 +40,7 @@ export class UserProfileController {
   });
 
   updateProfile = asyncHandler(async (req, res) => {
-    const userId = req.user.userId;
+    const userId = "6a5c82d2a4cb28be7d10521f";
     const { fullName, phone } = req.body;
     const updatedUser = await this._userUpdateProfileUsecase.execute(
       userId,
@@ -103,16 +57,19 @@ export class UserProfileController {
   });
 
   requestEmailChangeOtp = asyncHandler(async (req, res) => {
-    const userId = req.user.userId;
+    const userId = "6a5c82d2a4cb28be7d10521f";
     const { newEmail } = req.body;
+    console.log('newemail :',newEmail)
     const result = await this._requestEmailChangeOtpUsecase.execute(
       userId,
       newEmail
     );
+    console.log('result:', result)
     return sendSuccess(res, statusCode.OK, result.message);
   });
+
   verifyEmailChangeOtp = asyncHandler(async (req, res) => {
-    const userId = req.user.userId;
+    const userId = "6a5c82d2a4cb28be7d10521f";
     const { otp } = req.body;
     const updatedUser = await this._verifyEmailChangeOtpUsecase.execute(
       userId,
@@ -126,18 +83,24 @@ export class UserProfileController {
       updatedUser
     );
   });
+  
   resendEmailChangeOtp = asyncHandler(async (req, res) => {
-    const userId = req.user.userId;
+    const userId = "6a5c82d2a4cb28be7d10521f";
 
     const result = await this._resendEmailChangeOtpUsecase.execute(userId);
 
-    return sendSuccess(res, statusCode.OK, result.message);
+    return sendSuccess(
+      res,
+      statusCode.OK,
+      UserMessage.success.PROFILE_FETCHED,
+      user
+    );
   });
+  
+  
+  
   updateProfileImage = asyncHandler(async (req, res) => {
-    const userId = req.user.userId;
-    if (!req.file) {
-      throw new ValidationError(UserMessage.error.PROFILE_IMAGE_REQUIRED);
-    }
+    const userId = "6a5c82d2a4cb28be7d10521f";
 
     const profileImage = {
       publicId: req.file.filename,
@@ -157,7 +120,7 @@ export class UserProfileController {
   });
 
   removeProfileImage = asyncHandler(async (req, res) => {
-    const userId = req.user.userId;
+    const userId = "6a5c82d2a4cb28be7d10521f"
 
     const updatedUser = await this._userRemoveProfileImageUsecase.execute(
       userId
@@ -172,7 +135,7 @@ export class UserProfileController {
   });
 
   changePassword = asyncHandler(async (req, res) => {
-    const userId = req.user.userId;
+    const userId = "6a5c82d2a4cb28be7d10521f";
     await this._userChangePasswordUsecase.execute({ userId, ...req.body });
     return sendSuccess(
       res,

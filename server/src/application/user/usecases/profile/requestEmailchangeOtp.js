@@ -42,9 +42,9 @@ export class RequestEmailChangeOtpUsecase{
         )
         }
 
-        const otp = this._otpService.generateOtp();
+        const otp = this._otpService.generate();
 
-        const otpExpiresAt = this._otpService.getOtpExpiry();
+        const otpExpiresAt = this._otpService.getExpiry();
         console.log("OTP => ", otp)
         const hashedOtp = await this._hashService.hash(otp);
 

@@ -198,6 +198,8 @@ export class UserRepository extends IUserRepository {
   }
 
   async saveEmailChangeOtp(userId, pendingEmail, otpCode, otpExpiresAt) {
+
+    console.log('pending email : ', pendingEmail)
     const document = await UserModel.findByIdAndUpdate(
       userId,
       {
@@ -207,6 +209,8 @@ export class UserRepository extends IUserRepository {
       },
       { new: true }
     );
+
+    console.log('document : ', document)
 
     if (!document) return null;
 
