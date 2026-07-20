@@ -1,0 +1,12 @@
+.placeholderValueWrapper {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap:2px 5px
+}
+
+.label::after{
+    content: ":";
+    padding:3px 0px;
+}
+

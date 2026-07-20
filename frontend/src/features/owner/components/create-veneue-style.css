@@ -1,0 +1,22 @@
+input,select {
+    border: 1px solid #000;
+    min-width:200px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+
+}

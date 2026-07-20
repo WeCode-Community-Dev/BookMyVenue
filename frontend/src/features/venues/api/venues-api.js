@@ -16,7 +16,20 @@ export const venuesApi = baseApi.injectEndpoints({
       transformResponse: (response) => response.data.venue,
       providesTags: (_result, _error, id) => [{ type: 'Venue', id }],
     }),
+    createVenue: builder.mutation({
+      query: (body) => ({
+        url: '/venues',
+        method:'POST',
+        headers:{
+          'Content-Type': 'application/json'
+        },
+        body: body,
+      }),
+      transformResponse: (result) => result.data,
+      transformErrorResponse:(error) => error.data.error,
+      invalidatesTags:(result,_error,id) => result && [{type:'Venue',id},{type:'Venue',id:'LIST'}]
+    })
   }),
 });
 
-export const { useGetVenuesQuery, useGetVenueByIdQuery } = venuesApi;
+export const { useGetVenuesQuery, useGetVenueByIdQuery , useCreateVenueMutation } = venuesApi;

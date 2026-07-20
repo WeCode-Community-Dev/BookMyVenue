@@ -12,6 +12,7 @@ export const paths = {
   },
   owner: {
     dashboard: { path: '/owner/dashboard' },
+    listOrders:{path:'/owner/orders'},
     venueNew: { path: '/owner/venues/new' },
     venueEdit: {
       path: '/owner/venues/:id/edit',
