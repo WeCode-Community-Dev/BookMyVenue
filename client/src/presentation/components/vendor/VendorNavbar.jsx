@@ -5,8 +5,19 @@ import {
   Search,
   ChevronDown,
 } from "lucide-react";
+import { useSelector } from "react-redux";
 
 const VendorNavbar = () => {
+  const { profile } = useSelector((state) => state.vendorProfile);
+
+  const initials =
+    profile?.fullName
+      ?.split(" ")
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "--";
+
   return (
     <header className="h-20 px-8 bg-white border-b flex items-center justify-between">
 
@@ -38,13 +49,21 @@ const VendorNavbar = () => {
         {/* Profile */}
         <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 cursor-pointer transition">
 
-          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white flex items-center justify-center font-semibold">
-            AK
-          </div>
+          {profile?.profileImage?.url ? (
+            <img
+              src={profile.profileImage.url}
+              alt={profile.fullName}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white flex items-center justify-center font-semibold">
+              {initials}
+            </div>
+          )}
 
           <div>
             <p className="font-semibold text-sm text-slate-900">
-              Arjun Kapoor
+              {profile?.fullName || "Vendor"}
             </p>
 
             <p className="text-xs text-slate-500">
