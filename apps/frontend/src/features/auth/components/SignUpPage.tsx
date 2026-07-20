@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import LoginModal from "@/components/global/login/Login";
 import NextImage from "next/image";
+import { SCREENS } from "@/lib/Constants";
 import SuccessModal from "@/components/global/login/SuccessModal";
 import { authStyle } from "../styles/AuthStyle";
 import googleIcon from "../../../../public/assets/images/login/google-color.svg";
@@ -45,7 +46,7 @@ export default function SignupPage() {
 
     useEffect(() => {
         if (isAuthenticated && !isRegistered) {
-            router.push("/venues");
+            router.push(SCREENS.VENUES);
         }
     }, [
         isAuthenticated, router, isRegistered
@@ -81,7 +82,7 @@ export default function SignupPage() {
 
             setTimeout(() => {
                 setShowSuccessModal(false);
-                router.push("/venues");
+                router.push(SCREENS.VENUES);
             }, 1000);
 
         } else {

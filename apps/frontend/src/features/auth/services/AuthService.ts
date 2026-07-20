@@ -8,6 +8,7 @@ import {
 } from "@/features/auth/AuthSlice";
 import { useDispatch, useSelector } from "react-redux";
 
+import { SCREENS } from "@/lib/Constants";
 import store from "@/store/Store";
 import { useRouter } from "next/navigation";
 
@@ -86,7 +87,7 @@ export const useAuthService = () => {
         const url = `${BASE_URL}${path}`;
 
         const headers: HeadersInit = {
-            "Content-Type": "application/json",
+            ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
             ...(options.headers || {}),
         };
 
@@ -254,7 +255,7 @@ export const useAuthService = () => {
             console.error("Logout error on backend:", apiError);
         } finally {
             dispatch(setLogout({ isManual: true }));
-            router.push("/venues");
+            router.push(SCREENS.VENUES);
             dispatch(setLoading(false));
         }
     };
@@ -276,5 +277,6 @@ export const useAuthService = () => {
         googleAuthCallback,
         loginWithGoogle,
         logout,
+        apiFetch,
     };
 };

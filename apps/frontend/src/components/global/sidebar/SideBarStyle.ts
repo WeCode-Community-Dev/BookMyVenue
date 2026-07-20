@@ -30,7 +30,8 @@ export const sideBarStyle = {
         "px-4",
         "py-4",
         "text-left",
-        "transition"
+        "transition",
+        "cursor-pointer"
     ),
     menuItemActive: clsx(
         "bg-sidebar-accent",
@@ -92,7 +93,8 @@ export const sideBarStyle = {
         "font-medium",
         "text-white",
         "transition",
-        "hover:bg-teal-800"
+        "hover:bg-teal-800",
+        "cursor-pointer"
     ),
     footer: clsx(
         "border-t",
@@ -115,7 +117,8 @@ export const sideBarStyle = {
         "text-sidebar-foreground",
         "transition",
         "hover:bg-sidebar-accent",
-        "hover:text-sidebar-accent-foreground"
+        "hover:text-sidebar-accent-foreground",
+        "cursor-pointer"
     ),
     footerButtonIcon: clsx(
         "h-4",

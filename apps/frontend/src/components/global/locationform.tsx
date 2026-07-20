@@ -2,9 +2,29 @@
 
 import { MapPin, Search } from "lucide-react";
 
+import { LocationFormProps } from "@/types/AddVenue";
+import { getText } from "@/lib/language/LanguageHelper";
+import { useLanguage } from "@/store/AppConfigReducer";
+import { useSelector } from "react-redux";
 import { venueStyle } from "@/features/venues/styles/VenueStyle";
 
-export default function LocationForm() {
+const txt = (textName: string) => {
+    return getText(textName, "LOCATION"); 
+};
+
+export default function LocationForm({
+    addressLine,
+    setAddressLine,
+    city,
+    setCity,
+    latitude,
+    setLatitude,
+    longitude,
+    setLongitude,
+}: LocationFormProps) {
+    // Re-render on language change
+    useSelector(useLanguage);
+
     return (
         <div className={venueStyle.card}>
             {/* Header */}
@@ -13,11 +33,11 @@ export default function LocationForm() {
 
                 <div>
                     <h2 className={venueStyle.headerTitle}>
-                        5. Location
+                        {txt("HEADING")}
                     </h2>
 
                     <p className={venueStyle.headerSubtitle}>
-                        Search or pin the exact location of your venue
+                        {txt("SUBTITLE")}
                     </p>
                 </div>
             </div>
@@ -27,7 +47,7 @@ export default function LocationForm() {
                 <Search className={venueStyle.searchIcon} />
 
                 <input
-                    placeholder="Search for an address or area"
+                    placeholder={txt("SEARCH_PLACEHOLDER")}
                     className={venueStyle.searchInput}
                 />
             </div>
@@ -36,62 +56,94 @@ export default function LocationForm() {
             <div className={venueStyle.mapBox}>
                 <div className={venueStyle.mapTextWrapper}>
                     <p className={venueStyle.mapText}>
-                        OpenLayers Map Here
+                        {txt("MAP_PLACEHOLDER")}
                     </p>
                 </div>
             </div>
 
             <p className={venueStyle.mapHint}>
-                Drag the marker to adjust the exact location
+                {txt("MAP_HINT")}
             </p>
 
             {/* Coordinates */}
             <div className={venueStyle.coordinatesGrid}>
                 <div>
                     <label className={venueStyle.label}>
-                        Latitude
+                        {txt("LATITUDE")}
                     </label>
 
                     <input
-                        value="10.0330"
-                        readOnly
-                        className={venueStyle.readOnlyInput}
+                        type="number"
+                        step="any"
+                        value={latitude}
+                        onChange={(evt) => {
+                            return setLatitude(Number(evt.target.value));
+                        }}
+                        className={venueStyle.input}
+                        required
                     />
                 </div>
 
                 <div>
                     <label className={venueStyle.label}>
-                        Longitude
+                        {txt("LONGITUDE")}
                     </label>
 
                     <input
-                        value="76.3454"
-                        readOnly
-                        className={venueStyle.readOnlyInput}
+                        type="number"
+                        step="any"
+                        value={longitude}
+                        onChange={(evt) => {
+                            return setLongitude(Number(evt.target.value));
+                        }}
+                        className={venueStyle.input}
+                        required
                     />
                 </div>
+            </div>
+
+            {/* City */}
+            <div className={venueStyle.fieldSpacing}>
+                <label className={venueStyle.label}>
+                    {txt("CITY")}
+                </label>
+
+                <input
+                    placeholder={txt("CITY_PLACEHOLDER")}
+                    value={city}
+                    onChange={(evt) => {
+                        return setCity(evt.target.value);
+                    }}
+                    className={venueStyle.input}
+                    required
+                />
             </div>
 
             {/* Address */}
             <div className={venueStyle.fieldSpacing}>
                 <label className={venueStyle.label}>
-                    Address
+                    {txt("ADDRESS")}
                 </label>
 
                 <input
-                    placeholder="Full address"
+                    placeholder={txt("ADDRESS_PLACEHOLDER")}
+                    value={addressLine}
+                    onChange={(evt) => {
+                        return setAddressLine(evt.target.value);
+                    }}
                     className={venueStyle.input}
+                    required
                 />
             </div>
 
             {/* Landmark */}
             <div className={venueStyle.fieldSpacing}>
                 <label className={venueStyle.label}>
-                    Landmark (Optional)
+                    {txt("LANDMARK")}
                 </label>
 
                 <input
-                    placeholder="Near Metro Station"
+                    placeholder={txt("LANDMARK_PLACEHOLDER")}
                     className={venueStyle.input}
                 />
             </div>

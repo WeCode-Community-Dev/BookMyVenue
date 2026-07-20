@@ -60,111 +60,117 @@ export class VenueService {
     console.log('DTO:', dto);
     console.log('Slot Templates:', dto.slotTemplates);
 
-    return await this.prismaService.$transaction(async (tx) => {
-      // Create Venue
-      const venue = await tx.venue.create({
-        data: {
-          ownerId,
-          name: dto.name,
-          description: dto.description,
-          venueType: dto.venueType,
-          capacityMin: dto.capacityMin,
-          capacityMax: dto.capacityMax,
-          addressLine: dto.addressLine,
-          city: dto.city,
-          latitude: dto.latitude,
-          longitude: dto.longitude,
-        },
-      });
-
-      await tx.venueCategory.createMany({
-        data: dto.categories.map((category) => ({
-          venueId: venue.id,
-          category,
-        })),
-      });
-
-      for (const amenityName of dto.amenities) {
-        const name = amenityName.trim();
-
-        let amenity = await tx.amenity.findUnique({
-          where: {
-            name,
+    return await this.prismaService.$transaction(
+      async (tx) => {
+        // Create Venue
+        const venue = await tx.venue.create({
+          data: {
+            ownerId,
+            name: dto.name,
+            description: dto.description,
+            venueType: dto.venueType,
+            capacityMin: dto.capacityMin,
+            capacityMax: dto.capacityMax,
+            addressLine: dto.addressLine,
+            city: dto.city,
+            latitude: dto.latitude,
+            longitude: dto.longitude,
           },
         });
 
-        if (!amenity) {
-          amenity = await tx.amenity.create({
-            data: {
+        await tx.venueCategory.createMany({
+          data: dto.categories.map((category) => ({
+            venueId: venue.id,
+            category,
+          })),
+        });
+
+        for (const amenityName of dto.amenities) {
+          const name = amenityName.trim();
+
+          let amenity = await tx.amenity.findUnique({
+            where: {
               name,
+            },
+          });
+
+          if (!amenity) {
+            amenity = await tx.amenity.create({
+              data: {
+                name,
+              },
+            });
+          }
+
+          await tx.venueAmenity.create({
+            data: {
+              venueId: venue.id,
+              amenityId: amenity.id,
             },
           });
         }
 
-        await tx.venueAmenity.create({
-          data: {
+        await tx.venueImage.createMany({
+          data: venueImages.map((image) => ({
             venueId: venue.id,
-            amenityId: amenity.id,
-          },
-        });
-      }
-
-      await tx.venueImage.createMany({
-        data: venueImages.map((image) => ({
-          venueId: venue.id,
-          url: image.url,
-          isPrimary: image.isPrimary,
-          sortOrder: image.sortOrder,
-        })),
-      });
-
-      for (const slot of dto.slotTemplates) {
-        console.log('DTO:', dto);
-        console.log('Slot Templates:', dto.slotTemplates);
-        const createdSlot = await tx.venueSlotTemplate.create({
-          data: {
-            venueId: venue.id,
-            label: slot.label,
-            startDayOffset: slot.startDayOffset,
-            startTime: slot.startTime,
-            endDayOffset: slot.endDayOffset,
-            endTime: slot.endTime,
-            isCustom: slot.isCustom,
-            customRatePerGuestPerHour: slot.customRatePerGuestPerHour,
-          },
-        });
-
-        await tx.venueSlotPricing.createMany({
-          data: slot.pricingTiers.map((tier) => ({
-            slotTemplateId: createdSlot.id,
-            minGuests: tier.minGuests,
-            maxGuests: tier.maxGuests,
-            price: tier.price,
+            url: image.url,
+            isPrimary: image.isPrimary,
+            sortOrder: image.sortOrder,
           })),
         });
-      }
-      const createdVenue = await tx.venue.findUnique({
-        where: {
-          id: venue.id,
-        },
-        include: {
-          categories: true,
-          amenities: {
-            include: {
-              amenity: true,
-            },
-          },
-          images: true,
-          slotTemplates: {
-            include: {
-              pricingTiers: true,
-            },
-          },
-        },
-      });
 
-      return createdVenue;
-    });
+        for (const slot of dto.slotTemplates) {
+          console.log('DTO:', dto);
+          console.log('Slot Templates:', dto.slotTemplates);
+          const createdSlot = await tx.venueSlotTemplate.create({
+            data: {
+              venueId: venue.id,
+              label: slot.label,
+              startDayOffset: slot.startDayOffset,
+              startTime: slot.startTime,
+              endDayOffset: slot.endDayOffset,
+              endTime: slot.endTime,
+              isCustom: slot.isCustom,
+              customRatePerGuestPerHour: slot.customRatePerGuestPerHour,
+            },
+          });
+
+          await tx.venueSlotPricing.createMany({
+            data: slot.pricingTiers.map((tier) => ({
+              slotTemplateId: createdSlot.id,
+              minGuests: tier.minGuests,
+              maxGuests: tier.maxGuests,
+              price: tier.price,
+            })),
+          });
+        }
+        const createdVenue = await tx.venue.findUnique({
+          where: {
+            id: venue.id,
+          },
+          include: {
+            categories: true,
+            amenities: {
+              include: {
+                amenity: true,
+              },
+            },
+            images: true,
+            slotTemplates: {
+              include: {
+                pricingTiers: true,
+              },
+            },
+          },
+        });
+
+        return createdVenue;
+      },
+      {
+        maxWait: 5000,
+        timeout: 12000,
+      },
+    );
   }
 
   async getAllVenues() {

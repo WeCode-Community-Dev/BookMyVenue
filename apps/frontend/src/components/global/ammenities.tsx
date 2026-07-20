@@ -2,21 +2,45 @@
 
 import { CheckSquare, Plus } from "lucide-react";
 
+import { AmmenitiesProps } from "@/types/AddVenue";
+import { getText } from "@/lib/language/LanguageHelper";
+import { useLanguage } from "@/store/AppConfigReducer";
+import { useSelector } from "react-redux";
 import { venueStyle } from "@/features/venues/styles/VenueStyle";
 
-const amenities = [
-    "Parking",
-    "AC / Air Conditioned",
-    "WiFi",
-    "Catering Allowed",
-    "Power Backup",
-    "Generator",
-    "Music Allowed",
-    "Alcohol Allowed",
-    "Decoration Allowed",
-];
+const amenityKeys = [
+    "PARKING",
+    "AC",
+    "WIFI",
+    "CATERING",
+    "POWER_BACKUP",
+    "GENERATOR",
+    "MUSIC",
+    "ALCOHOL",
+    "DECORATION",
+] as const;
 
-export default function Ammenities() {
+export default function Ammenities({
+    selectedAmenities,
+    setSelectedAmenities,
+}: AmmenitiesProps) {
+    // Consume language so the component re-renders on language change
+    useSelector(useLanguage);
+
+    const handleToggle = (key: string, checked: boolean) => {
+        if (checked) {
+            setSelectedAmenities([
+                ...selectedAmenities, key
+            ]);
+        } else {
+            setSelectedAmenities(
+                selectedAmenities.filter((item) => {
+                    return item !== key; 
+                })
+            );
+        }
+    };
+
     return (
         <div className={venueStyle.card}>
             {/* Header */}
@@ -24,24 +48,30 @@ export default function Ammenities() {
                 <CheckSquare className={venueStyle.headerIcon} />
 
                 <h2 className={venueStyle.headerTitle}>
-                    3. Amenities
+                    {getText("HEADING", "AMENITIES")}
                 </h2>
             </div>
 
             {/* Amenities Grid */}
             <div className={venueStyle.amenitiesGrid}>
-                {amenities.map((item) => {
+                {amenityKeys.map((key) => {
                     return (
                         <label
-                            key={item}
+                            key={key}
                             className={venueStyle.checkboxLabel}
                         >
                             <input
                                 type="checkbox"
+                                checked={selectedAmenities.includes(key)}
+                                onChange={(evt) => {
+                                    return handleToggle(key, evt.target.checked);
+                                }}
                                 className={venueStyle.checkbox}
                             />
 
-                            <span>{item}</span>
+                            <span>
+                                {getText(key, "AMENITIES")}
+                            </span>
                         </label>
                     );
                 })}
@@ -53,7 +83,7 @@ export default function Ammenities() {
                 className={venueStyle.buttonSecondary}
             >
                 <Plus className="h-4 w-4" />
-                Add More Amenities
+                {getText("ADD_MORE_AMENITIES", "BUTTON")}
             </button>
         </div>
     );

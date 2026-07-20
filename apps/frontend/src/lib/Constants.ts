@@ -18,6 +18,7 @@ export enum LoginStatus {
 export const SCREENS = {
     PROFILE: "/profile",
     ADD_VENUE:"/addvenue",
+    VENUES:"/venues",
     SETTINGS:"/settings"
 };
 
