@@ -41,6 +41,9 @@ class Booking(Base):
     cancellation_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     cancelled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     idempotency_key: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
+    # generated when owner approves — owner scans this at venue entry
+    check_in_token: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, unique=True, index=True)
+    checked_in_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -54,7 +57,7 @@ class Booking(Base):
     __table_args__ = (
         UniqueConstraint("user_id", "idempotency_key", name="uq_booking_user_idempotency"),
         CheckConstraint(
-            "status IN ('pending_payment', 'booked', 'cancelled')",
+            "status IN ('pending_payment', 'booked', 'cancelled', 'completed')",
             name="ck_booking_status",
         ),
         CheckConstraint(

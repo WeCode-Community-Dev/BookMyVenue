@@ -46,3 +46,19 @@ class RevenueOverviewOut(BaseModel):
     change_pct: float
     previous_total: float
     series: list[RevenuePointOut]
+
+
+class CheckInVerifyRequest(BaseModel):
+    check_in_token: str
+
+
+class CheckInVerifyOut(BaseModel):
+    booking_id: int
+    venue_name: str
+    guest_name: str
+    guest_count: Optional[int] = None
+    event_type: Optional[str] = None
+    check_in_date: date
+    checked_in_at: datetime
+    already_checked_in: bool = False
+    message: str

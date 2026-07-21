@@ -86,9 +86,13 @@ export const authService = {
     }
   },
 
-  async getMe() {
-    const res = await client.get("/auth/me");
-    return res.data;
+  async updateProfile(data) {
+    try {
+      const res = await client.patch("/auth/me", data);
+      return res.data;
+    } catch (err) {
+      throw new Error(err.message);
+    }
   },
 
   // async refreshToken() {

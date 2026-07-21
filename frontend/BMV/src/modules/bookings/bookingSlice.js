@@ -115,6 +115,10 @@ const bookingSlice = createSlice({
           state.current.cancellation_reason =
             action.payload.cancellation_reason;
           state.current.cancelled_at = action.payload.cancelled_at;
+          state.current.can_cancel = false;
+          state.current.refund_percent_if_cancelled = action.payload.refund_percent ?? 0;
+          state.current.refund_amount_if_cancelled = action.payload.refund_amount ?? 0;
+          state.current.refund_status = action.payload.refund_status;
         }
       })
       .addCase(cancelBookingAsync.rejected, (state, action) => {

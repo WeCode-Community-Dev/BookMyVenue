@@ -6,7 +6,9 @@ from app.db.deps import get_db
 from app.models.user import User
 from app.schemas.booking import (
     BookingCancelRequest,
+    BookingCancelOut,
     BookingCreate,
+    BookingDetailOut,
     BookingOut,
     PaginatedBookingsOut,
 )
@@ -34,13 +36,14 @@ def create_booking(
 def my_bookings(
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=20, ge=1, le=100),
+    status: str | None = Query(default=None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return booking_service.get_my_bookings(db, current_user, page, limit)
+    return booking_service.get_my_bookings(db, current_user, page, limit, status)
 
 
-@router.get("/{booking_id}", response_model=BookingOut)
+@router.get("/{booking_id}", response_model=BookingDetailOut)
 def booking_detail(
     booking_id: int,
     db: Session = Depends(get_db),
@@ -49,7 +52,7 @@ def booking_detail(
     return booking_service.get_booking_detail(db, current_user, booking_id)
 
 
-@router.patch("/{booking_id}/cancel", response_model=BookingOut)
+@router.patch("/{booking_id}/cancel", response_model=BookingCancelOut)
 def cancel_booking(
     booking_id: int,
     data: BookingCancelRequest | None = None,

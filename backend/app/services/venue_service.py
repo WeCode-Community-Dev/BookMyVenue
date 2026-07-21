@@ -8,6 +8,7 @@ from app.models.user import User
 from app.models.venue import Venue
 from app.schemas.venue import VenueCreate
 from app.services.notification_service import create_notification
+from app.services.cancellation_policy_service import validate_cancellation_policy_fields
 from app.services.booking_dates import (
     booking_end_dt,
     booking_start_dt,
@@ -79,16 +80,37 @@ def _find_overlap(
     return None
 
 
+def _validate_google_maps_url(url: str | None) -> None:
+    if not url or not url.strip():
+        return
+    allowed = ("google.com/maps", "maps.app.goo.gl", "goo.gl/maps")
+    if not any(part in url for part in allowed):
+        raise HTTPException(
+            status_code=400,
+            detail="Google Maps URL must be a valid Google Maps share link",
+        )
+
+
 def create_venue(db: Session, venue_data: VenueCreate, current_user: User) -> Venue:
+    _validate_google_maps_url(venue_data.google_maps_url)
+    validate_cancellation_policy_fields(
+        venue_data.refund_50_days_before,
+        venue_data.refund_25_days_before,
+        venue_data.cancel_cutoff_days_before,
+    )
     new_venue = Venue(
         owner_id=current_user.id,
         name=venue_data.name,
         location=venue_data.location,
+        google_maps_url=venue_data.google_maps_url,
         price_per_day=venue_data.price_per_day,
         venue_type_id=venue_data.venue_type_id,
         capacity=venue_data.capacity,
         image_url=venue_data.image_url,
         description=venue_data.description,
+        refund_50_days_before=venue_data.refund_50_days_before,
+        refund_25_days_before=venue_data.refund_25_days_before,
+        cancel_cutoff_days_before=venue_data.cancel_cutoff_days_before,
     )
 
     db.add(new_venue)
@@ -191,13 +213,24 @@ def update_venue(db: Session, venue_id: int, venue_data, owner_id: int):
     if venue.owner_id != owner_id:
         raise HTTPException(status_code=403, detail="You don't have permission to update this venue")
 
+    _validate_google_maps_url(venue_data.google_maps_url)
+    validate_cancellation_policy_fields(
+        venue_data.refund_50_days_before,
+        venue_data.refund_25_days_before,
+        venue_data.cancel_cutoff_days_before,
+    )
+
     venue.name = venue_data.name
     venue.location = venue_data.location
+    venue.google_maps_url = venue_data.google_maps_url
     venue.price_per_day = venue_data.price_per_day
     venue.venue_type_id = venue_data.venue_type_id
     venue.description = venue_data.description
     venue.capacity = venue_data.capacity
     venue.image_url = venue_data.image_url
+    venue.refund_50_days_before = venue_data.refund_50_days_before
+    venue.refund_25_days_before = venue_data.refund_25_days_before
+    venue.cancel_cutoff_days_before = venue_data.cancel_cutoff_days_before
 
     db.commit()
     return _fetch_full(db, venue_id)

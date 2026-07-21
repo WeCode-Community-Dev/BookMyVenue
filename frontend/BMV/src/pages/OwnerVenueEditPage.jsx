@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { ArrowLeft, ImageIcon, IndianRupee, Save } from "lucide-react";
-import OwnerLayout from "../components/VenueOwnerDashboard/OwnerLayout";
+import {
+  parsePolicyDays,
+  validateCancellationPolicyFields,
+  policyPayloadFromFields,
+} from "../utils/cancellationPolicy";
 import {
   fetchVenueByIdAsync,
   fetchVenueTypesAsync,
@@ -13,6 +17,7 @@ import {
   clearActiveVenue,
   clearVenueOwnerError,
 } from "../modules/venueOwner/venueOwnerSlice";
+import OwnerLayout from "../components/VenueOwnerDashboard/OwnerLayout";
 
 function Field({ label, error, children }) {
   return (
@@ -77,11 +82,15 @@ function OwnerVenueEditPage() {
       setFields({
         name:        venue.name ?? "",
         location:    venue.location ?? "",
+        googleMapsUrl: venue.google_maps_url ?? "",
         venueTypeId: venue.venue_type?.id ?? "",
         capacity:    venue.capacity ?? "",
         dailyRate:   venue.price_per_day ?? "",
         description: venue.description ?? "",
         imageUrl:    venue.image_url ?? "",
+        refund50Days: venue.refund_50_days_before ?? "",
+        refund25Days: venue.refund_25_days_before ?? "",
+        cancelCutoffDays: venue.cancel_cutoff_days_before ?? "",
       });
     }
   }, [venue]);
@@ -104,6 +113,12 @@ function OwnerVenueEditPage() {
       next.dailyRate = "Enter a valid daily rate";
     if (fields.capacity && Number(fields.capacity) <= 0)
       next.capacity = "Capacity must be a positive number";
+    const policyError = validateCancellationPolicyFields(
+      parsePolicyDays(fields.refund50Days),
+      parsePolicyDays(fields.refund25Days),
+      parsePolicyDays(fields.cancelCutoffDays),
+    );
+    if (policyError) next.cancellationPolicy = policyError;
     setFieldErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -118,11 +133,17 @@ function OwnerVenueEditPage() {
         payload: {
           name:          fields.name.trim(),
           location:      fields.location.trim(),
+          google_maps_url: fields.googleMapsUrl.trim() || null,
           venue_type_id: Number(fields.venueTypeId),
           price_per_day: Number(fields.dailyRate),
           capacity:      fields.capacity ? Number(fields.capacity) : null,
           description:   fields.description.trim() || null,
           image_url:     fields.imageUrl.trim() || null,
+          ...policyPayloadFromFields(
+            fields.refund50Days,
+            fields.refund25Days,
+            fields.cancelCutoffDays,
+          ),
         },
       }),
     );
@@ -224,6 +245,20 @@ function OwnerVenueEditPage() {
               />
             </Field>
 
+            <Field label="Google Maps link (optional)">
+              <input
+                name="googleMapsUrl"
+                type="url"
+                placeholder="https://maps.app.goo.gl/..."
+                value={fields.googleMapsUrl}
+                onChange={handleChange}
+                className={`${inputBase} ${inputNormal}`}
+              />
+              <p className="mt-1 text-xs text-gray-400">
+                Paste the share link from Google Maps so customers can open directions.
+              </p>
+            </Field>
+
             <Field label="Capacity (Guests)" error={fieldErrors.capacity}>
               <input
                 name="capacity"
@@ -276,6 +311,54 @@ function OwnerVenueEditPage() {
               className={`${inputBase} ${inputNormal} resize-none`}
             />
           </Field>
+        </div>
+
+        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 space-y-4">
+          <h3 className="text-sm font-semibold text-rose-900">Cancellation policy</h3>
+          <p className="text-xs text-gray-400">
+            Days before a guest&apos;s check-in date. Leave all empty to allow cancellation until check-in with full refund.
+          </p>
+          {fieldErrors.cancellationPolicy && (
+            <p className="text-xs text-red-500">⚠ {fieldErrors.cancellationPolicy}</p>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Field label="Full refund (days before check-in)">
+              <input
+                name="refund50Days"
+                type="number"
+                min="1"
+                placeholder="e.g. 30"
+                value={fields.refund50Days}
+                onChange={handleChange}
+                className={`${inputBase} ${inputNormal}`}
+              />
+            </Field>
+            <Field label="50% refund (days before check-in)">
+              <input
+                name="refund25Days"
+                type="number"
+                min="1"
+                placeholder="e.g. 14"
+                value={fields.refund25Days}
+                onChange={handleChange}
+                className={`${inputBase} ${inputNormal}`}
+              />
+            </Field>
+            <Field label="Last day to cancel (days before check-in)">
+              <input
+                name="cancelCutoffDays"
+                type="number"
+                min="1"
+                placeholder="e.g. 3"
+                value={fields.cancelCutoffDays}
+                onChange={handleChange}
+                className={`${inputBase} ${inputNormal}`}
+              />
+            </Field>
+          </div>
+          <p className="text-xs text-gray-400">
+            Full-refund days must be greater than 50% days, which must be greater than last-cancel days.
+          </p>
         </div>
 
         {/* Amenities — live toggle */}

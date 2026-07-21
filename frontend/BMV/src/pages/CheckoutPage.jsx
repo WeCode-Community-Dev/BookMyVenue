@@ -56,8 +56,7 @@ function CheckoutPage() {
       return;
     }
 
-    const key =
-      import.meta.env.VITE_RAZORPAY_KEY_ID || current.key_id;
+    const key = import.meta.env.VITE_RAZORPAY_KEY_ID || current.key_id;
     if (!key) {
       setLocalError("Razorpay key is not configured.");
       setPaying(false);
@@ -76,7 +75,7 @@ function CheckoutPage() {
         email: user?.email || "",
         contact: user?.phone_number || "",
       },
-      theme: { color: "#2563eb" },
+      theme: { color: "#881337" },
       handler: async (response) => {
         const result = await dispatch(
           confirmPaymentAsync({
@@ -88,7 +87,7 @@ function CheckoutPage() {
         );
         setPaying(false);
         if (confirmPaymentAsync.fulfilled.match(result)) {
-          setTimeout(() => navigate("/order-history"), 1200);
+          setTimeout(() => navigate(`/bookings/${bookingId}`), 1200);
         }
       },
       modal: {
@@ -108,77 +107,74 @@ function CheckoutPage() {
   }, [bookingId, current, dispatch, navigate, user]);
 
   const displayError = localError || error;
-  const amountInr = current
-    ? Number(current.amount).toLocaleString("en-IN")
-    : null;
+  const amountInr = current ? Number(current.amount).toLocaleString("en-IN") : null;
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5]">
-      <div className="mx-auto max-w-md px-4 py-8">
-        <Link to={`/bookings/${bookingId}`} className="text-sm text-blue-600 hover:underline">
-          ← Back to booking
-        </Link>
-        <h1 className="mt-4 text-2xl font-bold text-slate-800">Checkout</h1>
+    <div className="max-w-md space-y-4">
+      <Link to={`/bookings/${bookingId}`} className="text-sm text-rose-800 hover:underline">
+        ← Back to booking
+      </Link>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800">Checkout</h1>
         <p className="text-sm text-slate-500 mt-1">Complete payment for booking #{bookingId}</p>
+      </div>
 
-        {loading && !current && (
-          <div className="mt-8 flex justify-center">
-            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      {loading && !current && (
+        <div className="flex justify-center py-8">
+          <div className="w-8 h-8 border-2 border-rose-900 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+
+      {displayError && (
+        <p className="text-sm text-rose-600 bg-rose-50 px-4 py-3 rounded-xl">{displayError}</p>
+      )}
+
+      {current && (
+        <div className="space-y-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">Payment ID</span>
+            <span className="font-mono text-slate-700">{current.payment_id}</span>
           </div>
-        )}
+          <div className="flex justify-between items-baseline">
+            <span className="text-slate-500">Amount</span>
+            <span className="text-2xl font-bold text-slate-900">₹{amountInr}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-500">Status</span>
+            <span className="capitalize text-slate-700">{current.status?.replace("_", " ")}</span>
+          </div>
 
-        {displayError && (
-          <p className="mt-4 text-sm text-rose-600 bg-rose-50 px-4 py-3 rounded-xl">
-            {displayError}
-          </p>
-        )}
-
-        {current && (
-          <div className="mt-6 space-y-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-500">Payment ID</span>
-              <span className="font-mono text-slate-700">{current.payment_id}</span>
-            </div>
-            <div className="flex justify-between items-baseline">
-              <span className="text-slate-500">Amount</span>
-              <span className="text-2xl font-bold text-slate-900">₹{amountInr}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-500">Status</span>
-              <span className="capitalize text-slate-700">{current.status?.replace("_", " ")}</span>
-            </div>
-
-            {current.status === "paid" ? (
-              <p className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-700">
-                Payment successful. Redirecting to your orders...
+          {current.status === "paid" ? (
+            <p className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-700">
+              Payment successful. Redirecting to your booking — your check-in QR will appear after
+              the owner accepts.
+            </p>
+          ) : current.status === "failed" ? (
+            <div className="space-y-3">
+              <p className="rounded-xl bg-rose-50 p-4 text-sm text-rose-700">
+                Payment failed. Please try again.
               </p>
-            ) : current.status === "failed" ? (
-              <div className="space-y-3">
-                <p className="rounded-xl bg-rose-50 p-4 text-sm text-rose-700">
-                  Payment failed. Please try again.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => dispatch(initiatePaymentAsync(Number(bookingId)))}
-                  disabled={loading}
-                  className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  Create new payment order
-                </button>
-              </div>
-            ) : (
               <button
                 type="button"
-                onClick={handleRazorpayPay}
-                disabled={loading || paying || !current.gateway_order_id}
-                className="w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                onClick={() => dispatch(initiatePaymentAsync(Number(bookingId)))}
+                disabled={loading}
+                className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
               >
-                {paying || loading ? "Opening Razorpay..." : "Pay with Razorpay"}
+                Create new payment order
               </button>
-            )}
-          </div>
-        )}
-      </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleRazorpayPay}
+              disabled={loading || paying || !current.gateway_order_id}
+              className="w-full rounded-xl bg-rose-900 py-3 text-sm font-semibold text-white hover:bg-rose-950 disabled:opacity-50"
+            >
+              {paying || loading ? "Opening Razorpay..." : "Pay with Razorpay"}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

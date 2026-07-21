@@ -33,6 +33,14 @@ export const venueOwnerService = {
     return res.data;
   },
 
+  // POST /venue-owners/dashboard/bookings/check-in
+  async verifyBookingCheckIn(check_in_token) {
+    const res = await client.post("/venue-owners/dashboard/bookings/check-in", {
+      check_in_token,
+    });
+    return res.data;
+  },
+
   // GET /venue-owners/dashboard/availability?month=YYYY-MM
   async getAvailabilityCalendar({ month, venue_id } = {}) {
      const params = { month };
@@ -119,3 +127,6 @@ export const venueOwnerService = {
     return res.data;
   },
 };
+
+export const verifyBookingCheckIn = (check_in_token) =>
+  venueOwnerService.verifyBookingCheckIn(check_in_token);

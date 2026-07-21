@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session, joinedload
-from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException, status
 
 from app.models.review import Review
 from app.models.venue import Venue
@@ -9,6 +10,7 @@ from app.models.booking import Booking
 from app.models.user import User
 from app.schemas.review import ReviewCreate
 from app.services.notification_service import create_notification
+from app.services.booking_service import maybe_complete_booking
 
 
 def create_review(db: Session, current_user: User, payload: ReviewCreate) -> dict:
@@ -29,7 +31,6 @@ def create_review(db: Session, current_user: User, payload: ReviewCreate) -> dic
             Booking.id == payload.booking_id,
             Booking.venue_id == payload.venue_id,
             Booking.user_id == current_user.id,
-            Booking.status == "booked",
         )
         .first()
     )
@@ -40,6 +41,25 @@ def create_review(db: Session, current_user: User, payload: ReviewCreate) -> dic
             detail="You can only review a venue after a completed booking",
         )
 
+    maybe_complete_booking(db, booking)
+
+    if booking.status != "completed":
+        raise HTTPException(
+            status_code=403,
+            detail="You can only review a venue after a completed booking",
+        )
+
+    existing_review = (
+        db.query(Review)
+        .filter(Review.booking_id == payload.booking_id)
+        .first()
+    )
+    if existing_review:
+        raise HTTPException(
+            status_code=409,
+            detail="You have already reviewed this booking",
+        )
+
     review = Review(
         venue_id=payload.venue_id,
         reviewer_id=current_user.id,
@@ -48,7 +68,14 @@ def create_review(db: Session, current_user: User, payload: ReviewCreate) -> dic
         comment=payload.comment,
     )
     db.add(review)
-    db.flush()
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="You have already reviewed this booking",
+        )
 
     all_ratings = db.query(Review.rating).filter(Review.venue_id == venue.id).all()
     ratings = [r[0] for r in all_ratings]
@@ -125,6 +152,9 @@ def get_reviews_for_venue(db: Session, venue_id: int) -> dict:
     distribution = {str(star): 0 for star in range(1, 6)}
     for review in reviews:
         distribution[str(review["rating"])] += 1
+
+    # show higher ratings first on the venue page
+    reviews.sort(key=lambda r: (r["rating"], r["created_at"]), reverse=True)
 
     return {
         "reviews": reviews,

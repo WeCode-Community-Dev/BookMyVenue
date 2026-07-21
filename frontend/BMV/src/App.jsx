@@ -14,9 +14,14 @@ import VenueOwnerRegisterPage from "./pages/VenueOwnerRegisterPage";
 import OwnerDashboardPage from "./pages/OwnerDashboardPage";
 import OwnerVenuesPage from "./pages/OwnerVenuesPage";
 import OwnerBookingsPage from "./pages/OwnerBookingsPage";
+import OwnerCheckInPage from "./pages/OwnerCheckInPage";
 import OwnerVenueManagePage from "./pages/OwnerVenueManagePage";
 import OwnerVenueEditPage from "./pages/OwnerVenueEditPage";
 import OwnerReviewsPage from "./pages/OwnerReviewsPage";
+import OwnerRevenuePage from "./pages/OwnerRevenuePage";
+import OwnerEnquiriesPage from "./pages/OwnerEnquiriesPage";
+import OwnerMessagesPage from "./pages/OwnerMessagesPage";
+import OwnerSettingsPage from "./pages/OwnerSettingsPage";
 
 import VenueListPage from "./modules/venues/pages/VenueListPage";
 import VenueDetailPage from "./modules/venues/pages/VenueDetailPage";
@@ -35,6 +40,7 @@ import RequireAuth from "./components/RequireAuth";
 import RequireVenueOwner from "./components/RequireVenueOwner";
 import RequireAdmin from "./components/RequireAdmin";
 import AdminLayout from "./components/admin/AdminLayout";
+import CustomerLayout from "./components/CustomerLayout";
 
 function ForgotPasswordPlaceholder() {
   return (
@@ -61,21 +67,28 @@ function App() {
           <Route path="/admin/login" element={<AdminLoginPage />} />
 
           <Route element={<RequireAuth />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/order-history" element={<OrderHistoryPage />} />
-            <Route path="/my-bookings" element={<OrderHistoryPage />} />
-            <Route path="/bookings/:id" element={<BookingDetailPage />} />
-            <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
+            <Route element={<CustomerLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/order-history" element={<OrderHistoryPage />} />
+              <Route path="/my-bookings" element={<OrderHistoryPage />} />
+              <Route path="/bookings/:id" element={<BookingDetailPage />} />
+              <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
+            </Route>
           </Route>
 
           <Route element={<RequireVenueOwner />}>
             <Route path="/owner/dashboard" element={<OwnerDashboardPage />} />
             <Route path="/owner/venues" element={<OwnerVenuesPage />} />
             <Route path="/owner/bookings" element={<OwnerBookingsPage />} />
+            <Route path="/owner/check-in" element={<OwnerCheckInPage />} />
             <Route path="/owner/venues/:id/manage" element={<OwnerVenueManagePage />} />
             <Route path="/owner/venues/:id/edit" element={<OwnerVenueEditPage />} />
             <Route path="/owner/reviews" element={<OwnerReviewsPage />} />
+            <Route path="/owner/revenue" element={<OwnerRevenuePage />} />
+            <Route path="/owner/enquiries" element={<OwnerEnquiriesPage />} />
+            <Route path="/owner/messages" element={<OwnerMessagesPage />} />
+            <Route path="/owner/settings" element={<OwnerSettingsPage />} />
           </Route>
 
           <Route element={<RequireAdmin />}>

@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { Star, MapPin, Users, Calendar } from "lucide-react";
 import { getVenueById, getVenueReviews } from "../services/venueService";
 import BookingForm from "../../../components/BookingForm";
+import { venueHasCancellationPolicy } from "../../../utils/cancellationPolicy";
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
@@ -123,7 +124,14 @@ function CustomerReviewCard({ review }) {
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-semibold text-slate-800">{review.reviewer_name}</p>
-            <p className="text-xs text-slate-400">{formatDate(review.created_at)}</p>
+            <div className="flex items-center gap-2">
+              {review.rating >= 4 && (
+                <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                  Top review
+                </span>
+              )}
+              <p className="text-xs text-slate-400">{formatDate(review.created_at)}</p>
+            </div>
           </div>
           <StarRating rating={review.rating} size={14} />
           {review.event_type && (
@@ -218,6 +226,16 @@ function VenueDetailPage() {
                 <MapPin size={14} />
                 {venue.location}
               </span>
+              {venue.google_maps_url && (
+                <a
+                  href={venue.google_maps_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 hover:underline font-medium"
+                >
+                  Open in Google Maps
+                </a>
+              )}
               {venue.venue_type && (
                 <span className="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">
                   {venue.venue_type.name}
@@ -298,6 +316,26 @@ function VenueDetailPage() {
                         </span>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {venueHasCancellationPolicy(venue) && (
+                  <div>
+                    <p className="text-xs text-slate-400 mb-2">Cancellation policy</p>
+                    <ul className="text-sm text-slate-600 space-y-1">
+                      <li>
+                        100% refund when cancelled at least {venue.refund_50_days_before} days before check-in
+                      </li>
+                      <li>
+                        50% refund when cancelled at least {venue.refund_25_days_before} days before check-in
+                      </li>
+                      <li>
+                        25% refund when cancelled at least {venue.cancel_cutoff_days_before} days before check-in
+                      </li>
+                      <li className="text-slate-400 text-xs pt-1">
+                        Cancellation is not available within {venue.cancel_cutoff_days_before} days of check-in.
+                      </li>
+                    </ul>
                   </div>
                 )}
               </section>

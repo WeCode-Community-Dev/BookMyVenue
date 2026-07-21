@@ -100,3 +100,11 @@ a.bg-blue-600:hover {
   background-color: #FFE4E9 !important;
   color: var(--primary-maroon-dark) !important;
 }
+
+.hover\:border-blue-100:hover {
+  border-color: #fecdd3 !important;
+}
+
+.border-blue-600 {
+  border-color: var(--primary-maroon) !important;
+}

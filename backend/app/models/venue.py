@@ -29,6 +29,8 @@ class Venue(Base):
 
     name = Column(String(150), nullable=False)
     location = Column(String(255), nullable=False)
+    # owner pastes Google Maps share link so customers can open directions
+    google_maps_url = Column(String(500), nullable=True)
 
     price_per_day = Column(Numeric(10, 2), nullable=False)
     
@@ -83,6 +85,11 @@ class Venue(Base):
         nullable=False,
         default=0,
     )
+
+    # Days before check-in for tiered cancellation refunds (all three set or all null).
+    refund_50_days_before = Column(Integer, nullable=True)
+    refund_25_days_before = Column(Integer, nullable=True)
+    cancel_cutoff_days_before = Column(Integer, nullable=True)
 
     is_active = Column(
         Boolean,

@@ -1,5 +1,10 @@
 import { useEffect, useState, useRef } from "react";
 import { X, ImageIcon, IndianRupee, UploadCloud } from "lucide-react";
+import {
+  parsePolicyDays,
+  validateCancellationPolicyFields,
+  policyPayloadFromFields,
+} from "../../utils/cancellationPolicy";
 
 
 
@@ -10,11 +15,15 @@ const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 const initialFormState = {
   name: "",
   location: "",
+  googleMapsUrl: "",
   venueTypeId: "",
   capacity: "",
   dailyRate: "",
   description: "",
   imageUrl: "",
+  refund50Days: "",
+  refund25Days: "",
+  cancelCutoffDays: "",
 };
 
 function AddVenueModal({
@@ -176,6 +185,12 @@ function AddVenueModal({
       next.dailyRate = "Enter a valid daily rate";
     if (fields.capacity && Number(fields.capacity) <= 0)
       next.capacity = "Capacity must be a positive number";
+    const policyError = validateCancellationPolicyFields(
+      parsePolicyDays(fields.refund50Days),
+      parsePolicyDays(fields.refund25Days),
+      parsePolicyDays(fields.cancelCutoffDays),
+    );
+    if (policyError) next.cancellationPolicy = policyError;
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -203,12 +218,18 @@ const handleSubmit = async (e) => {
   onSubmit({
     name: fields.name.trim(),
     location: fields.location.trim(),
+    google_maps_url: fields.googleMapsUrl.trim() || null,
     price_per_day: Number(fields.dailyRate),
     venue_type_id: Number(fields.venueTypeId),
     capacity: fields.capacity ? Number(fields.capacity) : null,
     description: fields.description.trim() || null,
     image_url: finalImageUrl,
     amenityIds: selectedAmenityIds,
+    ...policyPayloadFromFields(
+      fields.refund50Days,
+      fields.refund25Days,
+      fields.cancelCutoffDays,
+    ),
   });
 };
 
@@ -305,6 +326,24 @@ const handleSubmit = async (e) => {
                 {errors.location && (
                   <p className="mt-1 text-xs text-red-500">⚠ {errors.location}</p>
                 )}
+              </div>
+
+              {/* Google Maps link — optional, owner pastes share URL */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Google Maps link (optional)
+                </label>
+                <input
+                  name="googleMapsUrl"
+                  type="url"
+                  placeholder="https://maps.app.goo.gl/..."
+                  value={fields.googleMapsUrl}
+                  onChange={handleChange}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent transition"
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  Paste the share link from Google Maps so customers can open directions.
+                </p>
               </div>
 
               {/* Capacity */}
@@ -404,6 +443,48 @@ const handleSubmit = async (e) => {
                 onChange={handleChange}
                 className="w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent resize-none"
               />
+            </div>
+
+            {/* Cancellation policy */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Cancellation policy (optional)
+              </label>
+              <p className="text-xs text-gray-400 mb-3">
+                Days before check-in. Leave all empty for no tiered policy.
+              </p>
+              {errors.cancellationPolicy && (
+                <p className="mb-2 text-xs text-red-500">⚠ {errors.cancellationPolicy}</p>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input
+                  name="refund50Days"
+                  type="number"
+                  min="1"
+                  placeholder="Full refund days"
+                  value={fields.refund50Days}
+                  onChange={handleChange}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm border border-gray-200 bg-gray-50"
+                />
+                <input
+                  name="refund25Days"
+                  type="number"
+                  min="1"
+                  placeholder="50% refund days"
+                  value={fields.refund25Days}
+                  onChange={handleChange}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm border border-gray-200 bg-gray-50"
+                />
+                <input
+                  name="cancelCutoffDays"
+                  type="number"
+                  min="1"
+                  placeholder="Last cancel days"
+                  value={fields.cancelCutoffDays}
+                  onChange={handleChange}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm border border-gray-200 bg-gray-50"
+                />
+              </div>
             </div>
 
             {/* ── Venue Image ──────────────────────────────────────── */}

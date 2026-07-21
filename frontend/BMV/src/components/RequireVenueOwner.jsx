@@ -7,7 +7,7 @@ import { isAuthenticated as hasToken } from "../core/auth/tokenStorage";
 function AuthLoading() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f0f2f5]">
-      <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-rose-900 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 }

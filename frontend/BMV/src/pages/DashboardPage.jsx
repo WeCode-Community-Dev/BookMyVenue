@@ -1,170 +1,175 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logoutUserAsync } from "../modules/auth/authSlice";
+import { CalendarCheck, CreditCard, IndianRupee, MapPin } from "lucide-react";
 import { fetchMyBookingsAsync } from "../modules/bookings/bookingSlice";
-import { getVenues } from "../modules/venues/services/venueService";
-import VenueCard from "../components/VenueCard";
+import StatusBadge from "../components/shared/StatusBadge";
+import EmptyState from "../components/shared/EmptyState";
 import { formatBookingPeriod } from "../utils/bookingFormat";
+
+function StatCard({ icon: Icon, label, value, sub }) {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+      <div className="flex items-center gap-2 text-slate-400 mb-2">
+        <Icon size={16} />
+        <p className="text-xs font-medium uppercase tracking-wide">{label}</p>
+      </div>
+      <p className="text-2xl font-bold text-slate-800">{value}</p>
+      {sub && <p className="text-xs text-slate-400 mt-1">{sub}</p>}
+    </div>
+  );
+}
 
 function DashboardPage() {
   const { user } = useSelector((state) => state.auth);
-  const { list: bookings, loading: bookingsLoading } = useSelector((state) => state.bookings);
+  const { list: bookings, loading: bookingsLoading, error: bookingsError } = useSelector(
+    (state) => state.bookings,
+  );
   const dispatch = useDispatch();
 
-  const [venues, setVenues] = useState([]);
-  const [search, setSearch] = useState("");
-  const [location, setLocation] = useState("");
-  const [venuesLoading, setVenuesLoading] = useState(true);
-  const [venuesError, setVenuesError] = useState("");
-
   useEffect(() => {
-    dispatch(fetchMyBookingsAsync({ limit: 3 }));
+    dispatch(fetchMyBookingsAsync({ limit: 20 }));
   }, [dispatch]);
 
-  const loadVenues = async () => {
-    setVenuesLoading(true);
-    setVenuesError("");
-    try {
-      const data = await getVenues({ search, location, limit: 50 });
-      setVenues(data);
-    } catch (err) {
-      setVenuesError(err.message || "Failed to load venues");
-    } finally {
-      setVenuesLoading(false);
-    }
-  };
+  const bookingList = Array.isArray(bookings) ? bookings : [];
 
-  useEffect(() => {
-    loadVenues();
-  }, []);
+  const stats = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const recentBookings = Array.isArray(bookings) ? bookings.slice(0, 3) : [];
+    const upcoming = bookingList.filter((b) => {
+      if (b.status === "cancelled") return false;
+      const end = b.check_out_date || b.booking_date;
+      return end && new Date(end) >= today;
+    });
+
+    const pendingPayment = bookingList.filter((b) => b.status === "pending_payment");
+    const totalSpent = bookingList
+      .filter((b) => b.status === "booked")
+      .reduce((sum, b) => sum + Number(b.amount || 0), 0);
+
+    return {
+      upcoming: upcoming.length,
+      pendingPayment: pendingPayment.length,
+      total: bookingList.length,
+      totalSpent,
+      recent: bookingList.slice(0, 5),
+      firstPending: pendingPayment[0],
+    };
+  }, [bookingList]);
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5]">
-      <header className="bg-white border-b border-slate-100 px-6 py-4">
-        <div className="mx-auto max-w-5xl flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-slate-800">BookMyVenue</h1>
-            <p className="text-sm text-slate-400">
-              {user?.name ? `Welcome, ${user.name}` : "Welcome back"}
-            </p>
-          </div>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link to="/profile" className="text-slate-600 hover:text-blue-600">
-              Profile
-            </Link>
-            <Link to="/order-history" className="text-slate-600 hover:text-blue-600">
-              Orders
-            </Link>
-            <button
-              type="button"
-              onClick={() => dispatch(logoutUserAsync())}
-              className="text-slate-500 hover:text-rose-600"
-            >
-              Logout
-            </button>
-          </nav>
-        </div>
-      </header>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800">
+          {user?.name ? `Hello, ${user.name.split(" ")[0]}` : "Your dashboard"}
+        </h1>
+        <p className="text-sm text-slate-400 mt-1">Manage bookings and explore venues</p>
+      </div>
 
-      <main className="mx-auto max-w-5xl px-4 py-6 space-y-8">
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard icon={CalendarCheck} label="Upcoming" value={stats.upcoming} />
+        <StatCard icon={CreditCard} label="Pending pay" value={stats.pendingPayment} />
+        <StatCard icon={MapPin} label="Total bookings" value={stats.total} />
+        <StatCard
+          icon={IndianRupee}
+          label="Total spent"
+          value={`₹${stats.totalSpent.toLocaleString("en-IN")}`}
+        />
+      </section>
+
+      {stats.firstPending && (
+        <Link
+          to={`/bookings/${stats.firstPending.id}`}
+          className="block bg-amber-50 border border-amber-200 rounded-2xl p-4 hover:bg-amber-100/80 transition-colors"
+        >
+          <p className="text-sm font-semibold text-amber-800">Payment pending</p>
+          <p className="text-sm text-amber-700 mt-1">
+            Complete payment for {stats.firstPending.venue_name || "your booking"} — ₹
+            {Number(stats.firstPending.amount).toLocaleString("en-IN")}
+          </p>
+          <span className="inline-block text-xs font-medium text-amber-800 mt-2">
+            Pay now →
+          </span>
+        </Link>
+      )}
+
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="font-semibold text-slate-800">Recent bookings</h2>
+              <p className="text-xs text-slate-400 mt-0.5">Your latest orders</p>
+            </div>
+            <Link to="/order-history" className="text-xs font-medium text-rose-800 hover:underline">
+              View all
+            </Link>
+          </div>
+
+          {bookingsLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-16 bg-slate-50 rounded-xl animate-pulse" />
+              ))}
+            </div>
+          ) : bookingsError ? (
+            <p className="text-sm text-rose-600 bg-rose-50 px-4 py-3 rounded-xl">{bookingsError}</p>
+          ) : stats.recent.length === 0 ? (
+            <EmptyState
+              title="No bookings yet"
+              description="Browse venues and book your first event."
+              actionLabel="Browse venues"
+              actionTo="/venues"
+            />
+          ) : (
+            <div className="space-y-3">
+              {stats.recent.map((b) => (
+                <Link
+                  key={b.id}
+                  to={`/bookings/${b.id}`}
+                  className="flex items-start justify-between gap-4 p-4 rounded-xl border border-slate-100 hover:border-rose-200 hover:shadow-sm transition-all"
+                >
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-800 truncate">
+                      {b.venue_name || `Venue #${b.venue_id}`}
+                    </p>
+                    <p className="text-sm text-slate-500 mt-0.5">{formatBookingPeriod(b)}</p>
+                    <p className="text-xs text-slate-400 mt-1">Order #{b.id}</p>
+                  </div>
+                  <div className="text-right shrink-0 space-y-1.5">
+                    <StatusBadge status={b.status} />
+                    <p className="text-sm font-bold text-slate-800">
+                      ₹{Number(b.amount).toLocaleString("en-IN")}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
           <Link
             to="/profile"
-            className="bg-white rounded-2xl border border-slate-100 p-5 hover:shadow-md hover:border-blue-100 transition-all"
+            className="block bg-white rounded-2xl border border-slate-100 p-5 hover:border-rose-200 hover:shadow-sm transition-all"
           >
             <p className="text-xs text-slate-400 uppercase tracking-wide">Profile</p>
             <p className="font-semibold text-slate-800 mt-1">{user?.name || "Your account"}</p>
             <p className="text-sm text-slate-400 mt-1 truncate">{user?.email}</p>
-            <p className="text-xs text-blue-600 mt-3">View & edit →</p>
+            <p className="text-xs text-rose-800 mt-3 font-medium">View & edit →</p>
           </Link>
 
           <Link
-            to="/order-history"
-            className="bg-white rounded-2xl border border-slate-100 p-5 hover:shadow-md hover:border-blue-100 transition-all md:col-span-2"
+            to="/venues"
+            className="block bg-white rounded-2xl border border-slate-100 p-5 hover:border-rose-200 hover:shadow-sm transition-all"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-slate-400 uppercase tracking-wide">Order history</p>
-                <p className="font-semibold text-slate-800 mt-1">Your bookings</p>
-              </div>
-              <span className="text-xs text-blue-600">View all →</span>
-            </div>
-            {bookingsLoading ? (
-              <p className="text-sm text-slate-400 mt-4">Loading...</p>
-            ) : recentBookings.length === 0 ? (
-              <p className="text-sm text-slate-400 mt-4">No bookings yet.</p>
-            ) : (
-              <ul className="mt-4 space-y-2">
-                {recentBookings.map((b) => (
-                  <li key={b.id} className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">
-                      Booking #{b.id} · {formatBookingPeriod(b)}
-                    </span>
-                    <span className="text-slate-400 capitalize">{b.status?.replace("_", " ")}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <p className="text-xs text-slate-400 uppercase tracking-wide">Explore</p>
+            <p className="font-semibold text-slate-800 mt-1">Browse venues</p>
+            <p className="text-sm text-slate-400 mt-1">Find and book your next venue</p>
+            <p className="text-xs text-rose-800 mt-3 font-medium">Search venues →</p>
           </Link>
-        </section>
-
-        <section>
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
-            <div>
-              <h2 className="text-lg font-bold text-slate-800">All venues</h2>
-              <p className="text-sm text-slate-400">Browse and book approved venues</p>
-            </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                loadVenues();
-              }}
-              className="flex flex-col sm:flex-row gap-2"
-            >
-              <input
-                type="text"
-                placeholder="Search name"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-              />
-              <input
-                type="text"
-                placeholder="Location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-              />
-              <button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium"
-              >
-                Search
-              </button>
-            </form>
-          </div>
-
-          {venuesLoading && (
-            <div className="flex justify-center py-12">
-              <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
-          {venuesError && (
-            <p className="text-rose-600 text-sm bg-rose-50 px-4 py-3 rounded-xl">{venuesError}</p>
-          )}
-          {!venuesLoading && !venuesError && venues.length === 0 && (
-            <p className="text-center text-slate-400 py-12">No venues found.</p>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {venues.map((venue) => (
-              <VenueCard key={venue.id} venue={venue} />
-            ))}
-          </div>
-        </section>
-      </main>
+        </div>
+      </section>
     </div>
   );
 }

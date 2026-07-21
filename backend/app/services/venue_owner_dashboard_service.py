@@ -2,13 +2,14 @@ from datetime import date, datetime, timedelta, timezone
 from calendar import monthrange
 
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 
 from app.models.venue import Venue
 from app.models.booking import Booking
 from app.models.payment import Payment
 from app.services.booking_dates import iter_dates_in_range
+from app.services.check_in_service import ensure_check_in_token
 
 
 def _owner_venue_ids(db: Session, owner_id: int) -> list[int]:
@@ -126,9 +127,65 @@ def _get_owned_booking_or_404(db: Session, booking_id: int, owner_id: int) -> Bo
 def accept_booking_request(db: Session, booking_id: int, owner_id: int) -> Booking:
     booking = _get_owned_booking_or_404(db, booking_id, owner_id)
     booking.owner_status = "accepted"
+    # without this token the customer cannot show a qr code for check-in
+    ensure_check_in_token(booking)
     db.commit()
     db.refresh(booking)
     return booking
+
+
+def verify_check_in(db: Session, owner_id: int, check_in_token: str) -> dict:
+    booking = (
+        db.query(Booking)
+        .options(joinedload(Booking.venue), joinedload(Booking.user))
+        .join(Venue, Booking.venue_id == Venue.id)
+        .filter(
+            Booking.check_in_token == check_in_token,
+            Venue.owner_id == owner_id,
+        )
+        .first()
+    )
+
+    if not booking:
+        raise HTTPException(status_code=404, detail="Invalid check-in code")
+
+    if booking.owner_status != "accepted":
+        raise HTTPException(status_code=400, detail="This booking is not approved")
+
+    if booking.status == "cancelled":
+        raise HTTPException(status_code=400, detail="This booking was cancelled")
+
+    if booking.status == "pending_payment":
+        raise HTTPException(status_code=400, detail="Payment is not completed yet")
+
+    if booking.checked_in_at:
+        return {
+            "booking_id": booking.id,
+            "venue_name": booking.venue.name,
+            "guest_name": booking.user.name or "Guest",
+            "guest_count": booking.guest_count,
+            "event_type": booking.event_type,
+            "check_in_date": booking.check_in_date,
+            "checked_in_at": booking.checked_in_at,
+            "already_checked_in": True,
+            "message": "Guest was already checked in",
+        }
+
+    booking.checked_in_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(booking)
+
+    return {
+        "booking_id": booking.id,
+        "venue_name": booking.venue.name,
+        "guest_name": booking.user.name or "Guest",
+        "guest_count": booking.guest_count,
+        "event_type": booking.event_type,
+        "check_in_date": booking.check_in_date,
+        "checked_in_at": booking.checked_in_at,
+        "already_checked_in": False,
+        "message": "Guest checked in successfully",
+    }
 
 
 def reject_booking_request(db: Session, booking_id: int, owner_id: int) -> Booking:
