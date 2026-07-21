@@ -86,6 +86,7 @@ const authSlice = createSlice({
   initialState: {
     user: null,
     isAuthenticated: isAuthenticated(),
+    isLoadingUser: isAuthenticated(), 
     isLoading: false,
     error: null,
     success: false,
@@ -140,12 +141,18 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
+      .addCase(fetchCurrentUserAsync.pending, (state) => {
+        state.isLoadingUser = true;
+      })
       .addCase(fetchCurrentUserAsync.fulfilled, (state, action) => {
         state.user = action.payload; // includes is_venue_owner
+        state.isAuthenticated = true;
+        state.isLoadingUser = false;
       })
       .addCase(fetchCurrentUserAsync.rejected, (state) => {
-        // If /auth/me fails (e.g. expired token), don't crash — just leave user as-is.
-        // RequireAuth/RequireVenueOwner guards will handle redirecting if needed.
+        state.isLoadingUser = false;
+        state.isAuthenticated = false;
+        state.user = null;
       })
 
       .addCase(logoutUserAsync.fulfilled, (state) => {

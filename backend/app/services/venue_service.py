@@ -3,7 +3,10 @@ from app.models.venue import Venue
 from app.schemas.venue import VenueCreate
 from fastapi import HTTPException
 from app.models.user import User
-
+from app.models.booking import Booking
+from datetime import date
+from app.services.notification_service import create_notification
+from datetime import datetime, timezone
 
 
 def _fetch_full(db: Session, venue_id: int) -> Venue:
@@ -114,27 +117,87 @@ def update_venue(
 
     return venue
 
-def delete_venue(db: Session, venue_id: int):
+def delete_venue(db: Session, venue_id: int, current_user: User):
     venue = db.query(Venue).filter(
-        Venue.id == venue_id
+        Venue.id == venue_id,
+        Venue.owner_id == current_user.id,
     ).first()
 
     if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+
+    if venue.approval_status == "approved":
         raise HTTPException(
-            status_code=404,
-            detail="Venue not found"
+            status_code=400,
+            detail="Approved venues cannot be hard deleted. Use deactivate instead.",
         )
 
     db.delete(venue)
     db.commit()
+    return {"detail": "Venue deleted successfully"}
 
-    return venue
+
+def deactivate_venue(db: Session, venue_id: int, current_user: User):
+    venue = db.query(Venue).filter(
+        Venue.id == venue_id,
+        Venue.owner_id == current_user.id,
+    ).first()
+
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+
+    if venue.approval_status != "approved":
+        raise HTTPException(
+            status_code=400,
+            detail="Only approved venues can be deactivated. Delete pending/rejected venues instead.",
+        )
+
+    if not venue.is_active:
+        raise HTTPException(status_code=400, detail="Venue is already deactivated")
+
+    # Cancel all upcoming bookings
+    upcoming_bookings = (
+        db.query(Booking)
+        .filter(
+            Booking.venue_id == venue_id,
+            Booking.booking_date >= date.today(),
+            Booking.status != "cancelled",
+        )
+        .all()
+    )
+
+    for booking in upcoming_bookings:
+        booking.status = "cancelled"
+        booking.cancellation_reason = "Venue deactivated by owner"
+        booking.cancelled_at = datetime.now(timezone.utc)
+
+        # Notify the customer
+        create_notification(
+            db,
+            user_id=booking.user_id,
+            type="booking_cancelled",
+            message=f"Your booking at {venue.name} has been cancelled because the venue is no longer available.",
+            venue_id=venue.id,
+            booking_id=booking.id,
+        )
+
+    venue.is_active = False
+    db.commit()
+
+    return {
+        "detail": "Venue deactivated successfully",
+        "cancelled_bookings": len(upcoming_bookings),
+    }
+
+
+
 
 
 
 def get_my_venues(db: Session, current_user: User):
     return (
         db.query(Venue)
+        .options(joinedload(Venue.venue_type), joinedload(Venue.amenities))
         .filter(Venue.owner_id == current_user.id)
         .order_by(Venue.created_at.desc())
         .all()

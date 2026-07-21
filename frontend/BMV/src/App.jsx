@@ -13,6 +13,7 @@ import OwnerVenuesPage from "./pages/OwnerVenuesPage";
 import OwnerBookingsPage from "./pages/OwnerBookingsPage";
 import OwnerVenueManagePage from "./pages/OwnerVenueManagePage";
 import OwnerVenueEditPage from "./pages/OwnerVenueEditPage";
+import OwnerReviewsPage from "./pages/OwnerReviewsPage";
 
 import RequireAuth from "./components/RequireAuth";
 import RequireVenueOwner from "./components/RequireVenueOwner";
@@ -51,6 +52,7 @@ function App() {
             <Route path="/owner/bookings" element={<OwnerBookingsPage />} />
             <Route path="/owner/venues/:id/manage" element={<OwnerVenueManagePage />} />
             <Route path="/owner/venues/:id/edit" element={<OwnerVenueEditPage />} />
+            <Route path="/owner/reviews" element={<OwnerReviewsPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

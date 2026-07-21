@@ -3,7 +3,7 @@ import client from "../../../core/api/client";
 import {
   saveTokens,
   clearTokens,
-  // getRefreshToken,
+  getRefreshToken,
 } from "../../../core/auth/tokenStorage";
 
 import { getFriendlyError } from "../../../utils/error";
@@ -24,13 +24,13 @@ export const authService = {
       if (data.password) {
         // Brand new venue owner — POST to /venue-owners/register
         const res = await client.post("/venue-owners/register", data);
-        const { access_token } = res.data;
-        saveTokens(access_token, true); // Auto-save token
+        const { access_token, refresh_token } = res.data;
+        saveTokens(access_token, refresh_token, true); // Auto-save token
         return res.data;
       } else {
-        // Existing customer adding host profile — POST to /venue-owners/profile
+        // Existing customer adding host profile — POST to /venue-owners/upgrade
         // Token already in headers via axios interceptor
-        const res = await client.post("/venue-owners/profile", data);
+        const res = await client.post("/venue-owners/upgrade", data);
         return res.data;
       }
     } catch (err) {
@@ -42,8 +42,8 @@ export const authService = {
     try {
       const { rememberMe = true, ...credentials } = data;
       const res = await client.post("/auth/login", credentials);
-      const { access_token } = res.data;
-      saveTokens(access_token, rememberMe);
+      const { access_token, refresh_token } = res.data;
+      saveTokens(access_token,refresh_token, rememberMe);
       return res.data;
     } catch (err) {
       throw new Error(err.message);
@@ -53,8 +53,8 @@ export const authService = {
   async googleLogin(idToken, rememberMe = true) {
     try {
       const res = await client.post("/auth/google", { id_token: idToken });
-      const { access_token } = res.data;
-      saveTokens(access_token, rememberMe);
+      const { access_token, refresh_token } = res.data;
+      saveTokens(access_token, refresh_token, rememberMe);
       return res.data;
     } catch (err) {
       throw new Error(err.message);
@@ -70,34 +70,20 @@ export const authService = {
     }
   },
 
-  // async logout() {
-  //   try {
-  //     const refresh_token = getRefreshToken();
-  //     if (refresh_token) {
-  //       await client.post("/auth/logout", { refresh_token });
-  //     }
-  //   } catch (_) {
-  //   } finally {
-  //     clearTokens();
-  //   }
-  // },
-
-  // Temporary for testing
   async logout() {
-    // No backend /auth/logout route exists yet — just clear local state.
-    clearTokens();
+    try {
+      const refresh_token = getRefreshToken();
+      if (refresh_token) {
+        await client.post("/auth/logout", {}, {
+          headers: {
+            Authorization: `Bearer ${refresh_token}`
+          }
+        });
+      }
+    } catch (_) {
+    } finally {
+      clearTokens();
+    }
   },
 
-  // async refreshToken() {
-  //   try {
-  //     const refresh_token = getRefreshToken();
-  //     const res = await client.post("/auth/refresh", { refresh_token });
-  //     const { access_token } = res.data.data;
-  //     saveTokens(access_token, refresh_token);
-  //     return access_token;
-  //   } catch (err) {
-  //     clearTokens(); // refresh failed, force logout
-  //     throw new Error(getFriendlyError(err.code));
-  //   }
-  // },
 };

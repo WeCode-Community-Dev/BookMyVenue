@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.deps import get_db
-from app.schemas.user import UserCreate, UserLogin, UserOut, TokenOut, GoogleAuthRequest
+from app.schemas.user import UserCreate, UserLogin, UserOut, TokenOut, TokenRefreshOut, GoogleAuthRequest
 from app.services.auth_service import create_user, authenticate_user, authenticate_google_user
-from app.core.security import create_access_token, get_current_user, verify_google_token
-from app.models.user import User
+from app.core.security import create_access_token, create_refresh_token, get_current_user, get_current_user_from_refresh_token,verify_google_token, oauth2_scheme
+from app.models.user import User, TokenBlacklist
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -35,8 +35,32 @@ def login(credential: UserLogin, db: Session = Depends(get_db)):
     user = authenticate_user(db, credential.email, credential.password)
     
     access_token = create_access_token(data={"sub": str(user.id)})
-    
-    return TokenOut(access_token=access_token)
+    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    return TokenOut(access_token=access_token, refresh_token=refresh_token)
+
+
+# Refresh token router
+@router.post("/refresh", response_model=TokenRefreshOut)              
+def refresh(current_user: User = Depends(get_current_user_from_refresh_token)):
+    new_access_token = create_access_token(data={"sub": str(current_user.id)})
+    new_refresh_token = create_refresh_token(data={"sub": str(current_user.id)})
+
+    return TokenRefreshOut(
+        access_token=new_access_token,
+        refresh_token=new_refresh_token
+    )
+
+
+@router.post("/logout")                     
+def logout(
+    current_user: User = Depends(get_current_user_from_refresh_token),
+    token=Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    # Blacklist the refresh token so it can never be used again
+    db.add(TokenBlacklist(token=token.credentials))
+    db.commit()
+    return {"detail": "Logged out successfully"}
 
 
 # Get current logged in user
@@ -70,4 +94,5 @@ def google_login(payload: GoogleAuthRequest, db:Session = Depends(get_db)):
     )
 
     access_token = create_access_token(data={"sub": str(user.id)})
-    return TokenOut(access_token=access_token)
+    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    return TokenOut(access_token=access_token, refresh_token=refresh_token)
