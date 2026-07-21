@@ -34,4 +34,7 @@ export class IAdminRepository {
     async clearRefreshToken(token){
         throw new Error("Method not implemented")
     }
+    async getDashboardStatistics() {
+    throw new Error("Method not implemented.");
+  }
 }

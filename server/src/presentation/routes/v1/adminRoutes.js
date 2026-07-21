@@ -1,5 +1,5 @@
 import Express from 'express'
-import { iAdminBookingController, iAdminUserController,iAdminPaymentController } from '../../controllers/di.js'
+import { iAdminBookingController, iAdminUserController,iAdminPaymentController, iAdminDashboardController } from '../../controllers/di.js'
 import { iAdminVendorController } from '../../controllers/di.js'
 import { ROUTES } from '../../../shared/constants/routes.js'
 import { getAllUsersQuerySchema, updateUserStatusSchema } from '../../validators/adminUser.validator.js'
@@ -16,6 +16,9 @@ import { adminGetAllBookingsSchema, adminGetBookingByIdSchema } from '../../vali
 import { adminGetAllPaymentsSchema, adminGetPaymentByIdSchema} from '../../validators/adminPayment.validator.js'
 
 const router = Express.Router()
+
+//Dashboard
+router.get(ROUTES.ADMIN.DASHBOARD.GET_STATISTICS,iAdminDashboardController.getDashboardStatistics)
 //User
 router.get(
     ROUTES.ADMIN.USER.GET_ALL, validate(getAllUsersQuerySchema, 'query'),

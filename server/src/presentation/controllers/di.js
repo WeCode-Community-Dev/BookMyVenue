@@ -15,6 +15,7 @@ import UserVerifyOtpUseCase from '../../application/user/usecases/auth/user.veri
 import UserResendOtpUseCase from '../../application/user/usecases/auth/user.resendOtp.useCase.js'
 import UserForgotPasswordUseCase from '../../application/user/usecases/auth/uer.forgotPassword.useCase.js'
 import UserResetPasswordUseCase from '../../application/user/usecases/auth/user.resetPassword.useCase.js'
+
 import { AdminGetAllUsersUsecase } from '../../application/admin/usecases/user/admin.getAllUsers.usecase.js'
 import { AdminUpdateUserStatusUsecase } from '../../application/admin/usecases/user/admin.updateUserStatus.usecase.js'
 import { AdminGetAllVendorsUsecase } from '../../application/admin/usecases/vendor/admin.getAllVendors.usecase.js'
@@ -38,11 +39,13 @@ import { AdminGetBookingStatisticsUsecase } from '../../application/admin/usecas
 import { AdminGetAllPaymentsUsecase } from "../../application/admin/usecases/payment/admin.getAllPayments.usecase.js";
 import { AdminGetPaymentByIdUsecase } from "../../application/admin/usecases/payment/admin.getPaymentById.usecase.js";
 import { AdminGetPaymentStatisticsUsecase } from "../../application/admin/usecases/payment/admin.getPaymentStatistics.usecase.js";
+import { AdminDashboardStatisticsUsecase } from '../../application/admin/usecases/dashboard/admin.getStatistics.usecase.js'
 import { AdminUserController } from '../controllers/admin/admin.userController.js'
 import { AdminVendorController } from '../controllers/admin/admin.vendorController.js'
 import { AdminVenueController } from './admin/admin.venueController.js'
 import { AdminBookingController } from './admin/admin.bookingController.js'
 import { AdminPaymentController } from "./admin/admin.paymentController.js";
+import { AdminDashboardController } from './admin/admin.dashboardController.js'
 import { VendorVenueController } from '../controllers/vendor/vendor.venueController.js'
 import { UserVenueController } from '../controllers/user/user.venueController.js'
 import { UserAuthController } from '../controllers/user/user.authController.js'
@@ -152,6 +155,8 @@ const iAdminGetAllPaymentUsecase = new AdminGetAllPaymentsUsecase(iPaymentReposi
 const iAdminGetPaymentByIdUsecase = new AdminGetPaymentByIdUsecase(iPaymentRepository)
 const iAdminPaymentStatisticsUsecase = new AdminGetPaymentStatisticsUsecase(iPaymentRepository)
 
+//adminDashboardUsecases
+const iAdminDashboardStatisticsUsecase = new AdminDashboardStatisticsUsecase(iAdminRepository)
 //user auth usecases
 const iRegisterUserUseCase = new RegisterUserUseCase(
     iUserRepository,
@@ -333,6 +338,7 @@ export const iVendorVenueController = new VendorVenueController(
     iVendorDeleteVenue,
     iUpdatevenueStatus
 )
+export const iAdminDashboardController = new AdminDashboardController(iAdminDashboardStatisticsUsecase)
 export const iAdminUserController = new AdminUserController(
     iAdminGetAllUsersUsecase,
     iAdminUpdateUserStatusUsecase

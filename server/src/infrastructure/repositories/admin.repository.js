@@ -1,6 +1,14 @@
 import { AdminMapper } from "../../application/mapper/Admin.mapper.js";
 import { IAdminRepository } from "../../domain/repositories/IAdmin.repository.js";
 import AdminModel from "../database/models/Admin.model.js";
+import { UserModel } from "../database/models/User.model.js";
+import { VenueModel } from "../database/models/Venue.model.js";
+import VendorModel from "../database/models/Vendor.model.js";
+import { BookingModel } from "../database/models/BookingModel.js";
+import { PaymentModel } from "../database/models/Payment.model.js";
+import { PaymentStatus } from "../../domain/enums/Payment.enum.js";
+import { VendorApprovalStatus } from "../../domain/enums/VendorApprovalStatus.enum.js";
+import { VenueStatus } from "../../domain/enums/Venue.enum.js";
 
 
 export class AdminRepository extends IAdminRepository {
@@ -93,4 +101,162 @@ export class AdminRepository extends IAdminRepository {
             { new: true }
         );
     }
+    //Admin dashboard
+    async getDashboardStatistics() {
+
+    const [
+
+      totalUsers,
+
+      totalVendors,
+
+      pendingVendorApprovals,
+
+      totalVenues,
+
+      pendingVenueApprovals,
+
+      totalBookings,
+
+    ] = await Promise.all([
+
+      UserModel.countDocuments(),
+
+      VendorModel.countDocuments(),
+
+      VendorModel.countDocuments({
+        approvalStatus: VendorApprovalStatus.PENDING,
+      }),
+
+      VenueModel.countDocuments(),
+
+      VenueModel.countDocuments({
+        approvalStatus: VenueStatus.PENDING,
+      }),
+
+      BookingModel.countDocuments(),
+
+    ]);
+
+    const revenue = await PaymentModel.aggregate([
+
+      {
+        $match: {
+          paymentStatus: PaymentStatus.SUCCESS,
+        },
+      },
+
+      {
+        $group: {
+          _id: null,
+          totalRevenue: {
+            $sum: "$amount",
+          },
+        },
+      },
+
+    ]);
+
+    const bookingOverview = await BookingModel.aggregate([
+  {
+    $group: {
+      _id: {
+        month: {  $month: {
+          $toDate: "$createdAt"
+        } },
+      },
+      bookings: {
+        $sum: 1,
+      },
+    },
+  },
+  {
+    $sort: {
+      "_id.month": 1,
+    },
+  },
+]);
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+const formattedBookingOverview = bookingOverview.map((item) => ({
+  month: months[item._id.month - 1],
+  bookings: item.bookings,
+}));
+
+const revenueOverview = await PaymentModel.aggregate([
+  {
+    $match: {
+      paymentStatus: PaymentStatus.SUCCESS,
+    },
+  },
+  {
+  $group: {
+    _id: {
+      month: {
+        $month: {
+          $toDate: "$createdAt"
+        }
+      }
+    },
+    revenue: {
+      $sum: "$amount"
+    }
+  }
+},
+  {
+    $sort: {
+      "_id.month": 1,
+    },
+  },
+]);
+
+const formattedRevenueOverview = revenueOverview.map((item) => ({
+  month: months[item._id.month - 1],
+  revenue: item.revenue,
+}));
+
+    return {
+
+      summary: {
+
+        totalUsers,
+
+        totalVendors,
+
+        pendingVendorApprovals,
+
+        totalVenues,
+
+        pendingVenueApprovals,
+
+        totalBookings,
+
+        totalRevenue:
+          revenue.length > 0
+            ? revenue[0].totalRevenue
+            : 0,
+
+      },
+       "bookingOverview": formattedBookingOverview,
+  "revenueOverview": formattedRevenueOverview,
+
+    };
+
+  }
+
+
+
 }
