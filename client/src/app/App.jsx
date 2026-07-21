@@ -11,6 +11,10 @@ const UserChangePassword = lazy(() => import("@/presentation/pages/user/ChangePa
 const Wishlist = lazy(() => import("@/presentation/pages/user/Wishlist"))
 const UserBookings = lazy(() => import("@/presentation/pages/user/BookingHistory"))
 const UserBookingsDetail = lazy(() => import("@/presentation/pages/user/BookingDetail"))
+const UserVenueDetails = lazy(() =>
+  import("@/presentation/pages/user/VenueDetails")
+);
+
 
 const Dashboard = lazy(() =>
   import("@/presentation/pages/vendor/Dashboard")
@@ -26,6 +30,9 @@ const Profile = lazy(() => import("@/presentation/pages/vendor/Profile"));
 
 const AddVenue = lazy(() => import("@/presentation/pages/vendor/AddVenue"));
 
+const VendorVenueDetails = lazy(() =>
+  import("@/presentation/pages/vendor/VenueDetails")
+);
 const EditVenue = lazy(() => import("@/presentation/pages/vendor/EditVenue"));
 
 const Settings = lazy(() => import("@/presentation/pages/vendor/Settings"));
@@ -86,6 +93,8 @@ function App() {
           <Route path={ROUTES.USER.WISHLIST} element={<Wishlist />} />
           <Route path={ROUTES.USER.BOOKINGS} element={<UserBookings />} />
           <Route path={ROUTES.USER.BOOKING_DETAIL} element={<UserBookingsDetail />} />
+          <Route path={ROUTES.USER.VENUE_DETAILS} element={<UserVenueDetails />} />
+
 
           <Route path={ROUTES.VENDOR.DASHBOARD} element={<Dashboard />} />
           <Route path={ROUTES.VENDOR.VENUES} element={<VenueList />} />
@@ -93,7 +102,8 @@ function App() {
           <Route path={ROUTES.VENDOR.ADD_VENUE} element={<AddVenue />} />
           <Route path={ROUTES.VENDOR.PROFILE} element={<Profile />} />
           <Route path={ROUTES.VENDOR.SETTINGS} element={<Settings />} />
-
+          <Route path={ROUTES.VENDOR.VENUE_DETAILS} element={<VendorVenueDetails />} />
+          <Route path={ROUTES.VENDOR.EDIT_VENUE} element={<EditVenue />} />
           {/* Admin Routes */}
 
           <Route path="/admin" element={<AdminLayout />}>

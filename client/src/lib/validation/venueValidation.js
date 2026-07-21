@@ -92,6 +92,12 @@ export const createVenueSchema = z.object({
       0,
       "Standing capacity cannot be negative"
     ),
+  pricePerHour: z.coerce
+    .number()
+    .min(
+      0,
+      "Price per hour cannot be negative"
+    ),
 
   pricePerDay: z.coerce
     .number()
@@ -121,9 +127,21 @@ export const createVenueSchema = z.object({
       "Minimum booking hours cannot be negative"
     ),
 
-  amenities: z
-    .array(z.string())
-    .optional(),
+amenities: z
+  .preprocess(
+    (value) => {
+      if (typeof value === "string") {
+        try {
+          return JSON.parse(value);
+        } catch {
+          return value;
+        }
+      }
+
+      return value;
+    },
+    z.array(z.string()).optional()
+  ),
 
   images: z
     .array(z.instanceof(File))
@@ -143,3 +161,19 @@ export const createVenueSchema = z.object({
     .optional(),
 });
 
+// ==============================
+// EDIT VENUE SCHEMA
+// ==============================
+
+export const editVenueSchema = createVenueSchema
+  .omit({
+    images: true,
+    license: true,
+  })
+  .extend({
+    vendorId: z.string().min(1, "Vendor ID is required"),
+
+    deletedImages: z.string().optional(),
+
+    deletedLicense: z.string().optional(),
+  });

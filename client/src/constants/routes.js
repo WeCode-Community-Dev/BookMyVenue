@@ -16,6 +16,7 @@ export const ROUTES = {
     VENDOR: {
         DASHBOARD: '/vendor/dashboard',
         VENUES: '/vendor/venues',
+        VENUE_DETAILS: '/vendor/venues/:venueId',
         BOOKINGS: '/vendor/bookings',
         ADD_VENUE: '/vendor/add-venue',
         EDIT_VENUE: '/vendor/edit-venue/:venueId',

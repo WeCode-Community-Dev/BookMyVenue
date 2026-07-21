@@ -11,6 +11,7 @@ const PricingForm = ({ pricing, setPricing, errors = {} }) => {
           {[
             ["seatingCapacity","Seating Capacity","500"],
             ["standingCapacity","Standing Capacity","700"],
+            ["pricePerHour","Price Per Hour (₹)","2000"],
             ["pricePerDay","Price Per Day (₹)","50000"],
             ["securityDeposit","Security Deposit (₹)","10000"],
             ["weekendSurcharge","Weekend Surcharge (%)","15"],

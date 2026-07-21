@@ -6,7 +6,7 @@ const initialState = {
   vendorId: "",
 
   loading: false,
-
+  success:false,
   venue: null,
   venues: [],
 
@@ -130,7 +130,7 @@ export const updateVenue = createAsyncThunk(
   ) => {
     try {
       const response = await api.patch(
-        API_ROUTES.VENDOR.VENUE_BY_ID(venueId),
+        API_ROUTES.VENDOR.UPDATE_VENUE(venueId),
         formData,
         {
           headers: {
@@ -159,11 +159,12 @@ export const deleteVenue = createAsyncThunk(
   async (venueId, { rejectWithValue }) => {
     try {
       await api.delete(
-        API_ROUTES.VENDOR.VENUE_BY_ID(venueId)
+        API_ROUTES.VENDOR.DELETE_VENUE(venueId)
       );
 
       return venueId;
     } catch (error) {
+      console.error("delete venue error",error.response?.data|| error);
       return rejectWithValue(
         error.response?.data?.message ||
           "Failed to delete venue"
@@ -185,7 +186,7 @@ export const updateVenueStatus = createAsyncThunk(
   ) => {
     try {
       const response = await api.patch(
-        `${API_ROUTES.VENDOR.VENUE_BY_ID(venueId)}/status`,
+        API_ROUTES.VENDOR.UPDATE_VENUE_STATUS(venueId),
         { status }
       );
 
@@ -211,6 +212,7 @@ const VendorVenueSlice = createSlice({
   reducers: {
     clearVenueState: (state) => {
       state.loading = false;
+      state.success=false;
       state.error = null;
       state.venue = null;
     },
@@ -309,16 +311,20 @@ const VendorVenueSlice = createSlice({
 
       .addCase(updateVenue.pending, (state) => {
         state.loading = true;
+        state.success=false;
         state.error = null;
+
       })
 
       .addCase(updateVenue.fulfilled, (state, action) => {
         state.loading = false;
+        state.success=true;
         state.venue = action.payload;
       })
 
       .addCase(updateVenue.rejected, (state, action) => {
         state.loading = false;
+        state.success=false;
         state.error = action.payload;
       })
 

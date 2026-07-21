@@ -27,6 +27,7 @@ import { editVenueSchema } from "@/lib/validation/venueValidation";
 const EditVenue = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const { venueId } = useParams();
 
   // ==============================
@@ -60,39 +61,61 @@ const EditVenue = () => {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [googleMapLink, setGoogleMapLink] = useState("");
 
-  // New images selected by the user
+  // ==============================
+  // IMAGES
+  // ==============================
+
   const [images, setImages] = useState([]);
-
-  // Images already stored in backend
   const [existingImages, setExistingImages] = useState([]);
-
-  // Public IDs of images removed by the user
   const [deletedImages, setDeletedImages] = useState([]);
 
+  // ==============================
+  // LICENSE
+  // ==============================
+
+  const [existingLicense, setExistingLicense] = useState([]);
+  const [deletedLicense, setDeletedLicense] = useState([]);
+  const [newLicense, setNewLicense] = useState([]);
+
+  // ==============================
+  // AMENITIES
+  // ==============================
+
   const [amenities, setAmenities] = useState([]);
+
+  // ==============================
+  // PRICING
+  // ==============================
 
   const [pricing, setPricing] = useState({
     seatingCapacity: "",
     standingCapacity: "",
+    pricePerHour: "",
     pricePerDay: "",
     securityDeposit: "",
     weekendSurcharge: "",
     minimumBookingHours: "",
   });
 
+  // ==============================
+  // VALIDATION ERRORS
+  // ==============================
+
   const [errors, setErrors] = useState({});
 
   // ==============================
-  // FETCH PROFILE AND VENUE
+  // FETCH DATA
   // ==============================
 
   useEffect(() => {
+    if (!venueId) return;
+
     dispatch(fetchVendorProfile());
     dispatch(getVenueById(venueId));
   }, [dispatch, venueId]);
 
   // ==============================
-  // SET VENUE DATA INTO FORM
+  // SET VENUE DATA
   // ==============================
 
   useEffect(() => {
@@ -102,61 +125,129 @@ const EditVenue = () => {
     setCategory(venue.category || "");
     setDescription(venue.description || "");
 
-    setAddressLine1(venue.address?.addressLine1 || "");
-    setCity(venue.address?.city || "");
-    setState(venue.address?.state || "");
-    setCountry(venue.address?.country || "");
+    setAddressLine1(
+      venue.address?.addressLine1 || ""
+    );
 
-    setPhone(venue.phone || "");
-    setPincode(venue.pincode || "");
+    setCity(
+      venue.address?.city || ""
+    );
 
-    setWebsiteUrl(venue.websiteUrl || "");
-    setGoogleMapLink(venue.googleMapLink || "");
+    setState(
+      venue.address?.state || ""
+    );
 
-    setAmenities(venue.amenities || []);
+    setCountry(
+      venue.address?.country || ""
+    );
+
+    setPhone(
+      String(venue.address?.phone || "")
+    );
+
+    setPincode(
+      String(venue.address?.pincode || "")
+    );
+
+    setWebsiteUrl(
+      venue.websiteUrl || ""
+    );
+
+    setGoogleMapLink(
+      venue.address?.googleMapLink || ""
+    );
+
+    setAmenities(
+      venue.amenities || []
+    );
 
     setPricing({
-      seatingCapacity: venue.seatingCapacity ?? "",
-      standingCapacity: venue.standingCapacity ?? "",
-      pricePerDay: venue.pricePerDay ?? "",
-      securityDeposit: venue.securityDeposit ?? "",
-      weekendSurcharge: venue.weekendSurcharge ?? "",
-      minimumBookingHours: venue.minimumBookingHours ?? "",
+      seatingCapacity:
+        venue.seatingCapacity ?? "",
+
+      standingCapacity:
+        venue.standingCapacity ?? "",
+
+      pricePerHour:
+        venue.pricePerHour ?? "",
+
+      pricePerDay:
+        venue.pricePerDay ?? "",
+
+      securityDeposit:
+        venue.securityDeposit ?? "",
+
+      weekendSurcharge:
+        venue.weekendSurcharge ?? "",
+
+      minimumBookingHours:
+        venue.minimumBookingHours ?? "",
     });
 
-    setExistingImages(venue.images || []);
+    // Existing Cloudinary images
+    setExistingImages(
+      venue.images || []
+    );
+
+    // Existing Cloudinary license
+    setExistingLicense(
+      venue.license || []
+    );
+
   }, [venue]);
 
   // ==============================
-  // SUCCESS / ERROR
+  // ERROR DISPLAY
   // ==============================
 
   useEffect(() => {
-    if (success) {
-      toast.success("Venue updated successfully!");
-
-      dispatch(clearVenueState());
-
-      navigate(ROUTES.OWNER.VENUE.GET_ALL);
-    }
-
     if (error) {
-      toast.error(error);
+      const errorMessage =
+        typeof error === "string"
+          ? error
+          : error?.message || "Something went wrong";
 
-      dispatch(clearVenueState());
+      toast.error(errorMessage);
     }
-  }, [success, error, dispatch, navigate]);
+  }, [error]);
 
   // ==============================
   // REMOVE EXISTING IMAGE
   // ==============================
 
   const handleRemoveExistingImage = (publicId) => {
+    console.log("deleting image with publicId:", publicId);
     setExistingImages((prev) =>
-      prev.filter((image) => image.publicId !== publicId)
+      prev.filter(
+        (image) =>
+          image.publicId !== publicId
+      )
     );
 
-    setDeletedImages((prev) => [...prev, publicId]);
+    setDeletedImages((prev) =>
+      prev.includes(publicId)
+        ? prev
+        : [...prev, publicId]
+    );
+  };
+
+  // ==============================
+  // REMOVE EXISTING LICENSE
+  // ==============================
+
+  const handleRemoveExistingLicense = (publicId) => {
+    setExistingLicense((prev) =>
+      prev.filter(
+        (license) =>
+          license.publicId !== publicId
+      )
+    );
+
+    setDeletedLicense((prev) =>
+      prev.includes(publicId)
+        ? prev
+        : [...prev, publicId]
+    );
   };
 
   // ==============================
@@ -166,26 +257,55 @@ const EditVenue = () => {
   const handleSubmit = async () => {
     setErrors({});
 
-    // Backend requires at least 3 images.
-    // Existing images + newly selected images
+    // ------------------------------
+    // IMAGE VALIDATION
+    // ------------------------------
+
     const totalImages =
-      existingImages.length + images.length;
+      existingImages.length +
+      images.length;
 
     if (totalImages < 3) {
       setErrors({
-        images: "At least 3 images are required.",
+        images:
+          "At least 3 images are required.",
       });
 
       return;
     }
 
-    if (!vendorId) {
+    // ------------------------------
+    // LICENSE VALIDATION
+    // ------------------------------
+
+    const totalLicenses =
+      existingLicense.length +
+      newLicense.length;
+
+    if (totalLicenses === 0) {
+      setErrors({
+        license:
+          "At least one license PDF is required.",
+      });
+
       return;
     }
 
-    // ==============================
-    // FORM VALUES
-    // ==============================
+    // ------------------------------
+    // VENDOR VALIDATION
+    // ------------------------------
+
+    if (!vendorId) {
+      toast.error(
+        "Vendor information is not available."
+      );
+
+      return;
+    }
+
+    // ------------------------------
+    // ZOD VALIDATION
+    // ------------------------------
 
     const formValues = {
       name: venueName,
@@ -206,34 +326,53 @@ const EditVenue = () => {
 
       googleMapLink,
 
-      seatingCapacity: pricing.seatingCapacity,
-      standingCapacity: pricing.standingCapacity,
+      seatingCapacity:
+        pricing.seatingCapacity,
 
-      pricePerDay: pricing.pricePerDay,
-      securityDeposit: pricing.securityDeposit,
-      weekendSurcharge: pricing.weekendSurcharge,
-      minimumBookingHours: pricing.minimumBookingHours,
+      standingCapacity:
+        pricing.standingCapacity,
+
+      pricePerHour:
+        pricing.pricePerHour,
+
+      pricePerDay:
+        pricing.pricePerDay,
+
+      securityDeposit:
+        pricing.securityDeposit,
+
+      weekendSurcharge:
+        pricing.weekendSurcharge,
+
+      minimumBookingHours:
+        pricing.minimumBookingHours,
 
       amenities,
 
-      deletedImages: JSON.stringify(deletedImages),
+      deletedImages:
+        JSON.stringify(deletedImages),
+
+      deletedLicense:
+        JSON.stringify(deletedLicense),
     };
 
-    // ==============================
-    // ZOD VALIDATION
-    // ==============================
+    const validationResult =
+      editVenueSchema.safeParse(
+        formValues
+      );
 
-    const result =
-      editVenueSchema.safeParse(formValues);
-
-    if (!result.success) {
+    if (!validationResult.success) {
       const fieldErrors = {};
 
-      result.error.issues.forEach((issue) => {
-        const fieldName = issue.path[0];
+      validationResult.error.issues.forEach(
+        (issue) => {
+          const fieldName =
+            issue.path[0];
 
-        fieldErrors[fieldName] = issue.message;
-      });
+          fieldErrors[fieldName] =
+            issue.message;
+        }
+      );
 
       setErrors(fieldErrors);
 
@@ -246,24 +385,74 @@ const EditVenue = () => {
 
     const formData = new FormData();
 
-    formData.append("name", venueName);
-    formData.append("description", description);
-    formData.append("category", category);
+    // Basic details
+    formData.append(
+      "name",
+      venueName
+    );
 
-    formData.append("vendorId", vendorId);
+    formData.append(
+      "description",
+      description
+    );
 
-    formData.append("websiteUrl", websiteUrl);
+    formData.append(
+      "category",
+      category
+    );
 
-    formData.append("addressLine1", addressLine1);
-    formData.append("city", city);
-    formData.append("state", state);
-    formData.append("country", country);
+    formData.append(
+      "vendorId",
+      vendorId
+    );
 
-    formData.append("phone", phone);
-    formData.append("pincode", pincode);
+    // Links
+    formData.append(
+      "websiteUrl",
+      websiteUrl
+    );
 
-    formData.append("googleMapLink", googleMapLink);
+    formData.append(
+      "googleMapLink",
+      googleMapLink
+    );
 
+    // Address
+    formData.append(
+      "addressLine1",
+      addressLine1
+    );
+
+    formData.append(
+      "city",
+      city
+    );
+
+    formData.append(
+      "state",
+      state
+    );
+
+    formData.append(
+      "country",
+      country
+    );
+
+    // IMPORTANT:
+    // These values are sent unchanged.
+    // If you want them to be non-editable,
+    // disable the inputs in VenueDetailsForm.
+    formData.append(
+      "phone",
+      phone
+    );
+
+    formData.append(
+      "pincode",
+      pincode
+    );
+
+    // Pricing
     formData.append(
       "seatingCapacity",
       pricing.seatingCapacity
@@ -272,6 +461,11 @@ const EditVenue = () => {
     formData.append(
       "standingCapacity",
       pricing.standingCapacity
+    );
+
+    formData.append(
+      "pricePerHour",
+      pricing.pricePerHour
     );
 
     formData.append(
@@ -294,31 +488,76 @@ const EditVenue = () => {
       pricing.minimumBookingHours
     );
 
+    // Amenities
     formData.append(
       "amenities",
       JSON.stringify(amenities)
     );
 
+    // Deleted existing images
     formData.append(
       "deletedImages",
       JSON.stringify(deletedImages)
     );
 
+    // Deleted existing licenses
+    formData.append(
+      "deletedLicense",
+      JSON.stringify(deletedLicense)
+    );
+
     // New images
     images.forEach((image) => {
-      formData.append("images", image);
+      formData.append(
+        "images",
+        image
+      );
+    });
+
+    // New license
+    newLicense.forEach((license) => {
+      formData.append(
+        "license",
+        license
+      );
     });
 
     // ==============================
-    // UPDATE VENUE
+    // UPDATE
     // ==============================
 
-    await dispatch(
-      updateVenue({
-        venueId,
-        formData,
-      })
-    );
+    try {
+      await dispatch(
+        updateVenue({
+          venueId,
+          formData,
+        })
+      ).unwrap();
+
+      toast.success(
+        "Venue updated successfully!"
+      );
+
+      dispatch(
+        clearVenueState()
+      );
+
+      navigate(
+        ROUTES.VENDOR.VENUES
+      );
+
+    } catch (err) {
+
+      const errorMessage =
+        typeof err === "string"
+          ? err
+          : err?.message ||
+            "Failed to update venue";
+
+      toast.error(
+        errorMessage
+      );
+    }
   };
 
   // ==============================
@@ -327,58 +566,92 @@ const EditVenue = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
+
       <VendorSidebar />
 
       <div className="flex-1">
+
         <VendorNavbar />
 
         <main className="space-y-8 p-6">
+
           <AddVenueHeader
             title="Edit Venue"
             subtitle="Update your venue information."
           />
 
+          {/* Do not render the entire error object */}
           {error && (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
+              {typeof error === "string"
+                ? error
+                : error?.message ||
+                  "Something went wrong"}
             </div>
           )}
 
           {loading && !venue ? (
+
             <div className="rounded-xl bg-white p-8 text-center">
               Loading venue details...
             </div>
+
           ) : (
+
             <>
+
               <VenueDetailsForm
                 venueName={venueName}
                 setVenueName={setVenueName}
+
                 category={category}
                 setCategory={setCategory}
+
                 description={description}
                 setDescription={setDescription}
+
                 addressLine1={addressLine1}
                 setAddressLine1={setAddressLine1}
+
                 city={city}
                 setCity={setCity}
+
                 state={state}
                 setState={setState}
+
                 country={country}
                 setCountry={setCountry}
+
                 phone={phone}
                 setPhone={setPhone}
+
                 pincode={pincode}
                 setPincode={setPincode}
+
                 websiteUrl={websiteUrl}
                 setWebsiteUrl={setWebsiteUrl}
+
                 googleMapLink={googleMapLink}
                 setGoogleMapLink={setGoogleMapLink}
+
+                // Images
                 images={images}
                 setImages={setImages}
+
                 existingImages={existingImages}
                 onRemoveExistingImage={
                   handleRemoveExistingImage
                 }
+
+                // License
+                existingLicense={existingLicense}
+                onRemoveExistingLicense={
+                  handleRemoveExistingLicense
+                }
+
+                newLicense={newLicense}
+                setNewLicense={setNewLicense}
+
                 errors={errors}
               />
 
@@ -407,13 +680,17 @@ const EditVenue = () => {
                 onPublish={handleSubmit}
                 submitLabel="Update Venue"
               />
+
             </>
+
           )}
+
         </main>
+
       </div>
+
     </div>
   );
 };
 
 export default EditVenue;
-
