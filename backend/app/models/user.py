@@ -24,3 +24,12 @@ class User(Base):
     venue_owner_profile = relationship(
         "VenueOwner", back_populates="user", uselist=False
     )
+    
+    
+    
+class TokenBlacklist(Base):                                         # 👈 new
+    __tablename__ = "token_blacklist"
+
+    id = Column(Integer, primary_key=True, index=True)
+    token = Column(String, unique=True, nullable=False, index=True) # the raw refresh token string
+    blacklisted_at = Column(DateTime, default=datetime.utcnow)

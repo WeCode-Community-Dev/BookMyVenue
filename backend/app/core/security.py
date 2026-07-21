@@ -7,7 +7,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from app.core.config import settings
 from app.db.deps import get_db
-from app.models.user import User
+from app.models.user import User, TokenBlacklist
 
 # Tells FastAPI where the login endpoint is
 oauth2_scheme = HTTPBearer()
@@ -19,7 +19,10 @@ def create_access_token(data: dict) -> str:
     expire = datetime.utcnow() + timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
-    to_encode.update({"exp": expire})
+    to_encode.update({
+        "exp": expire,
+        "type" : "access"
+    })
 
     token = jwt.encode(
         to_encode,
@@ -27,6 +30,22 @@ def create_access_token(data: dict) -> str:
         algorithm=settings.ALGORITHM
     )
     return token
+
+def create_refresh_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(
+        days=settings.REFRESH_TOKEN_EXPIRE_DAYS   
+    )
+    to_encode.update({
+        "exp": expire,
+        "type": "refresh"     
+    })
+    
+    token = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+    return token
+
+
 
 # Decode token and return the current user 
 def get_current_user(
@@ -50,8 +69,12 @@ def get_current_user(
         )
         # Extract the user id we stored in "sub"
         user_id: str = payload.get("sub")
+        token_type: str = payload.get("type")
 
         if user_id is None:
+            raise credentials_exception
+        
+        if token_type != "access":
             raise credentials_exception
 
     except JWTError:
@@ -71,6 +94,59 @@ def get_current_user(
 
     return user
 
+
+def get_current_user_from_refresh_token(
+    token=Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+) -> User:
+    """
+    Used exclusively by POST /auth/refresh.
+    Validates that the incoming token is a refresh token and returns the user.
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or expired refresh token",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        payload = jwt.decode(
+            token.credentials,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM]
+        )
+        user_id: str = payload.get("sub")
+        token_type: str = payload.get("type")
+
+        if user_id is None:
+            raise credentials_exception
+
+        # Reject access tokens used on the refresh endpoint
+        if token_type != "refresh":
+            raise credentials_exception
+
+    except JWTError:
+        raise credentials_exception
+    
+    
+    blacklisted = db.query(TokenBlacklist).filter(
+        TokenBlacklist.token == token.credentials
+    ).first()
+    if blacklisted:
+        raise credentials_exception
+
+    user = db.query(User).filter(User.id == int(user_id)).first()
+
+    if user is None:
+        raise credentials_exception
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is inactive"
+        )
+
+    return user
 
 # only admin role can access admin routes
 def require_admin(current_user: User = Depends(get_current_user)) -> User:

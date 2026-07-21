@@ -22,11 +22,13 @@ class Review(Base):
 
     venue_id = Column(Integer, ForeignKey("venues.id", ondelete="CASCADE"), nullable=False)
     reviewer_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    # Optional: which booking this review is about (lets us show "Wedding on 12 May")
     booking_id = Column(Integer, ForeignKey("bookings.id", ondelete="SET NULL"), nullable=True)
 
     rating = Column(Integer, nullable=False)  # 1 to 5
     comment = Column(Text, nullable=True)
+    
+    owner_reply = Column(Text, nullable=True)
+    replied_at = Column(DateTime(timezone=True), nullable=True)
 
     created_at = Column(
         DateTime(timezone=True),

@@ -13,6 +13,7 @@ from app.services.venue_service import(
     update_venue,
     delete_venue,
     get_my_venues,
+    deactivate_venue
 
 )
 from app.core.security import get_current_venue_owner
@@ -37,6 +38,8 @@ def list_pending_venues(
     db: Session = Depends(get_db)
 ):
     return get_pending_venues(db)
+
+
 @router.post("/", response_model=VenueOut)
 def create_new_venue(
     venue: VenueCreate,
@@ -90,6 +93,16 @@ def delete_existing_venue(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_venue_owner),
 ):
+    return delete_venue(db, venue_id, current_user)
+
+
+@router.patch("/{venue_id}/deactivate")
+def deactivate_existing_venue(
+    venue_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    return deactivate_venue(db, venue_id, current_user)
     """Delete a venue (owner only - can only delete own venues)"""
     return delete_venue(
         db,

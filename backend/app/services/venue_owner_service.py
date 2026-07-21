@@ -30,7 +30,7 @@ def register_venue_owner(db: Session, payload: VenueOwnerCreate) -> User:
     return new_user
 
 
-def add_venue_owner_profile(db: Session, current_user: User, payload: VenueOwnerProfileCreate) -> User:
+def upgrade_customer_to_owner(db: Session, current_user: User, payload: VenueOwnerProfileCreate) -> User:
     """Existing logged-in customer adding a host profile to their account."""
     existing = db.query(VenueOwner).filter(VenueOwner.user_id == current_user.id).first()
     if existing:

@@ -35,9 +35,12 @@ function OwnerDashboardPage() {
   } = useSelector((state) => state.venueOwner);
 
   useEffect(() => {
+
+    const currentMonth = new Date().toISOString().slice(0, 7);
+
     dispatch(fetchDashboardSummaryAsync());
     dispatch(fetchBookingRequestsAsync());
-    dispatch(fetchAvailabilityCalendarAsync("2024-05"));
+    dispatch(fetchAvailabilityCalendarAsync({ month: currentMonth }));
     dispatch(fetchMyVenuesAsync());
     dispatch(fetchRevenueOverviewAsync("this_month"));
     dispatch(fetchRecentReviewsAsync());

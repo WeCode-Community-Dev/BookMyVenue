@@ -30,8 +30,8 @@ const validate = (fields) => {
     errors.email = "Enter a valid email address.";
 
   if (!fields.password) errors.password = "Password is required.";
-  else if (fields.password.length < 6)
-    errors.password = "Password must be at least 6 characters.";
+  else if (fields.password.length < 8)
+    errors.password = "Password must be at least 8 characters.";
 
   if (!fields.confirmPassword)
     errors.confirmPassword = "Please confirm your password.";

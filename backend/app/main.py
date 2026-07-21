@@ -10,7 +10,7 @@ from app.db.database import Base, engine, SessionLocal
 from app.seeds.venue_type_seed import seed_venue_types
 from app.seeds.amenity_seed import seed_amenities
 from app.models import user, venue, booking, payment, venue_owner, review, notification, amenity, venue_amenity, venue_type
-from app.routers import auth,bookings,payments, venue_owner as venue_owner_router, venue as venue_router, venue_owner_dashboard, venue_type as venue_type_router, amenity as amenity_router, venue_amenity as venue_amenity_router
+from app.routers import auth,bookings,payments, venue_owner as venue_owner_router, venue as venue_router, venue_owner_dashboard, venue_type as venue_type_router, amenity as amenity_router, venue_amenity as venue_amenity_router, review
 
 from app.db.database import Base, engine, SessionLocal
 
@@ -114,6 +114,7 @@ app.include_router(venue_owner_router.router)
 app.include_router(venue_router.router)
 app.include_router(venue_owner_dashboard.router)
 app.include_router(venue_type_router.router)
+app.include_router(review.router)
 
 @app.get("/")
 def root():

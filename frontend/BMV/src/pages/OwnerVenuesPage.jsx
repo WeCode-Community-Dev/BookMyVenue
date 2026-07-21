@@ -11,12 +11,16 @@ import {
   fetchAmenitiesAsync,
   createVenueAsync,
   linkVenueAmenityAsync,
+  deleteVenueAsync,
+  deactivateVenueAsync,
   clearVenueOwnerError,
 } from "../modules/venueOwner/venueOwnerSlice";
 
 function OwnerVenuesPage() {
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [deactivatingId, setDeactivatingId] = useState(null);
 
   const { venues, venueTypes, amenities, loading, error } = useSelector(
     (state) => state.venueOwner,
@@ -29,20 +33,14 @@ function OwnerVenuesPage() {
   }, [dispatch]);
 
   const handleAddVenue = async ({ amenityIds, ...venuePayload }) => {
-    // Step 1: create the venue — we need its id before we can link amenities.
     const result = await dispatch(createVenueAsync(venuePayload));
 
     if (!createVenueAsync.fulfilled.match(result)) {
-      // createVenueAsync.rejected — error is already in state.venueOwner.error,
-      // the modal stays open so the person can see it and retry.
       return;
     }
 
     const newVenueId = result.payload.id;
 
-    // Step 2: link each selected amenity in parallel.
-    // Failures here are non-blocking — the venue is already created and
-    // visible in the list. Errors land in state.venueOwner.error as usual.
     if (amenityIds && amenityIds.length > 0) {
       await Promise.all(
         amenityIds.map((amenityId) =>
@@ -52,6 +50,18 @@ function OwnerVenuesPage() {
     }
 
     setIsModalOpen(false);
+  };
+
+  const handleDelete = async (id) => {
+    setDeletingId(id);
+    await dispatch(deleteVenueAsync(id));
+    setDeletingId(null);
+  };
+
+  const handleDeactivate = async (id) => {
+    setDeactivatingId(id);
+    await dispatch(deactivateVenueAsync(id));
+    setDeactivatingId(null);
   };
 
   const handleCloseModal = () => {
@@ -68,7 +78,6 @@ function OwnerVenuesPage() {
             Manage and monitor all your registered venues from one place.
           </p>
         </div>
-
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-1.5 bg-rose-900 hover:bg-rose-950 text-white text-sm font-semibold px-4 py-2.5 rounded-full shrink-0 transition-colors"
@@ -78,7 +87,14 @@ function OwnerVenuesPage() {
         </button>
       </div>
 
-      <VenuesGrid venues={venues} loading={loading.venues} />
+      <VenuesGrid
+        venues={venues}
+        loading={loading.venues}
+        onDelete={handleDelete}
+        onDeactivate={handleDeactivate}
+        deletingId={deletingId}
+        deactivatingId={deactivatingId}
+      />
 
       <AddVenueModal
         isOpen={isModalOpen}
