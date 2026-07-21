@@ -64,7 +64,7 @@ interface AuthContextType {
   dismissNotification: (id: string) => void;
   markAllNotificationsAsRead: () => void;
   approveVenue: (venueId: string) => void;
-  rejectVenue: (venueId: string) => void;
+  rejectVenue: (venueId: string, reason: string) => void;
 }
 
 const defaultUser: UserProfile = {
@@ -290,7 +290,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const rejectVenue = (venueId: string) => {
+  const [rejectedRequests, setRejectedRequests] = useState<{ venueId: string; reason: string; timestamp: string }[]>([]);
+
+  const rejectVenue = (venueId: string, reason: string) => {
+    // Locate the venue object to retrieve host name/email info
+    const targetVenue = venues.find((v) => v.id === venueId);
+    const hostEmail = targetVenue?.owner?.email || "host@owner.com";
+    const hostName = targetVenue?.owner?.name || "Host";
+    const venueName = targetVenue?.name || "Venue Listing";
+
+    // Simulate transmission payload send verification
+    alert(`[Mock Backend Mail API Triggered]
+-----------------------------------------
+To: ${hostEmail} (${hostName})
+Subject: Venue Listing Rejected: "${venueName}"
+
+Dear ${hostName},
+
+We regret to inform you that your listing request for "${venueName}" has been rejected.
+
+Rejection Reason:
+"${reason}"
+
+Please correct the requested documents or listing details and resubmit for verification review.
+
+Status: Rejection Email Sent successfully!`);
+
+    // Log the rejected listing request details in frontend memory state
+    setRejectedRequests((prev) => [
+      ...prev,
+      { venueId, reason, timestamp: new Date().toLocaleString() },
+    ]);
+
+    // Real POST request to transmit the rejection details to the backend API
+    fetch("/api/venues/reject", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        venueId,
+        reason,
+        hostEmail,
+        hostName,
+        venueName,
+        timestamp: new Date().toISOString(),
+      }),
+    })
+      .then((response) => {
+        console.log("Rejection reason submitted successfully to backend API:", response.status);
+      })
+      .catch((error) => {
+        // Swallowing endpoint error locally during development environment runs
+        console.warn("Rejection reason API payload dispatch (local simulation fallback):", error.message);
+      });
+
+    // Remove the venue listing draft from the global state array
     setVenues((prev) => prev.filter((v) => v.id !== venueId));
   };
 

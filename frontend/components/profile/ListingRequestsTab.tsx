@@ -23,10 +23,13 @@ export default function ListingRequestsTab() {
   };
 
   const handleReject = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to reject the listing request for "${name}"?`)) {
-      rejectVenue(id);
-      alert(`Listing request for "${name}" has been rejected.`);
+    const reason = prompt(`Please enter the reason for rejecting "${name}":`);
+    if (reason === null) return; // User cancelled prompt
+    if (!reason.trim()) {
+      alert("A rejection reason is required.");
+      return;
     }
+    rejectVenue(id, reason.trim());
   };
 
   return (

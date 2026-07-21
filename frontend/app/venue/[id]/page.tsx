@@ -219,13 +219,13 @@ export default function VenueDetailPage({ params }: PageProps) {
                           alert("Venue bookings have been paused successfully.");
                         }
                       }}
-                      className="w-full bg-transparent hover:bg-red-50 text-red-650 hover:text-red-700 border border-red-200/50 hover:border-red-200 font-extrabold h-10 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all text-xs"
+                      className="w-full bg-transparent hover:bg-red-50 text-red-655 hover:text-red-700 border border-red-200/50 hover:border-red-200 font-extrabold h-10 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all text-xs"
                     >
                       <span>Pause Public Bookings</span>
                     </Button>
                   </div>
                 </div>
-              ) : !venue.verified ? (
+              ) : (!venue.verified && user?.role === "Admin") ? (
                 // Render Admin Approval Control Panel
                 <div className="bg-slate-50 border border-amber-200 shadow-lg rounded-3xl p-5 sm:p-6 space-y-6">
                   <div className="space-y-2 border-b border-slate-200/80 pb-4 text-left">
@@ -282,17 +282,33 @@ export default function VenueDetailPage({ params }: PageProps) {
                     <Button
                       type="button"
                       onClick={() => {
-                        if (confirm(`Are you sure you want to reject the listing request for "${venue.name}"?`)) {
-                          rejectVenue(venue.id);
-                          alert(`Listing request for "${venue.name}" has been rejected.`);
-                          router.push("/profile");
+                        const reason = prompt(`Please enter the reason for rejecting "${venue.name}":`);
+                        if (reason === null) return; // User cancelled prompt
+                        if (!reason.trim()) {
+                          alert("A rejection reason is required.");
+                          return;
                         }
+                        rejectVenue(venue.id, reason.trim());
+                        router.push("/profile");
                       }}
-                      className="w-full bg-transparent hover:bg-red-50 text-red-600 hover:text-red-700 border border-red-200/50 hover:border-red-200 font-bold h-11 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+                      className="w-full bg-transparent hover:bg-red-50 text-red-655 hover:text-red-700 border border-red-200/50 hover:border-red-200 font-bold h-11 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer transition-all"
                     >
                       <X className="size-4 stroke-[3]" />
                       <span>Reject Request</span>
                     </Button>
+                  </div>
+                </div>
+              ) : !venue.verified ? (
+                // Render Pending Verification placeholder block for normal users
+                <div className="bg-slate-50 border border-slate-200 shadow-lg rounded-3xl p-6 text-center space-y-4">
+                  <div className="mx-auto size-12 rounded-full bg-amber-50 flex items-center justify-center">
+                    <AlertTriangle className="size-6 text-amber-600 animate-pulse" />
+                  </div>
+                  <div className="space-y-1.5 select-none text-left">
+                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-wider">Pending Verification</h3>
+                    <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">
+                      This venue listing is currently undergoing review. Public bookings will be active once approved by administration.
+                    </p>
                   </div>
                 </div>
               ) : (

@@ -26,6 +26,7 @@ export interface Venue {
     responseRate: string;
     languages: string[];
     bio: string;
+    email?: string;
   };
   reviews?: {
     id: string;
