@@ -55,10 +55,10 @@ export const ROUTES = {
         VENUE: {
             CREATE: '/venue',
             EDIT: '/venue/:venueId',
-            GET_BY_ID: '/venue/:venueId/:vendorId',
+            GET_BY_ID: '/venues/:venueId',
             GET_ALL: '/venues',
-            DELETE: '/venue/:venueId/:vendorId',
-            UPDATE_STATUS: '/venue/:venueId/:vendorId/status'
+            DELETE: '/venue/:venueId',
+            UPDATE_STATUS: '/venue/:venueId/status'
         },
         PROFILE: {
             GET: '/profile',

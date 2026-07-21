@@ -17,7 +17,9 @@ export class VendorProfileController {
   }
 
   getProfile = asyncHandler(async (req, res) => {
-    const vendorId = req.user.id;
+    //const vendorId = req.user.id;
+        const vendorId = '6a2d96f9bd24251e9e502c04';
+
 
     const vendor = await this._getVendorProfileUsecase.execute(vendorId);
 
@@ -30,7 +32,9 @@ export class VendorProfileController {
   });
 
   updateProfile = asyncHandler(async (req, res) => {
-    const vendorId = req.user.id;
+    //const vendorId = req.user.id;
+        const vendorId = '6a2d96f9bd24251e9e502c04';
+
 
     const vendor = await this._updateVendorProfileUsecase.execute({
       vendorId,
@@ -47,7 +51,7 @@ export class VendorProfileController {
   });
 
   changePassword = asyncHandler(async (req, res) => {
-    const vendorId = '6a58e836080d38065f2fe547';
+    const vendorId = '6a2d96f9bd24251e9e502c04';
 
     await this._changeVendorPasswordUsecase.execute({
       vendorId,
