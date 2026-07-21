@@ -101,6 +101,9 @@ def update_order_status_refund(db: Session, order_id: str, status: str, refund_r
             order.refunded_amount = int(order.amount * 0.7)
             order.refund_percentage = 70
 
+        ############## Need to sent mail to user about refund and refund amount ##############
+
+
         order.status = status
         if refund_reason:
             order.refund_reason = refund_reason
@@ -121,7 +124,7 @@ def get_earnings(db: Session, user_id: int):
         total_earnings_paise = (
             db.query(func.sum(Order.amount))
             .filter(
-                Order.user_id == user_id,
+                # Order.user_id == user_id,
                 Order.status == "paid"
             )
             .scalar()
@@ -133,7 +136,7 @@ def get_earnings(db: Session, user_id: int):
             db.query(func.sum(Order.amount))
             .join(Booking, Booking.order_id == Order.id)
             .filter(
-                Order.user_id == user_id,
+                # Order.user_id == user_id,
                 Order.status == "paid",
                 Booking.booking_date <= current_date
             )
