@@ -71,6 +71,48 @@ type SpaceDetails = Prisma.SpaceGetPayload<{
   include: typeof spaceDetailsInclude;
 }>;
 
+const browseVenuesInclude = {
+  images: {
+    where: {isCover: true},
+    select: {
+      image: true,
+    },
+  },
+  spaces: {
+    select: {
+      categoryId: true,
+      spacePricing: {
+        select: {
+          pricingType: true,
+          amount: true,
+          currency: true,
+        },
+      },
+      capacityType: true,
+      capacityValue: true,
+    },
+  },
+  amenities: {
+    select: {
+      amenity: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.VenueInclude;
+
+type BrowseVenueDetails = Prisma.VenueGetPayload<{
+  include: typeof browseVenuesInclude;
+}>;
+
+type BrowseVenueListItem = Omit<BrowseVenueDetails, 'images' | 'amenities'> & {
+  images: BrowseVenueDetails['images'][number]['image'][];
+  amenities: BrowseVenueDetails['amenities'][number]['amenity'][];
+};
+
 type AmenityDetails = Prisma.AmenityGetPayload<{
   select: {
     id: true;
@@ -293,14 +335,55 @@ export class VenuesService {
     }
   }
 
-  async findAllVenues(): Promise<VenueDetails[]> {
+
+  async findAllVenues(page: number = 1, limit: number = 10, amenityIds?: string): Promise<SuccessResponse<BrowseVenueListItem[]>> {
+    const parsedAmenityIds = amenityIds ? amenityIds.split(',') : [];
+    const existingAmenityIds = await this.filterExistingIds(this.prismaService.amenity, parsedAmenityIds);
+    
     try {
-      return this.prismaService.venue.findMany({
-        orderBy: {
-          createdAt: 'desc',
+      const where = {
+        AND: existingAmenityIds.length > 0 ? existingAmenityIds.map(id => ({
+          amenities: {
+            some: {
+              amenityId: id,
+            },
+          },
+        })) : {},
+      }
+      const [venues, totalVenues] = await this.prismaService.$transaction([
+        
+        this.prismaService.venue.findMany({
+          where,
+          orderBy: {
+            createdAt: 'desc',
+          },
+          include: browseVenuesInclude,
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        this.prismaService.venue.count({ where }),
+      ]);
+
+      const flattedVenues: BrowseVenueListItem[] = venues.map((venue) => ({
+        ...venue,
+        images: venue.images.map((image) => image.image),
+        amenities: venue.amenities.map((amenity) => amenity.amenity),
+      }));
+
+      return {
+        success: true,
+        message: 'Venues fetched successfully',
+        data: flattedVenues,
+        meta: {
+          total: totalVenues,
+          page,
+          limit,
+          totalPages: Math.ceil(totalVenues / limit),
+          hasNext: page < Math.ceil(totalVenues / limit),
+          hasPrevious: page > 1,
         },
-        include: venueDetailsInclude,
-      });
+      };
+
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -1031,6 +1114,29 @@ export class VenuesService {
         throw new NotFoundException(`${modalName} not found: ${missingIds.join(', ')}`);
       }
     } catch (error) {
+      throw error;
+    }
+  }
+
+  private async filterExistingIds<
+    T extends {
+      findMany(args: {
+        where: { id: { in: string[] } };
+        select: { id: true };
+      }): Promise<{ id: string }[]>;
+    },
+  >(
+    model: T,
+    ids: string[],
+  ): Promise<string[]> {
+    try {
+      const existingIds = await model.findMany({
+        where: { id: { in: ids } },
+        select: { id: true },
+      });
+      return existingIds.map((id) => id.id);
+    }
+    catch (error) {
       throw error;
     }
   }

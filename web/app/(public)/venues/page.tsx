@@ -28,11 +28,7 @@ type VenuesPageProps = {
 export default async function VenuesPage({ searchParams }: VenuesPageProps) {
   const params = await searchParams;
 
-  const [venues, categories, amenities] = await Promise.all([
-    getVenues(),
-    getSpaceCategories(),
-    fetchAmenities(),
-  ]);
+  const venues = await getVenues();
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans">
@@ -49,9 +45,6 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
         >
           <VenuesBrowse
             venues={venues}
-            categories={categories}
-            amenities={amenities}
-            initialSearchParams={params}
           />
         </Suspense>
       </main>

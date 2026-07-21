@@ -13,9 +13,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import type {
-  AmenityResponse,
-  SpaceCategoryResponse,
+import {
+  fetchAmenities,
+  type AmenityResponse,
+  type SpaceCategoryResponse,
 } from "@/services/venueServices";
 import {
   CAPACITY_MAX,
@@ -27,13 +28,15 @@ import {
   defaultBrowseFilters,
 } from "@/lib/data/venues-browse";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type VenuesBrowseFiltersProps = {
-  filters: BrowseFilters;
-  categories: SpaceCategoryResponse[];
-  amenities: AmenityResponse;
-  onChange: (filters: BrowseFilters) => void;
-  onReset: () => void;
+  // filters: BrowseFilters;
+  // categories: SpaceCategoryResponse[];
+  // amenities: AmenityResponse;
+  // onChange: (filters: BrowseFilters) => void;
+  // onReset: () => void;
 };
 
 const sortOptions: { value: BrowseSortOption; label: string }[] = [
@@ -45,21 +48,46 @@ const sortOptions: { value: BrowseSortOption; label: string }[] = [
 ];
 
 export function VenuesBrowseFilters({
-  filters,
-  categories,
-  amenities,
-  onChange,
-  onReset,
+  // filters,
+  // categories,
+  // amenities,
+  // onChange,
+  // onReset,
 }: VenuesBrowseFiltersProps) {
-  function update(partial: Partial<BrowseFilters>) {
-    onChange({ ...filters, ...partial, page: 1 });
-  }
+  // function update(partial: Partial<BrowseFilters>) {
+  //   onChange({ ...filters, ...partial, page: 1 });
+  // }
 
-  function toggleAmenity(amenityId: string) {
-    const amenityIds = filters.amenityIds.includes(amenityId)
-      ? filters.amenityIds.filter((id) => id !== amenityId)
-      : [...filters.amenityIds, amenityId];
-    update({ amenityIds });
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const selectedIds = (searchParams.get("amenityIds") ?? "")
+    .split(",")
+    .filter(Boolean);
+
+  const [amenities, setAmenities] = useState<AmenityResponse>([]);
+
+  useEffect(() => {
+    (async ()=>{
+      const amenities = await fetchAmenities();
+      setAmenities(amenities);
+    })()
+  }, []);
+  
+
+  function toggleAmenity(amenityId: string, checked: boolean) {
+    const next = checked
+      ? [...selectedIds, amenityId]
+      : selectedIds.filter((id) => id !== amenityId);
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (next.length > 0) {
+      params.set("amenityIds", next.join(","));
+    } else {
+      params.delete("amenityIds");
+    }
+    params.set("page", "1");
+
+    router.push(`/venues?${params.toString()}`);
   }
 
   return (
@@ -68,7 +96,7 @@ export function VenuesBrowseFilters({
         <h2 className="text-base font-semibold text-on-surface">Filters</h2>
         <button
           type="button"
-          onClick={onReset}
+          // onClick={onReset}
           className="text-sm font-medium text-surface-tint hover:underline"
         >
           Reset
@@ -80,8 +108,8 @@ export function VenuesBrowseFilters({
         <div className="relative">
           <MapPin className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
           <Input
-            value={filters.location}
-            onChange={(e) => update({ location: e.target.value })}
+            // value={filters.location}
+            // onChange={(e) => update({ location: e.target.value })}
             placeholder="City or neighborhood"
             className="h-10 pl-9 bg-background"
           />
@@ -91,7 +119,7 @@ export function VenuesBrowseFilters({
       <div className="flex flex-col gap-3">
         <Label className="text-sm font-medium text-on-surface">Category</Label>
         <div className="flex flex-wrap gap-2">
-          {categories.map((category) => {
+          {/* {categories.map((category) => {
             const isSelected = filters.categoryId === category.id;
             return (
               <button
@@ -112,7 +140,7 @@ export function VenuesBrowseFilters({
                 {category.name}
               </button>
             );
-          })}
+          })} */}
         </div>
       </div>
 
@@ -120,17 +148,17 @@ export function VenuesBrowseFilters({
         <div className="flex items-center justify-between">
           <Label className="text-sm font-medium text-on-surface">Capacity</Label>
           <span className="text-xs text-on-surface-variant">
-            {filters.minCapacity} - {filters.maxCapacity >= CAPACITY_MAX ? `${CAPACITY_MAX}+` : filters.maxCapacity}
+            {/* {filters.minCapacity} - {filters.maxCapacity >= CAPACITY_MAX ? `${CAPACITY_MAX}+` : filters.maxCapacity} */}
           </span>
         </div>
         <Slider
           min={CAPACITY_MIN}
           max={CAPACITY_MAX}
           step={5}
-          value={[filters.minCapacity, filters.maxCapacity]}
+          // value={[filters.minCapacity, filters.maxCapacity]}
           onValueChange={(value) => {
             const [min, max] = value;
-            update({ minCapacity: min, maxCapacity: max });
+            // update({ minCapacity: min, maxCapacity: max });
           }}
         />
       </div>
@@ -148,15 +176,15 @@ export function VenuesBrowseFilters({
               type="number"
               min={PRICE_MIN}
               max={PRICE_MAX}
-              value={filters.minPrice}
-              onChange={(e) =>
-                update({
-                  minPrice: Math.min(
-                    parseInt(e.target.value, 10) || PRICE_MIN,
-                    filters.maxPrice,
-                  ),
-                })
-              }
+              // value={filters.minPrice}
+              // onChange={(e) =>
+              //   update({
+              //     minPrice: Math.min(
+              //       parseInt(e.target.value, 10) || PRICE_MIN,
+              //       filters.maxPrice,
+              //     ),
+              //   })
+              // }
               className="h-10 pl-7 bg-background"
             />
           </div>
@@ -168,15 +196,15 @@ export function VenuesBrowseFilters({
               type="number"
               min={PRICE_MIN}
               max={PRICE_MAX}
-              value={filters.maxPrice}
-              onChange={(e) =>
-                update({
-                  maxPrice: Math.max(
-                    parseInt(e.target.value, 10) || PRICE_MAX,
-                    filters.minPrice,
-                  ),
-                })
-              }
+              // value={filters.maxPrice}
+              // onChange={(e) =>
+              //   update({
+              //     maxPrice: Math.max(
+              //       parseInt(e.target.value, 10) || PRICE_MAX,
+              //       filters.minPrice,
+              //     ),
+              //   })
+              // }
               className="h-10 pl-7 bg-background"
             />
           </div>
@@ -192,8 +220,10 @@ export function VenuesBrowseFilters({
               className="flex items-center gap-3 cursor-pointer"
             >
               <Checkbox
-                checked={filters.amenityIds.includes(amenity.id)}
-                onCheckedChange={() => toggleAmenity(amenity.id)}
+                checked={selectedIds.includes(amenity.id)}
+                onCheckedChange={(checked) =>
+                  toggleAmenity(amenity.id, checked === true)
+                }
               />
               <span className="text-sm text-on-surface">{amenity.name}</span>
             </label>
@@ -204,10 +234,10 @@ export function VenuesBrowseFilters({
       <div className="flex flex-col gap-2">
         <Label className="text-sm font-medium text-on-surface">Sort By</Label>
         <Select
-          value={filters.sort}
-          onValueChange={(value) =>
-            update({ sort: value as BrowseSortOption })
-          }
+          // value={filters.sort}
+          // onValueChange={(value) =>
+          //   update({ sort: value as BrowseSortOption })
+          // }
         >
           <SelectTrigger className="h-10 w-full bg-background">
             <SelectValue />

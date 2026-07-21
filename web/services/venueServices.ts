@@ -1,4 +1,4 @@
-import { Space, VenueDetails, VenueStatus } from "@/lib/data/venues";
+import { CapacityType, Space, VenueDetails, VenueStatus } from "@/lib/data/venues";
 import { apiFetch } from "./api";
 
 export type CreateVenuePayload = {
@@ -105,6 +105,69 @@ export type PricingType =
     | 'EVENT'
     | 'CUSTOM';
 
+export type BrowseVenueImage = {
+    id: string;
+    url: string;
+    altText: string | null;
+    width: number | null;
+    height: number | null;
+    createdAt: string;
+};
+
+export type BrowseVenueAmenity = {
+    id: string;
+    name: string;
+};
+
+export type BrowseVenueSpacePricing = {
+    pricingType: PricingType;
+    amount: string;
+    currency: string;
+};
+
+export type BrowseVenueSpace = {
+    categoryId: string;
+    spacePricing: BrowseVenueSpacePricing[];
+    capacityType: CapacityType | null;
+    capacityValue: string | null;
+};
+
+export type BrowseVenueListItem = {
+    id: string;
+    ownerId: string;
+    name: string;
+    description: string | null;
+    address: string;
+    city: string;
+    state: string | null;
+    country: string;
+    postalCode: string | null;
+    latitude: string | null;
+    longitude: string | null;
+    timezone: string;
+    createdAt: string;
+    updatedAt: string;
+    images: BrowseVenueImage[];
+    amenities: BrowseVenueAmenity[];
+    spaces: BrowseVenueSpace[];
+};
+
+export type PaginationMeta = {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+};
+
+export type GetVenuesResult = {
+    venues: BrowseVenueListItem[];
+    meta: PaginationMeta;
+};
+
+export const VENUES_PAGE_LIMIT = 10;
+
 export type UpsertSpacePricingPayload = {
     pricingType: PricingType;
     amount: number;
@@ -166,15 +229,23 @@ export async function createImages(images: { url: string, altText: string }[]): 
     }
 }
 
-export async function getVenues(): Promise<VenueDetailedResponse[]> {
+export async function getVenues(
+    page: number = 1,
+    limit: number = VENUES_PAGE_LIMIT,
+    amenityIds?:string
+): Promise<GetVenuesResult> {
     try {
-        const response = await apiFetch('/venues', {
+        const response = await apiFetch(`/venues?page=${page}&limit=${limit}&amenityIds=${amenityIds}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
         });
-        return response;
+
+        return {
+            venues: response.data ?? [],
+            meta: response.meta,
+        };
     }
     catch (error) {
         console.error(error);

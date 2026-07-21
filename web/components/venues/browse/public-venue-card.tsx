@@ -6,7 +6,6 @@ import {
   Sparkles,
   Star,
   Users,
-  Zap,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,28 +16,43 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   getImageUrl,
-  getVenueCoverImage,
 } from "@/lib/data/venue-detail";
-import type { VenueBrowseDisplay } from "@/lib/data/venues-browse";
 import { cn } from "@/lib/utils";
+import { BrowseVenueListItem, BrowseVenueSpace } from "@/services/venueServices";
 
 type PublicVenueCardProps = {
-  display: VenueBrowseDisplay;
+  venue: BrowseVenueListItem;
   view: "grid" | "list";
 };
 
-export function PublicVenueCard({ display, view }: PublicVenueCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
-  const { venue, categoryLabel, capacityValue, amenityLabels, startingPrice, rating, isAvailableToday } =
-    display;
+const getStartingPrice = (spaces: BrowseVenueSpace[]): number|string => {
+  const price = '—';
+  if (spaces.length === 0) return price;
+  let minPrice = Infinity;
+  for (const space of spaces) {
+    for(const spacePrice of space.spacePricing){
+      if(spacePrice.pricingType == 'HOURLY'){
+        minPrice = Math.min(minPrice, Number(spacePrice.amount));
+      }
+    }
+  }
+  return minPrice === Infinity ? price : minPrice;
+}
 
-  const coverImage = getVenueCoverImage(venue);
+
+export function PublicVenueCard({ venue, view }: PublicVenueCardProps) {
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  const amenityLabels = venue.amenities.map((amenity) => amenity.name);
+
+
+  const coverImage = venue.images[0];
   const locationLine = [venue.city, venue.address.split(",")[0]]
     .filter(Boolean)
     .join(", ");
 
-  const capacityLabel =
-    capacityValue != null ? `Max ${Math.round(capacityValue)}` : "—";
+  const capacityLabel = venue.spaces.length > 0 ?  `Max ${Math.max(...venue.spaces.map((space) =>  space.capacityValue ? Number(space.capacityValue) : 0))}` : '—';
+  const startingPrice = getStartingPrice(venue.spaces);
 
   const imageSection = (
     <div
@@ -49,8 +63,8 @@ export function PublicVenueCard({ display, view }: PublicVenueCardProps) {
     >
       {coverImage ? (
         <Image
-          src={getImageUrl(coverImage.image.url)}
-          alt={coverImage.image.altText || venue.name}
+          src={getImageUrl(coverImage.url)}
+          alt={coverImage.altText || venue.name}
           fill
           className="object-cover"
           sizes={
@@ -64,14 +78,14 @@ export function PublicVenueCard({ display, view }: PublicVenueCardProps) {
           No image
         </div>
       )}
-      {isAvailableToday && (
+      {/* {isAvailableToday && (
         <Badge
           className="absolute top-3 left-3 gap-1 border-transparent bg-surface-tint text-on-primary uppercase"
         >
           <Zap className="size-3" />
           Available Today
         </Badge>
-      )}
+      )} */}
       <Button
         type="button"
         variant="secondary"
@@ -100,11 +114,11 @@ export function PublicVenueCard({ display, view }: PublicVenueCardProps) {
     >
       <div className="flex items-start justify-between gap-2">
         <p className="text-[10px] font-semibold tracking-wider text-surface-tint uppercase">
-          {categoryLabel}
+          {/* {categoryLabel} */}
         </p>
         <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-on-surface">
           <Star className="size-3.5 fill-amber-400 text-amber-400" />
-          {rating.toFixed(1)}
+          {/* {rating.toFixed(1)} */}
         </span>
       </div>
 
