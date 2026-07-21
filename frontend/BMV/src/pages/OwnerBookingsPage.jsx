@@ -8,6 +8,7 @@ import {
   acceptBookingRequestAsync,
   rejectBookingRequestAsync,
 } from "../modules/venueOwner/venueOwnerSlice";
+import { formatBookingPeriod } from "../utils/bookingFormat";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -21,7 +22,8 @@ const TABS = [
 // Derives a single display status from the two backend status fields
 function resolveDisplayStatus(booking) {
   if (booking.status === "cancelled") return "cancelled";
-  const isPast = new Date(booking.booking_date) < new Date(new Date().toDateString());
+  const endDate = booking.check_out_date ?? booking.booking_date;
+  const isPast = new Date(endDate) < new Date(new Date().toDateString());
   if (booking.owner_status === "accepted" && isPast) return "completed";
   if (booking.owner_status === "accepted") return "confirmed";
   if (booking.owner_status === "rejected") return "rejected";
@@ -97,11 +99,7 @@ function ActionButtons({ booking, actionBookingId, onAccept, onReject }) {
 
 // Desktop table row
 function BookingRow({ booking, actionBookingId, onAccept, onReject }) {
-  const d = new Date(booking.booking_date);
-  const dateStr = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-  const timeStr = booking.time_slot
-    ? new Date(`1970-01-01T${booking.time_slot}`).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })
-    : "—";
+  const periodStr = formatBookingPeriod(booking);
 
   return (
     <tr className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
@@ -130,10 +128,7 @@ function BookingRow({ booking, actionBookingId, onAccept, onReject }) {
 
       {/* Date & time */}
       <td className="py-4 px-5">
-        <p className="text-sm text-gray-700 font-medium">{dateStr}</p>
-        <p className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1">
-          <Clock size={10} /> {timeStr}
-        </p>
+        <p className="text-sm text-gray-700 font-medium">{periodStr}</p>
         {booking.guest_count != null && (
           <p className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1">
             <Users size={10} /> {booking.guest_count} guests
@@ -179,11 +174,7 @@ function BookingRow({ booking, actionBookingId, onAccept, onReject }) {
 
 // Mobile card
 function BookingCard({ booking, actionBookingId, onAccept, onReject }) {
-  const d = new Date(booking.booking_date);
-  const dateStr = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-  const timeStr = booking.time_slot
-    ? new Date(`1970-01-01T${booking.time_slot}`).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })
-    : "—";
+  const periodStr = formatBookingPeriod(booking);
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-3">
@@ -213,8 +204,7 @@ function BookingCard({ booking, actionBookingId, onAccept, onReject }) {
 
       {/* Date / time / guests */}
       <div className="flex flex-wrap gap-3 text-[11px] text-gray-500">
-        <span className="flex items-center gap-1"><Calendar size={11} /> {dateStr}</span>
-        <span className="flex items-center gap-1"><Clock size={11} /> {timeStr}</span>
+        <span className="flex items-center gap-1"><Calendar size={11} /> {periodStr}</span>
         {booking.guest_count != null && (
           <span className="flex items-center gap-1"><Users size={11} /> {booking.guest_count} guests</span>
         )}

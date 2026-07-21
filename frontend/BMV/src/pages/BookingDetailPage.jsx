@@ -5,6 +5,7 @@ import {
   fetchBookingDetailAsync,
   cancelBookingAsync,
 } from "../modules/bookings/bookingSlice";
+import { formatBookingPeriod } from "../utils/bookingFormat";
 
 const STATUS_STYLES = {
   pending_payment: "bg-amber-50 text-amber-700",
@@ -83,8 +84,10 @@ function BookingDetailPage() {
           <div className="grid grid-cols-2 gap-3 text-sm">
             <Row label="Order ID" value={`#${current.id}`} />
             <Row label="Amount" value={`₹${Number(current.amount).toLocaleString("en-IN")}`} />
-            <Row label="Date" value={current.booking_date} />
-            <Row label="Time" value={String(current.time_slot).slice(0, 5)} />
+            <Row label="Period" value={formatBookingPeriod(current)} className="col-span-2" />
+            {current.num_days > 1 && (
+              <Row label="Duration" value={`${current.num_days} days`} />
+            )}
             {current.payment_status && (
               <Row label="Payment" value={current.payment_status} />
             )}
@@ -163,9 +166,9 @@ function BookingDetailPage() {
   );
 }
 
-function Row({ label, value }) {
+function Row({ label, value, className = "" }) {
   return (
-    <div className="bg-slate-50 rounded-xl p-3">
+    <div className={`bg-slate-50 rounded-xl p-3 ${className}`}>
       <p className="text-xs text-slate-400">{label}</p>
       <p className="font-medium text-slate-800 mt-0.5">{value}</p>
     </div>

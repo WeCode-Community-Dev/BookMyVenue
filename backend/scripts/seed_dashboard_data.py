@@ -67,8 +67,11 @@ def seed():
             row = db.execute(
                 text("""
                     INSERT INTO bookings
-                    (user_id, venue_id, booking_date, time_slot, amount, status, owner_status, created_at, updated_at)
-                    VALUES (:uid, :vid, :bd, :ts, :amt, :status, :owner_status, :created_at, :created_at)
+                    (user_id, venue_id, booking_date, time_slot,
+                     check_in_date, check_in_time, check_out_date, check_out_time, num_days,
+                     amount, status, owner_status, created_at, updated_at)
+                    VALUES (:uid, :vid, :bd, :ts, :bd, :ts, :bd, '23:59:59'::time, 1,
+                            :amt, :status, :owner_status, :created_at, :created_at)
                     RETURNING id
                 """),
                 {

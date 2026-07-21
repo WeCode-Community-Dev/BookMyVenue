@@ -5,6 +5,7 @@ import { logoutUserAsync, fetchCurrentUserAsync } from "../modules/auth/authSlic
 import { fetchMyBookingsAsync } from "../modules/bookings/bookingSlice";
 import { getVenues } from "../modules/venues/services/venueService";
 import VenueCard from "../components/VenueCard";
+import { formatBookingPeriod } from "../utils/bookingFormat";
 
 function DashboardPage() {
   const { user } = useSelector((state) => state.auth);
@@ -101,7 +102,7 @@ function DashboardPage() {
                 {recentBookings.map((b) => (
                   <li key={b.id} className="flex items-center justify-between text-sm">
                     <span className="text-slate-600">
-                      Booking #{b.id} · {String(b.booking_date)}
+                      Booking #{b.id} · {formatBookingPeriod(b)}
                     </span>
                     <span className="text-slate-400 capitalize">{b.status?.replace("_", " ")}</span>
                   </li>

@@ -81,8 +81,11 @@ def main() -> int:
 
     state: dict[str, Any] = {}
     booking_date = (date.today() + timedelta(days=30)).isoformat()
+    check_out_date = (date.today() + timedelta(days=33)).isoformat()
     time_hour = 10 + (RUN_ID % 8)
-    time_slot = f"{time_hour:02d}:30:00"
+    check_in_time = f"{time_hour:02d}:30:00"
+    check_out_time = "16:30:00"
+    time_slot = check_in_time
 
     # --- A. Health ---
     print("A. Health")
@@ -113,6 +116,19 @@ def main() -> int:
         vid = state["public_venue_id"]
         r = requests.get(f"{BASE_URL}/venues/{vid}", timeout=10)
         check(f"GET /venues/{vid}", r.status_code == 200, snippet(r))
+
+        r = requests.get(
+            f"{BASE_URL}/venues/{vid}/availability/range",
+            params={
+                "check_in_date": booking_date,
+                "check_in_time": check_in_time,
+                "check_out_date": check_out_date,
+                "check_out_time": check_out_time,
+            },
+            timeout=10,
+        )
+        range_avail_ok = r.status_code == 200 and r.json().get("available") is True
+        check(f"GET /venues/{vid}/availability/range", range_avail_ok, snippet(r))
 
         r = requests.get(
             f"{BASE_URL}/venues/{vid}/availability",
@@ -198,9 +214,11 @@ def main() -> int:
         }
         booking_body = {
             "venue_id": venue_id,
-            "booking_date": booking_date,
-            "time_slot": time_slot,
-            "notes": "Smoke test booking",
+            "check_in_date": booking_date,
+            "check_in_time": check_in_time,
+            "check_out_date": check_out_date,
+            "check_out_time": check_out_time,
+            "notes": "Smoke test multi-day booking",
         }
         r = requests.post(
             f"{BASE_URL}/bookings",
@@ -209,9 +227,11 @@ def main() -> int:
             timeout=10,
         )
         booking_ok = r.status_code == 201
-        check("POST /bookings", booking_ok, snippet(r))
+        check("POST /bookings (multi-day)", booking_ok, snippet(r))
         if booking_ok:
             state["booking_id"] = r.json()["id"]
+            num_days_ok = r.json().get("num_days") == 4
+            check("POST /bookings num_days=4", num_days_ok, snippet(r))
 
         r = requests.post(
             f"{BASE_URL}/bookings",
@@ -393,8 +413,10 @@ def main() -> int:
             },
             json={
                 "venue_id": venue_id,
-                "booking_date": booking_date,
-                "time_slot": f"{(time_hour + 1) % 24:02d}:30:00",
+                "check_in_date": booking_date,
+                "check_in_time": f"{(time_hour + 1) % 24:02d}:30:00",
+                "check_out_date": check_out_date,
+                "check_out_time": check_out_time,
                 "notes": "Owner should not book",
             },
             timeout=10,

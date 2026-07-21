@@ -99,7 +99,11 @@ function DayPopup({ dateKey, dayData, onClose }) {
         {dayData.time_slot && (
           <div className="flex items-center gap-2">
             <Clock size={13} className="text-gray-400 shrink-0" />
-            <span className="text-xs">{dayData.time_slot}</span>
+            <span className="text-xs">
+              {dayData.num_days > 1 && dayData.check_out_time
+                ? `${dayData.time_slot} → ${dayData.check_out_time} (${dayData.num_days} days)`
+                : dayData.time_slot}
+            </span>
           </div>
         )}
         {dayData.amount != null && (

@@ -10,6 +10,15 @@ from app.models.user import User
 from app.models.venue import Venue
 from app.schemas.admin import UserAdminCreate, UserAdminUpdate, VenueAdminCreate, VenueAdminUpdate
 from app.services.auth_service import hash_password
+from app.services.booking_dates import day_in_booking_range
+
+
+def _bookings_covering_day(db: Session, day) -> int:
+    return (
+        db.query(Booking)
+        .filter(Booking.check_in_date <= day, Booking.check_out_date >= day)
+        .count()
+    )
 
 
 def _venue_to_admin_out(venue: Venue, owner_name: str | None = None) -> dict:
@@ -78,22 +87,22 @@ def get_dashboard_stats(db: Session) -> dict:
     }
 
     today = datetime.now(timezone.utc).date()
-    today_bookings = db.query(Booking).filter(Booking.booking_date == today).count()
+    today_bookings = _bookings_covering_day(db, today)
     today_revenue = (
         db.query(func.coalesce(func.sum(Payment.amount), 0))
         .join(Booking, Payment.booking_id == Booking.id)
-        .filter(Booking.booking_date == today, Payment.status == "paid")
+        .filter(Booking.check_in_date <= today, Booking.check_out_date >= today, Payment.status == "paid")
         .scalar()
     )
 
     weekly_trend = []
     for i in range(6, -1, -1):
         day = today - timedelta(days=i)
-        day_bookings = db.query(Booking).filter(Booking.booking_date == day).count()
+        day_bookings = _bookings_covering_day(db, day)
         day_revenue = (
             db.query(func.coalesce(func.sum(Payment.amount), 0))
             .join(Booking, Payment.booking_id == Booking.id)
-            .filter(Booking.booking_date == day, Payment.status == "paid")
+            .filter(Booking.check_in_date <= day, Booking.check_out_date >= day, Payment.status == "paid")
             .scalar()
         )
         weekly_trend.append(
@@ -106,13 +115,18 @@ def get_dashboard_stats(db: Session) -> dict:
         )
 
     month_start = today.replace(day=1)
-    month_rows = (
-        db.query(Booking.booking_date, func.count(Booking.id))
-        .filter(Booking.booking_date >= month_start, Booking.booking_date <= today)
-        .group_by(Booking.booking_date)
+    month_bookings = (
+        db.query(Booking)
+        .filter(Booking.check_out_date >= month_start, Booking.check_in_date <= today)
         .all()
     )
-    counts_by_date = {str(row[0]): row[1] for row in month_rows}
+    counts_by_date: dict[str, int] = {}
+    cursor = month_start
+    while cursor <= today:
+        counts_by_date[str(cursor)] = sum(
+            1 for b in month_bookings if day_in_booking_range(b, cursor)
+        )
+        cursor += timedelta(days=1)
     month_activity = []
     cursor = month_start
     while cursor <= today:
@@ -309,6 +323,11 @@ def get_all_bookings(db: Session, skip: int = 0, limit: int = 20) -> list[dict]:
                 "venue_name": venue_name,
                 "booking_date": booking.booking_date,
                 "time_slot": booking.time_slot,
+                "check_in_date": booking.check_in_date,
+                "check_in_time": booking.check_in_time,
+                "check_out_date": booking.check_out_date,
+                "check_out_time": booking.check_out_time,
+                "num_days": booking.num_days,
                 "status": booking.status,
                 "amount": float(booking.amount),
                 "payment_status": payment.status if payment else None,

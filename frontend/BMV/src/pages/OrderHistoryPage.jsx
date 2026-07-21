@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { fetchMyBookingsAsync } from "../modules/bookings/bookingSlice";
+import { formatBookingPeriod } from "../utils/bookingFormat";
 
 const STATUS_STYLES = {
   pending_payment: "bg-amber-50 text-amber-700 border-amber-200",
@@ -23,11 +24,6 @@ function StatusBadge({ status }) {
       {status?.replace("_", " ")}
     </span>
   );
-}
-
-function formatTime(t) {
-  if (!t) return "";
-  return String(t).slice(0, 5);
 }
 
 function OrderHistoryPage() {
@@ -113,7 +109,7 @@ function OrderHistoryPage() {
                     <p className="text-sm text-slate-400 truncate">{b.venue_location}</p>
                   )}
                   <p className="text-sm text-slate-600 mt-2">
-                    {b.booking_date} · {formatTime(b.time_slot)}
+                    {formatBookingPeriod(b)}
                   </p>
                   <p className="text-xs text-slate-400 mt-1">
                     Order #{b.id} · {new Date(b.created_at).toLocaleDateString("en-IN")}

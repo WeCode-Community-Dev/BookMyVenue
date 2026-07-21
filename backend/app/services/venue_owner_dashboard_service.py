@@ -8,6 +8,7 @@ from fastapi import HTTPException, status
 from app.models.venue import Venue
 from app.models.booking import Booking
 from app.models.payment import Payment
+from app.services.booking_dates import iter_dates_in_range
 
 
 def _owner_venue_ids(db: Session, owner_id: int) -> list[int]:
@@ -42,11 +43,14 @@ def get_dashboard_summary(db: Session, owner_id: int) -> dict:
     booking_requests_pending = booking_requests_total - booking_requests_new
 
     upcoming_query = db.query(Booking).filter(
-        Booking.venue_id.in_(venue_ids), Booking.owner_status == "accepted",Booking.status != "cancelled", Booking.booking_date >= date.today(),
+        Booking.venue_id.in_(venue_ids),
+        Booking.owner_status == "accepted",
+        Booking.status != "cancelled",
+        Booking.check_out_date >= date.today(),
     )
     upcoming_events_count = upcoming_query.count()
-    next_event = upcoming_query.order_by(Booking.booking_date.asc()).first()
-    next_event_date = next_event.booking_date if next_event else None
+    next_event = upcoming_query.order_by(Booking.check_in_date.asc()).first()
+    next_event_date = next_event.check_in_date if next_event else None
 
     today = date.today()
     this_month_start, this_month_end = _month_bounds(today.year, today.month)
@@ -95,7 +99,9 @@ def get_booking_requests(db: Session, owner_id: int) -> list[dict]:
     return [
         {
             "id": booking.id, "venue_name": venue.name, "event_type": booking.event_type,
-            "event_date": booking.booking_date, "event_time": booking.time_slot,
+            "event_date": booking.check_in_date, "event_time": booking.check_in_time,
+            "check_out_date": booking.check_out_date, "check_out_time": booking.check_out_time,
+            "num_days": booking.num_days,
             "guest_count": booking.guest_count, "price": float(booking.amount),
             "owner_status": booking.owner_status,
         }
@@ -150,27 +156,34 @@ def get_availability_calendar(db: Session, owner_id: int, month: str, venue_id: 
     start, end = _month_bounds(year, mon)
 
     bookings = db.query(Booking).filter(
-        Booking.venue_id.in_(venue_ids), Booking.booking_date >= start,
-        Booking.booking_date <= end, Booking.owner_status != "rejected", Booking.status != "cancelled",
+        Booking.venue_id.in_(venue_ids),
+        Booking.check_in_date <= end,
+        Booking.check_out_date >= start,
+        Booking.owner_status != "rejected",
+        Booking.status != "cancelled",
     ).all()
 
     days: dict[str, dict] = {}
     for b in bookings:
-        key = b.booking_date.isoformat()
         status_val = "booked" if b.owner_status == "accepted" else "pending"
-    
-        if key in days and days[key]["status"] == "booked":
-            continue
-        
-        days[key] = {
-            "status": status_val,
-            "booking_id": b.id,
-            "venue_name": b.venue.name if b.venue else None,
-            "event_type": b.event_type,
-            "guest_count": b.guest_count,
-            "time_slot": b.time_slot.strftime("%I:%M %p") if b.time_slot else None,
-            "amount": float(b.amount),
-        }
+        for day in iter_dates_in_range(
+            max(b.check_in_date, start),
+            min(b.check_out_date, end),
+        ):
+            key = day.isoformat()
+            if key in days and days[key]["status"] == "booked":
+                continue
+            days[key] = {
+                "status": status_val,
+                "booking_id": b.id,
+                "venue_name": b.venue.name if b.venue else None,
+                "event_type": b.event_type,
+                "guest_count": b.guest_count,
+                "time_slot": b.check_in_time.strftime("%I:%M %p") if b.check_in_time else None,
+                "check_out_time": b.check_out_time.strftime("%I:%M %p") if b.check_out_time else None,
+                "num_days": b.num_days,
+                "amount": float(b.amount),
+            }
 
     return {"month": month, "days": days}
 

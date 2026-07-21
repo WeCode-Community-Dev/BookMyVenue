@@ -19,3 +19,13 @@ export const checkAvailability = async (venueId, booking_date, time_slot) => {
   });
   return response.data;
 };
+
+export const checkAvailabilityRange = async (
+  venueId,
+  { check_in_date, check_in_time, check_out_date, check_out_time },
+) => {
+  const response = await client.get(`/venues/${venueId}/availability/range`, {
+    params: { check_in_date, check_in_time, check_out_date, check_out_time },
+  });
+  return response.data;
+};

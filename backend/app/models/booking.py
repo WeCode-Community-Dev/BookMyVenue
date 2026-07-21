@@ -17,6 +17,11 @@ class Booking(Base):
     venue_id: Mapped[int] = mapped_column(Integer, ForeignKey("venues.id", ondelete="CASCADE"), nullable=False)
     booking_date: Mapped[date] = mapped_column(Date, nullable=False)
     time_slot: Mapped[time] = mapped_column(Time, nullable=False)
+    check_in_date: Mapped[date] = mapped_column(Date, nullable=False)
+    check_in_time: Mapped[time] = mapped_column(Time, nullable=False)
+    check_out_date: Mapped[date] = mapped_column(Date, nullable=False)
+    check_out_time: Mapped[time] = mapped_column(Time, nullable=False)
+    num_days: Mapped[int] = mapped_column(Integer, nullable=False)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)   
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     
@@ -47,7 +52,6 @@ class Booking(Base):
     user = relationship("User") 
 
     __table_args__ = (
-        UniqueConstraint("venue_id", "booking_date", "time_slot", name="uq_booking_slot"),
         UniqueConstraint("user_id", "idempotency_key", name="uq_booking_user_idempotency"),
         CheckConstraint(
             "status IN ('pending_payment', 'booked', 'cancelled')",

@@ -9,14 +9,30 @@ from app.models.user import User
 from app.schemas.venue import VenueCreate, VenueOut, VenueUpdate
 from app.services.venue_service import (
     check_availability,
+    check_availability_range,
     create_venue,
+    deactivate_venue,
     delete_venue,
     get_my_venues,
-    deactivate_venue
-
+    get_venue_by_id,
+    get_venues,
+    update_venue,
 )
 
 router = APIRouter(prefix="/venues", tags=["Venues"])
+
+
+def _parse_date(date_str: str):
+    return datetime.strptime(date_str, "%Y-%m-%d").date()
+
+
+def _parse_time(time_str: str):
+    for fmt in ("%H:%M:%S", "%H:%M"):
+        try:
+            return datetime.strptime(time_str, fmt).time()
+        except ValueError:
+            continue
+    raise ValueError
 
 
 @router.get("/my-venues", response_model=list[VenueOut])
@@ -25,15 +41,6 @@ def list_my_venues(
     current_user: User = Depends(get_current_venue_owner),
 ):
     return get_my_venues(db, current_user)
-
-
-
-
-@router.get("/pending", response_model=list[VenueOut])
-def list_pending_venues(
-    db: Session = Depends(get_db)
-):
-    return get_pending_venues(db)
 
 
 @router.post("/", response_model=VenueOut)
@@ -61,35 +68,36 @@ def get_single_venue(
     venue_id: int,
     db: Session = Depends(get_db),
 ):
-    """Update a venue (owner only - can only update own venues)"""
-    return update_venue(
+    return get_venue_by_id(db, venue_id)
+
+
+@router.get("/{venue_id}/availability/range")
+def venue_availability_range(
+    venue_id: int,
+    check_in_date: str = Query(..., description="Check-in date YYYY-MM-DD"),
+    check_in_time: str = Query(..., description="Check-in time HH:MM or HH:MM:SS"),
+    check_out_date: str = Query(..., description="Check-out date YYYY-MM-DD"),
+    check_out_time: str = Query(..., description="Check-out time HH:MM or HH:MM:SS"),
+    db: Session = Depends(get_db),
+):
+    try:
+        parsed_check_in_date = _parse_date(check_in_date)
+        parsed_check_out_date = _parse_date(check_out_date)
+        parsed_check_in_time = _parse_time(check_in_time)
+        parsed_check_out_time = _parse_time(check_out_time)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid date or time format. Use YYYY-MM-DD and HH:MM",
+        )
+
+    return check_availability_range(
         db,
         venue_id,
-        venue,
-        owner_id=current_user.id
-    )
-
-@router.delete("/{venue_id}")
-def delete_existing_venue(
-    venue_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_venue_owner),
-):
-    return delete_venue(db, venue_id, current_user)
-
-
-@router.patch("/{venue_id}/deactivate")
-def deactivate_existing_venue(
-    venue_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_venue_owner),
-):
-    return deactivate_venue(db, venue_id, current_user)
-    """Delete a venue (owner only - can only delete own venues)"""
-    return delete_venue(
-        db,
-        venue_id,
-        owner_id=current_user.id
+        parsed_check_in_date,
+        parsed_check_in_time,
+        parsed_check_out_date,
+        parsed_check_out_time,
     )
 
 
@@ -101,15 +109,8 @@ def venue_availability(
     db: Session = Depends(get_db),
 ):
     try:
-        parsed_date = datetime.strptime(booking_date, "%Y-%m-%d").date()
-        for fmt in ("%H:%M:%S", "%H:%M"):
-            try:
-                parsed_time = datetime.strptime(time_slot, fmt).time()
-                break
-            except ValueError:
-                continue
-        else:
-            raise ValueError
+        parsed_date = _parse_date(booking_date)
+        parsed_time = _parse_time(time_slot)
     except ValueError:
         raise HTTPException(
             status_code=400,
@@ -129,10 +130,19 @@ def update_existing_venue(
     return update_venue(db, venue_id, venue, owner_id=current_user.id)
 
 
+@router.patch("/{venue_id}/deactivate")
+def deactivate_existing_venue(
+    venue_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    return deactivate_venue(db, venue_id, current_user)
+
+
 @router.delete("/{venue_id}")
 def delete_existing_venue(
     venue_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_venue_owner),
 ):
-    return delete_venue(db, venue_id, owner_id=current_user.id)
+    return delete_venue(db, venue_id, current_user)
