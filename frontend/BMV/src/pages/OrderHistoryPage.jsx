@@ -48,7 +48,7 @@ function OrderHistoryPage() {
         <div className="mx-auto max-w-3xl px-4 py-4 flex items-center justify-between">
           <div>
             <Link to="/dashboard" className="text-xs text-blue-600 hover:underline">
-              ← Dashboard
+              ← Home
             </Link>
             <h1 className="text-xl font-bold text-slate-800 mt-1">Order History</h1>
             <p className="text-sm text-slate-400">

@@ -70,6 +70,46 @@ export const fetchCurrentUserAsync = createAsyncThunk(
   },
 );
 
+export const fetchMeAsync = createAsyncThunk(
+  "auth/fetchMe",
+  async (_, { rejectWithValue }) => {
+    try {
+      const user = await authService.getMe();
+      return user;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
+export const adminLoginAsync = createAsyncThunk(
+  "auth/adminLogin",
+  async ({ email, password, rememberMe = true }, { rejectWithValue }) => {
+    try {
+      await authService.login({ email, password, rememberMe });
+      const user = await authService.getMe();
+      if (user.role !== "admin") {
+        await authService.logout();
+        return rejectWithValue("Admin access required");
+      }
+      return user;
+    } catch (err) {
+      return rejectWithValue(err.message || "Login failed");
+    }
+  },
+);
+
+export const updateProfileAsync = createAsyncThunk(
+  "auth/updateProfile",
+  async (data, { rejectWithValue }) => {
+    try {
+      return await authService.updateProfile(data);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
 export const logoutUserAsync = createAsyncThunk(
   "auth/logout",
   async (_, { rejectWithValue }) => {
@@ -190,6 +230,19 @@ const authSlice = createSlice({
       .addCase(fetchMeAsync.rejected, (state) => {
         state.user = null;
         state.isAuthenticated = false;
+      })
+
+      .addCase(updateProfileAsync.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateProfileAsync.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+      })
+      .addCase(updateProfileAsync.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
       });
   },
 });

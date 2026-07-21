@@ -114,6 +114,7 @@ app.include_router(venue_owner_router.router)
 app.include_router(venue_router.router)
 app.include_router(venue_owner_dashboard.router)
 app.include_router(venue_type_router.router)
+app.include_router(admin.router)
 
 @app.get("/")
 def root():

@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from app.models.user import User
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, UserProfileUpdate
 
 
 # Creating an instance of CryptoContext Class.
@@ -119,3 +119,15 @@ def authenticate_google_user(db: Session, google_email: str, google_name: str, g
     db.commit()
     db.refresh(new_user)
     return new_user
+
+
+def update_user_profile(db: Session, user: User, data: UserProfileUpdate) -> User:
+    if data.name is not None:
+        user.name = data.name.strip() or user.name
+    if data.phone_number is not None:
+        user.phone_number = data.phone_number.strip() or None
+    if data.password:
+        user.hashed_password = hash_password(data.password)
+    db.commit()
+    db.refresh(user)
+    return user

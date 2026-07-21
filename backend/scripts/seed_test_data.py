@@ -13,9 +13,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal, engine, Base
+import app.models  # noqa: F401 — register all mappers
 from app.models.user import User
 from app.models.venue import Venue
 from app.models.amenity import Amenity
+from app.models.venue_type import VenueType
+from app.seeds.venue_type_seed import seed_venue_types
+from app.seeds.amenity_seed import seed_amenities
 from app.services.auth_service import hash_password
 
 def seed_test_data():
@@ -28,6 +32,13 @@ def seed_test_data():
         # Create tables if they don't exist
         Base.metadata.create_all(bind=engine)
         print("✅ Database tables ready")
+
+        seed_venue_types(db)
+        seed_amenities(db)
+        default_type = db.query(VenueType).first()
+        if not default_type:
+            raise RuntimeError("No venue types found after seeding")
+        venue_type_id = default_type.id
         
         # Check if test user already exists
         existing_user = db.query(User).filter(User.email == "owner@test.com").first()
@@ -40,10 +51,11 @@ def seed_test_data():
             test_user = User(
                 email="owner@test.com",
                 name="Test Owner",
-                mobile="9876543210",
+                phone_number="9876543210",
                 role="owner",
-                password_hash=hash_password("password123"),
-                is_active=True
+                hashed_password=hash_password("password123"),
+                auth_provider="email",
+                is_active=True,
             )
             db.add(test_user)
             db.commit()
@@ -106,7 +118,8 @@ def seed_test_data():
             
             venue = Venue(
                 owner_id=test_user.id,
-                **venue_data
+                venue_type_id=venue_type_id,
+                **venue_data,
             )
             db.add(venue)
             created_venues.append(venue)

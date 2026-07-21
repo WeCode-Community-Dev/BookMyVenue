@@ -7,9 +7,11 @@ function unwrap(err) {
 }
 
 export const bookingService = {
-  async create(data) {
+  async create(data, idempotencyKey) {
     try {
-      const res = await client.post("/bookings", data);
+      const res = await client.post("/bookings", data, {
+        headers: { "Idempotency-Key": idempotencyKey },
+      });
       return res.data;
     } catch (err) {
       unwrap(err);

@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.deps import get_db
-from app.schemas.user import UserCreate, UserLogin, UserOut, TokenOut, GoogleAuthRequest
-from app.services.auth_service import create_user, authenticate_user, authenticate_google_user
+from app.schemas.user import UserCreate, UserLogin, UserOut, TokenOut, GoogleAuthRequest, UserProfileUpdate
+from app.services.auth_service import create_user, authenticate_user, authenticate_google_user, update_user_profile
 from app.core.security import create_access_token, get_current_user, verify_google_token
 from app.models.user import User
 
@@ -53,6 +53,26 @@ def get_me(current_user: User = Depends(get_current_user)):
         auth_provider=current_user.auth_provider,
         created_at=current_user.created_at,
         is_venue_owner=current_user.venue_owner_profile is not None,
+    )
+
+
+@router.patch("/me", response_model=UserOut)
+def update_me(
+    data: UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user = update_user_profile(db, current_user, data)
+    return UserOut(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        phone_number=user.phone_number,
+        role=user.role,
+        is_active=user.is_active,
+        auth_provider=user.auth_provider,
+        created_at=user.created_at,
+        is_venue_owner=user.venue_owner_profile is not None,
     )
 
 

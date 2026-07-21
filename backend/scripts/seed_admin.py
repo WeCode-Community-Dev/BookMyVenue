@@ -17,6 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.db.database import SessionLocal
+import app.models  # noqa: F401 — register all mappers
 from app.models.user import User
 from app.services.auth_service import hash_password
 

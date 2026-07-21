@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 from typing import Optional
 from datetime import datetime, timezone, date
@@ -6,8 +7,9 @@ from app.models.booking import Booking
 from app.models.payment import Payment
 from app.models.user import User
 from app.models.venue import Venue
-from app.schemas.booking import BookingCreate 
+from app.schemas.booking import BookingCreate
 from app.services.notification_service import create_notification
+from app.services.booking_lock import acquire_slot_lock
 
 def get_venue(db: Session, venue_id: int):
     return db.query(Venue).filter(Venue.id == venue_id).first()
@@ -47,12 +49,65 @@ def _to_list_item(booking: Booking, venue_name: str | None, venue_location: str 
     }
 
 
-def create_booking(db: Session, current_user: User, data: BookingCreate):
+def _payload_matches(booking: Booking, data: BookingCreate) -> bool:
+    return (
+        booking.venue_id == data.venue_id
+        and booking.booking_date == data.booking_date
+        and booking.time_slot == data.time_slot
+        and booking.notes == data.notes
+        and booking.event_type == data.event_type
+        and booking.guest_count == data.guest_count
+    )
+
+
+def _slot_taken(db: Session, venue_id: int, booking_date: date, time_slot) -> bool:
+    return (
+        db.query(Booking)
+        .filter(
+            Booking.venue_id == venue_id,
+            Booking.booking_date == booking_date,
+            Booking.time_slot == time_slot,
+            Booking.status != "cancelled",
+        )
+        .first()
+        is not None
+    )
+
+
+def create_booking(
+    db: Session,
+    current_user: User,
+    data: BookingCreate,
+    idempotency_key: str,
+) -> tuple[Booking, bool]:
+    if not idempotency_key or len(idempotency_key) > 128:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Idempotency-Key header is required (max 128 characters)",
+        )
+
+    existing = (
+        db.query(Booking)
+        .filter(
+            Booking.user_id == current_user.id,
+            Booking.idempotency_key == idempotency_key,
+        )
+        .first()
+    )
+    if existing:
+        if not _payload_matches(existing, data):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Idempotency key was already used with different booking data",
+            )
+        return existing, False
+
     if current_user.role != "user":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only users can create bookings",
         )
+
     venue = get_venue(db, data.venue_id)
     if venue is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venue not found")
@@ -71,21 +126,15 @@ def create_booking(db: Session, current_user: User, data: BookingCreate):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Booking date cannot be in the past",
         )
-    clash = (
-        db.query(Booking)
-        .filter(
-            Booking.venue_id == data.venue_id,
-            Booking.booking_date == data.booking_date,
-            Booking.time_slot == data.time_slot,
-            Booking.status != "cancelled",
-        )
-        .first()
-    )
-    if clash:
+
+    acquire_slot_lock(db, data.venue_id, data.booking_date, data.time_slot)
+
+    if _slot_taken(db, data.venue_id, data.booking_date, data.time_slot):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="This slot is already booked",
         )
+
     booking = Booking(
         user_id=current_user.id,
         venue_id=data.venue_id,
@@ -97,12 +146,35 @@ def create_booking(db: Session, current_user: User, data: BookingCreate):
         amount=venue.price_per_day,
         status="pending_payment",
         owner_status="pending",
+        idempotency_key=idempotency_key,
     )
     db.add(booking)
-    db.commit()
-    db.refresh(booking)
-    
-    
+
+    try:
+        db.commit()
+        db.refresh(booking)
+    except IntegrityError:
+        db.rollback()
+        replay = (
+            db.query(Booking)
+            .filter(
+                Booking.user_id == current_user.id,
+                Booking.idempotency_key == idempotency_key,
+            )
+            .first()
+        )
+        if replay:
+            if _payload_matches(replay, data):
+                return replay, False
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Idempotency key was already used with different booking data",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This slot is already booked",
+        )
+
     create_notification(
         db,
         user_id=venue.owner_id,
@@ -111,8 +183,8 @@ def create_booking(db: Session, current_user: User, data: BookingCreate):
         venue_id=venue.id,
         booking_id=booking.id,
     )
-    
-    return booking
+
+    return booking, True
 
 
 

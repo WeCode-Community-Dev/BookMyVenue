@@ -177,7 +177,33 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ---
 
-## 6. Database migrations (Alembic)
+## 6. API workflow smoke test
+
+Seed fixture users, start the server, then run the smoke script:
+
+```bash
+cd backend
+source .venv/bin/activate
+python scripts/seed_admin.py
+python scripts/seed_test_data.py
+uvicorn app.main:app --reload --port 8000
+
+# In another terminal
+BMV_API_URL=http://localhost:8000 python scripts/smoke_test_api.py
+```
+
+The script exercises register, login, venue listing, booking, payments, venue-owner dashboard, and superadmin APIs. It prints pass/fail per step and exits with code `1` if any step fails.
+
+**Test credentials:**
+
+| Role | Email | Password |
+|------|-------|----------|
+| Superadmin | `admin@bookmyvenue.com` | `admin123456` |
+| Venue owner | `owner@test.com` | `password123` |
+
+---
+
+## 7. Database migrations (Alembic)
 
 From the `backend/` directory:
 

@@ -35,9 +35,7 @@ class Booking(Base):
     
     cancellation_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     cancelled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    owner_status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
-    event_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    guest_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    idempotency_key: Mapped[Optional[str]] = mapped_column(String(128), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -49,8 +47,8 @@ class Booking(Base):
     user = relationship("User") 
 
     __table_args__ = (
-        # one venue cannot be booked twice for the same date + time
         UniqueConstraint("venue_id", "booking_date", "time_slot", name="uq_booking_slot"),
+        UniqueConstraint("user_id", "idempotency_key", name="uq_booking_user_idempotency"),
         CheckConstraint(
             "status IN ('pending_payment', 'booked', 'cancelled')",
             name="ck_booking_status",

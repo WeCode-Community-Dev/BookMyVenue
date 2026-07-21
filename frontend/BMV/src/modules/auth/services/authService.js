@@ -84,13 +84,16 @@ export const authService = {
 
   // Temporary for testing
   async logout() {
-    // No backend /auth/logout route exists yet — just clear local state.
     clearTokens();
   },
 
-  async getMe() {
-    const res = await client.get("/auth/me");
-    return res.data;
+  async updateProfile(data) {
+    try {
+      const res = await client.patch("/auth/me", data);
+      return res.data;
+    } catch (err) {
+      throw new Error(err.message);
+    }
   },
 
   // async refreshToken() {
