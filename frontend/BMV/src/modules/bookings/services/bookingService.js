@@ -1,24 +1,29 @@
 import client from "../../../core/api/client";
 import { getFriendlyError } from "../../../utils/error";
 
+function unwrap(err) {
+  const message = err?.message || err?.response?.data?.detail || "Something went wrong.";
+  throw new Error(typeof message === "string" ? message : getFriendlyError(err.code));
+}
+
 export const bookingService = {
   async create(data) {
     try {
       const res = await client.post("/bookings", data);
       return res.data;
     } catch (err) {
-      throw new Error(getFriendlyError(err.code));
+      unwrap(err);
     }
   },
 
-  async myBookings(page = 1, limit = 20) {
+  async myBookings({ status = "", page = 1, limit = 20 } = {}) {
     try {
-      const res = await client.get("/bookings/my-bookings", {
-        params: { page, limit },
-      });
+      const params = { page, limit };
+      if (status) params.status = status;
+      const res = await client.get("/bookings/my-bookings", { params });
       return res.data;
     } catch (err) {
-      throw new Error(getFriendlyError(err.code));
+      unwrap(err);
     }
   },
 
@@ -27,7 +32,7 @@ export const bookingService = {
       const res = await client.get(`/bookings/${id}`);
       return res.data;
     } catch (err) {
-      throw new Error(getFriendlyError(err.code));
+      unwrap(err);
     }
   },
 
@@ -38,7 +43,7 @@ export const bookingService = {
       });
       return res.data;
     } catch (err) {
-      throw new Error(getFriendlyError(err.code));
+      unwrap(err);
     }
   },
 };

@@ -3,6 +3,7 @@ from fastapi import HTTPException, status
 from typing import Optional
 from datetime import datetime, timezone, date
 from app.models.booking import Booking
+from app.models.payment import Payment
 from app.models.user import User
 from app.models.venue import Venue
 from app.schemas.booking import BookingCreate 
@@ -11,32 +12,65 @@ from app.services.notification_service import create_notification
 def get_venue(db: Session, venue_id: int):
     return db.query(Venue).filter(Venue.id == venue_id).first()
 
-def create_booking(db: Session, current_user: User, data: BookingCreate): 
-    # 1. only normal users can book
+
+def _latest_payment(db: Session, booking_id: int) -> Payment | None:
+    return (
+        db.query(Payment)
+        .filter(Payment.booking_id == booking_id)
+        .order_by(Payment.created_at.desc())
+        .first()
+    )
+
+
+def _can_access_booking(user: User, booking: Booking, venue: Venue | None) -> bool:
+    if user.role == "admin":
+        return True
+    if booking.user_id == user.id:
+        return True
+    if user.role in ("host", "owner") and venue and venue.owner_id == user.id:
+        return True
+    return False
+
+
+def _to_list_item(booking: Booking, venue_name: str | None, venue_location: str | None, payment_status: str | None) -> dict:
+    return {
+        "id": booking.id,
+        "venue_id": booking.venue_id,
+        "venue_name": venue_name,
+        "venue_location": venue_location,
+        "booking_date": booking.booking_date,
+        "time_slot": booking.time_slot,
+        "status": booking.status,
+        "amount": float(booking.amount),
+        "payment_status": payment_status,
+        "created_at": booking.created_at,
+    }
+
+
+def create_booking(db: Session, current_user: User, data: BookingCreate):
     if current_user.role != "user":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only users can create bookings",
         )
-    # 2. venue must exist and be approved
     venue = get_venue(db, data.venue_id)
     if venue is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Venue not found",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venue not found")
     if venue.approval_status != "approved":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Venue is not available for booking",
         )
-    # 3. booking date cannot be in the past
+    if not venue.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Venue is not available for booking",
+        )
     if data.booking_date < datetime.now(timezone.utc).date():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Booking date cannot be in the past",
         )
-    # 4. slot must be free (ignore cancelled bookings)
     clash = (
         db.query(Booking)
         .filter(
@@ -52,7 +86,6 @@ def create_booking(db: Session, current_user: User, data: BookingCreate):
             status_code=status.HTTP_409_CONFLICT,
             detail="This slot is already booked",
         )
-    # 5. create the booking (price comes from the venue)
     booking = Booking(
         user_id=current_user.id,
         venue_id=data.venue_id,
@@ -63,6 +96,7 @@ def create_booking(db: Session, current_user: User, data: BookingCreate):
         guest_count=data.guest_count,
         amount=venue.price_per_day,
         status="pending_payment",
+        owner_status="pending",
     )
     db.add(booking)
     db.commit()

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from datetime import date, time, datetime
-from typing import Optional 
+from typing import Optional
+
 
 class BookingCreate(BaseModel):
     venue_id: int

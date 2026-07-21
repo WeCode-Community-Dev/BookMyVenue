@@ -86,4 +86,24 @@ export const authService = {
     }
   },
 
+<<<<<<< HEAD
+=======
+  async getMe() {
+    const res = await client.get("/auth/me");
+    return res.data;
+  },
+
+  // async refreshToken() {
+  //   try {
+  //     const refresh_token = getRefreshToken();
+  //     const res = await client.post("/auth/refresh", { refresh_token });
+  //     const { access_token } = res.data.data;
+  //     saveTokens(access_token, refresh_token);
+  //     return access_token;
+  //   } catch (err) {
+  //     clearTokens(); // refresh failed, force logout
+  //     throw new Error(getFriendlyError(err.code));
+  //   }
+  // },
+>>>>>>> 4b1e5f6f7551b86f5f9ef44258ea107e75f994ae
 };

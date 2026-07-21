@@ -35,6 +35,9 @@ class Booking(Base):
     
     cancellation_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     cancelled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    owner_status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+    event_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    guest_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
