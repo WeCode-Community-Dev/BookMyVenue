@@ -14,6 +14,7 @@ from app.services.order_service import (
 )
 from app.services.booking_service import create_booking
 from datetime import datetime, timezone
+from app.core.dependencies import get_current_user
 
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
@@ -26,7 +27,11 @@ client = razorpay.Client(
 )
 
 @router.post("/create-order")
-async def create_order(payload: CreateOrderRequest, db: Session = Depends(get_db)):
+async def create_order(
+    payload: CreateOrderRequest, 
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
     try:
         order_data = {
             "amount": payload.amount * 100,  # ₹500 => 50000 paise
