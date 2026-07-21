@@ -122,6 +122,9 @@ export class MailServiceImpl extends MailService {
     }
 
     async sendEmailChangeOtp(email,name, otp) {
+        console.log('email : ', email);
+        console.log('name : ', name);
+        console.log('otp : ', otp);
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,

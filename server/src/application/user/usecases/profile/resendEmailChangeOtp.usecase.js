@@ -43,6 +43,7 @@ export class ResendEmailChangeOtpUsecase {
 
         await this._mailService.sendEmailChangeOtp(
             user.pendingEmail,
+            user.fullName,
             otp
         );
 
