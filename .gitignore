@@ -1,0 +1,10 @@
+venv/*
+
+.env
+
+*.pyc
+__pycache__/
+
+db.sqlite3
+
+sheet_demo.py
