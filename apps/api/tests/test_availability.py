@@ -1,0 +1,584 @@
+"""
+Tests for the Availability module - slot validation, calendar generation, and date availability.
+
+These tests are critical for ensuring no double bookings can occur and that the calendar
+displays correct availability information.
+"""
+
+from datetime import UTC, date, datetime, timedelta
+from datetime import time as dt_time
+from uuid import uuid4
+from zoneinfo import ZoneInfo
+
+from tests.conftest import seed_approved_venue, seed_user
+
+_VENUE_TZ = ZoneInfo("Asia/Kolkata")
+
+
+def _future_date(days: int = 30) -> date:
+    """Helper to get a future date for testing."""
+    return date.today() + timedelta(days=days)
+
+
+def _future_datetime(hours: int = 48) -> datetime:
+    """Helper to get a future datetime for testing.
+
+    Pinned to a fixed local hour (14:00 Asia/Kolkata, within every seeded
+    venue's 9:00-21:00 operating window) instead of `now + hours`, so the
+    result isn't sensitive to what time of day the suite happens to run.
+    """
+    days_ahead = max(1, hours // 24)
+    local = datetime.combine(date.today() + timedelta(days=days_ahead), dt_time(14, 0)).replace(
+        tzinfo=_VENUE_TZ
+    )
+    return local.astimezone(UTC)
+
+
+def _iso(dt: datetime) -> str:
+    """Convert datetime to ISO format string."""
+    return dt.isoformat().replace("+00:00", "Z")
+
+
+# ── Calendar API Tests ─────────────────────────────────────────────────────────
+
+
+def test_calendar_returns_400_for_invalid_date_range(client):
+    """Calendar must reject end_date before start_date."""
+    resp = client.get(
+        "/api/availability/venues/00000000-0000-0000-0000-000000000000/calendar?start_date=2025-12-31&end_date=2025-01-01&booking_type=full_day"
+    )
+    assert resp.status_code == 400
+
+
+def test_calendar_rejects_range_over_370_days(client, db, category_id):
+    """Calendar date range cannot exceed 370 days."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    start = _future_date(1)
+    end = start + timedelta(days=400)
+
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/calendar?start_date={start.isoformat()}&end_date={end.isoformat()}&booking_type=full_day"
+    )
+    assert resp.status_code == 400
+
+
+def test_calendar_returns_available_for_empty_venue(client, db, category_id):
+    """A venue with no bookings should show all days as available."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    start = _future_date(10)
+    end = start + timedelta(days=7)
+
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/calendar?start_date={start.isoformat()}&end_date={end.isoformat()}&booking_type=full_day"
+    )
+
+    assert resp.status_code == 200
+    days = resp.json()["days"]
+    for day in days:
+        assert day["status"] == "available"
+        assert day["is_bookable"] is True
+
+
+def test_calendar_shows_fully_booked_for_full_day(client, db, category_id):
+    """A venue with an accepted booking should show fully_booked for full_day type.
+
+    Per the booking lifecycle (requested -> accepted -> confirmed), merely
+    requesting a slot never blocks it -- multiple customers may request the
+    same slot until the owner accepts one. The calendar can only show
+    fully_booked once the owner has accepted a request, which starts the
+    24-hour payment hold.
+    """
+    owner_id, owner_token = seed_user(db, "venue_owner")
+    customer_id, customer_token = seed_user(db, "customer")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    booking_date = _future_date(15)
+    resp = client.post(
+        "/api/bookings/",
+        json={
+            "venue_id": str(venue_id),
+            "venue_name": "Test Venue",
+            "booking_type": "full_day",
+            "booking_date": booking_date.isoformat(),
+            "guest_count": 10,
+        },
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+    assert resp.status_code == 201
+    booking_id = resp.json()["id"]
+
+    # A merely-requested booking must not block the slot yet.
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/calendar?start_date={booking_date.isoformat()}&end_date={booking_date.isoformat()}&booking_type=full_day"
+    )
+    assert resp.status_code == 200
+    assert resp.json()["days"][0]["status"] == "available"
+
+    # Owner accepting the request starts the hold, which does block the slot.
+    accept_resp = client.post(
+        f"/api/bookings/{booking_id}/accept",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert accept_resp.status_code == 200
+
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/calendar?start_date={booking_date.isoformat()}&end_date={booking_date.isoformat()}&booking_type=full_day"
+    )
+    assert resp.status_code == 200
+    day = resp.json()["days"][0]
+    assert day["status"] == "fully_booked"
+
+
+# ── Date Availability Tests ───────────────────────────────────────────────────
+
+
+def test_date_availability_returns_operating_window(client, db, category_id):
+    """Date availability must return operating window even with no bookings."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    check_date = _future_date(20)
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/date/{check_date.isoformat()}?booking_type=time_slot"
+    )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "operating_window" in data
+    assert data["operating_window"]["is_available"] is True
+
+
+def test_date_availability_shows_blocked_for_blocked_date(client, db, category_id):
+    """Venue blocked dates should make date unavailable."""
+    owner_id, owner_token = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    # Create a blocked date. Pinned to a daytime local hour so it reliably
+    # overlaps `check_date`'s operating window regardless of wall-clock time.
+    blocked_start = _future_datetime(hours=30 * 24)
+    blocked_end = blocked_start + timedelta(days=5)
+
+    block_resp = client.post(
+        f"/api/venues/{venue_id}/blocked-dates",
+        json={
+            "starts_at": _iso(blocked_start),
+            "ends_at": _iso(blocked_end),
+            "reason": "Maintenance",
+        },
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert block_resp.status_code == 201
+
+    # Check a date within the blocked period
+    check_date = blocked_start.date()
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/date/{check_date.isoformat()}?booking_type=full_day"
+    )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["operating_window"]["is_available"] is True  # Day is open
+    # For full_day, should show as blocked due to venue block
+    assert len(data["blocked_slots"]) > 0
+
+
+# ── Slot Validation Tests ─────────────────────────────────────────────────────
+
+
+def test_validate_slot_rejects_past_time(client, db, category_id):
+    """Validation must reject slots in the past."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    past_time = datetime.now(UTC) - timedelta(hours=1)
+    future_time = datetime.now(UTC) + timedelta(hours=2)
+
+    resp = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=time_slot&starts_at={_iso(past_time)}&ends_at={_iso(future_time)}"
+    )
+    assert resp.status_code == 400
+
+
+def test_validate_slot_rejects_invalid_time_order(client, db, category_id):
+    """End time must be after start time."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    start = _future_datetime()
+    end = start - timedelta(hours=2)  # Earlier than start
+
+    resp = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=time_slot&starts_at={_iso(start)}&ends_at={_iso(end)}"
+    )
+    assert resp.status_code == 400
+
+
+def test_validate_slot_rejects_misaligned_time_slot(client, db, category_id):
+    """Time slot times must align with venue's slot_interval_minutes (default 30)."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    # 9:15 is not aligned to 30-minute intervals
+    start = datetime.now(UTC).replace(minute=15, second=0, microsecond=0) + timedelta(hours=48)
+    end = start + timedelta(hours=2)
+
+    resp = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=time_slot&starts_at={_iso(start)}&ends_at={_iso(end)}"
+    )
+    assert resp.status_code == 400
+
+
+def test_validate_slot_rejects_exceeds_max_capacity(client, db, category_id):
+    """Guest count cannot exceed venue max_capacity."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    start = _future_datetime()
+    end = start + timedelta(hours=4)
+
+    resp = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=time_slot&starts_at={_iso(start)}&ends_at={_iso(end)}&guest_count=1000"
+    )
+    assert resp.status_code == 400
+
+
+def test_validate_slot_rejects_unsupported_booking_type(client, db, category_id):
+    """Booking type must be in venue's allowed_booking_types."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    # Venue allows only "full_day" by default, try "time_slot"
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    start = _future_datetime()
+    end = start + timedelta(hours=4)
+
+    resp = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=invalid_type&starts_at={_iso(start)}&ends_at={_iso(end)}"
+    )
+    assert resp.status_code == 400
+
+
+def test_validate_slot_returns_409_for_conflicting_booking(client, db, category_id):
+    """Validation must return 409 Conflict when slot overlaps an accepted booking.
+
+    A merely-requested booking doesn't block the slot (see
+    test_calendar_shows_fully_booked_for_full_day) -- the owner must accept
+    it first, which is what actually starts the exclusivity hold.
+    """
+    owner_id, owner_token = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    booking_date = _future_date(30)
+
+    resp = client.post(
+        "/api/bookings/",
+        json={
+            "venue_id": str(venue_id),
+            "venue_name": "Test Venue",
+            "booking_type": "full_day",
+            "booking_date": booking_date.isoformat(),
+            "guest_count": 10,
+        },
+        headers={"Authorization": f"Bearer {seed_user(db, 'customer')[1]}"},
+    )
+    assert resp.status_code == 201
+    booking_id = resp.json()["id"]
+
+    accept_resp = client.post(
+        f"/api/bookings/{booking_id}/accept",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert accept_resp.status_code == 200
+
+    # Try to validate same date - should conflict
+    resp = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=full_day&booking_date={booking_date.isoformat()}"
+    )
+    assert resp.status_code == 409
+
+
+def test_validate_slot_accepts_valid_request(client, db, category_id):
+    """A valid slot should return valid=true with effective times."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+    from app.modules.venue.models import Venue
+
+    venue = db.query(Venue).get(venue_id)
+    venue.allowed_booking_types = ["full_day", "time_slot"]
+    db.commit()
+
+    start = _future_datetime()
+    end = start + timedelta(hours=4)
+
+    # Use aligned time (on the hour)
+    start = start.replace(minute=0, second=0, microsecond=0)
+    end = start + timedelta(hours=4)
+
+    resp = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=time_slot&starts_at={_iso(start)}&ends_at={_iso(end)}"
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["valid"] is True
+    assert "effective_starts_at" in data
+    assert "effective_ends_at" in data
+
+
+# ── Pricing Quote Tests ─────────────────────────────────────────────────────
+
+
+def test_pricing_quote_returns_valid_response(client, db, category_id):
+    """Pricing quote should return valid pricing structure."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    start = _future_datetime()
+    end = start + timedelta(hours=4)
+
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/quote?starts_at={_iso(start)}&ends_at={_iso(end)}&booking_type=full_day"
+    )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "quoted_price_paise" in data
+    assert "platform_fee_paise" in data
+    assert "owner_payout_paise" in data
+    assert "advance_due_paise" in data
+
+
+def test_pricing_quote_does_not_require_availability(client, db, category_id):
+    """Pricing quote works even if slot is not available."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    # Use a past date - pricing should still work
+    past_start = datetime.now(UTC) - timedelta(days=10)
+    past_end = past_start + timedelta(hours=4)
+
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/quote?starts_at={_iso(past_start)}&ends_at={_iso(past_end)}&booking_type=full_day"
+    )
+    assert resp.status_code == 200
+
+
+# ── Operating Window Tests ───────────────────────────────────────────────────
+
+
+def test_closed_day_shows_unavailable(client, db, category_id):
+    """Days marked as closed in venue_availability should show closed status."""
+    from app.modules.venue.models import VenueAvailability
+
+    owner_id, owner_token = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    # Set Sunday (day 6) as closed
+    closed_avail = VenueAvailability(
+        id=uuid4(),
+        venue_id=venue_id,
+        day_of_week=6,  # Sunday
+        is_available=False,
+    )
+    db.add(closed_avail)
+    db.commit()
+
+    # Find a Sunday 30 days out
+    future_date = _future_date(30)
+    while future_date.weekday() != 6:
+        future_date += timedelta(days=1)
+
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/calendar?start_date={future_date.isoformat()}&end_date={future_date.isoformat()}&booking_type=full_day"
+    )
+
+    assert resp.status_code == 200
+    day = resp.json()["days"][0]
+    assert day["status"] == "closed"
+    assert day["is_bookable"] is False
+
+
+# ── Buffer Time Tests ───────────────────────────────────────────────────────
+
+
+def test_buffer_times_block_adjacent_slots(client, db, category_id):
+    """Post-buffer time should prevent adjacent bookings.
+
+    Buffers are baked into a slot's effective range at booking-creation time
+    (see compute_effective_range), so post_buffer_minutes must be set on the
+    venue *before* the first booking is made. And -- as with the other
+    conflict tests -- only an accepted booking blocks the slot, so the first
+    booking must be accepted before the adjacent slot is validated.
+    """
+    from app.modules.venue.models import Venue
+
+    owner_id, owner_token = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    db.query(Venue).filter(Venue.id == venue_id).update({"post_buffer_minutes": 60})
+    db.commit()
+
+    # Venue with 60min post-buffer
+    # Book 9-12, next booking should start at 13:00 earliest
+
+    booking_date = _future_date(25)
+    start_time = datetime.combine(booking_date, dt_time(9, 0)).replace(tzinfo=UTC)
+    end_time = datetime.combine(booking_date, dt_time(12, 0)).replace(tzinfo=UTC)
+
+    resp = client.post(
+        "/api/bookings/",
+        json={
+            "venue_id": str(venue_id),
+            "venue_name": "Test Venue",
+            "booking_type": "time_slot",
+            "starts_at": _iso(start_time),
+            "ends_at": _iso(end_time),
+            "guest_count": 10,
+        },
+        headers={"Authorization": f"Bearer {seed_user(db, 'customer')[1]}"},
+    )
+    assert resp.status_code == 201
+    booking_id = resp.json()["id"]
+
+    accept_resp = client.post(
+        f"/api/bookings/{booking_id}/accept",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert accept_resp.status_code == 200
+
+    # Try to book 12:30-14:00 - should conflict due to buffer
+    adjacent_start = datetime.combine(booking_date, dt_time(12, 30)).replace(tzinfo=UTC)
+    adjacent_end = datetime.combine(booking_date, dt_time(14, 0)).replace(tzinfo=UTC)
+
+    resp = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=time_slot&starts_at={_iso(adjacent_start)}&ends_at={_iso(adjacent_end)}"
+    )
+
+    assert resp.status_code == 409
+
+
+# ── Owner Calendar Tests ───────────────────────────────────────────────────
+
+
+def test_owner_calendar_requires_venue_owner(client, db, category_id):
+    """Only venue owners can access owner calendar."""
+    owner_id, _ = seed_user(db, "venue_owner")
+    other_owner_id, other_token = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    start = _future_date(10)
+    end = start + timedelta(days=7)
+
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/calendar/owner?start_date={start.isoformat()}&end_date={end.isoformat()}&booking_type=full_day",
+        headers={"Authorization": f"Bearer {other_token}"},
+    )
+
+    assert resp.status_code == 403
+
+
+def test_owner_calendar_includes_bookings(client, db, category_id):
+    """Owner calendar should include booking details."""
+    owner_id, owner_token = seed_user(db, "venue_owner")
+    customer_id, customer_token = seed_user(db, "customer")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    booking_date = _future_date(15)
+    client.post(
+        "/api/bookings/",
+        json={
+            "venue_id": str(venue_id),
+            "venue_name": "Test Venue",
+            "booking_type": "full_day",
+            "booking_date": booking_date.isoformat(),
+            "guest_count": 10,
+        },
+        headers={"Authorization": f"Bearer {customer_token}"},
+    )
+
+    resp = client.get(
+        f"/api/availability/venues/{venue_id}/calendar/owner?start_date={booking_date.isoformat()}&end_date={booking_date.isoformat()}&booking_type=full_day",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+
+    assert resp.status_code == 200
+    day = resp.json()["days"][0]
+    assert len(day["bookings"]) > 0
+
+
+def test_buffer_times_stacking_validation_and_availability(client, db, category_id):
+    """If a booking exists at 9:00-10:00 with 30m buffers:
+    - Booking at 10:30 should fail validation (overlaps with A's cleanup and its own prep).
+    - Availability API should return 8:00-11:00 as blocked.
+    - Booking at 11:00 should pass validation.
+    """
+    from app.modules.venue.models import Venue
+
+    owner_id, owner_token = seed_user(db, "venue_owner")
+    venue_id = seed_approved_venue(db, owner_id, category_id)
+
+    db.query(Venue).filter(Venue.id == venue_id).update(
+        {"pre_buffer_minutes": 30, "post_buffer_minutes": 30}
+    )
+    db.commit()
+
+    booking_date = _future_date(25)
+    start_time = datetime.combine(booking_date, dt_time(9, 0)).replace(tzinfo=UTC)
+    end_time = datetime.combine(booking_date, dt_time(10, 0)).replace(tzinfo=UTC)
+
+    # Make the first booking 9:00 - 10:00
+    resp = client.post(
+        "/api/bookings/",
+        json={
+            "venue_id": str(venue_id),
+            "venue_name": "Test Venue",
+            "booking_type": "time_slot",
+            "starts_at": _iso(start_time),
+            "ends_at": _iso(end_time),
+            "guest_count": 10,
+        },
+        headers={"Authorization": f"Bearer {seed_user(db, 'customer')[1]}"},
+    )
+    assert resp.status_code == 201
+    booking_id = resp.json()["id"]
+
+    # Accept the booking so it blocks the slot
+    accept_resp = client.post(
+        f"/api/bookings/{booking_id}/accept",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert accept_resp.status_code == 200
+
+    # 1. Booking at 10:30-11:30 should fail validation
+    invalid_start = datetime.combine(booking_date, dt_time(10, 30)).replace(tzinfo=UTC)
+    invalid_end = datetime.combine(booking_date, dt_time(11, 30)).replace(tzinfo=UTC)
+    validate_resp1 = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=time_slot&starts_at={_iso(invalid_start)}&ends_at={_iso(invalid_end)}"
+    )
+    assert validate_resp1.status_code == 409
+
+    # 2. Check the availability calendar blocked slots
+    avail_resp = client.get(
+        f"/api/availability/venues/{venue_id}/date/{booking_date.isoformat()}?booking_type=time_slot"
+    )
+    assert avail_resp.status_code == 200
+    blocked_slots = avail_resp.json()["blocked_slots"]
+
+    found = False
+    for slot in blocked_slots:
+        if "08:00:00" in slot["starts_at"] and "11:00:00" in slot["ends_at"]:
+            found = True
+            break
+    assert found, (
+        f"Expected blocked range 08:00:00 - 11:00:00 in blocked_slots, got: {blocked_slots}"
+    )
+
+    # 3. Booking at 11:00-12:00 should pass validation
+    valid_start = datetime.combine(booking_date, dt_time(11, 0)).replace(tzinfo=UTC)
+    valid_end = datetime.combine(booking_date, dt_time(12, 0)).replace(tzinfo=UTC)
+    validate_resp2 = client.post(
+        f"/api/availability/venues/{venue_id}/validate?booking_type=time_slot&starts_at={_iso(valid_start)}&ends_at={_iso(valid_end)}"
+    )
+    assert validate_resp2.status_code == 200

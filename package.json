@@ -1,0 +1,26 @@
+{
+  "name": "venue404",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "concurrently -n user,owner,admin -c blue,green,magenta \"pnpm --filter user-web dev\" \"pnpm --filter owner-portal dev\" \"pnpm --filter admin-panel dev\"",
+    "dev:all": "concurrently -n docker,user,owner,admin -c yellow,blue,green,magenta \"docker compose up --build\" \"pnpm --filter user-web dev\" \"pnpm --filter owner-portal dev\" \"pnpm --filter admin-panel dev\"",
+    "dev:api": "docker compose up --build api",
+    "api:migrate": "docker compose exec api alembic upgrade head",
+    "api:migrate:new": "docker compose exec api alembic revision --autogenerate -m",
+    "api:migrate:down": "docker compose exec api alembic downgrade -1",
+    "build": "pnpm -r --filter \"./apps/user-web\" --filter \"./apps/owner-portal\" --filter \"./apps/admin-panel\" build",
+    "lint": "pnpm -r --filter \"./apps/user-web\" --filter \"./apps/owner-portal\" --filter \"./apps/admin-panel\" lint",
+    "typecheck": "pnpm -r --filter \"./apps/user-web\" --filter \"./apps/owner-portal\" --filter \"./apps/admin-panel\" typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "check:all": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/check-all.ps1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "concurrently": "^10.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.4.0"
+  }
+}

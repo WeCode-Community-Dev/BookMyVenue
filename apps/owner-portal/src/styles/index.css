@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "@venue404/ui/theme.css";
+@source "../../../../packages/ui/src";
+
+@layer base {
+  html {
+    overflow-y: scroll;
+  }
+}

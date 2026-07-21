@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Build (tsc type-check + vite build — the merge gate)
+        run: pnpm build
+      - name: Security audit
+        # npm retired the legacy audit endpoints pnpm audit relies on (410 Gone);
+        # pnpm hasn't shipped a fix yet (pnpm/pnpm#11265). Non-blocking until it does.
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
+
+  api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: pass
+          POSTGRES_DB: venue404
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U user -d venue404"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DATABASE_URL: postgresql://user:pass@localhost:5432/venue404
+      SUPABASE_URL: https://example.supabase.co
+      SUPABASE_JWT_SECRET: test-secret
+      SUPABASE_SERVICE_ROLE_KEY: test-service-role
+      STRIPE_SECRET_KEY: sk_test_dummy
+      STRIPE_WEBHOOK_SECRET: whsec_dummy
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "apps/api/pyproject.toml"
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          uv venv
+          echo "$PWD/.venv/bin" >> $GITHUB_PATH
+          uv pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check .
+      - name: Migrate
+        run: alembic upgrade head
+      - name: Tests
+        run: pytest -q
+      - name: Security audit
+        run: uvx pip-audit

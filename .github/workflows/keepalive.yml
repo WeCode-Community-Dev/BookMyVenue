@@ -1,0 +1,19 @@
+name: Keepalive
+
+# Pings the API /health every 13 minutes so Render's free web service does not
+# spin down (it sleeps after ~15 min idle). GitHub Actions cron is best-effort.
+#
+# NOTE: on a PRIVATE repo this consumes ~3,300 Actions minutes/month and will
+# exceed the 2,000-min free budget — use a free external pinger (UptimeRobot /
+# cron-job.org) instead. On a PUBLIC repo, Actions minutes are free.
+on:
+  schedule:
+    - cron: "*/13 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /health
+        run: curl -fsS --max-time 60 --retry 3 --retry-delay 10 "${{ secrets.API_BASE_URL }}/health"

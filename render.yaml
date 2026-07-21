@@ -1,0 +1,28 @@
+# Render Blueprint — Venue404 API.
+# New → Blueprint → connect this repo. Render builds the FastAPI app from the
+# apps/api Dockerfile and auto-deploys on push to main when apps/api/** changes.
+#
+# Secrets are NOT stored here. Create an Environment Group named "venue404-api"
+# in the Render dashboard with: DATABASE_URL, SUPABASE_URL, SUPABASE_JWT_SECRET,
+# SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
+# RESEND_API_KEY, EMAIL_FROM, FRONTEND_BASE_URL, CORS_ORIGINS (the Vercel URLs),
+# JOB_RUNNER_TOKEN (long random), SENTRY_DSN (this service's Sentry project DSN —
+# unset disables error tracking), plus super-admin / Cloudinary vars as needed.
+services:
+  - type: web
+    name: venue404-api
+    runtime: docker
+    plan: free
+    branch: main
+    autoDeploy: true
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: ./apps/api
+    healthCheckPath: /health
+    buildFilter:
+      paths:
+        - apps/api/**
+    envVars:
+      # In-process scheduler stays OFF; jobs run via the cron-triggered endpoint.
+      - key: ENABLE_JOBS
+        value: "false"
+      - fromGroup: venue404-api

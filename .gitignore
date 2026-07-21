@@ -1,0 +1,44 @@
+# ---- Dependencies ----
+node_modules/
+.venv/
+*.egg-info/
+
+# ---- Build output ----
+dist/
+build/
+*.tsbuildinfo
+
+# ---- Environment secrets ----
+.env
+.env.local
+.env.*.local
+
+# ---- Python runtime ----
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ---- Test & coverage ----
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ---- Editor & OS ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Misc ----
+prd.txt
+auth-prd.md
+.claude/
+claude.md
+/prds
+
+.akhil
+self/ 

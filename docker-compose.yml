@@ -1,0 +1,14 @@
+services:
+  api:
+    build: ./apps/api
+    restart: unless-stopped
+    env_file:
+      - ./apps/api/.env
+    ports:
+      - "8000:8000"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    volumes:
+      - ./apps/api:/app
+      - /app/.venv

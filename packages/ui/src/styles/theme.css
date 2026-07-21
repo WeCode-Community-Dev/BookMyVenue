@@ -1,0 +1,319 @@
+/**
+ * Venue404 — Shared Design System
+ *
+ * Import order in every app:
+ *   1. @import "tailwindcss";
+ *   2. @import "@venue404/ui/theme.css";
+ *   3. @source "<path-to-packages/ui/src>";
+ *
+ * Palette  : zinc neutrals  +  #285A48 primary  +  #408A71 secondary  +  #091413 black
+ * Font     : Geist Variable (variable font, weights 100–900)
+ * Sidebar  : brand-black background, zinc-800 borders
+ * Content  : zinc-50 background, white cards, zinc-200 borders
+ * Motion   : Emil-style press feedback (scale 0.97), expo easing, stagger entry
+ */
+
+@import "@fontsource-variable/geist";
+
+/* ─── Dark mode variant ──────────────────────────────────────────────────
+ * Class-based (not media-query-based) so a header toggle can override the
+ * system preference. Toggled by adding/removing `.dark` on <html>.
+ * ────────────────────────────────────────────────────────────────────── */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Brand color utilities (Tailwind v4 @theme) ────────────────────────── */
+@theme {
+  --color-brand:                 #285A48;  /* primary */
+  --color-brand-hover:           #1e4335;  /* primary dark */
+  --color-brand-secondary:       #408A71;  /* secondary */
+  --color-brand-secondary-hover: #327060;  /* secondary dark */
+  --color-brand-black:           #091413;  /* custom black */
+  --color-brand-light:           #e8f2ee;  /* primary tint — backgrounds */
+  --color-brand-light-strong:    #d1e6dc;  /* primary tint — stronger */
+  --color-brand-muted:           #9ec5b4;  /* primary tint — rings/borders */
+
+  /* Dark-mode neutrals — tinted toward --color-brand-black instead of
+     plain gray, so dark surfaces read as "the brand" rather than a
+     generic OS dark theme. Use in place of zinc-950/900/800/700/600
+     for any dark: background/border/divide utility. */
+  --color-ink-950: #0a1412;  /* page background */
+  --color-ink-900: #101d1a;  /* card / surface background */
+  --color-ink-850: #1a2d29;  /* elevated surface */
+  --color-ink-800: #26403a;  /* hover surface, default borders */
+  --color-ink-700: #385951;  /* stronger borders / dividers */
+  --color-ink-600: #4a7368;  /* interactive borders on hover */
+}
+
+/* ─── Design tokens ─────────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    /* Layout */
+    --sidebar-width: 248px;
+    --topbar-height: 60px;
+
+    /* Easing (Emil Kowalski) */
+    --ease-out-expo:    cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out-expo: cubic-bezier(0.77, 0, 0.175, 1);
+
+    /* Non-Tailwind surface tokens */
+    --color-surface: #ffffff;
+    --color-bg:      #fafafa;  /* zinc-50 */
+    --color-text:        #18181b; /* zinc-900 */
+    --color-border:      #e4e4e7; /* zinc-200 */
+    --color-border-strong: #d4d4d8; /* zinc-300 */
+    color-scheme: light;
+  }
+
+  .dark {
+    --color-surface: var(--color-ink-900);
+    --color-bg:      var(--color-ink-950);
+    --color-text:        #f4f4f5; /* zinc-100 */
+    --color-border:      var(--color-ink-800);
+    --color-border-strong: var(--color-ink-700);
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Geist Variable', system-ui, -apple-system, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+}
+
+/* ─── Brand glow (dark-mode depth) ──────────────────────────────────────────
+ * A soft radial wash of brand green behind hero/nav/card surfaces in dark
+ * mode, so panels read as lit from within rather than flat gray-on-black.
+ * No-op in light mode. Host element needs `position: relative` (or use
+ * `.brand-glow` which sets it) and `overflow: hidden` to clip the blob.
+ * ────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .brand-glow {
+    position: relative;
+    isolation: isolate;
+  }
+  .brand-glow::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+    background:
+      radial-gradient(ellipse 60% 50% at 15% 0%, rgb(64 138 113 / 0.16), transparent 65%),
+      radial-gradient(ellipse 45% 40% at 100% 100%, rgb(40 90 72 / 0.12), transparent 70%);
+  }
+  .dark .brand-glow::before {
+    opacity: 1;
+  }
+}
+
+/* ─── Press feedback (Emil Kowalski) ────────────────────────────────────── */
+@layer utilities {
+  .press {
+    transition: transform 150ms var(--ease-out-expo);
+  }
+  .press:active {
+    transform: scale(0.97);
+  }
+}
+
+/* ─── Card stagger entry ─────────────────────────────────────────────────── */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.card-enter {
+  animation: card-in 400ms var(--ease-out-expo) both;
+}
+.card-enter:nth-child(1) { animation-delay:   0ms; }
+.card-enter:nth-child(2) { animation-delay:  60ms; }
+.card-enter:nth-child(3) { animation-delay: 120ms; }
+.card-enter:nth-child(4) { animation-delay: 180ms; }
+.card-enter:nth-child(5) { animation-delay: 240ms; }
+.card-enter:nth-child(6) { animation-delay: 300ms; }
+
+/* ─── Page fade-in ───────────────────────────────────────────────────────── */
+@keyframes page-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.page-enter {
+  animation: page-in 250ms var(--ease-out-expo) both;
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .card-enter,
+  .page-enter {
+    animation: none;
+  }
+}
+
+/* ─── Form elements ──────────────────────────────────────────────────────── */
+@layer components {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  input:not([type]),
+  textarea,
+  select {
+    appearance: none;
+    display: block;
+    width: 100%;
+    border-radius: 0.5rem;             /* rounded-lg */
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    padding: 0.5rem 0.75rem;           /* py-2 px-3  */
+    font-size: 0.875rem;               /* text-sm    */
+    line-height: 1.5rem;
+    color: var(--color-text);
+    font-family: inherit;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease, color 150ms ease;
+  }
+
+  input:not([type]):focus,
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus,
+  input[type="search"]:focus,
+  input[type="tel"]:focus,
+  input[type="url"]:focus,
+  input[type="number"]:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px rgb(40 90 72 / 0.15);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #a1a1aa; /* zinc-400 */
+  }
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: #71717a; /* zinc-500 */
+  }
+
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    background-color: #f4f4f5; /* zinc-100 */
+    color: #a1a1aa;
+    cursor: not-allowed;
+  }
+  .dark input:disabled,
+  .dark textarea:disabled,
+  .dark select:disabled {
+    background-color: var(--color-ink-800);
+    color: #71717a;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2.25rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.8125rem;  /* 13px */
+    font-weight: 500;
+    color: #52525b;        /* zinc-600 */
+    margin-bottom: 0.375rem;
+  }
+  .dark label {
+    color: #a1a1aa; /* zinc-400 */
+  }
+}
+
+/* ─── Button variants ────────────────────────────────────────────────────── */
+@layer components {
+  button[data-variant] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    line-height: 1;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+  }
+
+  button[data-variant]:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  button[data-variant="primary"] {
+    background-color: var(--color-brand);
+    color: #ffffff;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  }
+
+  button[data-variant="primary"]:hover:not(:disabled) {
+    background-color: var(--color-brand-hover);
+  }
+
+  button[data-variant="secondary"] {
+    background-color: var(--color-surface);
+    color: #3f3f46;        /* zinc-700 */
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  }
+  .dark button[data-variant="secondary"] {
+    color: #d4d4d8; /* zinc-300 */
+  }
+
+  button[data-variant="secondary"]:hover:not(:disabled) {
+    background-color: #f4f4f5; /* zinc-100 */
+    border-color: #d4d4d8;     /* zinc-300 */
+  }
+  .dark button[data-variant="secondary"]:hover:not(:disabled) {
+    background-color: var(--color-ink-800);
+    border-color: var(--color-border-strong);
+  }
+
+  button[data-variant="ghost"] {
+    background-color: transparent;
+    color: #52525b; /* zinc-600 */
+    border: 1px solid transparent;
+  }
+  .dark button[data-variant="ghost"] {
+    color: #a1a1aa; /* zinc-400 */
+  }
+
+  button[data-variant="ghost"]:hover:not(:disabled) {
+    background-color: #f4f4f5; /* zinc-100 */
+    color: #18181b;
+  }
+  .dark button[data-variant="ghost"]:hover:not(:disabled) {
+    background-color: var(--color-ink-800);
+    color: #f4f4f5;
+  }
+}
