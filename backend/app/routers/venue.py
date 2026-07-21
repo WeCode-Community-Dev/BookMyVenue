@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 from app.core.security import get_current_venue_owner
 from app.db.deps import get_db
 from app.models.user import User
+from app.schemas.review import VenueReviewsOut
 from app.schemas.venue import VenueCreate, VenueOut, VenueUpdate
+from app.services.review_service import get_reviews_for_venue
 from app.services.venue_service import (
     check_availability,
     check_availability_range,
@@ -61,6 +63,14 @@ def list_venues(
     db: Session = Depends(get_db),
 ):
     return get_venues(db, location=location, search=search, skip=skip, limit=limit)
+
+
+@router.get("/{venue_id}/reviews", response_model=VenueReviewsOut)
+def list_venue_reviews(
+    venue_id: int,
+    db: Session = Depends(get_db),
+):
+    return get_reviews_for_venue(db, venue_id)
 
 
 @router.get("/{venue_id}", response_model=VenueOut)

@@ -1,12 +1,35 @@
-import { useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Navigate, useLocation, Outlet } from "react-router-dom";
+import { fetchCurrentUserAsync } from "../modules/auth/authSlice";
+import { isAuthenticated as hasToken } from "../core/auth/tokenStorage";
+
+function AuthLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#f0f2f5]">
+      <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 function RequireVenueOwner() {
-  const { isAuthenticated, isLoadingUser, user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const location = useLocation();
+  const { isAuthenticated, isLoadingUser, user } = useSelector((state) => state.auth);
+  const tokenPresent = hasToken();
 
-  if(isLoadingUser){
-    return null;
+  useEffect(() => {
+    if (tokenPresent && !user && !isLoadingUser) {
+      dispatch(fetchCurrentUserAsync());
+    }
+  }, [dispatch, tokenPresent, user, isLoadingUser]);
+
+  if (!tokenPresent && !isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (tokenPresent && !user) {
+    return <AuthLoading />;
   }
 
   if (!isAuthenticated) {
@@ -14,7 +37,6 @@ function RequireVenueOwner() {
   }
 
   if (!user?.is_venue_owner) {
-    // Logged in, but not a venue owner — bounce to customer dashboard
     return <Navigate to="/dashboard" replace />;
   }
 

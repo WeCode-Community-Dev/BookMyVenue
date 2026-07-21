@@ -18,6 +18,19 @@ import OwnerVenueManagePage from "./pages/OwnerVenueManagePage";
 import OwnerVenueEditPage from "./pages/OwnerVenueEditPage";
 import OwnerReviewsPage from "./pages/OwnerReviewsPage";
 
+import VenueListPage from "./modules/venues/pages/VenueListPage";
+import VenueDetailPage from "./modules/venues/pages/VenueDetailPage";
+import AdminLoginPage from "./pages/admin/AdminLoginPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import PendingVenuesPage from "./pages/admin/PendingVenuesPage";
+import AdminVenuesPage from "./pages/admin/VenuesPage";
+import VenueCreatePage from "./pages/admin/VenueCreatePage";
+import AdminVenueEditPage from "./pages/admin/VenueEditPage";
+import AdminBookingsPage from "./pages/admin/BookingsPage";
+import AdminUsersPage from "./pages/admin/UsersPage";
+import UserCreatePage from "./pages/admin/UserCreatePage";
+import UserEditPage from "./pages/admin/UserEditPage";
+
 import RequireAuth from "./components/RequireAuth";
 import RequireVenueOwner from "./components/RequireVenueOwner";
 import RequireAdmin from "./components/RequireAdmin";

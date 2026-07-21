@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logoutUserAsync, fetchCurrentUserAsync } from "../modules/auth/authSlice";
+import { logoutUserAsync } from "../modules/auth/authSlice";
 import { fetchMyBookingsAsync } from "../modules/bookings/bookingSlice";
 import { getVenues } from "../modules/venues/services/venueService";
 import VenueCard from "../components/VenueCard";
@@ -19,7 +19,6 @@ function DashboardPage() {
   const [venuesError, setVenuesError] = useState("");
 
   useEffect(() => {
-    dispatch(fetchCurrentUserAsync());
     dispatch(fetchMyBookingsAsync({ limit: 3 }));
   }, [dispatch]);
 

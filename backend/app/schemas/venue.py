@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 from datetime import datetime
 from typing import Optional
 from app.schemas.amenity import AmenityOut
@@ -41,3 +41,8 @@ class VenueOut(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @computed_field
+    @property
+    def images(self) -> list[str]:
+        return [self.image_url] if self.image_url else []

@@ -126,7 +126,7 @@ const authSlice = createSlice({
   initialState: {
     user: null,
     isAuthenticated: isAuthenticated(),
-    isLoadingUser: isAuthenticated(), 
+    isLoadingUser: false,
     isLoading: false,
     error: null,
     success: false,

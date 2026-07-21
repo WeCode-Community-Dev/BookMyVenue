@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 
 from app.models.review import Review
@@ -78,6 +78,59 @@ def create_review(db: Session, current_user: User, payload: ReviewCreate) -> dic
         "event_type": booking.event_type,
         "owner_reply": review.owner_reply,
         "replied_at": review.replied_at,
+    }
+
+
+def get_reviews_for_venue(db: Session, venue_id: int) -> dict:
+    venue = (
+        db.query(Venue)
+        .filter(
+            Venue.id == venue_id,
+            Venue.approval_status == "approved",
+            Venue.is_active.is_(True),
+        )
+        .first()
+    )
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+
+    review_rows = (
+        db.query(Review)
+        .options(joinedload(Review.reviewer))
+        .filter(Review.venue_id == venue_id)
+        .order_by(Review.created_at.desc())
+        .all()
+    )
+
+    booking_ids = [r.booking_id for r in review_rows if r.booking_id]
+    bookings_by_id = {}
+    if booking_ids:
+        bookings = db.query(Booking).filter(Booking.id.in_(booking_ids)).all()
+        bookings_by_id = {b.id: b for b in bookings}
+
+    reviews = []
+    for review in review_rows:
+        booking = bookings_by_id.get(review.booking_id) if review.booking_id else None
+        reviews.append({
+            "id": review.id,
+            "rating": review.rating,
+            "comment": review.comment,
+            "created_at": review.created_at,
+            "reviewer_name": review.reviewer.name or "Anonymous",
+            "event_type": booking.event_type if booking else None,
+            "owner_reply": review.owner_reply,
+            "replied_at": review.replied_at,
+        })
+
+    distribution = {str(star): 0 for star in range(1, 6)}
+    for review in reviews:
+        distribution[str(review["rating"])] += 1
+
+    return {
+        "reviews": reviews,
+        "total_reviews": venue.total_reviews or len(reviews),
+        "average_rating": float(venue.average_rating or 0),
+        "rating_distribution": distribution,
     }
 
 
