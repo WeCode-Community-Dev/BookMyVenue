@@ -9,7 +9,6 @@ import Cookies from 'js-cookie';
 import apiService from '../services/apiService';
 import Logo from '../assets/Logo.png'
 import EditVenueModal from '../components/EditVenueModal';
-import { all } from 'axios';
 
 
 const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
@@ -252,7 +251,7 @@ const ListedProperties = ({handleToggleAvailability, userVenues, setSelectedVenu
               </div>
             </div>
             <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-50">
-              <p className="text-sm text-gray-500 font-semibold">₹{venue.price}<span className={" text-xs text-[#ff485e] py-1"} >/{userVenues.booking_types === "hourly" ? "hour" : "day"}</span> </p>
+              <p className="text-sm text-gray-500 font-semibold">₹{venue.price}<span className={" text-xs text-[#ff485e] py-1"} >/{venue.booking_types === "hourly" ? "hour" : "day"}</span> </p>
               <ToggleSwitch isActive={venue.is_available}
                venue={venue}
                onToggle={handleToggleAvailability}  
@@ -280,6 +279,7 @@ export default function OwnerDashboard() {
   const navigate = useNavigate()
 
   const [userVenues, setUserVenues] = useState([])
+  console.log(userVenues)
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [ownerRevenue, setOwnerRevenue] = useState(0);
@@ -290,7 +290,6 @@ export default function OwnerDashboard() {
   const onClose = () => {
     setIsEditOpen(false);
   }
-
 
   //  Toggle Availability Function
   const handleToggleAvailability = async (venue) => {
@@ -332,7 +331,6 @@ export default function OwnerDashboard() {
       } else {
         setUserVenues([]);
       }
-      console.log(allBookings);
       
     } catch (error) {
       console.log(error);
@@ -344,8 +342,6 @@ export default function OwnerDashboard() {
   useEffect(() => {
     fetchVenues()
   },[])
-
-
 
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans overflow-hidden">
