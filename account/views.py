@@ -2,6 +2,8 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+
 
 from .models import User
 from .Serializers import RegisterSerializer,LoginUserSerializer
@@ -9,8 +11,7 @@ from .Serializers import RegisterSerializer,LoginUserSerializer
 
 class RegisterCreateView(CreateAPIView):
     serializer_class = RegisterSerializer
-    queryset = User.objects.all()
-
+    queryset = User.objects.all()    
 
 class LoginUserView(APIView):
 

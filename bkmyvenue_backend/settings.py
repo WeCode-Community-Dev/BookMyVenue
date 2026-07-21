@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'account',
     'venues',
     'bookings',
+    'locations',
 ]
 
 MIDDLEWARE = [

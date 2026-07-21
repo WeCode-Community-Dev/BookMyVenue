@@ -14,3 +14,6 @@ class VenueListCreateView(ListCreateAPIView):
 class VenueDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Venue.objects.all()
     serializer_class = VenueSerializer
+
+class VenueMediaListCreateView(ListCreateAPIView):
+    pass

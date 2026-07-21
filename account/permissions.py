@@ -1,26 +1,26 @@
 from rest_framework.permissions import BasePermission
+from account.models import User
 
 
 class IsAdminRole(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and request.user.role_type == request.user.Role.ADMIN
+            and request.user.role == User.Role.ADMIN
         )
-    
-class IsAdminRole(BasePermission):
+
+
+class IsOwnerRole(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and request.user.role_type == request.user.Role.OWNER
+            and request.user.role == User.Role.OWNER
         )
 
-class IsAdminRole(BasePermission):
+
+class IsCustomerRole(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and request.user.role_type == request.user.Role.CUSTOMER
+            and request.user.role == User.Role.CUSTOMER
         )
-
-
-
