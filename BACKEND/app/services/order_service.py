@@ -7,6 +7,7 @@ from app.model.bookings import Booking
 from typing import Optional
 from datetime import datetime, timezone
 from sqlalchemy import func
+from app.services.email_service import send_email
 
 async def add_order_details(    
     db: Session,
@@ -102,7 +103,11 @@ def update_order_status_refund(db: Session, order_id: str, status: str, refund_r
             order.refund_percentage = 70
 
         ############## Need to sent mail to user about refund and refund amount ##############
-
+        send_email(
+            to_email=order.user.email,
+            subject="Refund Processed",
+            body=f"Your refund for order {order.id} has been processed. Refund Amount: ₹{order.refunded_amount / 100:.2f}. Reason: {refund_reason if refund_reason else 'N/A'}"
+        )
 
         order.status = status
         if refund_reason:
@@ -130,6 +135,14 @@ def get_earnings(db: Session, user_id: int):
             .scalar()
         )
 
+        total_earnings_paise_refunded = (
+            db.query(func.sum(Order.refunded_amount))
+            .filter(
+                Order.status == "refunded"
+            )
+            .scalar()
+        )
+
         current_date = datetime.now().date()
 
         amount_to_receive_paise = (
@@ -145,12 +158,14 @@ def get_earnings(db: Session, user_id: int):
 
         total_earnings_paise = total_earnings_paise or 0
         total_earnings_rupees = total_earnings_paise / 100
+        total_earnings_rupees_refunded = (total_earnings_paise_refunded or 0) / 100
         amount_to_receive_paise = amount_to_receive_paise or 0
         amount_to_receive_rupees = amount_to_receive_paise / 100
 
         return {
-            "total_earnings": total_earnings_rupees,
+            "total_earnings": total_earnings_rupees + total_earnings_rupees_refunded,
             "amount_yet_to_receive": amount_to_receive_rupees,
+            "total_refunded": total_earnings_rupees_refunded,
             "currency": "INR"
         }
 
