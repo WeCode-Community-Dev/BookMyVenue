@@ -91,7 +91,7 @@ export const useAuthForm = () => {
                     navigate("/")
                     console.log(data.user.role)
                 } else if(data.user.role == "admin") {
-                    navigate("/admin")
+                    navigate("/admin/dashboard")
                 } else if(data.user.role == "owner"){
                     navigate("/host")
                 }

@@ -9,7 +9,6 @@ import Cookies from 'js-cookie';
 import apiService from '../services/apiService';
 import Logo from '../assets/Logo.png'
 import EditVenueModal from '../components/EditVenueModal';
-import { all } from 'axios';
 
 
 const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
@@ -25,8 +24,36 @@ const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
 );
 
 const ToggleSwitch = ({ isActive, onToggle, venue }) => (
-  <div onClick={() => onToggle(venue)} className={`w-11 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${isActive ? 'bg-[#2a5660]' : 'bg-gray-300'}`}>
-    <div className={`bg-white w-4 h-4 rounded-full shadow-sm transform transition-transform duration-300 ${isActive ? 'translate-x-5' : 'translate-x-0'}`}></div>
+  <div 
+    onClick={() => onToggle(venue)} 
+    className={`relative w-20 h-8 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-300 ${
+      isActive ? 'bg-[#2a5660]' : 'bg-gray-300'
+    }`}
+  >
+    {/* Text Labels */}
+    <div className="absolute inset-0 flex items-center pointer-events-none">
+      <span 
+        className={`absolute left-2.5 text-xs font-semibold text-white whitespace-nowrap transition-opacity duration-300 ${
+          isActive ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        Online
+      </span>
+      <span 
+        className={`absolute right-2 text-xs font-semibold text-gray-600 whitespace-nowrap transition-opacity duration-300 ${
+          isActive ? 'opacity-0' : 'opacity-100'
+        }`}
+      >
+        Offline
+      </span>
+    </div>
+
+    {/* Sliding Thumb */}
+    <div 
+      className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 z-10 ${
+        isActive ? 'translate-x-12' : 'translate-x-0'
+      }`}
+    />
   </div>
 );
 
@@ -144,6 +171,7 @@ const RecentBookings = ({allBookings}) => (
       {allBookings.map((item) => {
         const booking = item.booking;
         const venuePrice = item.venue_price;
+        console.log(allBookings);
 
         return (
           <div key={booking.id} className="relative bg-white border border-gray-100 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-sm hover:shadow-md transition-shadow">
@@ -252,7 +280,7 @@ const ListedProperties = ({handleToggleAvailability, userVenues, setSelectedVenu
               </div>
             </div>
             <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-50">
-              <p className="text-sm text-gray-500 font-semibold">₹{venue.price}<span className={" text-xs text-[#ff485e] py-1"} >/{userVenues.booking_types === "hourly" ? "hour" : "day"}</span> </p>
+              <p className="text-sm text-gray-500 font-semibold">₹{venue.price}<span className={" text-xs text-[#ff485e] py-1"} >/{venue.booking_types === "hourly" ? "hour" : "day"}</span> </p>
               <ToggleSwitch isActive={venue.is_available}
                venue={venue}
                onToggle={handleToggleAvailability}  
@@ -280,6 +308,7 @@ export default function OwnerDashboard() {
   const navigate = useNavigate()
 
   const [userVenues, setUserVenues] = useState([])
+  console.log(userVenues)
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [ownerRevenue, setOwnerRevenue] = useState(0);
@@ -290,7 +319,6 @@ export default function OwnerDashboard() {
   const onClose = () => {
     setIsEditOpen(false);
   }
-
 
   //  Toggle Availability Function
   const handleToggleAvailability = async (venue) => {
@@ -332,7 +360,6 @@ export default function OwnerDashboard() {
       } else {
         setUserVenues([]);
       }
-      console.log(allBookings);
       
     } catch (error) {
       console.log(error);
@@ -344,8 +371,6 @@ export default function OwnerDashboard() {
   useEffect(() => {
     fetchVenues()
   },[])
-
-
 
   return (
     <div className="flex h-screen bg-[#f8fafc] font-sans overflow-hidden">

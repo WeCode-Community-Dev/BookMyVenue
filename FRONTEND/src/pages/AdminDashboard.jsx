@@ -1,23 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import Cookies from "js-cookie"
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Logo from '../assets/Logo.png'
 import { Layout, Building, SlashCircle, X } from '@mynaui/icons-react';
 import apiService from '../services/apiService';
 import toast, {Toaster} from 'react-hot-toast';
 
-// ==========================================
-// 1. DUMMY DATA (Replace with API data)
-// ==========================================
-const USERS_DATA = [
-  { id: 1, initials: 'ES', name: 'Elena Santos', role: 'Host', joinDate: 'Oct 12, 2023', status: 'Active', avatarBg: 'bg-[#2a5660] text-white' },
-  { id: 2, initials: 'MJ', name: 'Marcus Johnson', role: 'Guest', joinDate: 'Nov 05, 2023', status: 'Active', avatarBg: 'bg-gray-500 text-white' },
-  { id: 3, initials: 'SL', name: 'Sarah Lee', role: 'Host', joinDate: 'Dec 01, 2023', status: 'Pending', avatarBg: 'bg-[#ff5c5d] text-white' },
-];
-
 
 // ==========================================
-// 2. SIDEBAR
+//  SIDEBAR
 // ==========================================
 const SidebarItem = ({ iconName, label, isActive, onClick, link }) => (
   <Link to={link}
@@ -36,11 +27,8 @@ const SidebarItem = ({ iconName, label, isActive, onClick, link }) => (
   </Link>
 );
 
-// ==========================================
-// 3. MAIN PARENT COMPONENT
-// ==========================================
+
 export default function AdminDashboard() {
-  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('Dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -60,11 +48,12 @@ export default function AdminDashboard() {
       const response = await apiService.GetAllVenuesForAdmin()
       const safeResponse = Array.isArray(response) ? response : []
       setAllVenues(safeResponse);
+      console.log(safeResponse);
       
-      const unapproved = safeResponse.filter(venue => venue.is_approved === false);
+      const unapproved = safeResponse.filter(venue => venue.is_approved_status === "pending");
       SetPendingVenues(unapproved);
       console.log(unapproved)
-      
+
     } catch (error) {
       console.log("Failed to Fetch Venues:", error);
       setAllVenues([]);
@@ -73,8 +62,8 @@ export default function AdminDashboard() {
 
   }
 
+  // fetch api's
   useEffect(() => {
-
     const getAllUsersList = async () => {
       try {
         const response = await apiService.GetUserListForAdmin();
@@ -90,11 +79,13 @@ export default function AdminDashboard() {
     fetchPendingVenues()
   }, [])
 
+  // Open Rejection Modal window
   const openRejectionModal = () => {
     setIsRejectModalOpen(true);
     setRejectReason("");
   }
 
+  // Execute Rejection when button clicked
   const executeRejection = () => {
     handleApproval("rejected", selectedVenueForRejection.id)
     console.log("Sending Rejection Reason");
@@ -105,13 +96,17 @@ export default function AdminDashboard() {
   const handleApproval = async (button, venue_id) => {
     try {
       const payload = {
-        "status": "approved",
+        "status": button,
         "user_id": Cookies.get('userId'),
-        "reason": "string"
+        "reason": rejectReason
       }
 
       const response = await apiService.updateAdminVenueApproval(payload, venue_id)
-      toast.success(response.message)
+      if(button === "approved"){
+        toast.success("Successfully Approved the Venue!")
+      } else if (button === "rejected"){
+        toast.success("Successfully Rejected the Venue!")
+      }
 
       fetchPendingVenues()
     } catch (error) {
