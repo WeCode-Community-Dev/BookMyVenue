@@ -1,0 +1,52 @@
+@use '../styles/variable.scss' as *;
+
+.page {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 72px);
+  background: $bg-warm;
+}
+
+:global(.owner-content-body--messages) .page {
+  height: 100%;
+}
+
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid $border-color;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebarHeader {
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid $border-color;
+
+  h1 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $text-dark;
+  }
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #fff;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-medium;
+  font-size: 0.9375rem;
+}

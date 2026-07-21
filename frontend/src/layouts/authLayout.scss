@@ -1,0 +1,198 @@
+.auth-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  width: 100%;
+  font-family: var(--sans);
+  text-align: left;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, var(--accent-bg) 0%, transparent 70%);
+      pointer-events: none;
+    }
+  }
+}
+
+// ─── Side panel (desktop) ───────────────────────────────────────────────────
+.auth-side-panel {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  @media (max-width: 900px) { display: none; }
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      rgba(20, 18, 16, 0.3) 0%,
+      rgba(20, 18, 16, 0.75) 60%,
+      rgba(61, 32, 16, 0.9) 100%
+    );
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+    padding: 48px;
+    color: #fff;
+  }
+
+  &__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    margin-bottom: 48px;
+
+    img {
+      height: 36px;
+      filter: brightness(0) invert(1);
+    }
+
+    span {
+      font-family: var(--heading);
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+
+      span { color: var(--accent-light); }
+    }
+  }
+
+  &__quote {
+    font-family: var(--heading);
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    font-weight: 500;
+    font-style: italic;
+    line-height: 1.4;
+    margin: 0 0 40px;
+    letter-spacing: -0.01em;
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  &__stats {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+
+    div {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.75);
+
+      svg { color: var(--accent-light); }
+
+      strong {
+        color: #fff;
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+// ─── Main auth area ──────────────────────────────────────────────────────────
+.auth-header {
+  position: relative;
+  z-index: 1;
+  padding: 24px 40px;
+
+  &--mobile {
+    display: none;
+
+    @media (max-width: 900px) {
+      display: block;
+      padding: 20px 24px;
+    }
+  }
+
+  .auth-logo-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+
+    &:hover { opacity: 0.85; }
+  }
+
+  .auth-logo-img {
+    height: 32px;
+    width: auto;
+  }
+
+  .auth-brand-text {
+    font-family: var(--heading);
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text-h);
+
+    span { color: var(--accent); }
+  }
+}
+
+.auth-main-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 40px 48px;
+
+  @media (max-width: 640px) {
+    padding: 16px 20px 40px;
+  }
+}
+
+.auth-card-container {
+  width: 100%;
+  max-width: 440px;
+  animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-footer {
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+  text-align: center;
+
+  .auth-footer-text {
+    font-size: 12px;
+    color: var(--text);
+    margin: 0;
+  }
+}

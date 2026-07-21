@@ -1,0 +1,380 @@
+.register-card {
+  background: var(--surface-elevated);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  padding: 48px;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.4s ease-out;
+
+  @media (max-width: 640px) {
+    padding: 32px 24px;
+    border-radius: 12px;
+  }
+
+  .register-header {
+    text-align: center;
+    margin-bottom: 32px;
+
+    h1 {
+      font-family: var(--heading);
+      font-size: 28px;
+      font-weight: 700;
+      color: #111827;
+      margin: 0 0 8px 0;
+      letter-spacing: -0.5px;
+    }
+
+    .register-subtitle {
+      font-size: 14.5px;
+      color: #6b7280;
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+
+  .role-selector-section {
+    margin-bottom: 28px;
+
+    .section-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #4b5563;
+      letter-spacing: 1.5px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .role-cards-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+
+      @media (max-width: 580px) {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+
+    .role-card {
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      background: #ffffff;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--accent-glow);
+      }
+
+      &.active {
+        border-color: var(--accent);
+        background: var(--accent-bg);
+
+        .role-icon-wrapper {
+          background-color: var(--accent);
+          color: #ffffff;
+        }
+
+        .role-indicator {
+          border-color: var(--accent);
+          
+          .indicator-dot {
+            transform: scale(1);
+            opacity: 1;
+            background-color: var(--accent);
+          }
+        }
+      }
+
+      .role-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f3f4f6;
+        color: #4b5563;
+        font-size: 20px;
+        margin-bottom: 16px;
+        transition: all 0.25s ease;
+      }
+
+      .role-card-text {
+        flex: 1;
+        margin-bottom: 20px;
+
+        h3 {
+          font-size: 15px;
+          font-weight: 600;
+          color: #111827;
+          margin: 0 0 6px 0;
+        }
+
+        p {
+          font-size: 12px;
+          color: #6b7280;
+          line-height: 1.45;
+          margin: 0;
+        }
+      }
+
+      .role-indicator {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid #d1d5db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        margin-top: auto;
+
+        .indicator-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background-color: #008060;
+          transform: scale(0);
+          opacity: 0;
+          transition: all 0.2s ease;
+        }
+      }
+    }
+  }
+
+  .register-form {
+    .form-group {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+
+      label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #4b5563;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 15px;
+        color: #111827;
+        background: #ffffff;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+
+        &::placeholder {
+          color: #9ca3af;
+        }
+
+        &:focus {
+          outline: none;
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px var(--accent-bg);
+        }
+      }
+
+      .form-hint {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 6px;
+      }
+    }
+
+    .password-group {
+      .password-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .password-input {
+        padding-right: 44px;
+      }
+
+      .password-toggle-btn {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        color: #9ca3af;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: #4b5563;
+        }
+      }
+    }
+
+    .form-checkbox-group {
+      margin-bottom: 24px;
+
+      .checkbox-container {
+        display: flex;
+        position: relative;
+        padding-left: 28px;
+        cursor: pointer;
+        font-size: 13px;
+        line-height: 1.45;
+        color: #4b5563;
+        user-select: none;
+
+        input {
+          position: absolute;
+          opacity: 0;
+          cursor: pointer;
+          height: 0;
+          width: 0;
+
+          &:checked ~ .checkmark {
+            background-color: #008060;
+            border-color: #008060;
+
+            &:after {
+              display: block;
+            }
+          }
+        }
+
+        .checkmark {
+          position: absolute;
+          top: 2px;
+          left: 0;
+          height: 18px;
+          width: 18px;
+          background-color: #ffffff;
+          border: 1px solid #d1d5db;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+
+          &:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 5px;
+            top: 2px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+          }
+        }
+
+        &:hover input ~ .checkmark {
+          border-color: #008060;
+        }
+
+        .checkbox-label {
+          margin-top: 1px;
+        }
+      }
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px 20px;
+      background: var(--gradient-brand);
+      border: none;
+      border-radius: 100px;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover {
+        background-color: var(--accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px var(--accent-glow);
+
+        .btn-arrow {
+          transform: translateX(3px);
+        }
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+
+      .btn-arrow {
+        font-size: 16px;
+        transition: transform 0.2s ease;
+      }
+    }
+  }
+
+  .form-link,
+  .form-link-highlight {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: text-decoration 0.2s ease;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .form-link-highlight {
+    text-decoration: none;
+    font-weight: 600;
+    transition: text-decoration 0.2s ease;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .register-footer-links {
+    margin-top: 24px;
+    text-align: center;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 20px;
+
+    p {
+      font-size: 14px;
+      color: #6b7280;
+      margin: 0;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

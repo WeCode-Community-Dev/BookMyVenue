@@ -1,0 +1,79 @@
+.payment-verify-page {
+  padding: 2.5rem 0;
+}
+
+.payment-card {
+  max-width: 720px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.payment-card h1 {
+  margin-bottom: 1rem;
+  font-size: 1.75rem;
+}
+
+.status-text {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.status-card {
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-top: 1rem;
+  background: var(--bg-subtle);
+}
+
+.status-card.success {
+  border: 1px solid #1f8a70;
+}
+
+.status-card.failed {
+  border: 1px solid #d64545;
+}
+
+.status-card.pending {
+  border: 1px solid #f0ad4e;
+}
+
+.status-card h2 {
+  margin-bottom: 0.75rem;
+}
+
+.payment-info {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.payment-info div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.98rem;
+}
+
+.action-row {
+  margin-top: 1.5rem;
+}
+
+.secondary-btn {
+  display: inline-block;
+  padding: 0.85rem 1.2rem;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.secondary-btn:hover {
+  background-color: var(--bg-subtle);
+}
