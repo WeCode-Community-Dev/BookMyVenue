@@ -20,19 +20,21 @@ export default {
     // "2026-06-30"
 
     const bookings = await db.query.bookingsTable.findMany({
-      where: and(
-        eq(bookingsTable.venueId, venueId),
-        ne(bookingsTable.status, 'cancelled'),
-        lte(bookingsTable.startDate, monthEndStr),
-        gte(bookingsTable.endDate, monthStartStr)
-      ),
-      columns: {
-        startDate: true,
-        endDate: true,
-        status: true,
-      },
-    });
-    return bookings;
+  where: and(
+    eq(bookingsTable.venueId, venueId),
+    ne(bookingsTable.status, 'cancelled'),
+    lte(bookingsTable.startDate, monthEndStr),
+    gte(bookingsTable.endDate, monthStartStr)
+  ),
+  columns: {
+    startDate: true,
+    endDate: true,
+    startTime: true,   // added
+    endTime: true,      // added
+    status: true,
+  },
+});
+return bookings;
   },
 
   bookVenue: async function (bookerId, venueId, startDate, endDate, startTime, endTime, note) {
