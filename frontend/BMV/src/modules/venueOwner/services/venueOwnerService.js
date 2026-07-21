@@ -59,6 +59,18 @@ export const venueOwnerService = {
     return res.data;
   },
 
+  // DELETE /venues/:id  — hard delete for pending/rejected
+  async deleteVenue(id) {
+    const res = await client.delete(`/venues/${id}`);
+    return res.data;
+  },
+
+  // PATCH /venues/:id/deactivate  — soft delete for approved
+  async deactivateVenue(id) {
+    const res = await client.patch(`/venues/${id}/deactivate`);
+    return res.data;
+  },
+
   // GET /venue-owners/dashboard/revenue?range=this_month
   async getRevenueOverview(range = "this_month") {
     const res = await client.get("/venue-owners/dashboard/revenue", { params: { range } });

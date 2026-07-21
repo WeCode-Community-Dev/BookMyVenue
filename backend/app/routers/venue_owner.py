@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.deps import get_db
 from app.schemas.venue_owner import VenueOwnerCreate, VenueOwnerProfileCreate
 from app.schemas.user import UserOut, TokenOut
-from app.services.venue_owner_service import register_venue_owner, add_venue_owner_profile
+from app.services.venue_owner_service import register_venue_owner, upgrade_customer_to_owner
 from app.core.security import create_access_token, get_current_user
 from app.models.user import User
 
@@ -20,14 +20,14 @@ def register(payload: VenueOwnerCreate, db: Session = Depends(get_db)):
     return TokenOut(access_token=access_token)
 
 
-@router.post("/profile", response_model=UserOut)
+@router.post("/upgrade", response_model=UserOut)
 def add_profile(
     payload: VenueOwnerProfileCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Existing logged-in customer adding a host profile."""
-    user = add_venue_owner_profile(db, current_user, payload)
+    user = upgrade_customer_to_owner(db, current_user, payload)
     return UserOut(
         id=user.id,
         name=user.name,

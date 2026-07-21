@@ -5,9 +5,12 @@ from typing import Optional
 
 class ReviewCreate(BaseModel):
     venue_id: int
-    booking_id: Optional[int] = None
+    booking_id: int
     rating: int = Field(..., ge=1, le=5)
     comment: Optional[str] = None
+    
+class ReplyCreate(BaseModel):
+    reply_text: str = Field(..., min_length=1, max_length=1000)
 
 
 class ReviewOut(BaseModel):
@@ -19,5 +22,7 @@ class ReviewOut(BaseModel):
     reviewer_name: str
     venue_name: str
     event_type: Optional[str] = None
+    owner_reply: Optional[str] = None
+    replied_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}

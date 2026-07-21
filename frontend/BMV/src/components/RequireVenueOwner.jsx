@@ -2,8 +2,12 @@ import { useSelector } from "react-redux";
 import { Navigate, useLocation, Outlet } from "react-router-dom";
 
 function RequireVenueOwner() {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isAuthenticated, isLoadingUser, user } = useSelector((state) => state.auth);
   const location = useLocation();
+
+  if(isLoadingUser){
+    return null;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace state={{ from: location }} />;

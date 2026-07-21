@@ -1,5 +1,11 @@
-import { useEffect, useState } from "react";
-import { X, ImageIcon, IndianRupee } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { X, ImageIcon, IndianRupee, UploadCloud } from "lucide-react";
+
+
+
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
 
 const initialFormState = {
   name: "",
@@ -24,6 +30,15 @@ function AddVenueModal({
   const [selectedAmenityIds, setSelectedAmenityIds] = useState([]);
   const [errors, setErrors] = useState({});
 
+
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
+
   // Lock body scroll while the modal is open, restore on close/unmount
   useEffect(() => {
     if (!isOpen) return;
@@ -43,10 +58,15 @@ function AddVenueModal({
       });
       setSelectedAmenityIds([]);
       setErrors({});
+      setImageFile(null);
+      setImagePreview(null);
+      setUploadError(null);
+      setUploadProgress(0);
+      setIsDragging(false);
     }
   }, [isOpen, venueTypes]);
 
-  // Close on Escape
+  
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e) => {
@@ -69,6 +89,84 @@ function AddVenueModal({
     );
   };
 
+  const applyImageFile = (file) => {
+    if (!file) return;
+
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowed.includes(file.type)) {
+      setUploadError("Only JPG, PNG, WEBP, or GIF files are allowed.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Image must be under 5 MB.");
+      return;
+    }
+
+    setUploadError(null);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setFields((prev) => ({ ...prev, imageUrl: "" }));
+  };
+
+  const handleFileInputChange = (e) => {
+    applyImageFile(e.target.files?.[0] ?? null);
+    e.target.value = "";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  const handleDragLeave = () => setIsDragging(false);
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    applyImageFile(e.dataTransfer.files?.[0] ?? null);
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setUploadError(null);
+    setUploadProgress(0);
+    setFields((prev) => ({ ...prev, imageUrl: "" }));
+  };
+
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable) {
+          setUploadProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      });
+
+      xhr.addEventListener("load", () => {
+        if (xhr.status === 200) {
+          const data = JSON.parse(xhr.responseText);
+          resolve(data.secure_url);
+        } else {
+          reject(new Error("Cloudinary upload failed."));
+        }
+      });
+
+      xhr.addEventListener("error", () =>
+        reject(new Error("Network error during upload."))
+      );
+
+      xhr.open(
+        "POST",
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`
+      );
+      xhr.send(formData);
+    });
+  };
+
   const validate = () => {
     const next = {};
     if (!fields.name.trim()) next.name = "Venue name is required";
@@ -82,23 +180,39 @@ function AddVenueModal({
     return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
 
-    // amenityIds is passed separately — OwnerVenuesPage links them after
-    // the venue is created, since /venue-amenities/ needs a venue_id first.
-    onSubmit({
-      name: fields.name.trim(),
-      location: fields.location.trim(),
-      price_per_day: Number(fields.dailyRate),
-      venue_type_id: Number(fields.venueTypeId),
-      capacity: fields.capacity ? Number(fields.capacity) : null,
-      description: fields.description.trim() || null,
-      image_url: fields.imageUrl.trim() || null,
-      amenityIds: selectedAmenityIds,
-    });
-  };
+  let finalImageUrl = null;
+
+  if (imageFile) {
+    try {
+      setUploading(true);
+      setUploadProgress(0);
+      finalImageUrl = await uploadToCloudinary(imageFile);
+    } catch (err) {
+      setUploadError(err.message || "Image upload failed. Please try again.");
+      setUploading(false);
+      return;
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  onSubmit({
+    name: fields.name.trim(),
+    location: fields.location.trim(),
+    price_per_day: Number(fields.dailyRate),
+    venue_type_id: Number(fields.venueTypeId),
+    capacity: fields.capacity ? Number(fields.capacity) : null,
+    description: fields.description.trim() || null,
+    image_url: finalImageUrl,
+    amenityIds: selectedAmenityIds,
+  });
+};
+
+  const isSubmitDisabled = submitting || uploading;
 
   return (
     <div
@@ -292,25 +406,103 @@ function AddVenueModal({
               />
             </div>
 
-            {/* Image URL */}
+            {/* ── Venue Image ──────────────────────────────────────── */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
-                Image URL
+                Venue Image
               </label>
-              <div className="flex items-center gap-2 rounded-xl px-3.5 py-2.5 border border-gray-200 bg-gray-50 focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-transparent">
-                <ImageIcon size={14} className="text-gray-400 shrink-0" />
-                <input
-                  name="imageUrl"
-                  type="url"
-                  placeholder="https://example.com/venue-photo.jpg"
-                  value={fields.imageUrl}
-                  onChange={handleChange}
-                  className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
-                />
-              </div>
-              <p className="mt-1.5 text-xs text-gray-400">
-                Direct image upload isn&apos;t available yet — paste a hosted image link for now.
-              </p>
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={handleFileInputChange}
+              />
+
+              {imagePreview ? (
+                /* ── Preview card ── */
+                <div className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                  <img
+                    src={imagePreview}
+                    alt="Venue preview"
+                    className="w-full h-48 object-cover"
+                  />
+
+                  {/* Progress bar while uploading */}
+                  {uploading && (
+                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-2">
+                      <p className="text-white text-xs font-semibold">
+                        Uploading… {uploadProgress}%
+                      </p>
+                      <div className="w-48 h-1.5 bg-white/30 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-white rounded-full transition-all duration-200"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Remove button */}
+                  {!uploading && (
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 p-1 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+                      aria-label="Remove image"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+
+                  {/* Change button */}
+                  {!uploading && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-2 right-2 px-3 py-1.5 rounded-lg bg-black/50 hover:bg-black/70 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+                    >
+                      <ImageIcon size={12} />
+                      Change
+                    </button>
+                  )}
+                </div>
+              ) : (
+                /* ── Drop zone ── */
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`flex flex-col items-center justify-center gap-2 h-36 rounded-xl border-2 border-dashed cursor-pointer transition-colors
+                    ${isDragging
+                      ? "border-rose-400 bg-rose-50"
+                      : "border-gray-200 bg-gray-50 hover:border-rose-300 hover:bg-rose-50/40"
+                    }`}
+                >
+                  <UploadCloud
+                    size={28}
+                    className={isDragging ? "text-rose-500" : "text-gray-300"}
+                  />
+                  <div className="text-center">
+                    <p className="text-xs font-medium text-gray-500">
+                      Drag & drop or{" "}
+                      <span className="text-rose-700 underline underline-offset-2">
+                        browse
+                      </span>
+                    </p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">
+                      JPG, PNG, WEBP or GIF · max 5 MB
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {uploadError && (
+                <p className="mt-1.5 text-xs text-red-500">⚠ {uploadError}</p>
+              )}
             </div>
           </div>
 
@@ -325,10 +517,10 @@ function AddVenueModal({
             </button>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={isSubmitDisabled}
               className="px-5 py-2.5 rounded-full bg-rose-900 hover:bg-rose-950 text-white text-sm font-semibold transition-colors disabled:opacity-50"
             >
-              {submitting ? "Adding..." : "Add Venue"}
+              {uploading ? "Uploading…" : submitting ? "Adding…" : "Add Venue"}
             </button>
           </div>
         </form>

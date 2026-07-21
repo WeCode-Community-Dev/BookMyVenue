@@ -17,6 +17,7 @@ from app.models import (  # noqa: F401
     notification,
     amenity,
     venue_amenity,
+    venue_type,
 )
 
 config = context.config

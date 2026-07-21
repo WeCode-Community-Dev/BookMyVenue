@@ -9,7 +9,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     phone_number: str
     password: str = Field(..., min_length=8, max_length=72)
-    # New users are always created with the default "user" role server-side
+    
 
     
     
@@ -40,10 +40,18 @@ class UserOut(BaseModel):
 
 class TokenOut(BaseModel):
     access_token: str
+    refresh_token: str 
+    token_type: str = "bearer"
+    
+    
+# What FastAPI sends back after token refresh
+class TokenRefreshOut(BaseModel):
+    access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     
  
-# Schema to validate the incoming request.   
+# Schema to validate the incoming  Google auth request.   
 class GoogleAuthRequest(BaseModel):
     id_token: str
 

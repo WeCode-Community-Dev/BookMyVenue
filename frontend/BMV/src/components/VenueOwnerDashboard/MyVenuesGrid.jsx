@@ -60,7 +60,6 @@ function VenueCard({ venue }) {
 }
 
 function MyVenuesGrid({ venues, loading }) {
-  // Only show approved venues on the dashboard snapshot
   const approvedVenues = (venues ?? []).filter((v) => v.approval_status === "approved");
 
   return (

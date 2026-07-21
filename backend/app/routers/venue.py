@@ -12,9 +12,8 @@ from app.services.venue_service import (
     create_venue,
     delete_venue,
     get_my_venues,
-    get_venue_by_id,
-    get_venues,
-    update_venue,
+    deactivate_venue
+
 )
 
 router = APIRouter(prefix="/venues", tags=["Venues"])
@@ -28,7 +27,16 @@ def list_my_venues(
     return get_my_venues(db, current_user)
 
 
-@router.post("/", response_model=VenueOut, status_code=201)
+
+
+@router.get("/pending", response_model=list[VenueOut])
+def list_pending_venues(
+    db: Session = Depends(get_db)
+):
+    return get_pending_venues(db)
+
+
+@router.post("/", response_model=VenueOut)
 def create_new_venue(
     venue: VenueCreate,
     db: Session = Depends(get_db),
@@ -53,7 +61,36 @@ def get_single_venue(
     venue_id: int,
     db: Session = Depends(get_db),
 ):
-    return get_venue_by_id(db, venue_id, public=True)
+    """Update a venue (owner only - can only update own venues)"""
+    return update_venue(
+        db,
+        venue_id,
+        venue,
+        owner_id=current_user.id
+    )
+
+@router.delete("/{venue_id}")
+def delete_existing_venue(
+    venue_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    return delete_venue(db, venue_id, current_user)
+
+
+@router.patch("/{venue_id}/deactivate")
+def deactivate_existing_venue(
+    venue_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    return deactivate_venue(db, venue_id, current_user)
+    """Delete a venue (owner only - can only delete own venues)"""
+    return delete_venue(
+        db,
+        venue_id,
+        owner_id=current_user.id
+    )
 
 
 @router.get("/{venue_id}/availability")

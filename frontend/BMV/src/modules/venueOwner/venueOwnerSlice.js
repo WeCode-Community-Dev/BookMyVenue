@@ -204,6 +204,30 @@ export const unlinkVenueAmenityAsync = createAsyncThunk(
   },
 );
 
+export const deleteVenueAsync = createAsyncThunk(
+  "venueOwner/deleteVenue",
+  async (id, { rejectWithValue }) => {
+    try {
+      await venueOwnerService.deleteVenue(id);
+      return id; 
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
+export const deactivateVenueAsync = createAsyncThunk(
+  "venueOwner/deactivateVenue",
+  async (id, { rejectWithValue }) => {
+    try {
+      await venueOwnerService.deactivateVenue(id);
+      return id;
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
 const initialState = {
   summary: null,
   bookingRequests: [],
@@ -242,6 +266,8 @@ const initialState = {
     revenue: false,
     reviews: false,
     notifications: false,
+    deletingVenue: false,
+    deactivatingVenue: false,
   },
   error: null,
 };
@@ -468,6 +494,34 @@ const venueOwnerSlice = createSlice({
         if (venue) venue.amenities = amenities;
       })
       .addCase(unlinkVenueAmenityAsync.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+
+      // ── Delete venue (pending/rejected) ──────────────────────────────────
+      .addCase(deleteVenueAsync.pending, (state) => {
+        state.loading.deletingVenue = true;
+        state.error = null;
+      })
+      .addCase(deleteVenueAsync.fulfilled, (state, action) => {
+        state.loading.deletingVenue = false;
+        state.venues = state.venues.filter((v) => v.id !== action.payload);
+      })
+      .addCase(deleteVenueAsync.rejected, (state, action) => {
+        state.loading.deletingVenue = false;
+        state.error = action.payload;
+      })
+
+      // ── Deactivate venue (approved) ───────────────────────────────────────
+      .addCase(deactivateVenueAsync.pending, (state) => {
+        state.loading.deactivatingVenue = true;
+        state.error = null;
+      })
+      .addCase(deactivateVenueAsync.fulfilled, (state, action) => {
+        state.loading.deactivatingVenue = false;
+        state.venues = state.venues.filter((v) => v.id !== action.payload);
+      })
+      .addCase(deactivateVenueAsync.rejected, (state, action) => {
+        state.loading.deactivatingVenue = false;
         state.error = action.payload;
       })
 

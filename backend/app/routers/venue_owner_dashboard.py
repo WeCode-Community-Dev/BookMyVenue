@@ -1,3 +1,4 @@
+from app.models.venue_owner import VenueOwner
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -20,7 +21,7 @@ from app.schemas.venue_owner_dashboard import (
 
 from app.services import venue_owner_dashboard_service as dashboard_service
 from app.services.venue_service import get_my_venues
-from app.services.review_service import get_recent_reviews_for_owner
+from app.services.review_service import get_recent_reviews_for_owner, get_review_dashboard_data
 from app.services.notification_service import get_notifications_for_user
 
 
@@ -117,6 +118,14 @@ def revenue_overview(
     current_user: User = Depends(get_current_venue_owner),
 ):
     return dashboard_service.get_revenue_overview(db, current_user.id, range)
+
+
+@router.get("/reviews")
+def get_owner_reviews(
+    db: Session = Depends(get_db),
+    current_owner: VenueOwner = Depends(get_current_venue_owner),
+):
+    return get_review_dashboard_data(db, owner_id=current_owner.id)
 
 
 @router.get("/reviews/recent", response_model=list[ReviewOut])
