@@ -14,9 +14,9 @@ export const initiatePaymentAsync = createAsyncThunk(
 
 export const confirmPaymentAsync = createAsyncThunk(
   "payments/confirm",
-  async ({ paymentId, success = true }, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
-      return await paymentService.confirm(paymentId, success);
+      return await paymentService.confirm(payload);
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -34,6 +34,9 @@ const paymentSlice = createSlice({
     resetPayment: (state) => {
       state.current = null;
       state.loading = false;
+      state.error = null;
+    },
+    clearPaymentError: (state) => {
       state.error = null;
     },
   },
@@ -67,5 +70,5 @@ const paymentSlice = createSlice({
   },
 });
 
-export const { resetPayment } = paymentSlice.actions;
+export const { resetPayment, clearPaymentError } = paymentSlice.actions;
 export default paymentSlice.reducer;

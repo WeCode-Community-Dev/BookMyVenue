@@ -269,28 +269,27 @@ def main() -> int:
             json={"booking_id": bid},
             timeout=10,
         )
-        pay_ok = r.status_code == 200 and "payment_id" in r.json()
+        pay_ok = (
+            r.status_code == 200
+            and "payment_id" in r.json()
+            and r.json().get("gateway_order_id")
+            and r.json().get("key_id")
+        )
         check("POST /payments/initiate", pay_ok, snippet(r))
         if pay_ok:
             state["payment_id"] = r.json()["payment_id"]
+            state["gateway_order_id"] = r.json()["gateway_order_id"]
+            print("        Note: complete payment manually in checkout with Razorpay test card 4111 1111 1111 1111")
 
     if customer_token and state.get("payment_id"):
         pid = state["payment_id"]
-        r = requests.post(
-            f"{BASE_URL}/payments/confirm",
-            headers=auth_headers(customer_token),
-            json={"payment_id": pid, "success": True},
-            timeout=10,
-        )
-        confirm_ok = r.status_code == 200 and r.json().get("status") == "paid"
-        check("POST /payments/confirm", confirm_ok, snippet(r))
-
         r = requests.get(
             f"{BASE_URL}/payments/{pid}/status",
             headers=auth_headers(customer_token),
             timeout=10,
         )
-        check(f"GET /payments/{pid}/status", r.status_code == 200, snippet(r))
+        status_ok = r.status_code == 200 and r.json().get("status") in ("created", "paid")
+        check(f"GET /payments/{pid}/status", status_ok, snippet(r))
 
     # --- D. Venue owner workflow ---
     print("\nD. Venue owner workflow")
