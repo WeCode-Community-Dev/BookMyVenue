@@ -86,8 +86,6 @@ export const authService = {
     }
   },
 
-<<<<<<< HEAD
-=======
   async getMe() {
     const res = await client.get("/auth/me");
     return res.data;
@@ -105,5 +103,4 @@ export const authService = {
   //     throw new Error(getFriendlyError(err.code));
   //   }
   // },
->>>>>>> 4b1e5f6f7551b86f5f9ef44258ea107e75f994ae
 };

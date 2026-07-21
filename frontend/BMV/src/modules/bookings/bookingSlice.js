@@ -5,7 +5,8 @@ export const createBookingAsync = createAsyncThunk(
   "bookings/create",
   async (data, { rejectWithValue }) => {
     try {
-      return await bookingService.create(data);
+      const { idempotencyKey, ...payload } = data;
+      return await bookingService.create(payload, idempotencyKey);
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -85,8 +86,10 @@ const bookingSlice = createSlice({
       .addCase(fetchMyBookingsAsync.fulfilled, (state, action) => {
         state.loading = false;
         const payload = action.payload;
-        state.list = payload?.data || [];
-        state.pagination = payload?.pagination || null;
+        state.list = payload?.items || payload?.data || [];
+        state.pagination = payload
+          ? { page: payload.page, limit: payload.limit, total_items: payload.total }
+          : null;
       })
       .addCase(fetchMyBookingsAsync.rejected, (state, action) => {
         state.loading = false;

@@ -54,3 +54,9 @@ class TokenRefreshOut(BaseModel):
 # Schema to validate the incoming  Google auth request.   
 class GoogleAuthRequest(BaseModel):
     id_token: str
+
+
+class UserProfileUpdate(BaseModel):
+    name: str | None = None
+    phone_number: str | None = None
+    password: str | None = Field(default=None, min_length=8, max_length=72)

@@ -80,6 +80,26 @@ def get_me(current_user: User = Depends(get_current_user)):
     )
 
 
+@router.patch("/me", response_model=UserOut)
+def update_me(
+    data: UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user = update_user_profile(db, current_user, data)
+    return UserOut(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        phone_number=user.phone_number,
+        role=user.role,
+        is_active=user.is_active,
+        auth_provider=user.auth_provider,
+        created_at=user.created_at,
+        is_venue_owner=user.venue_owner_profile is not None,
+    )
+
+
 # Route for Google Authentication
 
 @router.post("/google", response_model=TokenOut)
