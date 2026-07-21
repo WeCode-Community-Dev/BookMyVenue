@@ -33,6 +33,8 @@ import { VenueDetailSkeleton } from "../../components/ui/LoadingSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
 import { ToastBanner } from "../../components/ui/ToastProvider";
 import { useGetVenueAvailabilityQuery } from "./venueApi";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const DAY_ORDER = [
   "Monday",
@@ -73,6 +75,9 @@ function VenueDetails() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  const [viewMonth, setViewMonth] = useState(new Date());
+  const monthParam = `${viewMonth.getFullYear()}-${String(viewMonth.getMonth() + 1).padStart(2, "0")}`;
+
   const openLightbox = (index) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
@@ -95,6 +100,8 @@ function VenueDetails() {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [lightboxOpen, images.length]);
+
+  
   const [bookingDate, setBookingDate] = useState("");
   const [bookingStartDate, setBookingStartDate] = useState("");
   const [bookingEndDate, setBookingEndDate] = useState("");
@@ -120,10 +127,38 @@ function VenueDetails() {
       : img?.alt || venue?.name || "Venue image";
 
   const { data: favResp, refetch: refetchFavorites } = useGetFavoritesQuery();
-  ;
-  const month = new Date().toISOString().slice(0, 7)
-const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, month })
+  const month = new Date().toISOString().slice(0, 7);
+  const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery(
+    { venueId, month: monthParam },
+    { skip: !venueId },
+  );
 
+  const bookings = venueAvailabilityData?.data ?? [];
+
+  const parseLocalDate = (dateStr) => {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  };
+
+  const excludeDateIntervals = bookings.map((b) => ({
+    start: parseLocalDate(b.startDate),
+    end: parseLocalDate(b.endDate),
+  }));
+
+  const toISODate = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  // submit-time guard for the "gap in between" case
+  const rangeHasBookedDate = (start, end) =>
+    bookings.some(
+      (b) =>
+        new Date(b.startDate) <= new Date(end) &&
+        new Date(b.endDate) >= new Date(start),
+    );
 
   const favoriteIds = new Set(
     (favResp?.data || []).map((i) => i?.venue?.id).filter(Boolean),
@@ -567,7 +602,9 @@ const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, 
                 />
               </div>
             ) : (
-              <p className="empty-hint">Map location is not available for this venue yet.</p>
+              <p className="empty-hint">
+                Map location is not available for this venue yet.
+              </p>
             )}
           </div>
 
@@ -628,197 +665,196 @@ const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, 
 
         <aside className="sidebar-wrapper">
           {isVenueActive ? (
-          <div className="booking-card">
-            <div className="booking-card__header">
-              <span className="eyebrow">Reserve</span>
-              <h2>Book this venue</h2>
-            </div>
+            <div className="booking-card">
+              <div className="booking-card__header">
+                <span className="eyebrow">Reserve</span>
+                <h2>Book this venue</h2>
+              </div>
 
-            <div className="booking-type-badge">
-              <FiCalendar />
-              <span>{bookingLabel}</span>
-            </div>
+              <div className="booking-type-badge">
+                <FiCalendar />
+                <span>{bookingLabel}</span>
+              </div>
 
-            <div className="pricing-cards">
-              {pricingRows.length > 0 ? (
-                pricingRows.map((pricing) => (
-                  <div
-                    key={`${pricing.dayType}-${pricing.id || pricing.dayType}`}
-                    className="pricing-card"
+              <div className="pricing-cards">
+                {pricingRows.length > 0 ? (
+                  pricingRows.map((pricing) => (
+                    <div
+                      key={`${pricing.dayType}-${pricing.id || pricing.dayType}`}
+                      className="pricing-card"
+                    >
+                      <span className="pricing-card__day">
+                        {pricing.dayType?.charAt(0).toUpperCase() +
+                          pricing.dayType?.slice(1)}
+                      </span>
+                      <span className="pricing-card__price">
+                        {formatCurrency(pricing.price)}
+                        <small>
+                          {pricingNote}
+                          {bookingType === "hourly"
+                            ? ` · min ${pricing.minHours || minBookingHours}h`
+                            : ""}
+                        </small>
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="empty-hint">Pricing unavailable</p>
+                )}
+              </div>
+
+              <div className="booking-form">
+                {bookingType === "hourly" ? (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label" htmlFor="booking-date">
+                        Date
+                      </label>
+                      <input
+                        type="date"
+                        id="booking-date"
+                        className="form-input"
+                        value={bookingDate}
+                        onChange={(e) => setBookingDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="start-time">
+                          Start Time
+                        </label>
+                        <select
+                          id="start-time"
+                          className="form-input"
+                          value={startTime}
+                          onChange={(e) => setStartTime(e.target.value)}
+                        >
+                          <option value="09:00">09:00 AM</option>
+                          <option value="10:00">10:00 AM</option>
+                          <option value="11:00">11:00 AM</option>
+                          <option value="12:00">12:00 PM</option>
+                          <option value="13:00">01:00 PM</option>
+                          <option value="14:00">02:00 PM</option>
+                          <option value="15:00">03:00 PM</option>
+                          <option value="16:00">04:00 PM</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="end-time">
+                          End Time
+                        </label>
+                        <select
+                          id="end-time"
+                          className="form-input"
+                          value={endTime}
+                          onChange={(e) => setEndTime(e.target.value)}
+                        >
+                          <option value="10:00">10:00 AM</option>
+                          <option value="11:00">11:00 AM</option>
+                          <option value="12:00">12:00 PM</option>
+                          <option value="13:00">01:00 PM</option>
+                          <option value="14:00">02:00 PM</option>
+                          <option value="15:00">03:00 PM</option>
+                          <option value="16:00">04:00 PM</option>
+                          <option value="17:00">05:00 PM</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="estimation-row">
+                      <span className="est-label">Estimated total</span>
+                      <span className="est-value">
+                        {priceEstimate
+                          ? formatCurrency(priceEstimate.amount)
+                          : "—"}
+                      </span>
+                    </div>
+                    {!priceEstimate && (
+                      <p className="est-hint">
+                        Select a date and time to see pricing
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="form-group">
+                      <label className="form-label">Start Date</label>
+                      <DatePicker
+                        selected={
+                          bookingStartDate ? new Date(bookingStartDate) : null
+                        }
+                        onChange={(date) =>
+                          setBookingStartDate(toISODate(date))
+                        }
+                        onMonthChange={setViewMonth}
+                        excludeDateIntervals={excludeDateIntervals}
+                        minDate={new Date()}
+                        dateFormat="yyyy-MM-dd"
+                        className="form-input"
+                        placeholderText="Select start date"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">End Date</label>
+                      <DatePicker
+                        selected={
+                          bookingEndDate ? new Date(bookingEndDate) : null
+                        }
+                        onChange={(date) => setBookingEndDate(toISODate(date))}
+                        onMonthChange={setViewMonth}
+                        excludeDateIntervals={excludeDateIntervals}
+                        minDate={
+                          bookingStartDate
+                            ? new Date(bookingStartDate)
+                            : new Date()
+                        }
+                        dateFormat="yyyy-MM-dd"
+                        className="form-input"
+                        placeholderText="Select end date"
+                      />
+                    </div>
+                    {!priceEstimate && (
+                      <p className="est-hint">
+                        Select booking dates to see pricing
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+
+              <div className="booking-card__footer">
+                {showMessageOwner && (
+                  <button
+                    type="button"
+                    className="book-btn book-btn--secondary"
+                    onClick={handleMessageOwner}
+                    disabled={isMessaging}
                   >
-                    <span className="pricing-card__day">
-                      {pricing.dayType?.charAt(0).toUpperCase() +
-                        pricing.dayType?.slice(1)}
-                    </span>
-                    <span className="pricing-card__price">
-                      {formatCurrency(pricing.price)}
-                      <small>
-                        {pricingNote}
-                        {bookingType === "hourly"
-                          ? ` · min ${pricing.minHours || minBookingHours}h`
-                          : ""}
-                      </small>
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="empty-hint">Pricing unavailable</p>
-              )}
-            </div>
-
-            <div className="booking-form">
-              {bookingType === "hourly" ? (
-                <>
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="booking-date">
-                      Date
-                    </label>
-                    <input
-                      type="date"
-                      id="booking-date"
-                      className="form-input"
-                      value={bookingDate}
-                      onChange={(e) => setBookingDate(e.target.value)}
-                    />
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label className="form-label" htmlFor="start-time">
-                        Start Time
-                      </label>
-                      <select
-                        id="start-time"
-                        className="form-input"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                      >
-                        <option value="09:00">09:00 AM</option>
-                        <option value="10:00">10:00 AM</option>
-                        <option value="11:00">11:00 AM</option>
-                        <option value="12:00">12:00 PM</option>
-                        <option value="13:00">01:00 PM</option>
-                        <option value="14:00">02:00 PM</option>
-                        <option value="15:00">03:00 PM</option>
-                        <option value="16:00">04:00 PM</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label" htmlFor="end-time">
-                        End Time
-                      </label>
-                      <select
-                        id="end-time"
-                        className="form-input"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                      >
-                        <option value="10:00">10:00 AM</option>
-                        <option value="11:00">11:00 AM</option>
-                        <option value="12:00">12:00 PM</option>
-                        <option value="13:00">01:00 PM</option>
-                        <option value="14:00">02:00 PM</option>
-                        <option value="15:00">03:00 PM</option>
-                        <option value="16:00">04:00 PM</option>
-                        <option value="17:00">05:00 PM</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="estimation-row">
-                    <span className="est-label">Estimated total</span>
-                    <span className="est-value">
-                      {priceEstimate
-                        ? formatCurrency(priceEstimate.amount)
-                        : "—"}
-                    </span>
-                  </div>
-                  {!priceEstimate && (
-                    <p className="est-hint">
-                      Select a date and time to see pricing
-                    </p>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label
-                        className="form-label"
-                        htmlFor="booking-start-date"
-                      >
-                        Start Date
-                      </label>
-                      <input
-                        type="date"
-                        id="booking-start-date"
-                        className="form-input"
-                        value={bookingStartDate}
-                        onChange={(e) => setBookingStartDate(e.target.value)}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label" htmlFor="booking-end-date">
-                        End Date
-                      </label>
-                      <input
-                        type="date"
-                        id="booking-end-date"
-                        className="form-input"
-                        value={bookingEndDate}
-                        onChange={(e) => setBookingEndDate(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="estimation-row">
-                    <span className="est-label">Estimated total</span>
-                    <span className="est-value">
-                      {priceEstimate
-                        ? formatCurrency(priceEstimate.amount)
-                        : "—"}
-                    </span>
-                  </div>
-                  {!priceEstimate && (
-                    <p className="est-hint">
-                      Select booking dates to see pricing
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-
-            <div className="booking-card__footer">
-              {showMessageOwner && (
+                    {isMessaging ? "Opening…" : "Message Owner"}
+                  </button>
+                )}
                 <button
                   type="button"
-                  className="book-btn book-btn--secondary"
-                  onClick={handleMessageOwner}
-                  disabled={isMessaging}
+                  className="book-btn"
+                  onClick={handleBookNow}
+                  disabled={!priceEstimate || isBooking}
                 >
-                  {isMessaging ? "Opening…" : "Message Owner"}
+                  {isBooking ? "Booking..." : "Book Now"}
                 </button>
-              )}
-              <button
-                type="button"
-                className="book-btn"
-                onClick={handleBookNow}
-                disabled={!priceEstimate || isBooking}
-              >
-                {isBooking ? "Booking..." : "Book Now"}
-              </button>
-              <ToastBanner
-                message={bookingMessage}
-                type={
-                  bookingMessage?.toLowerCase().includes("fail")
-                    ? "error"
-                    : "success"
-                }
-              />
-              <span className="muted-note">
-                {bookingType === "hourly"
-                  ? `Min. booking: ${minBookingHours} ${minBookingHours === 1 ? "hour" : "hours"}`
-                  : "Daily bookings use a date range."}
-              </span>
+                <ToastBanner
+                  message={bookingMessage}
+                  type={
+                    bookingMessage?.toLowerCase().includes("fail")
+                      ? "error"
+                      : "success"
+                  }
+                />
+                <span className="muted-note">
+                  {bookingType === "hourly"
+                    ? `Min. booking: ${minBookingHours} ${minBookingHours === 1 ? "hour" : "hours"}`
+                    : "Daily bookings use a date range."}
+                </span>
+              </div>
             </div>
-          </div>
           ) : (
             <div className="booking-card booking-card--inactive">
               <div className="booking-card__header">
@@ -828,8 +864,8 @@ const { data: venueAvailabilityData } = useGetVenueAvailabilityQuery({ venueId, 
               <div className="venue-inactive-notice">
                 <span className="venue-inactive-badge">Inactive</span>
                 <p>
-                  This venue is currently inactive and not accepting new bookings.
-                  Check back later or browse other available venues.
+                  This venue is currently inactive and not accepting new
+                  bookings. Check back later or browse other available venues.
                 </p>
               </div>
             </div>

@@ -23,51 +23,6 @@ const AMENITIES_FILTER = [
   { slug: 'kitchen',     label: 'Kitchen' },
 ];
 
-const MOCK_VENUES = [
-  {
-    id: 1, name: 'Elegant Grand Hall', type: 'Hall',
-    city: 'Bengaluru', state: 'Karnataka',
-    capacity: 250, pricePerHour: 1500, rating: 4.7, reviews: 38,
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=700&h=420&q=80',
-    amenities: ['wifi', 'ac', 'parking', 'projector'],
-  },
-  {
-    id: 2, name: 'Skyview Plaza Rooftop', type: 'Rooftop',
-    city: 'Mumbai', state: 'Maharashtra',
-    capacity: 180, pricePerHour: 2200, rating: 4.9, reviews: 61,
-    image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=700&h=420&q=80',
-    amenities: ['wifi', 'catering', 'parking'],
-  },
-  {
-    id: 3, name: 'Rustic Farmhouse Estate', type: 'Farmhouse',
-    city: 'Pune', state: 'Maharashtra',
-    capacity: 400, pricePerHour: 3500, rating: 4.5, reviews: 22,
-    image: 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=700&h=420&q=80',
-    amenities: ['parking', 'catering', 'kitchen'],
-  },
-  {
-    id: 4, name: 'Tech Conference Centre', type: 'Conference Room',
-    city: 'Bengaluru', state: 'Karnataka',
-    capacity: 120, pricePerHour: 1200, rating: 4.6, reviews: 45,
-    image: 'https://images.unsplash.com/photo-1517502884422-41eaaced0168?auto=format&fit=crop&w=700&h=420&q=80',
-    amenities: ['wifi', 'projector', 'av_equipment', 'ac'],
-  },
-  {
-    id: 5, name: 'Skyline Banquet Hall', type: 'Banquet',
-    city: 'Delhi', state: 'Delhi',
-    capacity: 500, pricePerHour: 4000, rating: 4.8, reviews: 90,
-    image: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=700&h=420&q=80',
-    amenities: ['wifi', 'ac', 'parking', 'catering', 'stage'],
-  },
-  {
-    id: 6, name: 'Creative Loft Studio', type: 'Studio',
-    city: 'Hyderabad', state: 'Telangana',
-    capacity: 60, pricePerHour: 800, rating: 4.3, reviews: 17,
-    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=700&h=420&q=80',
-    amenities: ['wifi', 'ac'],
-  },
-];
-
 const TYPE_COLORS = {
   Hall: 'type-hall',
   Rooftop: 'type-rooftop',

@@ -7,7 +7,7 @@ import { isChatEnabled } from '../../config/featureFlags';
 import PageTransition from '../../components/ui/PageTransition';
 
 const MOCK_STATS = [
-  { label: 'Total Revenue', value: '$12,450', change: '+12% this month', icon: FiDollarSign, color: 'stat-green' },
+  { label: 'Total Revenue', value: '12,450', change: '+12% this month', icon: FiDollarSign, color: 'stat-green' },
   { label: 'Total Bookings', value: '48', change: '+8% this week', icon: FiTrendingUp, color: 'stat-blue' },
   { label: 'Active Venues', value: '8', change: '2 pending approval', icon: FiUsers, color: 'stat-teal' },
   { label: 'Approval Rate', value: '94%', change: 'Same as last month', icon: FiCheckCircle, color: 'stat-purple' },

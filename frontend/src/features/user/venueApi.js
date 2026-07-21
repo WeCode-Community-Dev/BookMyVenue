@@ -62,6 +62,9 @@ export const userAPi = baseApi.injectEndpoints({
     url: `/venue/${venueId}/availability`,
     params: { month },
   }),
+   providesTags: (result, error, { venueId }) => [
+    { type: 'Availability', id: venueId },
+  ],
   serializeQueryArgs: ({ queryArgs }) => {
     return `${queryArgs.venueId}-${queryArgs.month}`
   },

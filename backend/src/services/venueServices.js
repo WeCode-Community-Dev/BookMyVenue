@@ -16,7 +16,7 @@ const venueServices = {
       hasPricing: payload.pricing?.length > 0,
       hasAmenities: payload.venueAmenities?.length > 0,
     };
-    console.log("check",check)
+    // console.log("check",check)
     const isReady = Object.values(check).every(Boolean);
     return { isReady, check };
   },
@@ -24,7 +24,7 @@ const venueServices = {
   addVenue: async function (payload) {
     const status = this.isReadyForReview(payload);
 
-    console.log(payload,status,"payload")
+    // console.log(payload,status,"payload")
 
     const venue = await db.transaction(async (tx) => {
       const venueData = {
@@ -279,8 +279,6 @@ updateVenue: async function(payload, id) {
         venueAmenities: true,
       },
     });
-
-    console.log(venue,"venuevenuevenuevenuevenuevenue")
 
     const checkStatus = this.isReadyForReview(venue);
     if (checkStatus.isReady) {
