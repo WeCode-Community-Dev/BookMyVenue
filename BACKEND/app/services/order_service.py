@@ -124,13 +124,13 @@ def update_order_status_refund(db: Session, order_id: str, status: str, refund_r
         )
 
 
-def get_earnings(db: Session, user_id: int, venue_id: int):
+def get_earnings(db: Session, user_id: int):
     try:
         total_earnings_paise = (
             db.query(func.sum(Order.amount))
             .filter(
                 # Order.user_id == user_id,
-                Order.venue_id == venue_id,
+                # Order.venue_id == venue_id,
                 Order.status == "paid"
             )
             .scalar()
@@ -151,7 +151,7 @@ def get_earnings(db: Session, user_id: int, venue_id: int):
             .join(Booking, Booking.order_id == Order.id)
             .filter(
                 # Order.user_id == user_id,
-                Order.venue_id == venue_id,
+                # Order.venue_id == venue_id,
                 Order.status == "paid",
                 Booking.booking_date <= current_date
             )
