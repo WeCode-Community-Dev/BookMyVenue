@@ -59,12 +59,10 @@ export class UserProfileController {
   requestEmailChangeOtp = asyncHandler(async (req, res) => {
     const userId = "6a5c82d2a4cb28be7d10521f";
     const { newEmail } = req.body;
-    console.log('newemail :',newEmail)
     const result = await this._requestEmailChangeOtpUsecase.execute(
       userId,
       newEmail
     );
-    console.log('result:', result)
     return sendSuccess(res, statusCode.OK, result.message);
   });
 
@@ -93,7 +91,6 @@ export class UserProfileController {
       res,
       statusCode.OK,
       UserMessage.success.PROFILE_FETCHED,
-      user
     );
   });
   

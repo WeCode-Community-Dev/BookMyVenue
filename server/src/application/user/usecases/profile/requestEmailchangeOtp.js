@@ -57,6 +57,7 @@ export class RequestEmailChangeOtpUsecase{
 
         await this._mailService.sendEmailChangeOtp(
             newEmail,
+            user.fullName,
             otp
         );
         return{
