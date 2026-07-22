@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { VenueStatusBadge } from "./venue-status-badge";
+
 import { VenueResponse } from "@/services/venueServices";
 import Link from "next/link";
 

@@ -1,22 +1,8 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-
-import type { VenueDetails } from "@/lib/data/venues";
-import {
-  browseFiltersToSearchParams,
-  defaultBrowseFilters,
-  filterVenues,
-  paginateVenues,
-  parseBrowseFiltersFromSearchParams,
-  sortVenues,
-} from "@/lib/data/venues-browse";
 import type {
-  AmenityResponse,
   BrowseVenueListItem,
   PaginationMeta,
-  SpaceCategoryResponse,
 } from "@/services/venueServices";
 
 import { PublicVenueCard } from "./public-venue-card";

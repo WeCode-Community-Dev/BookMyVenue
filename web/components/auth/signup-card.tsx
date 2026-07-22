@@ -1,6 +1,4 @@
-import { AuthDivider } from "@/components/auth/auth-divider";
 import { SignupForm } from "@/components/auth/signup-form";
-import { SocialLoginButtons } from "@/components/auth/social-login-buttons";
 import {
   Card,
   CardContent,

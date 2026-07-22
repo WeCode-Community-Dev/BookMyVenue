@@ -1,5 +1,3 @@
-export type BookingStatus = "confirmed" | "pending" | "draft";
-
 export type StatChangeType = "positive" | "negative" | "neutral";
 
 export type NavIcon =
@@ -66,37 +64,6 @@ export const statCards = [
     change: "+12.5% increase",
     changeType: "positive" as StatChangeType,
     icon: "wallet" as const,
-  },
-];
-
-export const upcomingBookings = [
-  {
-    customer: "Jane Doe",
-    initials: "JD",
-    space: "Skyline Hall A",
-    date: "Oct 24, 2023",
-    status: "confirmed" as BookingStatus,
-  },
-  {
-    customer: "Mark Smith",
-    initials: "MS",
-    space: "Green Garden",
-    date: "Oct 25, 2023",
-    status: "pending" as BookingStatus,
-  },
-  {
-    customer: "Tech Logistics Inc.",
-    initials: "TL",
-    space: "Boardroom Z",
-    date: "Oct 26, 2023",
-    status: "draft" as BookingStatus,
-  },
-  {
-    customer: "Robert King",
-    initials: "RK",
-    space: "Skyline Hall B",
-    date: "Oct 28, 2023",
-    status: "confirmed" as BookingStatus,
   },
 ];
 

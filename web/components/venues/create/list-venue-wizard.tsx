@@ -57,7 +57,7 @@ export function ListVenueWizard() {
           image.id, // choose a filename
           { type: blob.type }
         );
-        const result = await uploadFile(file);
+        await uploadFile(file);
       }
   
       const images:{id: string}[] = await createImages(venueImages.filter((image) => image.url.startsWith('blob:')).map((image) => ({
@@ -65,7 +65,7 @@ export function ListVenueWizard() {
         altText: image.alt,
       })));
   
-      const venue = await createVenue({
+      await createVenue({
         ...basicsForm,
         latitude: Number(basicsForm.latitude),
         longitude: Number(basicsForm.longitude),

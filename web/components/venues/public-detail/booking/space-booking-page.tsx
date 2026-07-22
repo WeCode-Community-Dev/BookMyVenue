@@ -28,7 +28,6 @@ export function SpaceBookingPage({
   venue,
   space,
   initialDate,
-  initialPricingType: _initialPricingType,
 }: SpaceBookingPageProps) {
   const defaultDate = useMemo(() => {
     const parsed = parseDateParam(initialDate);

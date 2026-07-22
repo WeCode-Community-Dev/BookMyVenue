@@ -9,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { Space, VenueDetails } from "@/lib/data/venues";
 import {
   formatPricingAmount,
-  getBreakdownFromPricing,
   getDefaultPricingType,
   getPricingTypeLabel,
   getPricingUnitLabel,
@@ -82,11 +81,6 @@ export function VenueBookingSidebar({
       ) ?? null,
     [pricingRecords, selectedPricingType],
   );
-
-  const breakdown = useMemo(() => {
-    if (!selectedSpace || !selectedPricing) return null;
-    return getBreakdownFromPricing(selectedPricing, selectedSpace.name);
-  }, [selectedPricing, selectedSpace]);
 
   const bookHref =
     selectedSpace && selectedPricingType

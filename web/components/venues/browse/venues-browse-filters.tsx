@@ -143,8 +143,7 @@ export function VenuesBrowseFilters() {
           max={CAPACITY_MAX}
           step={5}
           // value={[filters.minCapacity, filters.maxCapacity]}
-          onValueChange={(value) => {
-            const [min, max] = value;
+          onValueChange={() => {
             // update({ minCapacity: min, maxCapacity: max });
           }}
         />

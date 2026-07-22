@@ -366,45 +366,6 @@ export function getValidEndTimes(
   return options;
 }
 
-/**
- * After a demo booking is confirmed, remove the booked range from availability.
- * Splits overlapping intervals into before/after segments.
- */
-export function splitIntervalAfterBooking(
-  intervals: TimeInterval[],
-  booking: TimeInterval,
-): TimeInterval[] {
-  const bookStart = parseTimeToMinutes(booking.start);
-  const bookEnd = parseTimeToMinutes(booking.end);
-  const result: TimeInterval[] = [];
-
-  for (const interval of intervals) {
-    const intervalStart = parseTimeToMinutes(interval.start);
-    const intervalEnd = parseTimeToMinutes(interval.end);
-
-    if (bookEnd <= intervalStart || bookStart >= intervalEnd) {
-      result.push(interval);
-      continue;
-    }
-
-    if (bookStart > intervalStart) {
-      result.push({
-        start: interval.start,
-        end: formatTime(bookStart),
-      });
-    }
-
-    if (bookEnd < intervalEnd) {
-      result.push({
-        start: formatTime(bookEnd),
-        end: interval.end,
-      });
-    }
-  }
-
-  return result;
-}
-
 /** Check whether a start/end pair fits entirely inside one available interval. */
 export function isValidTimeRange(
   start: string,

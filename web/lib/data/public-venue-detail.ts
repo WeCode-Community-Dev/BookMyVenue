@@ -66,19 +66,6 @@ export function getSpaceHourlyPrice(spaceId: string): number {
   return getPlaceholderHourlyPrice(spaceId);
 }
 
-export function getVenueAverageHourlyPrice(venue: VenueDetails): number {
-  const activeSpaces = venue.spaces.filter((s) => s.isActive);
-  const spaces = activeSpaces.length > 0 ? activeSpaces : venue.spaces;
-  if (spaces.length === 0) {
-    return getPlaceholderHourlyPrice(venue.id);
-  }
-  const total = spaces.reduce(
-    (sum, space) => sum + getSpaceHourlyPrice(space.id),
-    0,
-  );
-  return Math.round(total / spaces.length);
-}
-
 export function isPremiumVenue(): boolean {
   return getVenueRating() >= PREMIUM_RATING_THRESHOLD;
 }
@@ -484,13 +471,6 @@ export function formatDisplayDate(date: Date): string {
     month: "short",
     day: "numeric",
     year: "numeric",
-  });
-}
-
-export function formatShortDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
   });
 }
 

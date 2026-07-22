@@ -3,10 +3,6 @@
 import { ArrowRight } from "lucide-react";
 
 import { IconInput } from "@/components/auth/icon-input";
-import {
-  PhoneInput,
-  type PhoneCountryCode,
-} from "@/components/auth/phone-input";
 import { PasswordField } from "@/components/auth/password-field";
 import { RoleSelector, type UserRole } from "@/components/auth/role-selector";
 import { Button } from "@/components/ui/button";

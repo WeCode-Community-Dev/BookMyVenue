@@ -1,5 +1,3 @@
-import { CheckCircle2 } from "lucide-react";
-
 import { ListVenueProTip } from "@/components/venues/create/list-venue-pro-tip";
 import {
   Card,

@@ -16,7 +16,7 @@ export function VenuesPagination({
 }: VenuesPaginationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { page, totalPages, hasNext, hasPrevious,total } = meta;
+  const { page, totalPages, hasNext, hasPrevious } = meta;
   if (totalPages <= 1) return null;
 
 

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { PublicSiteFooter } from "@/components/landing/public-site-footer";
 import { PublicSiteHeader } from "@/components/landing/public-site-header";
 import { SpaceBookingPage } from "@/components/venues/public-detail/booking/space-booking-page";
 import { getVenue } from "@/services/venueServices";

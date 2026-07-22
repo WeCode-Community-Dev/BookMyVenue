@@ -85,15 +85,6 @@ export const spaceManageActivity: SpaceManageActivityItem[] = [
   },
 ];
 
-export type SpaceManageQuickActionIcon = "eye" | "share-2" | "archive";
-
-export type SpaceManageQuickAction = {
-  label: string;
-  icon: SpaceManageQuickActionIcon;
-  variant?: "default" | "destructive";
-  href?: string;
-};
-
 export const spaceManageSupport = {
   title: "Need help?",
   description:

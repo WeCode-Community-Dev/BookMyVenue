@@ -1,10 +1,7 @@
-import { AuthDivider } from "@/components/auth/auth-divider";
 import { LoginForm } from "@/components/auth/login-form";
-import { SocialLoginButtons } from "@/components/auth/social-login-buttons";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";

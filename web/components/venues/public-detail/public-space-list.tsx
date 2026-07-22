@@ -13,7 +13,6 @@ import {
 import {
   formatSpaceArea,
   formatSpaceCapacity,
-  getSpaceHourlyPrice,
 } from "@/lib/data/public-venue-detail";
 import { cn } from "@/lib/utils";
 
