@@ -76,6 +76,7 @@ const RegisterForm = () => {
             // Handle server rejection error message
             const apiError = result.payload?.message || result.error?.message || "Registration failed"
             toast.error(apiError)
+            
         }
     }
       
