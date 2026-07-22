@@ -105,14 +105,14 @@ func TestRegister(t *testing.T) {
 			wantUser:   true,
 		},
 		{
-			name: "missing username",
+			name: "missing email",
 			body: map[string]string{
-				"email":    "alice@example.com",
+				"username": "alice",
 				"password": "s3cr3t",
 			},
 			mockReturn: nil, // service should not be called
 			wantStatus: http.StatusBadRequest,
-			wantError:  "Username and password are required",
+			wantError:  "Email and password are required",
 		},
 		{
 			name: "missing password",
@@ -122,7 +122,7 @@ func TestRegister(t *testing.T) {
 			},
 			mockReturn: nil,
 			wantStatus: http.StatusBadRequest,
-			wantError:  "Username and password are required",
+			wantError:  "Email and password are required",
 		},
 		{
 			name: "malformed json",

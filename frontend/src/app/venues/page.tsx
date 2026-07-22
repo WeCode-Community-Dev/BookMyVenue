@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AuthGuard from "@/components/AuthGuard";
 import SearchBar from "@/components/SearchBar";
 import VenueCard from "@/components/VenueCard";
-import { getVenues } from "@/lib/venues";
-import type { VenueCategory } from "@/lib/venues";
+import { fetchVenues } from "@/lib/venues";
+import type { VenueCategory, Venue } from "@/lib/venues";
 
 function VenueSkeleton() {
   return (
@@ -31,9 +31,15 @@ function VenueSkeleton() {
 function VenuesContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState<VenueCategory | "All">("All");
-  const [loading] = useState(false);
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const venues = getVenues({ search: searchQuery, category });
+  useEffect(() => {
+    setLoading(true);
+    fetchVenues({ search: searchQuery, category })
+      .then(setVenues)
+      .finally(() => setLoading(false));
+  }, [searchQuery, category]);
 
   function handleSearch(q: string, cat: VenueCategory | "All") {
     setSearchQuery(q);

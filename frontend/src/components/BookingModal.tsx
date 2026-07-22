@@ -33,7 +33,7 @@ export default function BookingModal({ venue, onClose, onSuccess }: BookingModal
   const [error, setError] = useState("");
 
   const hours = calcHours(startTime, endTime);
-  const totalPrice = Math.round(hours * venue.pricePerHour);
+  const totalPrice = Math.round(hours * venue.price_per_hour);
   const isValid = hours > 0 && guestCount > 0 && guestCount <= venue.capacity;
 
   async function handleBook() {
@@ -46,12 +46,12 @@ export default function BookingModal({ venue, onClose, onSuccess }: BookingModal
         venueId: venue.id,
         venueName: venue.name,
         venueLocation: venue.location,
-        venueImage: venue.images[0],
+        venueImage: venue.images?.[0] ?? "",
         date,
         startTime,
         endTime,
         guestCount,
-        pricePerHour: venue.pricePerHour,
+        pricePerHour: venue.price_per_hour,
       });
       onSuccess();
     } catch (e: unknown) {
@@ -222,7 +222,7 @@ export default function BookingModal({ venue, onClose, onSuccess }: BookingModal
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.875rem", color: "var(--text-secondary)" }}>
-              <span>{formatPrice(venue.pricePerHour)} × {hours > 0 ? `${hours}h` : "—"}</span>
+              <span>{formatPrice(venue.price_per_hour)} × {hours > 0 ? `${hours}h` : "—"}</span>
               <span>{hours > 0 ? formatPrice(totalPrice) : "—"}</span>
             </div>
             <div

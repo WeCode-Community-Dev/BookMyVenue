@@ -8,6 +8,7 @@ import { isAuthenticated, getUser, logout } from "@/lib/auth";
 export default function Navbar() {
   const [authed, setAuthed] = useState(false);
   const [userName, setUserName] = useState("");
+  const [userRole, setUserRole] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -19,12 +20,17 @@ export default function Navbar() {
       if (ok) {
         const u = getUser();
         setUserName(u?.name ?? u?.email ?? "User");
+        setUserRole(u?.role ?? "");
+      } else {
+        setUserRole("");
       }
     };
     check();
     window.addEventListener("storage", check);
     return () => window.removeEventListener("storage", check);
   }, [pathname]);
+
+  const isOwnerOrAdmin = userRole === "owner" || userRole === "admin";
 
   function handleLogout() {
     logout();
@@ -39,6 +45,7 @@ export default function Navbar() {
     { href: "/", label: "Home" },
     { href: "/venues", label: "Venues" },
     ...(authed ? [{ href: "/my-bookings", label: "My Bookings" }] : []),
+    ...(isOwnerOrAdmin ? [{ href: "/my-venues", label: "My Venues" }] : []),
   ];
 
   return (

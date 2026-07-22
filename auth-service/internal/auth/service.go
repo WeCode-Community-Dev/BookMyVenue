@@ -22,10 +22,15 @@ type AuthService interface {
 type authService struct {
 	repo       domain.UserRepository
 	jwtManager *JWTManager
+	pub        Publisher
 }
 
-func NewAuthService(repo domain.UserRepository, jwt *JWTManager) AuthService {
-	return &authService{jwtManager: jwt, repo: repo}
+type Publisher interface {
+	PublishLogin(userID string) error
+}
+
+func NewAuthService(repo domain.UserRepository, jwt *JWTManager, pub Publisher) AuthService {
+	return &authService{jwtManager: jwt, repo: repo, pub: pub}
 }
 
 func (s *authService) Login(email, password string) (string, error) {
@@ -44,7 +49,22 @@ func (s *authService) Login(email, password string) (string, error) {
 		return "", errors.New("invalid credentials")
 	}
 
-	return s.jwtManager.GenerateToken(user.ID, user.Role, time.Hour)
+	token, err := s.jwtManager.GenerateToken(user.ID, user.Role, time.Hour)
+	if err != nil {
+		return "", err
+	}
+
+	// Publish login event asynchronously; failures should not block the
+	// authentication flow.
+	if s.pub != nil {
+		go func(id string) {
+			if err := s.pub.PublishLogin(id); err != nil {
+				log.Printf("failed to publish login event: %v", err)
+			}
+		}(user.ID)
+	}
+
+	return token, nil
 }
 
 func (s *authService) Register(name, email, role, password string) (*domain.User, error) {

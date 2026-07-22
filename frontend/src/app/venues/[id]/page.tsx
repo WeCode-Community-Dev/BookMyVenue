@@ -1,12 +1,13 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import BookingModal from "@/components/BookingModal";
-import { getVenueById } from "@/lib/venues";
+import { fetchVenueById } from "@/lib/venues";
+import type { Venue } from "@/lib/venues";
 import { formatPrice } from "@/lib/bookings";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -23,28 +24,47 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-function StarRating({ rating, count }: { rating: number; count: number }) {
+function StarRating({ rating }: { rating?: number }) {
+  const r = rating ?? 0;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
       {[1, 2, 3, 4, 5].map((s) => (
-        <span key={s} style={{ fontSize: "1rem", color: s <= Math.round(rating) ? "#fbbf24" : "var(--text-muted)" }}>
+        <span key={s} style={{ fontSize: "1rem", color: s <= Math.round(r) ? "#fbbf24" : "var(--text-muted)" }}>
           ★
         </span>
       ))}
-      <span style={{ fontWeight: 700, color: "var(--text-primary)", marginLeft: "0.25rem" }}>{rating.toFixed(1)}</span>
-      <span style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>({count} reviews)</span>
+      <span style={{ fontWeight: 700, color: "var(--text-primary)", marginLeft: "0.25rem" }}>{r.toFixed(1)}</span>
     </div>
   );
 }
 
 function VenueDetailContent({ id }: { id: string }) {
-  const venue = getVenueById(id);
+  const [venue, setVenue] = useState<Venue | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
+  useEffect(() => {
+    fetchVenueById(id)
+      .then(setVenue)
+      .catch(() => notFound())
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem 1.5rem 4rem" }}>
+        <div className="skeleton" style={{ height: "380px", borderRadius: "var(--radius-lg)", marginBottom: "2rem" }} />
+        <div className="skeleton" style={{ height: "32px", width: "60%", marginBottom: "1rem" }} />
+        <div className="skeleton" style={{ height: "20px", width: "40%", marginBottom: "2rem" }} />
+        <div className="skeleton" style={{ height: "120px", borderRadius: "var(--radius-md)" }} />
+      </div>
+    );
+  }
+
   if (!venue) notFound();
 
-  const accentColor = CATEGORY_COLORS[venue.category] ?? "#6366f1";
+  const accentColor = venue.category ? (CATEGORY_COLORS[venue.category] ?? "#6366f1") : "#6366f1";
 
   function handleSuccess() {
     setShowModal(false);
@@ -100,29 +120,30 @@ function VenueDetailContent({ id }: { id: string }) {
             }}
           >
             <Image
-              src={venue.images[0]}
+              src={venue.images?.[0] ?? "/placeholder.svg"}
               alt={venue.name}
               fill
               sizes="(max-width: 768px) 100vw, 700px"
               style={{ objectFit: "cover" }}
               priority
             />
-            {/* Category overlay */}
-            <div style={{ position: "absolute", top: "1rem", left: "1rem" }}>
-              <span
-                className="badge"
-                style={{
-                  background: `${accentColor}25`,
-                  color: accentColor,
-                  border: `1px solid ${accentColor}55`,
-                  backdropFilter: "blur(8px)",
-                  fontSize: "0.8125rem",
-                  padding: "0.3rem 0.75rem",
-                }}
-              >
-                {venue.category}
-              </span>
-            </div>
+            {venue.category && (
+              <div style={{ position: "absolute", top: "1rem", left: "1rem" }}>
+                <span
+                  className="badge"
+                  style={{
+                    background: `${accentColor}25`,
+                    color: accentColor,
+                    border: `1px solid ${accentColor}55`,
+                    backdropFilter: "blur(8px)",
+                    fontSize: "0.8125rem",
+                    padding: "0.3rem 0.75rem",
+                  }}
+                >
+                  {venue.category}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Title & rating */}
@@ -138,7 +159,7 @@ function VenueDetailContent({ id }: { id: string }) {
             {venue.name}
           </h1>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem", alignItems: "center" }}>
-            <StarRating rating={venue.rating} count={venue.reviewCount} />
+            <StarRating rating={0} />
             <span style={{ color: "var(--text-secondary)", fontSize: "0.9rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
               📍 {venue.location}
             </span>
@@ -148,61 +169,67 @@ function VenueDetailContent({ id }: { id: string }) {
           </div>
 
           {/* Description */}
-          <div
-            style={{
-              background: "var(--bg-surface)",
-              border: "1px solid var(--border-card)",
-              borderRadius: "var(--radius-md)",
-              padding: "1.5rem",
-              marginBottom: "1.5rem",
-            }}
-          >
-            <h2 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.75rem" }}>
-              About this venue
-            </h2>
-            <p style={{ color: "var(--text-secondary)", lineHeight: 1.75, fontSize: "0.95rem" }}>
-              {venue.description}
-            </p>
-          </div>
+          {venue.description && (
+            <div
+              style={{
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border-card)",
+                borderRadius: "var(--radius-md)",
+                padding: "1.5rem",
+                marginBottom: "1.5rem",
+              }}
+            >
+              <h2 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.75rem" }}>
+                About this venue
+              </h2>
+              <p style={{ color: "var(--text-secondary)", lineHeight: 1.75, fontSize: "0.95rem" }}>
+                {venue.description}
+              </p>
+            </div>
+          )}
 
           {/* Highlights */}
-          <div style={{ marginBottom: "1.5rem" }}>
-            <h2 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.875rem" }}>
-              Highlights
-            </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              {venue.highlights.map((h) => (
-                <div key={h} style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.925rem", color: "var(--text-secondary)" }}>
-                  <span style={{ color: "var(--success)", fontSize: "0.9rem" }}>✓</span>
-                  {h}
-                </div>
-              ))}
+          {venue.highlights && venue.highlights.length > 0 && (
+            <div style={{ marginBottom: "1.5rem" }}>
+              <h2 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.875rem" }}>
+                Highlights
+              </h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {venue.highlights.map((h) => (
+                  <div key={h} style={{ display: "flex", alignItems: "center", gap: "0.625rem", fontSize: "0.925rem", color: "var(--text-secondary)" }}>
+                    <span style={{ color: "var(--success)", fontSize: "0.9rem" }}>✓</span>
+                    {h}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Amenities */}
-          <div>
-            <h2 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.875rem" }}>
-              Amenities
-            </h2>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.625rem" }}>
-              {venue.amenities.map((a) => (
-                <span
-                  key={a}
-                  style={{
-                    padding: "0.375rem 0.875rem",
-                    background: "var(--bg-elevated)",
-                    border: "1px solid var(--border-card)",
-                    borderRadius: "9999px",
-                    fontSize: "0.8375rem",
-                    color: "var(--text-secondary)",
-                  }}
-                >
-                  {a}
-                </span>
-              ))}
+          {venue.amenities && venue.amenities.length > 0 && (
+            <div>
+              <h2 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.875rem" }}>
+                Amenities
+              </h2>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.625rem" }}>
+                {venue.amenities.map((a) => (
+                  <span
+                    key={a}
+                    style={{
+                      padding: "0.375rem 0.875rem",
+                      background: "var(--bg-elevated)",
+                      border: "1px solid var(--border-card)",
+                      borderRadius: "9999px",
+                      fontSize: "0.8375rem",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    {a}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right — sticky booking sidebar */}
@@ -231,7 +258,7 @@ function VenueDetailContent({ id }: { id: string }) {
                     letterSpacing: "-0.04em",
                   }}
                 >
-                  {formatPrice(venue.pricePerHour)}
+                  {formatPrice(venue.price_per_hour)}
                 </span>
                 <span style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>/hour</span>
               </div>
@@ -250,10 +277,9 @@ function VenueDetailContent({ id }: { id: string }) {
               }}
             >
               {[
-                { icon: "📍", label: "Location", value: venue.city },
+                { icon: "📍", label: "Location", value: venue.city || venue.location },
                 { icon: "👥", label: "Capacity", value: `${venue.capacity} guests` },
-                { icon: "⭐", label: "Rating", value: `${venue.rating}/5 (${venue.reviewCount} reviews)` },
-                { icon: "🏷️", label: "Category", value: venue.category },
+                { icon: "🏷️", label: "Category", value: venue.category || "—" },
               ].map((item) => (
                 <div key={item.label} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.875rem" }}>
                   <span style={{ color: "var(--text-secondary)", display: "flex", gap: "0.35rem", alignItems: "center" }}>

@@ -7,7 +7,8 @@ interface VenueCardProps {
   venue: Venue;
 }
 
-function StarRating({ rating }: { rating: number }) {
+function StarRating({ rating }: { rating?: number }) {
+  const r = rating ?? 0;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
       {[1, 2, 3, 4, 5].map((star) => (
@@ -15,7 +16,7 @@ function StarRating({ rating }: { rating: number }) {
           key={star}
           style={{
             fontSize: "0.75rem",
-            color: star <= Math.round(rating) ? "#fbbf24" : "var(--text-muted)",
+            color: star <= Math.round(r) ? "#fbbf24" : "var(--text-muted)",
           }}
         >
           ★
@@ -28,7 +29,7 @@ function StarRating({ rating }: { rating: number }) {
           marginLeft: "0.15rem",
         }}
       >
-        {rating.toFixed(1)}
+        {r.toFixed(1)}
       </span>
     </div>
   );
@@ -56,7 +57,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
         {/* Hero Image */}
         <div style={{ position: "relative", height: "200px", overflow: "hidden" }}>
           <Image
-            src={venue.images[0]}
+            src={venue.images?.[0] ?? "/placeholder.svg"}
             alt={venue.name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -104,7 +105,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
               border: "1px solid rgba(99,102,241,0.3)",
             }}
           >
-            {formatPrice(venue.pricePerHour)}/hr
+            {formatPrice(venue.price_per_hour)}/hr
           </div>
         </div>
 
@@ -123,7 +124,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
             >
               {venue.name}
             </h3>
-            <StarRating rating={venue.rating} />
+            <StarRating rating={0} />
           </div>
 
           {/* Location */}
@@ -140,7 +141,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
 
           {/* Amenities preview */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginTop: "0.25rem" }}>
-            {venue.amenities.slice(0, 3).map((a) => (
+            {(venue.amenities ?? []).slice(0, 3).map((a) => (
               <span
                 key={a}
                 style={{
@@ -155,7 +156,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
                 {a}
               </span>
             ))}
-            {venue.amenities.length > 3 && (
+            {(venue.amenities ?? []).length > 3 && (
               <span
                 style={{
                   padding: "0.15rem 0.5rem",

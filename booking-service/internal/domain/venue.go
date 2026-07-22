@@ -24,8 +24,13 @@ type Venue struct {
 	Name         string    `json:"name"`
 	Description  string    `json:"description"`
 	Location     string    `json:"location"`
+	City         string    `json:"city"`
+	Category     string    `json:"category"`
 	Capacity     int       `json:"capacity"`
 	PricePerHour float64   `json:"price_per_hour"`
+	Images       []string  `json:"images"`
+	Amenities    []string  `json:"amenities"`
+	Highlights   []string  `json:"highlights"`
 	CreatedAt    time.Time `json:"created_at"`
 }
 

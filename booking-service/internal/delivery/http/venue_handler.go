@@ -4,10 +4,11 @@ import (
 	"booking-service/internal/domain"
 	"booking-service/internal/venue"
 	"errors"
+	"log"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"bookmyvenue.com/shared/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 type VenueHandler struct {
@@ -15,19 +16,29 @@ type VenueHandler struct {
 }
 
 type createVenueRequest struct {
-	Name         string  `json:"name"          binding:"required"`
-	Description  string  `json:"description"`
-	Location     string  `json:"location"      binding:"required"`
-	Capacity     int     `json:"capacity"      binding:"required,min=1"`
-	PricePerHour float64 `json:"price_per_hour" binding:"required,min=0"`
+	Name         string   `json:"name"          binding:"required"`
+	Description  string   `json:"description"`
+	Location     string   `json:"location"      binding:"required"`
+	City         string   `json:"city"`
+	Category     string   `json:"category"`
+	Capacity     int      `json:"capacity"      binding:"required,min=1"`
+	PricePerHour float64  `json:"price_per_hour" binding:"required,min=0"`
+	Images       []string `json:"images"`
+	Amenities    []string `json:"amenities"`
+	Highlights   []string `json:"highlights"`
 }
 
 type updateVenueRequest struct {
-	Name         string  `json:"name"          binding:"required"`
-	Description  string  `json:"description"`
-	Location     string  `json:"location"      binding:"required"`
-	Capacity     int     `json:"capacity"      binding:"required,min=1"`
-	PricePerHour float64 `json:"price_per_hour" binding:"required,min=0"`
+	Name         string   `json:"name"          binding:"required"`
+	Description  string   `json:"description"`
+	Location     string   `json:"location"      binding:"required"`
+	City         string   `json:"city"`
+	Category     string   `json:"category"`
+	Capacity     int      `json:"capacity"      binding:"required,min=1"`
+	PricePerHour float64  `json:"price_per_hour" binding:"required,min=0"`
+	Images       []string `json:"images"`
+	Amenities    []string `json:"amenities"`
+	Highlights   []string `json:"highlights"`
 }
 
 // RegisterVenueRoutes mounts venue endpoints on the router group.
@@ -80,7 +91,7 @@ func (h *VenueHandler) CreateVenue(c *gin.Context) {
 		return
 	}
 	ownerID := c.GetString(middleware.CtxUserID)
-	v, err := h.svc.CreateVenue(ownerID, req.Name, req.Description, req.Location, req.Capacity, req.PricePerHour)
+	v, err := h.svc.CreateVenue(ownerID, req.Name, req.Description, req.Location, req.City, req.Category, req.Capacity, req.PricePerHour, req.Images, req.Amenities, req.Highlights)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
@@ -101,8 +112,13 @@ func (h *VenueHandler) UpdateVenue(c *gin.Context) {
 		Name:         req.Name,
 		Description:  req.Description,
 		Location:     req.Location,
+		City:         req.City,
+		Category:     req.Category,
 		Capacity:     req.Capacity,
 		PricePerHour: req.PricePerHour,
+		Images:       req.Images,
+		Amenities:    req.Amenities,
+		Highlights:   req.Highlights,
 	}
 	if err := h.svc.UpdateVenue(callerID, callerRole, v); err != nil {
 		switch {
@@ -139,6 +155,7 @@ func (h *VenueHandler) ListMyVenues(c *gin.Context) {
 	ownerID := c.GetString(middleware.CtxUserID)
 	venues, err := h.svc.ListMyVenues(ownerID)
 	if err != nil {
+		log.Printf("ERROR: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}

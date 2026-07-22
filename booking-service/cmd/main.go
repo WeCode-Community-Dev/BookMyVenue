@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
@@ -50,6 +51,12 @@ func main() {
 
 	// ── Router ────────────────────────────────────────────────────────────────
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 	api := r.Group("/")
 	delivery.RegisterVenueRoutes(api, venueSvc, jwtSecret)
 	delivery.RegisterBookingRoutes(api, bookingSvc, jwtSecret)

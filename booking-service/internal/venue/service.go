@@ -8,7 +8,7 @@ import (
 
 // Service is the venue business-logic contract.
 type Service interface {
-	CreateVenue(ownerID, name, description, location string, capacity int, pricePerHour float64) (*domain.Venue, error)
+	CreateVenue(ownerID, name, description, location, city, category string, capacity int, pricePerHour float64, images, amenities, highlights []string) (*domain.Venue, error)
 	GetVenue(id string) (*domain.Venue, error)
 	ListVenues() ([]domain.Venue, error)
 	ListMyVenues(ownerID string) ([]domain.Venue, error)
@@ -24,14 +24,19 @@ func NewVenueService(repo domain.VenueRepository) Service {
 	return &venueService{repo: repo}
 }
 
-func (s *venueService) CreateVenue(ownerID, name, description, location string, capacity int, price float64) (*domain.Venue, error) {
+func (s *venueService) CreateVenue(ownerID, name, description, location, city, category string, capacity int, price float64, images, amenities, highlights []string) (*domain.Venue, error) {
 	v := &domain.Venue{
 		OwnerID:      ownerID,
 		Name:         name,
 		Description:  description,
 		Location:     location,
+		City:         city,
+		Category:     category,
 		Capacity:     capacity,
 		PricePerHour: price,
+		Images:       images,
+		Amenities:    amenities,
+		Highlights:   highlights,
 	}
 	if err := s.repo.Create(v); err != nil {
 		return nil, err
