@@ -1,61 +1,66 @@
-import { asyncHandler } from '../../../shared/utils/asyncHandler.js'
-import { sendSuccess } from '../../../shared/utils/apiResponse.js'
-import { statusCode } from '../../../shared/constants/enums/statusCode.js'
-import { VendorMessages } from '../../../shared/constants/messages/vendorMessages.js'
+import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
+import { sendSuccess } from "../../../shared/utils/apiResponse.js";
+import { statusCode } from "../../../shared/constants/enums/statusCode.js";
+import { VendorMessages } from "../../../shared/constants/messages/vendorMessages.js";
 
 export class VendorProfileController {
+  constructor(
+    GetVendorProfileUsecase,
+    UpdateVendorProfileUsecase,
+    ChangeVendorPasswordUsecase
+  ) {
+    this._getVendorProfileUsecase = GetVendorProfileUsecase;
 
-    constructor(
-        GetVendorProfileUsecase,
-        UpdateVendorProfileUsecase
-    ) {
+    this._updateVendorProfileUsecase = UpdateVendorProfileUsecase;
 
-        this._getVendorProfileUsecase =
-            GetVendorProfileUsecase
+    this._changeVendorPasswordUsecase = ChangeVendorPasswordUsecase;
+  }
 
-        this._updateVendorProfileUsecase =
-            UpdateVendorProfileUsecase
-    }
+  getProfile = asyncHandler(async (req, res) => {
+    const vendorId = req.user.id;
 
-    getProfile = asyncHandler(async (req, res) => {
+    const vendor = await this._getVendorProfileUsecase.execute(vendorId);
 
-        const vendorId = req.user.id;
+    return sendSuccess(
+      res,
+      statusCode.OK,
+      VendorMessages.success.PROFILE_FETCHED,
+      vendor
+    );
+  });
 
-        const vendor =
-            await this._getVendorProfileUsecase.execute(
-                vendorId
-            )
+  updateProfile = asyncHandler(async (req, res) => {
+    const vendorId = req.user.id;
 
-        return sendSuccess(
-            res,
-            statusCode.OK,
-            VendorMessages.success.PROFILE_FETCHED,
-            vendor
-        )
+    const vendor = await this._updateVendorProfileUsecase.execute({
+      vendorId,
 
-    })
+      ...req.body,
+    });
 
+    return sendSuccess(
+      res,
+      statusCode.OK,
+      VendorMessages.success.PROFILE_UPDATED,
+      vendor
+    );
+  });
 
-    updateProfile = asyncHandler(async (req, res) => {
+  changePassword = asyncHandler(async (req, res) => {
+    const vendorId = "6a58e836080d38065f2fe547";
 
-        const vendorId = req.user.id;
+    await this._changeVendorPasswordUsecase.execute({
+      vendorId,
 
-        const vendor =
-            await this._updateVendorProfileUsecase.execute({
+      ...req.body,
+    });
 
-                vendorId,
+    return sendSuccess(
+      res,
 
-                ...req.body
+      statusCode.OK,
 
-            })
-
-        return sendSuccess(
-            res,
-            statusCode.OK,
-            VendorMessages.success.PROFILE_UPDATED,
-            vendor
-        )
-
-    })
-
+      VendorMessages.success.PASSWORD_CHANGED
+    );
+  });
 }

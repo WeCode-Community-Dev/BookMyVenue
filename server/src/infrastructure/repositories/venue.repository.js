@@ -5,12 +5,20 @@ import { VenueStatus } from "../../domain/enums/Venue.enum.js";
 
 export class VenueRepository extends IVenueRepository {
 
-    async findById(id) {
-        const document = await VenueModel.findById(id)
+async findById(id) {
 
-        if (!document) return null
-        return VenueMapper.mapToEntity(document)
-    }
+    const document =
+        await VenueModel.findById(id)
+            .populate(
+                "vendorId",
+                "fullName email phone companyName"
+            );
+
+    if (!document) return null;
+
+    return VenueMapper.mapToEntity(document);
+
+}
 
     async create(venue) {
         const data = VenueMapper.mapToPersistence(venue)
@@ -29,7 +37,7 @@ export class VenueRepository extends IVenueRepository {
         return VenueMapper.mapToEntity(document)
     }
 
-    async findByOwnerAndName(vendorId, name) {
+    async findByVendorAndName(vendorId, name) {
         const document = await VenueModel.findOne({
             vendorId,
             name

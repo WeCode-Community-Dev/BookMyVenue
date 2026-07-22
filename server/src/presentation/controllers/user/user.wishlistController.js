@@ -16,7 +16,8 @@ export class UserWishlistController {
     }
     addToWishlist = asyncHandler(async(req,res)=>{
 
-        const userId = req.user.userId;
+        // const userId = req.user.userId;
+            const userId = '6a5c82d2a4cb28be7d10521f'
 
         const { venueId } = req.params;
 
@@ -34,7 +35,7 @@ export class UserWishlistController {
     });
     getWishlist = asyncHandler(async(req,res)=>{
 
-        const userId = req.user.userId;
+        const userId = '6a5c82d2a4cb28be7d10521f'
 
         const wishlist = await this._userGetWishlistUsecase.execute(
             userId
@@ -49,8 +50,7 @@ export class UserWishlistController {
     });
     removeWishlist = asyncHandler(async(req,res)=>{
 
-        const userId = req.user.userId;
-
+        const userId = '6a5c82d2a4cb28be7d10521f'
         const { venueId } = req.params;
 
         const wishlist = await this._userRemoveWishlistUsecase.execute(

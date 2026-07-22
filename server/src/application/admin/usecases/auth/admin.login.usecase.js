@@ -25,15 +25,20 @@ export class LoginAdminUsecase {
             throw new UnauthorizedError(authMessages.error.INVALID_CREDENTIALS);
         }
 
-        const accessToken = this._tokenService.generateAccessToken({id: admin.id, email: admin.email, role: UserRole.ADMIN});
-        const refreshToken = this._tokenService.generateRefreshToken({id: admin.id, role: UserRole.ADMIN})
+        const accessToken = this._tokenService.generateAccessToken(admin.id, admin.email, UserRole.ADMIN );
+        const refreshToken = this._tokenService.generateRefreshToken( admin.id, UserRole.ADMIN)
         const hashedToken = await this._hashService.hashToken(refreshToken)
         await this._adminRepository.updateRefreshToken(admin.id, hashedToken)
 
         return { 
             accessToken, 
             refreshToken,
-            admin
+            admin: {
+                id: admin.id,
+                role: admin.role,
+                email: admin.email,
+                
+            }
         };
     }
 }

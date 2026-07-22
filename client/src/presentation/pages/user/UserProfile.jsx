@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 import Header from "@/presentation/components/common/Header";
 import UserSidebar from "@/presentation/components/user/UserSidebar";
@@ -15,6 +16,7 @@ import {
   updateProfile,
   updateProfileImage,
   verifyEmailOtp,
+  removeProfileImage,
 } from "@/redux/slices/UserProfileSlice";
 
 const UserProfile = () => {
@@ -34,9 +36,9 @@ const UserProfile = () => {
         fullName: formData.name,
         phone: formData.phone,
       };
-  
+
       await dispatch(updateProfile(payload)).unwrap();
-  
+
       toast.success("Profile updated successfully");
       setIsEditing(false);
     } catch (error) {
@@ -47,8 +49,32 @@ const UserProfile = () => {
   const handleImageChange = async (file) => {
     try {
       await dispatch(updateProfileImage(file)).unwrap();
-  
+
       toast.success("Profile picture updated successfully");
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    const result = await Swal.fire({
+      title: "Remove Profile Photo?",
+      text: "Are you sure you want to remove your profile photo?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#f59e0b", // Amber
+      cancelButtonColor: "#6b7280", // Gray
+      confirmButtonText: "Yes, Remove",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await dispatch(removeProfileImage()).unwrap();
+
+      toast.success("Profile image removed");
     } catch (error) {
       toast.error(error);
     }
@@ -57,9 +83,8 @@ const UserProfile = () => {
   const handleRequestEmailOtp = async (newEmail) => {
     try {
       await dispatch(requestEmailChangeOtp(newEmail)).unwrap();
-  
+
       toast.success("OTP sent to your email");
-  
     } catch (error) {
       toast.error(error);
       throw error;
@@ -69,22 +94,21 @@ const UserProfile = () => {
   const handleVerifyOtp = async (otp) => {
     try {
       await dispatch(verifyEmailOtp(otp)).unwrap();
-  
+
       toast.success("Email updated successfully");
-  
+
       await dispatch(getProfile());
-  
+
       setIsEditing(false);
-  
     } catch (error) {
-      throw error;
+      toast.error(typeof error === "string" ? error : "Failed to update email");
     }
   };
 
   const handleResendOtp = async () => {
     try {
       await dispatch(resendEmailOtp()).unwrap();
-  
+
       toast.success("OTP resent successfully");
     } catch (error) {
       toast.error(error);
@@ -147,6 +171,7 @@ const UserProfile = () => {
                   }
                 )}
                 onImageChange={handleImageChange}
+                onRemoveImage={handleRemoveImage}
               />
             </div>
 

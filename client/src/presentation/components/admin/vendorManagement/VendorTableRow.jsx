@@ -22,7 +22,7 @@ const VendorTableRow = ({
     onBlock,
     onUnblock,
 }) => {
-    console.log("vendor44", vendor)
+    
     const isBlocked = vendor.isBlocked;
 
     const approvalStatus = vendor.approvalStatus;
@@ -206,7 +206,7 @@ const VendorTableRow = ({
                         isBlocked && (
 
                             <Button
-                                 className="bg-green-600 hover:bg-green-700 text-white"
+                                className="bg-green-600 hover:bg-green-700 text-white"
                                 size="sm"
                                 onClick={() => onUnblock(vendor)}
                             >

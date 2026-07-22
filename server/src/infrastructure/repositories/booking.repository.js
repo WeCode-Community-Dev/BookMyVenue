@@ -2,8 +2,8 @@ import { BookingRepository } from "../../domain/repositories/IBooking.repository
 import mongoose from "mongoose";
 import { BookingModel } from "../database/models/BookingModel.js";
 import { UserModel } from "../database/models/User.model.js";
-import VendorModel from "../database/models/Vendor.model.js";
 import { VenueModel } from "../database/models/Venue.model.js";
+import VendorModel from "../database/models/Vendor.model.js";
 import { BookingMapper } from "../../application/mapper/Booking.mapper.js";
 import { BookingStatus } from "../../domain/enums/Booking.enum.js";
 import { Types } from "mongoose";
@@ -27,9 +27,10 @@ export class BookingRepositoryImpl extends BookingRepository {
             await BookingModel
                 .findById(id)
                 .populate("userId", "fullName email phone")
-                .populate("vendorId", "fullName email phone")
-                .populate("venueId", "name");
+                .populate("vendorId", "fullName email phone companyName")
+                .populate("venueId");
         if (!booking) return null;
+        console.log("Mongo Booking:", booking);
         return BookingMapper.mapToEntity(booking);
     }
 
@@ -240,7 +241,8 @@ export class BookingRepositoryImpl extends BookingRepository {
         if (query.search) {
             const regex = new RegExp(query.search, "i");
             const userIds = await UserModel.find({ fullName: regex }).distinct("_id");
-            const vendorIds = await VendorModel.find({ $or: [{ fullName: regex }, { companyName: regex }] }).distinct("_id"); const venueIds = await VenueModel.find({ name: regex }).distinct("_id"); const searchFilter = [{ userId: { $in: userIds } }, { vendorId: { $in: vendorIds } }, { venueId: { $in: venueIds } }];
+            const vendorIds = await VendorModel.find({ $or: [{ fullName: regex }, { companyName: regex }] }).distinct("_id");
+            const venueIds = await VenueModel.find({ name: regex }).distinct("_id"); const searchFilter = [{ userId: { $in: userIds } }, { vendorId: { $in: vendorIds } }, { venueId: { $in: venueIds } }];
             if (Types.ObjectId.isValid(query.search)) { searchFilter.push({ _id: new Types.ObjectId(query.search) }); }
             filter.$or = searchFilter;
         }
@@ -316,6 +318,15 @@ export class BookingRepositoryImpl extends BookingRepository {
                             }
 
                         },
+                        rejectedBookings: {
+                            $sum: {
+                                $cond: [
+                                    { $eq: ["$status", BookingStatus.REJECTED] },
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
 
                         cancelledBookings: {
 
@@ -376,6 +387,7 @@ export class BookingRepositoryImpl extends BookingRepository {
             pendingBookings: 0,
 
             confirmedBookings: 0,
+            rejectedBookings: 0,
 
             cancelledBookings: 0,
 

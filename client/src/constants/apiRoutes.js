@@ -10,6 +10,7 @@ export const API_ROUTES = {
           REQUEST_EMAIL_CHANGE_OTP: "/user/profile/email/request-otp",
           VERIFY_EMAIL_CHANGE_OTP: "/user/profile/email/verify-otp",
           RESEND_EMAIL_CHANGE_OTP: "/user/profile/email/resend-otp",
+          CHANGE_PASSWORD: "/user/profile/change-password"
         },
         CHANGE_PASSWORD: {
           CHANGE_PASSWORD: "user/changepassword",
@@ -24,6 +25,10 @@ export const API_ROUTES = {
         }
     },
    ADMIN: {
+    DASHBOARD:{
+      STATISTICS: "/admin/dashboard/statistics",
+
+    },
     USER: {
       USERS: "/admin/users",
       UPDATE_STATUS: (userId) => `/admin/users/${userId}/status`,
@@ -57,5 +62,19 @@ export const API_ROUTES = {
       STATISTICS: "/admin/payments/statistics",
     },
   },
+  VENDOR: {
+    DASHBOARD: "/vendor/dashboard",
+    PROFILE: "/vendor/profile",
+    BOOKINGS: "/vendor/bookings",
+    BOOKING_BY_ID: (bookingId) =>
+                `/vendor/bookings/${bookingId}`,
+
+    VENUES: "/vendor/venues",
+    CREATE_VENUE: "/vendor/venue",
+    VENUE_BY_ID: (venueId) =>
+              `/vendor/venues/${venueId}`,
+    UPDATE_VENUE_STATUS: (venueId) =>
+          `/vendor/venues/${venueId}/status`,
+},
 
 }

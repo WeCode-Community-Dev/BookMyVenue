@@ -6,6 +6,7 @@ import {
   iVendorProfileController,
   iVendorBookingController,
   iVendorDashboardController,
+  iTokenService,
 } from "../../controllers/di.js";
 import { validate } from "../../middlewares/validator.js";
 import {
@@ -15,12 +16,16 @@ import {
   VenueUpdateStatusSchema,
 } from "../../validators/VenderVenue.validator.js";
 
-import { UpdateVendorProfileSchema } from "../../validators/vendorProfile.validator.js";
+import {
+  UpdateVendorProfileSchema,
+  ChangeVendorPasswordSchema,
+} from "../../validators/vendorProfile.validator.js";
 
 import {
   BookingParamsSchema,
   BookingQuerySchema,
 } from "../../validators/vendorBooking.validator.js";
+import { authHandler } from "../../middlewares/auth.middleware.js";
 
 const router = Express.Router();
 
@@ -29,41 +34,41 @@ const uploadVenue = cloudinaryUpload("venues");
 
 //venue
 router.post(
-  ROUTES.OWNER.VENUE.CREATE,
+  ROUTES.OWNER.VENUE.CREATE, authHandler(iTokenService),
   uploadVenue.fields([
-    {name: "images", maxCount: 10},
-    {name: "license", maxCount: 5}
+    { name: "images", maxCount: 10 },
+    { name: "license", maxCount: 5 },
   ]),
   validate(createVenueSchema, "body"),
   iVendorVenueController.createVenue
 );
 router.patch(
-  ROUTES.OWNER.VENUE.EDIT,
+  ROUTES.OWNER.VENUE.EDIT, authHandler(iTokenService),
   uploadVenue.fields([
-    {name: "images", maxCount: 10},
-    {name: "license", maxCount: 5}
+    { name: "images", maxCount: 10 },
+    { name: "license", maxCount: 5 },
   ]),
   validate(createVenueSchema, "body"),
   validate(VenueParamsSchema, "params"),
   iVendorVenueController.updateVenue
 );
 router.get(
-  ROUTES.OWNER.VENUE.GET_BY_ID,
+  ROUTES.OWNER.VENUE.GET_BY_ID, authHandler(iTokenService),
   validate(VenueParamsSchema, "params"),
   iVendorVenueController.getById
 );
 router.get(
-  ROUTES.OWNER.VENUE.GET_ALL,
+  ROUTES.OWNER.VENUE.GET_ALL, authHandler(iTokenService),
   validate(VenueQuerySchema, "query"),
   iVendorVenueController.getAllVenues
 );
 router.delete(
-  ROUTES.OWNER.VENUE.DELETE,
+  ROUTES.OWNER.VENUE.DELETE, authHandler(iTokenService),
   validate(VenueParamsSchema, "params"),
   iVendorVenueController.deleteVenue
 );
 router.patch(
-  ROUTES.OWNER.VENUE.UPDATE_STATUS,
+  ROUTES.OWNER.VENUE.UPDATE_STATUS, authHandler(iTokenService),
   validate(VenueParamsSchema, "params"),
   validate(VenueUpdateStatusSchema, "body"),
   iVendorVenueController.updateVenueStatus
@@ -76,6 +81,12 @@ router.patch(
   ROUTES.OWNER.PROFILE.UPDATE,
   validate(UpdateVendorProfileSchema, "body"),
   iVendorProfileController.updateProfile
+);
+
+router.patch(
+  ROUTES.OWNER.PROFILE.CHANGE_PASSWORD,
+  validate(ChangeVendorPasswordSchema, "body"),
+  iVendorProfileController.changePassword
 );
 
 // booking
@@ -92,9 +103,6 @@ router.get(
   iVendorBookingController.getBookingById
 );
 
-router.get(
-  ROUTES.OWNER.DASHBOARD,
-  iVendorDashboardController.getDashboard
-);
+router.get(ROUTES.OWNER.DASHBOARD, iVendorDashboardController.getDashboard);
 
 export default router;
