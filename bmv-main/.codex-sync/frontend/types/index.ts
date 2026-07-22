@@ -1,4 +1,4 @@
-﻿export interface Venue {
+export interface Venue {
   id: string;
   name: string;
   city: string;
@@ -14,6 +14,10 @@
   address?: string;
   images?: string[];
   amenities?: string[];
+  documents?: {
+    type: "GOVERNMENT_ID" | "PROPERTY_DOCUMENT";
+    documentUrl: string;
+  }[];
   rules?: string[];
   similarVenueIds?: string[];
   owner?: {

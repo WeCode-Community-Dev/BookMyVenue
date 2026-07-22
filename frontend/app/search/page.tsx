@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useMemo, Suspense } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { useAuth } from "@/context/AuthContext";
 import SearchHeader from "@/components/search/SearchHeader";
 import FilterBar from "@/components/search/FilterBar";
 import FilterDrawer from "@/components/search/FilterDrawer";
@@ -12,170 +11,153 @@ import SortDropdown from "@/components/search/SortDropdown";
 import SearchResults from "@/components/search/SearchResults";
 import Pagination from "@/components/search/Pagination";
 import EmptyState from "@/components/search/EmptyState";
+import { Venue } from "@/types";
+import * as searchService from "@/services/search.service";
 
 function SearchPageContent() {
   const searchParams = useSearchParams();
-  const { venues } = useAuth();
-  
-  // Resolve initial parameters from query string
   const initialQuery = searchParams.get("q") || "";
   const initialCategory = searchParams.get("category") || null;
-  const initialCapacity = searchParams.get("capacity") ? parseInt(searchParams.get("capacity")!) : null;
+  const initialCapacity = searchParams.get("capacity") ? parseInt(searchParams.get("capacity")!, 10) : null;
   const initialCity = searchParams.get("city") || "Kochi";
 
-  // Search and Filter State variables
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);
-  const [priceRange, setPriceRange] = useState<[number, number]>([1000, 300000]);
-  const [capacity, setCapacity] = useState<number | null>(initialCapacity);
+  const [searchQuery, setSearchQueryState] = useState(initialQuery);
+  const [selectedCategory, setSelectedCategoryState] = useState<string | null>(initialCategory);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 300000]);
+  const [capacity, setCapacityState] = useState<number | null>(initialCapacity);
   const [rating, setRating] = useState<number | null>(null);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("recommended");
-  
-  // UI Panels states
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Active filters counting (excluding base city)
   const activeFiltersCount = useMemo(() => {
     let count = 0;
     if (selectedCategory !== null) count++;
-    if (priceRange[1] < 300000) count++;
+    if (priceRange[0] > 0 || priceRange[1] < 300000) count++;
     if (capacity !== null) count++;
     if (rating !== null) count++;
     count += selectedAmenities.length;
     return count;
   }, [selectedCategory, priceRange, capacity, rating, selectedAmenities]);
 
-  // Client Side Mocks Filtering Logic
-  const filteredAndSortedVenues = useMemo(() => {
-    let list = [...venues];
+  useEffect(() => {
+    let isCancelled = false;
 
-    // Filter by city first if provided
-    if (initialCity && initialCity !== "Anywhere") {
-      list = list.filter((v) => v.city.toLowerCase() === initialCity.toLowerCase());
-    }
+    const load = async () => {
+      setIsLoading(true);
+      setError("");
 
-    // Filter by text search query (venue name, area, city, category)
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (v) =>
-          v.name.toLowerCase().includes(q) ||
-          v.city.toLowerCase().includes(q) ||
-          v.category.toLowerCase().includes(q) ||
-          (v.categories && v.categories.some((c) => c.toLowerCase().includes(q))) ||
-          (v.area && v.area.toLowerCase().includes(q))
-      );
-    }
-
-    // Filter by scroll-bar category tags
-    if (selectedCategory) {
-      const categoryLower = selectedCategory.toLowerCase();
-      
-      if (categoryLower === "outdoor" || categoryLower === "indoor") {
-        // Special tags mapping
-        list = list.filter((v) => {
-          const amenitiesLower = (v.amenities || []).map((a) => a.toLowerCase());
-          if (categoryLower === "outdoor") {
-            return !amenitiesLower.includes("air conditioning");
-          } else {
-            return amenitiesLower.includes("air conditioning");
+      try {
+        if (searchQuery.trim()) {
+          let filtered = await searchService.searchNavbar(searchQuery.trim());
+          if (initialCity && initialCity !== "Anywhere") {
+            filtered = filtered.filter((venue) => venue.city.toLowerCase() === initialCity.toLowerCase());
           }
-        });
-      } else {
-        list = list.filter((v) =>
-          v.categories && v.categories.length > 0
-            ? v.categories.some((c) => c.toLowerCase() === categoryLower)
-            : v.category.toLowerCase() === categoryLower
-        );
+          if (selectedCategory) {
+            filtered = filtered.filter((venue) =>
+              (venue.categories || []).some((category) => category.toLowerCase() === selectedCategory.toLowerCase()),
+            );
+          }
+          if (capacity !== null) {
+            filtered = filtered.filter((venue) => venue.capacity >= capacity);
+          }
+          filtered = filtered.filter((venue) => venue.startingPrice >= priceRange[0] && venue.startingPrice <= priceRange[1]);
+          if (selectedAmenities.length > 0) {
+            filtered = filtered.filter((venue) =>
+              selectedAmenities.every((amenity) => (venue.amenities || []).includes(amenity)),
+            );
+          }
+
+          if (!isCancelled) {
+            setVenues(filtered);
+            setTotalPages(1);
+          }
+        } else {
+          const response = await searchService.searchVenues({
+            city: initialCity !== "Anywhere" ? initialCity : undefined,
+            category: selectedCategory,
+            capacity,
+            skip: (currentPage - 1) * 6,
+            take: 6,
+          });
+
+          let filtered = response.data.filter((venue) => venue.startingPrice >= priceRange[0] && venue.startingPrice <= priceRange[1]);
+          if (selectedAmenities.length > 0) {
+            filtered = filtered.filter((venue) =>
+              selectedAmenities.every((amenity) => (venue.amenities || []).includes(amenity)),
+            );
+          }
+
+          if (!isCancelled) {
+            setVenues(filtered);
+            setTotalPages(Math.max(1, Math.ceil(response.pagination.total / 6)));
+          }
+        }
+      } catch (loadError: unknown) {
+        if (!isCancelled) {
+          const message = loadError instanceof Error ? loadError.message : "Failed to load venues from the backend."; setError(message);
+          setVenues([]);
+          setTotalPages(1);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
-    }
+    };
 
-    // Filter by price range
-    list = list.filter(
-      (v) => v.startingPrice >= priceRange[0] && v.startingPrice <= priceRange[1]
-    );
+    load();
+    return () => {
+      isCancelled = true;
+    };
+  }, [searchQuery, selectedCategory, capacity, currentPage, initialCity, priceRange, selectedAmenities]);
 
-    // Filter by capacity
-    if (capacity !== null) {
-      list = list.filter((v) => v.capacity >= capacity);
-    }
+  const filteredAndSortedVenues = useMemo(() => {
+    const list = [...venues];
+    const ratedList = rating !== null ? list.filter((venue) => venue.rating >= rating) : list;
 
-    // Filter by rating
-    if (rating !== null) {
-      list = list.filter((v) => v.rating >= rating);
-    }
-
-    // Filter by amenities Checklist selection
-    if (selectedAmenities.length > 0) {
-      list = list.filter((v) =>
-        selectedAmenities.every((amenity) => (v.amenities || []).includes(amenity))
-      );
-    }
-
-    // Sort operations
-    if (sortBy === "rating-desc") {
-      list.sort((a, b) => b.rating - a.rating);
-    } else if (sortBy === "price-asc") {
-      list.sort((a, b) => a.startingPrice - b.startingPrice);
+    if (sortBy === "price-asc") {
+      ratedList.sort((a, b) => a.startingPrice - b.startingPrice);
     } else if (sortBy === "price-desc") {
-      list.sort((a, b) => b.startingPrice - a.startingPrice);
-    } else if (sortBy === "popular") {
-      list.sort((a, b) => b.reviewCount - a.reviewCount);
+      ratedList.sort((a, b) => b.startingPrice - a.startingPrice);
     } else if (sortBy === "newest") {
-      list.sort((a, b) => b.id.localeCompare(a.id));
+      ratedList.sort((a, b) => b.id.localeCompare(a.id));
     }
 
-    return list;
-  }, [initialCity, searchQuery, selectedCategory, priceRange, capacity, rating, selectedAmenities, sortBy]);
+    return ratedList;
+  }, [venues, rating, sortBy]);
 
-  // Pagination setup (6 elements per page)
-  const itemsPerPage = 6;
-  const totalPages = Math.max(1, Math.ceil(filteredAndSortedVenues.length / itemsPerPage));
-  
-  const paginatedVenues = useMemo(() => {
-    // Clamp current page to bounds
-    const page = Math.min(currentPage, totalPages);
-    const startIdx = (page - 1) * itemsPerPage;
-    return filteredAndSortedVenues.slice(startIdx, startIdx + itemsPerPage);
-  }, [filteredAndSortedVenues, currentPage, totalPages]);
-
-  // Reset all filters state
   const handleResetFilters = () => {
-    setPriceRange([1000, 300000]);
-    setCapacity(null);
+    setPriceRange([0, 300000]);
+    setCapacityState(null);
     setRating(null);
     setSelectedAmenities([]);
-    setSelectedCategory(null);
-    setSearchQuery("");
+    setSelectedCategoryState(null);
+    setSearchQueryState("");
     setSortBy("recommended");
-    setCurrentPage(1);
-  };
-
-  const handleApplyFilters = () => {
     setCurrentPage(1);
   };
 
   return (
     <>
-      {/* Sticky header navbar */}
-      <Navbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-
+      <Navbar searchQuery={searchQuery} setSearchQuery={(value) => { setCurrentPage(1); setSearchQueryState(value); }} />
       <main className="flex-grow bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4">
-          
-          {/* Active Info tags & Search parameters */}
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <SearchHeader
               totalCount={filteredAndSortedVenues.length}
               city={initialCity}
               selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
+              setSelectedCategory={(value) => { setCurrentPage(1); setSelectedCategoryState(value); }}
               priceRange={priceRange}
               setPriceRange={setPriceRange}
               capacity={capacity}
-              setCapacity={setCapacity}
+              setCapacity={(value) => { setCurrentPage(1); setCapacityState(value); }}
               rating={rating}
               setRating={setRating}
               selectedAmenities={selectedAmenities}
@@ -185,48 +167,49 @@ function SearchPageContent() {
             <SortDropdown value={sortBy} onChange={setSortBy} />
           </div>
 
-          {/* Quick tags category bar */}
           <FilterBar
             selectedCategory={selectedCategory}
-            onSelectCategory={(cat) => { setSelectedCategory(cat); setCurrentPage(1); }}
+            onSelectCategory={(category) => {
+              setSelectedCategoryState(category);
+              setCurrentPage(1);
+            }}
             onOpenDrawer={() => setIsDrawerOpen(true)}
             activeFiltersCount={activeFiltersCount}
           />
 
-          {/* Main layout (expanded full width) */}
           <div className="space-y-6 pt-2 animate-in fade-in duration-200">
-            {paginatedVenues.length > 0 ? (
+            {error ? (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-5 text-sm font-semibold text-rose-700">{error}</div>
+            ) : isLoading ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm font-semibold text-slate-500">
+                Loading venues from the backend...
+              </div>
+            ) : filteredAndSortedVenues.length > 0 ? (
               <>
-                <SearchResults venues={paginatedVenues} />
-                {totalPages > 1 && (
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                  />
+                <SearchResults venues={filteredAndSortedVenues} />
+                {totalPages > 1 && !searchQuery.trim() && (
+                  <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                 )}
               </>
             ) : (
               <EmptyState onReset={handleResetFilters} />
             )}
           </div>
-
         </div>
       </main>
 
-      {/* Advanced filters slide drawer */}
       <FilterDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         priceRange={priceRange}
         setPriceRange={setPriceRange}
         capacity={capacity}
-        setCapacity={setCapacity}
+        setCapacity={(value) => { setCurrentPage(1); setCapacityState(value); }}
         rating={rating}
         setRating={setRating}
         selectedAmenities={selectedAmenities}
         setSelectedAmenities={setSelectedAmenities}
-        onApply={handleApplyFilters}
+        onApply={() => setCurrentPage(1)}
         onReset={handleResetFilters}
       />
 
@@ -237,15 +220,22 @@ function SearchPageContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-white flex items-center justify-center select-none">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-rose-600 mx-auto" />
-          <p className="text-sm font-semibold text-slate-500">Searching venues...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center select-none">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-rose-600 mx-auto" />
+            <p className="text-sm font-semibold text-slate-500">Searching venues...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <SearchPageContent />
     </Suspense>
   );
 }
+
+
+
+
+

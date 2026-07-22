@@ -8,47 +8,50 @@ import { Input } from "@/components/ui/input";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail, KeyRound, CheckCircle2, Lock } from "lucide-react";
+import * as authService from "@/services/auth.service";
 
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [sentOtp, setSentOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSendOtp = (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
-    if (!email) {
-      setError("Please enter a valid email address.");
-      return;
+    try {
+      await authService.forgotPassword({ email });
+      setStep(2);
+    } catch (err: any) {
+      console.error("Forgot password request failed:", err);
+      setError(err.response?.data?.message || "Failed to send verification code. Check email address.");
+    } finally {
+      setIsLoading(false);
     }
-
-    // Generate a random 6-digit OTP
-    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    setSentOtp(generatedOtp);
-
-    // Trigger mock alert to show the OTP to the user
-    alert(`[Mock OTP Service] A verification code "${generatedOtp}" has been sent to ${email}.`);
-    setStep(2);
   };
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
-    if (otp !== sentOtp) {
-      setError("Invalid verification code. Please check and try again.");
-      return;
+    try {
+      await authService.verifyForgotPasswordOtp({ email, otp });
+      setStep(3);
+    } catch (err: any) {
+      console.error("OTP verification failed:", err);
+      setError(err.response?.data?.message || "Invalid or expired verification code.");
+    } finally {
+      setIsLoading(false);
     }
-
-    setStep(3);
   };
 
-  const handleResetPassword = (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -62,8 +65,17 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    // Success
-    setStep(4);
+    setIsLoading(true);
+
+    try {
+      await authService.resetPassword({ email, newPassword: password, confirmPassword });
+      setStep(4);
+    } catch (err: any) {
+      console.error("Password reset failed:", err);
+      setError(err.response?.data?.message || "Failed to reset password.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -116,9 +128,10 @@ export default function ForgotPasswordPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold h-10 rounded-xl cursor-pointer shadow-xs active:translate-y-px transition-all border-none"
+                disabled={isLoading}
+                className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold h-10 rounded-xl cursor-pointer shadow-xs active:translate-y-px transition-all border-none disabled:opacity-50"
               >
-                Send Verification Code
+                {isLoading ? "Sending..." : "Send Verification Code"}
               </Button>
             </form>
           </div>
@@ -162,22 +175,31 @@ export default function ForgotPasswordPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold h-10 rounded-xl cursor-pointer shadow-xs active:translate-y-px transition-all border-none"
+                disabled={isLoading}
+                className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold h-10 rounded-xl cursor-pointer shadow-xs active:translate-y-px transition-all border-none disabled:opacity-50"
               >
-                Verify Code
+                {isLoading ? "Verifying..." : "Verify Code"}
               </Button>
 
               <div className="text-center pt-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
-                    setSentOtp(newOtp);
-                    alert(`[Mock OTP Service] A new verification code "${newOtp}" has been sent to ${email}.`);
+                  disabled={isLoading}
+                  onClick={async () => {
+                    setError("");
+                    setIsLoading(true);
+                    try {
+                      await authService.forgotPassword({ email });
+                      alert(`A new verification code has been successfully sent to ${email}.`);
+                    } catch (err: any) {
+                      setError(err.response?.data?.message || "Failed to resend code.");
+                    } finally {
+                      setIsLoading(false);
+                    }
                   }}
-                  className="text-xs font-bold text-rose-600 hover:text-rose-700 transition cursor-pointer bg-transparent border-none"
+                  className="text-xs font-bold text-rose-600 hover:text-rose-700 transition cursor-pointer bg-transparent border-none disabled:opacity-50"
                 >
-                  Resend Code
+                  {isLoading ? "Resending..." : "Resend Code"}
                 </button>
               </div>
             </form>
@@ -232,9 +254,10 @@ export default function ForgotPasswordPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold h-10 rounded-xl cursor-pointer shadow-xs active:translate-y-px transition-all border-none"
+                disabled={isLoading}
+                className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold h-10 rounded-xl cursor-pointer shadow-xs active:translate-y-px transition-all border-none disabled:opacity-50"
               >
-                Reset Password
+                {isLoading ? "Resetting Password..." : "Reset Password"}
               </Button>
             </form>
           </div>

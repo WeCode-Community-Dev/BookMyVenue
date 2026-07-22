@@ -13,16 +13,11 @@ export class SearchService {
       where: {
         status: VenueStatus.APPROVED,
       },
-      select: {
-        id: true,
-        name: true,
-        city: true,
-        price: true,
-        capacity: true,
-        images: {
-          take: 1,
-          select: {
-            imageUrl: true,
+      include: {
+        images: true,
+        owner: {
+          include: {
+            profile: true,
           },
         },
       },

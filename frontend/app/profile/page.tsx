@@ -17,7 +17,6 @@ import NotificationsTab from "@/components/profile/NotificationsTab";
 import BecomeOwnerTab from "@/components/profile/BecomeOwnerTab";
 import MyVenuesTab from "@/components/profile/MyVenuesTab";
 import ListingRequestsTab from "@/components/profile/ListingRequestsTab";
-import DeveloperLogin from "@/components/auth/DeveloperLogin";
 import { ShieldAlert, LogIn } from "lucide-react";
 
 function ProfilePageContent() {
@@ -61,7 +60,6 @@ function ProfilePageContent() {
         
         {/* Developer login switch overlay helper at bottom */}
         <div className="w-full flex justify-center py-6 bg-slate-100 select-none">
-          <DeveloperLogin />
         </div>
         
         <Footer />
@@ -89,7 +87,7 @@ function ProfilePageContent() {
           <div className="bg-white border border-slate-200/60 shadow-xs rounded-3xl p-6 sm:p-8 space-y-6 text-left select-none">
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Account Settings</h2>
             <p className="text-sm text-slate-500 font-semibold leading-relaxed">
-              Manage your password, login authorization credentials, safety limits, and payout bank accounts (mock details).
+              Manage your password, login authorization credentials, safety limits, and payout bank accounts.
             </p>
             <div className="border border-slate-100 rounded-xl p-5 space-y-4 max-w-sm">
               <div>
@@ -150,7 +148,6 @@ function ProfilePageContent() {
             <p className="text-xs font-semibold text-slate-400 mb-2">
               Verify page rendering under different role views:
             </p>
-            <DeveloperLogin />
           </div>
 
         </div>
@@ -172,3 +169,4 @@ export default function ProfilePage() {
     </Suspense>
   );
 }
+

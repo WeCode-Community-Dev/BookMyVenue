@@ -180,10 +180,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadMyVenues = async () => {
     try {
-      setMyVenues(await venueService.getMyVenues());
+      const data = await venueService.getMyVenues();
+      setMyVenues(data);
+      return data;
     } catch (error) {
       console.error("Failed to load my venues:", error);
       setMyVenues([]);
+      return [] as Venue[];
     }
   };
 
@@ -215,12 +218,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }));
       setIsLoggedIn(true);
 
-      await Promise.allSettled([
+      const [, , myVenuesResult] = await Promise.allSettled([
         loadRecommendedVenues(),
         loadBookings(),
-        backendRole === "ADMIN" ? loadMyVenues() : Promise.resolve(setMyVenues([])),
+        loadMyVenues(),
         backendRole === "ADMIN" ? loadPendingVenues() : Promise.resolve(),
       ]);
+
+      if (myVenuesResult.status === "fulfilled" && myVenuesResult.value.length > 0) {
+        setUser((prev) => ({
+          ...prev,
+          role: prev.role === "Admin" ? "Admin" : "Venue Owner",
+        }));
+      }
     } catch (error) {
       console.error("Session verification failed:", error);
       localStorage.removeItem("token");
@@ -240,12 +250,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (emailOrRole: string, password?: string) => {
-    if (emailOrRole === "User" || emailOrRole === "Venue Owner" || emailOrRole === "Admin") {
-      setIsLoggedIn(true);
-      setUser((prev) => ({ ...prev, role: emailOrRole as UserProfile["role"] }));
-      return;
-    }
-
     const data = await authService.login({ email: emailOrRole, password: password || "" });
     localStorage.setItem("token", data.token || "");
     await fetchProfile();
@@ -364,6 +368,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addVenue = async (venueData: Partial<Venue>) => {
+    const normalizedImageUrls = (venueData.images || [])
+      .filter(Boolean)
+      .filter((url, index, array) => array.indexOf(url) === index);
+
     const createdVenue = await venueService.createVenue({
       name: venueData.name || "Untitled Venue",
       description: venueData.description,
@@ -375,9 +383,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       price: venueData.startingPrice,
       categories: venueData.categories || (venueData.category ? [venueData.category] : []),
       amenities: venueData.amenities || [],
+      imageUrls: normalizedImageUrls,
+      documents: venueData.documents || [],
     });
 
+
     setMyVenues((prev) => [createdVenue, ...prev]);
+    setUser((prev) => ({
+      ...prev,
+      role: prev.role === "Admin" ? "Admin" : "Venue Owner",
+    }));
     setNotifications((prev) => [
       {
         id: `n-sys-${Date.now()}`,
@@ -463,6 +478,11 @@ export function useAuth() {
   }
   return context;
 }
+
+
+
+
+
 
 
 

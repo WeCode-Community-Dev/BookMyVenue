@@ -1,3 +1,4 @@
+
 export type BackendRole = "USER" | "VENUE_OWNER" | "ADMIN";
 
 export type BackendVenueStatus =
@@ -11,6 +12,7 @@ export type BackendVenueCategory =
   | "BIRTHDAY"
   | "CONFERENCE"
   | "SPORTS"
+  
   | "PARTY"
   | "AUDITORIUM"
   | "RESORT"

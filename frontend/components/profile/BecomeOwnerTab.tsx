@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Image from "next/image";
 import { Check, ShieldCheck, DollarSign, CalendarRange, ArrowRight, ArrowLeft, UploadCloud } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import * as venueService from "@/services/venue.service";
+import { toAbsoluteAssetUrl } from "@/lib/backend-mappers";
 
 const CATEGORIES = ["Wedding", "Conference", "Sports", "Cafe", "Resort", "Auditorium", "Birthday", "Party"];
 const CITIES = ["Kochi", "Bangalore", "Mumbai", "Delhi"];
@@ -38,6 +40,16 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
   const [governmentIdUploaded, setGovernmentIdUploaded] = useState(false);
   const [propertyTitleUploaded, setPropertyTitleUploaded] = useState(false);
   const [customCoverPreviewUrl, setCustomCoverPreviewUrl] = useState("");
+  const [governmentIdFileName, setGovernmentIdFileName] = useState("");
+  const [governmentIdDocumentUrl, setGovernmentIdDocumentUrl] = useState("");
+  const [propertyTitleFileName, setPropertyTitleFileName] = useState("");
+  const [propertyTitleDocumentUrl, setPropertyTitleDocumentUrl] = useState("");
+  const [customCoverFileName, setCustomCoverFileName] = useState("");
+  const [customCoverStorageUrl, setCustomCoverStorageUrl] = useState("");
+  const [isUploadingGovId, setIsUploadingGovId] = useState(false);
+  const [isUploadingPropTitle, setIsUploadingPropTitle] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isSubmittingApplication, setIsSubmittingApplication] = useState(false);
 
   // Venue states
   const [venueAddress, setVenueAddress] = useState("");
@@ -47,6 +59,10 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
   const [venueCoverUrl, setVenueCoverUrl] = useState(COVER_PRESETS[0]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(["Wedding"]);
 
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const govIdInputRef = useRef<HTMLInputElement>(null);
+  const propTitleInputRef = useRef<HTMLInputElement>(null);
+
   const toggleCategory = (categoryName: string) => {
     setSelectedCategories((prev) => {
       const next = prev.includes(categoryName)
@@ -54,10 +70,6 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
         : [...prev, categoryName];
       return next.length > 0 ? next : ["Wedding"];
     });
-  };
-
-  const handleFileUpload = (docType: string) => {
-    // Logic for file handling
   };
 
   const handleNextStep = () => {
@@ -77,42 +89,144 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
   const handleSelectPreset = (url: string) => {
     setVenueCoverUrl(url);
     setCustomCoverPreviewUrl("");
+    setCustomCoverFileName("");
   };
 
-  const handleSubmitApplication = () => {
-    if (agreedToTerms) {
-      // 1. Upgrade user role
-      updateUser({
+  const handleGovIdClick = () => govIdInputRef.current?.click();
+  const handlePropTitleClick = () => propTitleInputRef.current?.click();
+  const handleCustomCoverClick = () => imageInputRef.current?.click();
+
+  const handleGovIdFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingGovId(true);
+    try {
+      const formData = new FormData();
+      formData.append("documents", file);
+      const result = await venueService.uploadVenueDocuments(formData);
+      const uploadedDocumentUrl = result.documents?.[0]?.documentUrl;
+      if (!uploadedDocumentUrl) {
+        throw new Error("Document upload did not return a document URL.");
+      }
+      setGovernmentIdUploaded(true);
+      setGovernmentIdFileName(file.name);
+      setGovernmentIdDocumentUrl(uploadedDocumentUrl);
+    } catch (error: any) {
+      console.error("Failed to upload government ID:", error);
+      alert(error.response?.data?.message || "Failed to upload document. Please try again.");
+      setGovernmentIdUploaded(false);
+      setGovernmentIdFileName("");
+      setGovernmentIdDocumentUrl("");
+    } finally {
+      setIsUploadingGovId(false);
+      e.target.value = "";
+    }
+  };
+
+  const handlePropTitleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingPropTitle(true);
+    try {
+      const formData = new FormData();
+      formData.append("documents", file);
+      const result = await venueService.uploadVenueDocuments(formData);
+      const uploadedDocumentUrl = result.documents?.[0]?.documentUrl;
+      if (!uploadedDocumentUrl) {
+        throw new Error("Document upload did not return a document URL.");
+      }
+      setPropertyTitleUploaded(true);
+      setPropertyTitleFileName(file.name);
+      setPropertyTitleDocumentUrl(uploadedDocumentUrl);
+    } catch (error: any) {
+      console.error("Failed to upload property document:", error);
+      alert(error.response?.data?.message || "Failed to upload document. Please try again.");
+      setPropertyTitleUploaded(false);
+      setPropertyTitleFileName("");
+      setPropertyTitleDocumentUrl("");
+    } finally {
+      setIsUploadingPropTitle(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleCustomCoverFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Only image files are allowed.");
+      return;
+    }
+
+    setIsUploadingCover(true);
+    try {
+      const formData = new FormData();
+      formData.append("images", file);
+      const result = await venueService.uploadVenueImage(formData);
+      const uploadedImageUrl = result.images?.[0]?.imageUrl;
+      if (!uploadedImageUrl) {
+        throw new Error("Image upload did not return an image URL.");
+      }
+      setCustomCoverStorageUrl(uploadedImageUrl);
+      setCustomCoverPreviewUrl(toAbsoluteAssetUrl(uploadedImageUrl));
+      setCustomCoverFileName(file.name);
+    } catch (error: any) {
+      console.error("Failed to upload cover image:", error);
+      alert(error.response?.data?.message || "Failed to upload image. Please try again.");
+      setCustomCoverPreviewUrl("");
+      setCustomCoverFileName("");
+      setCustomCoverStorageUrl("");
+    } finally {
+      setIsUploadingCover(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleSubmitApplication = async () => {
+    if (!agreedToTerms || isSubmittingApplication) {
+      return;
+    }
+
+    setIsSubmittingApplication(true);
+    try {
+      await updateUser({
         role: "Venue Owner",
         phone: businessPhone || undefined,
         city: businessCity || undefined,
       });
 
-      // 2. Add the first venue
-      const finalCover = customCoverPreviewUrl || venueCoverUrl;
-      addVenue({
+      const finalCoverPreview = customCoverPreviewUrl || venueCoverUrl;
+      const imageUrls = [customCoverStorageUrl].filter(Boolean);
+      const documents = [
+        governmentIdDocumentUrl ? { type: "GOVERNMENT_ID" as const, documentUrl: governmentIdDocumentUrl } : null,
+        propertyTitleDocumentUrl ? { type: "PROPERTY_DOCUMENT" as const, documentUrl: propertyTitleDocumentUrl } : null,
+      ].filter((document): document is { type: "GOVERNMENT_ID" | "PROPERTY_DOCUMENT"; documentUrl: string } => Boolean(document));
+
+      await addVenue({
         name: businessName.trim(),
         category: selectedCategories[0] || "Wedding",
         categories: selectedCategories,
         city: businessCity,
         address: venueAddress.trim(),
-        capacity: parseInt(venueCapacity),
-        startingPrice: parseInt(venuePrice),
+        capacity: parseInt(venueCapacity, 10),
+        startingPrice: parseInt(venuePrice, 10),
         description: businessBio.trim(),
         amenities: selectedAmenities,
-        thumbnail: finalCover,
-        images: [
-          finalCover,
-          "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80",
-          "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=800&q=80",
-        ],
+        thumbnail: finalCoverPreview,
+        images: imageUrls.length > 0 ? imageUrls : [venueCoverUrl],
+        documents,
       });
 
-      // 3. Alert success
-      alert("Congratulations! Your application has been approved. You are now a registered Venue Owner.");
-
-      // 4. Switch tab back to my-venues
+      alert("Venue owner application submitted successfully.");
       onSuccessRedirect("my-venues");
+    } catch (error: any) {
+      console.error("Failed to submit venue owner application:", error);
+      alert(error.response?.data?.message || error?.message || "Failed to submit venue owner application.");
+    } finally {
+      setIsSubmittingApplication(false);
     }
   };
 
@@ -307,19 +421,22 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
           <div className="space-y-6 animate-in fade-in duration-200">
             <h3 className="text-lg font-black text-slate-905">Step 3: Document Verification</h3>
             <p className="text-xs text-slate-450 font-semibold leading-relaxed">
-              Upload mock files to pass identity verification. Clicking the boxes will immediately simulate a successful document upload.
+              Upload the required verification documents for your venue owner application.
             </p>
 
+            <input ref={govIdInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden" onChange={handleGovIdFileChange} />
+            <input ref={propTitleInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden" onChange={handlePropTitleFileChange} />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Box 1 */}
               <button
                 type="button"
-                onClick={() => setGovernmentIdUploaded(true)}
-                className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 cursor-pointer transition active:scale-99 w-full bg-transparent flex flex-col items-center justify-center ${
+                onClick={handleGovIdClick}
+                disabled={isUploadingGovId}
+                className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 transition active:scale-99 w-full bg-transparent flex flex-col items-center justify-center ${
                   governmentIdUploaded
                     ? "border-emerald-500 bg-emerald-50/10"
                     : "border-slate-200 hover:border-slate-350"
-                }`}
+                } ${isUploadingGovId ? "cursor-wait opacity-80" : "cursor-pointer"}`}
               >
                 <UploadCloud className={`size-8 ${governmentIdUploaded ? "text-emerald-600" : "text-slate-400"}`} />
                 <div>
@@ -329,22 +446,22 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
                 {governmentIdUploaded ? (
                   <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100/50 px-2 py-0.5 rounded-full select-none">
                     <Check className="size-3 stroke-[3]" />
-                    <span>Identity Document Uploaded</span>
+                    <span>Uploaded: {governmentIdFileName || "Government ID"}</span>
                   </span>
                 ) : (
-                  <span className="text-[10px] font-bold text-rose-600 hover:text-rose-700">Click to Upload mock file</span>
+                  <span className="text-[10px] font-bold text-rose-600 hover:text-rose-700">{isUploadingGovId ? "Uploading..." : "Click to select document file"}</span>
                 )}
               </button>
 
-              {/* Box 2 */}
               <button
                 type="button"
-                onClick={() => setPropertyTitleUploaded(true)}
-                className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 cursor-pointer transition active:scale-99 w-full bg-transparent flex flex-col items-center justify-center ${
+                onClick={handlePropTitleClick}
+                disabled={isUploadingPropTitle}
+                className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 transition active:scale-99 w-full bg-transparent flex flex-col items-center justify-center ${
                   propertyTitleUploaded
                     ? "border-emerald-500 bg-emerald-50/10"
                     : "border-slate-200 hover:border-slate-350"
-                }`}
+                } ${isUploadingPropTitle ? "cursor-wait opacity-80" : "cursor-pointer"}`}
               >
                 <UploadCloud className={`size-8 ${propertyTitleUploaded ? "text-emerald-600" : "text-slate-400"}`} />
                 <div>
@@ -354,10 +471,10 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
                 {propertyTitleUploaded ? (
                   <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100/50 px-2 py-0.5 rounded-full select-none">
                     <Check className="size-3 stroke-[3]" />
-                    <span>Property Document Uploaded</span>
+                    <span>Uploaded: {propertyTitleFileName || "Property Document"}</span>
                   </span>
                 ) : (
-                  <span className="text-[10px] font-bold text-rose-600 hover:text-rose-700">Click to Upload mock file</span>
+                  <span className="text-[10px] font-bold text-rose-600 hover:text-rose-700">{isUploadingPropTitle ? "Uploading..." : "Click to select document file"}</span>
                 )}
               </button>
             </div>
@@ -421,7 +538,7 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
 
               <div className="space-y-1.5">
                 <label htmlFor="venuePrice" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                  Starting Price (₹ / event)
+                  Starting Price (Ã¢â€šÂ¹ / event)
                 </label>
                 <Input
                   id="venuePrice"
@@ -524,18 +641,20 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
 
                 <div className="space-y-2">
                   <span className="text-[10px] font-bold text-slate-400 block uppercase">Or upload a custom cover photo</span>
+                  <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleCustomCoverFileChange} />
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                     <button
                       type="button"
-                      onClick={() => setCustomCoverPreviewUrl("https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80")}
-                      className="flex items-center gap-2 px-4 py-2 border rounded-xl cursor-pointer text-xs font-bold hover:bg-slate-50 transition bg-white"
+                      onClick={handleCustomCoverClick}
+                      disabled={isUploadingCover}
+                      className="flex items-center gap-2 px-4 py-2 border rounded-xl cursor-pointer text-xs font-bold hover:bg-slate-50 transition bg-white disabled:opacity-60 disabled:cursor-wait"
                     >
                       <UploadCloud className="size-4" />
-                      <span>{customCoverPreviewUrl ? "Change Custom Photo" : "Upload Custom Photo"}</span>
+                      <span>{isUploadingCover ? "Uploading..." : customCoverPreviewUrl ? "Change Custom Photo" : "Upload Custom Photo"}</span>
                     </button>
                     {customCoverPreviewUrl && (
                       <span className="text-xs text-slate-500 font-semibold truncate max-w-xs">
-                        custom-cover.jpg (Uploaded)
+                        {customCoverFileName || "custom-cover"} (Uploaded)
                       </span>
                     )}
                   </div>
@@ -608,10 +727,10 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
               </Button>
               <Button
                 onClick={handleSubmitApplication}
-                disabled={!agreedToTerms}
+                disabled={!agreedToTerms || isSubmittingApplication}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold h-11 px-6 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs active:translate-y-px border-none"
               >
-                <span>Complete Registration</span>
+                <span>{isSubmittingApplication ? "Submitting..." : "Complete Registration"}</span>
                 <Check className="size-4 stroke-[3]" />
               </Button>
             </div>
@@ -622,4 +741,10 @@ export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProp
     </div>
   );
 }
+
+
+
+
+
+
 

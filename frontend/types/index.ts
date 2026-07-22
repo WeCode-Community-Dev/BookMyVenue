@@ -10,11 +10,14 @@ export interface Venue {
   category: string;
   categories?: string[];
 
-  // Detailed fields
   description?: string;
   address?: string;
   images?: string[];
   amenities?: string[];
+  documents?: {
+    type: "GOVERNMENT_ID" | "PROPERTY_DOCUMENT";
+    documentUrl: string;
+  }[];
   rules?: string[];
   similarVenueIds?: string[];
   owner?: {
@@ -37,10 +40,12 @@ export interface Venue {
     text: string;
   }[];
 
-  // Search fields
   area?: string;
   verified?: boolean;
   favorite?: boolean;
   latitude?: number;
   longitude?: number;
+  status?: "PENDING_DOCUMENTS" | "PENDING" | "APPROVED" | "REJECTED";
+  rejectionReason?: string;
+  bookingApprovalRequired?: boolean;
 }

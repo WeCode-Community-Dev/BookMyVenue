@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -5,61 +6,90 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
-import { VenueAmenity, VenueCategory } from '@prisma/client';
-import { ApiProperty } from '@nestjs/swagger';
+import {
+  VenueAmenity,
+  VenueCategory,
+  VenueDocumentType,
+} from '@prisma/client';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+class CreateVenueDocumentDto {
+  @IsEnum(VenueDocumentType)
+  @ApiProperty({ example: 'GOVERNMENT_ID', enum: VenueDocumentType })
+  type!: VenueDocumentType;
+
+  @IsString()
+  @MaxLength(500)
+  @ApiProperty({ example: '/uploads/venues/venue-doc-123.pdf' })
+  documentUrl!: string;
+}
 
 export class CreateVenueDto {
   @IsString()
   @MaxLength(100)
-  @ApiProperty({example: 'Grand Ballroom'})
+  @ApiProperty({ example: 'Grand Ballroom' })
   name!: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(1000)
-  @ApiProperty({example: 'A beautiful ballroom for events'})
+  @ApiPropertyOptional({ example: 'A beautiful ballroom for events' })
   description?: string;
 
   @IsString()
   @MaxLength(100)
-  @ApiProperty({example: 'Kochi'})
+  @ApiProperty({ example: 'Kochi' })
   city!: string;
 
   @IsString()
   @MaxLength(255)
-  @ApiProperty({example: '123 Main Street'})
+  @ApiProperty({ example: '123 Main Street' })
   address!: string;
 
   @IsOptional()
   @IsNumber()
-  @ApiProperty({example: 10.0})
+  @ApiPropertyOptional({ example: 10.0 })
   latitude?: number;
 
   @IsOptional()
   @IsNumber()
-  @ApiProperty({example: 76.0})
+  @ApiPropertyOptional({ example: 76.0 })
   longitude?: number;
 
   @IsOptional()
   @IsNumber()
-  @ApiProperty({example: 200})
+  @ApiPropertyOptional({ example: 200 })
   capacity?: number;
 
   @IsOptional()
   @IsNumber()
-  @ApiProperty({example: 5000})
+  @ApiPropertyOptional({ example: 5000 })
   price?: number;
 
   @IsOptional()
   @IsArray()
   @IsEnum(VenueCategory, { each: true })
-  @ApiProperty({example: ['WEDDING', 'CONFERENCE']})
+  @ApiPropertyOptional({ example: ['WEDDING', 'CONFERENCE'] })
   categories?: VenueCategory[];
 
   @IsOptional()
   @IsArray()
   @IsEnum(VenueAmenity, { each: true })
-  @ApiProperty({example: ['WI-FI', 'PARKING']})
+  @ApiPropertyOptional({ example: ['WIFI', 'PARKING'] })
   amenities?: VenueAmenity[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @ApiPropertyOptional({ example: ['/uploads/venue/cover.jpg'] })
+  imageUrls?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateVenueDocumentDto)
+  @ApiPropertyOptional({ type: [CreateVenueDocumentDto] })
+  documents?: CreateVenueDocumentDto[];
 }

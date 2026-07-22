@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User, Calendar, Heart, Bell, Settings, BadgeCheck, Briefcase, PlusCircle } from "lucide-react";
+import { User, Calendar, Heart, Bell, Settings, BadgeCheck, Briefcase, PlusCircle, Loader2, Camera } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/context/AuthContext";
+import * as profileService from "@/services/profile.service";
 
 interface ProfileSidebarProps {
   avatar: string;
@@ -16,6 +18,38 @@ export default function ProfileSidebar({ avatar, name, role, memberSince }: Prof
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab") || "profile";
+  const { updateUser } = useAuth();
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Only image files are allowed.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const result = await profileService.uploadProfilePicture(formData);
+      await updateUser({ avatar: result.imageUrl });
+    } catch (error: any) {
+      console.error("Failed to upload profile picture:", error);
+      alert(error.response?.data?.message || "Failed to upload profile picture. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleTabClick = (tabKey: string) => {
     router.push(`/profile?tab=${tabKey}`);
@@ -50,14 +84,46 @@ export default function ProfileSidebar({ avatar, name, role, memberSince }: Prof
       {/* Avatar & Basic Info */}
       <div className="flex flex-col items-center">
         
-        {/* Avatar picture container - clicking it triggers coming soon alert */}
+        {/* Hidden File Input */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          accept="image/*"
+          className="hidden"
+        />
+
+        {/* Avatar picture container */}
         <button
           type="button"
-          onClick={() => alert("Feature coming soon")}
-          className="relative size-24 rounded-full bg-slate-100 flex items-center justify-center mb-3.5 shadow-xs border border-slate-200/60 cursor-pointer transition hover:bg-slate-200/50 active:scale-95 border-none p-0 outline-none"
-          aria-label="Profile picture options"
+          onClick={handleAvatarClick}
+          disabled={isUploading}
+          className="relative size-24 rounded-full bg-slate-100 flex items-center justify-center mb-3.5 shadow-xs border border-slate-200/60 cursor-pointer transition hover:bg-slate-200/50 active:scale-95 border-none p-0 outline-none overflow-hidden group animate-in duration-205"
+          aria-label="Change profile picture"
         >
-          <User className="size-12 text-slate-400 stroke-[1.5]" />
+          {avatar ? (
+            <img
+              src={avatar}
+              alt={name}
+              className="size-full object-cover"
+            />
+          ) : (
+            <User className="size-12 text-slate-400 stroke-[1.5]" />
+          )}
+
+          {/* Uploading indicator */}
+          {isUploading && (
+            <div className="absolute inset-0 bg-slate-900/65 flex items-center justify-center">
+              <Loader2 className="size-6 text-white animate-spin" />
+            </div>
+          )}
+
+          {/* Hover Overlay */}
+          {!isUploading && (
+            <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Camera className="size-6 text-white" />
+            </div>
+          )}
         </button>
 
         <h2 className="text-lg font-black text-slate-900 flex items-center justify-center gap-1 leading-none">

@@ -40,8 +40,16 @@ export default function ProfileDropdown() {
         className="flex items-center gap-2 p-1.5 pr-3 rounded-full border border-slate-200 bg-white hover:border-slate-300 transition duration-150 shadow-xs cursor-pointer select-none active:scale-[0.98]"
         aria-label="Toggle profile menu"
       >
-        <div className="size-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 shadow-xs border border-slate-200/50">
-          <User className="size-4 text-slate-400 stroke-[2]" />
+        <div className="size-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 shadow-xs border border-slate-200/50 overflow-hidden">
+          {user.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user.name}
+              className="size-full object-cover"
+            />
+          ) : (
+            <User className="size-4 text-slate-400 stroke-[2]" />
+          )}
         </div>
         <span className="text-xs sm:text-sm font-extrabold text-slate-800 hidden xs:inline max-w-[90px] sm:max-w-[120px] truncate leading-none">
           {user.name}

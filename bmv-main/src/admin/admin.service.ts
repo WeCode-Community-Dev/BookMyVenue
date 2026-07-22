@@ -1,41 +1,71 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma, Role, VenueStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { VenueStatus } from '@prisma/client/edge';
 import { MailService } from 'src/mail/mail.service';
 import { RejectVenueDto } from './dto/reject-venue.dto';
 
+const adminVenueInclude = {
+  images: true,
+  documents: true,
+  owner: {
+    include: {
+      profile: true,
+    },
+  },
+} satisfies Prisma.VenueInclude;
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService, private readonly mailService: MailService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
+  ) {}
 
   async getPendingVenues() {
-    // Fetch all venues with status PENDING
     return this.prisma.venue.findMany({
-      where: { status: 'PENDING' },
+      where: {
+        status: {
+          in: [VenueStatus.PENDING, VenueStatus.PENDING_DOCUMENTS],
+        },
+      },
+      include: adminVenueInclude,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
-  }  
-  
- async approveVenue(venueId: string) {
+  }
+
+  async approveVenue(venueId: string) {
     const venue = await this.prisma.venue.findUnique({
       where: {
         id: venueId,
       },
-      include: {
-        owner: true,
-      },
+      include: adminVenueInclude,
     });
 
     if (!venue) {
-      throw new NotFoundException(
-        'Venue not found.',
-      );
+      throw new NotFoundException('Venue not found.');
     }
 
     if (venue.status === VenueStatus.APPROVED) {
+      throw new BadRequestException('Venue is already approved.');
+    }
+
+    if (venue.status === VenueStatus.PENDING_DOCUMENTS) {
       throw new BadRequestException(
-        'Venue is already approved.',
+        'Venue documents are incomplete. Upload the required documents before approval.',
       );
+    }
+
+    if (venue.owner.role === Role.USER) {
+      await this.prisma.user.update({
+        where: { id: venue.ownerId },
+        data: { role: Role.VENUE_OWNER },
+      });
     }
 
     const approvedVenue = await this.prisma.venue.update({
@@ -46,6 +76,7 @@ export class AdminService {
         status: VenueStatus.APPROVED,
         rejectionReason: null,
       },
+      include: adminVenueInclude,
     });
 
     await this.mailService.sendVenueApprovedEmail(
@@ -58,52 +89,44 @@ export class AdminService {
       venue: approvedVenue,
     };
   }
-  async rejectVenue(
-  venueId: string,
-  rejectVenueDto: RejectVenueDto,
-) {
-  const venue = await this.prisma.venue.findUnique({
-    where: {
-      id: venueId,
-    },
-    include: {
-      owner: true,
-    },
-  });
 
-  if (!venue) {
-    throw new NotFoundException(
-      'Venue not found.',
-    );
-  }
+  async rejectVenue(venueId: string, rejectVenueDto: RejectVenueDto) {
+    const venue = await this.prisma.venue.findUnique({
+      where: {
+        id: venueId,
+      },
+      include: adminVenueInclude,
+    });
 
-  if (venue.status === VenueStatus.REJECTED) {
-    throw new BadRequestException(
-      'Venue is already rejected.',
-    );
-  }
+    if (!venue) {
+      throw new NotFoundException('Venue not found.');
+    }
 
-  const rejectedVenue =
-    await this.prisma.venue.update({
+    if (venue.status === VenueStatus.REJECTED) {
+      throw new BadRequestException('Venue is already rejected.');
+    }
+
+    const rejectedVenue = await this.prisma.venue.update({
       where: {
         id: venueId,
       },
       data: {
         status: VenueStatus.REJECTED,
-        rejectionReason:
-          rejectVenueDto.reason,
+        rejectionReason: rejectVenueDto.reason,
       },
+      include: adminVenueInclude,
     });
 
-  await this.mailService.sendVenueRejectedEmail(
-    venue.owner.email,
-    venue.name,
-    rejectVenueDto.reason,
-  );
+    await this.mailService.sendVenueRejectedEmail(
+      venue.owner.email,
+      venue.name,
+      rejectVenueDto.reason,
+    );
 
-  return {
-    message: 'Venue rejected successfully.',
-    venue: rejectedVenue,
-  };
+    return {
+      message: 'Venue rejected successfully.',
+      venue: rejectedVenue,
+    };
+  }
 }
-}
+

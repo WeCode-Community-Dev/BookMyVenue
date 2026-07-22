@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import AuthLayout from "@/components/auth/AuthLayout";
 import AuthCard from "@/components/auth/AuthCard";
 import { Input } from "@/components/ui/input";
@@ -10,16 +11,46 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import GoogleButton from "@/components/auth/GoogleButton";
 import Divider from "@/components/auth/Divider";
-import DeveloperLogin from "@/components/auth/DeveloperLogin";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const router = useRouter();
+  const { login, loginWithGoogle } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Mock sign-in triggered!");
+    setError("");
+    setIsLoading(true);
+
+    try {
+      await login(email, password);
+      router.push("/");
+    } catch (err: any) {
+      console.error("Login failed:", err);
+      setError(err.response?.data?.message || "Invalid email or password.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleLogin = () => {
-    alert("Mock Google sign-in triggered!");
+  const handleGoogleLogin = async () => {
+    setError("");
+    setIsGoogleLoading(true);
+
+    try {
+      await loginWithGoogle();
+      router.push("/");
+    } catch (err: any) {
+      console.error("Google login failed:", err);
+      setError(err?.message || "Google sign-in failed.");
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
@@ -35,21 +66,29 @@ export default function LoginPage() {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-650 text-xs font-bold text-left">
+              {error}
+            </div>
+          )}
+
           <div className="space-y-1">
-            <label htmlFor="email" className="text-xs font-bold text-slate-500 uppercase tracking-wider block select-none">
+            <label htmlFor="email" className="text-xs font-bold text-slate-550 uppercase tracking-wider block select-none text-left font-sans">
               Email Address
             </label>
             <Input
               id="email"
               type="email"
               placeholder="name@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
 
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-xs font-bold text-slate-500 uppercase tracking-wider block select-none">
+              <label htmlFor="password" className="text-xs font-bold text-slate-550 uppercase tracking-wider block select-none text-left font-sans">
                 Password
               </label>
               <Link href="/forgot-password" className="text-xs font-semibold text-rose-600 hover:text-rose-700 transition select-none">
@@ -59,6 +98,8 @@ export default function LoginPage() {
             <PasswordInput
               id="password"
               placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
@@ -71,16 +112,17 @@ export default function LoginPage() {
           {/* Sign In Button */}
           <Button
             type="submit"
-            className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold h-10 rounded-xl cursor-pointer shadow-xs active:translate-y-px transition-all border-none"
+            disabled={isLoading}
+            className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold h-10 rounded-xl cursor-pointer shadow-xs active:translate-y-px transition-all border-none disabled:opacity-50"
           >
-            Sign In
+            {isLoading ? "Signing In..." : "Sign In"}
           </Button>
 
           {/* Divider */}
           <Divider>OR</Divider>
 
           {/* Google SSO */}
-          <GoogleButton onClick={handleGoogleLogin} />
+          <GoogleButton onClick={handleGoogleLogin} disabled={isGoogleLoading} label={isGoogleLoading ? "Connecting to Google..." : "Continue with Google"} />
         </form>
 
         {/* Bottom Switch Link */}
@@ -93,7 +135,9 @@ export default function LoginPage() {
       </AuthCard>
 
       {/* Developer helper drawer */}
-      <DeveloperLogin />
     </AuthLayout>
   );
 }
+
+
+

@@ -1,8 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { Venue } from "@/types";
-import { MOCK_VENUES } from "@/lib/mock-data";
+import * as authService from "@/services/auth.service";
+import * as profileService from "@/services/profile.service";
+import * as searchService from "@/services/search.service";
+import * as venueService from "@/services/venue.service";
+import * as adminService from "@/services/admin.service";
+import * as bookingService from "@/services/booking.service";
+import { mapBackendBooking, mapBackendProfile } from "@/lib/backend-mappers";
+import { BackendRole } from "@/types/backend";
 
 export interface Booking {
   id: string;
@@ -54,308 +61,376 @@ interface AuthContextType {
   venues: Venue[];
   bookings: Booking[];
   notifications: Notification[];
-  wishlist: string[]; // venue ids
-  login: (role: "User" | "Venue Owner" | "Admin") => void;
+  wishlist: string[];
+  login: (emailOrRole: string, password?: string) => Promise<void>;
+  signup: (email: string, password: string, confirmPassword: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => void;
-  updateUser: (updatedUser: Partial<UserProfile>) => void;
-  addVenue: (venueData: Partial<Venue>) => void;
+  updateUser: (updatedUser: Partial<UserProfile>) => Promise<void>;
+  addVenue: (venueData: Partial<Venue>) => Promise<void>;
   cancelBooking: (bookingId: string) => void;
   toggleWishlist: (venueId: string) => void;
   dismissNotification: (id: string) => void;
   markAllNotificationsAsRead: () => void;
-  approveVenue: (venueId: string) => void;
-  rejectVenue: (venueId: string, reason: string) => void;
+  approveVenue: (venueId: string) => Promise<void>;
+  rejectVenue: (venueId: string, reason: string) => Promise<void>;
 }
 
 const defaultUser: UserProfile = {
-  name: "Amith Biju",
+  name: "",
   avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80",
-  email: "amith.biju@example.com",
-  phone: "+91 98765 43210",
-  dob: "1998-05-12",
-  gender: "Male",
-  address: "4B Skyline Apartments, Marine Drive",
-  city: "Kochi",
-  state: "Kerala",
-  country: "India",
-  bio: "Event planner and space enthusiast. Booking beautiful spaces across Kerala.",
-  memberSince: "September 2022",
+  email: "",
+  phone: "",
+  dob: "",
+  gender: "",
+  address: "",
+  city: "",
+  state: "",
+  country: "",
+  bio: "",
+  memberSince: "BookMyVenue",
   role: "User",
   stats: {
-    upcoming: 1,
-    completed: 1,
-    cancelled: 1,
-    favorites: 3,
+    upcoming: 0,
+    completed: 0,
+    cancelled: 0,
+    favorites: 0,
   },
 };
-
-const initialBookings: Booking[] = [
-  {
-    id: "B-88392",
-    venueId: "v2",
-    venueName: "Aura Sky Lounge & Pool",
-    venueImage: "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80",
-    city: "Kochi",
-    date: "2026-07-12",
-    timeSlot: "6:00 PM - 11:00 PM",
-    price: 75000,
-    guests: 150,
-    status: "Confirmed",
-  },
-  {
-    id: "B-23912",
-    venueId: "v7",
-    venueName: "The Glass House Cafe",
-    venueImage: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80",
-    city: "Kochi",
-    date: "2026-06-15",
-    timeSlot: "4:00 PM - 8:00 PM",
-    price: 12000,
-    guests: 40,
-    status: "Completed",
-  },
-  {
-    id: "B-49281",
-    venueId: "v3",
-    venueName: "Silicon Hub Seminar Hall",
-    venueImage: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
-    city: "Bangalore",
-    date: "2026-05-10",
-    timeSlot: "9:00 AM - 5:00 PM",
-    price: 35000,
-    guests: 100,
-    status: "Cancelled",
-  },
-];
 
 const initialNotifications: Notification[] = [
   {
     id: "n1",
-    title: "Booking Confirmed",
-    description: "Your booking for Aura Sky Lounge & Pool on July 12, 2026 has been successfully confirmed.",
-    timestamp: "2 hours ago",
+    title: "Live API Mode",
+    description: "Search, profile, venue listing, admin approval, and booking history now use the backend where routes exist.",
+    timestamp: "Just now",
     read: false,
-    type: "booking",
-  },
-  {
-    id: "n2",
-    title: "Profile Setup Complete",
-    description: "Welcome to BookMyVenue! Your identity is fully verified.",
-    timestamp: "3 days ago",
-    read: true,
     type: "system",
-  },
-  {
-    id: "n3",
-    title: "Kochi Weekend Special",
-    description: "Get up to 20% discount on sports lawns in Kochi this weekend. Use code SPORTS20.",
-    timestamp: "1 week ago",
-    read: true,
-    type: "promo",
   },
 ];
 
-const initialWishlist: string[] = ["v1", "v8", "v20"];
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [user, setUser] = useState<UserProfile>(defaultUser);
-  const [venues, setVenues] = useState<Venue[]>(MOCK_VENUES);
-  const [bookings, setBookings] = useState<Booking[]>(initialBookings);
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
-  const [wishlist, setWishlist] = useState<string[]>(initialWishlist);
-
-  const login = (role: "User" | "Venue Owner" | "Admin") => {
-    setIsLoggedIn(true);
-    setUser((prev) => ({
-      ...prev,
-      role,
-    }));
-  };
-
-  const logout = () => {
-    setIsLoggedIn(false);
-  };
-
-  const updateUser = (updatedFields: Partial<UserProfile>) => {
-    setUser((prev) => ({
-      ...prev,
-      ...updatedFields,
-    }));
-  };
-
-  const addVenue = (venueData: Partial<Venue>) => {
-    const newId = `v-custom-${Date.now()}`;
-    const newVenue: Venue = {
-      id: newId,
-      name: venueData.name || "Custom Venue",
-      city: venueData.city || "Kochi",
-      rating: 5.0,
-      reviewCount: 0,
-      startingPrice: venueData.startingPrice || 10000,
-      thumbnail: venueData.thumbnail || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80",
-      capacity: venueData.capacity || 100,
-      category: venueData.category || "Wedding",
-      categories: venueData.categories || [venueData.category || "Wedding"],
-      description: venueData.description || "Beautiful custom venue.",
-      address: venueData.address || "123 Venue Street",
-      amenities: venueData.amenities || [],
-      images: venueData.images || [venueData.thumbnail || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80"],
-      verified: false,
-      favorite: false,
-      owner: {
-        name: user.name,
-        avatar: user.avatar,
-        verified: true,
-        hostingSince: "2026",
-        responseTime: "within an hour",
-        responseRate: "100%",
-        languages: ["English"],
-        bio: user.bio || "Venue Host on BookMyVenue",
-      },
-      rules: ["Respect the space", "Clear trash after use"],
-      reviews: [],
-    };
-
-    setVenues((prev) => [newVenue, ...prev]);
-
-    // Push system notification
-    const newNotification: Notification = {
-      id: `n-sys-${Date.now()}`,
-      title: "Venue Published",
-      description: `Your venue "${newVenue.name}" has been published successfully and is now active!`,
-      timestamp: "Just now",
-      read: false,
-      type: "system",
-    };
-    setNotifications((prev) => [newNotification, ...prev]);
-  };
-
-  const cancelBooking = (bookingId: string) => {
-    setBookings((prev) =>
-      prev.map((b) => (b.id === bookingId ? { ...b, status: "Cancelled" } : b))
+function decodeJwtPayload(token: string) {
+  try {
+    const base64Url = token.split(".")[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
     );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
 
-    const cancelledBooking = bookings.find((b) => b.id === bookingId);
-    if (cancelledBooking) {
-      // Add notification
-      const newNotification: Notification = {
-        id: `n-sys-${Date.now()}`,
-        title: "Booking Cancelled",
-        description: `You have successfully cancelled your booking for ${cancelledBooking.venueName}.`,
-        timestamp: "Just now",
-        read: false,
-        type: "booking",
-      };
-      setNotifications((prev) => [newNotification, ...prev]);
+function mergeVenues(...lists: Venue[][]) {
+  const byId = new Map<string, Venue>();
+  for (const venue of lists.flat()) {
+    byId.set(venue.id, { ...byId.get(venue.id), ...venue });
+  }
+  return Array.from(byId.values());
+}
+
+function buildGoogleAuthUrl() {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  return `${apiBaseUrl.replace(/\/$/, "")}/auth/google`;
+}
+
+function extractGoogleAuthResponse(popup: Window) {
+  const raw = popup.document.body?.innerText?.trim();
+  if (!raw) return null;
+
+  return JSON.parse(raw) as { token?: string; message?: string };
+}
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<UserProfile>(defaultUser);
+  const [recommendedVenues, setRecommendedVenues] = useState<Venue[]>([]);
+  const [myVenues, setMyVenues] = useState<Venue[]>([]);
+  const [pendingVenues, setPendingVenues] = useState<Venue[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+
+  const venues = useMemo(() => mergeVenues(myVenues, pendingVenues, recommendedVenues), [myVenues, pendingVenues, recommendedVenues]);
+
+  const loadRecommendedVenues = async () => {
+    try {
+      setRecommendedVenues(await searchService.getRecommendedVenues());
+    } catch (error) {
+      console.error("Failed to load recommended venues:", error);
     }
   };
 
-  const toggleWishlist = (venueId: string) => {
-    setWishlist((prev) => {
-      if (prev.includes(venueId)) {
-        return prev.filter((id) => id !== venueId);
-      } else {
-        return [...prev, venueId];
+  const loadBookings = async () => {
+    try {
+      const data = await bookingService.getMyBookings();
+      setBookings(data.map(mapBackendBooking));
+    } catch (error) {
+      console.error("Failed to load bookings:", error);
+      setBookings([]);
+    }
+  };
+
+  const loadMyVenues = async () => {
+    try {
+      setMyVenues(await venueService.getMyVenues());
+    } catch (error) {
+      console.error("Failed to load my venues:", error);
+      setMyVenues([]);
+    }
+  };
+
+  const loadPendingVenues = async () => {
+    try {
+      setPendingVenues(await adminService.getPendingVenues());
+    } catch (error) {
+      console.error("Failed to load pending venues:", error);
+      setPendingVenues([]);
+    }
+  };
+
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setIsLoggedIn(false);
+        return;
       }
+
+      const profileData = await profileService.getMe();
+      const decoded = decodeJwtPayload(token);
+      const backendRole = (decoded?.role || "USER") as BackendRole;
+
+      setUser((prev) => ({
+        ...prev,
+        ...mapBackendProfile(profileData, backendRole),
+        stats: prev.stats,
+      }));
+      setIsLoggedIn(true);
+
+      await Promise.allSettled([
+        loadRecommendedVenues(),
+        loadBookings(),
+        backendRole === "VENUE_OWNER" || backendRole === "ADMIN" ? loadMyVenues() : Promise.resolve(setMyVenues([])),
+        backendRole === "ADMIN" ? loadPendingVenues() : Promise.resolve(),
+      ]);
+    } catch (error) {
+      console.error("Session verification failed:", error);
+      localStorage.removeItem("token");
+      setIsLoggedIn(false);
+      setUser(defaultUser);
+      setBookings([]);
+      setMyVenues([]);
+      setPendingVenues([]);
+    }
+  };
+
+  useEffect(() => {
+    loadRecommendedVenues();
+    if (localStorage.getItem("token")) {
+      fetchProfile();
+    }
+  }, []);
+
+  const login = async (emailOrRole: string, password?: string) => {
+    if (emailOrRole === "User" || emailOrRole === "Venue Owner" || emailOrRole === "Admin") {
+      setIsLoggedIn(true);
+      setUser((prev) => ({ ...prev, role: emailOrRole as UserProfile["role"] }));
+      return;
+    }
+
+    const data = await authService.login({ email: emailOrRole, password: password || "" });
+    localStorage.setItem("token", data.token || "");
+    await fetchProfile();
+  };
+
+  const signup = async (email: string, password: string, confirmPassword: string) => {
+    await authService.signUp({ email, password, confirmPassword });
+  };
+
+  const loginWithGoogle = async () => {
+    if (typeof window === "undefined") {
+      throw new Error("Google sign-in is only available in the browser.");
+    }
+
+    const popup = window.open(
+      buildGoogleAuthUrl(),
+      "bookmyvenue-google-auth",
+      "width=520,height=720,menubar=no,toolbar=no,location=yes,resizable=yes,scrollbars=yes,status=no",
+    );
+
+    if (!popup) {
+      throw new Error("Popup blocked. Please allow popups and try again.");
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      const timeout = window.setTimeout(() => {
+        cleanup();
+        try {
+          popup.close();
+        } catch {}
+        reject(new Error("Google sign-in timed out. Please try again."));
+      }, 120000);
+
+      const poller = window.setInterval(async () => {
+        if (popup.closed) {
+          cleanup();
+          reject(new Error("Google sign-in was closed before completion."));
+          return;
+        }
+
+        try {
+          const callbackUrl = popup.location.href;
+          if (!callbackUrl) return;
+
+          const currentUrl = new URL(callbackUrl);
+          if (!currentUrl.pathname.endsWith("/auth/google/callback")) {
+            return;
+          }
+
+          const authResponse = extractGoogleAuthResponse(popup);
+          if (!authResponse) {
+            return;
+          }
+
+          if (!authResponse.token) {
+            throw new Error(authResponse.message || "Google sign-in failed.");
+          }
+
+          localStorage.setItem("token", authResponse.token);
+          cleanup();
+          popup.close();
+          await fetchProfile();
+          resolve();
+        } catch (error) {
+          if (error instanceof DOMException) {
+            return;
+          }
+
+          cleanup();
+          try {
+            popup.close();
+          } catch {}
+          reject(error instanceof Error ? error : new Error("Google sign-in failed."));
+        }
+      }, 500);
+
+      const cleanup = () => {
+        window.clearTimeout(timeout);
+        window.clearInterval(poller);
+      };
     });
   };
 
-  const dismissNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const logout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    setUser(defaultUser);
+    setBookings([]);
+    setMyVenues([]);
+    setPendingVenues([]);
   };
 
-  const markAllNotificationsAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const updateUser = async (updatedFields: Partial<UserProfile>) => {
+    const payload: Record<string, string> = {};
+    if (updatedFields.name !== undefined) payload.name = updatedFields.name;
+    if (updatedFields.phone !== undefined) payload.phoneNumber = updatedFields.phone;
+    if (updatedFields.avatar !== undefined) payload.profilePicture = updatedFields.avatar;
+    if (updatedFields.address !== undefined) payload.address = updatedFields.address;
+    if (updatedFields.city !== undefined) payload.city = updatedFields.city;
+    if (updatedFields.state !== undefined) payload.state = updatedFields.state;
+    if (updatedFields.country !== undefined) payload.country = updatedFields.country;
+    if (updatedFields.dob !== undefined) payload.dateOfBirth = updatedFields.dob;
+    if (updatedFields.gender !== undefined) payload.gender = updatedFields.gender;
+    if (updatedFields.bio !== undefined) payload.biography = updatedFields.bio;
+
+    const profileData = await profileService.updateProfile(payload);
+    const token = localStorage.getItem("token");
+    const decoded = token ? decodeJwtPayload(token) : null;
+    const backendRole = (decoded?.role || "USER") as BackendRole;
+
+    setUser((prev) => ({
+      ...prev,
+      ...mapBackendProfile(profileData, backendRole),
+      stats: prev.stats,
+    }));
   };
 
-  const approveVenue = (venueId: string) => {
-    setVenues((prev) =>
-      prev.map((v) => (v.id === venueId ? { ...v, verified: true } : v))
-    );
+  const addVenue = async (venueData: Partial<Venue>) => {
+    const normalizedImageUrls = (venueData.images || [])
+      .filter(Boolean)
+      .filter((url, index, array) => array.indexOf(url) === index);
 
-    const venue = venues.find((v) => v.id === venueId);
-    if (venue) {
-      const newNotification: Notification = {
+    const createdVenue = await venueService.createVenue({
+      name: venueData.name || "Untitled Venue",
+      description: venueData.description,
+      city: venueData.city || "Kochi",
+      address: venueData.address || "",
+      latitude: venueData.latitude,
+      longitude: venueData.longitude,
+      capacity: venueData.capacity,
+      price: venueData.startingPrice,
+      categories: venueData.categories || (venueData.category ? [venueData.category] : []),
+      amenities: venueData.amenities || [],
+      imageUrls: normalizedImageUrls,
+      documents: venueData.documents || [],
+    });
+
+
+    setMyVenues((prev) => [createdVenue, ...prev]);
+    setNotifications((prev) => [
+      {
         id: `n-sys-${Date.now()}`,
-        title: "Venue Approved",
-        description: `Venue "${venue.name}" has been approved by the Admin and is now verified.`,
+        title: "Venue Submitted",
+        description: `Your venue "${createdVenue.name}" was sent to the backend and is now waiting for approval.`, 
         timestamp: "Just now",
         read: false,
         type: "system",
-      };
-      setNotifications((prev) => [newNotification, ...prev]);
-    }
-  };
-
-  const [rejectedRequests, setRejectedRequests] = useState<{ venueId: string; reason: string; timestamp: string }[]>([]);
-
-  const rejectVenue = (venueId: string, reason: string) => {
-    // Locate the venue object to retrieve host name/email info
-    const targetVenue = venues.find((v) => v.id === venueId);
-    const hostEmail = targetVenue?.owner?.email || "host@owner.com";
-    const hostName = targetVenue?.owner?.name || "Host";
-    const venueName = targetVenue?.name || "Venue Listing";
-
-    // Simulate transmission payload send verification
-    alert(`[Mock Backend Mail API Triggered]
------------------------------------------
-To: ${hostEmail} (${hostName})
-Subject: Venue Listing Rejected: "${venueName}"
-
-Dear ${hostName},
-
-We regret to inform you that your listing request for "${venueName}" has been rejected.
-
-Rejection Reason:
-"${reason}"
-
-Please correct the requested documents or listing details and resubmit for verification review.
-
-Status: Rejection Email Sent successfully!`);
-
-    // Log the rejected listing request details in frontend memory state
-    setRejectedRequests((prev) => [
-      ...prev,
-      { venueId, reason, timestamp: new Date().toLocaleString() },
-    ]);
-
-    // Real POST request to transmit the rejection details to the backend API
-    fetch("/api/venues/reject", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        venueId,
-        reason,
-        hostEmail,
-        hostName,
-        venueName,
-        timestamp: new Date().toISOString(),
-      }),
-    })
-      .then((response) => {
-        console.log("Rejection reason submitted successfully to backend API:", response.status);
-      })
-      .catch((error) => {
-        // Swallowing endpoint error locally during development environment runs
-        console.warn("Rejection reason API payload dispatch (local simulation fallback):", error.message);
-      });
-
-    // Remove the venue listing draft from the global state array
-    setVenues((prev) => prev.filter((v) => v.id !== venueId));
+      ...prev,
+    ]);
   };
 
-  // Compute dynamic stats based on other states
+  const cancelBooking = (bookingId: string) => {
+    setBookings((prev) => prev.map((booking) => (booking.id === bookingId ? { ...booking, status: "Cancelled" } : booking)));
+  };
+
+  const toggleWishlist = (venueId: string) => {
+    setWishlist((prev) => (prev.includes(venueId) ? prev.filter((id) => id !== venueId) : [...prev, venueId]));
+  };
+
+  const dismissNotification = (id: string) => {
+    setNotifications((prev) => prev.filter((notification) => notification.id !== id));
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications((prev) => prev.map((notification) => ({ ...notification, read: true })));
+  };
+
+  const approveVenue = async (venueId: string) => {
+    const result = await adminService.approveVenue(venueId);
+    setPendingVenues((prev) => prev.filter((venue) => venue.id !== venueId));
+    setRecommendedVenues((prev) => mergeVenues([result.venue], prev));
+  };
+
+  const rejectVenue = async (venueId: string, reason: string) => {
+    await adminService.rejectVenue(venueId, reason);
+    setPendingVenues((prev) => prev.filter((venue) => venue.id !== venueId));
+  };
+
   const computedUser = {
     ...user,
     stats: {
-      upcoming: bookings.filter((b) => b.status === "Confirmed").length,
-      completed: bookings.filter((b) => b.status === "Completed").length,
-      cancelled: bookings.filter((b) => b.status === "Cancelled").length,
+      upcoming: bookings.filter((booking) => booking.status === "Confirmed").length,
+      completed: bookings.filter((booking) => booking.status === "Completed").length,
+      cancelled: bookings.filter((booking) => booking.status === "Cancelled").length,
       favorites: wishlist.length,
     },
   };
@@ -370,6 +445,8 @@ Status: Rejection Email Sent successfully!`);
         notifications,
         wishlist,
         login,
+        signup,
+        loginWithGoogle,
         logout,
         updateUser,
         addVenue,
@@ -393,3 +470,10 @@ export function useAuth() {
   }
   return context;
 }
+
+
+
+
+
+
+

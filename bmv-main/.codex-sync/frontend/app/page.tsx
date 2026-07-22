@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import { Navbar } from "@/components/layout/navbar";
@@ -14,7 +14,9 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredVenues = venues.filter((venue) => {
+  const approvedVenues = venues.filter((venue) => venue.status === "APPROVED" || venue.verified);
+
+  const filteredVenues = approvedVenues.filter((venue) => {
     const matchesCategory = selectedCategory
       ? (venue.categories && venue.categories.length > 0
           ? venue.categories.some((category) => category.toLowerCase() === selectedCategory.toLowerCase())
@@ -48,7 +50,7 @@ export default function Home() {
         <div className="py-6 space-y-4">
           <VenueSection
             title="Available Right Now"
-            description="Approved venues currently coming from the backend search API"
+            description="Approved venues currently coming from the backend APIs"
             venues={featuredVenues}
           />
         </div>
@@ -58,3 +60,4 @@ export default function Home() {
     </>
   );
 }
+
