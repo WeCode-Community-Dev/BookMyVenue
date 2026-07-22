@@ -3,24 +3,19 @@
 import { LayoutGrid, List } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { BrowseFilters } from "@/lib/data/venues-browse";
-import { buildResultsSubtitle } from "@/lib/data/venues-browse";
 import { cn } from "@/lib/utils";
 
 type VenuesBrowseHeaderProps = {
   totalCount: number;
-  filters: BrowseFilters;
-  categoryName?: string;
   onViewChange: (view: "grid" | "list") => void;
+  view: "grid" | "list";
 };
 
 export function VenuesBrowseHeader({
   totalCount,
-  filters,
-  categoryName,
   onViewChange,
+  view,
 }: VenuesBrowseHeaderProps) {
-  const subtitle = buildResultsSubtitle(filters, categoryName);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -28,7 +23,6 @@ export function VenuesBrowseHeader({
         <h1 className="text-headline-sm font-bold text-on-surface md:text-headline-md">
           {totalCount} Venues found
         </h1>
-        <p className="text-body-sm text-on-surface-variant">{subtitle}</p>
       </div>
 
       <div className="flex items-center gap-1 rounded-lg border border-outline-variant/40 p-1">
@@ -38,11 +32,11 @@ export function VenuesBrowseHeader({
           size="icon"
           className={cn(
             "size-9",
-            filters.view === "grid" && "bg-surface-container-low",
+            view === "grid" && "bg-surface-container-low",
           )}
           onClick={() => onViewChange("grid")}
           aria-label="Grid view"
-          aria-pressed={filters.view === "grid"}
+          aria-pressed={view === "grid"}
         >
           <LayoutGrid className="size-4" />
         </Button>
@@ -52,11 +46,11 @@ export function VenuesBrowseHeader({
           size="icon"
           className={cn(
             "size-9",
-            filters.view === "list" && "bg-surface-container-low",
+            view === "list" && "bg-surface-container-low",
           )}
           onClick={() => onViewChange("list")}
           aria-label="List view"
-          aria-pressed={filters.view === "list"}
+          aria-pressed={view === "list"}
         >
           <List className="size-4" />
         </Button>

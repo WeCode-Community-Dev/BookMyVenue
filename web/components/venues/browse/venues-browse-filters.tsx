@@ -16,28 +16,17 @@ import { Slider } from "@/components/ui/slider";
 import {
   fetchAmenities,
   type AmenityResponse,
-  type SpaceCategoryResponse,
 } from "@/services/venueServices";
 import {
   CAPACITY_MAX,
   CAPACITY_MIN,
   PRICE_MAX,
   PRICE_MIN,
-  type BrowseFilters,
   type BrowseSortOption,
-  defaultBrowseFilters,
 } from "@/lib/data/venues-browse";
-import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type VenuesBrowseFiltersProps = {
-  // filters: BrowseFilters;
-  // categories: SpaceCategoryResponse[];
-  // amenities: AmenityResponse;
-  // onChange: (filters: BrowseFilters) => void;
-  // onReset: () => void;
-};
 
 const sortOptions: { value: BrowseSortOption; label: string }[] = [
   { value: "recommended", label: "Most Recommended" },
@@ -47,16 +36,7 @@ const sortOptions: { value: BrowseSortOption; label: string }[] = [
   { value: "rating-low", label: "Rating: Low to High" },
 ];
 
-export function VenuesBrowseFilters({
-  // filters,
-  // categories,
-  // amenities,
-  // onChange,
-  // onReset,
-}: VenuesBrowseFiltersProps) {
-  // function update(partial: Partial<BrowseFilters>) {
-  //   onChange({ ...filters, ...partial, page: 1 });
-  // }
+export function VenuesBrowseFilters() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -90,13 +70,20 @@ export function VenuesBrowseFilters({
     router.push(`/venues?${params.toString()}`);
   }
 
+  function resetFilters() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("amenityIds");
+    params.delete("page");
+    router.push(`/venues?${params.toString()}`);
+  }
+
   return (
     <aside className="flex flex-col gap-6 rounded-lg bg-surface-container-lowest p-5 shadow-elevation-1">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-on-surface">Filters</h2>
         <button
           type="button"
-          // onClick={onReset}
+          onClick={resetFilters}
           className="text-sm font-medium text-surface-tint hover:underline"
         >
           Reset

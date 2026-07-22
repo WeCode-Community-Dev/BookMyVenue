@@ -3,9 +3,8 @@ import { Suspense } from "react";
 import { PublicSiteHeader } from "@/components/landing/public-site-header";
 import { VenuesBrowse } from "@/components/venues/browse/venues-browse";
 import {
-  fetchAmenities,
-  getSpaceCategories,
   getVenues,
+  VENUES_PAGE_LIMIT,
 } from "@/services/venueServices";
 
 type VenuesPageProps = {
@@ -14,7 +13,7 @@ type VenuesPageProps = {
     date?: string;
     occasion?: string;
     category?: string;
-    amenities?: string;
+    amenityIds?: string;
     minCapacity?: string;
     maxCapacity?: string;
     minPrice?: string;
@@ -26,9 +25,10 @@ type VenuesPageProps = {
 };
 
 export default async function VenuesPage({ searchParams }: VenuesPageProps) {
-  const params = await searchParams;
+  const {page=1, amenityIds} = await searchParams;
+  
 
-  const venues = await getVenues();
+  const { venues, meta } = await getVenues(Number(page), VENUES_PAGE_LIMIT, amenityIds);
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans">
@@ -45,6 +45,7 @@ export default async function VenuesPage({ searchParams }: VenuesPageProps) {
         >
           <VenuesBrowse
             venues={venues}
+            meta={meta}
           />
         </Suspense>
       </main>
