@@ -17,7 +17,6 @@ router = APIRouter(
 async def get_my_earnings(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
-    venue_id: str = Path(...)
 ):
     """
     Get total earnings for the current user.
