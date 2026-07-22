@@ -183,7 +183,6 @@ export default function SpaceListing() {
 
         return `${year}-${month}-${date}`;
     }
-    
 
     const handleReservation = async () => {
   
@@ -242,6 +241,9 @@ export default function SpaceListing() {
 
                         if(verifyResponse.success){
                             toast.success("Successfully Booked the Venue! Check your bookings in the dashboard.")
+                            setTimeout(() => {
+                                navigate("/user/dashboard")
+                            }, 2000);
                         }
                         
                     } catch (verifyError) {
