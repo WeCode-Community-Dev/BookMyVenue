@@ -16,6 +16,24 @@ import {
 } from "@/components/ui/card";
 
 const RevenueChart = ({ data }) => {
+        const getMonthName = (monthNumber) => {
+
+        return new Date(
+            2000,
+            monthNumber - 1
+        ).toLocaleString("en-US", {
+            month: "short",
+        });
+
+    };
+
+    const chartData = data.map((item) => ({
+
+        ...item,
+
+        month: getMonthName(item.month),
+
+    }));
 
     return (
 
@@ -41,7 +59,7 @@ const RevenueChart = ({ data }) => {
                     >
 
                         <LineChart
-                            data={data}
+                            data={chartData}
                         >
 
                             <CartesianGrid
