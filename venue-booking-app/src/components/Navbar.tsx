@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Sun, Moon, Menu, X, Calendar, LayoutDashboard, Search, Sparkles, LogOut, LogIn } from "lucide-react";
+import { Sun, Moon, Menu, X, Calendar, LayoutDashboard, Search, Sparkles, LogOut, LogIn, Settings } from "lucide-react";
 
 export default function Navbar() {
   const { user, role, setRole, logout } = useApp();
@@ -33,7 +33,7 @@ export default function Navbar() {
 
     if (user.role === "admin") {
       return [
-        { label: "Admin Dashboard", href: "/host", icon: LayoutDashboard },
+        { label: "Admin Dashboard", href: "/admin", icon: LayoutDashboard },
         { label: "Manage Spaces", href: "/venues", icon: Search },
         { label: "All Reservations", href: "/bookings", icon: Calendar },
       ];
@@ -46,16 +46,20 @@ export default function Navbar() {
             { label: "Browse as Guest", href: "/venues", icon: Search },
           ]
         : [
+            { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
             { label: "Find Venues", href: "/venues", icon: Search },
             { label: "My Bookings", href: "/bookings", icon: Calendar },
-            { label: "Host Dashboard", href: "/host", icon: LayoutDashboard },
+            { label: "Settings", href: "/settings", icon: Settings },
+            { label: "Host Portal", href: "/host", icon: LayoutDashboard },
           ];
     }
 
     // Customer
     return [
+      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { label: "Find Venues", href: "/venues", icon: Search },
       { label: "My Bookings", href: "/bookings", icon: Calendar },
+      { label: "Settings", href: "/settings", icon: Settings },
     ];
   };
 

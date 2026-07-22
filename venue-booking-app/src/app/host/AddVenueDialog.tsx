@@ -39,7 +39,7 @@ type DayOfWeek =
   | "SUNDAY";
 
 // NOTE: backend enum values assumed — confirm against your DurationType enum
-type DurationType = "HOURLY" | "DAILY";
+type DurationType = "HOURLY" | "HALF_DAY" | "FULL_DAY";
 
 interface VenueAvailabilityRulesRequest {
   durationType: DurationType;
@@ -344,7 +344,9 @@ const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
                 <Label className="text-[11px] font-bold text-foreground">Booking Duration Type</Label>
                 <select value={durationType} onChange={(e) => setDurationType(e.target.value as DurationType)} className={selectClass}>
                   {DURATION_TYPES.map((d) => (
-                    <option key={d} value={d}>{d.charAt(0) + d.slice(1).toLowerCase()}</option>
+                    <option key={d} value={d}>
+                      {d === "HALF_DAY" ? "Half Day" : d === "FULL_DAY" ? "Full Day" : d.charAt(0) + d.slice(1).toLowerCase()}
+                    </option>
                   ))}
                 </select>
               </div>

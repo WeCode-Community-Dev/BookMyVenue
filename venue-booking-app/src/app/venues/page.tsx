@@ -37,7 +37,11 @@ const AMENITIES_LIST = [
 function VenuesSearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { venues } = useApp();
+  const { venues: contextVenues } = useApp();
+
+  // Venue listings state
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [loadingVenues, setLoadingVenues] = useState(true);
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,12 +50,83 @@ function VenuesSearchContent() {
   const [selectedCapacity, setSelectedCapacity] = useState("");
   const [maxPrice, setMaxPrice] = useState<number>(400);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  
+
   // UI States
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [sortBy, setSortBy] = useState<"rating" | "priceLow" | "priceHigh">("rating");
+
+  // Helper: map images from backend
+  const mapBackendImages = (imageFiles: any[] | undefined, venueType: string): string[] => {
+    if (!imageFiles || imageFiles.length === 0) {
+      const type = (venueType || "").toLowerCase();
+      if (type.includes("conference") || type.includes("meeting")) {
+        return ["https://images.unsplash.com/photo-1517502884422-41eaaced0168?auto=format&fit=crop&q=80&w=800"];
+      } else if (type.includes("wedding") || type.includes("ballroom")) {
+        return ["https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800"];
+      } else if (type.includes("coworking")) {
+        return ["https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=800"];
+      } else if (type.includes("studio")) {
+        return ["https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&q=80&w=800"];
+      } else if (type.includes("rooftop")) {
+        return ["https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=800"];
+      } else {
+        return ["https://images.unsplash.com/photo-1545232979-8bf34eb9757b?auto=format&fit=crop&q=80&w=800"];
+      }
+    }
+
+    return imageFiles.map((img: any) => {
+      if (typeof img === "string") {
+        return img.startsWith("http") ? img : `http://localhost:8080/${img}`;
+      }
+      if (img && typeof img === "object") {
+        const loc = img.fileLocation || img.filePath || img.url;
+        if (loc) {
+          return loc.startsWith("http") ? loc : `http://localhost:8080/${loc}`;
+        }
+      }
+      return "https://images.unsplash.com/photo-1517502884422-41eaaced0168?auto=format&fit=crop&q=80&w=800";
+    });
+  };
+
+  // Fetch venues from backend on mount
+  useEffect(() => {
+    const fetchAllVenues = async () => {
+      setLoadingVenues(true);
+      try {
+        const response = await fetch("http://localhost:8080/api/venue");
+        if (!response.ok) throw new Error("Failed to fetch from API");
+        const data = await response.json();
+
+        // Map backend entities to Venue interfaces
+        const mapped = data.map((v: any) => ({
+          id: String(v.id),
+          name: v.name || "",
+          description: v.description || "",
+          capacity: v.seatingCapacity || v.capacity || 20,
+          location: v.city || v.location || "San Francisco",
+          address: v.address || "",
+          pricePerHour: v.pricePerHour || 75,
+          pricePerDay: v.pricePerDay || (v.pricePerHour ? v.pricePerHour * 8 : 550),
+          rating: v.rating || 4.8,
+          reviewsCount: v.reviewsCount || 10,
+          type: (v.venueType || v.type || "conference").toLowerCase() as any,
+          images: mapBackendImages(v.imageFiles, v.venueType || v.type),
+          amenities: Array.isArray(v.amenities) ? v.amenities.map((a: any) => typeof a === 'string' ? a : (a.name || "")) : [],
+          ownerId: v.owner ? String(v.owner.id) : "host-1"
+        }));
+
+        setVenues(mapped);
+      } catch (err) {
+        console.warn("Backend venue listing endpoint failed, falling back to mock context venues.", err);
+        setVenues(contextVenues);
+      } finally {
+        setLoadingVenues(false);
+      }
+    };
+    fetchAllVenues();
+  }, [contextVenues]);
 
   // Read URL query parameters on load
   useEffect(() => {
@@ -207,11 +282,10 @@ function VenuesSearchContent() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           {/* 1. Sidebar Filters (Desktop) */}
           <aside
-            className={`lg:block ${
-              showFiltersMobile
-                ? "fixed inset-0 z-50 bg-background/95 backdrop-blur-md p-6 overflow-y-auto block animate-in slide-in-from-bottom-5 duration-300"
-                : "hidden"
-            } border border-border bg-card p-6 rounded-2xl shadow-sm space-y-6 sticky top-24`}
+            className={`lg:block ${showFiltersMobile
+              ? "fixed inset-0 z-50 bg-background/95 backdrop-blur-md p-6 overflow-y-auto block animate-in slide-in-from-bottom-5 duration-300"
+              : "hidden"
+              } border border-border bg-card p-6 rounded-2xl shadow-sm space-y-6 sticky top-24`}
           >
             {/* Header / Reset */}
             <div className="flex items-center justify-between pb-4 border-b border-border">

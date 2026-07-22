@@ -23,9 +23,31 @@ export default function Bookings() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
 
-  const handleCancel = (bookingId: string, venueName: string) => {
-    cancelBooking(bookingId);
-    toast.error(`Reservation at ${venueName} has been cancelled.`);
+  const handleCancel = async (bookingId: string, venueId: string, venueName: string) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/venue/${venueId}/bookings/${bookingId}/cancel`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { "Authorization": `Bearer ${token}` } : {})
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to cancel reservation on API");
+      }
+
+      cancelBooking(bookingId);
+      toast.success(`Reservation at ${venueName} has been cancelled.`);
+    } catch (error) {
+      console.warn("Backend booking cancel endpoint failed, cancelling locally.", error);
+      cancelBooking(bookingId);
+      toast.success(`Reservation at ${venueName} has been cancelled (saved locally).`);
+    }
   };
 
   const openInvoice = (booking: Booking) => {
@@ -183,7 +205,7 @@ export default function Bookings() {
                         
                         {(booking.status === "pending" || booking.status === "confirmed") && (
                           <Button
-                            onClick={() => handleCancel(booking.id, booking.venueName)}
+                            onClick={() => handleCancel(booking.id, booking.venueId, booking.venueName)}
                             variant="destructive"
                             size="sm"
                             className="rounded-xl"

@@ -2,70 +2,167 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useApp } from "@/context/AppContext";
-import { api, Venue } from "@/lib/api";
+import { api } from "@/lib/api";
+import { Venue, useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { Users, MapPin, Star, Sparkles, Check, Info, ShieldCheck, CreditCard, ChevronRight } from "lucide-react";
-import { format } from "date-fns";
-
-const HOURS = [
-  "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
-  "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"
-];
+import { Users, MapPin, Star, Sparkles, Check, Info, ShieldCheck, ArrowRight, CalendarRange, Clock } from "lucide-react";
 
 interface UserVenueDetailsProps {
   venueId: string;
   previewMode?: boolean;
 }
 
+export interface NormalizedException {
+  id: string;
+  date: string; // YYYY-MM-DD
+  closed: boolean;
+  startTime?: string | null;
+  endTime?: string | null;
+  reason?: string | null;
+}
+
+export const normalizeExceptions = (data: any[]): NormalizedException[] => {
+  if (!Array.isArray(data)) return [];
+  return data
+    .filter((e: any) => e.status !== "CANCELLED")
+    .map((e: any) => {
+      return {
+        id: String(e.id),
+        date: e.exceptionDate || e.startDate || "",
+        closed: e.closed !== undefined ? e.closed : (e.type === "holiday" || e.type === "maintenance"),
+        startTime: e.openingTime || e.startTime || null,
+        endTime: e.closingTime || e.endTime || null,
+        reason: e.reason || e.name || ""
+      };
+    })
+    .filter((e: any) => e.date);
+};
+
+const mapBackendImages = (imageFiles: any[] | undefined, venueType: string): string[] => {
+  if (!imageFiles || imageFiles.length === 0) {
+    const type = (venueType || "").toLowerCase();
+    if (type.includes("conference") || type.includes("meeting")) {
+      return ["https://images.unsplash.com/photo-1517502884422-41eaaced0168?auto=format&fit=crop&q=80&w=800"];
+    } else if (type.includes("wedding") || type.includes("ballroom")) {
+      return ["https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800"];
+    } else if (type.includes("coworking")) {
+      return ["https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=800"];
+    } else if (type.includes("studio")) {
+      return ["https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&q=80&w=800"];
+    } else if (type.includes("rooftop")) {
+      return ["https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=800"];
+    } else {
+      return ["https://images.unsplash.com/photo-1545232979-8bf34eb9757b?auto=format&fit=crop&q=80&w=800"];
+    }
+  }
+
+  return imageFiles.map((img: any) => {
+    if (typeof img === "string") {
+      return img.startsWith("http") ? img : `http://localhost:8080/${img}`;
+    }
+    if (img && typeof img === "object") {
+      const loc = img.fileLocation || img.filePath || img.url;
+      if (loc) {
+        return loc.startsWith("http") ? loc : `http://localhost:8080/${loc}`;
+      }
+    }
+    return "https://images.unsplash.com/photo-1517502884422-41eaaced0168?auto=format&fit=crop&q=80&w=800";
+  });
+};
+
+const mapVenueResponseToVenue = (v: any): Venue => {
+  return {
+    id: String(v.id),
+    name: v.name || "",
+    description: v.description || "",
+    capacity: v.seatingCapacity || v.capacity || 20,
+    location: v.city || v.location || "San Francisco",
+    address: v.address || "",
+    pricePerHour: v.pricePerHour || 75,
+    pricePerDay: v.pricePerDay || (v.pricePerHour ? v.pricePerHour * 8 : 550),
+    rating: v.rating || 4.8,
+    reviewsCount: v.reviewsCount || 10,
+    type: (v.venueType || v.type || "conference").toLowerCase() as any,
+    images: mapBackendImages(v.imageFiles, v.venueType || v.type),
+    amenities: Array.isArray(v.amenities) ? v.amenities.map((a: any) => typeof a === 'string' ? a : (a.name || "")) : [],
+    ownerId: v.ownerId ? String(v.ownerId) : "host-1"
+  };
+};
+
 export default function UserVenueDetails({ venueId, previewMode = false }: UserVenueDetailsProps) {
   const router = useRouter();
-  const { addBooking } = useApp();
+  const { user } = useApp();
 
-  // Find Venue via API
+  // Find Venue via API / Backend
   const [venue, setVenue] = useState<Venue | null>(null);
   const [activeImage, setActiveImage] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Booking details state
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("13:00");
-
-  // Dialog and Checkout flow state
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [checkoutStep, setCheckoutStep] = useState<"details" | "payment" | "success">("details");
-  const [guestName, setGuestName] = useState("");
-  const [guestEmail, setGuestEmail] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
+  const [exceptions, setExceptions] = useState<NormalizedException[]>([]);
 
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
     setError(null);
 
-    api.getVenueDetails(venueId)
-      .then((data) => {
+    const fetchVenue = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/venue/${venueId}?id=${venueId}`);
+        if (!response.ok) throw new Error("API failed to find venue");
+        
+        const data = await response.json();
+        const mappedVenue = mapVenueResponseToVenue(data);
+
+        // Fetch exceptions
+        let fetchedExceptions: any[] = [];
+        try {
+          const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+          const exResponse = await fetch(`http://localhost:8080/api/owner/venue/${venueId}/exceptions`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+          });
+          if (exResponse.ok) {
+            fetchedExceptions = await exResponse.json();
+          }
+        } catch (exErr) {
+          console.warn("Could not fetch exceptions from backend:", exErr);
+        }
+        
         if (isMounted) {
-          setVenue(data);
-          setActiveImage(data.images?.[0] || "");
+          setVenue(mappedVenue);
+          setExceptions(normalizeExceptions(fetchedExceptions));
+          setActiveImage(mappedVenue.images?.[0] || "");
           setLoading(false);
         }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          setError(err.message || "Failed to load venue details.");
-          setLoading(false);
-        }
-      });
+      } catch (err) {
+        console.warn("Backend venue endpoint unavailable, loading from mock data.", err);
+        // Fallback to local storage API
+        api.getVenueDetails(venueId)
+          .then(async (data) => {
+            const mapped = mapVenueResponseToVenue(data);
+            let localExceptions: any[] = [];
+            try {
+              localExceptions = await api.getExceptionRules(venueId);
+            } catch (exErr) {
+              console.warn("Could not fetch local exception rules:", exErr);
+            }
+
+            if (isMounted) {
+              setVenue(mapped);
+              setExceptions(normalizeExceptions(localExceptions));
+              setActiveImage(mapped.images?.[0] || "");
+              setLoading(false);
+            }
+          })
+          .catch((mockErr) => {
+            if (isMounted) {
+              setError("Failed to load venue details.");
+              setLoading(false);
+            }
+          });
+      }
+    };
+
+    fetchVenue();
 
     return () => {
       isMounted = false;
@@ -93,68 +190,13 @@ export default function UserVenueDetails({ venueId, previewMode = false }: UserV
     );
   }
 
-  // Calculate booking metrics
-  const startIdx = HOURS.indexOf(startTime);
-  const endIdx = HOURS.indexOf(endTime);
-  const totalHours = Math.max(1, endIdx - startIdx);
-  const isTimeValid = endIdx > startIdx;
-
-  const basePrice = totalHours * venue.pricePerHour;
-  const cleaningFee = Math.round(basePrice * 0.08); // 8% cleaning
-  const platformFee = Math.round(basePrice * 0.05); // 5% platform
-  const totalCost = basePrice + cleaningFee + platformFee;
-
-  const handleCheckoutSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (previewMode) {
-      toast.info("This is a preview mode. Booking requests are disabled for owners.");
-      setCheckoutStep("success");
+  const handleBookRedirect = () => {
+    if (!user) {
+      const bookPath = `/venues/${venue.id}/book`;
+      router.push(`/login?message=${encodeURIComponent("Please sign in to book this venue")}&redirect=${encodeURIComponent(bookPath)}`);
       return;
     }
-
-    if (checkoutStep === "details") {
-      if (!guestName || !guestEmail) {
-        toast.error("Please fill in contact details");
-        return;
-      }
-      setCheckoutStep("payment");
-    } else if (checkoutStep === "payment") {
-      if (!cardNumber || !cardExpiry || !cardCvc) {
-        toast.error("Please complete payment details");
-        return;
-      }
-      // Process mock reservation
-      if (!selectedDate) return;
-      
-      addBooking({
-        venueId: venue.id,
-        venueName: venue.name,
-        venueImage: venue.images?.[0] || "",
-        date: format(selectedDate, "yyyy-MM-dd"),
-        startTime,
-        endTime,
-        totalHours,
-        totalCost,
-        guestName,
-        guestEmail
-      });
-
-      toast.success("Reservation request sent successfully!");
-      setCheckoutStep("success");
-    }
-  };
-
-  const openCheckout = () => {
-    if (!selectedDate) {
-      toast.error("Please select a date first");
-      return;
-    }
-    if (!isTimeValid) {
-      toast.error("Start time must be before end time");
-      return;
-    }
-    setCheckoutStep("details");
-    setCheckoutOpen(true);
+    router.push(`/venues/${venue.id}/book`);
   };
 
   return (
@@ -211,7 +253,7 @@ export default function UserVenueDetails({ venueId, previewMode = false }: UserV
 
         {/* Thumbnail list */}
         <div className="grid grid-cols-3 lg:grid-cols-1 gap-4 h-full">
-          {venue.images && venue.images.map((img, idx) => (
+          {venue.images && venue.images.slice(0, 3).map((img, idx) => (
             <button
               key={idx}
               onClick={() => setActiveImage(img)}
@@ -281,7 +323,45 @@ export default function UserVenueDetails({ venueId, previewMode = false }: UserV
             </div>
           </div>
 
-          {/* Mock Static Map Section */}
+          {/* Exceptions Section */}
+          {exceptions.length > 0 && (
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+              <h2 className="text-xl font-extrabold text-foreground mb-4">Availability Exceptions</h2>
+              <div className="space-y-3">
+                {exceptions.map((ex) => (
+                  <div key={ex.id} className="flex items-start justify-between p-3.5 rounded-xl border border-border/60 bg-muted/5">
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm font-bold text-foreground">
+                          {new Date(ex.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                        </span>
+                        {ex.closed ? (
+                          <span className="text-[10px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/20 px-2 py-0.5 rounded-full border border-rose-100 dark:border-rose-900/30">
+                            Closed
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 rounded-full border border-amber-100 dark:border-amber-900/30">
+                            Special Hours
+                          </span>
+                        )}
+                      </div>
+                      {ex.reason && (
+                        <p className="text-xs text-muted-foreground">{ex.reason}</p>
+                      )}
+                    </div>
+                    {!ex.closed && ex.startTime && ex.endTime && (
+                      <span className="text-xs font-semibold text-foreground bg-secondary px-2.5 py-1 rounded-lg flex items-center">
+                        <Clock className="h-3 w-3 mr-1 text-muted-foreground" />
+                        {ex.startTime.substring(0, 5)} - {ex.endTime.substring(0, 5)}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Location Map Section */}
           <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
             <h2 className="text-xl font-extrabold text-foreground mb-4">Location Map</h2>
             <div className="aspect-video w-full rounded-xl overflow-hidden border border-border bg-slate-100 dark:bg-slate-900/40 relative flex items-center justify-center">
@@ -296,170 +376,115 @@ export default function UserVenueDetails({ venueId, previewMode = false }: UserV
             </div>
           </div>
 
-          {/* Mock Reviews Section */}
+          {/* Reviews Section */}
           <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-6">
             <h2 className="text-xl font-extrabold text-foreground">Guest Reviews</h2>
             
-            <div className="flex items-center space-x-6 pb-6 border-b border-border">
-              <div className="text-center">
-                <div className="text-4xl font-black text-foreground">{venue.rating.toFixed(2)}</div>
-                <div className="flex justify-center text-amber-400 my-1">★★★★★</div>
-                <div className="text-xs text-muted-foreground">Based on {venue.reviewsCount} reviews</div>
+            {venue.reviewsCount === 0 ? (
+              <div className="text-center py-6 text-sm text-muted-foreground">
+                No reviews yet. Be the first to review this space!
               </div>
-              
-              <div className="flex-1 space-y-1.5 hidden sm:block">
-                <div className="flex items-center text-xs text-muted-foreground space-x-2">
-                  <span className="w-12">5 stars</span>
-                  <div className="flex-grow h-2 bg-secondary rounded overflow-hidden">
-                    <div className="bg-amber-400 h-full w-[85%]" />
+            ) : (
+              <>
+                <div className="flex items-center space-x-6 pb-6 border-b border-border">
+                  <div className="text-center">
+                    <div className="text-4xl font-black text-foreground">{venue.rating.toFixed(2)}</div>
+                    <div className="flex justify-center text-amber-400 my-1">
+                      {"★".repeat(Math.round(venue.rating)) + "☆".repeat(5 - Math.round(venue.rating))}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Based on {venue.reviewsCount} reviews</div>
                   </div>
-                  <span className="w-8 text-right">85%</span>
-                </div>
-                <div className="flex items-center text-xs text-muted-foreground space-x-2">
-                  <span className="w-12">4 stars</span>
-                  <div className="flex-grow h-2 bg-secondary rounded overflow-hidden">
-                    <div className="bg-amber-400 h-full w-[12%]" />
+                  
+                  <div className="flex-1 space-y-1.5 hidden sm:block">
+                    <div className="flex items-center text-xs text-muted-foreground space-x-2">
+                      <span className="w-12">5 stars</span>
+                      <div className="flex-grow h-2 bg-secondary rounded overflow-hidden">
+                        <div className="bg-amber-400 h-full w-[85%]" />
+                      </div>
+                      <span className="w-8 text-right">85%</span>
+                    </div>
+                    <div className="flex items-center text-xs text-muted-foreground space-x-2">
+                      <span className="w-12">4 stars</span>
+                      <div className="flex-grow h-2 bg-secondary rounded overflow-hidden">
+                        <div className="bg-amber-400 h-full w-[12%]" />
+                      </div>
+                      <span className="w-8 text-right">12%</span>
+                    </div>
+                    <div className="flex items-center text-xs text-muted-foreground space-x-2">
+                      <span className="w-12">3 stars</span>
+                      <div className="flex-grow h-2 bg-secondary rounded overflow-hidden">
+                        <div className="bg-amber-400 h-full w-[3%]" />
+                      </div>
+                      <span className="w-8 text-right">3%</span>
+                    </div>
                   </div>
-                  <span className="w-8 text-right">12%</span>
                 </div>
-                <div className="flex items-center text-xs text-muted-foreground space-x-2">
-                  <span className="w-12">3 stars</span>
-                  <div className="flex-grow h-2 bg-secondary rounded overflow-hidden">
-                    <div className="bg-amber-400 h-full w-[3%]" />
-                  </div>
-                  <span className="w-8 text-right">3%</span>
-                </div>
-              </div>
-            </div>
 
-            {/* Review List items */}
-            <div className="space-y-6">
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-foreground">Sarah Jenkins</span>
-                  <span className="text-xs text-muted-foreground">June 10, 2026</span>
+                <div className="space-y-6">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-foreground">Sarah Jenkins</span>
+                      <span className="text-xs text-muted-foreground">June 10, 2026</span>
+                    </div>
+                    <div className="text-amber-400 text-xs">★★★★★</div>
+                    <p className="text-muted-foreground leading-relaxed text-xs">
+                      This {venue.type} was absolutely perfect for our needs. The setup of {venue.name} was highly professional, facilities were top-notch, and the location in {venue.location} was very convenient. Highly recommended!
+                    </p>
+                  </div>
                 </div>
-                <div className="text-amber-400 text-xs">★★★★★</div>
-                <p className="text-muted-foreground leading-relaxed text-xs">
-                  This space was absolutely perfect for our quarterly executive board meeting. The Wi-Fi was fast, the tech setup was seamless, and the host went out of their way to provide premium coffee. Highly recommended!
-                </p>
-              </div>
+              </>
+            )}
+          </div>
+
+          {/* Book Now button at the bottom of left column */}
+          <div className="flex items-center justify-between p-6 bg-primary/5 border border-primary/20 rounded-2xl shadow-sm">
+            <div>
+              <h4 className="font-extrabold text-base text-foreground">Ready to reserve this space?</h4>
+              <p className="text-xs text-muted-foreground mt-0.5">Select a calendar day and time slot to book instantly.</p>
             </div>
+            <Button
+              onClick={handleBookRedirect}
+              className="rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground font-bold px-6 py-5 shadow flex items-center transition-transform hover:scale-[1.02] cursor-pointer"
+            >
+              Book Now
+              <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Button>
           </div>
         </div>
 
-        {/* Right Sticky Booking Widget */}
+        {/* Right Sticky Booking Widget (Simplified) */}
         <div className="sticky top-24 space-y-6">
-          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-6">
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-5">
             <div>
               <span className="text-2xl font-extrabold text-foreground">${venue.pricePerHour}</span>
               <span className="text-sm text-muted-foreground font-medium"> / hour</span>
             </div>
 
-            {/* Booking Options form */}
-            <div className="space-y-4">
-              {/* Date Picker Input */}
-              <div className="space-y-2">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground block">
-                  1. Select Date
-                </label>
-                <div className="border border-border rounded-xl p-2 bg-background flex flex-col items-center">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    disabled={{ before: new Date() }}
-                    className="rounded-md border-0"
-                  />
-                  {selectedDate && (
-                    <div className="text-xs font-semibold text-primary mt-2">
-                      Selected: {format(selectedDate, "PP")}
-                    </div>
-                  )}
-                </div>
+            <div className="space-y-3 pt-3 border-t border-border text-xs text-muted-foreground">
+              <div className="flex justify-between">
+                <span>Capacity:</span>
+                <span className="font-bold text-foreground">{venue.capacity} guests</span>
               </div>
-
-              {/* Time selector grid */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground block">
-                    Start Time
-                  </label>
-                  <select
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
-                  >
-                    {HOURS.map((hr) => (
-                      <option key={hr} value={hr}>
-                        {hr}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground block">
-                    End Time
-                  </label>
-                  <select
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
-                  >
-                    {HOURS.map((hr) => (
-                      <option key={hr} value={hr}>
-                        {hr}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className="flex justify-between">
+                <span>Location:</span>
+                <span className="font-bold text-foreground">{venue.location}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Type:</span>
+                <span className="font-bold text-foreground capitalize">{venue.type}</span>
               </div>
             </div>
 
-            {/* Pricing Breakdown Calculations */}
-            {selectedDate && (
-              <div className="space-y-3 pt-4 border-t border-border text-sm">
-                {isTimeValid ? (
-                  <>
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>
-                        ${venue.pricePerHour} x {totalHours} hours
-                      </span>
-                      <span className="font-bold text-foreground">${basePrice}</span>
-                    </div>
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Cleaning fee (8%)</span>
-                      <span className="font-bold text-foreground">${cleaningFee}</span>
-                    </div>
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>Platform fee (5%)</span>
-                      <span className="font-bold text-foreground">${platformFee}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-base pt-3 border-t border-border/80 text-foreground">
-                      <span>Total Cost</span>
-                      <span>${totalCost}</span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-xs text-destructive bg-destructive/10 p-3 rounded-lg flex items-center">
-                    <Info className="h-4 w-4 mr-1.5 shrink-0" />
-                    <span>End time must be later than start time.</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* CTA Reservation button */}
             <Button
-              onClick={openCheckout}
-              disabled={!selectedDate || !isTimeValid}
-              className="w-full rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground font-semibold py-6 shadow-md transition-all cursor-pointer"
+              onClick={handleBookRedirect}
+              className="w-full rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground font-bold py-6 shadow-md transition-all cursor-pointer flex items-center justify-center text-sm"
             >
-              {previewMode ? "Test Booking Flow" : "Reserve Space"}
+              Book Now
+              <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
 
             <div className="text-xxs text-center text-muted-foreground leading-normal px-2">
-              {previewMode ? "You are viewing this as an owner. Payment details are fully mocked." : "You won't be charged yet. The host will review and confirm this request first."}
+              Select date & time slot on the next page. Free cancellation up to 24h prior.
             </div>
           </div>
 
@@ -473,150 +498,6 @@ export default function UserVenueDetails({ venueId, previewMode = false }: UserV
           </div>
         </div>
       </div>
-
-      {/* Step-by-Step Checkout Modal Dialog */}
-      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="max-w-md rounded-2xl bg-card border border-border p-6">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-extrabold text-foreground flex items-center">
-              <CreditCard className="h-5.5 w-5.5 text-primary mr-2" />
-              Complete Reservation
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Confirm details to finalize the mock booking request.
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Checkout Steps */}
-          {checkoutStep !== "success" && (
-            <div className="flex items-center justify-center space-x-2 text-xxs font-bold uppercase tracking-wider text-muted-foreground my-2 pb-2 border-b border-border/60">
-              <span className={checkoutStep === "details" ? "text-primary" : ""}>1. Guest Info</span>
-              <ChevronRight className="h-3 w-3" />
-              <span className={checkoutStep === "payment" ? "text-primary" : ""}>2. Payment</span>
-            </div>
-          )}
-
-          <form onSubmit={handleCheckoutSubmit} className="space-y-4 mt-2">
-            {checkoutStep === "details" && (
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="guestName" className="text-xs font-bold text-foreground">Full Name</Label>
-                  <Input
-                    id="guestName"
-                    type="text"
-                    required
-                    placeholder="Jane Doe"
-                    value={guestName}
-                    onChange={(e) => setGuestName(e.target.value)}
-                    className="rounded-xl border-border bg-background"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="guestEmail" className="text-xs font-bold text-foreground">Email Address</Label>
-                  <Input
-                    id="guestEmail"
-                    type="email"
-                    required
-                    placeholder="jane@example.com"
-                    value={guestEmail}
-                    onChange={(e) => setGuestEmail(e.target.value)}
-                    className="rounded-xl border-border bg-background"
-                  />
-                </div>
-
-                <div className="bg-secondary p-4 rounded-xl space-y-2 text-xs">
-                  <h5 className="font-bold text-foreground">Booking Recap</h5>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Date:</span>
-                    <span className="font-semibold text-foreground">
-                      {selectedDate ? format(selectedDate, "PP") : ""}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground border-t border-border/80 pt-2 mt-2 font-bold text-sm text-foreground">
-                    <span>Amount Due:</span>
-                    <span>${totalCost}</span>
-                  </div>
-                </div>
-
-                <Button type="submit" className="w-full rounded-xl bg-primary text-primary-foreground font-semibold mt-4">
-                  Proceed to Payment
-                </Button>
-              </div>
-            )}
-
-            {checkoutStep === "payment" && (
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="cardNumber" className="text-xs font-bold text-foreground">Card Number</Label>
-                  <Input
-                    id="cardNumber"
-                    type="text"
-                    required
-                    maxLength={16}
-                    placeholder="4111 2222 3333 4444"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, ""))}
-                    className="rounded-xl border-border bg-background"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="cardExpiry" className="text-xs font-bold text-foreground">Expiry</Label>
-                    <Input
-                      id="cardExpiry"
-                      type="text"
-                      required
-                      placeholder="12/28"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
-                      className="rounded-xl border-border bg-background"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="cardCvc" className="text-xs font-bold text-foreground">CVC</Label>
-                    <Input
-                      id="cardCvc"
-                      type="password"
-                      required
-                      maxLength={3}
-                      placeholder="123"
-                      value={cardCvc}
-                      onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, ""))}
-                      className="rounded-xl border-border bg-background"
-                    />
-                  </div>
-                </div>
-
-                <Button type="submit" className="w-full rounded-xl bg-primary text-primary-foreground font-semibold mt-4">
-                  Submit Reservation Request (${totalCost})
-                </Button>
-              </div>
-            )}
-
-            {checkoutStep === "success" && (
-              <div className="flex flex-col items-center justify-center text-center py-6 space-y-4">
-                <div className="h-14 w-14 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full flex items-center justify-center mb-2">
-                  <Check className="h-8 w-8" />
-                </div>
-                <h4 className="font-extrabold text-lg text-foreground">
-                  {previewMode ? "Preview Verification Successful!" : "Booking Request Received!"}
-                </h4>
-                <p className="text-xs text-muted-foreground max-w-xs leading-normal">
-                  {previewMode
-                    ? "The booking calculator and checkout rules have been verified successfully. Users will see this checkout flow."
-                    : "Your reservation request has been submitted successfully."}
-                </p>
-                <Button
-                  onClick={() => setCheckoutOpen(false)}
-                  className="w-full rounded-xl bg-primary text-primary-foreground font-semibold"
-                >
-                  Close Preview
-                </Button>
-              </div>
-            )}
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

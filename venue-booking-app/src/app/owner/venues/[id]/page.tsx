@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { api, Venue, AvailabilityRule, ExceptionRule } from "@/lib/api";
-import { useApp } from "@/context/AppContext";
+import { api, AvailabilityRule, ExceptionRule } from "@/lib/api";
+import { useApp, Venue } from "@/context/AppContext";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -51,8 +51,8 @@ export default function OwnerVenueDetailsPage() {
   const [activeTab, setActiveTab] = useState<"overview" | "rules" | "exceptions" | "preview">(initialTab || "overview");
 
   // Core Data States
-  const [venue, setVenue] = useState<Venue | null>(null);
-  const [rules, setRules] = useState<AvailabilityRule[]>([]);
+  const [venue, setVenue] = useState<any>(null);
+  const [rules, setRules] = useState<any[]>([]);
   const [exceptions, setExceptions] = useState<ExceptionRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,15 +90,15 @@ export default function OwnerVenueDetailsPage() {
   const [creatingException, setCreatingException] = useState(false);
 
   // Sync state parameters from loaded venue
-  const populateForm = useCallback((v: Venue) => {
-    setName(v.name);
-    setDescription(v.description);
-    setAddress(v.address);
-    setCity(v.location);
-    setType(v.type);
-    setCapacity(String(v.capacity));
-    setPricePerHour(String(v.pricePerHour));
-    setPricePerDay(String(v.pricePerDay));
+  const populateForm = useCallback((v: any) => {
+    setName(v.name || "");
+    setDescription(v.description || "");
+    setAddress(v.address || "");
+    setCity(v.city || v.location || "");
+    setType(v.venueType?.toLowerCase() || v.type || "conference");
+    setCapacity(String(v.seatingCapacity || v.capacity || ""));
+    setPricePerHour(String(v.pricePerHour || ""));
+    setPricePerDay(String(v.pricePerDay || ""));
     setImageInput(v.images?.join(", ") || "");
     setSelectedAmenities(v.amenities || []);
   }, []);
@@ -164,7 +164,7 @@ export default function OwnerVenueDetailsPage() {
         amenities: selectedAmenities
       };
 
-      const updated = await api.updateVenue(id, payload);
+      const updated = await api.updateVenue(id, payload as any);
       setVenue(updated);
       toast.success("Venue specifications updated successfully.");
     } catch (err: any) {
@@ -235,7 +235,7 @@ export default function OwnerVenueDetailsPage() {
         isActive: newRuleActive
       };
 
-      const newRule = await api.createAvailabilityRule(id, payload);
+      const newRule = await api.createAvailabilityRule(id, payload as any);
       
       // If the new rule is active, it deactivates all others in simulated DB
       if (newRuleActive) {
@@ -681,8 +681,8 @@ export default function OwnerVenueDetailsPage() {
               ) : (
                 <div className="grid gap-4 md:grid-cols-2">
                   {rules.map((rule) => {
-                    const daysStr = rule.daysOfWeek
-                      .map((d) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d])
+                    const daysStr = (rule.daysOfWeek || [])
+                      .map((d: any) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d] || "")
                       .join(", ");
                     return (
                       <Card

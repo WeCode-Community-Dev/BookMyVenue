@@ -18,8 +18,8 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
 
         createUserIfNotExists(
-                "root",
-                "pass",
+                "admin@bookmyvenue.com",
+                "admin123",
                 "Admin",
                 Role.ADMIN);
 
@@ -29,10 +29,16 @@ public class DataInitializer implements CommandLineRunner {
                 "Venue Owner",
                 Role.VENUE_OWNER);
 
+
         createUserIfNotExists(
                 "user@bookmyvenue.com",
                 "user123",
                 "Test User",
+                Role.USER);
+        createUserIfNotExists(
+                "customer@bookmyvenue.com",
+                "customer123",
+                "Test User 2",
                 Role.USER);
     }
 

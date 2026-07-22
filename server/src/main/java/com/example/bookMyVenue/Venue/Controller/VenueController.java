@@ -1,5 +1,6 @@
 package com.example.bookMyVenue.Venue.Controller;
 
+import com.example.bookMyVenue.Enums.VenueVerificationStatus;
 import com.example.bookMyVenue.Venue.DTO.VenueResponse;
 import com.example.bookMyVenue.Venue.Model.Venue;
 import com.example.bookMyVenue.Venue.Repository.VenueRepo;
@@ -23,9 +24,9 @@ public class VenueController {
     public final VenueService venueService;
 
     @GetMapping
-    public ResponseEntity<List<Venue>> getAllVenues() {
+    public ResponseEntity<List<VenueResponse>> getAllVenues() {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(venueService.getAllActiveVenues());
+                .body(venueService.getVenuesByStatus(VenueVerificationStatus.VERIFIED));
 
     }
 

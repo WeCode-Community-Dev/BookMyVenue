@@ -226,7 +226,7 @@ export const api = {
       rating: 5.0,
       reviewsCount: 0,
       ownerId: "host-custom",
-      status: venueData.status || "pending"
+      status: (venueData.status === "approved" ? "VERIFIED" : (venueData.status ? venueData.status.toUpperCase() : "PENDING")) as any
     };
 
     // Save Venue
@@ -344,7 +344,27 @@ export const api = {
 
   // Exception Rules
   async getExceptionRules(venueId: string): Promise<ExceptionRule[]> {
-    await delay(200);
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    try {
+      const res = await fetch(`http://localhost:8080/api/owner/venue/${venueId}/exceptions`, {
+        headers: token ? { "Authorization": `Bearer ${token}` } : {}
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.map((e: any) => ({
+          id: String(e.id),
+          venueId: String(e.venueId),
+          name: e.reason || "Closure Block",
+          type: (e.exceptionType || "holiday").toLowerCase() as any,
+          startDate: e.exceptionDate || "",
+          endDate: e.exceptionDate || "",
+          startTime: e.startTime ? e.startTime.substring(0, 5) : undefined,
+          endTime: e.endTime ? e.endTime.substring(0, 5) : undefined
+        })).filter((e: any) => e.startDate);
+      }
+    } catch (err) {
+      console.warn("Backend getExceptionRules failed, falling back to local storage:", err);
+    }
     const exceptions = getExceptionData();
     return exceptions.filter((e) => e.venueId === venueId);
   },
@@ -353,7 +373,42 @@ export const api = {
     venueId: string,
     exception: Omit<ExceptionRule, "id" | "venueId">
   ): Promise<ExceptionRule> {
-    await delay(300);
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    try {
+      const payload = {
+        exceptionDate: exception.startDate,
+        startTime: exception.startTime ? (exception.startTime.includes(":") && exception.startTime.split(":").length === 2 ? `${exception.startTime}:00` : exception.startTime) : null,
+        endTime: exception.endTime ? (exception.endTime.includes(":") && exception.endTime.split(":").length === 2 ? `${exception.endTime}:00` : exception.endTime) : null,
+        exceptionType: (exception.type === "maintenance" ? "MAINTENANCE" : (exception.type === "holiday" ? "HOLIDAY" : "TEMPORARY_UNAVAILABLE")),
+        reason: exception.name
+      };
+
+      const res = await fetch(`http://localhost:8080/api/owner/venue/${venueId}/exceptions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        const e = await res.json();
+        return {
+          id: String(e.id),
+          venueId: String(e.venueId),
+          name: e.reason || "Closure Block",
+          type: (e.exceptionType || "holiday").toLowerCase() as any,
+          startDate: e.exceptionDate || "",
+          endDate: e.exceptionDate || "",
+          startTime: e.startTime ? e.startTime.substring(0, 5) : undefined,
+          endTime: e.endTime ? e.endTime.substring(0, 5) : undefined
+        };
+      }
+    } catch (err) {
+      console.warn("Backend createExceptionRule failed, falling back to local storage:", err);
+    }
+
     const exceptions = getExceptionData();
     const newId = `er-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -369,7 +424,19 @@ export const api = {
   },
 
   async deleteExceptionRule(venueId: string, exceptionId: string): Promise<boolean> {
-    await delay(250);
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    try {
+      const res = await fetch(`http://localhost:8080/api/owner/venue/${venueId}/exceptions/${exceptionId}/cancel`, {
+        method: "PUT",
+        headers: token ? { "Authorization": `Bearer ${token}` } : {}
+      });
+      if (res.ok) {
+        return true;
+      }
+    } catch (err) {
+      console.warn("Backend deleteExceptionRule failed, falling back to local storage:", err);
+    }
+
     const exceptions = getExceptionData();
     const filtered = exceptions.filter((e) => e.id !== exceptionId);
     setStorageItem("bookmyvenue_exception_rules", filtered);

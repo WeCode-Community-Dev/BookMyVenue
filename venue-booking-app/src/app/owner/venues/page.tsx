@@ -191,7 +191,7 @@ export default function OwnerVenuesPage() {
         weekendNightRate: Math.round((parseInt(vPrice) || 80) * 1.5)
       };
 
-      const createdVenue = await api.createVenue(venuePayload, rulePayload);
+      const createdVenue = await api.createVenue(venuePayload as any, rulePayload as any);
       
       toast.success("Venue successfully registered and default rule created!");
       setIsCreateOpen(false);
@@ -223,15 +223,6 @@ export default function OwnerVenuesPage() {
       } catch (err: any) {
         toast.error(err.message || "Failed to delete venue.");
       }
-    }
-  };
-
-  // Toggle Day selection helper
-  const toggleDay = (day: number) => {
-    if (ruleDays.includes(day)) {
-      setRuleDays(ruleDays.filter((d) => d !== day));
-    } else {
-      setRuleDays([...ruleDays, day].sort());
     }
   };
 
@@ -492,8 +483,8 @@ export default function OwnerVenuesPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {AMENITIES_LIST.map((amenity) => (
                       <label key={amenity} className="flex items-center space-x-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer select-none">
-                        <Checkbox checked={vAmenities.includes(amenity)} onCheckedChange={(checked) => {
-                          if (checked) setVAmenities([...vAmenities, amenity]);
+                        <Checkbox checked={vAmenities.includes(amenity as any)} onCheckedChange={(checked) => {
+                          if (checked) setVAmenities([...vAmenities, amenity as any]);
                           else setVAmenities(vAmenities.filter((a) => a !== amenity));
                         }} className="rounded" />
                         <span>{amenity}</span>

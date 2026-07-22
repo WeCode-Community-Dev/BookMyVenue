@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,15 +13,20 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Eye, EyeOff, Mail, Lock, Sparkles, AlertCircle, ArrowRight, UserCheck, CheckCircle2 } from "lucide-react";
 
-export default function LoginPage() {
+function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useApp();
+
+  const messageParam = searchParams.get("message");
+  const redirectParam = searchParams.get("redirect");
 
   // Form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<"customer" | "owner" | "admin">("customer");
   
   // UI states
   const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +36,11 @@ export default function LoginPage() {
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
+
+  // Helper redirect destination
+  const getDestination = (defaultPath: string) => {
+    return redirectParam ? redirectParam : defaultPath;
+  };
 
   // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,40 +52,79 @@ export default function LoginPage() {
 
     setIsLoading(true);
 
-try {
-    const response = await fetch(
-      "http://localhost:8080/owner/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      }
-    );
+    // Determine backend path & target details based on selected role
+    let loginUrl = "http://localhost:8080/user/login";
+    let targetRole: "customer" | "owner" | "admin" = selectedRole;
+    let defaultRedirect = "/dashboard";
+    let displayName = "Customer Guest";
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      toast.error("Invalid email or password");
-      return;
+    if (selectedRole === "admin") {
+      loginUrl = "http://localhost:8080/admin/login";
+      defaultRedirect = "/admin";
+      displayName = "Admin User";
+    } else if (selectedRole === "owner") {
+      loginUrl = "http://localhost:8080/owner/login";
+      defaultRedirect = "/host";
+      displayName = "Venue Owner";
     }
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("userEmail",data.email);
-    localStorage.setItem("userRole",data.role);
+    const lowerEmail = email.toLowerCase();
 
-    toast.success("Login successful!");
+    try {
+      const response = await fetch(
+        loginUrl,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
 
-    router.push("/host");
-  } catch (error) {
-    toast.error("Unable to connect to server");
-  } finally {
-    setIsLoading(false);
-  }
+      if (!response.ok) {
+        toast.error("Invalid email or password");
+        setIsLoading(false);
+        return;
+      }
+
+      const data = await response.json();
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userEmail", data.email || email);
+      localStorage.setItem("userRole", data.role || (targetRole === "owner" ? "OWNER" : targetRole === "admin" ? "ADMIN" : "USER"));
+
+      // Synchronize frontend context state
+      login(email, targetRole, displayName);
+
+      toast.success("Login successful!");
+      router.push(getDestination(defaultRedirect));
+    } catch (error) {
+      console.warn("Backend auth down. Simulating login locally.");
+      
+      // Fallback local simulation: authenticate locally using user-defined demo creds
+      if (
+        (lowerEmail === "user@bookmyvenue.com" && password === "user123") ||
+        (lowerEmail === "customer@bookmyvenue.com" && password === "customer123") ||
+        (lowerEmail === "owner@bookmyvenue.com" && password === "owner123") ||
+        (lowerEmail === "admin@bookmyvenue.com" && password === "admin123")
+      ) {
+        localStorage.setItem("token", "simulated-jwt-token-xyz");
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("userRole", targetRole === "owner" ? "OWNER" : targetRole === "admin" ? "ADMIN" : "USER");
+        
+        login(email, targetRole, displayName);
+        toast.success("Login successful! (Simulated Mode)");
+        router.push(getDestination(defaultRedirect));
+      } else {
+        toast.error("Unable to connect to server and invalid mock credentials.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Google OAuth Login Mock
@@ -85,12 +134,13 @@ try {
       login("john.doe@gmail.com", "customer", "John Doe");
       setIsGoogleLoading(false);
       toast.success("Successfully authenticated with Google!");
-      router.push("/venues");
+      router.push(getDestination("/venues"));
     }, 1500);
   };
 
   // Pre-fill demo accounts helper
   const fillDemoAccount = (roleType: "customer" | "owner" | "admin") => {
+    setSelectedRole(roleType);
     if (roleType === "customer") {
       setEmail("customer@bookmyvenue.com");
       setPassword("customer123");
@@ -113,7 +163,6 @@ try {
     toast.success("Password recovery link sent successfully!");
     setTimeout(() => {
       setForgotPasswordOpen(false);
-      // reset state
       setForgotEmail("");
       setForgotSubmitted(false);
     }, 2500);
@@ -162,7 +211,7 @@ try {
 
         {/* Footer info */}
         <div className="relative z-10 text-xs text-blue-200 flex justify-between items-center">
-          <span>&copy; 2026 BookMyVenue Inc.</span>
+          <span>&copy; {new Date().getFullYear()} BookMyVenue Inc.</span>
           <div className="flex space-x-4">
             <a href="#" className="hover:underline">Privacy Policy</a>
             <a href="#" className="hover:underline">Terms of Service</a>
@@ -183,7 +232,15 @@ try {
             </span>
           </div>
 
-          <Card className="border border-border bg-card shadow-sm rounded-2xl">
+          <Card className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden">
+            {/* Notice Alert Banner if redirected from booking */}
+            {messageParam && (
+              <div className="mx-6 sm:mx-8 mt-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center space-x-2.5">
+                <Lock className="h-4.5 w-4.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                <span>{messageParam}</span>
+              </div>
+            )}
+
             <CardHeader className="space-y-1.5 p-6 sm:p-8">
               <CardTitle className="text-2xl font-extrabold tracking-tight text-foreground">
                 Sign in to your account
@@ -194,6 +251,43 @@ try {
             </CardHeader>
 
             <CardContent className="p-6 sm:p-8 pt-0 space-y-5">
+              {/* Role selector tabs */}
+              <div className="grid grid-cols-3 gap-2 p-1 bg-secondary/60 rounded-xl text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground select-none">
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole("customer")}
+                  className={`py-2 rounded-lg transition-all cursor-pointer text-center ${
+                    selectedRole === "customer"
+                      ? "bg-card text-foreground shadow-sm font-black"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Customer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole("owner")}
+                  className={`py-2 rounded-lg transition-all cursor-pointer text-center ${
+                    selectedRole === "owner"
+                      ? "bg-card text-foreground shadow-sm font-black"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Host/Owner
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole("admin")}
+                  className={`py-2 rounded-lg transition-all cursor-pointer text-center ${
+                    selectedRole === "admin"
+                      ? "bg-card text-foreground shadow-sm font-black"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Admin
+                </button>
+              </div>
+
               {/* Form container */}
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Email address field */}
@@ -355,7 +449,7 @@ try {
         </div>
       </div>
 
-      {/* Forgot Password Modal Dialog Dialog */}
+      {/* Forgot Password Modal Dialog */}
       <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
         <DialogContent className="max-w-md rounded-2xl bg-card border border-border p-6">
           <DialogHeader>
@@ -413,5 +507,17 @@ try {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary"></div>
+      </div>
+    }>
+      <LoginFormContent />
+    </Suspense>
   );
 }
