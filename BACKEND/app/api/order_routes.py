@@ -16,7 +16,7 @@ router = APIRouter(
 @router.get("/total-earnings")
 async def get_my_earnings(
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Get total earnings for the current user.
