@@ -663,3 +663,16 @@ export const updateOwnerBookingStatusService = async (
 
   return updatedBooking;
 };
+
+// ── Admin Bookings ──────────────────────────────────────────
+
+export const getAdminBookingsService = async (
+  page: number,
+  limit: number,
+  search?: string,
+  status?: string,
+  categoryId?: string,
+  sort?: string
+) => {
+  return bookingRepo.getAdminBookings(page, limit, search, status, categoryId, sort);
+};

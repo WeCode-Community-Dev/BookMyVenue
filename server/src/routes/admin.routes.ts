@@ -3,6 +3,7 @@ import * as categoryController from '@/controllers/category.controller';
 import * as userController from '@/controllers/user.controller';
 import * as adminVenueController from '@/controllers/admin-venue.controller';
 import * as settlementController from '@/controllers/settlement.controller';
+import * as bookingController from '@/controllers/booking.controller';
 import * as dashboardController from '@/controllers/dashboard.controller';
 import { upload } from '@/middlewares/upload.middleware';
 import { authMiddleware } from '@/middlewares/auth.middleware';
@@ -65,6 +66,9 @@ import * as transactionController from '@/controllers/transaction.controller';
 // Transactions
 router.get('/transactions', transactionController.getAdminTransactions);
 router.get('/transactions/stats', transactionController.getAdminTransactionStats);
+
+// Bookings
+router.get('/bookings', bookingController.getAdminBookings);
 
 // Settlements
 router.get('/settlements', settlementController.getPendingSettlements);

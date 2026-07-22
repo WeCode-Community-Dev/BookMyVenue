@@ -12,6 +12,7 @@ import ProtectedRoute from '@/shared/components/ProtectedRoute';
 import AdminDashboard from '@/features/dashboard/pages/AdminDashboard';
 import UserProfile from '@/features/profile/pages/UserProfile';
 import AdminTransactions from '@/features/admin/pages/AdminTransactions';
+import AdminBookingsList from '@/features/admin/pages/AdminBookingsList';
 
 export const adminRoutes = {
   path: '/admin',
@@ -54,6 +55,10 @@ export const adminRoutes = {
     {
       path: 'venues/:id',
       element: <AdminVenueDetails />,
+    },
+    {
+      path: 'bookings',
+      element: <AdminBookingsList />,
     },
     {
       path: 'settlements',

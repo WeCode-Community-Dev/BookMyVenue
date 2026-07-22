@@ -342,3 +342,134 @@ export const markRefundFailed = async (bookingId: string): Promise<IBooking | nu
     { new: true }
   ) as Promise<IBooking | null>;
 };
+
+// ── Admin Bookings (Aggregation) ────────────────────────────
+
+export const getAdminBookings = async (
+  page: number,
+  limit: number,
+  search?: string,
+  status?: string,
+  categoryId?: string,
+  sort?: string
+) => {
+  const skip = (page - 1) * limit;
+  const matchStage: Record<string, any> = {};
+
+  // Status filter
+  if (status && status !== 'all') {
+    matchStage.bookingStatus = status;
+  }
+
+  // Build the aggregation pipeline
+  const pipeline: any[] = [
+    // 1. Lookup Venue
+    {
+      $lookup: {
+        from: 'venues',
+        localField: 'venue',
+        foreignField: '_id',
+        as: 'venueInfo',
+      },
+    },
+    { $unwind: { path: '$venueInfo', preserveNullAndEmptyArrays: true } },
+
+    // 2. Lookup Category from venueInfo.categoryId
+    {
+      $lookup: {
+        from: 'categories',
+        localField: 'venueInfo.categoryId',
+        foreignField: '_id',
+        as: 'categoryInfo',
+      },
+    },
+    { $unwind: { path: '$categoryInfo', preserveNullAndEmptyArrays: true } },
+
+    // 3. Lookup Owner document from venueInfo.ownerId
+    {
+      $lookup: {
+        from: 'owners',
+        localField: 'venueInfo.ownerId',
+        foreignField: '_id',
+        as: 'ownerRecord',
+      },
+    },
+    { $unwind: { path: '$ownerRecord', preserveNullAndEmptyArrays: true } },
+
+    // 4. Lookup User for the owner (to get fullName)
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'ownerRecord.userId',
+        foreignField: '_id',
+        as: 'ownerUserInfo',
+      },
+    },
+    { $unwind: { path: '$ownerUserInfo', preserveNullAndEmptyArrays: true } },
+
+    // 5. Lookup Customer (the booking user)
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user',
+        foreignField: '_id',
+        as: 'customerInfo',
+      },
+    },
+    { $unwind: { path: '$customerInfo', preserveNullAndEmptyArrays: true } },
+  ];
+
+  // Category filter (applied after lookups)
+  if (categoryId && categoryId !== 'all') {
+    matchStage['venueInfo.categoryId'] = new mongoose.Types.ObjectId(categoryId);
+  }
+
+  // Search filter — match on bookingId, venue name, owner name, or customer name
+  if (search) {
+    const regex = { $regex: search, $options: 'i' };
+    matchStage.$or = [
+      { bookingId: regex },
+      { 'venueInfo.name': regex },
+      { 'ownerUserInfo.fullName': regex },
+      { 'customerInfo.fullName': regex },
+    ];
+  }
+
+  pipeline.push({ $match: matchStage });
+
+  // Sort
+  const sortStage: Record<string, 1 | -1> = {};
+  switch (sort) {
+    case 'old-new':        sortStage.createdAt = 1;               break;
+    case 'a-z':            sortStage['venueInfo.name'] = 1;       break;
+    case 'z-a':            sortStage['venueInfo.name'] = -1;      break;
+    case 'price-low-high': sortStage.totalAmount = 1;             break;
+    case 'price-high-low': sortStage.totalAmount = -1;            break;
+    case 'guests-low-high':sortStage.guests = 1;                  break;
+    case 'guests-high-low':sortStage.guests = -1;                 break;
+    default:               sortStage.createdAt = -1;              break; // new-old
+  }
+  pipeline.push({ $sort: sortStage });
+
+  // Facet for pagination + total count in a single query
+  pipeline.push({
+    $facet: {
+      metadata: [{ $count: 'total' }],
+      data: [{ $skip: skip }, { $limit: limit }],
+    },
+  });
+
+  const results = await Booking.aggregate(pipeline);
+  const total = results[0]?.metadata[0]?.total || 0;
+  const bookings = results[0]?.data || [];
+
+  return {
+    bookings,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
