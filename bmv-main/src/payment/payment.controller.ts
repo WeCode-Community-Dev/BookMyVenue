@@ -34,7 +34,7 @@ export class PaymentController {
   ) {
     return this.paymentService.createOrder(
       createOrderDto,
-      req.user.id,
+      req.user.userId,
     );
   }
   @Post('verify')
@@ -47,7 +47,7 @@ verifyPayment(
 ) {
   return this.paymentService.verifyPayment(
     verifyPaymentDto,
-    req.user.id,
+    req.user.userId,
   );
 }
 }
