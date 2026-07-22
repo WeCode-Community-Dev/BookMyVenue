@@ -14,6 +14,18 @@ const UserBookingsDetail = lazy(() => import("@/presentation/pages/user/BookingD
 const UserVenueDetails = lazy(() =>
   import("@/presentation/pages/user/VenueDetails")
 );
+const BookingSummary = lazy(() =>
+  import("@/presentation/pages/user/BookingSummary")
+);
+const UserPayment =lazy(()=>
+import("@/presentation/pages/user/Payment"))
+
+const UserPaymentSuccess =lazy(()=>
+import("@/presentation/pages/user/PaymentSuccess"))
+
+const UserPaymentFailure =lazy(()=>
+import("@/presentation/pages/user/PaymentFailure"))
+
 
 
 const Dashboard = lazy(() =>
@@ -94,7 +106,10 @@ function App() {
           <Route path={ROUTES.USER.BOOKINGS} element={<UserBookings />} />
           <Route path={ROUTES.USER.BOOKING_DETAIL} element={<UserBookingsDetail />} />
           <Route path={ROUTES.USER.VENUE_DETAILS} element={<UserVenueDetails />} />
-
+          <Route path={ROUTES.USER.BOOKING_SUMMARY} element={<BookingSummary />} />
+          <Route path={ROUTES.USER.PAYMENT} element={<UserPayment />} />
+          <Route path={ROUTES.USER.PAYMENT_SUCCESS} element={<UserPaymentSuccess />} />
+          <Route path={ROUTES.USER.PAYMENT_FAILURE} element={<UserPaymentFailure />} />
 
           <Route path={ROUTES.VENDOR.DASHBOARD} element={<Dashboard />} />
           <Route path={ROUTES.VENDOR.VENUES} element={<VenueList />} />

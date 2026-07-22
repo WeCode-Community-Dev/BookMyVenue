@@ -1,13 +1,31 @@
-import { useEffect } from "react";
+import { useEffect,useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-
+import VenueReviews from "@/presentation/components/user/venueDetails/VenueReviews";
 import Header from "@/presentation/components/common/Header";
 import Footer from "@/presentation/components/common/Footer";
-
+import VenueAmenities from "@/presentation/components/user/venueDetails/VenueAmenities";
+import VenueGallery from "@/presentation/components/user/venueDetails/VenueGallery";
+import VenueHeader from "@/presentation/components/user/venueDetails/VenueHeader";
+import VenueAbout from "@/presentation/components/user/venueDetails/VenueAbout";
 import { getVenueById } from "@/redux/slices/UserVenueSlice";
+import BookingCard from "@/presentation/components/user/venueDetails/BookingCard";
+import SimilarVenues from "@/presentation/components/user/venueDetails/SimilarVenues";
+import VenuePricingPackages from "@/presentation/components/user/venueDetails/VenuePricingPackages";
+import VenueAvailability from "@/presentation/components/user/venueDetails/VenueAvailability";
+import HostedBy from "@/presentation/components/user/venueDetails/HostedBy";
+import { similarVenues } from "@/constants/mockVenues";
+import CancellationPolicy from "@/presentation/components/user/venueDetails/CancellationPolicy";
 
 export default function VenueDetails() {
+  const [selectedPackage, setSelectedPackage] = useState(null);
+
+  const [availability, setAvailability] = useState({
+    eventDate: "",
+    startTime: "",
+    endTime: "",
+    guestCount: "",
+  });
   const { id } = useParams();
   const dispatch = useDispatch();
 
@@ -49,43 +67,39 @@ export default function VenueDetails() {
           )}
 
           {!loading && !error && selectedVenue && (
-            <>
-              <h1 className="text-3xl font-bold">
-                {selectedVenue.name}
-              </h1>
+          <>
+            <VenueHeader venue={selectedVenue} />
 
-              <p className="text-gray-500 mt-2">
-                📍 {selectedVenue.address?.city},{" "}
-                {selectedVenue.address?.state}
-              </p>
+            <VenueGallery venue={selectedVenue} />
 
-              <div className="grid grid-cols-2 gap-4 mt-6">
-                {selectedVenue.images?.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image.url}
-                    alt={selectedVenue.name}
-                    className="w-full h-72 object-cover rounded-2xl"
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+
+                <div className="lg:col-span-2">
+                  <VenueAbout description={selectedVenue.description} />
+                  <VenueAmenities amenities={selectedVenue.amenities} />
+                  <VenuePricingPackages selectedPackage={selectedPackage?.id} onPackageSelect={setSelectedPackage} />
+                  <VenueAvailability venue={selectedVenue} onAvailabilityChange={setAvailability} />
+                  <VenueReviews rating={selectedVenue.rating} 
+                    reviews={selectedVenue.reviews} />
+                  <HostedBy
+                    vendor={selectedVenue.vendorId}
                   />
-                ))}
+                  <CancellationPolicy />
+
+ 
+                </div>
+
+                <BookingCard venue={selectedVenue} selectedPackage={selectedPackage} />
+
               </div>
+              <SimilarVenues venues={similarVenues} />
+          </>
+        )}       
 
-              <div className="bg-white rounded-2xl p-6 mt-8">
-                <h2 className="text-2xl font-bold mb-4">
-                  About this venue
-                </h2>
+      </div>
+    </main>
 
-                <p className="text-gray-600">
-                  {selectedVenue.description}
-                </p>
-              </div>
-            </>
-          )}
-
-        </div>
-      </main>
-
-      <Footer />
-    </>
+    <Footer />
+  </>
   );
 }
