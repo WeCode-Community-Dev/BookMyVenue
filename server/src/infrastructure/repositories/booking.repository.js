@@ -384,5 +384,26 @@ export class BookingRepositoryImpl extends BookingRepository {
         };
 
     }
+    async hasOverlappingBooking(
+        venueId,
+            bookingDate,
+            startTime,
+            endTime
+        ) {
+        const booking=await BookingModel.findOne({
+            venueId,
+            bookingDate,
+            status:{
+                $ne:BookingStatus.CANCELLED
+            },
+            startTime:{
+                $lt:endTime
+            },
+            endTime:{
+                $gt:startTime
+            }
+        })
+        return Boolean(booking)
+     }
 
 }

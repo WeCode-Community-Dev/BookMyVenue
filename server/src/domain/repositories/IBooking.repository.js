@@ -44,4 +44,12 @@ export class BookingRepository {
 async getRecentBookings(vendorId) {
     throw new Error("Method not implemented");
 }
+async hasOverlappingBooking(
+    venueId,
+    bookingDate,
+    startTime,
+    endTime
+) {
+    throw new Error("Method not implemented.");
+}
   }

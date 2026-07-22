@@ -89,6 +89,7 @@ import { AdminRepository } from '../../infrastructure/repositories/admin.reposit
 import { AdminAuthController } from './admin/admin.authController.js'
 import { AdminLogoutUseCase } from '../../application/admin/usecases/auth/admin.logOut.usecase.js'
 import { AdminRefreshTokenUseCase } from '../../application/admin/usecases/auth/admin.refreshToken.usecase.js'
+import { RedisService } from "../../application/services/redisService.js";
 
 //repository
 const iVenueRepository = new VenueRepository();
@@ -105,6 +106,7 @@ const iHashService = new HashService()
 const iOtpService = new OtpService()
 const iOtpStoreService = new OtpStoreService(redisClient)
 export const iTokenService = new TokenService()
+export const IredisService=new RedisService()
 
 // --- admin auth usecase---
 const iAdminLoginUsecase = new LoginAdminUsecase (
