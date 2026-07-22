@@ -149,10 +149,11 @@ export default function BookingCard({ venueId, venueName, startingPrice, rating,
       throw new Error("Razorpay checkout failed to load. Please try again.");
     }
 
+    const RazorpayCtor = window.Razorpay;
     const order = await paymentService.createPaymentOrder({ bookingId });
 
     await new Promise<void>((resolve, reject) => {
-      const razorpay = new window.Razorpay({
+      const razorpay = new RazorpayCtor({
         key: razorpayKeyId,
         amount: order.amount,
         currency: order.currency,
@@ -309,3 +310,4 @@ export default function BookingCard({ venueId, venueName, startingPrice, rating,
     </div>
   );
 }
+

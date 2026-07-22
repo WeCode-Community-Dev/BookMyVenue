@@ -6,7 +6,17 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import * as bookingService from "@/services/booking.service";
+import * as paymentService from "@/services/payment.service";
 import * as venueService from "@/services/venue.service";
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => {
+      open: () => void;
+      on: (event: string, callback: (response: unknown) => void) => void;
+    };
+  }
+}
 
 interface BookingCardProps {
   venueId: string;
@@ -17,9 +27,74 @@ interface BookingCardProps {
   bookingApprovalRequired?: boolean;
 }
 
+interface RazorpaySuccessResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+const RAZORPAY_SCRIPT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
+
+function getTodayDateKey() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function loadRazorpayScript() {
+  return new Promise<boolean>((resolve) => {
+    if (typeof window === "undefined") {
+      resolve(false);
+      return;
+    }
+
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${RAZORPAY_SCRIPT_SRC}"]`);
+    if (existingScript) {
+      existingScript.addEventListener("load", () => resolve(true), { once: true });
+      existingScript.addEventListener("error", () => resolve(false), { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = RAZORPAY_SCRIPT_SRC;
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
+function getErrorMessage(error: unknown) {
+  if (typeof error === "object" && error !== null) {
+    const maybeAxios = error as {
+      response?: { data?: { message?: string | string[] } };
+      message?: string;
+    };
+    const apiMessage = maybeAxios.response?.data?.message;
+    if (Array.isArray(apiMessage)) {
+      return apiMessage.join(", ");
+    }
+    if (typeof apiMessage === "string") {
+      return apiMessage;
+    }
+    if (typeof maybeAxios.message === "string") {
+      return maybeAxios.message;
+    }
+  }
+
+  return "Something went wrong.";
+}
+
 export default function BookingCard({ venueId, venueName, startingPrice, rating, reviewCount, bookingApprovalRequired = false }: BookingCardProps) {
   const router = useRouter();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const [guests, setGuests] = useState("100");
   const [date, setDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +119,7 @@ export default function BookingCard({ venueId, venueName, startingPrice, rating,
   }, [venueId]);
 
   const unavailableSet = useMemo(() => new Set(unavailableDates), [unavailableDates]);
-  const minDate = "2026-07-23";
+  const minDate = useMemo(getTodayDateKey, []);
 
   useEffect(() => {
     if (date) return;
@@ -59,9 +134,74 @@ export default function BookingCard({ venueId, venueName, startingPrice, rating,
       }
     }
     setDate(minDate);
-  }, [date, unavailableSet]);
+  }, [date, minDate, unavailableSet]);
 
   const formatPrice = (price: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(price);
+
+  const startPaymentFlow = async (bookingId: string) => {
+    const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    if (!razorpayKeyId) {
+      throw new Error("NEXT_PUBLIC_RAZORPAY_KEY_ID is missing in the frontend environment.");
+    }
+
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded || !window.Razorpay) {
+      throw new Error("Razorpay checkout failed to load. Please try again.");
+    }
+
+    const RazorpayCtor = window.Razorpay;
+    const order = await paymentService.createPaymentOrder({ bookingId });
+
+    await new Promise<void>((resolve, reject) => {
+      const razorpay = new RazorpayCtor({
+        key: razorpayKeyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: "BookMyVenue",
+        description: `Payment for ${venueName}`,
+        order_id: order.razorpayOrderId,
+        prefill: {
+          name: user.name,
+          email: user.email,
+          contact: user.phone,
+        },
+        notes: {
+          bookingId: order.bookingId,
+          venueName,
+        },
+        handler: async (response: unknown) => {
+          try {
+            const paymentResponse = response as RazorpaySuccessResponse;
+            const verification = await paymentService.verifyPayment({
+              bookingId: order.bookingId,
+              razorpayOrderId: paymentResponse.razorpay_order_id,
+              razorpayPaymentId: paymentResponse.razorpay_payment_id,
+              razorpaySignature: paymentResponse.razorpay_signature,
+            });
+            alert(verification.message);
+            router.push("/profile?tab=bookings");
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            reject(new Error("Payment was cancelled before completion."));
+          },
+        },
+        theme: {
+          color: "#e11d48",
+        },
+      });
+
+      razorpay.on("payment.failed", () => {
+        reject(new Error("Payment failed. Please try again."));
+      });
+
+      razorpay.open();
+    });
+  };
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,11 +227,22 @@ export default function BookingCard({ venueId, venueName, startingPrice, rating,
         eventName: `${venueName} Booking`,
         guestCount: Number(guests),
       });
-      const expiryText = result.paymentExpiresAt ? ` Payment window closes at ${new Date(result.paymentExpiresAt).toLocaleString("en-IN")}.` : "";
-      alert(`${result.message}${expiryText}`);
-      router.push("/profile?tab=bookings");
+
+      if (result.bookingStatus === "PENDING_OWNER_APPROVAL") {
+        const expiryText = result.paymentExpiresAt ? ` Payment window closes at ${new Date(result.paymentExpiresAt).toLocaleString("en-IN")}.` : "";
+        alert(`${result.message}${expiryText}`);
+        router.push("/profile?tab=bookings");
+        return;
+      }
+
+      await startPaymentFlow(result.bookingId);
     } catch (error: unknown) {
-      alert(error instanceof Error ? error.message : "Booking creation failed.");
+      const message = getErrorMessage(error);
+      if (message.toLowerCase().includes("not allowed to make payment")) {
+        alert("Payment API is connected in the frontend, but the backend is rejecting the authenticated user for payment. The booking was created, but payment could not continue.");
+      } else {
+        alert(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -138,7 +289,7 @@ export default function BookingCard({ venueId, venueName, startingPrice, rating,
           </div>
         </div>
         <Button type="submit" disabled={isSubmitting} className="w-full bg-rose-600 hover:bg-rose-700 text-white font-extrabold h-11 rounded-2xl cursor-pointer shadow-md active:translate-y-px transition-all border-none text-sm tracking-wide disabled:opacity-50">
-          {isSubmitting ? "Submitting..." : bookingApprovalRequired ? "Request Booking" : "Book Now"}
+          {isSubmitting ? "Processing..." : bookingApprovalRequired ? "Request Booking" : "Book & Pay Now"}
         </Button>
       </form>
 
@@ -159,3 +310,4 @@ export default function BookingCard({ venueId, venueName, startingPrice, rating,
     </div>
   );
 }
+
