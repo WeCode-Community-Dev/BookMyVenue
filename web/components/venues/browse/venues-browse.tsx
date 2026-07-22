@@ -10,6 +10,7 @@ import { VenuesBrowseFilters } from "./venues-browse-filters";
 import { VenuesBrowseHeader } from "./venues-browse-header";
 import { VenuesPagination } from "./venues-pagination";
 import { useState } from "react";
+import { BrowseViewMode } from "@/lib/data/venues-browse";
 
 type VenuesBrowseProps = {
   venues: BrowseVenueListItem[];
@@ -21,9 +22,9 @@ export function VenuesBrowse({
   meta
 }: VenuesBrowseProps) {
 
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useState<BrowseViewMode>("grid");
   
-  const handleViewChange = (view: "grid" | "list") => {
+  const handleViewChange = (view: BrowseViewMode) => {
     setView(view);
   };
 

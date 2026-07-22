@@ -12,7 +12,6 @@ type VenuesPageProps = {
     location?: string;
     date?: string;
     occasion?: string;
-    category?: string;
     amenityIds?: string;
     minCapacity?: string;
     maxCapacity?: string;
@@ -21,14 +20,16 @@ type VenuesPageProps = {
     sort?: string;
     page?: string;
     view?: string;
+    categoryId?: string;
+    search?: string;
   }>;
 };
 
 export default async function VenuesPage({ searchParams }: VenuesPageProps) {
-  const {page=1, amenityIds} = await searchParams;
+  const {page=1, amenityIds, categoryId, search} = await searchParams;
   
 
-  const { venues, meta } = await getVenues(Number(page), VENUES_PAGE_LIMIT, amenityIds);
+  const { venues, meta } = await getVenues(Number(page), VENUES_PAGE_LIMIT, amenityIds, categoryId, search);
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans">

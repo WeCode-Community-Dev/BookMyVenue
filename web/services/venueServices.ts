@@ -232,10 +232,12 @@ export async function createImages(images: { url: string, altText: string }[]): 
 export async function getVenues(
     page: number = 1,
     limit: number = VENUES_PAGE_LIMIT,
-    amenityIds?:string
+    amenityIds?:string,
+    categoryId?:string,
+    search?:string
 ): Promise<GetVenuesResult> {
     try {
-        const response = await apiFetch(`/venues?page=${page}&limit=${limit}&amenityIds=${amenityIds}`, {
+        const response = await apiFetch(`/venues?page=${page}&limit=${limit}&amenityIds=${amenityIds}&categoryId=${categoryId}&search=${search}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

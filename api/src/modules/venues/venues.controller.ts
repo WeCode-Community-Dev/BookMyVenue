@@ -40,8 +40,8 @@ export class VenuesController {
   }
 
   @Get('venues')
-  findAllVenues(@Query() paginationDto: PaginationDto, @Query('amenityIds') amenityIds?: string) {
-    return this.venuesService.findAllVenues(paginationDto.page, paginationDto.limit, amenityIds);
+  findAllVenues(@Query() paginationDto: PaginationDto, @Query('amenityIds') amenityIds?: string, @Query('categoryId') categoryId?: string, @Query('search') search?: string) {
+    return this.venuesService.findAllVenues(paginationDto.page, paginationDto.limit, amenityIds, categoryId, search);
   }
 
   @Get('venues/:id')

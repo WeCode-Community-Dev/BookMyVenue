@@ -4,11 +4,12 @@ import { LayoutGrid, List } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { BrowseViewMode } from "@/lib/data/venues-browse";
 
 type VenuesBrowseHeaderProps = {
   totalCount: number;
-  onViewChange: (view: "grid" | "list") => void;
-  view: "grid" | "list";
+  onViewChange: (view: BrowseViewMode) => void;
+  view: BrowseViewMode;
 };
 
 export function VenuesBrowseHeader({

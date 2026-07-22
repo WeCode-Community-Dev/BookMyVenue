@@ -336,20 +336,37 @@ export class VenuesService {
   }
 
 
-  async findAllVenues(page: number = 1, limit: number = 10, amenityIds?: string): Promise<SuccessResponse<BrowseVenueListItem[]>> {
+  async findAllVenues(page: number = 1, limit: number = 10, amenityIds?: string, categoryId?: string, search?: string): Promise<SuccessResponse<BrowseVenueListItem[]>> {
     const parsedAmenityIds = amenityIds ? amenityIds.split(',') : [];
     const existingAmenityIds = await this.filterExistingIds(this.prismaService.amenity, parsedAmenityIds);
-    
+    const existingCategoryId = await this.filterExistingIds(this.prismaService.spaceCategory, [categoryId ?? '']);
+
     try {
       const where = {
-        AND: existingAmenityIds.length > 0 ? existingAmenityIds.map(id => ({
-          amenities: {
-            some: {
-              amenityId: id,
+        AND: [
+          ...existingAmenityIds.map(id => ({
+            amenities: {
+              some: {
+                amenityId: id,
+              },
             },
-          },
-        })) : {},
-      }
+          })),
+          (existingCategoryId.length ? { spaces:{
+            some:{
+              categoryId:existingCategoryId[0]
+            }
+          }}:{}),
+          {OR:[
+            { name: { contains: search, mode: 'insensitive' } },
+            { address: { contains: search, mode: 'insensitive' } },
+            { city: { contains: search, mode: 'insensitive' } },
+            { state: { contains: search, mode: 'insensitive' } },
+            { country: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ]},
+        ]
+      } satisfies Prisma.VenueWhereInput;
+      
       const [venues, totalVenues] = await this.prismaService.$transaction([
         
         this.prismaService.venue.findMany({
