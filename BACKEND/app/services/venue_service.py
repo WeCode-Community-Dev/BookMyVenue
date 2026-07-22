@@ -329,10 +329,31 @@ def update_venue_approval_status(
         venue.is_approved = True
         venue.is_approved_status = "approved"
 
+        body = f"""
+            Hello,
+
+            Congratulations! Your venue has been approved.
+
+            Venue Details:
+            --------------------------------
+            Venue Name      : {venue.venue_name}
+            Location        : {venue.location}
+            Capacity        : {venue.capacity}
+            Price           : ₹{venue.venue_price}
+            Status          : Approved
+
+            Your venue is now visible to users and can start receiving bookings.
+
+            Thank you for choosing BookMyVenue.
+
+            Regards,
+            BookMyVenue Team
+        """
+
         send_email(
             to_email=email_id.email,
             subject="Venue Approval Approved",
-            body="Your venue request has been approved."
+            body=body
         )
 
     elif status.lower() == "rejected":
@@ -340,10 +361,32 @@ def update_venue_approval_status(
         venue.rejected_reason = reason
         venue.is_approved_status = "rejected"
 
+        body = f"""
+            Hello,
+
+            We're sorry to inform you that your venue approval request has been rejected.
+
+            Venue Details:
+            --------------------------------
+            Venue Name      : {venue.venue_name}
+            Location        : {venue.location}
+            Capacity        : {venue.capacity}
+            Price           : ₹{venue.venue_price}
+            Status          : Rejected
+
+            Reason for Rejection:
+            {reason}
+
+            Please update the venue details as required and submit it again for review.
+
+            Thank you,
+            BookMyVenue Team
+        """
+
         send_email(
             to_email=email_id.email,
             subject="Venue Approval Rejection",
-            body="Your venue request has been rejected. due to this reason: " + reason
+            body=body
         )
 
     else:
