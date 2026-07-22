@@ -1,29 +1,26 @@
 import smtplib
 from email.message import EmailMessage
 from app.core.config import settings
+import resend
 
-def send_email(to_email: str, subject: str, body: str):
+
+resend.api_key = settings.RESEND_API_KEY
+
+def send_email(to_email: str, subject: str, body: str) -> bool:
     try:
-        print(f"To email: {to_email}")
+        print(f"Sending email to: {to_email}")
 
-        msg = EmailMessage()
-        msg["From"] = settings.SMTP_EMAIL
-        msg["To"] = to_email
-        msg["Subject"] = subject
-        msg.set_content(body)
+        response = resend.Emails.send({
+            "from": f"BookMyVenue <{settings.RESEND_FROM_EMAIL}>",
+            "to": [to_email],
+            "subject": subject,
+            "text": body,
+        })
 
-        print("Connecting to SMTP server...")
-
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as smtp:
-            smtp.starttls()
-            smtp.login(settings.SMTP_EMAIL, settings.SMTP_PASSWORD)
-
-            print("Sending email...")
-            smtp.send_message(msg)
-
-        print("Email sent successfully.")
+        print(f"Email sent successfully: {response}")
         return True
 
-    except Exception as e:
-        raise Exception(f"Email sending failed: {e}")
+    except Exception as error:
+        print(f"Email sending failed: {error}")
+        raise Exception(f"Email sending failed: {error}") from error
 
