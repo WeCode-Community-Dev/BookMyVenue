@@ -233,7 +233,7 @@ export default function UserBookings() {
           </div>
         </div>
 
-        {/* <div className='bg-[#ff535e] p-3 pl-5 rounded-3xl text-white font-medium mx-12' >
+        <div className='bg-[#ff535e] p-3 pl-5 rounded-3xl text-white font-medium mx-12' >
             <h1 className='text-xl font-bold' >REFUND POLICY</h1>
             <p>
                 - if current date and booking date is more than 24 hours, then refund is not allowed <br />
@@ -242,7 +242,7 @@ export default function UserBookings() {
                 - if 7 days before the booking date, then refund is allowed 70% of the amount <br />
                 - else no refund is allowed
             </p>
-        </div> */}
+        </div>
       </main>
 
       {/* ==========================================

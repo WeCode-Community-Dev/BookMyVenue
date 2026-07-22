@@ -165,7 +165,7 @@ export default function ListNewVenue() {
             }
             
             // API call failed!
-            return false; 
+            return false;
 
         } finally {
             setIsLoading(false);

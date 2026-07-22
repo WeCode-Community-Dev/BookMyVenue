@@ -62,6 +62,7 @@ export default function FormBooking ({
         const startTime = new Date()
         const endTime = new Date()
 
+        console.log(venue)
         SetTimeFromString(startTime, venue.availability.open_time) 
         SetTimeFromString(endTime, venue.availability.closing_time)
         

@@ -109,6 +109,10 @@ const apiService = {
         const response = await axiosInstance.get(`/booking/already-booked/${venue_id}`)
         return response.data;
     },
+    OfflineBooking: async (payload) => {
+        const response = await axiosInstance.post(`/booking/offline`, payload)
+        return response.data;
+    },
 
 }
 

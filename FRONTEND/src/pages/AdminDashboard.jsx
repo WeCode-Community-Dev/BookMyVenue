@@ -48,11 +48,9 @@ export default function AdminDashboard() {
       const response = await apiService.GetAllVenuesForAdmin()
       const safeResponse = Array.isArray(response) ? response : []
       setAllVenues(safeResponse);
-      console.log(safeResponse);
       
       const unapproved = safeResponse.filter(venue => venue.is_approved_status === "pending");
       SetPendingVenues(unapproved);
-      console.log(unapproved)
 
     } catch (error) {
       console.log("Failed to Fetch Venues:", error);
@@ -396,15 +394,18 @@ export default function AdminDashboard() {
                       <p className="font-black text-gray-900 text-lg whitespace-nowrap">₹{venue.price}</p> 
                       
                       <div className="w-28 text-center">
-                        {venue.is_approved ? (
+                        {venue.is_approved_status === "approved" ? (
                           <span className="inline-block w-full px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-green-50 text-green-600 border border-green-100">
                             Approved
                           </span>
-                        ) : (
-                          <span className="inline-block w-full px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-amber-50 text-amber-600 border border-amber-100">
-                            Pending
-                          </span>
-                        )}
+                        ) : venue.is_approved_status === "rejected" 
+                            ? <span className="inline-block w-full px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-red-100 text-red-800 border border-amber-100">
+                                Rejected
+                              </span>
+                            :  <span className="inline-block w-full px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-amber-50 text-amber-600 border border-amber-100">
+                                Pending
+                              </span>
+                            }
                       </div>
                     </div>
 
