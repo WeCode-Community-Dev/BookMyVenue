@@ -13,10 +13,11 @@ router = APIRouter(
 )
 
 
-@router.get("/total-earnings")
+@router.get("/total-earnings/{venue_id}")
 async def get_my_earnings(
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    venue_id: str = Path(...)
 ):
     """
     Get total earnings for the current user.
@@ -25,6 +26,7 @@ async def get_my_earnings(
         return get_earnings(
             db,
             user_id=current_user["sub"],
+            venue_id=venue_id
         ) 
 
     except Exception as e:
