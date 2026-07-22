@@ -34,50 +34,50 @@ const RegisterForm = () => {
     }
         
     const handleSubmit = async (e) => {
-        e.preventDefault()
+    e.preventDefault()
 
-        // 1. Client-side check: Match passwords
-        if (formData.password !== formData.confirmPassword) {
-            toast.error('Passwords do not match')
-            return
-        }
+    
+    if (formData.password !== formData.confirmPassword) {
+        toast.error('Passwords do not match')
+        return
+    }
 
-        // 2. Schema validation (Zod)
-        const validation = registerSchema.safeParse({
-            ...formData,
-            role,
-        })
+    // 2. Schema validation (Zod)
+    const validation = registerSchema.safeParse({
+        ...formData,
+        role,
+    })
 
-        if (!validation.success) {
-            // Display the first validation error in a toast
-            const errorMessage = validation.error.issues[0]?.message || 'Validation failed'
-            toast.error(errorMessage)
-            return
-        }
+    if (!validation.success) {
+        const errorMessage = validation.error.issues[0]?.message || 'Validation failed'
+        toast.error(errorMessage)
+        return
+    }
 
-        // 3. Dispatch to API
+    
+    try {
         const result = await dispatch(
             registerUser({
                 role,
                 userData: validation.data,
             })
-        )
+        ).unwrap() 
 
-        // 4. Handle Redux response
-        if (registerUser.fulfilled.match(result)) {
-            toast.success("Account created successfully! Please verify your OTP.")
-            navigate(ROUTES.PUBLIC.VERIFY_OTP, {
-                state: {
-                    email: formData.email,
-                    role,
-                },
-            })
-        } else if (registerUser.rejected.match(result)) {
-            // Handle server rejection error message
-            const apiError = result.payload?.message || result.error?.message || "Registration failed"
-            toast.error(apiError)
-            
-        }
+        console.log("success")
+        toast.success(result?.message || "Account created successfully! Please verify your OTP.")
+        
+        navigate(ROUTES.PUBLIC.VERIFY_OTP, {
+            state: {
+                email: formData.email,
+                role,
+                
+            },
+        })
+    } catch (err) {
+        const apiError = err?.message || err || "Registration failed"
+        toast.error(apiError)
+    }
+
     }
       
     return (
