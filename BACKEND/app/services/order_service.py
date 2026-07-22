@@ -8,6 +8,7 @@ from typing import Optional
 from datetime import datetime, timezone
 from sqlalchemy import func
 from app.services.email_service import send_email
+from app.model.venue import Venue
 
 async def add_order_details(    
     db: Session,
