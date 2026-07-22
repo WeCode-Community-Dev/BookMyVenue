@@ -316,6 +316,9 @@ def update_venue_approval_status(
         .first()
     )
 
+    venue_price = venue.venue_availability.venue_price if venue.venue_availability else None
+    booking_types = venue.venue_availability.booking_types if venue.venue_availability else None
+
     if not venue:
         raise Exception("Invalid venue")
 
@@ -339,10 +342,12 @@ def update_venue_approval_status(
             Venue Name      : {venue.venue_name}
             Location        : {venue.location}
             Capacity        : {venue.capacity}
-            Price           : ₹{venue.venue_price}
+            Price           : ₹{venue_price}
             Status          : Approved
+            Booking Type    : {booking_types}
 
-            Your venue is now visible to users and can start receiving bookings.
+            Your venue is currently offline.
+            Activate it to make it visible to users and begin receiving booking requests.
 
             Thank you for choosing BookMyVenue.
 
@@ -371,8 +376,9 @@ def update_venue_approval_status(
             Venue Name      : {venue.venue_name}
             Location        : {venue.location}
             Capacity        : {venue.capacity}
-            Price           : ₹{venue.venue_price}
+            Price           : ₹{venue_price}
             Status          : Rejected
+            Booking Type    : {booking_types}
 
             Reason for Rejection:
             {reason}
@@ -418,6 +424,8 @@ def update_venue_active_status(
         raise Exception("Invalid venue")
 
     if status.lower() == "active":
+        if(venue.is_approved_status == "pending" or venue.is_approved_status == "rejected"):
+            raise Exception("Venue is rejected/pending. Please update the venue details and submit for approval.")
         venue.is_available = True
 
     elif status.lower() == "inactive":

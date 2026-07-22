@@ -196,15 +196,36 @@ const RecentBookings = ({ allBookings }) => (
               </div>
             </div>
 
-            <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
-              <div className="flex flex-col min-w-0 gap-1">
-                <h2 className='font-black text-[#ff535e] text-xs whitespace-nowrap flex flex-col'>Paid Amount</h2>
-                <div className='flex gap-1' >
-                  <p className="text-sm font-bold text-gray-900 mb-0.5 truncate">₹{venuePrice}</p>
+            {
+              booking.order?.status === "refunded" ? (
+                <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
+                  <div className="flex flex-col min-w-0 gap-1">
+                    <h2 className="font-black text-[#ff535e] text-xs whitespace-nowrap">
+                      Refunded Amount
+                    </h2>
+                    <div className="flex gap-1">
+                      <p className="text-sm font-bold text-gray-900 mb-0.5 truncate">
+                        ₹{(booking.order?.refunded_amount ?? 0) / 100}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-
+              ) : (
+                <div className="flex items-center gap-4 flex-1 w-full border-t md:border-none border-gray-50 pt-4 md:pt-0 min-w-0">
+                  <div className="flex flex-col min-w-0 gap-1">
+                    <h2 className="font-black text-[#ff535e] text-xs whitespace-nowrap">
+                      Paid Amount
+                    </h2>
+                    <div className="flex gap-1">
+                      <p className="text-sm font-bold text-gray-900 mb-0.5 truncate">
+                        ₹{venuePrice}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+            
             {booking.start_time !== "" || booking.end_time !== "" ? (
               <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto border-t md:border-none border-gray-50 pt-4 md:pt-0 shrink-0">
                 <div>
@@ -480,7 +501,7 @@ export default function OwnerDashboard() {
       )); 
 
     } catch (error) {
-      toast.error("Some Error occurred during toggling venue Availability!");
+      toast.error("Venue is rejected/pending. Please wait for approval if rejected you will recieve an email with the reason.");
       console.error(error);
     }
   }
