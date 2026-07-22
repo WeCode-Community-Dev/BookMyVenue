@@ -16,6 +16,7 @@ import {
   getOwnerBookingsService,
   getOwnerBookingByIdService,
   updateOwnerBookingStatusService,
+  getAdminBookingsService,
 } from '@/services/booking.service';
 import { createOrder as createRazorpayOrder } from '@/services/razorpay.service';
 import { CreateBookingPayload } from '@/types/booking.types';
@@ -264,6 +265,23 @@ export const updateOwnerBookingStatus = async (req: Request, res: Response, next
     );
 
     success(res, HTTP_STATUS.OK, updatedBooking, 'Booking status updated successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /admin/bookings
+export const getAdminBookings = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = (req.query.search as string) || undefined;
+    const status = (req.query.status as string) || undefined;
+    const categoryId = (req.query.category as string) || undefined;
+    const sort = (req.query.sort as string) || undefined;
+
+    const result = await getAdminBookingsService(page, limit, search, status, categoryId, sort);
+    success(res, HTTP_STATUS.OK, result, 'Admin bookings fetched successfully');
   } catch (error) {
     next(error);
   }
