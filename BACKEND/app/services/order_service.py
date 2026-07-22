@@ -126,11 +126,25 @@ def update_order_status_refund(db: Session, order_id: str, status: str, refund_r
 
 def get_earnings(db: Session, user_id: int):
     try:
+        venue_ids = [
+            venue.id
+            for venue in db.query(Venue.id)
+            .filter(Venue.user_id == user_id)
+            .all()
+        ]
+
+        if not venue_ids:
+            return {
+                "total_earnings": 0,
+                "amount_yet_to_receive": 0,
+                "total_refunded": 0,
+                "currency": "INR"
+            }
+
         total_earnings_paise = (
             db.query(func.sum(Order.amount))
             .filter(
-                # Order.user_id == user_id,
-                # Order.venue_id == venue_id,
+                Order.venue_id.in_(venue_ids),
                 Order.status == "paid"
             )
             .scalar()
@@ -150,8 +164,7 @@ def get_earnings(db: Session, user_id: int):
             db.query(func.sum(Order.amount))
             .join(Booking, Booking.order_id == Order.id)
             .filter(
-                # Order.user_id == user_id,
-                # Order.venue_id == venue_id,
+                Order.venue_id.in_(venue_ids),
                 Order.status == "paid",
                 Booking.booking_date <= current_date
             )
