@@ -30,6 +30,7 @@ export const bookingsApi = baseApi.injectEndpoints({
         { type: 'Booking', id: 'LIST' },
         { type: 'Booking', id: `AVAIL-${venueId}` },
         { type: 'Venue', id: venueId },
+        { type: 'OwnerBooking', id: 'LIST' },
       ],
     }),
     cancelBooking: builder.mutation({
@@ -43,6 +44,7 @@ export const bookingsApi = baseApi.injectEndpoints({
         { type: 'Booking', id: 'LIST' },
         { type: 'Venue', id: result?.venueId },
         { type: 'Booking', id: `AVAIL-${result?.venueId}` },
+        { type: 'OwnerBooking', id: 'LIST' },
       ],
     }),
   }),

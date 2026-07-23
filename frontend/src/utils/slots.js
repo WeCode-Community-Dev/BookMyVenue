@@ -62,7 +62,6 @@ export function isDateBeforeToday(dateString) {
 /** Every operating hour is blocked (or day is in the past). */
 export function isDateFullyBooked(dateString, busySlots) {
   if (isDateBeforeToday(dateString)) return true;
-  if(dateString === '2026-07-15') console.log(getAvailableHoursForDay(dateString, busySlots),'getAvailableHoursForDay');
   return getAvailableHoursForDay(dateString, busySlots).length === 0;
 }
 

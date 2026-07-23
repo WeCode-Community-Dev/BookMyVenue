@@ -1,12 +1,16 @@
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/cn';
 import { formatHourAsAmPm } from '@/utils/datetime';
-import { getVenueBookingEndHourNumbers, getVenueOperatingHourNumbers, isHourBlockedByExistingBooking, isHourRangeBlockedByExistingBooking } from '@/utils/slots';
+import {
+  getVenueBookingEndHourNumbers,
+  getVenueOperatingHourNumbers,
+  isHourBlockedByExistingBooking,
+  isHourRangeBlockedByExistingBooking,
+} from '@/utils/slots';
 
 export function TimeSlotGrid({ dateStr, busySlots, startHour, endHour, onSelectStart, onSelectEnd }) {
   const startHours = getVenueOperatingHourNumbers();
   const endHours = getVenueBookingEndHourNumbers();
-
 
   return (
     <div className="space-y-4">

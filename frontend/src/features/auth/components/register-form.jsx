@@ -35,8 +35,6 @@ export function RegisterForm() {
       }}
       validationSchema={registerSchema}
       onSubmit={async (values, { setSubmitting }) => {
-        console.log(values, 'values');
-        console.log(setSubmitting, 'setSubmitting');
         try {
           const data = await register(values).unwrap();
           dispatch(setCredentials({ token: data.token, user: data.user }));

@@ -66,8 +66,8 @@ export function getMonthUtcRangeForAvailabilityQuery(year, monthOneToTwelve) {
    * below is a technique to get the days in the month
    * Date.UTc(year, month, 0) => there is no day called 0 , so js return last day of previous month ,  so we are getting the last day of the previous month
    * then getUTCDate() will give the last day of the month
-   * 
-   * eg : if month is 7(in js is 0 index its calculated as aug which is 8) , and day is 0 , then it will return last day of 6 which is actually 7 june 
+   *
+   * eg : if month is 7(in js is 0 index its calculated as aug which is 8) , and day is 0 , then it will return last day of 6 which is actually 7 june
    */
   const daysInMonth = new Date(Date.UTC(year, monthOneToTwelve, 0)).getUTCDate();
   const lastDayOfMonth = `${year}-${monthPadded}-${String(daysInMonth).padStart(2, '0')}`;
