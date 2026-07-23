@@ -22,7 +22,8 @@ export class VendorVenueController {
     }
 
     createVenue = asyncHandler( async (req, res) => {
-        const vendorId = req.user.id
+        // const vendorId = req.user.id
+        const vendorId = '6a2d96f9bd24251e9e502c04'
         console.log('files', req.files)
         const images = (req.files.images || []).map(file => ({
             publicId: file.filename,

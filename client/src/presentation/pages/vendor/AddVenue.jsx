@@ -66,7 +66,7 @@ const AddVenue = () => {
   const {
     vendorId,
     loading,
-    success,
+    // success,
     error,
   } = useSelector((state) => state.vendorVenue);
 
@@ -177,11 +177,11 @@ const AddVenue = () => {
     // VENDOR VALIDATION
     // ==============================
 
-    if (!vendorId) {
-      toast.error("Vendor profile is still loading.");
+    // if (!vendorId) {
+    //   toast.error("Vendor profile is still loading.");
 
-      return;
-    }
+    //   return;
+    // }
 
     // ==============================
     // FORM DATA

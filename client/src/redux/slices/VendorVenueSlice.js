@@ -48,6 +48,7 @@ export const createVenue = createAsyncThunk(
 
   async (formData, { rejectWithValue }) => {
     try {
+      console.log("from slice,", formData)
       const response = await api.post(
         API_ROUTES.VENDOR.CREATE_VENUE,
         formData,

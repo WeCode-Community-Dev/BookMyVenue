@@ -34,7 +34,7 @@ const uploadVenue = cloudinaryUpload("venues");
 
 //venue
 router.post(
-  ROUTES.OWNER.VENUE.CREATE, authHandler(iTokenService),
+  ROUTES.OWNER.VENUE.CREATE,
   uploadVenue.fields([
     { name: "images", maxCount: 10 },
     { name: "license", maxCount: 5 },
