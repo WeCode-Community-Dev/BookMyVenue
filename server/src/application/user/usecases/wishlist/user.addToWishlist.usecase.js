@@ -41,13 +41,14 @@ export class UserAddToWishlistUsecase {
         );
         }
 
-        if(!venue.isAdminVerified){
-            throw new ValidationError(
-            VenueMessages.error.NOT_ADMIN_VERIFIED
-        );
-        }
+        // if(!venue.isAdminVerified){
+        //     throw new ValidationError(
+        //     VenueMessages.error.NOT_ADMIN_VERIFIED
+        // );
+        // }
 
-        if(venue.status !== VenueStatus.ACTIVE){
+        if(venue.approvalStatus !== VenueStatus.ACTIVE){
+            console.log('venue status : ', venue.approvalStatus)
             throw new ValidationError(
             VenueMessages.error.NOT_ACTIVE_VENUE
         );
