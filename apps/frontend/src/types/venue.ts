@@ -48,4 +48,11 @@ export interface Venue {
       price: string | number;
     }>;
   }>;
+  owner?: {
+    id: string;
+    name: string | null;
+    email: string;
+    phone: string | null;
+    createdAt: string;
+  };
 }

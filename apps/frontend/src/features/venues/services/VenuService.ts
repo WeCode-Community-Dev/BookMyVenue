@@ -31,24 +31,35 @@ export function getVenueAmenities(venue: Venue): string[] {
 }
 
 export function getVenuePrice(venue: Venue): number {
+    if (!venue.slotTemplates || venue.slotTemplates.length === 0) {
+        return 5000;
+    }
+
     let minPrice = Infinity;
-    if (venue.slotTemplates && venue.slotTemplates.length > 0) {
-        for (const slot of venue.slotTemplates) {
-            if (slot.pricingTiers && slot.pricingTiers.length > 0) {
-                for (const tier of slot.pricingTiers) {
-                    const tierPrice = Number(tier.price);
-                    if (!isNaN(tierPrice) && tierPrice < minPrice) {
-                        minPrice = tierPrice;
-                    }
-                }
-            } else if (slot.customRatePerGuestPerHour) {
-                const customPrice = Number(slot.customRatePerGuestPerHour);
-                if (!isNaN(customPrice) && customPrice < minPrice) {
-                    minPrice = customPrice;
-                }
+
+    for (const slot of venue.slotTemplates) {
+        const prices = (slot.pricingTiers || [
+        ])
+            .map((tier) => {
+                return Number(tier.price); 
+            })
+            .filter((price) => {
+                return !isNaN(price); 
+            });
+        
+        if (prices.length > 0) {
+            const minTierPrice = Math.min(...prices);
+            if (minTierPrice < minPrice) {
+                minPrice = minTierPrice;
+            }
+        } else if (slot.customRatePerGuestPerHour) {
+            const customPrice = Number(slot.customRatePerGuestPerHour);
+            if (!isNaN(customPrice) && customPrice < minPrice) {
+                minPrice = customPrice;
             }
         }
     }
+
     return minPrice === Infinity ? 5000 : minPrice;
 }
 
@@ -75,6 +86,20 @@ export async function fetchVenues(): Promise<Venue[]> {
             });
     } catch (error) {
         console.error("Error in fetchVenues:", error);
+        throw error;
+    }
+}
+
+export async function getVenueById(id: string): Promise<Venue> {
+    const url = `${BASE_URL}/venue/${id}`;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch venue: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error in getVenueById:", error);
         throw error;
     }
 }

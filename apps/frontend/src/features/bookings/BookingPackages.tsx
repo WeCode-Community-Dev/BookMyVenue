@@ -1,68 +1,87 @@
 /* eslint-disable */
 
+import { format } from "date-fns";
 import PackageCard from "./PackageCard";
+import { AppText, getText } from "@/lib/language/LanguageHelper";
+import { bookingPackagesStyle } from "@/features/booking/styles/BookingPackagesStyle";
 
-const packages = [
-    {
-        date: "15 Jul 2026",
-        title: "Morning Wedding Package",
-        time: "09:00 AM - 01:00 PM",
-        guests: "50 - 150 Guests",
-        price: "₹18,000",
-        available: "Available",
-        selected: true,
-    },
-    {
-        date: "16 Jul 2026",
-        title: "Morning Wedding Package",
-        time: "09:00 AM - 01:00 PM",
-        guests: "50 - 150 Guests",
-        price: "₹18,000",
-        available: "Available",
-    },
-    {
-        date: "17 Jul 2026",
-        title: "Evening Reception Package",
-        time: "04:00 PM - 10:00 PM",
-        guests: "150 - 400 Guests",
-        price: "₹30,000",
-        available: "Only 2 Left",
-        evening: true,
-    },
-];
+export default function BookingPackages({ selectedDates }: { selectedDates?: Date[] }) {
+    const defaultDates = [
+        new Date(2026, 6, 15),
+        new Date(2026, 6, 16),
+        new Date(2026, 6, 17),
+    ];
 
-export default function BookingPackages() {
+    const dates = selectedDates || defaultDates;
+
+    if (dates.length === 0) {
+        return (
+            <section className={bookingPackagesStyle.card}>
+                <div className={bookingPackagesStyle.header}>
+                    <div>
+                        <h2 className={bookingPackagesStyle.title}>
+                            <AppText textName="CHOOSE_BOOKING_PACKAGE" textModule="LABEL" />
+                        </h2>
+                        <p className={bookingPackagesStyle.subtitle}>
+                            <AppText textName="SELECT_PACKAGE_FOR_EACH_DATE" textModule="LABEL" />
+                        </p>
+                    </div>
+                </div>
+                <div className={bookingPackagesStyle.emptyText}>
+                    <AppText textName="SELECT_DATE_TO_CHOOSE_PACKAGES" textModule="LABEL" />
+                </div>
+            </section>
+        );
+    }
+
     return (
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className={bookingPackagesStyle.card}>
 
-            <div className="mb-6 flex items-center justify-between">
+            <div className={bookingPackagesStyle.header}>
 
                 <div>
 
-                    <h2 className="text-xl font-bold">
-                        2. Choose your booking package
+                    <h2 className={bookingPackagesStyle.title}>
+                        <AppText textName="CHOOSE_BOOKING_PACKAGE" textModule="LABEL" />
                     </h2>
 
-                    <p className="mt-1 text-sm text-slate-500">
-                        Select a package for each date
+                    <p className={bookingPackagesStyle.subtitle}>
+                        <AppText textName="SELECT_PACKAGE_FOR_EACH_DATE" textModule="LABEL" />
                     </p>
 
                 </div>
 
-                <button className="text-sm font-semibold text-[#0F8C84]">
-                    How packages work?
+                <button className={bookingPackagesStyle.howBtn}>
+                    <AppText textName="HOW_PACKAGES_WORK" textModule="LABEL" />
                 </button>
 
             </div>
 
-            <div className="flex flex-wrap gap-5">
+            <div className={bookingPackagesStyle.packagesList}>
 
-                {packages.map((pkg) => (
-                    <PackageCard
-                        key={pkg.date}
-                        {...pkg}
-                    />
-                ))}
+                {dates.map((date, idx) => {
+                    const isEvening = idx % 2 !== 0;
+                    const formattedDate = format(date, "dd MMM yyyy");
+                    const title = isEvening 
+                        ? getText("EVENING_RECEPTION_PACKAGE", "LABEL") 
+                        : getText("MORNING_WEDDING_PACKAGE", "LABEL");
+                    const time = isEvening ? "04:00 PM - 10:00 PM" : "09:00 AM - 01:00 PM";
+                    const price = isEvening ? "₹30,000" : "₹18,000";
+
+                    return (
+                        <PackageCard
+                            key={date.toISOString() + idx}
+                            date={formattedDate}
+                            title={title}
+                            time={time}
+                            guests={getText("GUESTS_RANGE", "LABEL", { min: 50, max: 150 })}
+                            price={price}
+                            available={getText("AVAILABLE", "LABEL")}
+                            selected={true}
+                            evening={isEvening}
+                        />
+                    );
+                })}
 
             </div>
 
