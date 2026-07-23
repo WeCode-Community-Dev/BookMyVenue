@@ -1,8 +1,6 @@
-import React from "react";
-
 const BookingStatCard = ({ title, value, color }) => {
   return (
-    <div className="bg-white rounded-xl shadow p-6 text-center">
+    <div className="rounded-xl bg-white p-6 text-center shadow">
       <h2 className={`text-3xl font-bold ${color}`}>
         {value}
       </h2>

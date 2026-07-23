@@ -19,11 +19,8 @@ export class UserGetVenueByIdUsecase {
         if(venue.isDeleted){
             throw new NotFoundError(VenueMessages.error.VENUE_NOT_FOUND)
         }
-        if(venue.status !== VenueStatus.ACTIVE){
+        if(venue.approvalStatus !== VenueStatus.ACTIVE){
             throw new ForbiddenError(VenueMessages.error.NOT_ACTIVE_VENUE)
-        }
-        if(!venue.isAdminVerified){
-            throw new ForbiddenError(VenueMessages.error.NOT_ADMIN_VERIFIED)
         }
         return venue
     }
