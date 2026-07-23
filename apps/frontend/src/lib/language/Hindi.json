@@ -34,8 +34,10 @@
         "SAVING": "सहेजा जा रहा है...",
         "CONFIRM_DETAILS_FIRST": "पहले विवरण की पुष्टि करें",
         "PROCEED_SECURE_PAYMENT": "सुरक्षित भुगतान पर आगे बढ़ें",
+        "EXPLORE_VENUES": "स्थानों की खोज करें",
         "CLEAR_ALL": "सभी साफ़ करें",
-        "ADD_ANOTHER_DATE": "+ दूसरी तिथि जोड़ें"
+        "ADD_ANOTHER_DATE": "+ दूसरी तिथि जोड़ें",
+        "RETRY": "पुनः प्रयास करें"
     },
     "LABEL": {
         "WELCOME_BACK": "वापसी पर स्वागत है",
@@ -124,7 +126,17 @@
         "SELECT_DATE_TO_CHOOSE_PACKAGES": "पैकेज चुनने के लिए कृपया कैलेंडर से कम से कम एक तिथि चुनें।",
         "HOW_PACKAGES_WORK": "पैकेज कैसे काम करते हैं?",
         "EVENING_RECEPTION_PACKAGE": "शाम का स्वागत समारोह पैकेज",
-        "MORNING_WEDDING_PACKAGE": "सुबह का विवाह समारोह पैकेज"
+        "MORNING_WEDDING_PACKAGE": "सुबह का विवाह समारोह पैकेज",
+        "MY_BOOKINGS_TITLE": "मेरी बुकिंग",
+        "MY_BOOKINGS_SUBTITLE": "अपने स्थान के आरक्षण देखें और प्रबंधित करें।",
+        "BOOKED_SLOTS": "बुक किए गए स्लॉट",
+        "BOOKED_ON": "बुकिंग तिथि",
+        "TOTAL_PAID": "कुल भुगतान",
+        "STATUS_CONFIRMED": "पुष्टि की गई",
+        "STATUS_PENDING_PAYMENT": "भुगतान लंबित",
+        "STATUS_EXPIRED": "समाप्त",
+        "STATUS_REFUNDED": "वापस किया गया",
+        "STATUS_CANCELLED": "रद्द किया गया"
     },
     "FILTERS": {
         "FILTER": "फ़िल्टर्स",
@@ -275,6 +287,9 @@
         "PASSWORDS_DONT_MATCH": "पासवर्ड मेल नहीं खाते",
         "PROFILE_UPDATE_SUCCESS": "प्रोफ़ाइल सफलतापूर्वक अपडेट और पुष्टि की गई!",
         "PROFILE_UPDATE_FAILED": "प्रोफ़ाइल विवरण अपडेट करने में विफल।",
-        "UNEXPECTED_ERROR": "एक अप्रत्याशित त्रुटि हुई।"
+        "UNEXPECTED_ERROR": "एक अप्रत्याशित त्रुटि हुई।",
+        "NO_BOOKINGS_FOUND": "कोई बुकिंग नहीं मिली।",
+        "START_EXPLORING_VENUES": "अपनी पहली बुकिंग करने के लिए स्थानों की खोज शुरू करें!",
+        "FAILED_TO_LOAD_BOOKINGS": "बुकिंग लोड करने में विफल"
     }
 }

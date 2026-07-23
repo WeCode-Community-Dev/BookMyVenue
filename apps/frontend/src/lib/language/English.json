@@ -34,8 +34,10 @@
         "SAVING": "Saving...",
         "CONFIRM_DETAILS_FIRST": "Confirm Details First",
         "PROCEED_SECURE_PAYMENT": "Proceed to Secure Payment",
+        "EXPLORE_VENUES": "Explore Venues",
         "CLEAR_ALL": "Clear All",
-        "ADD_ANOTHER_DATE": "+ Add Another Date"
+        "ADD_ANOTHER_DATE": "+ Add Another Date",
+        "RETRY": "Retry"
     },
     "LABEL": {
         "WELCOME_BACK": "Welcome Back",
@@ -124,7 +126,17 @@
         "SELECT_DATE_TO_CHOOSE_PACKAGES": "Please select at least one date from the calendar to choose packages.",
         "HOW_PACKAGES_WORK": "How packages work?",
         "EVENING_RECEPTION_PACKAGE": "Evening Reception Package",
-        "MORNING_WEDDING_PACKAGE": "Morning Wedding Package"
+        "MORNING_WEDDING_PACKAGE": "Morning Wedding Package",
+        "MY_BOOKINGS_TITLE": "My Bookings",
+        "MY_BOOKINGS_SUBTITLE": "View and manage your venue reservations.",
+        "BOOKED_SLOTS": "Booked Slots",
+        "BOOKED_ON": "Booked on",
+        "TOTAL_PAID": "Total Paid",
+        "STATUS_CONFIRMED": "Confirmed",
+        "STATUS_PENDING_PAYMENT": "Pending Payment",
+        "STATUS_EXPIRED": "Expired",
+        "STATUS_REFUNDED": "Refunded",
+        "STATUS_CANCELLED": "Cancelled"
     },
     "FILTERS": {
         "FILTER": "Filters",
@@ -275,6 +287,9 @@
         "PASSWORDS_DONT_MATCH": "Passwords do not match",
         "PROFILE_UPDATE_SUCCESS": "Profile updated and confirmed successfully!",
         "PROFILE_UPDATE_FAILED": "Failed to update profile details.",
-        "UNEXPECTED_ERROR": "An unexpected error occurred."
+        "UNEXPECTED_ERROR": "An unexpected error occurred.",
+        "NO_BOOKINGS_FOUND": "No bookings found.",
+        "START_EXPLORING_VENUES": "Start exploring venues to make your first booking!",
+        "FAILED_TO_LOAD_BOOKINGS": "Failed to load bookings"
     }
 }

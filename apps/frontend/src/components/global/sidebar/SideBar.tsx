@@ -50,7 +50,7 @@ export default function Sidebar() {
             icon: CalendarDays,
             label: "BOOKINGS",
             active: false,
-            path: ""
+            path: SCREENS.BOOKINGS
         },
         {
             icon: Heart,
