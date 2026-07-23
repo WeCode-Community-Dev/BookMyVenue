@@ -24,6 +24,7 @@ import { CreateSpaceBlockedPeriodDto } from './dto/create-space-block-period.dto
 import { UpdateSpaceBlockedPeriodDto } from './dto/update-space-block-period.dto';
 import { UpsertSpacePricingDto } from './dto/upsert-space-pricing.dto';
 import { PaginationDto } from './dto/pagination-dto';
+import { VenueFilterDto } from './dto/venues-filter.dto';
 
 @Controller()
 export class VenuesController {
@@ -40,8 +41,8 @@ export class VenuesController {
   }
 
   @Get('venues')
-  findAllVenues(@Query() paginationDto: PaginationDto, @Query('amenityIds') amenityIds?: string, @Query('categoryId') categoryId?: string, @Query('search') search?: string) {
-    return this.venuesService.findAllVenues(paginationDto.page, paginationDto.limit, amenityIds, categoryId, search);
+  findAllVenues(@Query() paginationDto: PaginationDto, @Query() filterDto:VenueFilterDto) {
+    return this.venuesService.findAllVenues(paginationDto.page, paginationDto.limit, filterDto.amenityIds, filterDto.categoryId, filterDto.search);
   }
 
   @Get('venues/:id')

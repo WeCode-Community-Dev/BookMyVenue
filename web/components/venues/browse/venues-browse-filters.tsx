@@ -1,43 +1,19 @@
 "use client";
 
-import { MapPin } from "lucide-react";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import {
   fetchAmenities,
   getSpaceCategories,
   SpaceCategoryResponse,
   type AmenityResponse,
 } from "@/services/venueServices";
-import {
-  CAPACITY_MAX,
-  CAPACITY_MIN,
-  PRICE_MAX,
-  PRICE_MIN,
-  type BrowseSortOption,
-} from "@/lib/data/venues-browse";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-
-const sortOptions: { value: BrowseSortOption; label: string }[] = [
-  { value: "recommended", label: "Most Recommended" },
-  { value: "price-low", label: "Price: Low to High" },
-  { value: "price-high", label: "Price: High to Low" },
-  { value: "rating-high", label: "Rating: High to Low" },
-  { value: "rating-low", label: "Rating: Low to High" },
-];
 
 export function VenuesBrowseFilters() {
 
@@ -96,6 +72,8 @@ export function VenuesBrowseFilters() {
     params.delete("amenityIds");
     params.delete("categoryId");
     params.delete("page");
+    params.delete('search')
+    setSearch('')
     router.push(`/venues?${params.toString()}`);
   }
 
@@ -130,12 +108,11 @@ export function VenuesBrowseFilters() {
       <div className="flex flex-col gap-2">
         <Label className="text-sm font-medium text-on-surface">Location</Label>
         <div className="relative">
-          <MapPin className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-on-surface-variant" />
           <Input
             value={search}
             onChange={handleSearchChange}
             placeholder="Search venues or location..."
-            className="h-10 pl-9 bg-background"
+            className="h-10 bg-background"
           />
         </div>
       </div>
