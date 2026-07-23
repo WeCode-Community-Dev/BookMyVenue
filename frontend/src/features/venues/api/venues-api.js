@@ -19,17 +19,36 @@ export const venuesApi = baseApi.injectEndpoints({
     createVenue: builder.mutation({
       query: (body) => ({
         url: '/venues',
-        method:'POST',
-        headers:{
-          'Content-Type': 'application/json'
-        },
-        body: body,
+        method: 'POST',
+        body,
       }),
-      transformResponse: (result) => result.data,
-      transformErrorResponse:(error) => error.data.error,
-      invalidatesTags:(result,_error,id) => result && [{type:'Venue',id},{type:'Venue',id:'LIST'}]
-    })
+      transformResponse: (response) => response.data.venue,
+      invalidatesTags: [{ type: 'Venue', id: 'LIST' }],
+    }),
+    updateVenue: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/venues/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      transformResponse: (response) => response.data.venue,
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Venue', id },
+        { type: 'Venue', id: 'LIST' },
+      ],
+    }),
+    deleteVenue: builder.mutation({
+      query: (id) => ({
+        url: `/venues/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: 'Venue', id },
+        { type: 'Venue', id: 'LIST' },
+        { type: 'OwnerBooking', id: 'LIST' },
+      ],
+    }),
   }),
 });
 
-export const { useGetVenuesQuery, useGetVenueByIdQuery , useCreateVenueMutation } = venuesApi;
+export const { useGetVenuesQuery, useGetVenueByIdQuery, useCreateVenueMutation, useUpdateVenueMutation, useDeleteVenueMutation } = venuesApi;

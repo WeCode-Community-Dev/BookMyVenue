@@ -88,16 +88,7 @@ src/
 └── testing/
 ```
 
-## Phase status
 
-| Phase | Status |
-|-------|--------|
-| F1 Scaffold + design tokens | Done |
-| F2 Auth | Done |
-| F3 Venues browse | Done |
-| F4 Booking + calendar | Done |
-| F5 Owner dashboard | Planned |
-| F6 Polish | Planned |
 
 ## Environment
 
