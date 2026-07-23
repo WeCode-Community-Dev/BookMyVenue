@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Mail } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast"
 import { resendOtp, verifyOtp } from "@/redux/slices/AuthSlice";
 
 import { ROUTES } from "@/constants/routes";
@@ -17,7 +18,7 @@ const VerifyOtpForm = () => {
   const { loading, error } = useSelector((state) => state.auth);
 
   const [otpCode, setOtpCode] = useState("");
-  const [resending, setResending] = useState(false); // Helps manage resend loader state
+  const [resending, setResending] = useState(false);
 
   const [countdown, setCountdown] = useState(30);
   const [canResend, setCanResend] = useState(false);
@@ -39,54 +40,61 @@ const VerifyOtpForm = () => {
     e.preventDefault();
 
     if (!/^\d{6}$/.test(otpCode)) {
-      alert("Please enter a valid 6-digit OTP");
+      toast.error("Please enter a valid 6-digit OTP");
       return;
     }
 
     try {
-      const result = await dispatch(
+      
+      const response = await dispatch(
         verifyOtp({
           role,
           email,
           otpCode,
         })
-      );
+      ).unwrap();
 
-      if (verifyOtp.fulfilled.match(result)) {
-        navigate(ROUTES.PUBLIC.LOGIN, {
-          state: {
-            role,
-            email,
-          },
-        });
-      }
+      toast.success(response?.message || "OTP verified successfully!");
+
+      navigate(ROUTES.PUBLIC.LOGIN, {
+        state: {
+          role,
+          email,
+        },
+      });
     } catch (err) {
-      console.error("An error occurred during verification:", err);
+      // err contains the payload passed via rejectWithValue in your slice
+      const errorMessage = typeof err === "string" ? err : err?.message || "OTP verification failed";
+      toast.error(errorMessage);
     }
   };
 
   const handleResendOtp = async () => {
-    if (!email || !role) return;
+    if (!email || !role) {
+      toast.error("Missing email or role. Please try logging in again.");
+      return;
+    }
 
     setResending(true);
 
     try {
-      const result = await dispatch(
+      const response = await dispatch(
         resendOtp({
           role,
           email,
         })
-      );
+      ).unwrap();
 
-      if (resendOtp.fulfilled.match(result)) {
-        setCountdown(30);
-        setCanResend(false);
-        setOtpCode(""); // Clear old OTP input field
-      }
+      toast.success(response?.message || "New OTP sent to your email!");
+
+      setCountdown(30);
+      setCanResend(false);
+      setOtpCode(""); 
     } catch (err) {
-      console.error("Failed to resend OTP:", err);
+      const errorMessage = typeof err === "string" ? err : err?.message || "Failed to resend OTP";
+      toast.error(errorMessage);
     } finally {
-      setResending(false); // Reset loading state regardless of success or failure
+      setResending(false);
     }
   };
 

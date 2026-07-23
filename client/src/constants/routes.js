@@ -5,7 +5,7 @@ export const ROUTES = {
         LOGIN: '/login',
         REGISTER:'/register',
         VERIFY_OTP:'/verify-otp',
-        RESEND_OTP:'/resend-otp',
+        
         LOGIN:'/login'
         
     },
