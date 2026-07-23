@@ -1,4 +1,8 @@
 export const API_ROUTES = {
+AUTH:{
+  REGISTER:(role)=> `/auth/${role}/register`
+},
+
     USER: {
         VENUE:{
           VENUES: '/user/venues',

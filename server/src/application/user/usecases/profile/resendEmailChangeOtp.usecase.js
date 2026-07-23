@@ -26,9 +26,9 @@ export class ResendEmailChangeOtpUsecase {
         );
         }
 
-        const otp = this._otpService.generateOtp();
+        const otp = this._otpService.generate();
 
-        const otpExpiresAt = this._otpService.getOtpExpiry();
+        const otpExpiresAt = this._otpService.getExpiry();
 
         const hashedOtp = await this._hashService.hash(otp);
 
@@ -41,8 +41,9 @@ export class ResendEmailChangeOtpUsecase {
             otpExpiresAt
         );
 
-        await this._mailService.resendEmailChangeOtp(
+        await this._mailService.sendEmailChangeOtp(
             user.pendingEmail,
+            user.fullName,
             otp
         );
 

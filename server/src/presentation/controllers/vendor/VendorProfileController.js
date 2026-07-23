@@ -51,7 +51,7 @@ export class VendorProfileController {
   });
 
   changePassword = asyncHandler(async (req, res) => {
-    const vendorId = '6a2d96f9bd24251e9e502c04';
+    const vendorId = "6a58e836080d38065f2fe547";
 
     await this._changeVendorPasswordUsecase.execute({
       vendorId,

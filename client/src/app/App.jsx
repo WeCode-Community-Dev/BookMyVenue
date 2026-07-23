@@ -3,6 +3,10 @@ import { Suspense, lazy } from "react";
 import { ROUTES } from "@/constants/routes";
 import BrowseVenues from "@/presentation/pages/user/BrowseVenue";
 import VenueDetails from "@/presentation/pages/admin/VenueDetails";
+//import {ROLES} from "@/constants/Roles"
+//Auth
+
+const Register = lazy(() => import("@/presentation/pages/auth/Register"))
 
 const Home = lazy(() => import("@/presentation/pages/Home"))
 
@@ -93,6 +97,7 @@ const CategoryManagement = lazy(() =>
 );
 
 
+
 function App() {
   return (
     <BrowserRouter>
@@ -117,8 +122,15 @@ function App() {
           <Route path={ROUTES.VENDOR.ADD_VENUE} element={<AddVenue />} />
           <Route path={ROUTES.VENDOR.PROFILE} element={<Profile />} />
           <Route path={ROUTES.VENDOR.SETTINGS} element={<Settings />} />
+<<<<<<< HEAD
           <Route path={ROUTES.VENDOR.VENUE_DETAILS} element={<VendorVenueDetails />} />
           <Route path={ROUTES.VENDOR.EDIT_VENUE} element={<EditVenue />} />
+=======
+//Auth routes
+
+     <Route path={ROUTES.PUBLIC.REGISTER} element={<Register />} />
+
+>>>>>>> d8aab5533ffd559347db16106d86f0dbcc27a05e
           {/* Admin Routes */}
 
           <Route path="/admin" element={<AdminLayout />}>
