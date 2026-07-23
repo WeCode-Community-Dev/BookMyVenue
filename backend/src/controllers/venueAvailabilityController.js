@@ -1,10 +1,8 @@
 import mongoose from "mongoose";
 import venueAvailabilityModel from "../models/venueAvailabilityModel.js";
 import venueModel from "../models/venueModel.js";
-import {
-    isValidSlotTime,
-    parseSlotTimeToMinutes,
-} from "../utils/parseSlotTime.js";
+import { isValidSlotTime, parseSlotTimeToMinutes, } from "../utils/parseSlotTime.js";
+import { getCache, setCache, getVenueAvailabilityCacheKey, invalidateVenueAvailabilityCache, VENUE_AVAILABILITY_CACHE_TTL, } from "../utils/cache.js";
 
 const createAvailability = async (req, res) => {
     try {
@@ -96,6 +94,8 @@ const createAvailability = async (req, res) => {
                 venueId, date, slotLabel, startTime, endTime,
             });
 
+        await invalidateVenueAvailabilityCache(venueId);
+
         return res.status(201).json({
             success: true,
             message: "Availability created successfully",
@@ -125,19 +125,26 @@ const getVenueAvailability = async (req, res) => {
             });
         }
 
+        const cacheKey = getVenueAvailabilityCacheKey(venueId);
+        const cached = await getCache(cacheKey);
+        if (cached) {
+            return res.status(200).json(cached);
+        }
+
         const availability = await venueAvailabilityModel.find({ venueId, }).sort({
             date: 1,
             startTime: 1,
         });
 
-        return res.status(200).json({
+        const payload = {
             success: true,
             count: availability.length,
             data: availability,
-        });
+        };
 
+        await setCache(cacheKey, payload, VENUE_AVAILABILITY_CACHE_TTL);
 
-
+        return res.status(200).json(payload);
 
     } catch (error) {
         console.error("Get availability error:", error);
@@ -198,6 +205,8 @@ const deactivateAvailability = async (req, res) => {
         slot.isActive = false;
         await slot.save();
 
+        await invalidateVenueAvailabilityCache(slot.venueId);
+
         return res.status(200).json({
             success: true,
             message: "Slot deactivated successfully",
@@ -253,6 +262,8 @@ const activateAvailability = async (req, res) => {
 
         slot.isActive = true;
         await slot.save();
+
+        await invalidateVenueAvailabilityCache(slot.venueId);
 
         return res.status(200).json({
             success: true,

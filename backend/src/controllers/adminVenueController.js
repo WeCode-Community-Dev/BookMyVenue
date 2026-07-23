@@ -1,6 +1,7 @@
 import venueModel from "../models/venueModel.js";
 import parsePagination from "../utils/parsePagination.js";
 import { buildSearchRegex } from "../utils/marketplaceUserFilter.js";
+import { invalidateActiveVenuesCache, invalidateActiveVenueCache, } from "../utils/cache.js";
 import mongoose from "mongoose";
 
 const buildVenueFilter = (query) => {
@@ -125,6 +126,9 @@ const activateVenue = async (req, res) => {
         venue.isActive = true;
         await venue.save();
 
+        await invalidateActiveVenuesCache();
+        await invalidateActiveVenueCache(id);
+
         return res.status(200).json({
             success: true,
             message: "Venue activated successfully",
@@ -161,6 +165,9 @@ const deactivateVenue = async (req, res) => {
 
         venue.isActive = false;
         await venue.save();
+
+        await invalidateActiveVenuesCache();
+        await invalidateActiveVenueCache(id);
 
         return res.status(200).json({
             success: true,

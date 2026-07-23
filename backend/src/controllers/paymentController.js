@@ -4,6 +4,7 @@ import bookingModel from '../models/bookingModel.js';
 import paymentOrderModel from '../models/paymentOrderModel.js';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
+import { invalidateVenueAvailabilityCache } from '../utils/cache.js';
 
 const razorpayInstance = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -355,6 +356,8 @@ const verifyPayment = async (req, res) => {
 
         paymentOrder.status = "completed";
         await paymentOrder.save();
+
+        await invalidateVenueAvailabilityCache(venueId);
 
         return res.status(201).json({
             success: true,

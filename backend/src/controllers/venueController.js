@@ -2,6 +2,7 @@ import venueModel from "../models/venueModel.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 import { resolveVenueCategory } from "../utils/venueCategory.js";
+import { getCache, setCache, getActiveVenueCacheKey, invalidateActiveVenuesCache, invalidateActiveVenueCache, ACTIVE_VENUES_CACHE_KEY, ACTIVE_VENUES_CACHE_TTL, } from "../utils/cache.js";
 import mongoose from "mongoose";
 
 
@@ -194,6 +195,8 @@ const createVenue = async (req, res) => {
         }
 
         const venue = await venueModel.create(venuePayload);
+
+        await invalidateActiveVenuesCache();
 
         return res.status(201).json({
             success: true,
@@ -481,6 +484,9 @@ const updateVenue = async (req, res) => {
 
         await venue.save();
 
+        await invalidateActiveVenuesCache();
+        await invalidateActiveVenueCache(id);
+
         return res.status(200).json({
             success: true,
             message: "Venue updated successfully",
@@ -542,6 +548,9 @@ const deactivateVenue = async (req, res) => {
 
         await venue.save();
 
+        await invalidateActiveVenuesCache();
+        await invalidateActiveVenueCache(id);
+
         return res.status(200).json({
             success: true,
             message: "Venue deactivated successfully",
@@ -591,6 +600,9 @@ const activateVenue = async (req, res) => {
 
         await venue.save();
 
+        await invalidateActiveVenuesCache();
+        await invalidateActiveVenueCache(id);
+
         return res.status(200).json({
             success: true,
             message: "Venue activated successfully",
@@ -611,17 +623,25 @@ const activateVenue = async (req, res) => {
 
 const getAllVenues = async (req, res) => {
     try {
-
+        const cached = await getCache(ACTIVE_VENUES_CACHE_KEY);
+        if (cached) {
+            return res.status(200).json(cached);
+        }
+        console.log("❌ Redis MISS");
 
         const venues = await venueModel.find({
             isActive: true,
         }).select("-__v").sort({ createdAt: -1 });
 
-        return res.status(200).json({
+        const payload = {
             success: true,
             count: venues.length,
             data: venues,
-        })
+        };
+
+        await setCache(ACTIVE_VENUES_CACHE_KEY, payload, ACTIVE_VENUES_CACHE_TTL);
+        console.log("Saved data to Redis");
+        return res.status(200).json(payload);
 
     } catch (error) {
         console.error("Get venues error:", error);
@@ -645,6 +665,12 @@ const getPublicVenueById = async (req, res) => {
             });
         }
 
+        const cacheKey = getActiveVenueCacheKey(venueId);
+        const cached = await getCache(cacheKey);
+        if (cached) {
+            return res.status(200).json(cached);
+        }
+
         const venue = await venueModel.findOne({
             _id: venueId,
             isActive: true,
@@ -657,10 +683,14 @@ const getPublicVenueById = async (req, res) => {
             });
         }
 
-        return res.status(200).json({
+        const payload = {
             success: true,
             data: venue,
-        })
+        };
+
+        await setCache(cacheKey, payload, ACTIVE_VENUES_CACHE_TTL);
+
+        return res.status(200).json(payload);
     } catch (error) {
         console.error("Get venue error:", error);
 
@@ -670,5 +700,7 @@ const getPublicVenueById = async (req, res) => {
         });
     }
 }
-export { createVenue, getMyVenues, getVenueById, updateVenue, deactivateVenue, activateVenue,
-     getAllVenues, getPublicVenueById };
+export {
+    createVenue, getMyVenues, getVenueById, updateVenue, deactivateVenue, activateVenue,
+    getAllVenues, getPublicVenueById
+};
