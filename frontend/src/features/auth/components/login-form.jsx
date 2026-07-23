@@ -34,7 +34,10 @@ export function LoginForm() {
           dispatch(setCredentials({ token: data.token, user: data.user }));
           toast.success('Welcome back!');
 
-          const destination = from || (data.user.role === 'OWNER' ? paths.owner.dashboard.path : paths.home.path);
+          // Owners always land on dashboard — never customer browse/book routes.
+          const isOwner = data.user.role === 'OWNER';
+          const ownerSafeFrom = from?.startsWith('/owner') ? from : null;
+          const destination = isOwner ? ownerSafeFrom || paths.owner.dashboard.path : from || paths.home.path;
           navigate(destination, { replace: true });
         } catch (error) {
           toast.error(getApiErrorMessage(error, 'Login failed'));
