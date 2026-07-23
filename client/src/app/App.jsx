@@ -5,8 +5,10 @@ import { ROUTES } from "@/constants/routes";
 import BrowseVenues from "@/presentation/pages/user/BrowseVenue";
 import VenueDetails from "@/presentation/pages/admin/VenueDetails";
 
-// Auth
-const Register = lazy(() => import("@/presentation/pages/auth/Register"));
+
+const Register = lazy(() => import("@/presentation/pages/auth/Register"))
+const VerifyOtp = lazy(() => import("@/presentation/pages/auth/VerifyOtp"))
+
 
 // Public/User Pages
 const Home = lazy(() => import("@/presentation/pages/Home"));
@@ -173,6 +175,10 @@ function App() {
             element={<Register />}
           />
 
+
+     <Route path={ROUTES.PUBLIC.REGISTER} element={<Register />} />
+     <Route path={ROUTES.PUBLIC.VERIFY_OTP} element={<VerifyOtp />}/>
+
           {/* Vendor Routes */}
           <Route
             path={ROUTES.VENDOR.DASHBOARD}
@@ -206,6 +212,7 @@ function App() {
             path={ROUTES.VENDOR.EDIT_VENUE}
             element={<EditVenue />}
           />
+
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>

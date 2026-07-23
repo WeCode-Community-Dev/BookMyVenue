@@ -7,7 +7,7 @@ import toast from "react-hot-toast"
 import { ROUTES } from '@/constants/routes'
 import { registerSchema } from '@/lib/validation/authValidation'
 import { ROLES } from '@/constants/Roles'
-import { registerUser } from "@/redux/slices/authSlice"
+import { registerUser } from "@/redux/slices/AuthSlice"
 
 const RegisterForm = () => {
     const navigate = useNavigate()
