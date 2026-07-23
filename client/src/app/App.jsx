@@ -7,6 +7,7 @@ import VenueDetails from "@/presentation/pages/admin/VenueDetails";
 //Auth
 
 const Register = lazy(() => import("@/presentation/pages/auth/Register"))
+const VerifyOtp = lazy(() => import("@/presentation/pages/auth/VerifyOtp"))
 
 const Home = lazy(() => import("@/presentation/pages/Home"))
 
@@ -101,6 +102,7 @@ function App() {
 //Auth routes
 
      <Route path={ROUTES.PUBLIC.REGISTER} element={<Register />} />
+     <Route path={ROUTES.PUBLIC.VERIFY_OTP} element={<VerifyOtp />}/>
 
           {/* Admin Routes */}
 
