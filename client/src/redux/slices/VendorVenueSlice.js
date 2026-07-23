@@ -238,7 +238,7 @@ state.venue = null;
 extraReducers: (builder) => {
 builder
 
-```
+
   // ==========================
   // FETCH VENDOR PROFILE
   // ==========================
@@ -387,7 +387,7 @@ builder
     state.loading = false;
     state.error = action.payload;
   });
-```
+
 
 },
 });

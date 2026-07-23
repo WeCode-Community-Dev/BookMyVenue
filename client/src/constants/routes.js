@@ -4,6 +4,9 @@ export const ROUTES = {
         SIGNUP: '/signup',
         LOGIN: '/login',
         REGISTER:'/register',
+        VERIFY_OTP:'/verify-otp',
+        
+        LOGIN:'/login'
         
     },
     USER: {
