@@ -7,17 +7,52 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getTopVenues } from "@/redux/slices/UserVenueSlice";
 import VenueCard from "../components/common/VenueCard";
+import {
+  getWishlist,
+  addToWishlist,
+  removeWishlist,
+} from "@/redux/slices/UserWishlistSlice";
+import { toast } from "react-hot-toast";
 
 export default function Home() {
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const { venues } = useSelector((state) => state.userVenue)
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { venues } = useSelector((state) => state.userVenue);
 
-  useEffect(()=> {
-    dispatch(getTopVenues())
-  }, [dispatch])
+  useEffect(() => {
+    dispatch(getTopVenues());
+  }, [dispatch]);
 
-  
+  const { wishlist } = useSelector((state) => state.userWishlist);
+
+  useEffect(() => {
+    dispatch(getWishlist());
+  }, [dispatch]);
+
+  const handleAddWishlist = async (venueId) => {
+    try {
+      await dispatch(addToWishlist(venueId)).unwrap();
+      dispatch(getWishlist());
+      toast.success("Added to wishlist");
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  const handleRemoveWishlist = async (venueId) => {
+    try {
+      await dispatch(removeWishlist(venueId)).unwrap();
+      dispatch(getWishlist());
+      toast.success("Removed from wishlist");
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  const isWishlisted = (venueId) => {
+    return wishlist?.some((item) => item.id === venueId);
+  };
+
   return (
     <div className="bg-white">
       <Header />
@@ -34,19 +69,19 @@ export default function Home() {
           </h1>
 
           <p className="text-xl text-gray-300 mt-8 max-w-3xl mx-auto">
-            From intimate gatherings to grand celebrations, find and book
-            the ideal venue for your special moments.
+            From intimate gatherings to grand celebrations, find and book the
+            ideal venue for your special moments.
           </p>
 
-        <div className="mt-14 flex justify-center">
-          <button
-            onClick={() => navigate(ROUTES.USER.BROWSE_VENUES)}
-            className="bg-amber-500 hover:bg-amber-600 text-white px-10 py-4 rounded-xl 
+          <div className="mt-14 flex justify-center">
+            <button
+              onClick={() => navigate(ROUTES.USER.BROWSE_VENUES)}
+              className="bg-amber-500 hover:bg-amber-600 text-white px-10 py-4 rounded-xl 
             flex items-center justify-center gap-2 font-semibold text-lg shadow-lg transition"
-          >
-            Explore Venues
-          </button>
-        </div>
+            >
+              Explore Venues
+            </button>
+          </div>
           <div className="flex justify-center gap-12 mt-12 text-gray-300">
             <div>✓ Verified Venues</div>
             <div>⭐ 4.8 Rating</div>
@@ -63,7 +98,8 @@ export default function Home() {
             </h2>
 
             <p className="text-xl text-gray-500 mt-4">
-              Explore our categories and discover spaces that match your celebration
+              Explore our categories and discover spaces that match your
+              celebration
             </p>
           </div>
 
@@ -73,9 +109,7 @@ export default function Home() {
                 key={category}
                 className="bg-white border rounded-2xl p-8 hover:shadow-lg transition-all"
               >
-                <h3 className="text-2xl font-semibold">
-                  {category}
-                </h3>
+                <h3 className="text-2xl font-semibold">{category}</h3>
               </div>
             ))}
           </div>
@@ -102,16 +136,27 @@ export default function Home() {
                 Handpicked premium venues for your events
               </p>
             </div>
-            <button onClick={() => navigate(ROUTES.USER.BROWSE_VENUES)} className=" border  px-7  py-3  rounded-xl  bg-white font-semibold flex items-center gap-2 hover:shadow">
+            <button
+              onClick={() => navigate(ROUTES.USER.BROWSE_VENUES)}
+              className=" border  px-7  py-3  rounded-xl  bg-white font-semibold flex items-center gap-2 hover:shadow"
+            >
               View All →
             </button>
           </div>
           <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8">
-            {venues.map((venue)=>(
-              <VenueCard 
-                  key={venue.id}
-                  venue={venue}
-              />
+            {venues.map((venue) => (
+              <VenueCard
+              key={venue.id}
+              venue={venue}
+              isWishlisted={isWishlisted(venue.id)}
+              onWishlistToggle={() => {
+                if (isWishlisted(venue.id)) {
+                  handleRemoveWishlist(venue.id);
+                } else {
+                  handleAddWishlist(venue.id);
+                }
+              }}
+            />
               // <div
               //   key={venue.id}
               //   onClick={() => navigate(`/user/venue/${venue._id}`)}
@@ -218,17 +263,21 @@ export default function Home() {
 
       <section className="bg-gradient-to-r from-slate-950 to-slate-900 text-white py-20">
         <div className="text-center">
-          <h2 className="text-5xl font-bold">
-            Ready to Host Your Event?
-          </h2>
+          <h2 className="text-5xl font-bold">Ready to Host Your Event?</h2>
           <p className="text-xl text-gray-300 mt-5">
             Start exploring thousands of verified venues across India
           </p>
           <div className="flex justify-center gap-5 mt-10">
-            <button onClick={() => navigate(ROUTES.USER.BROWSE_VENUES)} className="bg-amber-500 text-black px-10 py-4 rounded-xl font-semibold text-lg">
+            <button
+              onClick={() => navigate(ROUTES.USER.BROWSE_VENUES)}
+              className="bg-amber-500 text-black px-10 py-4 rounded-xl font-semibold text-lg"
+            >
               Browse Venues →
             </button>
-            <button onClick={() => navigate(ROUTES.VENDOR.VENUES)} className=" border border-white px-10 py-4 rounded-xl font-semibold text-lg">
+            <button
+              onClick={() => navigate(ROUTES.VENDOR.VENUES)}
+              className=" border border-white px-10 py-4 rounded-xl font-semibold text-lg"
+            >
               List Your Venue
             </button>
           </div>

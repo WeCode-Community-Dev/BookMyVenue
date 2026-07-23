@@ -1,6 +1,8 @@
 export const VenueMessages = {
     success: {
-        VENUE_CREATED: 'Venue created successfully'
+        VENUE_CREATED: 'Venue created successfully',
+        VENUE_UPDATED:"Venue updated Successfully"
+
     },
     error: {
         VENUE_NOT_FOUND: 'Venue not found',

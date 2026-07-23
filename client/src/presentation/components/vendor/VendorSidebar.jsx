@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import SidebarProfileCard from "./SidebarProfileCard";
 import { ROUTES } from "@/constants/routes";
-import logo from "@/assets/images/logo.jpeg"
+import logo from "@/assets/images/logo.jpeg";
 
 
 
@@ -14,7 +14,6 @@ import {
   User,
   Settings,
   LogOut,
-  MapPin,
 } from "lucide-react";
 
 const VendorSidebar = () => {

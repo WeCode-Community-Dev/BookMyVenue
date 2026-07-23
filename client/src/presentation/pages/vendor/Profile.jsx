@@ -49,12 +49,12 @@ const Profile = () => {
   };
 
   const handleCancel = () => {
-    setFormData(profile);
+    setFormData(profile || {});
     setIsEditing(false);
   };
 
   return (
-    <div className="flex bg-slate-100 min-h-screen">
+    <div className="flex min-h-screen bg-slate-100">
       <VendorSidebar />
 
       <div className="flex-1">

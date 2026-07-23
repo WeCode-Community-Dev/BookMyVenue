@@ -8,10 +8,19 @@ export default function VenueCard({
 }) {
   const navigate = useNavigate();
 
+  const handleVenueClick = () => {
+    navigate(`/user/venue/${venue.id}`);
+  };
+
+  const handleWishlistClick = (event) => {
+    event.stopPropagation();
+    onWishlistToggle?.(venue.id);
+  };
+
   return (
     <div
-      onClick={() => navigate(`/user/venue/${venue.id}`)}
-      className="cursor-pointer bg-white rounded-3xl overflow-hidden border hover:shadow-xl transition self-start"
+      onClick={handleVenueClick}
+      className="cursor-pointer self-start overflow-hidden rounded-3xl border bg-white transition hover:shadow-xl"
     >
       {/* Image */}
       <div className="relative">
@@ -20,80 +29,78 @@ export default function VenueCard({
           alt={venue.name}
           className={
             variant === "home"
-              ? "h-62 w-full object-cover flex-shrink-0"
-              : "h-52 w-full object-cover flex-shrink-0"
+              ? "h-62 w-full flex-shrink-0 object-cover"
+              : "h-52 w-full flex-shrink-0 object-cover"
           }
         />
 
-        <span className="absolute bottom-4 left-4 bg-amber-500 px-4 py-2 rounded-full text-sm font-semibold">
+        <span className="absolute bottom-4 left-4 rounded-full bg-amber-500 px-4 py-2 text-sm font-semibold">
           {venue.category}
         </span>
 
-
         <button
-          onClick={(e) => { e.stopPropagation();
-            onWishlistToggle?.(venue.id);
-          }}
-          className="absolute right-4 top-4 bg-white rounded-full w-11 h-11 flex items-center justify-center shadow"
+          type="button"
+          onClick={handleWishlistClick}
+          className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow"
+          aria-label={
+            isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+          }
         >
           {isWishlisted ? "❤️" : "🤍"}
         </button>
-
       </div>
 
-      <div className="p-5 flex flex-col flex-1">
+      <div className="flex flex-1 flex-col p-5">
         {/* Rating */}
-        <div className="flex gap-2 mb-3">
+        <div className="mb-3 flex gap-2">
           <span className="text-amber-500">⭐</span>
-
           <span>{venue.rating || 0}</span>
         </div>
 
         {/* Name */}
-
-        <h2 className="text-xl font-bold line-clamp-1">{venue.name}</h2>
+        <h2 className="line-clamp-1 text-xl font-bold">{venue.name}</h2>
 
         {/* Location */}
-
-        <p className="text-gray-500 text-sm mt-2">
+        <p className="mt-2 text-sm text-gray-500">
           📍 {venue.address?.city}, {venue.address?.state}
         </p>
 
-        {/* Description only browse */}
-
+        {/* Description */}
         {variant === "default" && (
-          <p className="text-gray-600 text-sm mt-3 line-clamp-2">
+          <p className="mt-3 line-clamp-2 text-sm text-gray-600">
             {venue.description}
           </p>
         )}
 
         {/* Price + Capacity */}
-
-        <div className="flex justify-between mt-5">
+        <div className="mt-5 flex justify-between">
           <div>
-            <p className="text-gray-500 text-sm">Starting from</p>
+            <p className="text-sm text-gray-500">Starting from</p>
 
-            <p className="font-bold text-xl">
+            <p className="text-xl font-bold">
               ₹{venue.pricePerDay}
               <span className="text-sm font-normal">/day</span>
             </p>
           </div>
 
           <div className="text-right">
-            <p className="text-gray-500 text-sm">Capacity</p>
+            <p className="text-sm text-gray-500">Capacity</p>
 
-            <p className="font-bold">{venue.seatingCapacity} Seating</p>
+            <p className="font-bold">
+              {venue.seatingCapacity} Seating
+            </p>
 
-            <p className="font-bold">{venue.standingCapacity} Standing</p>
+            <p className="font-bold">
+              {venue.standingCapacity} Standing
+            </p>
           </div>
         </div>
 
-        {/* Browse extra details */}
-
+        {/* Browse Extra Details */}
         {variant === "default" && (
           <>
             <div className="mt-4">
-              <p className="text-gray-500 text-sm">Available</p>
+              <p className="text-sm text-gray-500">Available</p>
 
               <p>
                 {venue.availabilityRules?.openTime}-
@@ -101,11 +108,11 @@ export default function VenueCard({
               </p>
             </div>
 
-            <div className="flex gap-2 mt-4">
+            <div className="mt-4 flex gap-2">
               {venue.amenities?.slice(0, 3).map((item, index) => (
                 <span
-                  key={index}
-                  className="bg-gray-100 px-3 py-1 rounded-full text-xs"
+                  key={`${item}-${index}`}
+                  className="rounded-full bg-gray-100 px-3 py-1 text-xs"
                 >
                   {item}
                 </span>
