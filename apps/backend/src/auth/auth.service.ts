@@ -14,6 +14,7 @@ import { RedisService } from 'src/providers/redis/redis.service';
 import { RegisterDto } from './dto/register.dto';
 import { RequestOtpDto } from './dto/request-otp.dto';
 import type { Response } from 'express';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import bcrypt from 'bcrypt';
 
@@ -166,19 +167,23 @@ export class AuthService {
       },
     });
 
-    const { password, refreshToken: _, ...safeUser } = user;
+    const safeUser = { ...user };
+    delete (safeUser as Partial<User>).password;
+    delete (safeUser as Partial<User>).refreshToken;
 
     return {
       message: 'User verified successfully.',
       accessToken,
       refreshToken,
-      user: safeUser,
+      user: { ...safeUser, isPasswordSet: !!user.password },
     };
   }
 
   getMyProfile(user: User) {
-    const { password, refreshToken, ...safeUser } = user;
-    return { user: safeUser };
+    const safeUser = { ...user };
+    delete (safeUser as Partial<User>).password;
+    delete (safeUser as Partial<User>).refreshToken;
+    return { user: { ...safeUser, isPasswordSet: !!user.password } };
   }
 
   async googleLogin(googleUser: GoogleUser) {
@@ -230,13 +235,15 @@ export class AuthService {
       },
     });
 
-    const { password, refreshToken: _, ...safeUser } = user;
+    const safeUser = { ...user };
+    delete (safeUser as Partial<User>).password;
+    delete (safeUser as Partial<User>).refreshToken;
 
     return {
       message: 'Google login successful.',
       accessToken,
       refreshToken,
-      user: safeUser,
+      user: { ...safeUser, isPasswordSet: !!user.password },
     };
   }
 
@@ -257,9 +264,9 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token not found');
     }
 
-    const payload = await this.jwtService.verifyAsync(refreshToken, {
+    const payload = (await this.jwtService.verifyAsync(refreshToken, {
       secret: process.env.JWT_SECRET,
-    });
+    })) as unknown as { sub: string };
 
     const user = await this.prismaService.user.findUnique({
       where: {
@@ -318,6 +325,46 @@ export class AuthService {
     return {
       success: true,
       message: 'User registered successfully.',
+    };
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const user = await this.prismaService.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    const dataToUpdate: {
+      name?: string;
+      phone?: string;
+      password?: string;
+    } = {};
+
+    if (dto.name !== undefined) {
+      dataToUpdate.name = dto.name;
+    }
+    if (dto.phone !== undefined) {
+      dataToUpdate.phone = dto.phone;
+    }
+    if (dto.password !== undefined) {
+      const hashedPassword = await bcrypt.hash(dto.password, 10);
+      dataToUpdate.password = hashedPassword;
+    }
+
+    const updatedUser = await this.prismaService.user.update({
+      where: { id: userId },
+      data: dataToUpdate,
+    });
+
+    const safeUser = { ...updatedUser };
+    delete (safeUser as Partial<User>).password;
+    delete (safeUser as Partial<User>).refreshToken;
+    return {
+      message: 'Profile updated successfully',
+      user: { ...safeUser, isPasswordSet: !!updatedUser.password },
     };
   }
 }
