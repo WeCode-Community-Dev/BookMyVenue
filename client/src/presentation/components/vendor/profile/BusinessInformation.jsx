@@ -1,4 +1,3 @@
-import React from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -25,18 +24,18 @@ const BusinessInformation = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border p-6 mb-6">
-      <h2 className="text-xl font-semibold mb-6">
+    <div className="mb-6 rounded-2xl border bg-white p-6">
+      <h2 className="mb-6 text-xl font-semibold">
         Business Information
       </h2>
 
       {!isEditing ? (
         <div className="space-y-6">
-
           <div>
             <p className="text-sm text-gray-500">
               Company Name
             </p>
+
             <p className="font-medium">
               {profile.companyName || "-"}
             </p>
@@ -46,6 +45,7 @@ const BusinessInformation = ({
             <p className="text-sm text-gray-500">
               Address Line
             </p>
+
             <p className="font-medium">
               {profile.address?.addressLine1 || "-"}
             </p>
@@ -55,6 +55,7 @@ const BusinessInformation = ({
             <p className="text-sm text-gray-500">
               City
             </p>
+
             <p className="font-medium">
               {profile.address?.city || "-"}
             </p>
@@ -64,6 +65,7 @@ const BusinessInformation = ({
             <p className="text-sm text-gray-500">
               State
             </p>
+
             <p className="font-medium">
               {profile.address?.state || "-"}
             </p>
@@ -73,6 +75,7 @@ const BusinessInformation = ({
             <p className="text-sm text-gray-500">
               Pincode
             </p>
+
             <p className="font-medium">
               {profile.address?.pincode || "-"}
             </p>
@@ -82,15 +85,14 @@ const BusinessInformation = ({
             <p className="text-sm text-gray-500">
               Bio
             </p>
+
             <p className="font-medium">
               {profile.bio || "-"}
             </p>
           </div>
-
         </div>
       ) : (
         <div className="space-y-4">
-
           <Input
             placeholder="Company Name"
             value={profile.companyName || ""}
@@ -139,7 +141,6 @@ const BusinessInformation = ({
               updateField("bio", e.target.value)
             }
           />
-
         </div>
       )}
     </div>

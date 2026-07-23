@@ -63,7 +63,7 @@ export class VendorEditVenueUsecase  {
             if(venue.isDeleted){
                 throw new NotFoundError(VenueMessages.error.CANNOT_UPDATE_DELETED_VENUE)
             }
-            if(venue.approvalStatus !== VenueStatus.ACTIVE && venue.approvalStatus !== VenueStatus.DRAFT){
+            if(venue.approvalStatus === VenueStatus.INACTIVE || venue.approvalStatus === VenueStatus.SUSPENDED){
                 throw new ConflictError(VenueMessages.error.CANNOT_UPDATE_INACTIVE_VENUE)
             }
 

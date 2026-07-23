@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import VendorSidebar from "@/presentation/components/vendor/VendorSidebar";
 import VendorNavbar from "@/presentation/components/vendor/VendorNavbar";
 import SettingsHeader from "@/presentation/components/vendor/settings/SettingsHeader";

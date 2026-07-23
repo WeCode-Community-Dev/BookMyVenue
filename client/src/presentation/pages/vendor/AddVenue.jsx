@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 import VendorSidebar from "@/presentation/components/vendor/VendorSidebar";
 import VendorNavbar from "@/presentation/components/vendor/VendorNavbar";
+import { ROUTES } from "@/constants/routes";
 
 import AddVenueHeader from "@/presentation/components/vendor/addVenue/AddVenueHeader";
 import VenueDetailsForm from "@/presentation/components/vendor/addVenue/VenueDetailsForm";
@@ -22,7 +23,7 @@ import { createVenueSchema } from "@/lib/validation/venueValidation";
 
 const AddVenue = () => {
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   // ==============================
   // FORM STATE
   // ==============================
@@ -50,6 +51,7 @@ const AddVenue = () => {
   const [pricing, setPricing] = useState({
     seatingCapacity: "",
     standingCapacity: "",
+    pricePerHour:"",
     pricePerDay: "",
     securityDeposit: "",
     weekendSurcharge: "",
@@ -64,7 +66,7 @@ const AddVenue = () => {
   // ==============================
 
   const {
-    vendorId,
+    //vendorId,
     loading,
     success,
     error,
@@ -109,6 +111,7 @@ const AddVenue = () => {
     setPricing({
       seatingCapacity: "",
       standingCapacity: "",
+      pricePerHour:"",
       pricePerDay: "",
       securityDeposit: "",
       weekendSurcharge: "",
@@ -143,6 +146,7 @@ const AddVenue = () => {
 
       seatingCapacity: pricing.seatingCapacity,
       standingCapacity: pricing.standingCapacity,
+      pricePerHour: pricing.pricePerHour,
       pricePerDay: pricing.pricePerDay,
       securityDeposit: pricing.securityDeposit,
       weekendSurcharge: pricing.weekendSurcharge,
@@ -177,11 +181,11 @@ const AddVenue = () => {
     // VENDOR VALIDATION
     // ==============================
 
-    if (!vendorId) {
-      toast.error("Vendor profile is still loading.");
+   // if (!vendorId) {
+     // toast.error("Vendor profile is still loading.");
 
-      return;
-    }
+     // return;
+   // }
 
     // ==============================
     // FORM DATA
@@ -220,9 +224,15 @@ const AddVenue = () => {
     );
 
     formData.append(
+    "pricePerHour",
+    String(pricing.pricePerHour)
+  );
+
+    formData.append(
       "pricePerDay",
       pricing.pricePerDay
     );
+
 
     formData.append(
       "securityDeposit",
@@ -239,7 +249,7 @@ const AddVenue = () => {
       pricing.minimumBookingHours
     );
 
-    formData.append("vendorId", vendorId);
+   // formData.append("vendorId", vendorId);
 
     if (license) {
       formData.append("license", license);
@@ -261,11 +271,16 @@ const AddVenue = () => {
       resetForm();
 
       dispatch(clearVenueState());
+      navigate(ROUTES.VENDOR.VENUES);
 
-    } catch (errorMessage) {
-      toast.error(errorMessage);
-    }
-  };
+} 
+catch (errorMessage) {
+  toast.error(
+    typeof errorMessage === "string"
+      ? errorMessage
+      : errorMessage?.message || "Failed to create venue"
+  );
+}  };
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -280,12 +295,13 @@ const AddVenue = () => {
 
           <AddVenueHeader />
 
-          {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
-
+{error && (
+  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+    {typeof error === "string"
+      ? error
+      : error?.message || "Something went wrong"}
+  </div>
+)}
           <VenueDetailsForm
             venueName={venueName}
             setVenueName={setVenueName}
