@@ -8,6 +8,7 @@ import {
   Pencil,
   Trash2,
   Star,
+  Eye,
 } from "lucide-react";
 
 const VenueCard = ({
@@ -20,33 +21,34 @@ const VenueCard = ({
   rating,
   category,
   status,
+  onView,
   onEdit,
   onDelete,
 }) => {
   return (
-    <Card className="overflow-hidden rounded-2xl border shadow-sm hover:shadow-lg transition-all duration-300">
+    <Card className="overflow-hidden rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-lg">
 
       {/* Image */}
       <div className="relative">
         <img
           src={image}
           alt={name}
-          className="w-full h-60 object-cover"
+          className="h-60 w-full object-cover"
         />
 
         {/* Category */}
-        <span className="absolute top-3 left-3 bg-white px-2.5 py-1 rounded-lg text-xs font-medium shadow-sm">
+        <span className="absolute left-3 top-3 rounded-lg bg-white px-2.5 py-1 text-xs font-medium shadow-sm">
           {category || "Venue"}
         </span>
 
         {/* Status */}
-        <span className="absolute top-3 right-3 bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-medium">
+        <span className="absolute right-3 top-3 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
           ● {status || "Active"}
         </span>
 
         {/* Rating */}
-        <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg text-white text-sm font-medium">
-          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+        <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-lg bg-black/50 px-2 py-1 text-sm font-medium text-white backdrop-blur-sm">
+          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
           {rating}
         </div>
       </div>
@@ -54,54 +56,66 @@ const VenueCard = ({
       <CardContent className="p-5">
 
         {/* Title */}
-        <h3 className="text-xl font-bold text-slate-900 mb-2">
+        <h3 className="mb-2 text-xl font-bold text-slate-900">
           {name}
         </h3>
 
         {/* Location */}
-        <div className="flex items-center gap-2 text-slate-500 text-sm mb-5">
-          <MapPin className="w-4 h-4" />
+        <div className="mb-5 flex items-center gap-2 text-sm text-slate-500">
+          <MapPin className="h-4 w-4" />
           <span>{location}</span>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 border-b border-slate-200 pb-4 mb-4 text-sm">
+        <div className="mb-4 grid grid-cols-3 gap-2 border-b border-slate-200 pb-4 text-sm">
 
           <div className="flex items-center gap-1 text-slate-600">
-            <Users className="w-4 h-4" />
+            <Users className="h-4 w-4" />
             <span>{guests}</span>
           </div>
 
-          <div className="text-center text-slate-600 font-medium">
+          <div className="text-center font-medium text-slate-600">
             ₹{price}/day
           </div>
 
           <div className="flex items-center justify-end gap-1 text-slate-600">
-            <Calendar className="w-4 h-4" />
+            <Calendar className="h-4 w-4" />
             <span>{bookings}</span>
           </div>
 
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className="flex gap-2">
 
+          {/* View Details */}
           <Button
-            variant="outline"
+            variant="secondary"
             className="flex-1 rounded-xl"
-            onClick={onEdit}
+            onClick={onView}
           >
-            <Pencil className="w-4 h-4 mr-2" />
-            Edit
+            <Eye className="mr-2 h-4 w-4" />
+            View
           </Button>
 
+          {/* Edit */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-xl"
+            onClick={onEdit}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+
+          {/* Delete */}
           <Button
             variant="destructive"
             size="icon"
             className="rounded-xl"
             onClick={onDelete}
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="h-4 w-4" />
           </Button>
 
         </div>

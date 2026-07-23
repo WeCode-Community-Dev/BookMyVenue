@@ -3,6 +3,8 @@ export const ROUTES = {
         HOME: '/',
         SIGNUP: '/signup',
         LOGIN: '/login',
+        REGISTER:'/register',
+        
     },
     USER: {
         PROFILE: '/user/profile',
@@ -11,11 +13,17 @@ export const ROUTES = {
         CHANGE_PASSWORD: '/user/changepassword',
         WISHLIST: '/user/wishlist',
         BOOKINGS: '/user/bookings',
-        BOOKING_DETAIL: '/user/bookings/:bookingId'
+        BOOKING_DETAIL: '/user/bookings/:bookingId',
+        BOOKING_SUMMARY:`/user/booking-summary`,
+        PAYMENT:`/user/payment`,
+        PAYMENT_SUCCESS:`/user/payment-success`,
+        PAYMENT_FAILURE:`/user/payment-failure`
+
     },
     VENDOR: {
         DASHBOARD: '/vendor/dashboard',
         VENUES: '/vendor/venues',
+        VENUE_DETAILS: '/vendor/venues/:venueId',
         BOOKINGS: '/vendor/bookings',
         ADD_VENUE: '/vendor/add-venue',
         EDIT_VENUE: '/vendor/edit-venue/:venueId',

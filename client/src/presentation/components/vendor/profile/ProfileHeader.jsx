@@ -8,7 +8,9 @@ const ProfileHeader = ({
 }) => {
   const initials =
     profile?.fullName
-      ?.split(" ")
+      ?.trim()
+      .split(/\s+/)
+      .filter(Boolean)
       .map((word) => word[0])
       .join("")
       .slice(0, 2)
@@ -16,11 +18,8 @@ const ProfileHeader = ({
 
   return (
     <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white mb-6">
-
-      <div className="flex justify-between items-center">
-
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div className="flex items-center gap-4">
-
           <div className="w-20 h-20 rounded-full bg-white text-blue-600 flex items-center justify-center text-3xl font-bold">
             {initials}
           </div>
@@ -38,18 +37,16 @@ const ProfileHeader = ({
               {profile?.email || "-"}
             </p>
           </div>
-
         </div>
 
         <Button
+          type="button"
           variant="secondary"
           onClick={() => setIsEditing(!isEditing)}
         >
           {isEditing ? "Cancel Editing" : "Edit Profile"}
         </Button>
-
       </div>
-
     </div>
   );
 };
