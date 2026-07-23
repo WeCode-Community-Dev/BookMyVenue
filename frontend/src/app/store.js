@@ -7,6 +7,7 @@ import { baseApi } from '@/lib/api';
 import '@/features/auth/api/auth-api';
 import '@/features/venues/api/venues-api';
 import '@/features/bookings/api/bookings-api';
+import '@/features/owner/api/owner-api';
 
 export const store = configureStore({
   reducer: {

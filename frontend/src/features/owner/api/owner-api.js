@@ -1,13 +1,16 @@
-import {baseApi} from "@/lib/api";
+import { baseApi } from '@/lib/api';
 
-const ownerApi = baseApi.injectEndpoints({
-  endpoints: (build) => ({
-    getAllBookings: build.query({
+export const ownerApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getOwnerBookings: builder.query({
       query: () => '/owners/bookings',
       transformResponse: (response) => response.data.bookings,
-      // providesTags: ['OwnerBooking']      
+      providesTags: (result) =>
+        result
+          ? [...result.map(({ id }) => ({ type: 'OwnerBooking', id })), { type: 'OwnerBooking', id: 'LIST' }]
+          : [{ type: 'OwnerBooking', id: 'LIST' }],
     }),
   }),
 });
 
-export const { useGetAllBookingsQuery } = ownerApi;
+export const { useGetOwnerBookingsQuery } = ownerApi;

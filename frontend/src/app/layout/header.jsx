@@ -19,7 +19,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-brand-border bg-white">
       <div className="mx-auto flex h-16 max-w-page items-center justify-between px-6">
-        <Link to={paths.home.path} className="text-xl font-semibold text-brand-text">
+        <Link to={role === 'OWNER' ? paths.owner.dashboard.path : paths.home.path} className="text-xl font-semibold text-brand-text">
           Book My Venue
         </Link>
 
@@ -29,11 +29,6 @@ export function Header() {
               {role === 'CUSTOMER' ? (
                 <Button asChild variant="ghost" className="hidden sm:inline-flex">
                   <Link to={paths.bookings.mine.path}>My bookings</Link>
-                </Button>
-              ) : null}
-              {role === 'OWNER' ? (
-                <Button asChild variant="ghost" className="hidden sm:inline-flex">
-                  <Link to={paths.owner.dashboard.path}>Dashboard</Link>
                 </Button>
               ) : null}
               <span className="hidden text-sm text-brand-muted sm:inline">{user?.username}</span>
