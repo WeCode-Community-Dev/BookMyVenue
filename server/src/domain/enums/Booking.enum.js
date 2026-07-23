@@ -3,6 +3,7 @@ export const BookingStatus = Object.freeze({
     CONFIRMED: "confirmed",
     CANCELLED: "cancelled",
     COMPLETED: "completed",
+    REJECTED:"rejected"
     
   });
 

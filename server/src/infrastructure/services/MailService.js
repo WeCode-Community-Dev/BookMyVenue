@@ -7,7 +7,8 @@ import { adminVenueRejectionTemplate } from "../emailTemplates/admin.venueReject
 import { forgotPasswordTemplate } from "../emailTemplates/forgotPasswordTemplate.js";
 import { VerifyRegisterotpTemplate } from "../emailTemplates/verifyRegisterOtpTemplate.js";
 import { emailChangeOtpTemplate } from "../emailTemplates/user.emailChangeOtpTemplate.js";
-
+import { bookingConfirmationTemplate } from "../emailTemplates/user.bookingConfirmationTemplate.js"
+import { paymentReminderTemplate } from "../emailTemplates/user.paymentReminderTemplate.js";
 // General-purpose send function used by auth use cases
 // export const sendMail = async (to, subject, html) => {
 //     await transporter.sendMail({
@@ -131,6 +132,58 @@ export class MailServiceImpl extends MailService {
             subject: 'Your Email change OTP',
             html: emailChangeOtpTemplate(name, otp)
         })
+    }
+   async sendBookingConfirmationMail(booking) {
+
+        const { subject, html } = bookingConfirmationTemplate({
+
+            customerName: booking.customerName,
+            venueName: booking.venueName,
+            bookingDate: booking.bookingDate,
+            startTime: booking.startTime,
+            endTime: booking.endTime,
+            guestCount: booking.guestCount,
+            bookingType: booking.bookingType,
+            totalAmount: booking.totalAmount,
+            paidAmount: booking.paidAmount,
+            remainingAmount: booking.remainingAmount
+
+        });
+
+        await transporter.sendMail({
+
+            from: process.env.EMAIL_USER,
+            to: booking.email,
+            subject,
+            html
+
+        });
+
+        console.log("Booking confirmation mail sent.");
+
+    }
+    async sendPaymentReminderMail(reminderData) {
+
+        const { subject, html } = paymentReminderTemplate({
+            customerName: reminderData.customerName,
+            venueName: reminderData.venueName,
+            bookingDate: reminderData.bookingDate,
+            startTime: reminderData.startTime,
+            endTime: reminderData.endTime,
+            totalAmount: reminderData.totalAmount,
+            paidAmount: reminderData.paidAmount,
+            remainingAmount: reminderData.remainingAmount
+        });
+
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: reminderData.email,
+            subject,
+            html
+        });
+
+        console.log("Payment reminder mail sent.");
+
     }
 
 }

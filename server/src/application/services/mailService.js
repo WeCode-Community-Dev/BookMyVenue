@@ -30,4 +30,11 @@ export class MailService {
     async SendVerifiyRegisterOtp(email, name, otp) {
         throw new Error("Method not implemented")
     }
+    
+    async sendBookingConfirmationMail(booking) {
+    throw new Error("Method not implemented");
+    }
+    async sendPaymentReminderMail(reminderData) {
+        throw new Error("Method not implemented");
+    }
 }

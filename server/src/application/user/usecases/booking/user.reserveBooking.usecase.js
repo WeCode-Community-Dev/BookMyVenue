@@ -145,7 +145,7 @@ export class UserReserveBookingUsecase{
             }
         }
         // check booking amount
-        let bookingAmount = 0;
+        let bookingAmount;
 
         if (bookingType === "hourly") {
             bookingAmount = bookingDuration * venue.pricePerHour;
@@ -170,15 +170,15 @@ export class UserReserveBookingUsecase{
             // Calculate advance payment
         const hoursDifference =(selectedDate - today) / (1000 * 60 * 60);
 
-        let advanceAmount = 0;
-        let remainingAmount = 0;
+        let advanceAmount;
+        let remainingAmount;
 
         if (hoursDifference > 72) {
             advanceAmount = Math.round(totalAmount * 0.2);
             remainingAmount = totalAmount - advanceAmount;
         } else {
             advanceAmount = totalAmount;
-            remainingAmount = 0;
+            remainingAmount;
         }
         const reservationId=crypto.randomUUID()
         const expiresAt=new Date(Date.now()+600*1000)

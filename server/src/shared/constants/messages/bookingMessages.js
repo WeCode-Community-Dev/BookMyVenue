@@ -91,7 +91,9 @@ export const BookingMessages = {
             "Failed to accept booking",
 
         BOOKING_REJECT_FAILED:
-            "Failed to reject booking"
+            "Failed to reject booking",
+        RESERVATION_NOT_FOUND:
+         "Reservation not found or expired."
 
     }
 

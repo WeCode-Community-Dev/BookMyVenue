@@ -7,6 +7,7 @@ import VendorModel from "../database/models/Vendor.model.js";
 import { BookingMapper } from "../../application/mapper/Booking.mapper.js";
 import { BookingStatus } from "../../domain/enums/Booking.enum.js";
 import { Types } from "mongoose";
+import { PaymentStatus } from "../../domain/entities/enums/paymentStatus.js";
 
 
 
@@ -418,4 +419,47 @@ export class BookingRepositoryImpl extends BookingRepository {
         return Boolean(booking)
      }
 
+     async getUserBookings(userId) {
+
+        const bookings = await BookingModel
+            .find({ userId })
+            .populate("venueId")
+            .sort({
+                createdAt: -1
+            });
+
+        return bookings.map((booking) =>
+            BookingMapper.mapToEntity(booking)
+        );
+
+    }
+
+    async getUserBookingById(userId, bookingId) {
+
+        const booking = await BookingModel
+            .findOne({
+                _id: bookingId,
+                userId
+            })
+            .populate("venueId")
+            .populate("vendorId", "fullName companyName email phone");
+
+        if (!booking) {
+            return null;
+        }
+
+        return BookingMapper.mapToEntity(booking);
+
+    }
+    async getBookingsForPaymentReminder(date) {
+
+        return await BookingModel.find({
+            bookingDate: date,
+            status: BookingStatus.CONFIRMED,
+            paymentStatus: PaymentStatus.PARTIAL
+        });
+
+    }
+
 }
+
