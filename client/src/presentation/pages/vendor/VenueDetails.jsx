@@ -30,17 +30,9 @@ const VenueDetails = () => {
     (state) => state.vendorVenue
   );
 
-  // ==============================
-  // FETCH VENUE
-  // ==============================
-
   useEffect(() => {
     dispatch(getVenueById(venueId));
   }, [dispatch, venueId]);
-
-  // ==============================
-  // EDIT
-  // ==============================
 
   const handleEdit = () => {
     navigate(
@@ -50,10 +42,6 @@ const VenueDetails = () => {
       )
     );
   };
-
-  // ==============================
-  // DELETE
-  // ==============================
 
   const handleDelete = async () => {
     try {
@@ -69,13 +57,13 @@ const VenueDetails = () => {
         ROUTES.VENDOR.VENUES
       );
     } catch (error) {
-      toast.error(error);
+      toast.error(
+        typeof error === "string"
+          ? error
+          : error?.message || "Failed to delete venue"
+      );
     }
   };
-
-  // ==============================
-  // LOADING
-  // ==============================
 
   if (loading) {
     return (
@@ -93,10 +81,6 @@ const VenueDetails = () => {
     );
   }
 
-  // ==============================
-  // ERROR
-  // ==============================
-
   if (error) {
     return (
       <div className="flex min-h-screen bg-slate-100">
@@ -107,7 +91,9 @@ const VenueDetails = () => {
 
           <main className="p-6">
             <p className="text-red-500">
-              {error}
+              {typeof error === "string"
+                ? error
+                : error?.message || "Something went wrong"}
             </p>
           </main>
         </div>
@@ -127,11 +113,7 @@ const VenueDetails = () => {
         <VendorNavbar />
 
         <main className="p-6">
-
-          {/* HEADER */}
-
           <div className="mb-6 flex items-center justify-between">
-
             <div>
               <h1 className="text-3xl font-bold">
                 {venue.name}
@@ -143,7 +125,6 @@ const VenueDetails = () => {
             </div>
 
             <div className="flex gap-3">
-
               <button
                 onClick={handleEdit}
                 className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
@@ -152,38 +133,26 @@ const VenueDetails = () => {
               </button>
 
               <button
-                onClick={() =>
-                  setDeleteOpen(true)
-                }
+                onClick={() => setDeleteOpen(true)}
                 className="rounded-lg bg-red-600 px-5 py-2 text-white hover:bg-red-700"
               >
                 Delete
               </button>
-
             </div>
           </div>
 
-          {/* IMAGES */}
-
           <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-
-            {venue.images?.map(
-              (image, index) => (
-                <img
-                  key={image.publicId || index}
-                  src={image.url}
-                  alt={venue.name}
-                  className="h-48 w-full rounded-xl object-cover"
-                />
-              )
-            )}
-
+            {venue.images?.map((image, index) => (
+              <img
+                key={image.publicId || index}
+                src={image.url}
+                alt={venue.name}
+                className="h-48 w-full rounded-xl object-cover"
+              />
+            ))}
           </div>
 
-          {/* DESCRIPTION */}
-
           <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
-
             <h2 className="mb-3 text-xl font-semibold">
               Description
             </h2>
@@ -191,19 +160,14 @@ const VenueDetails = () => {
             <p className="text-gray-600">
               {venue.description}
             </p>
-
           </div>
 
-          {/* ADDRESS */}
-
           <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
-
             <h2 className="mb-4 text-xl font-semibold">
               Location Details
             </h2>
 
             <div className="grid gap-4 md:grid-cols-2">
-
               <p>
                 <strong>Address:</strong>{" "}
                 {venue.address?.addressLine1}
@@ -233,21 +197,15 @@ const VenueDetails = () => {
                 <strong>Phone:</strong>{" "}
                 {venue.address?.phone}
               </p>
-
             </div>
-
           </div>
 
-          {/* CAPACITY & PRICING */}
-
           <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
-
             <h2 className="mb-4 text-xl font-semibold">
               Capacity & Pricing
             </h2>
 
             <div className="grid gap-4 md:grid-cols-3">
-
               <p>
                 <strong>Seating Capacity:</strong>{" "}
                 {venue.seatingCapacity}
@@ -282,37 +240,25 @@ const VenueDetails = () => {
                 <strong>Minimum Booking Hours:</strong>{" "}
                 {venue.minimumBookingHours}
               </p>
-
             </div>
-
           </div>
 
-          {/* AMENITIES */}
-
           <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm">
-
             <h2 className="mb-4 text-xl font-semibold">
               Amenities
             </h2>
 
             <div className="flex flex-wrap gap-3">
-
-              {venue.amenities?.map(
-                (amenity) => (
-                  <span
-                    key={amenity}
-                    className="rounded-full bg-blue-100 px-4 py-2 text-sm text-blue-700"
-                  >
-                    {amenity}
-                  </span>
-                )
-              )}
-
+              {venue.amenities?.map((amenity) => (
+                <span
+                  key={amenity}
+                  className="rounded-full bg-blue-100 px-4 py-2 text-sm text-blue-700"
+                >
+                  {amenity}
+                </span>
+              ))}
             </div>
-
           </div>
-
-          {/* DELETE DIALOG */}
 
           <DeleteVenueDialog
             open={deleteOpen}
@@ -320,7 +266,6 @@ const VenueDetails = () => {
             onConfirm={handleDelete}
             loading={loading}
           />
-
         </main>
       </div>
     </div>

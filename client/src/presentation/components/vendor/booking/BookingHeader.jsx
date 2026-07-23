@@ -1,5 +1,3 @@
-import React from "react";
-
 const BookingHeader = () => {
   return (
     <div className="mb-6">

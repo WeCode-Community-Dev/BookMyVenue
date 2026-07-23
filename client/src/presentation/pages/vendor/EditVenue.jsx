@@ -38,7 +38,6 @@ const EditVenue = () => {
     venue,
     vendorId,
     loading,
-    success,
     error,
   } = useSelector((state) => state.vendorVenue);
 
@@ -216,7 +215,6 @@ const EditVenue = () => {
   // ==============================
 
   const handleRemoveExistingImage = (publicId) => {
-    console.log("deleting image with publicId:", publicId);
     setExistingImages((prev) =>
       prev.filter(
         (image) =>

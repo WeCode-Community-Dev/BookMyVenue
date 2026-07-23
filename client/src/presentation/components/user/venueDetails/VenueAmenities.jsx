@@ -1,7 +1,7 @@
 export default function VenueAmenities({ amenities = [] }) {
   return (
-    <section className="bg-white rounded-2xl p-6 mt-6">
-      <h2 className="text-2xl font-bold mb-5">
+    <section className="mt-6 rounded-2xl bg-white p-6">
+      <h2 className="mb-5 text-2xl font-bold">
         Amenities & Features
       </h2>
 
@@ -10,11 +10,11 @@ export default function VenueAmenities({ amenities = [] }) {
           No amenities listed for this venue.
         </p>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {amenities.map((amenity, index) => (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+          {amenities.map((amenity) => (
             <div
-              key={index}
-              className="flex items-center gap-3 border rounded-xl p-4"
+              key={amenity}
+              className="flex items-center gap-3 rounded-xl border p-4"
             >
               <span className="text-xl">✓</span>
 

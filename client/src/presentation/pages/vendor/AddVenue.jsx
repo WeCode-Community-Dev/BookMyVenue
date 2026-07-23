@@ -23,8 +23,7 @@ import { createVenueSchema } from "@/lib/validation/venueValidation";
 
 const AddVenue = () => {
   const dispatch = useDispatch();
-  const navigate=useNavigate();
-
+  const navigate = useNavigate();
   // ==============================
   // FORM STATE
   // ==============================

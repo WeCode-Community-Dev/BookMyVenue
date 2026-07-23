@@ -89,7 +89,8 @@ export default function VenueDetails() {
  
                 </div>
 
-                <BookingCard venue={selectedVenue} selectedPackage={selectedPackage} />
+                <BookingCard venue={selectedVenue} selectedPackage={selectedPackage}
+                availability={availability} />
 
               </div>
               <SimilarVenues venues={similarVenues} />

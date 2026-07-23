@@ -1,5 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 import VendorSidebar from "@/presentation/components/vendor/VendorSidebar";
 import VendorNavbar from "@/presentation/components/vendor/VendorNavbar";
@@ -10,14 +13,10 @@ import DeleteVenueDialog from "@/presentation/components/vendor/DeleteVenueDialo
 
 import { ROUTES } from "@/constants/routes";
 
-import { useDispatch, useSelector } from "react-redux";
-
 import {
   fetchVenues,
   deleteVenue,
 } from "@/redux/slices/VendorVenueSlice";
-
-import toast from "react-hot-toast";
 
 const initialFilters = {
   search: "",
@@ -49,10 +48,6 @@ const VenueList = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedVenueId, setSelectedVenueId] = useState(null);
 
-  // ==============================
-  // QUERY PARAMS
-  // ==============================
-
   const queryParams = useMemo(() => {
     const sanitized = { ...filters };
 
@@ -71,17 +66,9 @@ const VenueList = () => {
     return sanitized;
   }, [filters]);
 
-  // ==============================
-  // FETCH VENUES
-  // ==============================
-
   useEffect(() => {
     dispatch(fetchVenues(queryParams));
   }, [dispatch, queryParams]);
-
-  // ==============================
-  // VIEW VENUE DETAILS
-  // ==============================
 
   const handleViewVenue = (venueId) => {
     navigate(
@@ -92,10 +79,6 @@ const VenueList = () => {
     );
   };
 
-  // ==============================
-  // EDIT VENUE
-  // ==============================
-
   const handleEditVenue = (venueId) => {
     navigate(
       ROUTES.VENDOR.EDIT_VENUE.replace(
@@ -104,10 +87,6 @@ const VenueList = () => {
       )
     );
   };
-
-  // ==============================
-  // DELETE VENUE
-  // ==============================
 
   const handleDeleteVenue = (venueId) => {
     setSelectedVenueId(venueId);
@@ -129,13 +108,13 @@ const VenueList = () => {
 
       dispatch(fetchVenues(queryParams));
     } catch (err) {
-      toast.error(err);
+      toast.error(
+        typeof err === "string"
+          ? err
+          : err?.message || "Failed to delete venue"
+      );
     }
   };
-
-  // ==============================
-  // STATUS FILTER
-  // ==============================
 
   const visibleVenues = useMemo(() => {
     if (!filters.status) {
@@ -170,7 +149,9 @@ const VenueList = () => {
 
           {error && (
             <p className="my-4 text-sm text-red-500">
-              {error}
+              {typeof error === "string"
+                ? error
+                : error?.message || "Something went wrong"}
             </p>
           )}
 

@@ -3,17 +3,17 @@ import api from "@/lib/axios";
 import { API_ROUTES } from "@/constants/apiRoutes";
 
 const initialState = {
-  vendorId: "",
+vendorId: "",
 
-  loading: false,
-  success:false,
-  venue: null,
-  venues: [],
+loading: false,
+success: false,
+venue: null,
+venues: [],
 
-  totalPages: 1,
-  totalCount: 0,
+totalPages: 1,
+totalCount: 0,
 
-  error: null,
+error: null,
 };
 
 // ==============================
@@ -21,22 +21,23 @@ const initialState = {
 // ==============================
 
 export const fetchVendorProfile = createAsyncThunk(
-  "vendorVenue/fetchVendorProfile",
+"vendorVenue/fetchVendorProfile",
 
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.get(
-        API_ROUTES.VENDOR.PROFILE
-      );
+async (_, { rejectWithValue }) => {
+try {
+const response = await api.get(API_ROUTES.VENDOR.PROFILE);
 
-      return response.data.data.id;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to load vendor profile"
-      );
-    }
-  }
+
+  return response.data.data.id;
+} catch (error) {
+  return rejectWithValue(
+    error.response?.data?.message ||
+      "Failed to load vendor profile"
+  );
+}
+
+
+}
 );
 
 // ==============================
@@ -44,28 +45,31 @@ export const fetchVendorProfile = createAsyncThunk(
 // ==============================
 
 export const createVenue = createAsyncThunk(
-  "vendorVenue/createVenue",
+"vendorVenue/createVenue",
 
-  async (formData, { rejectWithValue }) => {
-    try {
-      const response = await api.post(
-        API_ROUTES.VENDOR.CREATE_VENUE,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+async (formData, { rejectWithValue }) => {
+try {
+const response = await api.post(
+API_ROUTES.VENDOR.CREATE_VENUE,
+formData,
+{
+headers: {
+"Content-Type": "multipart/form-data",
+},
+}
+);
 
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to create venue"
-      );
-    }
-  }
+
+  return response.data.data;
+} catch (error) {
+  return rejectWithValue(
+    error.response?.data?.message ||
+      "Failed to create venue"
+  );
+}
+
+
+}
 );
 
 // ==============================
@@ -73,25 +77,28 @@ export const createVenue = createAsyncThunk(
 // ==============================
 
 export const fetchVenues = createAsyncThunk(
-  "vendorVenue/fetchVenues",
+"vendorVenue/fetchVenues",
 
-  async (params = {}, { rejectWithValue }) => {
-    try {
-      const response = await api.get(
-        API_ROUTES.VENDOR.VENUES,
-        {
-          params,
-        }
-      );
+async (params = {}, { rejectWithValue }) => {
+try {
+const response = await api.get(
+API_ROUTES.VENDOR.VENUES,
+{
+params,
+}
+);
 
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to fetch venues"
-      );
-    }
-  }
+
+  return response.data.data;
+} catch (error) {
+  return rejectWithValue(
+    error.response?.data?.message ||
+      "Failed to fetch venues"
+  );
+}
+
+
+}
 );
 
 // ==============================
@@ -99,22 +106,25 @@ export const fetchVenues = createAsyncThunk(
 // ==============================
 
 export const getVenueById = createAsyncThunk(
-  "vendorVenue/getVenueById",
+"vendorVenue/getVenueById",
 
-  async (venueId, { rejectWithValue }) => {
-    try {
-      const response = await api.get(
-        API_ROUTES.VENDOR.VENUE_BY_ID(venueId)
-      );
+async (venueId, { rejectWithValue }) => {
+try {
+const response = await api.get(
+API_ROUTES.VENDOR.VENUE_BY_ID(venueId)
+);
 
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to fetch venue"
-      );
-    }
-  }
+
+  return response.data.data;
+} catch (error) {
+  return rejectWithValue(
+    error.response?.data?.message ||
+      "Failed to fetch venue"
+  );
+}
+
+
+}
 );
 
 // ==============================
@@ -122,31 +132,34 @@ export const getVenueById = createAsyncThunk(
 // ==============================
 
 export const updateVenue = createAsyncThunk(
-  "vendorVenue/updateVenue",
+"vendorVenue/updateVenue",
 
-  async (
-    { venueId, formData },
-    { rejectWithValue }
-  ) => {
-    try {
-      const response = await api.patch(
-        API_ROUTES.VENDOR.UPDATE_VENUE(venueId),
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+async (
+{ venueId, formData },
+{ rejectWithValue }
+) => {
+try {
+const response = await api.patch(
+API_ROUTES.VENDOR.UPDATE_VENUE(venueId),
+formData,
+{
+headers: {
+"Content-Type": "multipart/form-data",
+},
+}
+);
 
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to update venue"
-      );
-    }
-  }
+
+  return response.data.data;
+} catch (error) {
+  return rejectWithValue(
+    error.response?.data?.message ||
+      "Failed to update venue"
+  );
+}
+
+
+}
 );
 
 // ==============================
@@ -154,23 +167,25 @@ export const updateVenue = createAsyncThunk(
 // ==============================
 
 export const deleteVenue = createAsyncThunk(
-  "vendorVenue/deleteVenue",
+"vendorVenue/deleteVenue",
 
-  async (venueId, { rejectWithValue }) => {
-    try {
-      await api.delete(
-        API_ROUTES.VENDOR.DELETE_VENUE(venueId)
-      );
+async (venueId, { rejectWithValue }) => {
+try {
+await api.delete(
+API_ROUTES.VENDOR.DELETE_VENUE(venueId)
+);
 
-      return venueId;
-    } catch (error) {
-      console.error("delete venue error",error.response?.data|| error);
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to delete venue"
-      );
-    }
-  }
+
+  return venueId;
+} catch (error) {
+  return rejectWithValue(
+    error.response?.data?.message ||
+      "Failed to delete venue"
+  );
+}
+
+
+}
 );
 
 // ==============================
@@ -178,26 +193,28 @@ export const deleteVenue = createAsyncThunk(
 // ==============================
 
 export const updateVenueStatus = createAsyncThunk(
-  "vendorVenue/updateVenueStatus",
+"vendorVenue/updateVenueStatus",
 
-  async (
-    { venueId, status },
-    { rejectWithValue }
-  ) => {
-    try {
-      const response = await api.patch(
-        API_ROUTES.VENDOR.UPDATE_VENUE_STATUS(venueId),
-        { status }
-      );
+async (
+{ venueId, status },
+{ rejectWithValue }
+) => {
+try {
+const response = await api.patch(
+API_ROUTES.VENDOR.UPDATE_VENUE_STATUS(venueId),
+{ status }
+);
 
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to update venue status"
-      );
-    }
-  }
+  return response.data.data;
+} catch (error) {
+  return rejectWithValue(
+    error.response?.data?.message ||
+      "Failed to update venue status"
+  );
+}
+
+
+}
 );
 
 // ==============================
@@ -205,181 +222,178 @@ export const updateVenueStatus = createAsyncThunk(
 // ==============================
 
 const VendorVenueSlice = createSlice({
-  name: "vendorVenue",
+name: "vendorVenue",
 
-  initialState,
+initialState,
 
-  reducers: {
-    clearVenueState: (state) => {
-      state.loading = false;
-      state.success=false;
-      state.error = null;
-      state.venue = null;
-    },
-  },
+reducers: {
+clearVenueState: (state) => {
+state.loading = false;
+state.success = false;
+state.error = null;
+state.venue = null;
+},
+},
 
-  extraReducers: (builder) => {
-    builder
+extraReducers: (builder) => {
+builder
 
-      // ==========================
-      // FETCH VENDOR PROFILE
-      // ==========================
+```
+  // ==========================
+  // FETCH VENDOR PROFILE
+  // ==========================
 
-      .addCase(fetchVendorProfile.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+  .addCase(fetchVendorProfile.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
 
-      .addCase(fetchVendorProfile.fulfilled, (state, action) => {
-        state.loading = false;
-        state.vendorId = action.payload;
-      })
+  .addCase(fetchVendorProfile.fulfilled, (state, action) => {
+    state.loading = false;
+    state.vendorId = action.payload;
+  })
 
-      .addCase(fetchVendorProfile.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+  .addCase(fetchVendorProfile.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  })
 
-      // ==========================
-      // CREATE VENUE
-      // ==========================
+  // ==========================
+  // CREATE VENUE
+  // ==========================
 
-      .addCase(createVenue.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+  .addCase(createVenue.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
 
-      .addCase(createVenue.fulfilled, (state, action) => {
-        state.loading = false;
-        state.venue = action.payload;
-      })
+  .addCase(createVenue.fulfilled, (state, action) => {
+    state.loading = false;
+    state.venue = action.payload;
+  })
 
-      .addCase(createVenue.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+  .addCase(createVenue.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  })
 
-      // ==========================
-      // FETCH VENUES
-      // ==========================
+  // ==========================
+  // FETCH VENUES
+  // ==========================
 
-      .addCase(fetchVenues.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+  .addCase(fetchVenues.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
 
-      .addCase(fetchVenues.fulfilled, (state, action) => {
-        state.loading = false;
+  .addCase(fetchVenues.fulfilled, (state, action) => {
+    state.loading = false;
 
-        state.venues =
-          action.payload.data || [];
+    state.venues = action.payload.data || [];
+    state.totalPages = action.payload.totalPages || 1;
+    state.totalCount = action.payload.totalCount || 0;
+  })
 
-        state.totalPages =
-          action.payload.totalPages || 1;
+  .addCase(fetchVenues.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  })
 
-        state.totalCount =
-          action.payload.totalCount || 0;
-      })
+  // ==========================
+  // GET VENUE BY ID
+  // ==========================
 
-      .addCase(fetchVenues.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+  .addCase(getVenueById.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
 
-      // ==========================
-      // GET VENUE BY ID
-      // ==========================
+  .addCase(getVenueById.fulfilled, (state, action) => {
+    state.loading = false;
+    state.venue = action.payload;
+  })
 
-      .addCase(getVenueById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+  .addCase(getVenueById.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  })
 
-      .addCase(getVenueById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.venue = action.payload;
-      })
+  // ==========================
+  // UPDATE VENUE
+  // ==========================
 
-      .addCase(getVenueById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+  .addCase(updateVenue.pending, (state) => {
+    state.loading = true;
+    state.success = false;
+    state.error = null;
+  })
 
-      // ==========================
-      // UPDATE VENUE
-      // ==========================
+  .addCase(updateVenue.fulfilled, (state, action) => {
+    state.loading = false;
+    state.success = true;
+    state.venue = action.payload;
+  })
 
-      .addCase(updateVenue.pending, (state) => {
-        state.loading = true;
-        state.success=false;
-        state.error = null;
+  .addCase(updateVenue.rejected, (state, action) => {
+    state.loading = false;
+    state.success = false;
+    state.error = action.payload;
+  })
 
-      })
+  // ==========================
+  // DELETE VENUE
+  // ==========================
 
-      .addCase(updateVenue.fulfilled, (state, action) => {
-        state.loading = false;
-        state.success=true;
-        state.venue = action.payload;
-      })
+  .addCase(deleteVenue.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
 
-      .addCase(updateVenue.rejected, (state, action) => {
-        state.loading = false;
-        state.success=false;
-        state.error = action.payload;
-      })
+  .addCase(deleteVenue.fulfilled, (state, action) => {
+    state.loading = false;
 
-      // ==========================
-      // DELETE VENUE
-      // ==========================
+    state.venues = state.venues.filter(
+      (venue) => venue.id !== action.payload
+    );
+  })
 
-      .addCase(deleteVenue.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+  .addCase(deleteVenue.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  })
 
-      .addCase(deleteVenue.fulfilled, (state, action) => {
-        state.loading = false;
+  // ==========================
+  // UPDATE VENUE STATUS
+  // ==========================
 
-        state.venues = state.venues.filter(
-          (venue) => venue.id !== action.payload
-        );
-      })
+  .addCase(updateVenueStatus.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
 
-      .addCase(deleteVenue.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+  .addCase(updateVenueStatus.fulfilled, (state, action) => {
+    state.loading = false;
 
-      // ==========================
-      // UPDATE VENUE STATUS
-      // ==========================
+    const updatedVenue = action.payload;
 
-      .addCase(updateVenueStatus.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+    state.venues = state.venues.map((venue) =>
+      venue.id === updatedVenue.id
+        ? updatedVenue
+        : venue
+    );
+  })
 
-      .addCase(updateVenueStatus.fulfilled, (state, action) => {
-        state.loading = false;
+  .addCase(updateVenueStatus.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  });
+```
 
-        const updatedVenue = action.payload;
-
-        state.venues = state.venues.map((venue) =>
-          venue.id === updatedVenue.id
-            ? updatedVenue
-            : venue
-        );
-      })
-
-      .addCase(updateVenueStatus.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
-  },
+},
 });
 
 export const {
-  clearVenueState,
+clearVenueState,
 } = VendorVenueSlice.actions;
 
 export default VendorVenueSlice.reducer;

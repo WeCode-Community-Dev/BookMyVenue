@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { ROUTES } from "@/constants/routes";
 
-export default function BookingCard({ venue,selectedPackage}) {
+export default function BookingCard({ venue, selectedPackage }) {
   const [eventDate, setEventDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -11,8 +12,6 @@ export default function BookingCard({ venue,selectedPackage}) {
   const navigate = useNavigate();
 
   const handleContinue = () => {
-    console.log("Continue clicked");
-
     navigate(ROUTES.USER.BOOKING_SUMMARY, {
       state: {
         venue,
@@ -25,67 +24,68 @@ export default function BookingCard({ venue,selectedPackage}) {
     });
   };
 
+  const maxGuestCount =
+    venue.seatingCapacity + venue.standingCapacity;
+
   return (
-    <aside className="bg-white rounded-2xl p-6 shadow-sm border sticky top-6">
-      <h2 className="text-2xl font-bold">
-        Book this venue
-      </h2>
+    <aside className="sticky top-6 rounded-2xl border bg-white p-6 shadow-sm">
+      <h2 className="text-2xl font-bold">Book this venue</h2>
 
       <div className="mt-6">
-        <label className="block text-sm font-medium mb-2">
+        <label className="mb-2 block text-sm font-medium">
           Event date
         </label>
 
         <input
           type="date"
           value={eventDate}
-          onChange={(e) => setEventDate(e.target.value)}
+          onChange={(event) => setEventDate(event.target.value)}
           min={new Date().toISOString().split("T")[0]}
-          className="w-full border rounded-xl px-4 py-3"
+          className="w-full rounded-xl border px-4 py-3"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mt-5">
+      <div className="mt-5 grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium mb-2">
+          <label className="mb-2 block text-sm font-medium">
             Start time
           </label>
 
           <input
             type="time"
             value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            className="w-full border rounded-xl px-3 py-3"
+            onChange={(event) => setStartTime(event.target.value)}
+            className="w-full rounded-xl border px-3 py-3"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">
+          <label className="mb-2 block text-sm font-medium">
             End time
           </label>
 
           <input
             type="time"
             value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            className="w-full border rounded-xl px-3 py-3"
+            onChange={(event) => setEndTime(event.target.value)}
+            className="w-full rounded-xl border px-3 py-3"
           />
         </div>
       </div>
 
       <div className="mt-5">
-        <label className="block text-sm font-medium mb-2">
+        <label className="mb-2 block text-sm font-medium">
           Number of guests
         </label>
 
         <input
           type="number"
           min="1"
-          max={venue.seatingCapacity + venue.standingCapacity}
+          max={maxGuestCount}
           value={guestCount}
-          onChange={(e) => setGuestCount(e.target.value)}
+          onChange={(event) => setGuestCount(event.target.value)}
           placeholder="Enter guest count"
-          className="w-full border rounded-xl px-4 py-3"
+          className="w-full rounded-xl border px-4 py-3"
         />
       </div>
 
@@ -93,7 +93,7 @@ export default function BookingCard({ venue,selectedPackage}) {
         type="button"
         onClick={handleContinue}
         disabled={!eventDate || !startTime || !endTime || !guestCount}
-        className="w-full mt-6 bg-black text-white py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-6 w-full rounded-xl bg-black py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
         Continue
       </button>

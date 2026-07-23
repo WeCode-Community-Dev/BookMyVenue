@@ -52,8 +52,8 @@ export default function VenuePricingPackages({
   const [internalSelectedPackage, setInternalSelectedPackage] =
     useState("premium");
 
-  const activePackage =
-    selectedPackage || internalSelectedPackage;
+  const activePackageId =
+    selectedPackage?.id || selectedPackage || internalSelectedPackage;
 
   const handleSelect = (packageItem) => {
     setInternalSelectedPackage(packageItem.id);
@@ -61,15 +61,15 @@ export default function VenuePricingPackages({
   };
 
   return (
-    <section className="bg-white rounded-2xl p-6 mt-6 border">
-      <h2 className="text-2xl font-bold mb-6">
+    <section className="mt-6 rounded-2xl border bg-white p-6">
+      <h2 className="mb-6 text-2xl font-bold">
         Pricing Packages
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
         {packages.map((packageItem) => {
           const isSelected =
-            activePackage === packageItem.id;
+            activePackageId === packageItem.id;
 
           return (
             <div
@@ -82,7 +82,7 @@ export default function VenuePricingPackages({
               }`}
             >
               {packageItem.popular && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black text-white text-xs font-semibold px-4 py-1.5 rounded-full">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-black px-4 py-1.5 text-xs font-semibold text-white">
                   Most Popular
                 </span>
               )}
@@ -91,15 +91,15 @@ export default function VenuePricingPackages({
                 {packageItem.name}
               </h3>
 
-              <p className="text-3xl font-bold mt-4">
+              <p className="mt-4 text-3xl font-bold">
                 {packageItem.price}
               </p>
 
-              <p className="text-gray-500 mt-1">
+              <p className="mt-1 text-gray-500">
                 {packageItem.duration}
               </p>
 
-              <div className="border-t my-5" />
+              <div className="my-5 border-t" />
 
               <ul className="space-y-3">
                 {packageItem.features.map((feature) => (
@@ -107,10 +107,7 @@ export default function VenuePricingPackages({
                     key={feature}
                     className="flex gap-2 text-sm text-gray-600"
                   >
-                    <span className="text-green-600">
-                      ✓
-                    </span>
-
+                    <span className="text-green-600">✓</span>
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -118,7 +115,11 @@ export default function VenuePricingPackages({
 
               <button
                 type="button"
-                className={`w-full mt-6 py-3 rounded-xl font-semibold ${
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleSelect(packageItem);
+                }}
+                className={`mt-6 w-full rounded-xl py-3 font-semibold ${
                   isSelected
                     ? "bg-black text-white"
                     : "bg-gray-100 text-gray-700"

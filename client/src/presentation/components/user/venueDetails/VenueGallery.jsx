@@ -1,12 +1,12 @@
 export default function VenueGallery({ venue }) {
   return (
-    <div className="grid grid-cols-2 gap-4 mt-6">
+    <div className="mt-6 grid grid-cols-2 gap-4">
       {venue.images?.map((image, index) => (
         <img
-          key={index}
+          key={image.id || `${image.url}-${index}`}
           src={image.url}
           alt={venue.name}
-          className="w-full h-72 object-cover rounded-2xl"
+          className="h-72 w-full rounded-2xl object-cover"
         />
       ))}
     </div>

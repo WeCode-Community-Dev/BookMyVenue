@@ -1,30 +1,34 @@
 export default function HostedBy({ vendor }) {
-  if (!vendor) return null;
+  if (!vendor) {
+    return null;
+  }
+
+  const hostName =
+    vendor.companyName || vendor.fullName || "Venue Host";
+
+  const hostInitial =
+    vendor.companyName?.charAt(0) ||
+    vendor.fullName?.charAt(0) ||
+    "V";
 
   return (
-    <section className="bg-white rounded-2xl p-6 mt-6 border">
-      <h2 className="text-2xl font-bold mb-6">
-        Hosted By
-      </h2>
+    <section className="mt-6 rounded-2xl border bg-white p-6">
+      <h2 className="mb-6 text-2xl font-bold">Hosted By</h2>
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold">
-            {vendor.companyName?.charAt(0) ||
-              vendor.fullName?.charAt(0) ||
-              "V"}
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 text-xl font-bold">
+            {hostInitial}
           </div>
 
           <div>
-            <h3 className="text-lg font-bold">
-              {vendor.companyName || vendor.fullName}
-            </h3>
+            <h3 className="text-lg font-bold">{hostName}</h3>
 
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="mt-1 text-sm text-gray-500">
               Professional venue host
             </p>
 
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="mt-1 text-sm text-gray-500">
               {vendor.email}
             </p>
           </div>
@@ -32,7 +36,7 @@ export default function HostedBy({ vendor }) {
 
         <button
           type="button"
-          className="border border-gray-300 px-5 py-2.5 rounded-xl font-medium hover:bg-gray-50"
+          className="rounded-xl border border-gray-300 px-5 py-2.5 font-medium hover:bg-gray-50"
         >
           Contact Host
         </button>
