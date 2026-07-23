@@ -7,7 +7,7 @@ import VendorModel from "../database/models/Vendor.model.js";
 import { BookingMapper } from "../../application/mapper/Booking.mapper.js";
 import { BookingStatus } from "../../domain/enums/Booking.enum.js";
 import { Types } from "mongoose";
-import { PaymentStatus } from "../../domain/entities/enums/paymentStatus.js";
+import { PaymentStatus } from "../../domain/enums/Payment.enum.js";
 
 
 
