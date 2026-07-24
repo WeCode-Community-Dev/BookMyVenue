@@ -1,0 +1,119 @@
+[data-bookMyVenu-theme='dark'] {
+  /* bg-color */
+  --body-bg-color: #070f17;
+  --primary-bg-color: #0b151f;
+  --secondary-bg-color: #070f17;
+  --tertiary-bg-color: #0fa577;
+  --secondary-button-bg-color: #070f17;
+  --border-color: #9bffe0;
+  --code-bg-code: #070f17;
+  --submenu-bg-top: #0a141f;
+  --submenu-bg-bottom: #152a40;
+  --selected: #13a679;
+  --textfield-bg-color: #09121b;
+  --button-bg-color: #172028;
+  --table-header: #0a141f;
+  --dialog-bg-color: #111518;
+  --btn-bg-color: #38b990;
+  --form-field-bg-color: #14181c;
+  --login-btn-bg: #2020201c;
+  --card-bg-top: #000;
+  --card-bg-bottom: #57adff;
+  --card-bg-light-top: #000;
+  --card-bg-light-bottom: #f89058;
+  --navbar-bg-color: #0d1114;
+  --theme-bg-color: #172232;
+  --lang-ext-bg-color: #070f16;
+  --lang-container-bg-color: #09121b;
+  --algo-partner-bg-color: #9090900a;
+
+  /* text-color */
+  --primary-text-color: #fff;
+  --secondary-text-color: #0fa577;
+  --secondary-dark-text-color: #0f4334;
+  --tertiary-text-color: #bbb;
+  --light-color: #fff;
+  --text-link: #3b82f6;
+  --benefit-title-color: #fff;
+  --faq-text-color: #ffff;
+  --card-text-color: #86b6ff;
+  --danger-text-color: #d32f2f;
+  --card-light-text-color: #ff8645;
+  --navbar-text-color: #ddd;
+  --lang-text-color: #fff;
+  --meant-for-desc-color: #bbb;
+  --zero-cost-symbol-color: #0f4334;
+  --zero-cost-color: #0fa577;
+  --click-below-app-text-color: #bbb;
+  --disable-field-text-color: #ffffff61;
+
+  /* border */
+  --box-border-color: #324258;
+  --card-border-color: #05233b;
+  --primary-divider-color: #434343;
+  --table-boarder: #1a1d22;
+  --submenu-border-color: #131b24;
+  --field-border: #182f41;
+  --login-btn-border: #2b2b2b;
+  --benefit-card-border: #05233b;
+  --card-border: #527ab8;
+  --card-border-light: #895336;
+  --divider-border-color: #303030;
+  --theme-border: #597fb6;
+  --grid-border-color: #434343;
+  --sign-separator-color: #ffffff14;
+  --table-border-color: #282727;
+
+  /* icon */
+  --star-icon: #fb4545;
+  --expand-icon: #7a7a7a;
+  --copy-icon: #bbb;
+  --menu-icon: #a0a0a0;
+  --theme-icon: #fff;
+
+  /* Gradient */
+  --lang-ext-gradient: linear-gradient(120.03deg, rgb(5 35 59 / 20%) -0.66%, #0d60a1 98.43%);
+  --submenu-bg-color: #0a141f;
+  --lang-container-gradient: linear-gradient(120.03deg, #0d60a1 -0.66%, rgb(5 35 59 / 20%) 47.75%);
+  --meant-for-trader-gradient: linear-gradient(290.49deg, rgb(19 55 90 / 40%) 3.4%, #2876c0 96.53%);
+  --meant-for-algo-gradient: linear-gradient(110.66deg, #7645c2 2.31%, rgb(80 34 153 / 40%) 98.4%);
+  --meant-for-fintech-gradient: linear-gradient(290.28deg, rgb(26 80 53 / 40%) 1.2%, #38805c 96.61%);
+  --meant-for-broker-gradient: linear-gradient(111.2deg, #ce7171 -0.48%, rgb(104 57 57 / 40%) 98.95%);
+  --feature-card-one-gradient: linear-gradient(180deg, rgb(0 0 0 / 0%) 0%, rgb(87 173 255 / 18%) 98.57%);
+  --feature-card-two-gradient: linear-gradient(180deg, rgb(0 0 0 / 0%) 0%, rgb(248 144 88 / 21%) 98.57%);
+  --footer-bg-gradient: linear-gradient(180deg, rgb(71 105 96 / 37%) -6.09%, rgb(0 0 0 / 16%) 100%);
+
+  /* standard mappings */
+  --background: #070f17;
+  --foreground: #fff;
+  --border: #1a1d22;
+  --sidebar: #0b151f;
+  --sidebar-foreground: #ddd;
+  --sidebar-border: #131b24;
+  --sidebar-accent: #172028;
+  --sidebar-accent-foreground: #0fa577;
+  --muted-foreground: #bbb;
+  --muted: #0a141f;
+
+  /* button custom states */
+  --button-invalid-border: rgba(211, 47, 47, 0.5);
+  --button-invalid-ring: rgba(211, 47, 47, 0.4);
+  --button-outline-border: var(--border);
+  --button-outline-bg: rgba(26, 29, 34, 0.3);
+  --button-outline-hover-bg: rgba(26, 29, 34, 0.5);
+  --button-ghost-hover-bg: rgba(10, 20, 31, 0.5);
+  --button-destructive-bg: rgba(211, 47, 47, 0.2);
+  --button-destructive-hover-bg: rgba(211, 47, 47, 0.3);
+  --button-destructive-ring: rgba(211, 47, 47, 0.4);
+
+  /* dropdown custom states */
+  --dropdown-bg: #09121b; /* slate-950-like/dark bg */
+  --dropdown-border: #1e293b; /* slate-800 */
+  --dropdown-text: #fff;
+  --dropdown-item-text: #e2e8f0; /* slate-200 */
+  --dropdown-item-hover-bg: #0f172a; /* slate-900 */
+  --dropdown-icon: #94a3b8; /* slate-400 */
+  --dropdown-divider: #1e293b; /* slate-800 */
+  --dropdown-logout-text: #f87171; /* red-400 */
+  --dropdown-logout-hover-bg: rgba(127, 29, 29, 0.3); /* red-950/30 */
+}
