@@ -10,7 +10,6 @@ from app.models.user import User, TokenBlacklist
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-# Register router
 
 @router.post("/register", response_model = UserOut)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
@@ -24,23 +23,20 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
         is_active=new_user.is_active,
         auth_provider=new_user.auth_provider,
         created_at=new_user.created_at,
-        is_venue_owner=False, 
+        is_venue_owner=False,
     )
 
-
-# Login router
 
 @router.post("/login", response_model = TokenOut)
 def login(credential: UserLogin, db: Session = Depends(get_db)):
     user = authenticate_user(db, credential.email, credential.password)
-    
+
     access_token = create_access_token(data={"sub": str(user.id)})
     refresh_token = create_refresh_token(data={"sub": str(user.id)})
     return TokenOut(access_token=access_token, refresh_token=refresh_token)
 
 
-# Refresh token router
-@router.post("/refresh", response_model=TokenRefreshOut)              
+@router.post("/refresh", response_model=TokenRefreshOut)
 def refresh(current_user: User = Depends(get_current_user_from_refresh_token)):
     new_access_token = create_access_token(data={"sub": str(current_user.id)})
     new_refresh_token = create_refresh_token(data={"sub": str(current_user.id)})
@@ -51,19 +47,16 @@ def refresh(current_user: User = Depends(get_current_user_from_refresh_token)):
     )
 
 
-@router.post("/logout")                     
+@router.post("/logout")
 def logout(
     current_user: User = Depends(get_current_user_from_refresh_token),
     token=Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ):
-    # Blacklist the refresh token so it can never be used again
     db.add(TokenBlacklist(token=token.credentials))
     db.commit()
     return {"detail": "Logged out successfully"}
 
-
-# Get current logged in user
 
 @router.get("/me", response_model=UserOut)
 def get_me(current_user: User = Depends(get_current_user)):
@@ -99,8 +92,6 @@ def update_me(
         is_venue_owner=user.venue_owner_profile is not None,
     )
 
-
-# Route for Google Authentication
 
 @router.post("/google", response_model=TokenOut)
 def google_login(payload: GoogleAuthRequest, db:Session = Depends(get_db)):

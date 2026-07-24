@@ -51,16 +51,14 @@ function LoginPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
- 
-    if (user.role === "admin") {
-      navigate("/admin", { replace: true });
-    } else if (user.is_venue_owner) {
-      navigate("/owner/dashboard", { replace: true });
-    } else {
-      navigate("/", { replace: true });
+    if (isAuthenticated && user) {
+      if (user.is_venue_owner) {
+        navigate("/owner/dashboard", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated,user, navigate]);
 
   useEffect(() => {
     return () => dispatch(resetAuthStatus());

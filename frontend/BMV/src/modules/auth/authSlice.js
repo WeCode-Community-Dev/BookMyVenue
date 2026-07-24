@@ -126,7 +126,7 @@ const authSlice = createSlice({
   initialState: {
     user: null,
     isAuthenticated: isAuthenticated(),
-    isLoadingUser: isAuthenticated(), 
+    isLoadingUser: false,
     isLoading: false,
     error: null,
     success: false,
@@ -174,6 +174,8 @@ const authSlice = createSlice({
       })
       .addCase(loginUserAsync.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
       })
       .addCase(loginUserAsync.rejected, (state, action) => {
         state.isLoading = false;
@@ -184,7 +186,7 @@ const authSlice = createSlice({
         state.isLoadingUser = true;
       })
       .addCase(fetchCurrentUserAsync.fulfilled, (state, action) => {
-        state.user = action.payload; 
+        state.user = action.payload; // includes is_venue_owner
         state.isAuthenticated = true;
         state.isLoadingUser = false;
       })

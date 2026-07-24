@@ -1,8 +1,9 @@
+import { Link } from "react-router-dom";
 import { Building2, CalendarCheck, CalendarClock, IndianRupee, TrendingUp } from "lucide-react";
 
-function StatCard({ icon: Icon, iconBg, iconColor, label, value, footer, footerColor }) {
-  return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col gap-3 shadow-sm">
+function StatCard({ icon: Icon, iconBg, iconColor, label, value, footer, footerColor, to }) {
+  const content = (
+    <>
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
         <Icon size={18} className={iconColor} />
       </div>
@@ -15,8 +16,21 @@ function StatCard({ icon: Icon, iconBg, iconColor, label, value, footer, footerC
           {footer}
         </p>
       )}
-    </div>
+    </>
   );
+
+  const className =
+    "bg-white border border-gray-100 rounded-2xl p-5 flex flex-col gap-3 shadow-sm hover:border-rose-200 hover:shadow-md transition-all";
+
+  if (to) {
+    return (
+      <Link to={to} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={className}>{content}</div>;
 }
 
 function StatCardsRow({ summary, loading }) {
@@ -43,6 +57,7 @@ function StatCardsRow({ summary, loading }) {
         value={summary.total_venues}
         footer={`${summary.active_venues} Active • ${summary.pending_venues} Pending`}
         footerColor="text-emerald-600"
+        to="/owner/venues"
       />
       <StatCard
         icon={CalendarCheck}
@@ -52,6 +67,7 @@ function StatCardsRow({ summary, loading }) {
         value={summary.booking_requests_total}
         footer={`${summary.booking_requests_new} New • ${summary.booking_requests_pending} Pending`}
         footerColor="text-amber-600"
+        to="/owner/bookings"
       />
       <StatCard
         icon={CalendarClock}
@@ -59,12 +75,17 @@ function StatCardsRow({ summary, loading }) {
         iconColor="text-blue-600"
         label="UPCOMING EVENTS"
         value={summary.upcoming_events_count}
-        footer={`Next: ${new Date(summary.next_event_date).toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })}`}
+        footer={
+          summary.next_event_date
+            ? `Next: ${new Date(summary.next_event_date).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}`
+            : "No upcoming events"
+        }
         footerColor="text-blue-600"
+        to="/owner/bookings"
       />
       <StatCard
         icon={IndianRupee}
@@ -78,6 +99,7 @@ function StatCardsRow({ summary, loading }) {
           </>
         }
         footerColor="text-emerald-600"
+        to="/owner/revenue"
       />
     </div>
   );

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Users } from "lucide-react";
 import {
@@ -20,7 +21,9 @@ function RecentBookingRequests({ requests, loading }) {
     <div className="bg-white border border-gray-100 rounded-2xl shadow-sm">
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
         <h3 className="text-sm font-semibold text-rose-900">Recent Booking Requests</h3>
-        <button className="text-xs font-medium text-rose-700 hover:underline">View all</button>
+        <Link to="/owner/bookings" className="text-xs font-medium text-rose-700 hover:underline">
+          View all
+        </Link>
       </div>
 
       {loading ? (
@@ -35,7 +38,6 @@ function RecentBookingRequests({ requests, loading }) {
         </div>
       ) : (
         <>
-          {/* Table header — desktop only */}
           <div className="hidden md:grid grid-cols-[2fr_1fr_1.4fr_0.8fr_1.2fr] gap-3 px-5 py-2.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
             <span>Venue &amp; Event</span>
             <span>Date &amp; Time</span>
@@ -80,12 +82,14 @@ function RecentBookingRequests({ requests, loading }) {
 
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={() => handleAccept(req.id)}
                     className="px-3.5 py-1.5 rounded-lg bg-rose-900 hover:bg-rose-950 text-white text-xs font-semibold transition-colors"
                   >
                     Accept
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleReject(req.id)}
                     className="px-3.5 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-500 text-xs font-semibold transition-colors"
                   >
@@ -97,9 +101,12 @@ function RecentBookingRequests({ requests, loading }) {
           </div>
 
           <div className="px-5 py-4">
-            <button className="w-full py-2.5 rounded-xl border border-rose-200 text-rose-800 text-sm font-semibold hover:bg-rose-50 transition-colors">
+            <Link
+              to="/owner/bookings"
+              className="block w-full py-2.5 rounded-xl border border-rose-200 text-rose-800 text-sm font-semibold hover:bg-rose-50 transition-colors text-center"
+            >
               View All Requests
-            </button>
+            </Link>
           </div>
         </>
       )}

@@ -8,8 +8,8 @@ import {
   acceptBookingRequestAsync,
   rejectBookingRequestAsync,
 } from "../modules/venueOwner/venueOwnerSlice";
+import { formatBookingPeriod } from "../utils/bookingFormat";
 
-// ── Constants ────────────────────────────────────────────────────────────────
 
 const TABS = [
   { key: "all",       label: "All Bookings" },
@@ -18,13 +18,15 @@ const TABS = [
   { key: "cancelled", label: "Cancelled" },
 ];
 
+// Derives a single display status from the two backend status fields
 function resolveDisplayStatus(booking) {
   if (booking.status === "cancelled") return "cancelled";
-  const isPast = new Date(booking.booking_date) < new Date(new Date().toDateString());
+  const endDate = booking.check_out_date ?? booking.booking_date;
+  const isPast = new Date(endDate) < new Date(new Date().toDateString());
   if (booking.owner_status === "accepted" && isPast) return "completed";
   if (booking.owner_status === "accepted") return "confirmed";
   if (booking.owner_status === "rejected") return "rejected";
-  return "pending";
+  return "pending"; // owner_status === "pending"
 }
 
 const STATUS_CONFIG = {
@@ -35,55 +37,6 @@ const STATUS_CONFIG = {
   rejected:   { label: "Rejected",   classes: "bg-red-50    text-red-600    border border-red-200"    },
 };
 
-// ── Reject reason modal ───────────────────────────────────────────────────────
-
-function RejectModal({ bookingId, onConfirm, onCancel, isSubmitting }) {
-  const [reason, setReason] = useState("");
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 space-y-4">
-        <div>
-          <h2 className="text-base font-bold text-gray-900">Reject booking request</h2>
-          <p className="text-xs text-gray-400 mt-1">
-            Optionally tell the customer why you're rejecting this request.
-          </p>
-        </div>
-
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          rows={3}
-          maxLength={500}
-          placeholder="e.g. Venue is already reserved for a private event on that date."
-          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-400 resize-none transition-all"
-        />
-
-        <div className="flex gap-3 pt-1">
-          <button
-            onClick={onCancel}
-            disabled={isSubmitting}
-            className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            Keep pending
-          </button>
-          <button
-            onClick={() => onConfirm(reason.trim() || null)}
-            disabled={isSubmitting}
-            className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {isSubmitting
-              ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              : "Confirm reject"
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Sub-components ────────────────────────────────────────────────────────────
 
 function Initials({ name }) {
   const parts = (name ?? "?").trim().split(" ");
@@ -108,7 +61,7 @@ function StatusBadge({ booking }) {
   );
 }
 
-function ActionButtons({ booking, actionBookingId, onAccept, onRejectClick }) {
+function ActionButtons({ booking, actionBookingId, onAccept, onReject }) {
   const displayStatus = resolveDisplayStatus(booking);
   const isActing = actionBookingId === booking.id;
 
@@ -123,7 +76,7 @@ function ActionButtons({ booking, actionBookingId, onAccept, onRejectClick }) {
   return (
     <div className="flex items-center gap-2">
       <button
-        onClick={() => onRejectClick(booking.id)}
+        onClick={() => onReject(booking.id)}
         disabled={isActing}
         className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-red-300 hover:text-red-600 hover:bg-red-50 text-xs font-semibold transition-colors disabled:opacity-50"
       >
@@ -142,15 +95,13 @@ function ActionButtons({ booking, actionBookingId, onAccept, onRejectClick }) {
   );
 }
 
-function BookingRow({ booking, actionBookingId, onAccept, onRejectClick }) {
-  const d = new Date(booking.booking_date);
-  const dateStr = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-  const timeStr = booking.time_slot
-    ? new Date(`1970-01-01T${booking.time_slot}`).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })
-    : "—";
+// Desktop table row
+function BookingRow({ booking, actionBookingId, onAccept, onReject }) {
+  const periodStr = formatBookingPeriod(booking);
 
   return (
     <tr className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
+      {/* Venue */}
       <td className="py-4 px-5">
         <p className="text-sm font-semibold text-rose-900 leading-snug">{booking.venue?.name ?? "—"}</p>
         {booking.venue?.location && (
@@ -160,6 +111,7 @@ function BookingRow({ booking, actionBookingId, onAccept, onRejectClick }) {
         )}
       </td>
 
+      {/* Customer */}
       <td className="py-4 px-5">
         <div className="flex items-center gap-2.5">
           <Initials name={booking.user?.name} />
@@ -172,11 +124,9 @@ function BookingRow({ booking, actionBookingId, onAccept, onRejectClick }) {
         </div>
       </td>
 
+      {/* Date & time */}
       <td className="py-4 px-5">
-        <p className="text-sm text-gray-700 font-medium">{dateStr}</p>
-        <p className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1">
-          <Clock size={10} /> {timeStr}
-        </p>
+        <p className="text-sm text-gray-700 font-medium">{periodStr}</p>
         {booking.guest_count != null && (
           <p className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-1">
             <Users size={10} /> {booking.guest_count} guests
@@ -184,10 +134,12 @@ function BookingRow({ booking, actionBookingId, onAccept, onRejectClick }) {
         )}
       </td>
 
+      {/* Status */}
       <td className="py-4 px-5">
         <StatusBadge booking={booking} />
       </td>
 
+      {/* Amount */}
       <td className="py-4 px-5">
         <p className="text-sm font-semibold text-gray-800 flex items-center gap-0.5">
           <IndianRupee size={13} />
@@ -195,6 +147,7 @@ function BookingRow({ booking, actionBookingId, onAccept, onRejectClick }) {
         </p>
       </td>
 
+      {/* Actions */}
       <td className="py-4 px-5">
         <div className="flex items-center gap-2">
           {booking.notes && (
@@ -209,7 +162,7 @@ function BookingRow({ booking, actionBookingId, onAccept, onRejectClick }) {
             booking={booking}
             actionBookingId={actionBookingId}
             onAccept={onAccept}
-            onRejectClick={onRejectClick}
+            onReject={onReject}
           />
         </div>
       </td>
@@ -217,15 +170,13 @@ function BookingRow({ booking, actionBookingId, onAccept, onRejectClick }) {
   );
 }
 
-function BookingCard({ booking, actionBookingId, onAccept, onRejectClick }) {
-  const d = new Date(booking.booking_date);
-  const dateStr = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-  const timeStr = booking.time_slot
-    ? new Date(`1970-01-01T${booking.time_slot}`).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })
-    : "—";
+// Mobile card
+function BookingCard({ booking, actionBookingId, onAccept, onReject }) {
+  const periodStr = formatBookingPeriod(booking);
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 space-y-3">
+      {/* Header row */}
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-sm font-semibold text-rose-900">{booking.venue?.name ?? "—"}</p>
@@ -238,6 +189,7 @@ function BookingCard({ booking, actionBookingId, onAccept, onRejectClick }) {
         <StatusBadge booking={booking} />
       </div>
 
+      {/* Customer */}
       <div className="flex items-center gap-2.5">
         <Initials name={booking.user?.name} />
         <div>
@@ -248,14 +200,15 @@ function BookingCard({ booking, actionBookingId, onAccept, onRejectClick }) {
         </div>
       </div>
 
+      {/* Date / time / guests */}
       <div className="flex flex-wrap gap-3 text-[11px] text-gray-500">
-        <span className="flex items-center gap-1"><Calendar size={11} /> {dateStr}</span>
-        <span className="flex items-center gap-1"><Clock size={11} /> {timeStr}</span>
+        <span className="flex items-center gap-1"><Calendar size={11} /> {periodStr}</span>
         {booking.guest_count != null && (
           <span className="flex items-center gap-1"><Users size={11} /> {booking.guest_count} guests</span>
         )}
       </div>
 
+      {/* Amount + actions */}
       <div className="flex items-center justify-between pt-2 border-t border-gray-100">
         <p className="text-sm font-semibold text-gray-800 flex items-center gap-0.5">
           <IndianRupee size={13} />
@@ -265,7 +218,7 @@ function BookingCard({ booking, actionBookingId, onAccept, onRejectClick }) {
           booking={booking}
           actionBookingId={actionBookingId}
           onAccept={onAccept}
-          onRejectClick={onRejectClick}
+          onReject={onReject}
         />
       </div>
     </div>
@@ -303,15 +256,10 @@ function EmptyState({ tab }) {
   );
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
 
 function OwnerBookingsPage() {
   const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("all");
-
-  // ← NEW: modal state — null means closed, a number means that booking id is pending rejection
-  const [rejectModal, setRejectModal] = useState(null); // booking id | null
-  const [isRejecting, setIsRejecting] = useState(false);
 
   const { ownerBookings, loading } = useSelector((s) => s.venueOwner);
   const { items, total, page, limit } = ownerBookings;
@@ -324,29 +272,25 @@ function OwnerBookingsPage() {
     [dispatch],
   );
 
+  // Fetch on mount and whenever tab changes (reset to page 1)
   useEffect(() => {
     load(activeTab, 1);
   }, [activeTab, load]);
 
-  const handleTabChange = (key) => setActiveTab(key);
-  const handlePageChange = (pg) => load(activeTab, pg);
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+  };
+
+  const handlePageChange = (pg) => {
+    load(activeTab, pg);
+  };
 
   const handleAccept = (id) => {
     dispatch(acceptBookingRequestAsync(id)).then(() => load(activeTab, page));
   };
 
-  // ← NEW: open modal instead of immediately rejecting
-  const handleRejectClick = (id) => {
-    setRejectModal(id);
-  };
-
-  // ← NEW: called by modal on confirm
-  const handleRejectConfirm = async (reason) => {
-    setIsRejecting(true);
-    await dispatch(rejectBookingRequestAsync({ id: rejectModal, reason }));
-    setIsRejecting(false);
-    setRejectModal(null);
-    load(activeTab, page);
+  const handleReject = (id) => {
+    dispatch(rejectBookingRequestAsync(id)).then(() => load(activeTab, page));
   };
 
   const isLoading = loading.ownerBookings;
@@ -358,11 +302,13 @@ function OwnerBookingsPage() {
   return (
     <OwnerLayout>
       <div className="space-y-4">
+        {/* Page header */}
         <div>
           <h2 className="text-lg font-bold text-gray-900">Bookings</h2>
           <p className="text-xs text-gray-400 mt-0.5">Manage and respond to booking requests across all your venues.</p>
         </div>
 
+        {/* Tab bar */}
         <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl w-fit">
           {TABS.map((t) => (
             <button
@@ -379,7 +325,7 @@ function OwnerBookingsPage() {
           ))}
         </div>
 
-        {/* Desktop table */}
+        {/* ── Desktop table ───────────────────────────────────────────────── */}
         <div className="hidden md:block bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
           <table className="w-full text-left">
             <thead>
@@ -402,14 +348,14 @@ function OwnerBookingsPage() {
                         booking={b}
                         actionBookingId={actionBookingId}
                         onAccept={handleAccept}
-                        onRejectClick={handleRejectClick}
+                        onReject={handleReject}
                       />
                     ))}
             </tbody>
           </table>
         </div>
 
-        {/* Mobile cards */}
+        {/* ── Mobile cards ────────────────────────────────────────────────── */}
         <div className="md:hidden space-y-3">
           {isLoading
             ? Array.from({ length: 4 }).map((_, i) => (
@@ -427,12 +373,12 @@ function OwnerBookingsPage() {
                     booking={b}
                     actionBookingId={actionBookingId}
                     onAccept={handleAccept}
-                    onRejectClick={handleRejectClick}
+                    onReject={handleReject}
                   />
                 ))}
         </div>
 
-        {/* Pagination */}
+        {/* ── Pagination ──────────────────────────────────────────────────── */}
         {!isLoading && total > 0 && (
           <div className="flex items-center justify-between pt-1">
             <p className="text-xs text-gray-400">
@@ -448,10 +394,16 @@ function OwnerBookingsPage() {
                 <ChevronLeft size={14} />
               </button>
 
+              {/* Page number pills */}
               {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter((pg) => pg === 1 || pg === totalPages || Math.abs(pg - page) <= 1)
+                .filter((pg) => {
+                  // Show: first, last, current ± 1
+                  return pg === 1 || pg === totalPages || Math.abs(pg - page) <= 1;
+                })
                 .reduce((acc, pg, idx, arr) => {
-                  if (idx > 0 && pg - arr[idx - 1] > 1) acc.push("ellipsis-" + pg);
+                  if (idx > 0 && pg - arr[idx - 1] > 1) {
+                    acc.push("ellipsis-" + pg);
+                  }
                   acc.push(pg);
                   return acc;
                 }, [])
@@ -484,16 +436,6 @@ function OwnerBookingsPage() {
           </div>
         )}
       </div>
-
-      {/* ← NEW: Reject reason modal, rendered outside the table */}
-      {rejectModal !== null && (
-        <RejectModal
-          bookingId={rejectModal}
-          onConfirm={handleRejectConfirm}
-          onCancel={() => setRejectModal(null)}
-          isSubmitting={isRejecting}
-        />
-      )}
     </OwnerLayout>
   );
 }

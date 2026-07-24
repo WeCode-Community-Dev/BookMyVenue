@@ -5,79 +5,10 @@ import {
   fetchBookingDetailAsync,
   cancelBookingAsync,
 } from "../modules/bookings/bookingSlice";
-
-// ─── Status helpers ───────────────────────────────────────────────────────────
-
-// The payment lifecycle status shown to customers
-const PAYMENT_STATUS_STYLES = {
-  pending_payment: { label: "Awaiting payment", classes: "bg-amber-50 text-amber-700 border border-amber-100" },
-  booked:          { label: "Booked",           classes: "bg-emerald-50 text-emerald-700 border border-emerald-100" },
-  cancelled:       { label: "Cancelled",         classes: "bg-slate-100 text-slate-500 border border-slate-200" },
-};
-
-// The owner's decision status
-const OWNER_STATUS_CONFIG = {
-  pending:  {
-    label: "Awaiting owner review",
-    icon: "🕐",
-    classes: "bg-amber-50 border-amber-100",
-    textClasses: "text-amber-800",
-    subtext: "The venue owner has received your request and will respond shortly.",
-  },
-  accepted: {
-    label: "Owner approved your request",
-    icon: "✅",
-    classes: "bg-emerald-50 border-emerald-100",
-    textClasses: "text-emerald-800",
-    subtext: "Great news! The venue owner has accepted your booking request.",
-  },
-  rejected: {
-    label: "Owner declined your request",
-    icon: "❌",
-    classes: "bg-red-50 border-red-100",
-    textClasses: "text-red-700",
-    subtext: "The venue owner was unable to accommodate your request.",
-  },
-};
-
-// ─── Components ───────────────────────────────────────────────────────────────
-
-function InfoRow({ label, value }) {
-  return (
-    <div className="bg-slate-50 rounded-xl p-3">
-      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">{label}</p>
-      <p className="font-medium text-slate-800 mt-0.5 text-sm">{value}</p>
-    </div>
-  );
-}
-
-function OwnerStatusBanner({ ownerStatus, cancellationReason }) {
-  const cfg = OWNER_STATUS_CONFIG[ownerStatus] ?? OWNER_STATUS_CONFIG.pending;
-
-  return (
-    <div className={`rounded-xl border p-4 ${cfg.classes}`}>
-      <div className="flex items-start gap-3">
-        <span className="text-lg shrink-0 mt-0.5">{cfg.icon}</span>
-        <div className="flex-1 min-w-0">
-          <p className={`text-sm font-bold ${cfg.textClasses}`}>{cfg.label}</p>
-          <p className={`text-xs mt-0.5 ${cfg.textClasses} opacity-80`}>{cfg.subtext}</p>
-
-          {/* Rejection reason — shown if owner rejected and there's a reason */}
-          {ownerStatus === "rejected" && cancellationReason && (
-            <div className="mt-3 pt-3 border-t border-red-100">
-              <p className="text-[10px] font-bold text-red-500 uppercase tracking-wide mb-1">
-                Reason from owner
-              </p>
-              <p className="text-sm text-red-700">{cancellationReason}</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
+import StatusBadge from "../components/shared/StatusBadge";
+import BookingQrCode from "../components/BookingQrCode";
+import { formatBookingPeriod } from "../utils/bookingFormat";
+import { formatPolicyDate } from "../utils/cancellationPolicy";
 
 function BookingDetailPage() {
   const { id } = useParams();
@@ -85,7 +16,7 @@ function BookingDetailPage() {
   const dispatch = useDispatch();
   const { current, loading, error } = useSelector((state) => state.bookings);
 
-  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [reason, setReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
 
@@ -93,194 +24,238 @@ function BookingDetailPage() {
     dispatch(fetchBookingDetailAsync(Number(id)));
   }, [dispatch, id]);
 
+  const awaitingOwnerApproval =
+    current?.status === "booked" && current?.owner_status === "pending";
+
+  useEffect(() => {
+    if (!awaitingOwnerApproval) return undefined;
+    const interval = setInterval(() => {
+      dispatch(fetchBookingDetailAsync(Number(id)));
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [awaitingOwnerApproval, dispatch, id]);
+
   const handleCancel = async () => {
     setCancelling(true);
-    const result = await dispatch(cancelBookingAsync({ id: Number(id), reason }));
+    const result = await dispatch(
+      cancelBookingAsync({ id: Number(id), reason }),
+    );
     setCancelling(false);
     if (cancelBookingAsync.fulfilled.match(result)) {
-      setShowCancelModal(false);
+      setShowModal(false);
       setReason("");
     }
   };
 
-  // ── Loading ──
   if (loading && !current) {
     return (
-      <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-rose-600 border-t-transparent rounded-full animate-spin" />
+      <div className="flex justify-center py-16">
+        <div className="w-8 h-8 border-2 border-rose-900 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
-
   if (error) {
     return (
-      <div className="min-h-screen bg-[#f5f5f7] p-6">
-        <p className="text-rose-600 text-sm">{error}</p>
-        <Link to="/my-bookings" className="text-sm text-blue-600 mt-2 inline-block hover:underline">
-          ← My bookings
+      <div className="max-w-xl">
+        <p className="text-rose-600">{error}</p>
+        <Link to="/order-history" className="text-sm text-rose-800 mt-2 inline-block hover:underline">
+          Back to bookings
         </Link>
       </div>
     );
   }
-
   if (!current) return null;
 
-  const ownerStatus   = current.owner_status;
-  const bookingStatus = current.status;
-
-  const paymentCfg = PAYMENT_STATUS_STYLES[bookingStatus] ?? {
-    label: bookingStatus,
-    classes: "bg-slate-100 text-slate-500 border border-slate-200",
-  };
-
-  const formattedDate = current.booking_date
-    ? new Date(current.booking_date).toLocaleDateString("en-IN", {
-        weekday: "long", day: "numeric", month: "long", year: "numeric",
-      })
-    : "—";
-  const formattedTime = current.time_slot
-    ? new Date(`1970-01-01T${current.time_slot}`).toLocaleTimeString("en-IN", {
-        hour: "2-digit", minute: "2-digit", hour12: true,
-      })
-    : "—";
-
-  // What actions can the customer take?
-  const canPayNow  = ownerStatus === "accepted" && bookingStatus === "pending_payment";
-  const canCancel  = bookingStatus !== "cancelled" && ownerStatus !== "rejected";
+  const canCancel =
+    current.can_cancel ??
+    (current.status !== "cancelled" && current.status !== "completed");
+  const policy = current.cancellation_policy;
+  const refundPreviewPercent = current.refund_percent_if_cancelled ?? 0;
+  const refundPreviewAmount = current.refund_amount_if_cancelled ?? 0;
+  const canPay = current.status === "pending_payment";
+  const awaitingPaymentForQr =
+    current.owner_status === "accepted" && current.status === "pending_payment";
+  const awaitingOwnerApprovalForQr =
+    current.status === "booked" && current.owner_status === "pending";
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7]">
-      <div className="mx-auto max-w-xl px-4 py-6">
-        {/* Breadcrumb */}
-        <Link to="/my-bookings" className="text-sm text-rose-600 hover:underline flex items-center gap-1 mb-5">
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-          My Bookings
-        </Link>
+    <div className="max-w-xl space-y-4">
+      <Link to="/order-history" className="text-sm text-rose-800 hover:underline">
+        ← My bookings
+      </Link>
 
-        {/* Header card */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
-
-          {/* Venue name + payment status badge */}
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Booking ref</p>
-              <h1 className="text-xl font-bold text-slate-900">
-                #BKM{current.id}
-              </h1>
-              <p className="text-sm text-slate-500 mt-0.5">
-                {current.venue_name || `Venue #${current.venue_id}`}
-              </p>
-            </div>
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap ${paymentCfg.classes}`}>
-              {paymentCfg.label}
-            </span>
-          </div>
-
-          {/* Owner decision banner — always visible */}
-          <OwnerStatusBanner
-            ownerStatus={ownerStatus}
-            cancellationReason={current.cancellation_reason}
-          />
-
-          {/* Booking details grid */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <InfoRow label="Date"   value={formattedDate} />
-            <InfoRow label="Time"   value={formattedTime} />
-            <InfoRow label="Amount" value={`₹${Number(current.amount).toLocaleString("en-IN")}`} />
-            {current.event_type && (
-              <InfoRow label="Event" value={current.event_type} />
-            )}
-            {current.guest_count && (
-              <InfoRow label="Guests" value={`${current.guest_count} expected`} />
+      <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-slate-800">
+              {current.venue_name || `Venue #${current.venue_id}`}
+            </h1>
+            {current.venue_location && (
+              <p className="text-sm text-slate-400">{current.venue_location}</p>
             )}
           </div>
+          <StatusBadge status={current.status} />
+        </div>
+        {current.owner_status === "pending" && current.status === "booked" && (
+          <p className="text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+            Owner approval pending — your check-in QR will appear here once the venue owner accepts.
+          </p>
+        )}
 
-          {/* Notes */}
-          {current.notes && (
-            <div className="bg-slate-50 rounded-xl p-3">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Notes</p>
-              <p className="text-sm text-slate-700">{current.notes}</p>
-            </div>
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <Row label="Order ID" value={`#${current.id}`} />
+          <Row label="Amount" value={`₹${Number(current.amount).toLocaleString("en-IN")}`} />
+          <Row label="Period" value={formatBookingPeriod(current)} className="col-span-2" />
+          {current.num_days > 1 && <Row label="Duration" value={`${current.num_days} days`} />}
+          {current.payment_status && <Row label="Payment" value={current.payment_status} />}
+          {current.payment?.paid_at && (
+            <Row
+              label="Paid at"
+              value={new Date(current.payment.paid_at).toLocaleString("en-IN")}
+            />
           )}
+        </div>
 
-          {/* ── Action buttons ── */}
-          <div className="space-y-2.5 pt-1">
+        {current.notes && (
+          <div className="text-sm bg-slate-50 rounded-xl p-3">
+            <p className="text-slate-400 text-xs mb-1">Notes</p>
+            <p className="text-slate-700">{current.notes}</p>
+          </div>
+        )}
 
-            {/* Pay Now — owner accepted, payment still pending */}
-            {canPayNow && (
-              <button
-                onClick={() => navigate(`/checkout/${current.id}`)}
-                className="w-full bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                Pay now — ₹{Number(current.amount).toLocaleString("en-IN")}
-              </button>
+        {current.cancellation_reason && (
+          <div className="text-sm bg-rose-50 rounded-xl p-3">
+            <p className="text-rose-400 text-xs mb-1">Cancellation reason</p>
+            <p className="text-rose-700">{current.cancellation_reason}</p>
+          </div>
+        )}
+
+        {policy && current.status !== "cancelled" && (
+          <div className="text-sm bg-slate-50 rounded-xl p-3 space-y-2">
+            <p className="text-slate-500 text-xs font-medium">Cancellation policy</p>
+            <ul className="text-slate-700 space-y-1 text-xs">
+              <li>100% refund if cancelled on or before {formatPolicyDate(policy.refund_50_deadline)}</li>
+              <li>50% refund if cancelled on or before {formatPolicyDate(policy.refund_25_deadline)}</li>
+              <li>25% refund if cancelled on or before {formatPolicyDate(policy.last_cancel_date)}</li>
+            </ul>
+            {!canCancel && (
+              <p className="text-rose-600 text-xs pt-1">
+                The last day to cancel this booking has passed.
+              </p>
             )}
-
-            {/* Browse other venues — if rejected */}
-            {ownerStatus === "rejected" && (
-              <Link
-                to="/venues"
-                className="block w-full text-center bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl text-sm font-bold transition-colors"
-              >
-                Browse other venues
-              </Link>
-            )}
-
-            {/* Cancel — only if still cancellable */}
-            {canCancel && (
-              <button
-                onClick={() => setShowCancelModal(true)}
-                className="w-full border border-slate-200 hover:border-rose-200 hover:bg-rose-50 text-slate-600 hover:text-rose-600 py-3 rounded-xl text-sm font-semibold transition-colors"
-              >
-                Cancel booking
-              </button>
+            {canCancel && refundPreviewPercent > 0 && (
+              <p className="text-emerald-700 text-xs pt-1">
+                If you cancel now: {refundPreviewPercent}% refund (₹{Number(refundPreviewAmount).toLocaleString("en-IN")})
+              </p>
             )}
           </div>
+        )}
+
+        <div className="flex gap-3 pt-2">
+          {canPay && (
+            <button
+              type="button"
+              onClick={() => navigate(`/checkout/${current.id}`)}
+              className="flex-1 bg-rose-900 hover:bg-rose-950 text-white py-2.5 rounded-xl text-sm font-medium"
+            >
+              Complete payment
+            </button>
+          )}
+          {canCancel && (
+            <button
+              type="button"
+              onClick={() => setShowModal(true)}
+              className="flex-1 border border-rose-200 text-rose-600 py-2.5 rounded-xl text-sm font-medium hover:bg-rose-50"
+            >
+              Cancel order
+            </button>
+          )}
         </div>
       </div>
 
-      {/* ── Cancel booking modal ── */}
-      {showCancelModal && (
+      {current.show_check_in_qr && current.check_in_token && (
+        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-3">
+          <h2 className="text-lg font-semibold text-slate-800">Venue check-in QR</h2>
+          {current.checked_in_at ? (
+            <p className="text-sm text-emerald-700 bg-emerald-50 rounded-xl px-4 py-3">
+              Checked in at {new Date(current.checked_in_at).toLocaleString("en-IN")}
+            </p>
+          ) : (
+            <BookingQrCode token={current.check_in_token} />
+          )}
+        </div>
+      )}
+
+      {awaitingOwnerApprovalForQr && (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-sm text-blue-900 space-y-1">
+          <p className="font-semibold">Payment received — waiting for venue approval</p>
+          <p className="text-blue-800">
+            The venue owner must accept your booking before your check-in QR code is generated.
+            This page will update automatically once approved.
+          </p>
+        </div>
+      )}
+
+      {awaitingPaymentForQr && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
+          Your booking is approved. Complete payment to unlock your check-in QR code.
+        </div>
+      )}
+
+      {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4 z-50">
-          <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 space-y-4">
-            <div>
-              <h2 className="text-base font-bold text-slate-800">Cancel this booking?</h2>
-              <p className="text-xs text-slate-400 mt-1">This action cannot be undone.</p>
-            </div>
+          <div className="w-full max-w-sm bg-white rounded-2xl p-6 space-y-4">
+            <h2 className="text-lg font-semibold text-slate-800">Cancel order</h2>
+            {refundPreviewPercent > 0 ? (
+              <p className="text-sm text-slate-600 bg-slate-50 rounded-xl px-3 py-2">
+                Estimated refund: <span className="font-semibold">{refundPreviewPercent}%</span>
+                {" "}(₹{Number(refundPreviewAmount).toLocaleString("en-IN")})
+              </p>
+            ) : current.status === "booked" ? (
+              <p className="text-sm text-amber-700 bg-amber-50 rounded-xl px-3 py-2">
+                No refund applies for cancellation at this time.
+              </p>
+            ) : (
+              <p className="text-sm text-slate-500 bg-slate-50 rounded-xl px-3 py-2">
+                Payment has not been completed — no refund will be processed.
+              </p>
+            )}
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
-              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-rose-100 focus:border-rose-400 resize-none transition-all"
+              className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/30"
               placeholder="Reason for cancellation (optional)"
             />
             <div className="flex gap-3">
               <button
-                onClick={() => { setShowCancelModal(false); setReason(""); }}
-                disabled={cancelling}
-                className="flex-1 border border-slate-200 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 disabled:opacity-50 transition-colors"
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="flex-1 border border-slate-200 py-2.5 rounded-xl text-sm hover:bg-slate-50"
               >
-                Keep booking
+                Keep order
               </button>
               <button
+                type="button"
                 onClick={handleCancel}
                 disabled={cancelling}
-                className="flex-1 bg-rose-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-rose-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 bg-rose-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-rose-700 disabled:opacity-50"
               >
-                {cancelling
-                  ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  : "Confirm cancel"
-                }
+                {cancelling ? "Cancelling..." : "Confirm cancel"}
               </button>
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function Row({ label, value, className = "" }) {
+  return (
+    <div className={`bg-slate-50 rounded-xl p-3 ${className}`}>
+      <p className="text-xs text-slate-400">{label}</p>
+      <p className="font-medium text-slate-800 mt-0.5">{value}</p>
     </div>
   );
 }

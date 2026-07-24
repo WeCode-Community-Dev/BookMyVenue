@@ -23,7 +23,6 @@ function placeholderColorFor(id) {
   return PLACEHOLDER_COLORS[Number.isNaN(index) ? 0 : index];
 }
 
-// ── Confirmation dialog ───────────────────────────────────────────────
 function ConfirmDialog({ isOpen, title, message, confirmLabel, confirmClassName, onConfirm, onCancel }) {
   if (!isOpen) return null;
   return (
@@ -50,7 +49,6 @@ function ConfirmDialog({ isOpen, title, message, confirmLabel, confirmClassName,
   );
 }
 
-// ── Venue card ────────────────────────────────────────────────────────
 function VenueCard({ venue, onDelete, onDeactivate, deleting, deactivating }) {
   const [dialog, setDialog] = useState(null); // null | "delete" | "deactivate"
   const placeholderColor = placeholderColorFor(venue.id);

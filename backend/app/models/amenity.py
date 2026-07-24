@@ -8,7 +8,6 @@ class Amenity(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
 
-    # both sides must point to each other, without this the mapper fails to load
     venues = relationship(
         "Venue",
         secondary="venue_amenities",

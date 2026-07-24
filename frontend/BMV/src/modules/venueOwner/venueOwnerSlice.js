@@ -56,12 +56,11 @@ export const acceptBookingRequestAsync = createAsyncThunk(
   },
 );
 
-// ← CHANGED: now accepts { id, reason } so the rejection reason flows through
 export const rejectBookingRequestAsync = createAsyncThunk(
   "venueOwner/rejectBookingRequest",
-  async ({ id, reason = null }, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
-      return await venueOwnerService.rejectBookingRequest(id, reason);
+      return await venueOwnerService.rejectBookingRequest(id);
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -194,7 +193,10 @@ export const unlinkVenueAmenityAsync = createAsyncThunk(
   "venueOwner/unlinkVenueAmenity",
   async ({ venueId, amenityId }, { rejectWithValue }) => {
     try {
-      const amenities = await venueOwnerService.unlinkAmenity(venueId, amenityId);
+      const amenities = await venueOwnerService.unlinkAmenity(
+        venueId,
+        amenityId,
+      );
       return { venueId, amenities };
     } catch (err) {
       return rejectWithValue(err.message);
@@ -207,7 +209,7 @@ export const deleteVenueAsync = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       await venueOwnerService.deleteVenue(id);
-      return id;
+      return id; 
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -274,10 +276,14 @@ const asListPayload = (payload) =>
   Array.isArray(payload) ? payload : payload?.data || payload?.items || [];
 
 function patchOwnerBooking(state, updatedBooking) {
-  const idx = state.ownerBookings.items.findIndex((b) => b.id === updatedBooking.id);
+  const idx = state.ownerBookings.items.findIndex(
+    (b) => b.id === updatedBooking.id,
+  );
   if (idx !== -1) state.ownerBookings.items[idx] = updatedBooking;
 
-  const rIdx = state.bookingRequests.findIndex((b) => b.id === updatedBooking.id);
+  const rIdx = state.bookingRequests.findIndex(
+    (b) => b.id === updatedBooking.id,
+  );
   if (rIdx !== -1) state.bookingRequests.splice(rIdx, 1);
 }
 
@@ -337,21 +343,18 @@ const venueOwnerSlice = createSlice({
       })
 
       .addCase(fetchVenueBookingsAsync.pending, (state) => {
-        state.loading.venueBookings = true;
-        state.error = null;
+        state.loading.venueBookings = true; state.error = null;
       })
       .addCase(fetchVenueBookingsAsync.fulfilled, (state, action) => {
         state.loading.venueBookings = false;
         state.venueBookings = action.payload;
       })
       .addCase(fetchVenueBookingsAsync.rejected, (state, action) => {
-        state.loading.venueBookings = false;
-        state.error = action.payload;
+        state.loading.venueBookings = false; state.error = action.payload;
       })
 
-      // ── Accept / Reject
       .addCase(acceptBookingRequestAsync.pending, (state, action) => {
-        state.loading.actionBooking = action.meta.arg;
+        state.loading.actionBooking = action.meta.arg; // booking id
       })
       .addCase(acceptBookingRequestAsync.fulfilled, (state, action) => {
         state.loading.actionBooking = null;
@@ -362,9 +365,8 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ← CHANGED: meta.arg is now { id, reason }, so we track by id
       .addCase(rejectBookingRequestAsync.pending, (state, action) => {
-        state.loading.actionBooking = action.meta.arg.id;
+        state.loading.actionBooking = action.meta.arg;
       })
       .addCase(rejectBookingRequestAsync.fulfilled, (state, action) => {
         state.loading.actionBooking = null;

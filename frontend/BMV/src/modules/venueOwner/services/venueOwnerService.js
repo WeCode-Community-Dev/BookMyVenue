@@ -23,20 +23,24 @@ export const venueOwnerService = {
     return res.data;
   },
 
-  // ← CHANGED: now accepts an optional rejectionReason string and sends it in the body
-  async rejectBookingRequest(id, rejectionReason = null) {
-    const res = await client.patch(`/venue-owners/dashboard/bookings/${id}/reject`, {
-      rejection_reason: rejectionReason || null,
+  async rejectBookingRequest(id) {
+    const res = await client.patch(`/venue-owners/dashboard/bookings/${id}/reject`);
+    return res.data;
+  },
+
+  async verifyBookingCheckIn(check_in_token) {
+    const res = await client.post("/venue-owners/dashboard/bookings/check-in", {
+      check_in_token,
     });
     return res.data;
   },
 
   async getAvailabilityCalendar({ month, venue_id } = {}) {
-    const params = { month };
-    if (venue_id && venue_id !== "all") params.venue_id = venue_id;
-    const res = await client.get("/venue-owners/dashboard/availability", { params });
-    return res.data;
-  },
+     const params = { month };
+     if (venue_id && venue_id !== "all") params.venue_id = venue_id;
+     const res = await client.get("/venue-owners/dashboard/availability", { params });
+     return res.data;
+   },
 
   async getMyVenues() {
     const res = await client.get("/venue-owners/dashboard/venues");
@@ -103,3 +107,6 @@ export const venueOwnerService = {
     return res.data;
   },
 };
+
+export const verifyBookingCheckIn = (check_in_token) =>
+  venueOwnerService.verifyBookingCheckIn(check_in_token);

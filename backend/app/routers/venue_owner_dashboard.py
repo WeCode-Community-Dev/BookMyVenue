@@ -1,6 +1,5 @@
 from app.models.venue_owner import VenueOwner
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import Optional
 
@@ -18,6 +17,8 @@ from app.schemas.venue_owner_dashboard import (
     BookingRequestOut,
     AvailabilityCalendarOut,
     RevenueOverviewOut,
+    CheckInVerifyRequest,
+    CheckInVerifyOut,
 )
 
 from app.services import venue_owner_dashboard_service as dashboard_service
@@ -27,11 +28,6 @@ from app.services.notification_service import get_notifications_for_user
 
 
 router = APIRouter(prefix="/venue-owners/dashboard", tags=["Venue Owner Dashboard"])
-
-
-# ── inline schema for reject body ────────────────────────────────────────────
-class BookingRejectBody(BaseModel):
-    rejection_reason: Optional[str] = None
 
 
 @router.get("/summary", response_model=DashboardSummaryOut)
@@ -44,7 +40,7 @@ def dashboard_summary(
 
 @router.get("/bookings/all", response_model=PaginatedOwnerBookingsOut)
 def owner_all_bookings(
-    tab: str = Query(default="all", regex="^(all|upcoming|past|cancelled)$"),
+    tab: str = Query(default="all", pattern="^(all|upcoming|past|cancelled)$"),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=10, ge=1, le=100),
     venue_id: Optional[int] = Query(default=None),
@@ -52,7 +48,6 @@ def owner_all_bookings(
     current_user: User = Depends(get_current_venue_owner),
 ):
     return booking_service.get_owner_bookings(db, current_user, tab, page, limit, venue_id)
-
 
 @router.get("/bookings/requests", response_model=list[BookingRequestOut])
 def booking_requests(
@@ -81,16 +76,13 @@ def accept_booking(
     }
 
 
-
 @router.patch("/bookings/{booking_id}/reject", response_model=BookingRequestOut)
 def reject_booking(
     booking_id: int,
-    body: BookingRejectBody | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_venue_owner),
 ):
-    reason = body.rejection_reason if body else None
-    booking = dashboard_service.reject_booking_request(db, booking_id, current_user.id, reason)
+    booking = dashboard_service.reject_booking_request(db, booking_id, current_user.id)
     return {
         "id": booking.id,
         "venue_name": booking.venue.name if hasattr(booking, "venue") else None,
@@ -101,6 +93,15 @@ def reject_booking(
         "price": float(booking.amount),
         "owner_status": booking.owner_status,
     }
+
+
+@router.post("/bookings/check-in", response_model=CheckInVerifyOut)
+def verify_booking_check_in(
+    payload: CheckInVerifyRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    return dashboard_service.verify_check_in(db, current_user.id, payload.check_in_token)
 
 
 @router.get("/availability", response_model=AvailabilityCalendarOut)

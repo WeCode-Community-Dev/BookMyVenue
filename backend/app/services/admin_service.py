@@ -10,6 +10,15 @@ from app.models.user import User
 from app.models.venue import Venue
 from app.schemas.admin import UserAdminCreate, UserAdminUpdate, VenueAdminCreate, VenueAdminUpdate
 from app.services.auth_service import hash_password
+from app.services.booking_dates import day_in_booking_range
+
+
+def _bookings_covering_day(db: Session, day) -> int:
+    return (
+        db.query(Booking)
+        .filter(Booking.check_in_date <= day, Booking.check_out_date >= day)
+        .count()
+    )
 
 
 def _venue_to_admin_out(venue: Venue, owner_name: str | None = None) -> dict:
@@ -78,22 +87,22 @@ def get_dashboard_stats(db: Session) -> dict:
     }
 
     today = datetime.now(timezone.utc).date()
-    today_bookings = db.query(Booking).filter(Booking.booking_date == today).count()
+    today_bookings = _bookings_covering_day(db, today)
     today_revenue = (
         db.query(func.coalesce(func.sum(Payment.amount), 0))
         .join(Booking, Payment.booking_id == Booking.id)
-        .filter(Booking.booking_date == today, Payment.status == "paid")
+        .filter(Booking.check_in_date <= today, Booking.check_out_date >= today, Payment.status == "paid")
         .scalar()
     )
 
     weekly_trend = []
     for i in range(6, -1, -1):
         day = today - timedelta(days=i)
-        day_bookings = db.query(Booking).filter(Booking.booking_date == day).count()
+        day_bookings = _bookings_covering_day(db, day)
         day_revenue = (
             db.query(func.coalesce(func.sum(Payment.amount), 0))
             .join(Booking, Payment.booking_id == Booking.id)
-            .filter(Booking.booking_date == day, Payment.status == "paid")
+            .filter(Booking.check_in_date <= day, Booking.check_out_date >= day, Payment.status == "paid")
             .scalar()
         )
         weekly_trend.append(
@@ -106,13 +115,18 @@ def get_dashboard_stats(db: Session) -> dict:
         )
 
     month_start = today.replace(day=1)
-    month_rows = (
-        db.query(Booking.booking_date, func.count(Booking.id))
-        .filter(Booking.booking_date >= month_start, Booking.booking_date <= today)
-        .group_by(Booking.booking_date)
+    month_bookings = (
+        db.query(Booking)
+        .filter(Booking.check_out_date >= month_start, Booking.check_in_date <= today)
         .all()
     )
-    counts_by_date = {str(row[0]): row[1] for row in month_rows}
+    counts_by_date: dict[str, int] = {}
+    cursor = month_start
+    while cursor <= today:
+        counts_by_date[str(cursor)] = sum(
+            1 for b in month_bookings if day_in_booking_range(b, cursor)
+        )
+        cursor += timedelta(days=1)
     month_activity = []
     cursor = month_start
     while cursor <= today:
@@ -211,7 +225,7 @@ def get_all_venues(
 
 def create_venue_admin(db: Session, data: VenueAdminCreate) -> dict:
     owner = _get_user_or_404(db, data.owner_id)
-    if owner.role not in ("owner", "host"):
+    if owner.role not in ("owner", "host") and owner.venue_owner_profile is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Owner must be a host or owner account",
@@ -221,6 +235,7 @@ def create_venue_admin(db: Session, data: VenueAdminCreate) -> dict:
         name=data.name,
         location=data.location,
         price_per_day=data.price_per_day,
+        venue_type_id=data.venue_type_id,
         description=data.description,
         approval_status=data.approval_status,
         is_active=True,
@@ -309,6 +324,11 @@ def get_all_bookings(db: Session, skip: int = 0, limit: int = 20) -> list[dict]:
                 "venue_name": venue_name,
                 "booking_date": booking.booking_date,
                 "time_slot": booking.time_slot,
+                "check_in_date": booking.check_in_date,
+                "check_in_time": booking.check_in_time,
+                "check_out_date": booking.check_out_date,
+                "check_out_time": booking.check_out_time,
+                "num_days": booking.num_days,
                 "status": booking.status,
                 "amount": float(booking.amount),
                 "payment_status": payment.status if payment else None,
@@ -327,7 +347,10 @@ def get_all_users(
 ) -> list[User]:
     query = db.query(User)
     if role:
-        query = query.filter(User.role == role)
+        if role == "host":
+            query = query.filter(User.role.in_(["host", "owner"]))
+        else:
+            query = query.filter(User.role == role)
     if is_active is not None:
         query = query.filter(User.is_active == is_active)
     return query.order_by(User.created_at.desc()).offset(skip).limit(limit).all()
@@ -344,13 +367,14 @@ def create_user_admin(db: Session, data: UserAdminCreate) -> User:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email is already registered",
         )
+    role = "owner" if data.role == "host" else data.role
     user = User(
         name=data.name,
         email=data.email,
         phone_number=data.phone_number,
         hashed_password=hash_password(data.password),
         auth_provider="email",
-        role=data.role,
+        role=role,
         is_active=True,
     )
     db.add(user)
@@ -379,7 +403,7 @@ def update_user_admin(db: Session, user_id: int, data: UserAdminUpdate) -> User:
     if data.phone_number is not None:
         user.phone_number = data.phone_number
     if data.role is not None:
-        user.role = data.role
+        user.role = "owner" if data.role == "host" else data.role
     if data.password:
         user.hashed_password = hash_password(data.password)
     if data.is_active is not None:

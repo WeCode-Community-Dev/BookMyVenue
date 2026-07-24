@@ -12,6 +12,7 @@ from app.models.venue_owner import VenueOwner
 from app.models.owner_profile import OwnerProfile
 from app.models.booking import Booking
 from app.models.payment import Payment
+from app.models.refund import Refund
 
 __all__ = [
     "User",
@@ -23,4 +24,5 @@ __all__ = [
     "OwnerProfile",
     "Booking",
     "Payment",
+    "Refund",
 ]

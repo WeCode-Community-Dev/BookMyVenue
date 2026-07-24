@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { adminService } from "../../modules/admin/services/adminService";
 import { AdminPageHeader, AdminTable, StatusBadge } from "../../components/admin/AdminCard";
+import { formatBookingPeriod } from "../../utils/bookingFormat";
 
 function BookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -28,13 +29,13 @@ function BookingsPage() {
       <AdminPageHeader title="Bookings" subtitle={`${bookings.length} orders`} />
       {error && <p className="text-rose-600 mb-4 text-sm">{error}</p>}
 
-      <AdminTable columns={["ID", "User", "Venue", "Date", "Status", "Amount", "Payment"]}>
+      <AdminTable columns={["ID", "User", "Venue", "Period", "Status", "Amount", "Payment"]}>
         {bookings.map((b) => (
           <tr key={b.id} className="hover:bg-slate-50/50">
             <td className="px-4 py-3 text-slate-400">#{b.id}</td>
             <td className="px-4 py-3">{b.user_name}</td>
             <td className="px-4 py-3">{b.venue_name}</td>
-            <td className="px-4 py-3">{b.booking_date}</td>
+            <td className="px-4 py-3 text-sm">{formatBookingPeriod(b)}</td>
             <td className="px-4 py-3">
               <StatusBadge status={b.status} />
             </td>

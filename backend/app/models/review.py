@@ -8,6 +8,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     CheckConstraint,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 
@@ -40,4 +41,5 @@ class Review(Base):
 
     __table_args__ = (
         CheckConstraint("rating >= 1 AND rating <= 5", name="ck_review_rating_range"),
+        UniqueConstraint("booking_id", name="uq_review_booking_id"),
     )

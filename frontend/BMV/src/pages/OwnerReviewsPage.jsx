@@ -8,7 +8,6 @@ import {
 } from "../modules/reviews/reviewSlice";
 import OwnerLayout from "../components/VenueOwnerDashboard/OwnerLayout";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatDate(dateStr) {
   if (!dateStr) return "";
@@ -28,7 +27,6 @@ function getInitials(name = "") {
     .slice(0, 2);
 }
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
 
 function StarRating({ rating, size = 16 }) {
   return (
@@ -81,7 +79,6 @@ function RatingBar({ star, pct }) {
   );
 }
 
-// ─── Review Card ─────────────────────────────────────────────────────────────
 
 function ReviewCard({ review }) {
   const dispatch = useDispatch();
@@ -208,7 +205,6 @@ function ReviewCard({ review }) {
   );
 }
 
-// ─── Review of the Month ──────────────────────────────────────────────────────
 
 function ReviewOfMonth({ review }) {
   if (!review) return null;
@@ -239,7 +235,6 @@ function ReviewOfMonth({ review }) {
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function OwnerReviewsPage() {
   const dispatch = useDispatch();

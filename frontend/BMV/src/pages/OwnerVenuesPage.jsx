@@ -56,9 +56,6 @@ function OwnerVenuesPage() {
     setDeletingId(id);
     await dispatch(deleteVenueAsync(id));
     setDeletingId(null);
-    // if (deleteVenueAsync.fulfilled.match(result)) {
-    //   dispatch(fetchPublicVenuesAsync({ limit: 8 }));
-    // }
   };
 
   const handleDeactivate = async (id) => {

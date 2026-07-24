@@ -1,39 +1,73 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createBookingAsync } from "../modules/bookings/bookingSlice";
-import { checkAvailability } from "../modules/venues/services/venueService";
+import { checkAvailabilityRange } from "../modules/venues/services/venueService";
+import { countBookingDays } from "../utils/bookingFormat";
+
+function normalizeTime(value) {
+  if (!value) return value;
+  return value.length === 5 ? `${value}:00` : value;
+}
 
 function BookingForm({ venueId, pricePerDay }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error } = useSelector((state) => state.bookings);
 
-  const [bookingDate, setBookingDate] = useState("");
-  const [timeSlot, setTimeSlot] = useState("");
+  const [checkInDate, setCheckInDate] = useState("");
+  const [checkInTime, setCheckInTime] = useState("");
+  const [checkOutDate, setCheckOutDate] = useState("");
+  const [checkOutTime, setCheckOutTime] = useState("");
   const [notes, setNotes] = useState("");
   const [localError, setLocalError] = useState("");
   const idempotencyKeyRef = useRef(null);
   const formFingerprintRef = useRef("");
 
+  const today = new Date().toISOString().split("T")[0];
+
+  const numDays = useMemo(() => {
+    if (!checkInDate || !checkOutDate) return 0;
+    return countBookingDays(checkInDate, checkOutDate);
+  }, [checkInDate, checkOutDate]);
+
+  const totalPrice = useMemo(() => {
+    if (!numDays || !pricePerDay) return 0;
+    return Number(pricePerDay) * numDays;
+  }, [numDays, pricePerDay]);
+
   useEffect(() => {
-    const fingerprint = `${venueId}|${bookingDate}|${timeSlot}`;
+    const fingerprint = `${venueId}|${checkInDate}|${checkInTime}|${checkOutDate}|${checkOutTime}`;
     if (formFingerprintRef.current !== fingerprint) {
       formFingerprintRef.current = fingerprint;
       idempotencyKeyRef.current = null;
     }
-  }, [venueId, bookingDate, timeSlot]);
+  }, [venueId, checkInDate, checkInTime, checkOutDate, checkOutTime]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLocalError("");
 
-    const time_slot = timeSlot.length === 5 ? `${timeSlot}:00` : timeSlot;
+    const check_in_time = normalizeTime(checkInTime);
+    const check_out_time = normalizeTime(checkOutTime);
+
+    if (checkOutDate < checkInDate) {
+      setLocalError("Check-out date must be on or after check-in date.");
+      return;
+    }
 
     try {
-      const availability = await checkAvailability(venueId, bookingDate, time_slot);
+      const availability = await checkAvailabilityRange(venueId, {
+        check_in_date: checkInDate,
+        check_in_time,
+        check_out_date: checkOutDate,
+        check_out_time,
+      });
       if (!availability.available) {
-        setLocalError("This slot is already booked. Please choose another time.");
+        setLocalError(
+          availability.reason ||
+            "This time range is not available. Please choose different dates.",
+        );
         return;
       }
     } catch (err) {
@@ -48,8 +82,10 @@ function BookingForm({ venueId, pricePerDay }) {
     const result = await dispatch(
       createBookingAsync({
         venue_id: Number(venueId),
-        booking_date: bookingDate,
-        time_slot,
+        check_in_date: checkInDate,
+        check_in_time,
+        check_out_date: checkOutDate,
+        check_out_time,
         notes: notes || null,
         idempotencyKey: idempotencyKeyRef.current,
       }),
@@ -74,31 +110,81 @@ function BookingForm({ venueId, pricePerDay }) {
         </p>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-600 mb-1">Date</label>
-        <input
-          type="date"
-          required
-          min={new Date().toISOString().split("T")[0]}
-          value={bookingDate}
-          onChange={(e) => setBookingDate(e.target.value)}
-          className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-600 mb-1">
+            Check-in date
+          </label>
+          <input
+            type="date"
+            required
+            min={today}
+            value={checkInDate}
+            onChange={(e) => {
+              setCheckInDate(e.target.value);
+              if (!checkOutDate || e.target.value > checkOutDate) {
+                setCheckOutDate(e.target.value);
+              }
+            }}
+            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-600 mb-1">
+            Check-in time
+          </label>
+          <input
+            type="time"
+            required
+            value={checkInTime}
+            onChange={(e) => setCheckInTime(e.target.value)}
+            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-600 mb-1">
+            Check-out date
+          </label>
+          <input
+            type="date"
+            required
+            min={checkInDate || today}
+            value={checkOutDate}
+            onChange={(e) => setCheckOutDate(e.target.value)}
+            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-600 mb-1">
+            Check-out time
+          </label>
+          <input
+            type="time"
+            required
+            value={checkOutTime}
+            onChange={(e) => setCheckOutTime(e.target.value)}
+            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+          />
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-600 mb-1">Time slot</label>
-        <input
-          type="time"
-          required
-          value={timeSlot}
-          onChange={(e) => setTimeSlot(e.target.value)}
-          className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-        />
-      </div>
+      {numDays > 0 && (
+        <div className="rounded-xl bg-slate-50 border border-slate-100 px-4 py-3 text-sm text-slate-700">
+          <span className="font-medium">
+            {numDays} day{numDays !== 1 ? "s" : ""} × ₹
+            {Number(pricePerDay).toLocaleString("en-IN")}
+          </span>
+          <span className="mx-2 text-slate-400">=</span>
+          <span className="font-bold text-slate-900">
+            ₹{totalPrice.toLocaleString("en-IN")}
+          </span>
+        </div>
+      )}
 
       <div>
-        <label className="block text-sm font-medium text-slate-600 mb-1">Notes (optional)</label>
+        <label className="block text-sm font-medium text-slate-600 mb-1">
+          Notes (optional)
+        </label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
@@ -109,7 +195,9 @@ function BookingForm({ venueId, pricePerDay }) {
       </div>
 
       {displayError && (
-        <p className="text-sm text-rose-600 bg-rose-50 px-3 py-2 rounded-xl">{displayError}</p>
+        <p className="text-sm text-rose-600 bg-rose-50 px-3 py-2 rounded-xl">
+          {displayError}
+        </p>
       )}
 
       <button
