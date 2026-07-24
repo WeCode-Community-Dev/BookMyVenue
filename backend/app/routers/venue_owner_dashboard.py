@@ -40,7 +40,7 @@ def dashboard_summary(
 
 @router.get("/bookings/all", response_model=PaginatedOwnerBookingsOut)
 def owner_all_bookings(
-    tab: str = Query(default="all", regex="^(all|upcoming|past|cancelled)$"),
+    tab: str = Query(default="all", pattern="^(all|upcoming|past|cancelled)$"),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=10, ge=1, le=100),
     venue_id: Optional[int] = Query(default=None),

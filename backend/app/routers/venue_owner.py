@@ -5,7 +5,7 @@ from app.db.deps import get_db
 from app.schemas.venue_owner import VenueOwnerCreate, VenueOwnerProfileCreate
 from app.schemas.user import UserOut, TokenOut
 from app.services.venue_owner_service import register_venue_owner, upgrade_customer_to_owner
-from app.core.security import create_access_token, get_current_user
+from app.core.security import create_access_token, create_refresh_token, get_current_user
 from app.models.user import User
 
 
@@ -17,7 +17,8 @@ def register(payload: VenueOwnerCreate, db: Session = Depends(get_db)):
     """Brand-new person registering directly as a venue owner — auto-login after."""
     user = register_venue_owner(db, payload)
     access_token = create_access_token(data={"sub": str(user.id)})
-    return TokenOut(access_token=access_token)
+    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    return TokenOut(access_token=access_token, refresh_token=refresh_token)
 
 
 @router.post("/upgrade", response_model=UserOut)

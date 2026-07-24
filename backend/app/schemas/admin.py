@@ -30,6 +30,7 @@ class VenueAdminCreate(BaseModel):
     name: str
     location: str
     price_per_day: float
+    venue_type_id: int
     description: Optional[str] = None
     approval_status: Literal["pending", "approved", "rejected"] = "pending"
 
@@ -109,14 +110,14 @@ class UserAdminCreate(BaseModel):
     email: EmailStr
     phone_number: str
     password: str = Field(..., min_length=8, max_length=72)
-    role: Literal["user", "host"] = "user"
+    role: Literal["user", "owner", "host"] = "user"
 
 
 class UserAdminUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
     phone_number: Optional[str] = None
-    role: Optional[Literal["user", "host"]] = None
+    role: Optional[Literal["user", "owner", "host"]] = None
     password: Optional[str] = Field(default=None, min_length=8, max_length=72)
     is_active: Optional[bool] = None
 

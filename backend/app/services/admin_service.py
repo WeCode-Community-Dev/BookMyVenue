@@ -225,7 +225,7 @@ def get_all_venues(
 
 def create_venue_admin(db: Session, data: VenueAdminCreate) -> dict:
     owner = _get_user_or_404(db, data.owner_id)
-    if owner.role not in ("owner", "host"):
+    if owner.role not in ("owner", "host") and owner.venue_owner_profile is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Owner must be a host or owner account",
@@ -235,6 +235,7 @@ def create_venue_admin(db: Session, data: VenueAdminCreate) -> dict:
         name=data.name,
         location=data.location,
         price_per_day=data.price_per_day,
+        venue_type_id=data.venue_type_id,
         description=data.description,
         approval_status=data.approval_status,
         is_active=True,
@@ -346,7 +347,10 @@ def get_all_users(
 ) -> list[User]:
     query = db.query(User)
     if role:
-        query = query.filter(User.role == role)
+        if role == "host":
+            query = query.filter(User.role.in_(["host", "owner"]))
+        else:
+            query = query.filter(User.role == role)
     if is_active is not None:
         query = query.filter(User.is_active == is_active)
     return query.order_by(User.created_at.desc()).offset(skip).limit(limit).all()
@@ -363,13 +367,14 @@ def create_user_admin(db: Session, data: UserAdminCreate) -> User:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email is already registered",
         )
+    role = "owner" if data.role == "host" else data.role
     user = User(
         name=data.name,
         email=data.email,
         phone_number=data.phone_number,
         hashed_password=hash_password(data.password),
         auth_provider="email",
-        role=data.role,
+        role=role,
         is_active=True,
     )
     db.add(user)
@@ -398,7 +403,7 @@ def update_user_admin(db: Session, user_id: int, data: UserAdminUpdate) -> User:
     if data.phone_number is not None:
         user.phone_number = data.phone_number
     if data.role is not None:
-        user.role = data.role
+        user.role = "owner" if data.role == "host" else data.role
     if data.password:
         user.hashed_password = hash_password(data.password)
     if data.is_active is not None:
