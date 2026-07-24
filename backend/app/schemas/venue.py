@@ -20,6 +20,8 @@ class VenueCreate(BaseModel):
     refund_50_days_before: Optional[int] = None
     refund_25_days_before: Optional[int] = None
     cancel_cutoff_days_before: Optional[int] = None
+    advance_percent: int = 30
+    allow_pay_at_venue: bool = True
 
     @field_validator("image_urls")
     @classmethod
@@ -43,6 +45,13 @@ class VenueCreate(BaseModel):
             return None
         return v
 
+    @field_validator("advance_percent")
+    @classmethod
+    def validate_advance_percent(cls, v):
+        if v < 1 or v > 100:
+            raise ValueError("advance_percent must be between 1 and 100")
+        return v
+
 
 class VenueUpdate(BaseModel):
     name: str
@@ -57,6 +66,8 @@ class VenueUpdate(BaseModel):
     refund_50_days_before: Optional[int] = None
     refund_25_days_before: Optional[int] = None
     cancel_cutoff_days_before: Optional[int] = None
+    advance_percent: int = 30
+    allow_pay_at_venue: bool = True
 
     @field_validator(
         "refund_50_days_before",
@@ -68,6 +79,13 @@ class VenueUpdate(BaseModel):
     def empty_str_to_none(cls, v):
         if v == "" or v is None:
             return None
+        return v
+
+    @field_validator("advance_percent")
+    @classmethod
+    def validate_advance_percent(cls, v):
+        if v < 1 or v > 100:
+            raise ValueError("advance_percent must be between 1 and 100")
         return v
 
 
@@ -90,6 +108,8 @@ class VenueOut(BaseModel):
     refund_50_days_before: Optional[int] = None
     refund_25_days_before: Optional[int] = None
     cancel_cutoff_days_before: Optional[int] = None
+    advance_percent: int = 30
+    allow_pay_at_venue: bool = True
     created_at: datetime
 
     model_config = {"from_attributes": True}

@@ -139,6 +139,8 @@ def create_venue(db: Session, venue_data: VenueCreate, current_user: User) -> Ve
         refund_50_days_before=venue_data.refund_50_days_before,
         refund_25_days_before=venue_data.refund_25_days_before,
         cancel_cutoff_days_before=venue_data.cancel_cutoff_days_before,
+        advance_percent=venue_data.advance_percent,
+        allow_pay_at_venue=venue_data.allow_pay_at_venue,
     )
 
     db.add(new_venue)
@@ -268,6 +270,8 @@ def update_venue(db: Session, venue_id: int, venue_data, owner_id: int):
     venue.refund_50_days_before = venue_data.refund_50_days_before
     venue.refund_25_days_before = venue_data.refund_25_days_before
     venue.cancel_cutoff_days_before = venue_data.cancel_cutoff_days_before
+    venue.advance_percent = venue_data.advance_percent
+    venue.allow_pay_at_venue = venue_data.allow_pay_at_venue
 
     # The gallery owns the cover image, so a venue with images ignores any
     # image_url in the payload and keeps mirroring its cover row instead.
@@ -294,8 +298,8 @@ def delete_venue(db: Session, venue_id: int, current_user: User):
             detail="Approved venues cannot be hard deleted. Use deactivate instead.",
         )
 
-    venue.approval_status = "approved"
-
+    venue.amenities = []
+    db.delete(venue)
     db.commit()
     return {"detail": "Venue deleted successfully"}
 

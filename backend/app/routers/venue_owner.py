@@ -39,4 +39,5 @@ def add_profile(
         auth_provider=user.auth_provider,
         created_at=user.created_at,
         is_venue_owner=user.venue_owner_profile is not None,
+        has_password=user.hashed_password is not None,
     )
