@@ -357,6 +357,7 @@ def _serialize_detail(db: Session, booking: Booking, venue: Venue | None, paymen
         "venue_name": venue.name if venue else None,
         "venue_location": venue.location if venue else None,
         "google_maps_url": venue.google_maps_url if venue else None,
+        "google_review_url": venue.google_review_url if venue else None,
         "payment_status": payment.status if payment else None,
         "can_review": can_review,
         "has_review": has_review,

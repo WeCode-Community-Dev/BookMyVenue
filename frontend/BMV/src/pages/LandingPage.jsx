@@ -281,15 +281,13 @@ function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">
               BMV
             </div>
-            <span>© {new Date().getFullYear()} BookMyVenue</span>
+            <span className="font-semibold text-slate-700">BookMyVenue</span>
           </div>
-          <nav className="flex flex-wrap justify-center gap-4">
-            <Link to="/login" className="hover:text-blue-600">Login</Link>
-            <Link to="/register" className="hover:text-blue-600">Register</Link>
-            <Link to="/register-venue-owner" className="hover:text-blue-600">Venue owner</Link>
+          <nav className="flex flex-wrap items-center justify-center gap-5">
             <Link to="/venues" className="hover:text-blue-600">Browse venues</Link>
-            <Link to="/admin/login" className="hover:text-blue-600 text-slate-400">Superadmin</Link>
+            <Link to="/register-venue-owner" className="hover:text-blue-600">List your venue</Link>
           </nav>
+          <span className="text-slate-400">© {new Date().getFullYear()} BookMyVenue</span>
         </div>
       </footer>
     </div>

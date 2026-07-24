@@ -22,6 +22,7 @@ function VenueCreatePage() {
     capacity: "",
     image_url: "",
     google_maps_url: "",
+    google_review_url: "",
     description: "",
     approval_status: "pending",
   });
@@ -63,6 +64,7 @@ function VenueCreatePage() {
         capacity: form.capacity ? Number(form.capacity) : null,
         image_url: form.image_url || null,
         google_maps_url: form.google_maps_url || null,
+        google_review_url: form.google_review_url || null,
         description: form.description || null,
         approval_status: form.approval_status,
       });
@@ -162,6 +164,16 @@ function VenueCreatePage() {
 
         <FormField label="Google Maps URL">
           <input name="google_maps_url" value={form.google_maps_url} onChange={handleChange} className={inputCls} />
+        </FormField>
+
+        <FormField label="Google Review URL">
+          <input
+            name="google_review_url"
+            value={form.google_review_url}
+            onChange={handleChange}
+            className={inputCls}
+            placeholder="https://g.page/r/.../review"
+          />
         </FormField>
 
         <FormField label="Description">

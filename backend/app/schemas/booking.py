@@ -84,6 +84,7 @@ class BookingDetailOut(BookingOut):
     venue_name: Optional[str] = None
     venue_location: Optional[str] = None
     google_maps_url: Optional[str] = None
+    google_review_url: Optional[str] = None
     payment_status: Optional[str] = None
     can_review: bool = False
     has_review: bool = False

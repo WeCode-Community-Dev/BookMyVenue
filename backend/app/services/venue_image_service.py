@@ -32,14 +32,22 @@ def _renumber(images: list[VenueImage]) -> None:
         image.sort_order = index
 
 
-def sync_cover(db: Session, venue: Venue) -> list[VenueImage]:
+def sync_cover(
+    db: Session,
+    venue: Venue,
+    preferred_image_id: int | None = None,
+) -> list[VenueImage]:
     """Keep exactly one cover row and mirror its url into venues.image_url."""
     images = ordered_images(db, venue.id)
     if not images:
         venue.image_url = None
         return images
 
-    cover = next((image for image in images if image.is_cover), images[0])
+    cover = None
+    if preferred_image_id is not None:
+        cover = next((image for image in images if image.id == preferred_image_id), None)
+    if cover is None:
+        cover = next((image for image in images if image.is_cover), images[0])
     for image in images:
         image.is_cover = image.id == cover.id
     venue.image_url = cover.url
@@ -77,8 +85,8 @@ def add_images(db: Session, venue_id: int, owner_id: int, urls: list[str]) -> li
     return ordered_images(db, venue_id)
 
 
-def create_images_for_new_venue(db: Session, venue: Venue, urls: list[str]) -> None:
-    """Seed the gallery during venue creation; caller commits."""
+def seed_gallery(db: Session, venue: Venue, urls: list[str]) -> None:
+    """Fill an empty gallery from a list of urls; the caller commits."""
     for index, url in enumerate(urls[:MAX_VENUE_IMAGES]):
         db.add(
             VenueImage(
@@ -121,11 +129,11 @@ def update_image(
         others.insert(position, image)
         _renumber(others)
 
-    if is_cover is not None:
-        image.is_cover = is_cover
+    if is_cover is False:
+        image.is_cover = False
 
     db.flush()
-    sync_cover(db, venue)
+    sync_cover(db, venue, preferred_image_id=image.id if is_cover else None)
     db.commit()
     return ordered_images(db, venue_id)
 

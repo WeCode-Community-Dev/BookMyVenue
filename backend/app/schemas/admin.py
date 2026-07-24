@@ -20,6 +20,7 @@ class VenueAdminOut(BaseModel):
     capacity: Optional[int] = None
     image_url: Optional[str] = None
     google_maps_url: Optional[str] = None
+    google_review_url: Optional[str] = None
     description: Optional[str] = None
     approval_status: str
     rejection_reason: Optional[str] = None
@@ -39,6 +40,7 @@ class VenueAdminCreate(BaseModel):
     capacity: Optional[int] = None
     image_url: Optional[str] = None
     google_maps_url: Optional[str] = None
+    google_review_url: Optional[str] = None
     description: Optional[str] = None
     approval_status: Literal["pending", "approved", "rejected"] = "pending"
 
@@ -52,6 +54,7 @@ class VenueAdminUpdate(BaseModel):
     capacity: Optional[int] = None
     image_url: Optional[str] = None
     google_maps_url: Optional[str] = None
+    google_review_url: Optional[str] = None
     description: Optional[str] = None
     approval_status: Optional[Literal["pending", "approved", "rejected"]] = None
     is_active: Optional[bool] = None

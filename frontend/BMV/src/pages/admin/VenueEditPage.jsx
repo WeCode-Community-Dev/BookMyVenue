@@ -26,6 +26,7 @@ function VenueEditPage() {
     capacity: "",
     image_url: "",
     google_maps_url: "",
+    google_review_url: "",
     description: "",
     approval_status: "pending",
     is_active: true,
@@ -53,6 +54,7 @@ function VenueEditPage() {
           capacity: v.capacity ?? "",
           image_url: v.image_url || "",
           google_maps_url: v.google_maps_url || "",
+          google_review_url: v.google_review_url || "",
           description: v.description || "",
           approval_status: v.approval_status,
           is_active: v.is_active,
@@ -81,6 +83,7 @@ function VenueEditPage() {
         capacity: form.capacity === "" ? null : Number(form.capacity),
         image_url: form.image_url || null,
         google_maps_url: form.google_maps_url || null,
+        google_review_url: form.google_review_url || null,
         description: form.description || null,
         approval_status: form.approval_status,
         is_active: form.is_active,
@@ -181,6 +184,16 @@ function VenueEditPage() {
 
         <FormField label="Google Maps URL">
           <input name="google_maps_url" value={form.google_maps_url} onChange={handleChange} className={inputCls} />
+        </FormField>
+
+        <FormField label="Google Review URL">
+          <input
+            name="google_review_url"
+            value={form.google_review_url}
+            onChange={handleChange}
+            className={inputCls}
+            placeholder="https://g.page/r/.../review"
+          />
         </FormField>
 
         <FormField label="Description" hint="Optional details shown to customers">

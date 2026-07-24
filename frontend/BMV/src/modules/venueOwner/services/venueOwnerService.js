@@ -71,6 +71,21 @@ export const venueOwnerService = {
     return res.data;
   },
 
+  async addVenueImages(venueId, urls) {
+    const res = await client.post(`/venues/${venueId}/images`, { urls });
+    return res.data;
+  },
+
+  async updateVenueImage(venueId, imageId, payload) {
+    const res = await client.patch(`/venues/${venueId}/images/${imageId}`, payload);
+    return res.data;
+  },
+
+  async deleteVenueImage(venueId, imageId) {
+    const res = await client.delete(`/venues/${venueId}/images/${imageId}`);
+    return res.data;
+  },
+
   async deleteVenue(id) {
     const res = await client.delete(`/venues/${id}`);
     return res.data;

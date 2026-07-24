@@ -16,6 +16,7 @@ class VenueCreate(BaseModel):
     image_url: Optional[str] = None
     image_urls: Optional[list[str]] = None
     google_maps_url: Optional[str] = None
+    google_review_url: Optional[str] = None
     refund_50_days_before: Optional[int] = None
     refund_25_days_before: Optional[int] = None
     cancel_cutoff_days_before: Optional[int] = None
@@ -52,6 +53,7 @@ class VenueUpdate(BaseModel):
     capacity: Optional[int] = None
     image_url: Optional[str] = None
     google_maps_url: Optional[str] = None
+    google_review_url: Optional[str] = None
     refund_50_days_before: Optional[int] = None
     refund_25_days_before: Optional[int] = None
     cancel_cutoff_days_before: Optional[int] = None
@@ -74,6 +76,7 @@ class VenueOut(BaseModel):
     name: str
     location: str
     google_maps_url: Optional[str] = None
+    google_review_url: Optional[str] = None
     price_per_day: float
     approval_status: str
     venue_type: Optional[VenueTypeOut] = None

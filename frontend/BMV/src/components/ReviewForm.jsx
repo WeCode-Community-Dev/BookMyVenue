@@ -22,13 +22,15 @@ function StarPicker({ value, onChange, disabled }) {
   );
 }
 
-function ReviewForm({ venueId, bookingId, googleMapsUrl, onSuccess }) {
+function ReviewForm({ venueId, bookingId, googleMapsUrl, googleReviewUrl, onSuccess }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showGooglePrompt, setShowGooglePrompt] = useState(false);
   const [submittedRating, setSubmittedRating] = useState(0);
+
+  const reviewRedirectUrl = googleReviewUrl || googleMapsUrl;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +49,7 @@ function ReviewForm({ venueId, bookingId, googleMapsUrl, onSuccess }) {
         comment: comment.trim() || null,
       });
       setSubmittedRating(rating);
-      if (rating >= 4 && googleMapsUrl) {
+      if (rating >= 4 && reviewRedirectUrl) {
         setShowGooglePrompt(true);
       }
       onSuccess?.({ rating });
@@ -69,7 +71,7 @@ function ReviewForm({ venueId, bookingId, googleMapsUrl, onSuccess }) {
         </p>
         <div className="flex gap-2">
           <a
-            href={googleMapsUrl}
+            href={reviewRedirectUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
@@ -88,7 +90,7 @@ function ReviewForm({ venueId, bookingId, googleMapsUrl, onSuccess }) {
     );
   }
 
-  if (submittedRating > 0 && !(submittedRating >= 4 && googleMapsUrl)) {
+  if (submittedRating > 0 && !(submittedRating >= 4 && reviewRedirectUrl)) {
     return (
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
         <p className="text-sm font-medium text-emerald-800">

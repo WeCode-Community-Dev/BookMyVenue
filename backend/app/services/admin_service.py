@@ -37,6 +37,7 @@ def _venue_to_admin_out(venue: Venue, owner_name: str | None = None) -> dict:
         "capacity": venue.capacity,
         "image_url": venue.image_url,
         "google_maps_url": venue.google_maps_url,
+        "google_review_url": venue.google_review_url,
         "description": venue.description,
         "approval_status": venue.approval_status,
         "rejection_reason": venue.rejection_reason,
@@ -350,6 +351,7 @@ def create_venue_admin(db: Session, data: VenueAdminCreate) -> dict:
         capacity=data.capacity,
         image_url=data.image_url,
         google_maps_url=data.google_maps_url,
+        google_review_url=data.google_review_url,
         description=data.description,
         approval_status=data.approval_status,
         is_active=True,
@@ -393,6 +395,8 @@ def update_venue_admin(db: Session, venue_id: int, data: VenueAdminUpdate) -> di
         venue.image_url = data.image_url or None
     if data.google_maps_url is not None:
         venue.google_maps_url = data.google_maps_url or None
+    if data.google_review_url is not None:
+        venue.google_review_url = data.google_review_url or None
     if data.description is not None:
         venue.description = data.description
     if data.approval_status is not None:

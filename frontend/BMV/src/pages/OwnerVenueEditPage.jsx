@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { ArrowLeft, ImageIcon, IndianRupee, Save } from "lucide-react";
+import { ArrowLeft, IndianRupee, Save } from "lucide-react";
 import {
   parsePolicyDays,
   validateCancellationPolicyFields,
@@ -18,6 +18,7 @@ import {
   clearVenueOwnerError,
 } from "../modules/venueOwner/venueOwnerSlice";
 import OwnerLayout from "../components/VenueOwnerDashboard/OwnerLayout";
+import VenueImageManager from "../components/VenueOwnerDashboard/VenueImageManager";
 
 function Field({ label, error, children }) {
   return (
@@ -83,11 +84,11 @@ function OwnerVenueEditPage() {
         name:        venue.name ?? "",
         location:    venue.location ?? "",
         googleMapsUrl: venue.google_maps_url ?? "",
+        googleReviewUrl: venue.google_review_url ?? "",
         venueTypeId: venue.venue_type?.id ?? "",
         capacity:    venue.capacity ?? "",
         dailyRate:   venue.price_per_day ?? "",
         description: venue.description ?? "",
-        imageUrl:    venue.image_url ?? "",
         refund50Days: venue.refund_50_days_before ?? "",
         refund25Days: venue.refund_25_days_before ?? "",
         cancelCutoffDays: venue.cancel_cutoff_days_before ?? "",
@@ -138,11 +139,11 @@ function OwnerVenueEditPage() {
           name:          fields.name.trim(),
           location:      fields.location.trim(),
           google_maps_url: fields.googleMapsUrl.trim() || null,
+          google_review_url: fields.googleReviewUrl.trim() || null,
           venue_type_id: Number(fields.venueTypeId),
           price_per_day: Number(fields.dailyRate),
           capacity:      fields.capacity ? Number(fields.capacity) : null,
           description:   fields.description.trim() || null,
-          image_url:     fields.imageUrl.trim() || null,
           advance_percent: Number(fields.advancePercent),
           allow_pay_at_venue: Boolean(fields.allowPayAtVenue),
           ...policyPayloadFromFields(
@@ -264,6 +265,20 @@ function OwnerVenueEditPage() {
               </p>
             </Field>
 
+            <Field label="Google review link (optional)">
+              <input
+                name="googleReviewUrl"
+                type="url"
+                placeholder="https://g.page/r/.../review or writereview link"
+                value={fields.googleReviewUrl}
+                onChange={handleChange}
+                className={`${inputBase} ${inputNormal}`}
+              />
+              <p className="mt-1 text-xs text-gray-400">
+                Paste your Google write-a-review link so happy customers can leave a Maps review.
+              </p>
+            </Field>
+
             <Field label="Capacity (Guests)" error={fieldErrors.capacity}>
               <input
                 name="capacity"
@@ -291,19 +306,6 @@ function OwnerVenueEditPage() {
               </div>
             </Field>
 
-            <Field label="Image URL">
-              <div className="flex items-center gap-2 rounded-xl px-3.5 py-2.5 border border-gray-200 bg-gray-50 focus-within:ring-2 focus-within:ring-rose-300 focus-within:border-transparent">
-                <ImageIcon size={14} className="text-gray-400 shrink-0" />
-                <input
-                  name="imageUrl"
-                  type="url"
-                  placeholder="https://example.com/photo.jpg"
-                  value={fields.imageUrl}
-                  onChange={handleChange}
-                  className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
-                />
-              </div>
-            </Field>
           </div>
 
           <Field label="Description">
@@ -317,6 +319,8 @@ function OwnerVenueEditPage() {
             />
           </Field>
         </div>
+
+        <VenueImageManager venueId={venue.id} images={venue.images ?? []} />
 
         <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 space-y-4">
           <h3 className="text-sm font-semibold text-rose-900">Cancellation policy</h3>

@@ -8,6 +8,8 @@ from app.db.deps import get_db
 from app.models.user import User
 from app.schemas.review import VenueReviewsOut
 from app.schemas.venue import VenueCreate, VenueOut, VenueUpdate
+from app.schemas.venue_image import VenueImageCreate, VenueImageOut, VenueImageUpdate
+from app.services import venue_image_service
 from app.services.review_service import get_reviews_for_venue
 from app.services.venue_service import (
     check_availability,
@@ -138,6 +140,59 @@ def update_existing_venue(
     current_user: User = Depends(get_current_venue_owner),
 ):
     return update_venue(db, venue_id, venue, owner_id=current_user.id)
+
+
+@router.get("/{venue_id}/images", response_model=list[VenueImageOut])
+def list_venue_images(
+    venue_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    venue_image_service.get_owned_venue(db, venue_id, current_user.id)
+    return venue_image_service.ordered_images(db, venue_id)
+
+
+@router.post("/{venue_id}/images", response_model=list[VenueImageOut], status_code=201)
+def add_venue_images(
+    venue_id: int,
+    payload: VenueImageCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    return venue_image_service.add_images(
+        db,
+        venue_id,
+        current_user.id,
+        payload.url_list(),
+    )
+
+
+@router.patch("/{venue_id}/images/{image_id}", response_model=list[VenueImageOut])
+def update_venue_image(
+    venue_id: int,
+    image_id: int,
+    payload: VenueImageUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    return venue_image_service.update_image(
+        db,
+        venue_id,
+        image_id,
+        current_user.id,
+        is_cover=payload.is_cover,
+        sort_order=payload.sort_order,
+    )
+
+
+@router.delete("/{venue_id}/images/{image_id}", response_model=list[VenueImageOut])
+def delete_venue_image(
+    venue_id: int,
+    image_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    return venue_image_service.delete_image(db, venue_id, image_id, current_user.id)
 
 
 @router.patch("/{venue_id}/deactivate")

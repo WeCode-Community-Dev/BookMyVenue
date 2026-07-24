@@ -251,6 +251,7 @@ function BookingDetailPage() {
             venueId={current.venue_id}
             bookingId={current.id}
             googleMapsUrl={current.google_maps_url}
+            googleReviewUrl={current.google_review_url}
             onSuccess={() => dispatch(fetchBookingDetailAsync(Number(id)))}
           />
         </div>
