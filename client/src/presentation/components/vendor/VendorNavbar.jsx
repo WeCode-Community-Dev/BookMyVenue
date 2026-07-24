@@ -1,4 +1,3 @@
-import React from "react";
 import { Input } from "@/components/ui/input";
 import {
   Bell,
@@ -9,9 +8,10 @@ import { useSelector } from "react-redux";
 
 const VendorNavbar = () => {
   const { profile } = useSelector((state) => state.vendorProfile);
+  const { user } = useSelector((state) => state.auth)
 
   const initials =
-    profile?.fullName
+    user?.name
       ?.split(" ")
       .map((word) => word[0])
       .join("")
@@ -52,7 +52,7 @@ const VendorNavbar = () => {
           {profile?.profileImage?.url ? (
             <img
               src={profile.profileImage.url}
-              alt={profile.fullName}
+              alt={user?.name}
               className="w-10 h-10 rounded-full object-cover"
             />
           ) : (
@@ -63,7 +63,7 @@ const VendorNavbar = () => {
 
           <div>
             <p className="font-semibold text-sm text-slate-900">
-              {profile?.fullName || "Vendor"}
+              {user?.name || "Vendor"}
             </p>
 
             <p className="text-xs text-slate-500">

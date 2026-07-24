@@ -1,5 +1,5 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
+
+import { NavLink, useNavigate } from "react-router-dom";
 import SidebarProfileCard from "./SidebarProfileCard";
 import { ROUTES } from "@/constants/routes";
 import logo from "@/assets/images/logo.jpeg";
@@ -15,6 +15,10 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { logout } from "@/redux/slices/AuthSlice";
+import { ROLES } from "@/constants/Roles";
 
 const VendorSidebar = () => {
   const menuItems = [
@@ -50,6 +54,18 @@ const VendorSidebar = () => {
     },
   ];
 
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout({role: ROLES.VENDOR})).unwrap()
+      toast.success("Vendor logged out successfully")
+      navigate(ROUTES.PUBLIC.LOGIN)
+    } catch (error) {
+      toast.error(error)
+    }
+  }
   return (
     <aside className="w-64 min-h-screen bg-slate-900 text-white p-6 flex flex-col">
 
@@ -106,7 +122,10 @@ const VendorSidebar = () => {
 
       {/* Logout */}
       <div className="mt-auto pt-8 border-t border-slate-800">
-        <button className="flex items-center gap-3 text-gray-300 hover:text-red-400 transition">
+        <button 
+          className="flex items-center gap-3 text-gray-300 hover:text-red-400 transition"
+          onClick={handleLogout}
+        >
           <LogOut size={18} />
           Logout
         </button>
