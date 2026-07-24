@@ -1,10 +1,10 @@
+/* eslint-disable */
 "use client";
 
 import { Suspense, useEffect } from "react";
 import { selectAuthLoading, selectIsAuthenticated } from "@/features/auth/AuthSlice";
-
 import { AppText } from "@/lib/language/LanguageHelper";
-import BookingLayout from "@/features/bookings/BookingLayout";
+import BookingsList from "@/features/bookings/BookingsList";
 import { SCREENS } from "@/lib/Constants";
 import { bookingPageStyle } from "@/features/booking/styles/BookingPageStyle";
 import { useRouter } from "next/navigation";
@@ -47,7 +47,7 @@ const Page = () => {
                 </div>
             </main>
         }>
-            <BookingLayout />
+            <BookingsList />
         </Suspense>
     );
 };

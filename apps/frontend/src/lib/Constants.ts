@@ -19,7 +19,8 @@ export const SCREENS = {
     PROFILE: "/profile",
     ADD_VENUE:"/addvenue",
     VENUES:"/venues",
-    SETTINGS:"/settings"
+    SETTINGS:"/settings",
+    BOOKINGS: "/bookings"
 };
 
 export const LANGUAGE={

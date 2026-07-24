@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Req,
   Res,
   UseGuards,
@@ -14,8 +15,9 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { AuthRequest } from 'src/types/auth.request.interface';
 import type { GoogleAuthRequest } from 'src/types/google-auth.request.interface';
 import { AuthGuard } from '@nestjs/passport';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { RegisterDto } from './dto/register.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -77,9 +79,12 @@ export class AuthController {
   }
 
   @Post('refresh')
-  async refresh(@Req() req, @Res({ passthrough: true }) res: Response) {
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const accessToken = await this.authService.refresh(
-      req.cookies.refresh_token,
+      req.cookies.refresh_token as string,
     );
 
     res.cookie('access_token', accessToken, {
@@ -102,5 +107,11 @@ export class AuthController {
     return {
       message: 'Logged out successfully',
     };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('profile')
+  updateProfile(@Req() req: AuthRequest, @Body() dto: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user.id, dto);
   }
 }

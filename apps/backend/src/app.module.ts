@@ -1,15 +1,22 @@
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { BookingModule } from './booking/booking.module';
 import { MailModule } from './providers/mail/mail.module';
 import { Module } from '@nestjs/common';
 import { PrismaModule } from './providers/prisma/prisma.module';
 import { RedisModule } from './providers/redis/redis.module';
 import { VenueModule } from './venue/venue.module';
-import { BookingModule } from './booking/booking.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule, MailModule, AuthModule, VenueModule, BookingModule],
+  imports: [
+    PrismaModule,
+    RedisModule,
+    MailModule,
+    AuthModule,
+    VenueModule,
+    BookingModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

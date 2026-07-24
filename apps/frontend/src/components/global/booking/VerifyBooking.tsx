@@ -27,6 +27,8 @@ import { AppText } from "@/lib/language/LanguageHelper";
 import { Button } from "@/components/ui/button/Button";
 import NxtImage from "next/image";
 import { Venue } from "@/types/Venue";
+import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 import { verifyBookingStyle } from "./VerifyBookingStyle";
 
 interface VenueApprovalModalProps {
@@ -65,6 +67,7 @@ export default function VenueApprovalModal({
     venue,
     actionType,
 }: VenueApprovalModalProps) {
+    const router = useRouter();
     if (!isOpen || !venue) return null;
 
     const mainImage = getVenuePrimaryImage(venue);
@@ -99,7 +102,17 @@ export default function VenueApprovalModal({
     ];
 
     const mapSrc = `https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(getVenueLocation(venue))
-        }&zoom=13&size=800x500&key=YOUR_GOOGLE_MAPS_API_KEY`;
+    }&zoom=13&size=800x500&key=YOUR_GOOGLE_MAPS_API_KEY`;
+
+    const memberSinceDate = venue.owner?.createdAt ? new Date(venue.owner.createdAt) : null;
+    const formattedMemberSince = memberSinceDate && !isNaN(memberSinceDate.getTime())
+        ? format(memberSinceDate, "dd MMM yyyy")
+        : "-";
+
+    const submittedOnDate = venue.createdAt ? new Date(venue.createdAt) : null;
+    const formattedSubmittedOn = submittedOnDate && !isNaN(submittedOnDate.getTime())
+        ? format(submittedOnDate, "dd MMM yyyy, hh:mm a")
+        : "-";
 
     return (
         <div className={verifyBookingStyle.overlay}>
@@ -362,7 +375,7 @@ export default function VenueApprovalModal({
                                         textModule="LABEL"
                                     />
                                 }
-                                value="Vishnu Raj"
+                                value={venue.owner?.name || "-"}
                             />
 
                             <InfoRow
@@ -377,7 +390,7 @@ export default function VenueApprovalModal({
                                         textModule="LABEL"
                                     />
                                 }
-                                value="vishnu.raj@example.com"
+                                value={venue.owner?.email || "-"}
                             />
 
                             <InfoRow
@@ -392,7 +405,7 @@ export default function VenueApprovalModal({
                                         textModule="LABEL"
                                     />
                                 }
-                                value="+91 98765 43210"
+                                value={venue.owner?.phone || "-"}
                             />
 
                             <InfoRow
@@ -407,7 +420,7 @@ export default function VenueApprovalModal({
                                         textModule="LABEL"
                                     />
                                 }
-                                value="24 May 2024"
+                                value={formattedMemberSince}
                             />
                         </div>
                     </div>
@@ -434,7 +447,7 @@ export default function VenueApprovalModal({
                                 </p>
 
                                 <p className={verifyBookingStyle.submittedOnValue}>
-                                    24 May 2025, 10:30 AM
+                                    {formattedSubmittedOn}
                                 </p>
                             </div>
 
@@ -470,7 +483,15 @@ export default function VenueApprovalModal({
                         <AppText textName="CANCEL" textModule="BUTTON" />
                     </Button>
 
-                    <Button className={verifyBookingStyle.primaryActionBtn}>
+                    <Button 
+                        className={verifyBookingStyle.primaryActionBtn}
+                        onClick={() => {
+                            if (actionType === "pay") {
+                                onClose();
+                                router.push(`/booking?venueId=${venue.id}`);
+                            }
+                        }}
+                    >
                         {actionType === "pay"
                             ? (
                                 <AppText

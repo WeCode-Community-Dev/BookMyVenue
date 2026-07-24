@@ -4,10 +4,31 @@ import {
     BadgeCheck,
     CalendarDays,
 } from "lucide-react";
+import { AppText, getText } from "@/lib/language/LanguageHelper";
+import { getVenuePrimaryImage, getVenueVerified } from "@/features/venues/services/VenuService";
 
 import Image from "next/image";
+import { Venue } from "@/types/Venue";
+import { bookingSummaryStyle } from "@/features/booking/styles/BookingSummaryStyle";
 
-const bookings = [
+export interface BookingItem {
+    id: number | string;
+    day: string;
+    month: string;
+    title: string;
+    time: string;
+    guests: string;
+    price: number | string;
+}
+
+interface BookingSummaryProps {
+    venue?: Venue | null;
+    isProfileConfirmed?: boolean;
+    onProceedToPayment?: () => void;
+    bookings?: BookingItem[];
+}
+
+const mockBookings: BookingItem[] = [
     {
         id: 1,
         day: "15",
@@ -15,7 +36,7 @@ const bookings = [
         title: "Morning Wedding Package",
         time: "09:00 AM - 01:00 PM",
         guests: "50-150 Guests",
-        price: "₹18,000",
+        price: 18000,
     },
     {
         id: 2,
@@ -24,7 +45,7 @@ const bookings = [
         title: "Morning Wedding Package",
         time: "09:00 AM - 01:00 PM",
         guests: "50-150 Guests",
-        price: "₹18,000",
+        price: 18000,
     },
     {
         id: 3,
@@ -33,53 +54,75 @@ const bookings = [
         title: "Evening Reception Package",
         time: "04:00 PM - 10:00 PM",
         guests: "150-400 Guests",
-        price: "₹30,000",
+        price: 30000,
     },
 ];
 
-export default function BookingSummary() {
-    return (
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+export default function BookingSummary({
+    venue,
+    isProfileConfirmed = false,
+    onProceedToPayment,
+    bookings,
+}: BookingSummaryProps) {
+    const activeBookings = bookings || mockBookings;
+    
+    // Calculate subtotal and grand total dynamically
+    const subtotal = activeBookings.reduce((sum, item) => sum + Number(item.price), 0);
+    const platformFee = 0; // free platform fee
+    const grandTotal = subtotal + platformFee;
 
-            <div className="p-5">
+    const formattedCurrency = (value: number) => {
+        return new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "INR",
+            maximumFractionDigits: 0,
+        }).format(value);
+    };
+
+    return (
+        <section className={bookingSummaryStyle.card}>
+
+            <div className={bookingSummaryStyle.p5}>
 
                 {/* Heading */}
 
-                <h2 className="text-[18px] font-bold text-slate-900">
-                    Booking Summary
+                <h2 className={bookingSummaryStyle.heading}>
+                    <AppText textName="BOOKING_SUMMARY" textModule="LABEL" />
                 </h2>
 
                 {/* Venue */}
 
-                <div className="mt-5 flex gap-3">
+                <div className={bookingSummaryStyle.venueRow}>
 
-                    <div className="overflow-hidden rounded-lg border border-slate-200">
+                    <div className={bookingSummaryStyle.imageWrapper}>
 
                         <Image
-                            src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=1400&auto=format&fit=crop"
-                            alt="Venue"
+                            src={venue ? getVenuePrimaryImage(venue) : "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=1400&auto=format&fit=crop"}
+                            alt={venue?.name || "Venue"}
                             width={84}
                             height={62}
-                            className="h-[62px] w-[84px] object-cover"
+                            className={bookingSummaryStyle.image}
                         />
 
                     </div>
 
-                    <div className="flex flex-1 flex-col justify-center">
+                    <div className={bookingSummaryStyle.venueInfo}>
 
-                        <h3 className="text-[15px] font-semibold leading-5 text-slate-900">
-                            Grand Palace Convention Centre
+                        <h3 className={bookingSummaryStyle.venueName}>
+                            {venue?.name || "Grand Palace Convention Centre"}
                         </h3>
 
-                        <div className="mt-2 flex items-center gap-2">
+                        {(!venue || getVenueVerified(venue)) && (
+                            <div className={bookingSummaryStyle.verifiedRow}>
 
-                            <BadgeCheck className="h-4 w-4 text-teal-600" />
+                                <BadgeCheck className={bookingSummaryStyle.verifiedIcon} />
 
-                            <span className="text-[14px] font-medium text-teal-700">
-                                Verified Venue
-                            </span>
+                                <span className={bookingSummaryStyle.verifiedText}>
+                                    <AppText textName="VERIFIED_VENUE" textModule="LABEL" />
+                                </span>
 
-                        </div>
+                            </div>
+                        )}
 
                     </div>
 
@@ -87,45 +130,33 @@ export default function BookingSummary() {
 
                 {/* Divider */}
 
-                <div className="my-5 border-t border-slate-200" />
+                <div className={bookingSummaryStyle.divider} />
 
                 {/* Booking Heading */}
 
-                <h3 className="text-[17px] font-semibold text-slate-900">
-                    Your Booking (3)
+                <h3 className={bookingSummaryStyle.subheading}>
+                    <AppText textName="YOUR_BOOKING" textModule="LABEL" append={{ count: activeBookings.length }} />
                 </h3>
 
                 {/* Booking Items */}
 
-                <div className="mt-4 space-y-4">
+                <div className={bookingSummaryStyle.itemsList}>
 
-                    {bookings.map((booking) => (
+                    {activeBookings.map((booking) => (
                         <div
                             key={booking.id}
-                            className="flex items-start gap-3"
+                            className={bookingSummaryStyle.itemRow}
                         >
 
                             {/* Date */}
 
-                            <div
-                                className="
-                                    flex
-                                    h-[56px]
-                                    w-[48px]
-                                    shrink-0
-                                    flex-col
-                                    items-center
-                                    justify-center
-                                    rounded-lg
-                                    bg-[#EAF8F6]
-                                "
-                            >
+                            <div className={bookingSummaryStyle.dateBlock}>
 
-                                <span className="text-[22px] font-bold leading-none text-[#0F8C84]">
+                                <span className={bookingSummaryStyle.dateDay}>
                                     {booking.day}
                                 </span>
 
-                                <span className="mt-1 text-[10px] font-bold tracking-wide text-[#0F8C84]">
+                                <span className={bookingSummaryStyle.dateMonth}>
                                     {booking.month}
                                 </span>
 
@@ -133,15 +164,15 @@ export default function BookingSummary() {
 
                             {/* Package */}
 
-                            <div className="min-w-0 flex-1">
+                            <div className={bookingSummaryStyle.itemContent}>
 
-                                <h4 className="truncate text-[14px] font-semibold text-slate-900">
+                                <h4 className={bookingSummaryStyle.itemTitle}>
                                     {booking.title}
                                 </h4>
 
-                                <div className="mt-1 flex items-center gap-1 text-[12px] text-slate-500">
+                                <div className={bookingSummaryStyle.itemTimeRow}>
 
-                                    <CalendarDays className="h-3 w-3" />
+                                    <CalendarDays className={bookingSummaryStyle.itemTimeIcon} />
 
                                     <span>
                                         {booking.time}
@@ -149,7 +180,7 @@ export default function BookingSummary() {
 
                                 </div>
 
-                                <p className="mt-1 text-[12px] text-slate-500">
+                                <p className={bookingSummaryStyle.itemGuests}>
                                     {booking.guests}
                                 </p>
 
@@ -157,10 +188,10 @@ export default function BookingSummary() {
 
                             {/* Price */}
 
-                            <div className="pl-2">
+                            <div className={bookingSummaryStyle.itemPriceWrapper}>
 
-                                <span className="text-[18px] font-bold text-slate-900">
-                                    {booking.price}
+                                <span className={bookingSummaryStyle.itemPrice}>
+                                    {formattedCurrency(Number(booking.price))}
                                 </span>
 
                             </div>
@@ -169,85 +200,67 @@ export default function BookingSummary() {
                     ))}
 
                 </div>
-                                {/* Divider */}
+                {/* Divider */}
 
-                <div className="my-5 border-t border-slate-200" />
+                <div className={bookingSummaryStyle.divider} />
 
                 {/* Price Breakdown */}
 
-                <h3 className="text-[17px] font-semibold text-slate-900">
-                    Price Breakdown
+                <h3 className={bookingSummaryStyle.subheading}>
+                    <AppText textName="PRICE_BREAKDOWN" textModule="LABEL" />
                 </h3>
 
-                <div className="mt-4 space-y-3">
+                <div className={bookingSummaryStyle.priceBreakdownList}>
 
-                    <div className="flex items-center justify-between">
-                        <span className="text-[14px] text-slate-600">
-                            Morning Wedding Package (15 Jul)
-                        </span>
+                    {activeBookings.map((booking) => (
+                        <div key={booking.id} className={bookingSummaryStyle.rowSpaceBetween}>
+                            <span className={bookingSummaryStyle.labelCol}>
+                                {booking.title} ({booking.day} {booking.month})
+                            </span>
 
-                        <span className="text-[14px] font-semibold text-slate-900">
-                            ₹18,000
-                        </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <span className="text-[14px] text-slate-600">
-                            Morning Wedding Package (16 Jul)
-                        </span>
-
-                        <span className="text-[14px] font-semibold text-slate-900">
-                            ₹18,000
-                        </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <span className="text-[14px] text-slate-600">
-                            Evening Reception Package (17 Jul)
-                        </span>
-
-                        <span className="text-[14px] font-semibold text-slate-900">
-                            ₹30,000
-                        </span>
-                    </div>
+                            <span className={bookingSummaryStyle.valCol}>
+                                {formattedCurrency(Number(booking.price))}
+                            </span>
+                        </div>
+                    ))}
 
                 </div>
 
                 {/* Dashed Divider */}
 
-                <div className="my-5 border-t border-dashed border-slate-300" />
+                <div className={bookingSummaryStyle.dividerDashed} />
 
                 {/* Totals */}
 
-                <div className="space-y-3">
+                <div className={bookingSummaryStyle.totalsList}>
 
-                    <div className="flex items-center justify-between">
-                        <span className="text-[14px] text-slate-600">
-                            Subtotal
+                    <div className={bookingSummaryStyle.rowSpaceBetween}>
+                        <span className={bookingSummaryStyle.labelCol}>
+                            <AppText textName="SUBTOTAL" textModule="LABEL" />
                         </span>
 
-                        <span className="text-[14px] font-semibold text-slate-900">
-                            ₹66,000
-                        </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <span className="text-[14px] text-slate-600">
-                            Platform Fee
-                        </span>
-
-                        <span className="text-[14px] font-semibold text-emerald-600">
-                            FREE
+                        <span className={bookingSummaryStyle.valCol}>
+                            {formattedCurrency(subtotal)}
                         </span>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                        <span className="text-[14px] text-slate-600">
-                            Taxes
+                    <div className={bookingSummaryStyle.rowSpaceBetween}>
+                        <span className={bookingSummaryStyle.labelCol}>
+                            <AppText textName="PLATFORM_FEE" textModule="LABEL" />
                         </span>
 
-                        <span className="text-[14px] font-semibold text-slate-900">
-                            Included
+                        <span className={bookingSummaryStyle.valColFree}>
+                            <AppText textName="FREE" textModule="LABEL" />
+                        </span>
+                    </div>
+
+                    <div className={bookingSummaryStyle.rowSpaceBetween}>
+                        <span className={bookingSummaryStyle.labelCol}>
+                            <AppText textName="TAXES" textModule="LABEL" />
+                        </span>
+
+                        <span className={bookingSummaryStyle.valColIncluded}>
+                            <AppText textName="INCLUDED" textModule="LABEL" />
                         </span>
                     </div>
 
@@ -255,40 +268,40 @@ export default function BookingSummary() {
 
                 {/* Divider */}
 
-                <div className="my-5 border-t border-slate-200" />
+                <div className={bookingSummaryStyle.divider} />
 
                 {/* Grand Total */}
 
-                <div className="flex items-center justify-between">
+                <div className={bookingSummaryStyle.rowSpaceBetween}>
 
                     <div>
 
-                        <p className="text-[15px] font-semibold text-slate-900">
-                            Grand Total
+                        <p className={bookingSummaryStyle.grandTotalLabel}>
+                            <AppText textName="GRAND_TOTAL" textModule="LABEL" />
                         </p>
 
-                        <p className="mt-1 text-[13px] text-slate-500">
-                            Including all taxes
+                        <p className={bookingSummaryStyle.grandTotalSubtext}>
+                            <AppText textName="INCLUDING_ALL_TAXES" textModule="LABEL" />
                         </p>
 
                     </div>
 
-                    <span className="text-[28px] font-bold text-[#0F8C84]">
-                        ₹66,000
+                    <span className={bookingSummaryStyle.grandTotalVal}>
+                        {formattedCurrency(grandTotal)}
                     </span>
 
                 </div>
 
                 {/* Cancellation Policy */}
 
-                <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div className={bookingSummaryStyle.policyCard}>
 
-                    <p className="text-[14px] font-semibold text-amber-900">
-                        Cancellation Policy
+                    <p className={bookingSummaryStyle.policyTitle}>
+                        <AppText textName="CANCELLATION_POLICY" textModule="LABEL" />
                     </p>
 
-                    <p className="mt-2 text-[13px] leading-6 text-amber-800">
-                        Free cancellation within 7 days of booking.
+                    <p className={bookingSummaryStyle.policyText}>
+                        <AppText textName="CANCELLATION_POLICY_DESC" textModule="LABEL" />
                     </p>
 
                 </div>
@@ -297,35 +310,22 @@ export default function BookingSummary() {
 
                 <button
                     type="button"
-                    className="
-                        mt-5
-                        flex
-                        h-12
-                        w-full
-                        items-center
-                        justify-center
-                        rounded-xl
-                        bg-gradient-to-r
-                        from-red-500
-                        to-rose-500
-                        text-[15px]
-                        font-semibold
-                        text-white
-                        shadow-md
-                        transition-all
-                        duration-200
-                        hover:scale-[1.01]
-                        hover:shadow-lg
-                    "
+                    onClick={onProceedToPayment}
+                    disabled={!isProfileConfirmed}
+                    className={isProfileConfirmed ? bookingSummaryStyle.payBtnActive : bookingSummaryStyle.payBtnDisabled}
                 >
-                    Proceed to Secure Payment
+                    {!isProfileConfirmed ? (
+                        <AppText textName="CONFIRM_DETAILS_FIRST" textModule="BUTTON" />
+                    ) : (
+                        <AppText textName="PROCEED_SECURE_PAYMENT" textModule="BUTTON" />
+                    )}
                 </button>
 
                 {/* Footer */}
 
-                <p className="mt-4 text-center text-[12px] text-slate-500">
-                    Powered securely by
-                    <span className="ml-1 font-semibold text-[#2563EB]">
+                <p className={bookingSummaryStyle.footerText}>
+                    <AppText textName="POWERED_SECURELY_BY" textModule="LABEL" />
+                    <span className={bookingSummaryStyle.footerBrand}>
                         Razorpay
                     </span>
                 </p>

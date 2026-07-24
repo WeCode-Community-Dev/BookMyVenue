@@ -1,10 +1,9 @@
 import BookingStepper from "./BookingStepper";
 import BookingVenueCard from "./BookingVenueCard";
-import EventDateSection from "./EventDateSelection";
 
 export default function Booking() {
     return (
-        <div className="max-w-[100%] px-6 py-2">
+        <div className="max-w-full px-6 py-2">
             <BookingStepper currentStep={1} />
 
             <div className="mt-6 grid grid-cols-12 gap-6">
@@ -14,7 +13,7 @@ export default function Booking() {
                     <BookingVenueCard />
 
 
-                    <EventDateSection />
+                    {/* <EventDateSection /> */}
                     {/* 
                     <BookingPackageSection /> */}
 

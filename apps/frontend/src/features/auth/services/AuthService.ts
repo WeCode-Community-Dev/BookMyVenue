@@ -266,6 +266,31 @@ export const useAuthService = () => {
         }
     };
 
+    const updateUserProfile = async (
+        userName: string,
+        phone: string,
+        password?: string,
+    ) => {
+        dispatch(setLoading(true));
+        try {
+            const result = await apiFetch("/auth/profile", {
+                method: "PATCH",
+                body: JSON.stringify({ name: userName, phone, password }),
+            });
+            if (result && result.user) {
+                dispatch(setAuthSuccess(result.user));
+            }
+            return { success: true, message: result.message || "Profile updated successfully." };
+        } catch (apiError: any) {
+            return {
+                success: false,
+                error: apiError.message || "Failed to update profile",
+            };
+        } finally {
+            dispatch(setLoading(false));
+        }
+    };
+
     return {
         user,
         isAuthenticated,
@@ -273,6 +298,7 @@ export const useAuthService = () => {
         requestOtp,
         verifyOtp,
         submitRegistration,
+        updateUserProfile,
         fetchProfile,
         googleAuthCallback,
         loginWithGoogle,

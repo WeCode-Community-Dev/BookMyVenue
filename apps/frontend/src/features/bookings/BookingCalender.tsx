@@ -9,13 +9,24 @@ import { CalendarDays, X } from "lucide-react";
 import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
 import { useState } from "react";
+import { AppText } from "@/lib/language/LanguageHelper";
+import { bookingCalendarStyle } from "@/features/booking/styles/BookingCalendarStyle";
 
-export default function BookingCalendar() {
-    const [selectedDates, setSelectedDates] = useState<Date[]>([
+export default function BookingCalendar({
+    selectedDates: propsSelectedDates,
+    setSelectedDates: propsSetSelectedDates,
+}: {
+    selectedDates?: Date[];
+    setSelectedDates?: React.Dispatch<React.SetStateAction<Date[]>>;
+}) {
+    const [localSelectedDates, setLocalSelectedDates] = useState<Date[]>([
         new Date(2026, 6, 15),
         new Date(2026, 6, 16),
         new Date(2026, 6, 17),
     ]);
+
+    const selectedDates = propsSelectedDates || localSelectedDates;
+    const setSelectedDates = propsSetSelectedDates || setLocalSelectedDates;
 
     const removeDate = (date: Date) => {
         setSelectedDates((prev) =>
@@ -26,24 +37,24 @@ export default function BookingCalendar() {
     };
 
     return (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className={bookingCalendarStyle.card}>
 
             {/* Heading */}
 
-            <div className="flex items-start gap-3">
+            <div className={bookingCalendarStyle.header}>
 
-                <div className="rounded-lg bg-teal-50 p-2">
-                    <CalendarDays className="h-5 w-5 text-teal-700" />
+                <div className={bookingCalendarStyle.iconWrapper}>
+                    <CalendarDays className={bookingCalendarStyle.icon} />
                 </div>
 
                 <div>
 
-                    <h2 className="text-xl font-bold text-slate-900">
-                        1. When is your event?
+                    <h2 className={bookingCalendarStyle.title}>
+                        <AppText textName="WHEN_IS_YOUR_EVENT" textModule="LABEL" />
                     </h2>
 
-                    <p className="mt-1 text-sm text-slate-500">
-                        Select one or more dates
+                    <p className={bookingCalendarStyle.subtitle}>
+                        <AppText textName="SELECT_ONE_OR_MORE_DATES" textModule="LABEL" />
                     </p>
 
                 </div>
@@ -52,16 +63,11 @@ export default function BookingCalendar() {
 
             {/* Content */}
 
-            <div className="mt-6 flex items-start gap-8">
+            <div className={bookingCalendarStyle.content}>
 
                 {/* Calendar */}
 
-                <div className="w-[340px]
-        shrink-0
-        rounded-xl
-        border
-        border-slate-200
-        p-4 ">
+                <div className={bookingCalendarStyle.calendarWrapper}>
 
                     <DayPicker
                         mode="multiple"
@@ -78,45 +84,36 @@ export default function BookingCalendar() {
 
                 {/* Selected Dates */}
 
-                <div className="w-[320px] shrink-0">
+                <div className={bookingCalendarStyle.sidebar}>
 
-                    <div className="mb-4 flex items-center justify-between">
+                    <div className={bookingCalendarStyle.sidebarHeader}>
 
-                        <h3 className="font-semibold text-slate-900">
-                            Selected Dates ({selectedDates.length})
+                        <h3 className={bookingCalendarStyle.sidebarTitle}>
+                            <AppText textName="SELECTED_DATES" textModule="LABEL" append={{ count: selectedDates.length }} />
                         </h3>
 
                         <button
-                            className="text-sm font-medium text-red-500"
+                            className={bookingCalendarStyle.clearBtn}
                             onClick={() => setSelectedDates([])}
                         >
-                            Clear All
+                            <AppText textName="CLEAR_ALL" textModule="BUTTON" />
                         </button>
 
                     </div>
 
-                    <div className="space-y-3">
+                    <div className={bookingCalendarStyle.datesList}>
 
                         {selectedDates.map((date) => (
                             <div
                                 key={date.toISOString()}
-                                className="
-                                    flex
-                                    items-center
-                                    justify-between
-                                    rounded-lg
-                                    border
-                                    border-slate-200
-                                    px-4
-                                    py-3
-                                "
+                                className={bookingCalendarStyle.dateItem}
                             >
 
-                                <div className="flex items-center gap-3">
+                                <div className={bookingCalendarStyle.dateInfo}>
 
-                                    <CalendarDays className="h-4 w-4 text-teal-700" />
+                                    <CalendarDays className={bookingCalendarStyle.dateIcon} />
 
-                                    <span className="font-medium text-slate-700">
+                                    <span className={bookingCalendarStyle.dateText}>
                                         {format(date, "EEE, dd MMM yyyy")}
                                     </span>
 
@@ -124,8 +121,9 @@ export default function BookingCalendar() {
 
                                 <button
                                     onClick={() => removeDate(date)}
+                                    className={bookingCalendarStyle.removeBtn}
                                 >
-                                    <X className="h-4 w-4 text-slate-500" />
+                                    <X className={bookingCalendarStyle.removeIcon} />
                                 </button>
 
                             </div>
@@ -133,24 +131,8 @@ export default function BookingCalendar() {
 
                     </div>
 
-                    <button
-                        className="
-                            mt-5
-                            flex
-                            h-12
-                            w-full
-                            items-center
-                            justify-center
-                            rounded-xl
-                            border
-                            border-dashed
-                            border-teal-400
-                            text-sm
-                            font-semibold
-                            text-teal-700
-                        "
-                    >
-                        + Add Another Date
+                    <button className={bookingCalendarStyle.addBtn}>
+                        <AppText textName="ADD_ANOTHER_DATE" textModule="BUTTON" />
                     </button>
 
                 </div>

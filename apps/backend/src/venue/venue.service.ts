@@ -149,6 +149,15 @@ export class VenueService {
             id: venue.id,
           },
           include: {
+            owner: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                createdAt: true,
+              },
+            },
             categories: true,
             amenities: {
               include: {
@@ -176,6 +185,15 @@ export class VenueService {
   async getAllVenues() {
     return await this.prismaService.venue.findMany({
       include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            createdAt: true,
+          },
+        },
         categories: true,
         amenities: {
           include: {
@@ -201,6 +219,15 @@ export class VenueService {
         id,
       },
       include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            createdAt: true,
+          },
+        },
         categories: true,
         amenities: {
           include: {
