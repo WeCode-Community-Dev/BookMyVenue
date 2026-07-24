@@ -45,7 +45,7 @@ def list_my_venues(
     return get_my_venues(db, current_user)
 
 
-@router.post("/", response_model=VenueOut)
+@router.post("/", response_model=VenueOut, status_code=201)
 def create_new_venue(
     venue: VenueCreate,
     db: Session = Depends(get_db),

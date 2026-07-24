@@ -35,6 +35,7 @@ from app.routers import (
     amenity as amenity_router,
     venue_amenity as venue_amenity_router,
     review,
+    admin,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -111,6 +112,7 @@ app.include_router(venue_router.router)
 app.include_router(venue_owner_dashboard.router)
 app.include_router(venue_type_router.router)
 app.include_router(review.router)
+app.include_router(admin.router)
 
 
 @app.get("/")

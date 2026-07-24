@@ -170,6 +170,11 @@ def create_booking(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only users can create bookings",
         )
+    if current_user.venue_owner_profile is not None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Venue owners cannot create customer bookings",
+        )
 
     venue = get_venue(db, data.venue_id)
     if venue is None:
