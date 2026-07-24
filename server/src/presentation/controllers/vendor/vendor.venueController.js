@@ -53,6 +53,7 @@ export class VendorVenueController {
             url: file.path
         }))
 
+        console.log("from controller: ", req.body)
         const venue = await this._vendorEditVenueUsecase.execute({vendorId, venueId, newImages, newLicense, ...req.body})
         return sendSuccess(res, statusCode.OK, '', venue)
     })

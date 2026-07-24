@@ -71,17 +71,6 @@ export class VendorEditVenueUsecase  {
             const remainingLicense = venue.license.filter(l => !deletedLicense.includes(l.publicId))
             const finalLicense = [...remainingLicense, ...newLicense]
 
-            console.log("deletedImages:", deletedImages)
-
-console.log(
-    "venue images:",
-    venue.images.map(img => img.publicId)
-)
-
-console.log(
-    "remaining:",
-    remainingImages.map(img => img.publicId)
-)
 
             if(finalLicense.length === 0){
                 throw new ValidationError(VenueMessages.error.VENUE_LICENSE_REQUIRED)
@@ -91,11 +80,6 @@ console.log(
             if(finalImages.length < 3){
                 throw new ValidationError(VenueMessages.error.REQUIRE_ATLEAST_THREE_IMAGES)
             }
-
-            console.log(
-    "Before update:",
-    venue.images.map(i => i.publicId)
-)
 
             venue.name = name
             venue.description = description
@@ -122,15 +106,11 @@ console.log(
 
             const updatedVenue = await this._venueRepository.update(venue.id, venue)
 
-            console.log(
-    "After update:",
-    updatedVenue.images.map(i => i.publicId)
-)
             if(deletedImages.length){
-                await this._cloudinaryService.deletedImages(deletedImages)
+                await this._cloudinaryService.deleteImages(deletedImages)
             }
             if(deletedLicense.length){
-                await this._cloudinaryService.deletedImages(deletedLicense)
+                await this._cloudinaryService.deleteImages(deletedLicense)
             }
 
             return updatedVenue

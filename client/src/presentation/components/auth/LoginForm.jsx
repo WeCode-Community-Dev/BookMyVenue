@@ -48,7 +48,7 @@ const LoginForm = () => {
             if (userRole.toLowerCase() === ROLES.VENDOR.toLowerCase()) {
                 navigate(ROUTES.VENDOR.DASHBOARD)
             
-            } else if (userRole === ROLES.USER) {
+            } else if (userRole === "customer") {
                 
                 navigate(ROUTES.PUBLIC.HOME)
             } 

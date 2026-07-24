@@ -42,9 +42,9 @@ export class VendorAuthController {
     });
 
     login = asyncHandler(async (req, res) => {
-        const { accessToken, refreshToken, vendor } = await this._loginVendorUseCase.execute({...req.body});
+        const { accessToken, refreshToken, user } = await this._loginVendorUseCase.execute({...req.body});
         res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
-        return sendSuccess(res, statusCode.OK, '', { accessToken, vendor });
+        return sendSuccess(res, statusCode.OK, '', { accessToken, user });
     });
 
     resendOtp = asyncHandler(async (req, res) => {
@@ -54,9 +54,9 @@ export class VendorAuthController {
 
     refreshToken = asyncHandler(async (req, res) => {
         const token = req.cookies?.refreshToken;
-        const { accessToken, refreshToken } = await this._refreshTokenUseCase.execute(token);
+        const { accessToken, refreshToken, vendor } = await this._refreshTokenUseCase.execute(token);
         res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
-        return sendSuccess(res, statusCode.OK, authMessages.success.TOKEN_REFRESHED, { accessToken });
+        return sendSuccess(res, statusCode.OK, authMessages.success.TOKEN_REFRESHED, { accessToken, vendor });
     });
 
     forgotPassword = asyncHandler(async (req, res) => {
@@ -65,8 +65,8 @@ export class VendorAuthController {
     });
 
     resetPassword = asyncHandler(async (req, res) => {
-        const { email, resetToken, newPassword } = req.body;
-        await this._resetPasswordUseCase.execute(email, resetToken, newPassword);
+        const { token, password } = req.body;
+        await this._resetPasswordUseCase.execute(token, password);
         return sendSuccess(res, statusCode.OK, authMessages.success.RESET_PASSWORD);
     });
 

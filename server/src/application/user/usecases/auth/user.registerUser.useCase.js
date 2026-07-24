@@ -48,7 +48,7 @@ export class RegisterUserUseCase {
         const hashedOtp = await this._otpService.hash(otp);
         await this._otpStoreService.saveOtp(savedUser.id, hashedOtp, 120)
 
-        await this._mailService.sendVerifiyRegisterOtp(savedUser.email, savedUser.fullName, otp)
+        // await this._mailService.sendVerifiyRegisterOtp(savedUser.email, savedUser.fullName, otp)
 
         return {
             success: true

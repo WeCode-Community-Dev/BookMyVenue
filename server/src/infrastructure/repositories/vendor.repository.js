@@ -16,6 +16,12 @@ class VendorRepositoryImpl extends IVendorRepository {
         return VendorMapper.mapToEntity(document);
     }
 
+  async findByResetToken(token){
+    const document = await VendorModel.findOne({resetToken: token})
+    if(!document) return null
+    return VendorMapper.mapToEntity(document)
+  }
+
     async findAll() {
         const docs = await VendorModel.find({ isDeleted: false });
         return docs.map((doc) => VendorMapper.mapToEntity(doc));

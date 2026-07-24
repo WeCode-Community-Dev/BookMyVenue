@@ -7,6 +7,10 @@ export class IVendorRepository {
         throw new Error('Method not implemented');
     }
 
+    async findByResetToken(token) {
+        throw new Error("Method not implemented");
+    }
+
     async findAll() {
         throw new Error('Method not implemented');
     }

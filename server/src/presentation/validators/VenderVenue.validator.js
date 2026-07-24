@@ -215,9 +215,20 @@ export const editVenueSchema = z.object({
         .record(z.any())
         .optional(),
 
-    amenities: z
-        .array(z.string())
-        .optional(),
+    amenities: z.preprocess(
+  (value) => {
+    if (typeof value === "string") {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value;
+      }
+    }
+
+    return value;
+  },
+  z.array(z.string()).optional()
+),
     deletedImages: z
         .string()
         .transform(value => JSON.parse(value))
