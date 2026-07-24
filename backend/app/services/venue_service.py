@@ -251,8 +251,8 @@ def delete_venue(db: Session, venue_id: int, current_user: User):
             detail="Approved venues cannot be hard deleted. Use deactivate instead.",
         )
 
-    venue.approval_status = "approved"
-
+    venue.amenities = []
+    db.delete(venue)
     db.commit()
     return {"detail": "Venue deleted successfully"}
 
