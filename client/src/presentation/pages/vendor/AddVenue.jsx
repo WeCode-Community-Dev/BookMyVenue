@@ -181,19 +181,12 @@ const AddVenue = () => {
     // VENDOR VALIDATION
     // ==============================
 
-<<<<<<< HEAD
     // if (!vendorId) {
     //   toast.error("Vendor profile is still loading.");
 
     //   return;
     // }
-=======
-   // if (!vendorId) {
-     // toast.error("Vendor profile is still loading.");
 
-     // return;
-   // }
->>>>>>> origin/develop
 
     // ==============================
     // FORM DATA

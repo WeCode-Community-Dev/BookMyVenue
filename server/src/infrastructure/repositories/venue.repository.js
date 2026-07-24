@@ -333,11 +333,13 @@ async findById(id) {
   }
 
   async findSimilarVenues(venueId, category){
-    const documents = await VenueModel.find(
-        {_id: { $ne: venueId } },
-        { category: category},
-        { approvalStatus: VenueStatus.ACTIVE}
-    )
+    const documents = await VenueModel.find({
+        _id: { $ne: venueId },
+        category,
+        approvalStatus: VenueStatus.ACTIVE,
+        isDeleted: false,
+        isBlocked: false
+    })
     return documents.map(doc => VenueMapper.mapToEntity(doc))
   }
 }
