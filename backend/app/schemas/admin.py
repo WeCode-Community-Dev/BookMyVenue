@@ -15,6 +15,12 @@ class VenueAdminOut(BaseModel):
     name: str
     location: str
     price_per_day: float
+    venue_type_id: Optional[int] = None
+    venue_type_name: Optional[str] = None
+    capacity: Optional[int] = None
+    image_url: Optional[str] = None
+    google_maps_url: Optional[str] = None
+    google_review_url: Optional[str] = None
     description: Optional[str] = None
     approval_status: str
     rejection_reason: Optional[str] = None
@@ -31,6 +37,10 @@ class VenueAdminCreate(BaseModel):
     location: str
     price_per_day: float
     venue_type_id: int
+    capacity: Optional[int] = None
+    image_url: Optional[str] = None
+    google_maps_url: Optional[str] = None
+    google_review_url: Optional[str] = None
     description: Optional[str] = None
     approval_status: Literal["pending", "approved", "rejected"] = "pending"
 
@@ -39,8 +49,14 @@ class VenueAdminUpdate(BaseModel):
     name: str
     location: str
     price_per_day: float
+    venue_type_id: Optional[int] = None
+    owner_id: Optional[int] = None
+    capacity: Optional[int] = None
+    image_url: Optional[str] = None
+    google_maps_url: Optional[str] = None
+    google_review_url: Optional[str] = None
     description: Optional[str] = None
-    approval_status: Optional[str] = None
+    approval_status: Optional[Literal["pending", "approved", "rejected"]] = None
     is_active: Optional[bool] = None
 
 
@@ -101,6 +117,13 @@ class UserAdminOut(BaseModel):
     role: str
     is_active: bool
     created_at: datetime
+    is_venue_owner: bool = False
+    business_name: Optional[str] = None
+    business_address: Optional[str] = None
+    business_type: Optional[str] = None
+    business_phone: Optional[str] = None
+    business_email: Optional[str] = None
+    gst_number: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
@@ -111,6 +134,12 @@ class UserAdminCreate(BaseModel):
     phone_number: str
     password: str = Field(..., min_length=8, max_length=72)
     role: Literal["user", "owner", "host"] = "user"
+    business_name: Optional[str] = None
+    business_address: Optional[str] = None
+    business_type: Optional[str] = None
+    business_phone: Optional[str] = None
+    business_email: Optional[str] = None
+    gst_number: Optional[str] = None
 
 
 class UserAdminUpdate(BaseModel):
@@ -120,6 +149,12 @@ class UserAdminUpdate(BaseModel):
     role: Optional[Literal["user", "owner", "host"]] = None
     password: Optional[str] = Field(default=None, min_length=8, max_length=72)
     is_active: Optional[bool] = None
+    business_name: Optional[str] = None
+    business_address: Optional[str] = None
+    business_type: Optional[str] = None
+    business_phone: Optional[str] = None
+    business_email: Optional[str] = None
+    gst_number: Optional[str] = None
 
 
 class BookingAdminOut(BaseModel):
@@ -130,6 +165,11 @@ class BookingAdminOut(BaseModel):
     venue_name: Optional[str] = None
     booking_date: date
     time_slot: time
+    check_in_date: Optional[date] = None
+    check_in_time: Optional[time] = None
+    check_out_date: Optional[date] = None
+    check_out_time: Optional[time] = None
+    num_days: Optional[int] = None
     status: str
     amount: float
     payment_status: Optional[str] = None

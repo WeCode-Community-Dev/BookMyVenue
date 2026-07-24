@@ -28,10 +28,24 @@ export const venueOwnerService = {
     return res.data;
   },
 
+  async collectBookingBalance(id) {
+    const res = await client.post(
+      `/venue-owners/dashboard/bookings/${id}/collect-balance`,
+    );
+    return res.data;
+  },
+
   async verifyBookingCheckIn(check_in_token) {
     const res = await client.post("/venue-owners/dashboard/bookings/check-in", {
       check_in_token,
     });
+    return res.data;
+  },
+
+  async collectBalance(bookingId) {
+    const res = await client.post(
+      `/venue-owners/dashboard/bookings/${bookingId}/collect-balance`,
+    );
     return res.data;
   },
 
@@ -54,6 +68,21 @@ export const venueOwnerService = {
 
   async updateVenue(id, payload) {
     const res = await client.put(`/venues/${id}`, payload);
+    return res.data;
+  },
+
+  async addVenueImages(venueId, urls) {
+    const res = await client.post(`/venues/${venueId}/images`, { urls });
+    return res.data;
+  },
+
+  async updateVenueImage(venueId, imageId, payload) {
+    const res = await client.patch(`/venues/${venueId}/images/${imageId}`, payload);
+    return res.data;
+  },
+
+  async deleteVenueImage(venueId, imageId) {
+    const res = await client.delete(`/venues/${venueId}/images/${imageId}`);
     return res.data;
   },
 

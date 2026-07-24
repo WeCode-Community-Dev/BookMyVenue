@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import OwnerLayout from "../components/VenueOwnerDashboard/OwnerLayout";
-import { verifyBookingCheckIn } from "../modules/venueOwner/services/venueOwnerService";
+import { venueOwnerService, verifyBookingCheckIn } from "../modules/venueOwner/services/venueOwnerService";
 import { parseCheckInQrValue } from "../utils/checkInQr";
 
 function OwnerCheckInPage() {
@@ -9,8 +9,10 @@ function OwnerCheckInPage() {
   const verifyingRef = useRef(false);
   const [manualToken, setManualToken] = useState("");
   const [loading, setLoading] = useState(false);
+  const [collecting, setCollecting] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
+  const [collectMessage, setCollectMessage] = useState("");
 
   const handleVerify = useCallback(async (rawToken) => {
     if (verifyingRef.current) return;
@@ -25,6 +27,7 @@ function OwnerCheckInPage() {
     setLoading(true);
     setError("");
     setResult(null);
+    setCollectMessage("");
     try {
       const data = await verifyBookingCheckIn(token);
       setResult(data);
@@ -35,6 +38,30 @@ function OwnerCheckInPage() {
       verifyingRef.current = false;
     }
   }, []);
+
+  const handleCollectBalance = async () => {
+    if (!result?.booking_id) return;
+    setCollecting(true);
+    setError("");
+    setCollectMessage("");
+    try {
+      const data = await venueOwnerService.collectBalance(result.booking_id);
+      setCollectMessage(data.message);
+      setResult((prev) =>
+        prev
+          ? {
+              ...prev,
+              amount_paid: data.amount_paid,
+              balance_due: data.balance_due,
+            }
+          : prev,
+      );
+    } catch (err) {
+      setError(err.message || "Could not collect balance.");
+    } finally {
+      setCollecting(false);
+    }
+  };
 
   useEffect(() => {
     const scanner = new Html5QrcodeScanner(
@@ -61,6 +88,8 @@ function OwnerCheckInPage() {
         });
     };
   }, [handleVerify]);
+
+  const balanceDue = result ? Number(result.balance_due || 0) : 0;
 
   return (
     <OwnerLayout>
@@ -116,10 +145,33 @@ function OwnerCheckInPage() {
             {result.event_type && (
               <p className="text-sm text-slate-600">Event: {result.event_type}</p>
             )}
+            {result.amount != null && (
+              <p className="text-sm text-slate-600">
+                Total ₹{Number(result.amount).toLocaleString("en-IN")} · Paid ₹
+                {Number(result.amount_paid || 0).toLocaleString("en-IN")} · Due ₹
+                {balanceDue.toLocaleString("en-IN")}
+              </p>
+            )}
             <p className="text-xs text-slate-400">
               Booking #{result.booking_id} ·{" "}
               {new Date(result.checked_in_at).toLocaleString("en-IN")}
             </p>
+
+            {balanceDue > 0 && (
+              <button
+                type="button"
+                disabled={collecting}
+                onClick={handleCollectBalance}
+                className="mt-2 w-full rounded-xl bg-rose-900 text-white py-2.5 text-sm font-medium hover:bg-rose-950 disabled:opacity-50"
+              >
+                {collecting
+                  ? "Recording..."
+                  : `Mark balance collected (₹${balanceDue.toLocaleString("en-IN")})`}
+              </button>
+            )}
+            {collectMessage && (
+              <p className="text-sm text-emerald-700 mt-1">{collectMessage}</p>
+            )}
           </div>
         )}
       </div>

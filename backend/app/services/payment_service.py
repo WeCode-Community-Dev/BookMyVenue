@@ -300,6 +300,7 @@ def get_payment_status(db: Session, current_user: User, payment_id: str) -> Paym
         raise HTTPException(status_code=404, detail="Payment not found")
     if payment.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="This is not your payment")
+
     booking = db.query(Booking).filter(Booking.id == payment.booking_id).first()
     return payment_to_out(payment, booking)
 

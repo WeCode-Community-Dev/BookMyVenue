@@ -204,7 +204,11 @@ function VenueDetailPage() {
     );
   }
 
-  const images = venue.images?.length ? venue.images : venue.image_url ? [venue.image_url] : [];
+  const images = venue.images?.length
+    ? venue.images.map((image) => image?.url ?? image)
+    : venue.image_url
+      ? [venue.image_url]
+      : [];
   const totalReviews = reviewsData?.total_reviews ?? venue.total_reviews ?? 0;
   const averageRating = reviewsData?.average_rating ?? venue.average_rating ?? 0;
   const reviews = reviewsData?.reviews ?? [];

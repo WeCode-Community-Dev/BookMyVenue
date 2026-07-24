@@ -1,9 +1,9 @@
 import client from "../../../core/api/client";
-import { getFriendlyError } from "../../../utils/error";
+import { resolveApiError } from "../../../utils/error";
 
 function unwrap(err) {
-  const message = err?.message || err?.response?.data?.detail || "Something went wrong.";
-  throw new Error(typeof message === "string" ? message : getFriendlyError(err.code));
+  const raw = err?.message || err?.response?.data?.detail || "Something went wrong.";
+  throw new Error(resolveApiError(raw));
 }
 
 export const bookingService = {

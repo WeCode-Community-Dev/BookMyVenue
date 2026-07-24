@@ -15,7 +15,7 @@ const links = [
   { to: "/admin/pending", label: "Pending", Icon: IconPending },
   { to: "/admin/venues", label: "Venues", Icon: IconVenue },
   { to: "/admin/bookings", label: "Bookings", Icon: IconBookings },
-  { to: "/admin/users", label: "Users", Icon: IconUsers },
+  { to: "/admin/users", label: "Users & Owners", Icon: IconUsers },
 ];
 
 function AdminLayout() {

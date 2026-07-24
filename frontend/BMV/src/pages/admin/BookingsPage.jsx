@@ -10,7 +10,7 @@ function BookingsPage() {
 
   useEffect(() => {
     adminService
-      .getBookings()
+      .getBookings({ limit: 100 })
       .then(setBookings)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));

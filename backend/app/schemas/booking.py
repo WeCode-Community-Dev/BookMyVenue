@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from datetime import date, time, datetime
 from typing import Optional
 
@@ -90,6 +90,7 @@ class BookingDetailOut(BookingOut):
     venue_name: Optional[str] = None
     venue_location: Optional[str] = None
     google_maps_url: Optional[str] = None
+    google_review_url: Optional[str] = None
     advance_percent: int = 30
     allow_pay_at_venue: bool = True
     payment_status: Optional[str] = None

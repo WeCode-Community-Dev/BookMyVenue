@@ -1,29 +1,31 @@
 import { useEffect, useState, useRef } from "react";
-import { X, ImageIcon, IndianRupee, UploadCloud } from "lucide-react";
+import { X, IndianRupee, UploadCloud } from "lucide-react";
 import {
   parsePolicyDays,
   validateCancellationPolicyFields,
   policyPayloadFromFields,
 } from "../../utils/cancellationPolicy";
-
-
-
-const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+import {
+  MAX_VENUE_IMAGES,
+  uploadImagesToCloudinary,
+  validateImageFile,
+} from "../../utils/cloudinaryUpload";
 
 
 const initialFormState = {
   name: "",
   location: "",
   googleMapsUrl: "",
+  googleReviewUrl: "",
   venueTypeId: "",
   capacity: "",
   dailyRate: "",
   description: "",
-  imageUrl: "",
   refund50Days: "",
   refund25Days: "",
   cancelCutoffDays: "",
+  advancePercent: "30",
+  allowPayAtVenue: true,
 };
 
 function AddVenueModal({
@@ -40,11 +42,11 @@ function AddVenueModal({
   const [errors, setErrors] = useState({});
 
 
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  // Each entry: { key, file, preview } — preview URLs are revoked on removal/reset.
+  const [imageItems, setImageItems] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -65,10 +67,12 @@ function AddVenueModal({
       });
       setSelectedAmenityIds([]);
       setErrors({});
-      setImageFile(null);
-      setImagePreview(null);
+      setImageItems((prev) => {
+        prev.forEach((item) => URL.revokeObjectURL(item.preview));
+        return [];
+      });
       setUploadError(null);
-      setUploadProgress(0);
+      setUploadStatus(null);
       setIsDragging(false);
     }
   }, [isOpen, venueTypes]);
@@ -96,27 +100,38 @@ function AddVenueModal({
     );
   };
 
-  const applyImageFile = (file) => {
-    if (!file) return;
+  const addImageFiles = (fileList) => {
+    const files = Array.from(fileList ?? []);
+    if (files.length === 0) return;
 
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-    if (!allowed.includes(file.type)) {
-      setUploadError("Only JPG, PNG, WEBP, or GIF files are allowed.");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError("Image must be under 5 MB.");
-      return;
+    const accepted = [];
+    let message = null;
+
+    for (const file of files) {
+      if (imageItems.length + accepted.length >= MAX_VENUE_IMAGES) {
+        message = `You can add up to ${MAX_VENUE_IMAGES} images.`;
+        break;
+      }
+      const fileError = validateImageFile(file);
+      if (fileError) {
+        message = fileError;
+        continue;
+      }
+      accepted.push({
+        key: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2)}`,
+        file,
+        preview: URL.createObjectURL(file),
+      });
     }
 
-    setUploadError(null);
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
-    setFields((prev) => ({ ...prev, imageUrl: "" }));
+    setUploadError(message);
+    if (accepted.length > 0) {
+      setImageItems((prev) => [...prev, ...accepted]);
+    }
   };
 
   const handleFileInputChange = (e) => {
-    applyImageFile(e.target.files?.[0] ?? null);
+    addImageFiles(e.target.files);
     e.target.value = "";
   };
 
@@ -128,50 +143,16 @@ function AddVenueModal({
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    applyImageFile(e.dataTransfer.files?.[0] ?? null);
+    addImageFiles(e.dataTransfer.files);
   };
 
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    setUploadError(null);
-    setUploadProgress(0);
-    setFields((prev) => ({ ...prev, imageUrl: "" }));
-  };
-
-  const uploadToCloudinary = async (file) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-          setUploadProgress(Math.round((e.loaded / e.total) * 100));
-        }
-      });
-
-      xhr.addEventListener("load", () => {
-        if (xhr.status === 200) {
-          const data = JSON.parse(xhr.responseText);
-          resolve(data.secure_url);
-        } else {
-          reject(new Error("Cloudinary upload failed."));
-        }
-      });
-
-      xhr.addEventListener("error", () =>
-        reject(new Error("Network error during upload."))
-      );
-
-      xhr.open(
-        "POST",
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`
-      );
-      xhr.send(formData);
+  const removeImage = (key) => {
+    setImageItems((prev) => {
+      const target = prev.find((item) => item.key === key);
+      if (target) URL.revokeObjectURL(target.preview);
+      return prev.filter((item) => item.key !== key);
     });
+    setUploadError(null);
   };
 
   const validate = () => {
@@ -183,6 +164,9 @@ function AddVenueModal({
       next.dailyRate = "Enter a valid daily rate";
     if (fields.capacity && Number(fields.capacity) <= 0)
       next.capacity = "Capacity must be a positive number";
+    const pct = Number(fields.advancePercent);
+    if (!pct || pct < 1 || pct > 100)
+      next.advancePercent = "Advance must be between 1 and 100";
     const policyError = validateCancellationPolicyFields(
       parsePolicyDays(fields.refund50Days),
       parsePolicyDays(fields.refund25Days),
@@ -197,13 +181,16 @@ const handleSubmit = async (e) => {
   e.preventDefault();
   if (!validate()) return;
 
-  let finalImageUrl = null;
+  let imageUrls = [];
 
-  if (imageFile) {
+  if (imageItems.length > 0) {
     try {
       setUploading(true);
-      setUploadProgress(0);
-      finalImageUrl = await uploadToCloudinary(imageFile);
+      setUploadStatus({ index: 0, total: imageItems.length, percent: 0 });
+      imageUrls = await uploadImagesToCloudinary(
+        imageItems.map((item) => item.file),
+        setUploadStatus,
+      );
     } catch (err) {
       setUploadError(err.message || "Image upload failed. Please try again.");
       setUploading(false);
@@ -217,12 +204,16 @@ const handleSubmit = async (e) => {
     name: fields.name.trim(),
     location: fields.location.trim(),
     google_maps_url: fields.googleMapsUrl.trim() || null,
+    google_review_url: fields.googleReviewUrl.trim() || null,
     price_per_day: Number(fields.dailyRate),
     venue_type_id: Number(fields.venueTypeId),
     capacity: fields.capacity ? Number(fields.capacity) : null,
     description: fields.description.trim() || null,
-    image_url: finalImageUrl,
+    image_url: imageUrls[0] ?? null,
+    image_urls: imageUrls,
     amenityIds: selectedAmenityIds,
+    advance_percent: Number(fields.advancePercent) || 30,
+    allow_pay_at_venue: Boolean(fields.allowPayAtVenue),
     ...policyPayloadFromFields(
       fields.refund50Days,
       fields.refund25Days,
@@ -341,6 +332,24 @@ const handleSubmit = async (e) => {
                 />
                 <p className="mt-1 text-xs text-gray-400">
                   Paste the share link from Google Maps so customers can open directions.
+                </p>
+              </div>
+
+              {/* Google review link — used after 4+ star in-app reviews */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Google review link (optional)
+                </label>
+                <input
+                  name="googleReviewUrl"
+                  type="url"
+                  placeholder="https://g.page/r/.../review or writereview link"
+                  value={fields.googleReviewUrl}
+                  onChange={handleChange}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-rose-300 focus:border-transparent transition"
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  Paste your Google write-a-review link so happy customers can leave a Maps review.
                 </p>
               </div>
 
@@ -485,84 +494,120 @@ const handleSubmit = async (e) => {
               </div>
             </div>
 
-            {/* ── Venue Image ──────────────────────────────────────── */}
+            {/* Payment options */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
-                Venue Image
+                Payment options
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Advance %</label>
+                  <input
+                    name="advancePercent"
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={fields.advancePercent}
+                    onChange={handleChange}
+                    className={`w-full rounded-xl px-3.5 py-2.5 text-sm border ${
+                      errors.advancePercent
+                        ? "border-red-400 bg-red-50"
+                        : "border-gray-200 bg-gray-50"
+                    }`}
+                  />
+                  {errors.advancePercent && (
+                    <p className="mt-1 text-xs text-red-500">⚠ {errors.advancePercent}</p>
+                  )}
+                </div>
+                <label className="flex items-center gap-2 mt-6 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    name="allowPayAtVenue"
+                    checked={Boolean(fields.allowPayAtVenue)}
+                    onChange={(e) =>
+                      setFields((prev) => ({
+                        ...prev,
+                        allowPayAtVenue: e.target.checked,
+                      }))
+                    }
+                    className="rounded border-gray-300 text-rose-900 focus:ring-rose-300"
+                  />
+                  Allow pay at venue
+                </label>
+              </div>
+            </div>
+
+            {/* ── Venue Photos ─────────────────────────────────────── */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Venue Photos
+                <span className="ml-2 text-[10px] font-normal text-gray-400">
+                  {imageItems.length}/{MAX_VENUE_IMAGES} · first photo is the cover
+                </span>
               </label>
 
-              {/* Hidden file input */}
               <input
                 ref={fileInputRef}
                 type="file"
+                multiple
                 accept="image/jpeg,image/png,image/webp,image/gif"
                 className="hidden"
                 onChange={handleFileInputChange}
               />
 
-              {imagePreview ? (
-                /* ── Preview card ── */
-                <div className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
-                  <img
-                    src={imagePreview}
-                    alt="Venue preview"
-                    className="w-full h-48 object-cover"
-                  />
-
-                  {/* Progress bar while uploading */}
-                  {uploading && (
-                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-2">
-                      <p className="text-white text-xs font-semibold">
-                        Uploading… {uploadProgress}%
-                      </p>
-                      <div className="w-48 h-1.5 bg-white/30 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-white rounded-full transition-all duration-200"
-                          style={{ width: `${uploadProgress}%` }}
-                        />
-                      </div>
+              {imageItems.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
+                  {imageItems.map((item, index) => (
+                    <div
+                      key={item.key}
+                      className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50"
+                    >
+                      <img
+                        src={item.preview}
+                        alt={`Venue photo ${index + 1}`}
+                        className="w-full h-20 object-cover"
+                      />
+                      {index === 0 && (
+                        <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-rose-900/90 text-white text-[10px] font-semibold">
+                          Cover
+                        </span>
+                      )}
+                      {!uploading && (
+                        <button
+                          type="button"
+                          onClick={() => removeImage(item.key)}
+                          className="absolute top-1 right-1 p-1 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
+                          aria-label={`Remove photo ${index + 1}`}
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
+                      {uploading && uploadStatus?.index === index && (
+                        <div className="absolute inset-0 bg-black/45 flex items-center justify-center">
+                          <p className="text-white text-[11px] font-semibold">
+                            {uploadStatus.percent}%
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  )}
-
-                  {/* Remove button */}
-                  {!uploading && (
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      className="absolute top-2 right-2 p-1 rounded-full bg-black/50 hover:bg-black/70 text-white transition-colors"
-                      aria-label="Remove image"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-
-                  {/* Change button */}
-                  {!uploading && (
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-2 right-2 px-3 py-1.5 rounded-lg bg-black/50 hover:bg-black/70 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
-                    >
-                      <ImageIcon size={12} />
-                      Change
-                    </button>
-                  )}
+                  ))}
                 </div>
-              ) : (
-                /* ── Drop zone ── */
+              )}
+
+              {imageItems.length < MAX_VENUE_IMAGES && (
                 <div
                   onClick={() => fileInputRef.current?.click()}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  className={`flex flex-col items-center justify-center gap-2 h-36 rounded-xl border-2 border-dashed cursor-pointer transition-colors
+                  className={`flex flex-col items-center justify-center gap-2 h-32 rounded-xl border-2 border-dashed cursor-pointer transition-colors
                     ${isDragging
                       ? "border-rose-400 bg-rose-50"
                       : "border-gray-200 bg-gray-50 hover:border-rose-300 hover:bg-rose-50/40"
                     }`}
                 >
                   <UploadCloud
-                    size={28}
+                    size={26}
                     className={isDragging ? "text-rose-500" : "text-gray-300"}
                   />
                   <div className="text-center">
@@ -570,13 +615,21 @@ const handleSubmit = async (e) => {
                       Drag & drop or{" "}
                       <span className="text-rose-700 underline underline-offset-2">
                         browse
-                      </span>
+                      </span>{" "}
+                      multiple photos
                     </p>
                     <p className="text-[11px] text-gray-400 mt-0.5">
-                      JPG, PNG, WEBP or GIF · max 5 MB
+                      JPG, PNG, WEBP or GIF · max 5 MB each
                     </p>
                   </div>
                 </div>
+              )}
+
+              {uploading && uploadStatus && (
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Uploading photo {uploadStatus.index + 1} of {uploadStatus.total} —{" "}
+                  {uploadStatus.percent}%
+                </p>
               )}
 
               {uploadError && (

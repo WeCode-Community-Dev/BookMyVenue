@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminService } from "../../modules/admin/services/adminService";
-import client from "../../core/api/client";
 import {
   AdminFormLayout,
   AdminLoading,
@@ -20,6 +19,10 @@ function VenueCreatePage() {
     location: "",
     price_per_day: "",
     venue_type_id: "",
+    capacity: "",
+    image_url: "",
+    google_maps_url: "",
+    google_review_url: "",
     description: "",
     approval_status: "pending",
   });
@@ -29,8 +32,8 @@ function VenueCreatePage() {
 
   useEffect(() => {
     Promise.all([
-      adminService.getUsers({ role: "host" }),
-      client.get("/venue-types/").then((r) => r.data),
+      adminService.getUsers({ role: "host", limit: 100 }),
+      adminService.getVenueTypes(),
     ])
       .then(([ownerList, types]) => {
         setOwners(ownerList);
@@ -58,6 +61,10 @@ function VenueCreatePage() {
         location: form.location,
         price_per_day: Number(form.price_per_day),
         venue_type_id: Number(form.venue_type_id),
+        capacity: form.capacity ? Number(form.capacity) : null,
+        image_url: form.image_url || null,
+        google_maps_url: form.google_maps_url || null,
+        google_review_url: form.google_review_url || null,
         description: form.description || null,
         approval_status: form.approval_status,
       });
@@ -130,12 +137,43 @@ function VenueCreatePage() {
           </FormField>
         </div>
 
-        <FormField label="Approval status">
-          <select name="approval_status" value={form.approval_status} onChange={handleChange} className={inputCls}>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <FormField label="Capacity">
+            <input
+              name="capacity"
+              type="number"
+              min="1"
+              value={form.capacity}
+              onChange={handleChange}
+              className={inputCls}
+              placeholder="Optional"
+            />
+          </FormField>
+          <FormField label="Approval status">
+            <select name="approval_status" value={form.approval_status} onChange={handleChange} className={inputCls}>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </FormField>
+        </div>
+
+        <FormField label="Image URL">
+          <input name="image_url" value={form.image_url} onChange={handleChange} className={inputCls} />
+        </FormField>
+
+        <FormField label="Google Maps URL">
+          <input name="google_maps_url" value={form.google_maps_url} onChange={handleChange} className={inputCls} />
+        </FormField>
+
+        <FormField label="Google Review URL">
+          <input
+            name="google_review_url"
+            value={form.google_review_url}
+            onChange={handleChange}
+            className={inputCls}
+            placeholder="https://g.page/r/.../review"
+          />
         </FormField>
 
         <FormField label="Description">

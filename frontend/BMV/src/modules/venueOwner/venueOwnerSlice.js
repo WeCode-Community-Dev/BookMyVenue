@@ -67,6 +67,17 @@ export const rejectBookingRequestAsync = createAsyncThunk(
   },
 );
 
+export const collectBookingBalanceAsync = createAsyncThunk(
+  "venueOwner/collectBookingBalance",
+  async (id, { rejectWithValue }) => {
+    try {
+      return await venueOwnerService.collectBookingBalance(id);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
 export const fetchAvailabilityCalendarAsync = createAsyncThunk(
   "venueOwner/fetchAvailabilityCalendar",
   async (params, { rejectWithValue }) => {
@@ -105,6 +116,46 @@ export const updateVenueAsync = createAsyncThunk(
   async ({ id, payload }, { rejectWithValue }) => {
     try {
       return await venueOwnerService.updateVenue(id, payload);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
+export const addVenueImagesAsync = createAsyncThunk(
+  "venueOwner/addVenueImages",
+  async ({ venueId, urls }, { rejectWithValue }) => {
+    try {
+      const images = await venueOwnerService.addVenueImages(venueId, urls);
+      return { venueId, images };
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
+export const updateVenueImageAsync = createAsyncThunk(
+  "venueOwner/updateVenueImage",
+  async ({ venueId, imageId, payload }, { rejectWithValue }) => {
+    try {
+      const images = await venueOwnerService.updateVenueImage(
+        venueId,
+        imageId,
+        payload,
+      );
+      return { venueId, images };
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
+export const deleteVenueImageAsync = createAsyncThunk(
+  "venueOwner/deleteVenueImage",
+  async ({ venueId, imageId }, { rejectWithValue }) => {
+    try {
+      const images = await venueOwnerService.deleteVenueImage(venueId, imageId);
+      return { venueId, images };
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -268,9 +319,21 @@ const initialState = {
     notifications: false,
     deletingVenue: false,
     deactivatingVenue: false,
+    venueImages: false,
   },
   error: null,
 };
+
+function applyVenueImages(state, { venueId, images }) {
+  const cover = images.find((image) => image.is_cover) ?? images[0] ?? null;
+  const patch = { images, image_url: cover?.url ?? null };
+
+  if (state.activeVenue?.id === venueId) {
+    state.activeVenue = { ...state.activeVenue, ...patch };
+  }
+  const idx = state.venues.findIndex((v) => v.id === venueId);
+  if (idx !== -1) state.venues[idx] = { ...state.venues[idx], ...patch };
+}
 
 const asListPayload = (payload) =>
   Array.isArray(payload) ? payload : payload?.data || payload?.items || [];
@@ -373,6 +436,28 @@ const venueOwnerSlice = createSlice({
         patchOwnerBooking(state, action.payload);
       })
       .addCase(rejectBookingRequestAsync.rejected, (state, action) => {
+        state.loading.actionBooking = null;
+        state.error = action.payload;
+      })
+
+      .addCase(collectBookingBalanceAsync.pending, (state, action) => {
+        state.loading.actionBooking = action.meta.arg;
+        state.error = null;
+      })
+      .addCase(collectBookingBalanceAsync.fulfilled, (state, action) => {
+        state.loading.actionBooking = null;
+        const idx = state.ownerBookings.items.findIndex(
+          (b) => b.id === action.payload.booking_id,
+        );
+        if (idx !== -1) {
+          state.ownerBookings.items[idx] = {
+            ...state.ownerBookings.items[idx],
+            amount_paid: action.payload.amount_paid,
+            balance_due: action.payload.balance_due,
+          };
+        }
+      })
+      .addCase(collectBookingBalanceAsync.rejected, (state, action) => {
         state.loading.actionBooking = null;
         state.error = action.payload;
       })
@@ -510,6 +595,45 @@ const venueOwnerSlice = createSlice({
       })
       .addCase(deactivateVenueAsync.rejected, (state, action) => {
         state.loading.deactivatingVenue = false;
+        state.error = action.payload;
+      })
+
+      .addCase(addVenueImagesAsync.pending, (state) => {
+        state.loading.venueImages = true;
+        state.error = null;
+      })
+      .addCase(addVenueImagesAsync.fulfilled, (state, action) => {
+        state.loading.venueImages = false;
+        applyVenueImages(state, action.payload);
+      })
+      .addCase(addVenueImagesAsync.rejected, (state, action) => {
+        state.loading.venueImages = false;
+        state.error = action.payload;
+      })
+
+      .addCase(updateVenueImageAsync.pending, (state) => {
+        state.loading.venueImages = true;
+        state.error = null;
+      })
+      .addCase(updateVenueImageAsync.fulfilled, (state, action) => {
+        state.loading.venueImages = false;
+        applyVenueImages(state, action.payload);
+      })
+      .addCase(updateVenueImageAsync.rejected, (state, action) => {
+        state.loading.venueImages = false;
+        state.error = action.payload;
+      })
+
+      .addCase(deleteVenueImageAsync.pending, (state) => {
+        state.loading.venueImages = true;
+        state.error = null;
+      })
+      .addCase(deleteVenueImageAsync.fulfilled, (state, action) => {
+        state.loading.venueImages = false;
+        applyVenueImages(state, action.payload);
+      })
+      .addCase(deleteVenueImageAsync.rejected, (state, action) => {
+        state.loading.venueImages = false;
         state.error = action.payload;
       })
 

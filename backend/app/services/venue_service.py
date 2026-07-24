@@ -1,13 +1,14 @@
 from datetime import date, datetime, time, timezone
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models.booking import Booking
 from app.models.user import User
 from app.models.venue import Venue
 from app.schemas.venue import VenueCreate
 from app.services.notification_service import create_notification
+from app.services.venue_image_service import seed_gallery, sync_cover
 from app.services.cancellation_policy_service import validate_cancellation_policy_fields
 from app.services.booking_dates import (
     booking_end_dt,
@@ -20,7 +21,11 @@ from app.services.booking_dates import (
 def _fetch_full(db: Session, venue_id: int) -> Venue:
     venue = (
         db.query(Venue)
-        .options(joinedload(Venue.venue_type), joinedload(Venue.amenities))
+        .options(
+            joinedload(Venue.venue_type),
+            joinedload(Venue.amenities),
+            selectinload(Venue.images),
+        )
         .filter(Venue.id == venue_id)
         .first()
     )
@@ -32,7 +37,11 @@ def _fetch_full(db: Session, venue_id: int) -> Venue:
 def _public_venue_query(db: Session):
     return (
         db.query(Venue)
-        .options(joinedload(Venue.venue_type), joinedload(Venue.amenities))
+        .options(
+            joinedload(Venue.venue_type),
+            joinedload(Venue.amenities),
+            selectinload(Venue.images),
+        )
         .filter(
             Venue.approval_status == "approved",
             Venue.is_active.is_(True),
@@ -91,8 +100,26 @@ def _validate_google_maps_url(url: str | None) -> None:
         )
 
 
+def _validate_google_review_url(url: str | None) -> None:
+    if not url or not url.strip():
+        return
+    allowed = (
+        "search.google.com/local/writereview",
+        "g.page/r/",
+        "google.com/maps",
+        "maps.app.goo.gl",
+        "goo.gl/maps",
+    )
+    if not any(part in url for part in allowed):
+        raise HTTPException(
+            status_code=400,
+            detail="Google review URL must be a valid Google write-a-review or Maps link",
+        )
+
+
 def create_venue(db: Session, venue_data: VenueCreate, current_user: User) -> Venue:
     _validate_google_maps_url(venue_data.google_maps_url)
+    _validate_google_review_url(venue_data.google_review_url)
     validate_cancellation_policy_fields(
         venue_data.refund_50_days_before,
         venue_data.refund_25_days_before,
@@ -103,6 +130,7 @@ def create_venue(db: Session, venue_data: VenueCreate, current_user: User) -> Ve
         name=venue_data.name,
         location=venue_data.location,
         google_maps_url=venue_data.google_maps_url,
+        google_review_url=venue_data.google_review_url,
         price_per_day=venue_data.price_per_day,
         venue_type_id=venue_data.venue_type_id,
         capacity=venue_data.capacity,
@@ -116,6 +144,14 @@ def create_venue(db: Session, venue_data: VenueCreate, current_user: User) -> Ve
     )
 
     db.add(new_venue)
+    db.flush()
+
+    gallery_urls = list(venue_data.image_urls or [])
+    if not gallery_urls and venue_data.image_url:
+        gallery_urls = [venue_data.image_url]
+    if gallery_urls:
+        seed_gallery(db, new_venue, gallery_urls)
+
     db.commit()
     return _fetch_full(db, new_venue.id)
 
@@ -216,6 +252,7 @@ def update_venue(db: Session, venue_id: int, venue_data, owner_id: int):
         raise HTTPException(status_code=403, detail="You don't have permission to update this venue")
 
     _validate_google_maps_url(venue_data.google_maps_url)
+    _validate_google_review_url(venue_data.google_review_url)
     validate_cancellation_policy_fields(
         venue_data.refund_50_days_before,
         venue_data.refund_25_days_before,
@@ -225,16 +262,22 @@ def update_venue(db: Session, venue_id: int, venue_data, owner_id: int):
     venue.name = venue_data.name
     venue.location = venue_data.location
     venue.google_maps_url = venue_data.google_maps_url
+    venue.google_review_url = venue_data.google_review_url
     venue.price_per_day = venue_data.price_per_day
     venue.venue_type_id = venue_data.venue_type_id
     venue.description = venue_data.description
     venue.capacity = venue_data.capacity
-    venue.image_url = venue_data.image_url
     venue.refund_50_days_before = venue_data.refund_50_days_before
     venue.refund_25_days_before = venue_data.refund_25_days_before
     venue.cancel_cutoff_days_before = venue_data.cancel_cutoff_days_before
     venue.advance_percent = venue_data.advance_percent
     venue.allow_pay_at_venue = venue_data.allow_pay_at_venue
+
+    # The gallery owns the cover image, so a venue with images ignores any
+    # image_url in the payload and keeps mirroring its cover row instead.
+    existing_images = sync_cover(db, venue)
+    if not existing_images and venue_data.image_url:
+        seed_gallery(db, venue, [venue_data.image_url])
 
     db.commit()
     return _fetch_full(db, venue_id)
@@ -316,7 +359,11 @@ def deactivate_venue(db: Session, venue_id: int, current_user: User):
 def get_my_venues(db: Session, current_user: User):
     return (
         db.query(Venue)
-        .options(joinedload(Venue.venue_type), joinedload(Venue.amenities))
+        .options(
+            joinedload(Venue.venue_type),
+            joinedload(Venue.amenities),
+            selectinload(Venue.images),
+        )
         .filter(Venue.owner_id == current_user.id)
         .order_by(Venue.created_at.desc())
         .all()

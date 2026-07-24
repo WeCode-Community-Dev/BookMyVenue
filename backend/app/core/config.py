@@ -10,7 +10,6 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str = ""
     RAZORPAY_API_KEY: str = ""
     RAZORPAY_API_SECRET: str = ""
-    RAZORPAY_WEBHOOK_SECRET: str = ""
 
     class Config:
         env_file = ".env"

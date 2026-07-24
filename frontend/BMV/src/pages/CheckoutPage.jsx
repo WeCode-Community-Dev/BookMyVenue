@@ -56,9 +56,10 @@ function CheckoutPage() {
       return;
     }
 
-    const key = import.meta.env.VITE_RAZORPAY_KEY_ID || current.key_id;
+    // Public key comes from backend RAZORPAY_API_KEY — no frontend env needed
+    const key = current.key_id;
     if (!key) {
-      setLocalError("Razorpay key is not configured.");
+      setLocalError("Razorpay key is not configured on the server.");
       setPaying(false);
       return;
     }

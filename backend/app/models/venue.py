@@ -30,6 +30,7 @@ class Venue(Base):
     name = Column(String(150), nullable=False)
     location = Column(String(255), nullable=False)
     google_maps_url = Column(String(500), nullable=True)
+    google_review_url = Column(String(500), nullable=True)
 
     price_per_day = Column(Numeric(10, 2), nullable=False)
 
@@ -97,6 +98,13 @@ class Venue(Base):
     )
 
     venue_type = relationship("VenueType", back_populates="venues")
+
+    images = relationship(
+        "VenueImage",
+        back_populates="venue",
+        cascade="all, delete-orphan",
+        order_by="VenueImage.sort_order",
+    )
 
     __table_args__ = (
         CheckConstraint(
