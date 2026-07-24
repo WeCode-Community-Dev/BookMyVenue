@@ -10,6 +10,7 @@ import { iUserWishlistController } from "../../controllers/di.js";
 import { UpdateAccountStatusSchema } from "../../validators/UserAccount.validator.js";
 import { iUserAccountController } from "../../controllers/di.js";
 import cloudinaryUpload from "../../middlewares/cloudinaryUpload.js";
+import { iUserBookingController } from "../../controllers/di.js"
 
 
 const router = Express.Router()
@@ -85,5 +86,27 @@ router.patch(
     validate(UpdateAccountStatusSchema,"body"),
     iUserAccountController.updateAccountStatus
 )
+
+
+
+// Booking
+router.post(
+    ROUTES.USER.BOOKING.RESERVE,
+    iUserBookingController.reserveBooking
+);
+
+router.post(
+    ROUTES.USER.BOOKING.CONFIRM,
+    iUserBookingController.confirmBooking
+);
+router.get(
+    ROUTES.USER.BOOKING.GET_ALL,
+    iUserBookingController.getBookings
+);
+
+router.get(
+    ROUTES.USER.BOOKING.GET_BY_ID,
+    iUserBookingController.getBookingById
+);
 
 export default router

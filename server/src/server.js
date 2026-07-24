@@ -8,6 +8,7 @@ import routes from './presentation/routes/index.js'
 import { connectDB } from './infrastructure/config/mongo.config.js';
 import cloudinaryUpload from "./presentation/middlewares/cloudinaryUpload.js";
 import { errorHandler } from './presentation/middlewares/errorHandler.js';
+import "./infrastructure/schedulers/paymentReminder.scheduler.js";
 
 const app = express()
 
