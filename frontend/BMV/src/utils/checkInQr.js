@@ -1,4 +1,3 @@
-// format used inside the qr code so the owner scanner knows it is a booking check-in
 export function buildCheckInQrValue(token) {
   return `BMV_CHECKIN:${token}`;
 }

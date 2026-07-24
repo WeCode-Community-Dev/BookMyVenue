@@ -17,7 +17,6 @@ import {
 } from "../modules/venueOwner/venueOwnerSlice";
 import { formatBookingPeriod } from "../utils/bookingFormat";
 
-// ── Approval badge config ─────────────────────────────────────────────────────
 
 const APPROVAL_BADGE = {
   approved: "bg-emerald-100 text-emerald-700",
@@ -30,7 +29,6 @@ const APPROVAL_LABEL = {
   rejected: "Rejected",
 };
 
-// ── Booking display status ────────────────────────────────────────────────────
 
 function resolveDisplayStatus(booking) {
   if (booking.status === "cancelled") return "cancelled";
@@ -50,7 +48,6 @@ const STATUS_CONFIG = {
   rejected:   { label: "Rejected",   classes: "bg-red-50 text-red-600 border border-red-200"             },
 };
 
-// ── Sub-components ────────────────────────────────────────────────────────────
 
 function Initials({ name }) {
   const parts = (name ?? "?").trim().split(" ");
@@ -207,7 +204,6 @@ const TABS = [
   { key: "cancelled", label: "Cancelled" },
 ];
 
-// ── Bookings section ──────────────────────────────────────────────────────────
 
 function VenueBookingsSection({ venueId }) {
   const dispatch = useDispatch();
@@ -382,7 +378,6 @@ function VenueBookingsSection({ venueId }) {
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
 
 function OwnerVenueManagePage() {
   const { id } = useParams();

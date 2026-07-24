@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { ChevronLeft, ChevronRight, X, Users, Clock, Building2, IndianRupee } from "lucide-react";
 import { fetchAvailabilityCalendarAsync, fetchMyVenuesAsync } from "../../modules/venueOwner/venueOwnerSlice";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
 
 const WEEKDAYS_SHORT = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const WEEKDAYS_FULL  = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -13,7 +12,6 @@ const STATUS_STYLES = {
   pending: { cell: "bg-amber-400 text-white", dot: "bg-amber-400", label: "Pending",   badge: "bg-amber-400 text-white" },
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function toKey(year, month, day) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -58,7 +56,6 @@ function formatTimeSlot(timeStr) {
   return `${h12}:${minutes} ${ampm}`;
 }
 
-// ─── Day Popup (shown in full-view modal when a booked date is clicked) ───────
 
 function DayPopup({ dateKey, dayData, onClose }) {
   const s = STATUS_STYLES[dayData.status];
@@ -122,7 +119,6 @@ function DayPopup({ dateKey, dayData, onClose }) {
   );
 }
 
-// ─── Full-View Modal ──────────────────────────────────────────────────────────
 
 function FullCalendarModal({ onClose }) {
   const dispatch = useDispatch();
@@ -294,7 +290,6 @@ function FullCalendarModal({ onClose }) {
   );
 }
 
-// ─── Mini Calendar (shown on dashboard) ───────────────────────────────────────
 
 function AvailabilityCalendar({ days, loading }) {
   const dispatch = useDispatch();

@@ -10,7 +10,6 @@ def generate_check_in_token() -> str:
 
 
 def ensure_check_in_token(booking: Booking) -> str:
-    # create a qr token when owner approves the booking
     if not booking.check_in_token:
         booking.check_in_token = generate_check_in_token()
     return booking.check_in_token

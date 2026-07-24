@@ -9,10 +9,9 @@ from app.core.config import settings
 from app.db.deps import get_db
 from app.models.user import User, TokenBlacklist
 
-# Tells FastAPI where the login endpoint is
 oauth2_scheme = HTTPBearer()
 
-# Creating a JWT token 
+
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
 
@@ -31,29 +30,26 @@ def create_access_token(data: dict) -> str:
     )
     return token
 
+
 def create_refresh_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(
-        days=settings.REFRESH_TOKEN_EXPIRE_DAYS   
+        days=settings.REFRESH_TOKEN_EXPIRE_DAYS
     )
     to_encode.update({
         "exp": expire,
-        "type": "refresh"     
+        "type": "refresh"
     })
-    
+
     token = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
     return token
 
 
-
-# Decode token and return the current user 
 def get_current_user(
     token = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> User:
-
-    # This is the error we raise if anything goes wrong
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -61,26 +57,23 @@ def get_current_user(
     )
 
     try:
-        # Decode the token using our secret key
         payload = jwt.decode(
             token.credentials,
             settings.SECRET_KEY,
             algorithms=[settings.ALGORITHM]
         )
-        # Extract the user id we stored in "sub"
         user_id: str = payload.get("sub")
         token_type: str = payload.get("type")
 
         if user_id is None:
             raise credentials_exception
-        
+
         if token_type != "access":
             raise credentials_exception
 
     except JWTError:
         raise credentials_exception
 
-    # Look up the user in the database
     user = db.query(User).filter(User.id == int(user_id)).first()
 
     if user is None:
@@ -121,14 +114,12 @@ def get_current_user_from_refresh_token(
         if user_id is None:
             raise credentials_exception
 
-        # Reject access tokens used on the refresh endpoint
         if token_type != "refresh":
             raise credentials_exception
 
     except JWTError:
         raise credentials_exception
-    
-    
+
     blacklisted = db.query(TokenBlacklist).filter(
         TokenBlacklist.token == token.credentials
     ).first()
@@ -148,7 +139,7 @@ def get_current_user_from_refresh_token(
 
     return user
 
-# only admin role can access admin routes
+
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != "admin":
         raise HTTPException(
@@ -169,9 +160,6 @@ def get_current_venue_owner(
     return current_user
 
 
-
-# function to verify Google ID token
-
 def verify_google_token(token: str) -> dict:
     try:
         idinfo = id_token.verify_oauth2_token(
@@ -185,5 +173,3 @@ def verify_google_token(token: str) -> dict:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Google token"
         )
-        
-        

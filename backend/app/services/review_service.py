@@ -153,7 +153,6 @@ def get_reviews_for_venue(db: Session, venue_id: int) -> dict:
     for review in reviews:
         distribution[str(review["rating"])] += 1
 
-    # show higher ratings first on the venue page
     reviews.sort(key=lambda r: (r["rating"], r["created_at"]), reverse=True)
 
     return {
@@ -200,7 +199,6 @@ def get_review_dashboard_data(db: Session, owner_id: int) -> dict:
     """
     reviews = get_recent_reviews_for_owner(db, owner_id, limit=50)
 
-    # Rating distribution across all owner's venues
     all_ratings = (
         db.query(Review.rating)
         .join(Venue, Review.venue_id == Venue.id)
@@ -215,13 +213,11 @@ def get_review_dashboard_data(db: Session, owner_id: int) -> dict:
     for r in rating_values:
         distribution[str(r)] += 1
 
-    # Convert counts to percentages
     distribution_pct = {
         star: round((count / total) * 100) if total else 0
         for star, count in distribution.items()
     }
 
-    # Review of the month: highest rating, then most recent if tie
     review_of_month = None
     if reviews:
         sorted_reviews = sorted(

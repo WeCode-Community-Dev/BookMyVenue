@@ -40,14 +40,12 @@ def seed_test_data():
             raise RuntimeError("No venue types found after seeding")
         venue_type_id = default_type.id
         
-        # Check if test user already exists
         existing_user = db.query(User).filter(User.email == "owner@test.com").first()
         
         if existing_user:
             print(f"ℹ️  Test user already exists (ID: {existing_user.id})")
             test_user = existing_user
         else:
-            # Create test owner user
             test_user = User(
                 email="owner@test.com",
                 name="Test Owner",
@@ -63,7 +61,6 @@ def seed_test_data():
             print(f"✅ Created test user: {test_user.email} (ID: {test_user.id})")
             print(f"   Password: password123")
         
-        # Create test venues
         venues_data = [
             {
                 "name": "Grand Conference Hall",
@@ -105,7 +102,6 @@ def seed_test_data():
         
         created_venues = []
         for venue_data in venues_data:
-            # Check if venue already exists
             existing_venue = db.query(Venue).filter(
                 Venue.name == venue_data["name"],
                 Venue.owner_id == test_user.id
@@ -127,12 +123,10 @@ def seed_test_data():
         
         db.commit()
         
-        # Link amenities to venues
         amenities = db.query(Amenity).all()
         if amenities:
             print("\n🔗 Linking amenities to venues...")
             for venue in created_venues:
-                # Add random amenities to each venue
                 import random
                 venue_amenities = random.sample(amenities, min(3, len(amenities)))
                 venue.amenities = venue_amenities

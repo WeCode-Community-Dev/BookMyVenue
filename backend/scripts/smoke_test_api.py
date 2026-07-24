@@ -87,7 +87,6 @@ def main() -> int:
     check_out_time = "16:30:00"
     time_slot = check_in_time
 
-    # --- A. Health ---
     print("A. Health")
     r = requests.get(f"{BASE_URL}/health", timeout=10)
     check("GET /health", r.status_code == 200, f"status={r.status_code}")
@@ -95,7 +94,6 @@ def main() -> int:
     r = requests.get(f"{BASE_URL}/", timeout=10)
     check("GET /", r.status_code == 200, f"status={r.status_code}")
 
-    # --- B. Reference data ---
     print("\nB. Reference data")
     r = requests.get(f"{BASE_URL}/amenities/", timeout=10)
     amenities_ok = r.status_code == 200 and isinstance(r.json(), list)
@@ -138,7 +136,6 @@ def main() -> int:
         avail_ok = r.status_code == 200 and r.json().get("available") is True
         check(f"GET /venues/{vid}/availability", avail_ok, snippet(r))
 
-    # --- Owner prep (profile + approved venue for booking) ---
     print("\nD-pre. Venue owner setup")
     owner_token = login(OWNER_EMAIL, OWNER_PASSWORD)
     check("POST /auth/login (owner)", owner_token is not None, "Could not login owner@test.com")
@@ -178,7 +175,6 @@ def main() -> int:
 
         state["owner_token"] = owner_token
 
-    # --- C. Customer workflow ---
     print("\nC. Customer workflow")
     r = requests.post(
         f"{BASE_URL}/auth/register",
@@ -291,7 +287,6 @@ def main() -> int:
         status_ok = r.status_code == 200 and r.json().get("status") in ("created", "paid")
         check(f"GET /payments/{pid}/status", status_ok, snippet(r))
 
-    # --- D. Venue owner workflow ---
     print("\nD. Venue owner workflow")
     owner_token = state.get("owner_token")
     if owner_token:
@@ -344,7 +339,6 @@ def main() -> int:
             if create_ok:
                 state["pending_venue_id"] = r.json()["id"]
 
-    # --- E. Superadmin workflow ---
     print("\nE. Superadmin workflow")
     admin_token = login(ADMIN_EMAIL, ADMIN_PASSWORD)
     check("POST /auth/login (admin)", admin_token is not None, "Run scripts/seed_admin.py first")
@@ -394,7 +388,6 @@ def main() -> int:
         )
         check("GET /admin/venues", r.status_code == 200, snippet(r))
 
-    # --- F. Negative checks ---
     print("\nF. Negative checks")
     r = requests.get(f"{BASE_URL}/admin/dashboard", timeout=10)
     check(
@@ -432,7 +425,6 @@ def main() -> int:
         )
         check(f"PATCH /bookings/{bid}/cancel", r.status_code == 200, snippet(r))
 
-    # --- Summary ---
     total = passed + failed
     print(f"\n{'=' * 50}")
     print(f"Results: {passed}/{total} passed")

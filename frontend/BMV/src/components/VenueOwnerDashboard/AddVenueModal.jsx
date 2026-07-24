@@ -48,7 +48,6 @@ function AddVenueModal({
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Lock body scroll while the modal is open, restore on close/unmount
   useEffect(() => {
     if (!isOpen) return;
     const previousOverflow = document.body.style.overflow;
@@ -58,7 +57,6 @@ function AddVenueModal({
     };
   }, [isOpen]);
 
-  // Reset form each time the modal opens
   useEffect(() => {
     if (isOpen) {
       setFields({

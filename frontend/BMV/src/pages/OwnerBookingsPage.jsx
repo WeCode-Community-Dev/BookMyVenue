@@ -10,7 +10,6 @@ import {
 } from "../modules/venueOwner/venueOwnerSlice";
 import { formatBookingPeriod } from "../utils/bookingFormat";
 
-// ── Constants ────────────────────────────────────────────────────────────────
 
 const TABS = [
   { key: "all",       label: "All Bookings" },
@@ -38,7 +37,6 @@ const STATUS_CONFIG = {
   rejected:   { label: "Rejected",   classes: "bg-red-50    text-red-600    border border-red-200"    },
 };
 
-// ── Sub-components ────────────────────────────────────────────────────────────
 
 function Initials({ name }) {
   const parts = (name ?? "?").trim().split(" ");
@@ -258,7 +256,6 @@ function EmptyState({ tab }) {
   );
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
 
 function OwnerBookingsPage() {
   const dispatch = useDispatch();

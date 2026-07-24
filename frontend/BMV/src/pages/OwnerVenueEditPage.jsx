@@ -95,7 +95,6 @@ function OwnerVenueEditPage() {
     }
   }, [venue]);
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -163,7 +162,6 @@ function OwnerVenueEditPage() {
     }
   };
 
-  // ── Guard: show skeleton until fields are ready ───────────────────────────
   // Do NOT gate on loading.activeVenue — it starts false so it can't protect
   // the first render. Gate on fields instead: null = not ready, object = ready.
   if (!fields) return <Skeleton />;

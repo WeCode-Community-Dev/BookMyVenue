@@ -41,6 +41,5 @@ class Review(Base):
 
     __table_args__ = (
         CheckConstraint("rating >= 1 AND rating <= 5", name="ck_review_rating_range"),
-        # without this the same booking can be reviewed more than once
         UniqueConstraint("booking_id", name="uq_review_booking_id"),
     )

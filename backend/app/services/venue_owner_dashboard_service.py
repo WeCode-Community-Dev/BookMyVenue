@@ -127,7 +127,6 @@ def _get_owned_booking_or_404(db: Session, booking_id: int, owner_id: int) -> Bo
 def accept_booking_request(db: Session, booking_id: int, owner_id: int) -> Booking:
     booking = _get_owned_booking_or_404(db, booking_id, owner_id)
     booking.owner_status = "accepted"
-    # without this token the customer cannot show a qr code for check-in
     ensure_check_in_token(booking)
     db.commit()
     db.refresh(booking)

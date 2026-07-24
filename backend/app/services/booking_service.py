@@ -256,7 +256,6 @@ def create_booking(
 
 
 def maybe_complete_booking(db: Session, booking: Booking) -> bool:
-    # mark booking completed when check-out time has passed
     if booking.status != "booked" or booking.owner_status != "accepted":
         return False
 

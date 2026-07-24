@@ -12,7 +12,6 @@ const client = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Attach Bearer token to every outgoing request automatically
 client.interceptors.request.use(
   (config) => {
     const token = getAccessToken();
@@ -24,9 +23,7 @@ client.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Track if a refresh is already in progress to prevent race conditions
 let isRefreshing = false;
-// Queue of requests that arrived while a refresh was in flight
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
@@ -45,13 +42,11 @@ client.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Attempt refresh on 401, but never for the refresh endpoint itself
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
       !originalRequest.url.includes("/auth/refresh")
     ) {
-      // Park this request if a refresh is already running
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -70,7 +65,6 @@ client.interceptors.response.use(
         const refreshToken = getRefreshToken();
         if (!refreshToken) throw new Error("No refresh token available.");
 
-        // Send refresh token in Authorization header (matches backend's HTTPBearer)
         const { data } = await axios.post(
           `${API_BASE_URL}/auth/refresh`,
           {},
@@ -81,7 +75,6 @@ client.interceptors.response.use(
           }
         );
 
-        // Preserve the original rememberMe choice by checking where the old token was
         const rememberMe = !!localStorage.getItem("bmv_access_token");
         saveTokens(data.access_token, data.refresh_token, rememberMe);
 
@@ -90,7 +83,6 @@ client.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
         return client(originalRequest);
       } catch (refreshError) {
-        // Refresh failed — session is dead, force logout
         processQueue(refreshError, null);
         clearTokens();
         window.location.href = "/login";
@@ -100,7 +92,6 @@ client.interceptors.response.use(
       }
     }
 
-    // Normalize all other errors into a consistent shape
     const message = error.response?.data?.detail || "Something went wrong.";
     const status = error.response?.status || 500;
     return Promise.reject({ message, status });

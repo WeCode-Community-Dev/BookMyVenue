@@ -303,7 +303,6 @@ const venueOwnerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // ── Summary ──────────────────────────────────────────────────────────
       .addCase(fetchDashboardSummaryAsync.pending, (state) => {
         state.loading.summary = true;
         state.error = null;
@@ -317,7 +316,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Booking requests
       .addCase(fetchBookingRequestsAsync.pending, (state) => {
         state.loading.bookingRequests = true;
         state.error = null;
@@ -331,7 +329,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Owner bookings page
       .addCase(fetchOwnerBookingsAsync.pending, (state) => {
         state.loading.ownerBookings = true;
         state.error = null;
@@ -345,7 +342,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Per-venue bookings (manage page) ─────────────────────────────────
       .addCase(fetchVenueBookingsAsync.pending, (state) => {
         state.loading.venueBookings = true; state.error = null;
       })
@@ -357,7 +353,6 @@ const venueOwnerSlice = createSlice({
         state.loading.venueBookings = false; state.error = action.payload;
       })
 
-      // ── Accept / Reject
       .addCase(acceptBookingRequestAsync.pending, (state, action) => {
         state.loading.actionBooking = action.meta.arg; // booking id
       })
@@ -382,7 +377,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Calendar ─────────────────────────────────────────────────────────
       .addCase(fetchAvailabilityCalendarAsync.pending, (state) => {
         state.loading.calendar = true;
         state.error = null;
@@ -396,7 +390,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── My venues ────────────────────────────────────────────────────────
       .addCase(fetchMyVenuesAsync.pending, (state) => {
         state.loading.venues = true;
         state.error = null;
@@ -438,7 +431,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Create venue ─────────────────────────────────────────────────────
       .addCase(createVenueAsync.pending, (state) => {
         state.loading.creatingVenue = true;
         state.error = null;
@@ -452,7 +444,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Venue types ───────────────────────────────────────────────────────
       .addCase(fetchVenueTypesAsync.pending, (state) => {
         state.loading.venueTypes = true;
         state.error = null;
@@ -466,7 +457,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Amenities ─────────────────────────────────────────────────────────
       .addCase(fetchAmenitiesAsync.pending, (state) => {
         state.loading.amenities = true;
         state.error = null;
@@ -497,7 +487,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Delete venue (pending/rejected) ──────────────────────────────────
       .addCase(deleteVenueAsync.pending, (state) => {
         state.loading.deletingVenue = true;
         state.error = null;
@@ -511,7 +500,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Deactivate venue (approved) ───────────────────────────────────────
       .addCase(deactivateVenueAsync.pending, (state) => {
         state.loading.deactivatingVenue = true;
         state.error = null;
@@ -525,7 +513,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Revenue ───────────────────────────────────────────────────────────
       .addCase(fetchRevenueOverviewAsync.pending, (state) => {
         state.loading.revenue = true;
         state.error = null;
@@ -539,7 +526,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Reviews ───────────────────────────────────────────────────────────
       .addCase(fetchRecentReviewsAsync.pending, (state) => {
         state.loading.reviews = true;
         state.error = null;
@@ -553,7 +539,6 @@ const venueOwnerSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ── Notifications ─────────────────────────────────────────────────────
       .addCase(fetchNotificationsAsync.pending, (state) => {
         state.loading.notifications = true;
         state.error = null;
