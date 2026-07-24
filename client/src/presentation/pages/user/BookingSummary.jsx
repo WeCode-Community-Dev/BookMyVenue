@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import Header from "@/presentation/components/common/Header";
 import Footer from "@/presentation/components/common/Footer";
-
+import { formatDateToDDMMYYYY } from "@/lib/utils";
 export default function BookingSummary() {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -25,6 +25,7 @@ export default function BookingSummary() {
     venue,
     selectedPackage,
     bookingDate,
+    bookingType,
     startTime,
     endTime,
     guestCount,
@@ -77,7 +78,7 @@ export default function BookingSummary() {
                   </p>
 
                   <p className="font-semibold">
-                    {bookingDate}
+                    {formatDateToDDMMYYYY(bookingDate)}
                   </p>
                 </div>
 
@@ -90,14 +91,27 @@ export default function BookingSummary() {
                     {guestCount}
                   </p>
                 </div>
-
                 <div>
                   <p className="text-gray-500 text-sm">
-                    Start Time
+                      Booking Type
                   </p>
 
                   <p className="font-semibold">
-                    {startTime}
+                      {bookingType === "fullDay"
+                        ? "Full Day"
+                        : "Hour Wise"}
+                  </p>
+                </div>
+
+                {bookingType === "hourWise" && (
+                <>
+                <div>
+                  <p className="text-gray-500 text-sm">
+                     Start Time
+                  </p>
+
+                  <p className="font-semibold">
+                   {startTime}
                   </p>
                 </div>
 
@@ -110,7 +124,8 @@ export default function BookingSummary() {
                     {endTime}
                   </p>
                 </div>
-                
+              </>
+            )}                
 
               </div>
 
@@ -144,7 +159,7 @@ export default function BookingSummary() {
                 onClick={() =>
                   navigate(ROUTES.USER.PAYMENT,{
                     state:{
-                      venue,selectedPackage,bookingDate,startTime,endTime,guestCount
+                      venue,selectedPackage,bookingType,bookingDate,startTime,endTime,guestCount
                     },
                   })
                 }

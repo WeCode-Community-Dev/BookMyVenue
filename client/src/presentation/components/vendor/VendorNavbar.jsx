@@ -1,82 +1,59 @@
-import React from "react";
-import { Input } from "@/components/ui/input";
-import {
-  Bell,
-  Search,
-  ChevronDown,
-} from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, User, LogOut } from "lucide-react";
 import { useSelector } from "react-redux";
 
 const VendorNavbar = () => {
-  const { profile } = useSelector((state) => state.vendorProfile);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  const initials =
-    profile?.fullName
-      ?.split(" ")
-      .map((word) => word[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "--";
+  const { profile } = useSelector(
+    (state) => state.vendorProfile
+  );
 
   return (
-    <header className="h-20 px-8 bg-white border-b flex items-center justify-between">
+    <header className="h-20 bg-white border-b border-gray-400 flex items-center justify-end px-6 shadow-sm">
 
-      {/* Search Bar */}
-      <div className="relative w-[420px]">
-        <Search
-          size={18}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-        />
+      <div className="relative">
 
-        <Input
-          placeholder="Search venues, bookings..."
-          className="pl-10 bg-slate-50 border-slate-200"
-        />
-      </div>
+        <button
+          type="button"
+          onClick={() => setShowDropdown(!showDropdown)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition"
+        >
 
-      {/* Right Section */}
-      <div className="flex items-center gap-6">
-
-        {/* Notification */}
-        <button className="relative p-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition">
-          <Bell size={20} />
-
-          <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
-            3
-          </span>
-        </button>
-
-        {/* Profile */}
-        <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 cursor-pointer transition">
-
+          {/* Profile Image */}
           {profile?.profileImage?.url ? (
             <img
               src={profile.profileImage.url}
-              alt={profile.fullName}
-              className="w-10 h-10 rounded-full object-cover"
+              alt={profile.fullName || "Vendor"}
+              className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white flex items-center justify-center font-semibold">
-              {initials}
-            </div>
+            <User size={25} />
           )}
 
-          <div>
-            <p className="font-semibold text-sm text-slate-900">
-              {profile?.fullName || "Vendor"}
-            </p>
+          {/* Name */}
+          <span className="font-medium">
+            {profile?.fullName || "Vendor User"}
+          </span>
 
-            <p className="text-xs text-slate-500">
-              Venue Owner
-            </p>
+          <ChevronDown size={25} />
+
+        </button>
+
+        {showDropdown && (
+          <div className="absolute right-0 mt-2 w-44 bg-white border rounded-lg shadow-lg">
+
+            <button
+              type="button"
+              className="w-full flex items-center gap-2 px-4 py-3 hover:bg-red-50 text-red-600"
+            >
+              <LogOut size={18} />
+
+              Logout
+            </button>
+
           </div>
-
-          <ChevronDown
-            size={16}
-            className="text-slate-500"
-          />
-
-        </div>
+        )}
 
       </div>
 

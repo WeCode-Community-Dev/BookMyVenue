@@ -1,8 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/routes";
 
+import { ROUTES } from "@/constants/routes";
 import Header from "@/presentation/components/common/Header";
 import Footer from "@/presentation/components/common/Footer";
+import { formatDateToDDMMYYYY } from "@/lib/utils";
 
 export default function Payment() {
   const { state } = useLocation();
@@ -14,7 +15,7 @@ export default function Payment() {
         <Header />
 
         <main className="min-h-screen flex items-center justify-center">
-          <p>  Booking details not found.</p>
+          <p>Booking details not found.</p>
         </main>
 
         <Footer />
@@ -25,6 +26,7 @@ export default function Payment() {
   const {
     venue,
     selectedPackage,
+    bookingType,
     bookingDate,
     startTime,
     endTime,
@@ -34,13 +36,23 @@ export default function Payment() {
   const totalAmount =
     selectedPackage?.price || venue.pricePerDay;
 
+  const paymentState = {
+    venue,
+    selectedPackage,
+    bookingType,
+    bookingDate,
+    startTime,
+    endTime,
+    guestCount,
+    totalAmount,
+  };
+
   return (
     <>
       <Header />
 
       <main className="min-h-screen bg-gray-50 py-10">
         <div className="max-w-5xl mx-auto px-6">
-
           <h1 className="text-3xl font-bold">
             Payment
           </h1>
@@ -49,7 +61,6 @@ export default function Payment() {
 
             {/* Payment Section */}
             <div className="lg:col-span-2 bg-white rounded-2xl p-6">
-
               <h2 className="text-xl font-bold">
                 Choose Payment Method
               </h2>
@@ -81,31 +92,41 @@ export default function Payment() {
                 </label>
               </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(ROUTES.USER.PAYMENT_SUCCESS, {
-                    state: {
-                      venue,
-                      selectedPackage,
-                      bookingDate,
-                      startTime,
-                      endTime,
-                      guestCount,
-                      totalAmount,
-                    },
-                  })
-                }
-                className="w-full mt-8 bg-black text-white py-3 rounded-xl font-semibold"
-              >
-                Pay ₹{totalAmount}
-              </button>
+              <div className="flex flex-col gap-3 mt-8">
 
+                {/* Successful Payment */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      ROUTES.USER.PAYMENT_SUCCESS,
+                      { state: paymentState }
+                    )
+                  }
+                  className="w-full bg-black text-white py-3 rounded-xl font-semibold"
+                >
+                  Simulate Successful Payment ₹{totalAmount}
+                </button>
+
+                {/* Failed Payment */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      ROUTES.USER.PAYMENT_FAILURE,
+                      { state: paymentState }
+                    )
+                  }
+                  className="w-full border border-red-500 text-red-500 py-3 rounded-xl font-semibold hover:bg-red-50"
+                >
+                  Simulate Failed Payment
+                </button>
+
+              </div>
             </div>
 
             {/* Order Summary */}
             <div className="bg-white rounded-2xl p-6 h-fit">
-
               <h2 className="text-xl font-bold">
                 Booking Summary
               </h2>
@@ -115,14 +136,31 @@ export default function Payment() {
               </p>
 
               <p className="text-gray-500 text-sm mt-2">
-                {bookingDate}
+                {formatDateToDDMMYYYY(bookingDate)}
               </p>
 
-              <p className="text-gray-500 text-sm">
-                {startTime} - {endTime}
+              {/* Booking Type */}
+              <p className="text-gray-500 text-sm mt-2">
+                Booking Type:{" "}
+                <span className="font-medium text-gray-700">
+                  {bookingType === "fullDay"
+                    ? "Full Day"
+                    : "Hour Wise"}
+                </span>
               </p>
 
-              <p className="text-gray-500 text-sm">
+              {/* Conditional Time Display */}
+              {bookingType === "fullDay" ? (
+                <p className="text-gray-500 text-sm mt-1">
+                  Full day venue booking
+                </p>
+              ) : (
+                <p className="text-gray-500 text-sm mt-1">
+                  {startTime} - {endTime}
+                </p>
+              )}
+
+              <p className="text-gray-500 text-sm mt-2">
                 {guestCount} guests
               </p>
 
@@ -133,11 +171,9 @@ export default function Payment() {
                   ₹{totalAmount}
                 </span>
               </div>
-
             </div>
 
           </div>
-
         </div>
       </main>
 

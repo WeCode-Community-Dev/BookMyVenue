@@ -1,104 +1,223 @@
 import { useState } from "react";
+import { Calendar } from "@/components/ui/calendar";
 
 export default function VenueAvailability({
   venue,
   onAvailabilityChange,
 }) {
-  const [eventDate, setEventDate] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null);
   const [guestCount, setGuestCount] = useState("");
-
-  const handleCheckAvailability = () => {
-    const availabilityData = {
-      eventDate,
-      startTime,
-      endTime,
-      guestCount,
-    };
-
-    onAvailabilityChange?.(availabilityData);
-  };
 
   const maxGuests =
     (venue?.seatingCapacity || 0) +
     (venue?.standingCapacity || 0);
 
+  // Temporary mock availability data
+  const availabilityData = {
+    "2026-08-01": {
+      type: "fullDay",
+      label: "Full day available",
+    },
+
+    "2026-08-02": {
+      type: "hourly",
+      label: "Available from 10:00 to 16:00",
+      startTime: "10:00",
+      endTime: "16:00",
+    },
+
+    "2026-08-03": {
+      type: "booked",
+      label: "Fully booked",
+    },
+  };
+
+  const formatDateKey = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleDateSelect = (date) => {
+    if (!date) return;
+
+    const dateKey = formatDateKey(date);
+    const selectedAvailability = availabilityData[dateKey];
+
+    if (selectedAvailability?.type === "booked") {
+      return;
+    }
+
+    setSelectedDate(date);
+
+    onAvailabilityChange?.({
+      eventDate: dateKey,
+      guestCount,
+      availability: selectedAvailability,
+    });
+  };
+
+  const handleCheckAvailability = () => {
+    if (!selectedDate || !guestCount) return;
+
+    const dateKey = formatDateKey(selectedDate);
+
+    onAvailabilityChange?.({
+      eventDate: dateKey,
+      guestCount,
+      availability: availabilityData[dateKey],
+    });
+  };
+
+  const isDateBooked = (date) => {
+    const dateKey = formatDateKey(date);
+
+    return availabilityData[dateKey]?.type === "booked";
+  };
+
+  const isFullDayAvailable = (date) => {
+    const dateKey = formatDateKey(date);
+
+    return availabilityData[dateKey]?.type === "fullDay";
+  };
+
+  const isHourlyAvailable = (date) => {
+    const dateKey = formatDateKey(date);
+
+    return availabilityData[dateKey]?.type === "hourly";
+  };
+
+  const selectedDateKey = selectedDate
+    ? formatDateKey(selectedDate)
+    : null;
+
+  const selectedAvailability =
+    selectedDateKey
+      ? availabilityData[selectedDateKey]
+      : null;
+
   return (
-    <section className="bg-white rounded-2xl p-6 mt-6 border">
+    <section className="mt-6 rounded-2xl border bg-white p-6">
       <h2 className="text-2xl font-bold">
         Check Availability
       </h2>
 
-      <p className="text-gray-500 mt-2">
-        Select your event date and requirements to check availability.
+      <p className="mt-2 text-gray-500">
+        Select an available date to check venue availability.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Event Date
-          </label>
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
 
-          <input
-            type="date"
-            value={eventDate}
-            min={new Date().toISOString().split("T")[0]}
-            onChange={(e) => setEventDate(e.target.value)}
-            className="w-full border rounded-xl px-4 py-3"
+        {/* Calendar */}
+        <div className="rounded-xl border p-4">
+
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleDateSelect}
+            disabled={[
+              { before: new Date() },
+              isDateBooked,
+            ]}
+            modifiers={{
+              fullDayAvailable: isFullDayAvailable,
+              hourlyAvailable: isHourlyAvailable,
+            }}
+            modifiersClassNames={{
+              fullDayAvailable:
+                "border-2 border-green-500",
+
+              hourlyAvailable:
+                "border-2 border-yellow-500",
+            }}
           />
+
+          {/* Legend */}
+          <div className="mt-4 space-y-2 text-sm">
+
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-green-500" />
+              <span>Full day available</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-yellow-500" />
+              <span>Hourly availability</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-gray-400" />
+              <span>Fully booked</span>
+            </div>
+
+          </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Number of Guests
-          </label>
+        {/* Availability Details */}
+        <div className="space-y-5">
 
-          <input
-            type="number"
-            min="1"
-            max={maxGuests}
-            value={guestCount}
-            onChange={(e) => setGuestCount(e.target.value)}
-            placeholder={`Maximum ${maxGuests} guests`}
-            className="w-full border rounded-xl px-4 py-3"
-          />
-        </div>
+          {/* Selected Date Information */}
+          {selectedDate && (
+            <div className="rounded-xl border bg-gray-50 p-4">
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Start Time
-          </label>
+              <p className="text-sm text-gray-500">
+                Selected Date
+              </p>
 
-          <input
-            type="time"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            className="w-full border rounded-xl px-4 py-3"
-          />
-        </div>
+              <p className="mt-1 font-semibold">
+                {selectedDate.toLocaleDateString("en-GB")}
+              </p>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            End Time
-          </label>
+              {selectedAvailability?.type === "fullDay" && (
+                <p className="mt-2 font-medium text-green-600">
+                  Full day available
+                </p>
+              )}
 
-          <input
-            type="time"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            className="w-full border rounded-xl px-4 py-3"
-          />
+              {selectedAvailability?.type === "hourly" && (
+                <p className="mt-2 font-medium text-yellow-600">
+                  Available from{" "}
+                  {selectedAvailability.startTime}
+                  {" "}to{" "}
+                  {selectedAvailability.endTime}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Guest Count */}
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Number of Guests
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              max={maxGuests}
+              value={guestCount}
+              onChange={(event) =>
+                setGuestCount(event.target.value)
+              }
+              placeholder={`Maximum ${maxGuests} guests`}
+              className="w-full rounded-xl border px-4 py-3"
+            />
+          </div>
+
+          {/* Check Availability */}
+          <button
+            type="button"
+            onClick={handleCheckAvailability}
+            disabled={!selectedDate || !guestCount}
+            className="w-full rounded-xl bg-black py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Check Availability
+          </button>
+
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={handleCheckAvailability}
-        className="w-full mt-6 bg-black text-white py-3 rounded-xl font-semibold"
-      >
-        Check Availability
-      </button>
     </section>
   );
 }

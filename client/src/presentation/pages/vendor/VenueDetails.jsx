@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 
 import VendorSidebar from "@/presentation/components/vendor/VendorSidebar";
 import VendorNavbar from "@/presentation/components/vendor/VendorNavbar";
-import DeleteVenueDialog from "@/presentation/components/vendor/DeleteVenueDialog";
+import DeleteVenueDialog from "@/presentation/components/vendor/venues/DeleteVenueDialog";
 
 import {
   getVenueById,
