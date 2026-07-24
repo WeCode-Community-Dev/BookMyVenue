@@ -7,13 +7,13 @@ import { BookingMessages } from "../../../../shared/constants/messages/bookingMe
 export class UserConfirmBookingUsecase {
     constructor(
         bookingRepository,
-        redisService,
+       reservationService,
         userRepository,
         venueRepository,
         mailService
     ) {
         this._bookingRepository = bookingRepository;
-        this._redisService = redisService;
+        this._reservationService =reservationService;
         this._userRepository = userRepository;
         this._venueRepository = venueRepository;
         this._mailService = mailService;
@@ -28,7 +28,7 @@ export class UserConfirmBookingUsecase {
         const reservationKey = `reservation:${venueId}:${bookingDate}`;
 
         const reservations =
-            await this._redisService.getReservation(reservationKey);
+            await this._reservationService.getReservation(reservationKey);
 
         if (!reservations || reservations.length === 0) {
             throw new NotFoundError(
@@ -45,6 +45,22 @@ export class UserConfirmBookingUsecase {
                 BookingMessages.error.RESERVATION_NOT_FOUND
             );
         }
+          const user =
+            await this._userRepository.findById(
+                reservation.userId
+            );
+              if (!user) {
+                throw new NotFoundError(BookingMessages.error.USER_NOT_FOUND);
+            }
+        const venue =
+            await this._venueRepository.findById(
+                reservation.venueId
+            );
+
+
+            if (!venue) {
+                throw new NotFoundError(BookingMessages.error.VENUE_NOT_FOUND);
+            }
 
         const booking = new Booking({
             userId: reservation.userId,
@@ -65,22 +81,7 @@ export class UserConfirmBookingUsecase {
 
         const savedBooking =
             await this._bookingRepository.create(booking);
-        const user =
-            await this._userRepository.findById(
-                reservation.userId
-            );
-              if (!user) {
-                throw new NotFoundError(BookingMessages.error.USER_NOT_FOUND);
-            }
-        const venue =
-            await this._venueRepository.findById(
-                reservation.venueId
-            );
-
-
-            if (!venue) {
-                throw new NotFoundError(BookingMessages.error.VENUE_NOT_FOUND);
-            }
+      
 
         const emailData = {
 
@@ -114,7 +115,7 @@ export class UserConfirmBookingUsecase {
 
         if (updatedReservations.length > 0) {
 
-            await this._redisService.reserveSlot(
+            await this._reservationService.reserveSlot(
                 reservationKey,
                 updatedReservations,
                 600
@@ -122,7 +123,7 @@ export class UserConfirmBookingUsecase {
 
         } else {
 
-            await this._redisService.deleteReservation(
+            await this._reservationService.deleteReservation(
                 reservationKey
             );
 

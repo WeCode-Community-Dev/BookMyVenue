@@ -59,8 +59,23 @@ export class UserBookingController {
 
         const userId = req.user.userId;
 
+        const {
+            page,
+            limit,
+            status,
+            search,
+            sortBy
+        } = req.query;
+
         const result =
-            await this._userGetBookingsUsecase.execute(userId);
+            await this._userGetBookingsUsecase.execute(
+                userId,
+                Number(page) || 1,
+                Number(limit) || 10,
+                status,
+                search,
+                sortBy
+            );
 
         return sendSuccess(
             res,

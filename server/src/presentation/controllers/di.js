@@ -93,7 +93,7 @@ import { AdminAuthController } from './admin/admin.authController.js'
 import { AdminLogoutUseCase } from '../../application/admin/usecases/auth/admin.logOut.usecase.js'
 import { AdminRefreshTokenUseCase } from '../../application/admin/usecases/auth/admin.refreshToken.usecase.js'
 //
-import { RedisService } from "../../application/services/redisService.js";
+import { ReservationService } from "../../infrastructure/services/reservationService.js";
 import { ChangeVendorPasswordUsecase } from "../../application/vendor/usecases/profile/changeVendorPassword.usecase.js";
 import { UserChangePasswordUsecase } from "../../application/user/usecases/profile/user.changePassword.usecase.js";
 import { UserReserveBookingUsecase } from "../../application/user/usecases/booking/user.reserveBooking.usecase.js";
@@ -117,7 +117,8 @@ const iHashService = new HashService()
 const iOtpService = new OtpService()
 const iOtpStoreService = new OtpStoreService(redisClient)
 export const iTokenService = new TokenService()
-export const IredisService=new RedisService()
+export const iReservationService =
+    new ReservationService(redisClient);
 
 // --- admin auth usecase---
 const iAdminLoginUsecase = new LoginAdminUsecase (
@@ -341,13 +342,13 @@ const iUserReserveBookingUsecase =
     new UserReserveBookingUsecase(
         bookingRepository,
         iVenueRepository,
-        IredisService
+     iReservationService
     );
 
 const iUserConfirmBookingUsecase =
     new UserConfirmBookingUsecase(
         bookingRepository,
-        IredisService,
+      iReservationService ,
         iUserRepository,
         iVenueRepository,
         iMailService

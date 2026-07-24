@@ -1,22 +1,32 @@
-import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
+
 import { BookingMessages } from "../../../../shared/constants/messages/bookingMessages.js";
 
 export class UserGetBookingsUsecase {
+
     constructor(bookingRepository) {
         this._bookingRepository = bookingRepository;
     }
 
-    async execute(userId) {
+    async execute(
+        userId,
+        page,
+        limit,
+        status,
+        search,
+        sortBy
+    ) {
 
-        const bookings =
-            await this._bookingRepository.getUserBookings(userId);
+        return await this._bookingRepository.getUserBookings(
+            userId,
+            {
+                page,
+                limit,
+                status,
+                search,
+                sortBy
+            }
+        );
 
-        if (!bookings || bookings.length === 0) {
-            throw new NotFoundError(
-                BookingMessages.error.BOOKINGS_NOT_FOUND
-            );
-        }
-
-        return bookings;
     }
+
 }

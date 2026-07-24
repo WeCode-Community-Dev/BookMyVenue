@@ -1,4 +1,4 @@
-import crypto from "crypto";
+
 
 import { VenueStatus } from "../../../../domain/enums/Venue.enum.js";
 import { ValidationError } from "../../../../domain/errors/ValidationError.js";
@@ -8,10 +8,10 @@ import { NotFoundError } from "../../../../domain/errors/NotFoundError.js";
 import { BookingMessages } from "../../../../shared/constants/messages/bookingMessages.js";
 
 export class UserReserveBookingUsecase{
-    constructor(bookingRepository,venueRepository,redisService){
+    constructor(bookingRepository,venueRepository,reservationService){
         this._bookingRepository = bookingRepository;
         this._venueRepository = venueRepository;
-        this._redisService = redisService;
+         this._reservationService = reservationService;
     }
 
     async execute(userId,bookingData){
@@ -133,7 +133,7 @@ export class UserReserveBookingUsecase{
         //check redis service(temporarly locked slot)
 
         const reservationKey = `reservation:${venueId}:${selectedDate.toISOString().split("T")[0]}`;
-        const reservations=await this._redisService.getReservation(reservationKey)
+        const reservations=await this._reservationService.getReservation(reservationKey)
         if(reservations && reservations.length>0){
             const hasOverlappingReservation=reservations.some(
                 (reservation)=>
@@ -178,9 +178,9 @@ export class UserReserveBookingUsecase{
             remainingAmount = totalAmount - advanceAmount;
         } else {
             advanceAmount = totalAmount;
-            remainingAmount;
+            remainingAmount=0;
         }
-        const reservationId=crypto.randomUUID()
+        const reservationId =this._reservationService.generateReservationId();
         const expiresAt=new Date(Date.now()+600*1000)
 
         //create reservation data//check again after booking success
@@ -204,7 +204,7 @@ export class UserReserveBookingUsecase{
 
         reservationList.push(reservationData)
 
-        await this._redisService.reserveSlot(reservationKey,reservationList,600)
+        await this._reservationService.reserveSlot(reservationKey,reservationList,600)
 
 
         return {

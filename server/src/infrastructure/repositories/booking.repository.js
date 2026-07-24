@@ -419,38 +419,78 @@ export class BookingRepositoryImpl extends BookingRepository {
         return Boolean(booking)
      }
 
-     async getUserBookings(userId) {
+     async getUserBookings(
+            userId,
+            {
+                page,
+                limit,
+                status,
+                search,
+                sortBy
+            }
+        ) {
 
-        const bookings = await BookingModel
-            .find({ userId })
-            .populate("venueId")
-            .sort({
-                createdAt: -1
-            });
+            const filter = { userId };
 
-        return bookings.map((booking) =>
-            BookingMapper.mapToEntity(booking)
-        );
+            if (status) {
+                filter.status = status;
+            }
 
-    }
+            let docs = await BookingModel.find(filter)
+                .populate("venueId")
+                .sort({
+                    bookingDate: sortBy === "asc" ? 1 : -1
+                });
 
-    async getUserBookingById(userId, bookingId) {
+            if (search) {
 
-        const booking = await BookingModel
-            .findOne({
-                _id: bookingId,
-                userId
-            })
-            .populate("venueId")
-            .populate("vendorId", "fullName companyName email phone");
+                const keyword = search.trim().toLowerCase();
 
-        if (!booking) {
-            return null;
+                docs = docs.filter(
+                    (doc) =>
+                        doc.venueId?.name?.toLowerCase().includes(keyword) ||
+                        doc._id.toString().includes(keyword)
+                );
+
+            }
+
+            const total = docs.length;
+
+            const skip = (page - 1) * limit;
+
+            docs = docs.slice(skip, skip + Number(limit));
+
+            return {
+                bookings: docs.map((doc) =>
+                    BookingMapper.mapToEntity(doc)
+                ),
+                pagination: {
+                    total,
+                    page: Number(page),
+                    limit: Number(limit),
+                    totalPages: Math.ceil(total / limit)
+                }
+            };
+
         }
+     async getUserBookingById(userId, bookingId) {
 
-        return BookingMapper.mapToEntity(booking);
+            const booking = await BookingModel
+                .findOne({
+                    _id: bookingId,
+                    userId
+                })
+                .populate("venueId")
+                .populate("vendorId", "fullName companyName email phone");
 
-    }
+            if (!booking) {
+                return null;
+            }
+
+            return BookingMapper.mapToEntity(booking);
+
+        }
+    
     async getBookingsForPaymentReminder(date) {
 
         return await BookingModel.find({
