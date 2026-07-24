@@ -94,4 +94,11 @@ export const adminStyle = {
         "md:grid-cols-2",
         "xl:grid-cols-4",
     ),
+
+    emptyState: clsx(
+        "col-span-full",
+        "py-8",
+        "text-center",
+        "text-slate-500",
+    ),
 };

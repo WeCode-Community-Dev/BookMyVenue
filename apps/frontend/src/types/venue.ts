@@ -56,3 +56,25 @@ export interface Venue {
     createdAt: string;
   };
 }
+
+export interface VenueCardProps {
+  imageUrl: string;
+  venueName: string;
+  venueLocation: string;
+  guests: number;
+  price: number;
+  venueStatus: string;
+}
+
+export interface PendingVenueCardProps {
+  id: string;
+  imageUrl: string;
+  venueName: string;
+  venueLocation: string;
+  capacity: number;
+  price: number;
+  owner: string;
+  submittedOn: string;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+}

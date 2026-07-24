@@ -20,7 +20,8 @@ export const SCREENS = {
     ADD_VENUE:"/addvenue",
     VENUES:"/venues",
     SETTINGS:"/settings",
-    BOOKINGS: "/bookings"
+    BOOKINGS: "/bookings",
+    OWNER: "/owner"
 };
 
 export const LANGUAGE={
