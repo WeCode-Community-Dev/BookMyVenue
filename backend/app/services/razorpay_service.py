@@ -53,21 +53,3 @@ def verify_payment_signature(order_id: str, payment_id: str, signature: str) -> 
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="INVALID_SIGNATURE",
         )
-
-
-def verify_webhook_signature(body: bytes, signature: str) -> None:
-    if not settings.RAZORPAY_WEBHOOK_SECRET:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Razorpay webhook secret is not configured",
-        )
-    expected = hmac.new(
-        settings.RAZORPAY_WEBHOOK_SECRET.encode("utf-8"),
-        body,
-        hashlib.sha256,
-    ).hexdigest()
-    if not hmac.compare_digest(expected, signature):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="INVALID_SIGNATURE",
-        )

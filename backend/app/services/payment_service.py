@@ -194,33 +194,3 @@ def get_payment_status(db: Session, current_user: User, payment_id: str) -> Paym
     if payment.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="This is not your payment")
     return payment_to_out(payment)
-
-
-def handle_webhook_event(db: Session, payload: dict) -> None:
-    event = payload.get("event", "")
-    entity = payload.get("payload", {})
-
-    order_id = None
-    payment_id = None
-
-    if event == "payment.captured":
-        payment_entity = entity.get("payment", {}).get("entity", {})
-        order_id = payment_entity.get("order_id")
-        payment_id = payment_entity.get("id")
-    elif event == "order.paid":
-        order_entity = entity.get("order", {}).get("entity", {})
-        order_id = order_entity.get("id")
-
-    if not order_id:
-        return
-
-    payment = (
-        db.query(Payment)
-        .filter(Payment.gateway_order_id == order_id)
-        .order_by(Payment.created_at.desc())
-        .first()
-    )
-    if payment is None or payment.status == "paid":
-        return
-
-    mark_payment_paid(db, payment, gateway_payment_id=payment_id)

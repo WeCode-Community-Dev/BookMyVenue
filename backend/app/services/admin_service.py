@@ -1,13 +1,15 @@
 from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy import func, or_
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.booking import Booking
 from app.models.payment import Payment
 from app.models.user import User
 from app.models.venue import Venue
+from app.models.venue_owner import VenueOwner
+from app.models.venue_type import VenueType
 from app.schemas.admin import UserAdminCreate, UserAdminUpdate, VenueAdminCreate, VenueAdminUpdate
 from app.services.auth_service import hash_password
 from app.services.booking_dates import day_in_booking_range
@@ -22,6 +24,7 @@ def _bookings_covering_day(db: Session, day) -> int:
 
 
 def _venue_to_admin_out(venue: Venue, owner_name: str | None = None) -> dict:
+    venue_type = getattr(venue, "venue_type", None)
     return {
         "id": venue.id,
         "owner_id": venue.owner_id,
@@ -29,6 +32,11 @@ def _venue_to_admin_out(venue: Venue, owner_name: str | None = None) -> dict:
         "name": venue.name,
         "location": venue.location,
         "price_per_day": float(venue.price_per_day),
+        "venue_type_id": venue.venue_type_id,
+        "venue_type_name": venue_type.name if venue_type else None,
+        "capacity": venue.capacity,
+        "image_url": venue.image_url,
+        "google_maps_url": venue.google_maps_url,
         "description": venue.description,
         "approval_status": venue.approval_status,
         "rejection_reason": venue.rejection_reason,
@@ -38,15 +46,91 @@ def _venue_to_admin_out(venue: Venue, owner_name: str | None = None) -> dict:
     }
 
 
+def _user_to_admin_out(user: User) -> dict:
+    profile = user.venue_owner_profile
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "phone_number": user.phone_number,
+        "role": user.role,
+        "is_active": user.is_active,
+        "created_at": user.created_at,
+        "is_venue_owner": profile is not None,
+        "business_name": profile.business_name if profile else None,
+        "business_address": profile.business_address if profile else None,
+        "business_type": profile.business_type if profile else None,
+        "business_phone": profile.business_phone if profile else None,
+        "business_email": profile.business_email if profile else None,
+        "gst_number": profile.gst_number if profile else None,
+    }
+
+
+def _normalize_owner_role(role: str | None) -> str | None:
+    if role is None:
+        return None
+    return "owner" if role == "host" else role
+
+
+def _ensure_owner_profile(
+    db: Session,
+    user: User,
+    *,
+    business_name: str | None = None,
+    business_address: str | None = None,
+    business_type: str | None = None,
+    business_phone: str | None = None,
+    business_email: str | None = None,
+    gst_number: str | None = None,
+) -> VenueOwner:
+    profile = user.venue_owner_profile
+    if profile is None:
+        profile = VenueOwner(
+            user_id=user.id,
+            business_name=(business_name or user.name or "Business").strip(),
+            business_address=(business_address or "Address pending").strip(),
+            business_type=business_type,
+            contact_person=user.name,
+            business_phone=business_phone or user.phone_number,
+            business_email=business_email or user.email,
+            gst_number=gst_number,
+        )
+        db.add(profile)
+    else:
+        if business_name is not None:
+            profile.business_name = business_name.strip() or profile.business_name
+        if business_address is not None:
+            profile.business_address = business_address.strip() or profile.business_address
+        if business_type is not None:
+            profile.business_type = business_type
+        if business_phone is not None:
+            profile.business_phone = business_phone
+        if business_email is not None:
+            profile.business_email = business_email
+        if gst_number is not None:
+            profile.gst_number = gst_number
+    return profile
+
+
 def _get_venue_or_404(db: Session, venue_id: int) -> Venue:
-    venue = db.query(Venue).filter(Venue.id == venue_id).first()
+    venue = (
+        db.query(Venue)
+        .options(joinedload(Venue.venue_type))
+        .filter(Venue.id == venue_id)
+        .first()
+    )
     if not venue:
         raise HTTPException(status_code=404, detail="Venue not found")
     return venue
 
 
 def _get_user_or_404(db: Session, user_id: int) -> User:
-    user = db.query(User).filter(User.id == user_id).first()
+    user = (
+        db.query(User)
+        .options(joinedload(User.venue_owner_profile))
+        .filter(User.id == user_id)
+        .first()
+    )
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
@@ -58,9 +142,21 @@ def _pct(value: int, total: int) -> int:
     return round((value / total) * 100)
 
 
+
 def get_dashboard_stats(db: Session) -> dict:
-    total_users = db.query(User).filter(User.role == "user").count()
-    total_owners = db.query(User).filter(User.role.in_(["owner", "host"])).count()
+    owner_user_ids = db.query(VenueOwner.user_id)
+    total_users = (
+        db.query(User)
+        .filter(User.role == "user", ~User.id.in_(owner_user_ids))
+        .count()
+    )
+    total_owners = (
+        db.query(User)
+        .outerjoin(VenueOwner)
+        .filter(or_(User.role.in_(["owner", "host"]), VenueOwner.id.isnot(None)))
+        .distinct()
+        .count()
+    )
     total_venues = db.query(Venue).count()
     pending_venues = db.query(Venue).filter(Venue.approval_status == "pending").count()
     active_venues = db.query(Venue).filter(Venue.is_active.is_(True)).count()
