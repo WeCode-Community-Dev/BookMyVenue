@@ -7,8 +7,15 @@ import {
 } from "../modules/bookings/bookingSlice";
 import StatusBadge from "../components/shared/StatusBadge";
 import BookingQrCode from "../components/BookingQrCode";
+import ReviewForm from "../components/ReviewForm";
 import { formatBookingPeriod } from "../utils/bookingFormat";
 import { formatPolicyDate } from "../utils/cancellationPolicy";
+
+const PAYMENT_OPTION_LABELS = {
+  full: "Paid in full",
+  advance: "Advance paid",
+  pay_at_venue: "Pay at venue",
+};
 
 function BookingDetailPage() {
   const { id } = useParams();
@@ -54,7 +61,7 @@ function BookingDetailPage() {
       </div>
     );
   }
-  if (error) {
+  if (error && !current) {
     return (
       <div className="max-w-xl">
         <p className="text-rose-600">{error}</p>
@@ -108,6 +115,15 @@ function BookingDetailPage() {
           <Row label="Period" value={formatBookingPeriod(current)} className="col-span-2" />
           {current.num_days > 1 && <Row label="Duration" value={`${current.num_days} days`} />}
           {current.payment_status && <Row label="Payment" value={current.payment_status} />}
+          {current.payment_option && (
+            <Row label="Payment plan" value={PAYMENT_OPTION_LABELS[current.payment_option] ?? current.payment_option} />
+          )}
+          {Number(current.amount_paid) > 0 && (
+            <Row label="Paid" value={`₹${Number(current.amount_paid).toLocaleString("en-IN")}`} />
+          )}
+          {current.status !== "cancelled" && Number(current.balance_due) > 0 && (
+            <Row label="Balance due" value={`₹${Number(current.balance_due).toLocaleString("en-IN")}`} />
+          )}
           {current.payment?.paid_at && (
             <Row
               label="Paid at"
@@ -127,6 +143,27 @@ function BookingDetailPage() {
           <div className="text-sm bg-rose-50 rounded-xl p-3">
             <p className="text-rose-400 text-xs mb-1">Cancellation reason</p>
             <p className="text-rose-700">{current.cancellation_reason}</p>
+          </div>
+        )}
+
+        {current.status === "cancelled" && (
+          <div className="text-sm bg-emerald-50 border border-emerald-100 rounded-xl p-3 space-y-1">
+            <p className="text-emerald-800 text-xs font-medium">Refund status</p>
+            {current.refund_status && (current.refund_amount_if_cancelled ?? 0) > 0 ? (
+              <>
+                <p className="text-emerald-700">
+                  {(current.refund_percent_if_cancelled ?? 0)}% refund of ₹
+                  {Number(current.refund_amount_if_cancelled).toLocaleString("en-IN")}
+                </p>
+                <p className="text-emerald-600 text-xs capitalize">
+                  Status: {String(current.refund_status).replace(/_/g, " ")}
+                </p>
+              </>
+            ) : (
+              <p className="text-slate-600">
+                No refund was issued for this cancellation.
+              </p>
+            )}
           </div>
         )}
 
@@ -202,6 +239,29 @@ function BookingDetailPage() {
         </div>
       )}
 
+      {current.can_review && (
+        <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-3">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-800">Rate your experience</h2>
+            <p className="text-sm text-slate-400 mt-0.5">
+              How was your event at {current.venue_name || "this venue"}?
+            </p>
+          </div>
+          <ReviewForm
+            venueId={current.venue_id}
+            bookingId={current.id}
+            googleMapsUrl={current.google_maps_url}
+            onSuccess={() => dispatch(fetchBookingDetailAsync(Number(id)))}
+          />
+        </div>
+      )}
+
+      {current.has_review && (
+        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-sm text-emerald-800">
+          You have already reviewed this booking. Thank you for your feedback!
+        </div>
+      )}
+
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4 z-50">
           <div className="w-full max-w-sm bg-white rounded-2xl p-6 space-y-4">
@@ -219,6 +279,9 @@ function BookingDetailPage() {
               <p className="text-sm text-slate-500 bg-slate-50 rounded-xl px-3 py-2">
                 Payment has not been completed — no refund will be processed.
               </p>
+            )}
+            {error && (
+              <p className="text-sm text-rose-600 bg-rose-50 rounded-xl px-3 py-2">{error}</p>
             )}
             <textarea
               value={reason}

@@ -67,6 +67,17 @@ export const rejectBookingRequestAsync = createAsyncThunk(
   },
 );
 
+export const collectBookingBalanceAsync = createAsyncThunk(
+  "venueOwner/collectBookingBalance",
+  async (id, { rejectWithValue }) => {
+    try {
+      return await venueOwnerService.collectBookingBalance(id);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
 export const fetchAvailabilityCalendarAsync = createAsyncThunk(
   "venueOwner/fetchAvailabilityCalendar",
   async (params, { rejectWithValue }) => {
@@ -373,6 +384,28 @@ const venueOwnerSlice = createSlice({
         patchOwnerBooking(state, action.payload);
       })
       .addCase(rejectBookingRequestAsync.rejected, (state, action) => {
+        state.loading.actionBooking = null;
+        state.error = action.payload;
+      })
+
+      .addCase(collectBookingBalanceAsync.pending, (state, action) => {
+        state.loading.actionBooking = action.meta.arg;
+        state.error = null;
+      })
+      .addCase(collectBookingBalanceAsync.fulfilled, (state, action) => {
+        state.loading.actionBooking = null;
+        const idx = state.ownerBookings.items.findIndex(
+          (b) => b.id === action.payload.booking_id,
+        );
+        if (idx !== -1) {
+          state.ownerBookings.items[idx] = {
+            ...state.ownerBookings.items[idx],
+            amount_paid: action.payload.amount_paid,
+            balance_due: action.payload.balance_due,
+          };
+        }
+      })
+      .addCase(collectBookingBalanceAsync.rejected, (state, action) => {
         state.loading.actionBooking = null;
         state.error = action.payload;
       })

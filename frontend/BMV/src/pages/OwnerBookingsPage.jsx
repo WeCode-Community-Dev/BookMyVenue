@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { MapPin, Calendar, Clock, Users, IndianRupee, FileText, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Calendar, Users, IndianRupee, FileText, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 import OwnerLayout from "../components/VenueOwnerDashboard/OwnerLayout";
 import {
   fetchOwnerBookingsAsync,
   acceptBookingRequestAsync,
   rejectBookingRequestAsync,
+  collectBookingBalanceAsync,
 } from "../modules/venueOwner/venueOwnerSlice";
 import { formatBookingPeriod } from "../utils/bookingFormat";
 
@@ -61,11 +62,35 @@ function StatusBadge({ booking }) {
   );
 }
 
-function ActionButtons({ booking, actionBookingId, onAccept, onReject }) {
+function hasBalanceDue(booking) {
+  return (
+    booking.status !== "cancelled" &&
+    booking.owner_status === "accepted" &&
+    Number(booking.balance_due ?? 0) > 0
+  );
+}
+
+function ActionButtons({ booking, actionBookingId, onAccept, onReject, onCollectBalance }) {
   const displayStatus = resolveDisplayStatus(booking);
   const isActing = actionBookingId === booking.id;
 
   if (displayStatus !== "pending") {
+    if (hasBalanceDue(booking)) {
+      return (
+        <button
+          onClick={() => onCollectBalance(booking.id)}
+          disabled={isActing}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold transition-colors disabled:opacity-50"
+        >
+          {isActing ? (
+            <span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <IndianRupee size={12} />
+          )}
+          Collect {Number(booking.balance_due).toLocaleString("en-IN")}
+        </button>
+      );
+    }
     return (
       <button className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold transition-colors">
         Manage
@@ -95,8 +120,25 @@ function ActionButtons({ booking, actionBookingId, onAccept, onReject }) {
   );
 }
 
+function PaymentSummary({ booking }) {
+  const balance = Number(booking.balance_due ?? 0);
+  if (booking.status === "cancelled") return null;
+  if (balance <= 0) {
+    return <p className="text-[11px] text-emerald-600 mt-0.5">Fully paid</p>;
+  }
+  return (
+    <p className="text-[11px] text-amber-600 mt-0.5">
+      {Number(booking.amount_paid ?? 0) > 0
+        ? `Paid ₹${Number(booking.amount_paid).toLocaleString("en-IN")} · `
+        : ""}
+      ₹{balance.toLocaleString("en-IN")} due
+      {booking.payment_option === "pay_at_venue" ? " at venue" : ""}
+    </p>
+  );
+}
+
 // Desktop table row
-function BookingRow({ booking, actionBookingId, onAccept, onReject }) {
+function BookingRow({ booking, actionBookingId, onAccept, onReject, onCollectBalance }) {
   const periodStr = formatBookingPeriod(booking);
 
   return (
@@ -145,6 +187,7 @@ function BookingRow({ booking, actionBookingId, onAccept, onReject }) {
           <IndianRupee size={13} />
           {Number(booking.amount).toLocaleString("en-IN")}
         </p>
+        <PaymentSummary booking={booking} />
       </td>
 
       {/* Actions */}
@@ -163,6 +206,7 @@ function BookingRow({ booking, actionBookingId, onAccept, onReject }) {
             actionBookingId={actionBookingId}
             onAccept={onAccept}
             onReject={onReject}
+            onCollectBalance={onCollectBalance}
           />
         </div>
       </td>
@@ -171,7 +215,7 @@ function BookingRow({ booking, actionBookingId, onAccept, onReject }) {
 }
 
 // Mobile card
-function BookingCard({ booking, actionBookingId, onAccept, onReject }) {
+function BookingCard({ booking, actionBookingId, onAccept, onReject, onCollectBalance }) {
   const periodStr = formatBookingPeriod(booking);
 
   return (
@@ -210,15 +254,19 @@ function BookingCard({ booking, actionBookingId, onAccept, onReject }) {
 
       {/* Amount + actions */}
       <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-        <p className="text-sm font-semibold text-gray-800 flex items-center gap-0.5">
-          <IndianRupee size={13} />
-          {Number(booking.amount).toLocaleString("en-IN")}
-        </p>
+        <div>
+          <p className="text-sm font-semibold text-gray-800 flex items-center gap-0.5">
+            <IndianRupee size={13} />
+            {Number(booking.amount).toLocaleString("en-IN")}
+          </p>
+          <PaymentSummary booking={booking} />
+        </div>
         <ActionButtons
           booking={booking}
           actionBookingId={actionBookingId}
           onAccept={onAccept}
           onReject={onReject}
+          onCollectBalance={onCollectBalance}
         />
       </div>
     </div>
@@ -293,6 +341,10 @@ function OwnerBookingsPage() {
     dispatch(rejectBookingRequestAsync(id)).then(() => load(activeTab, page));
   };
 
+  const handleCollectBalance = (id) => {
+    dispatch(collectBookingBalanceAsync(id)).then(() => load(activeTab, page));
+  };
+
   const isLoading = loading.ownerBookings;
   const actionBookingId = loading.actionBooking;
 
@@ -349,6 +401,7 @@ function OwnerBookingsPage() {
                         actionBookingId={actionBookingId}
                         onAccept={handleAccept}
                         onReject={handleReject}
+                        onCollectBalance={handleCollectBalance}
                       />
                     ))}
             </tbody>
@@ -374,6 +427,7 @@ function OwnerBookingsPage() {
                     actionBookingId={actionBookingId}
                     onAccept={handleAccept}
                     onReject={handleReject}
+                    onCollectBalance={handleCollectBalance}
                   />
                 ))}
         </div>

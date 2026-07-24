@@ -91,6 +91,8 @@ function OwnerVenueEditPage() {
         refund50Days: venue.refund_50_days_before ?? "",
         refund25Days: venue.refund_25_days_before ?? "",
         cancelCutoffDays: venue.cancel_cutoff_days_before ?? "",
+        advancePercent: venue.advance_percent ?? 30,
+        allowPayAtVenue: venue.allow_pay_at_venue !== false,
       });
     }
   }, [venue]);
@@ -112,6 +114,9 @@ function OwnerVenueEditPage() {
       next.dailyRate = "Enter a valid daily rate";
     if (fields.capacity && Number(fields.capacity) <= 0)
       next.capacity = "Capacity must be a positive number";
+    const pct = Number(fields.advancePercent);
+    if (!pct || pct < 1 || pct > 100)
+      next.advancePercent = "Advance must be between 1 and 100";
     const policyError = validateCancellationPolicyFields(
       parsePolicyDays(fields.refund50Days),
       parsePolicyDays(fields.refund25Days),
@@ -138,6 +143,8 @@ function OwnerVenueEditPage() {
           capacity:      fields.capacity ? Number(fields.capacity) : null,
           description:   fields.description.trim() || null,
           image_url:     fields.imageUrl.trim() || null,
+          advance_percent: Number(fields.advancePercent),
+          allow_pay_at_venue: Boolean(fields.allowPayAtVenue),
           ...policyPayloadFromFields(
             fields.refund50Days,
             fields.refund25Days,
@@ -357,6 +364,37 @@ function OwnerVenueEditPage() {
           <p className="text-xs text-gray-400">
             Full-refund days must be greater than 50% days, which must be greater than last-cancel days.
           </p>
+        </div>
+
+        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 space-y-4">
+          <h3 className="text-sm font-semibold text-rose-900">Payment options</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Advance payment %" error={fieldErrors.advancePercent}>
+              <input
+                name="advancePercent"
+                type="number"
+                min="1"
+                max="100"
+                value={fields.advancePercent}
+                onChange={handleChange}
+                className={`${inputBase} ${
+                  fieldErrors.advancePercent ? inputError : inputNormal
+                }`}
+              />
+            </Field>
+            <label className="flex items-center gap-2 sm:mt-6 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={Boolean(fields.allowPayAtVenue)}
+                onChange={(e) => {
+                  setFields((prev) => ({ ...prev, allowPayAtVenue: e.target.checked }));
+                  setSaveSuccess(false);
+                }}
+                className="rounded border-gray-300 text-rose-900 focus:ring-rose-300"
+              />
+              Allow pay at venue
+            </label>
+          </div>
         </div>
 
         {/* Amenities — live toggle */}

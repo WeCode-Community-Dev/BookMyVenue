@@ -20,3 +20,11 @@ const ERROR_MESSAGES = {
 
 export const getFriendlyError = (code) =>
   ERROR_MESSAGES[code] ?? ERROR_MESSAGES.INTERNAL_ERROR;
+
+/** Map known API error codes; leave free-text details unchanged. */
+export const resolveApiError = (detail) => {
+  if (typeof detail !== "string" || !detail) {
+    return ERROR_MESSAGES.INTERNAL_ERROR;
+  }
+  return ERROR_MESSAGES[detail] ?? detail;
+};

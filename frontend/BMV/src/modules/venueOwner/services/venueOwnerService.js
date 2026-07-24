@@ -28,10 +28,24 @@ export const venueOwnerService = {
     return res.data;
   },
 
+  async collectBookingBalance(id) {
+    const res = await client.post(
+      `/venue-owners/dashboard/bookings/${id}/collect-balance`,
+    );
+    return res.data;
+  },
+
   async verifyBookingCheckIn(check_in_token) {
     const res = await client.post("/venue-owners/dashboard/bookings/check-in", {
       check_in_token,
     });
+    return res.data;
+  },
+
+  async collectBalance(bookingId) {
+    const res = await client.post(
+      `/venue-owners/dashboard/bookings/${bookingId}/collect-balance`,
+    );
     return res.data;
   },
 

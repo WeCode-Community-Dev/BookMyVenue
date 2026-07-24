@@ -14,17 +14,29 @@ const FILTERS = [
   { key: "cancelled", label: "Cancelled" },
 ];
 
+const PAGE_SIZE = 10;
+
 function OrderHistoryPage() {
   const dispatch = useDispatch();
   const { list, pagination, loading, error } = useSelector((state) => state.bookings);
   const { user } = useSelector((state) => state.auth);
   const [filter, setFilter] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    dispatch(fetchMyBookingsAsync({ status: filter }));
-  }, [dispatch, filter]);
+    setPage(1);
+  }, [filter]);
+
+  useEffect(() => {
+    dispatch(fetchMyBookingsAsync({ status: filter, page, limit: PAGE_SIZE }));
+  }, [dispatch, filter, page]);
 
   const bookings = Array.isArray(list) ? list : [];
+  const totalItems = pagination?.total_items ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  const currentPage = pagination?.page || page;
+  const canPrev = currentPage > 1;
+  const canNext = currentPage < totalPages;
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -36,7 +48,7 @@ function OrderHistoryPage() {
           </p>
         </div>
         {pagination && (
-          <span className="text-sm text-slate-400 shrink-0">{pagination.total_items} orders</span>
+          <span className="text-sm text-slate-400 shrink-0">{totalItems} orders</span>
         )}
       </div>
 
@@ -117,6 +129,30 @@ function OrderHistoryPage() {
           </Link>
         ))}
       </div>
+
+      {!loading && totalItems > PAGE_SIZE && (
+        <div className="flex items-center justify-between gap-4 bg-white rounded-2xl border border-slate-100 px-4 py-3">
+          <button
+            type="button"
+            disabled={!canPrev}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-slate-500">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            disabled={!canNext}
+            onClick={() => setPage((p) => p + 1)}
+            className="px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

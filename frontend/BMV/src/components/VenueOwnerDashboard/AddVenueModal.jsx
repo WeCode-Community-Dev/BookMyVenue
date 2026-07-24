@@ -24,6 +24,8 @@ const initialFormState = {
   refund50Days: "",
   refund25Days: "",
   cancelCutoffDays: "",
+  advancePercent: "30",
+  allowPayAtVenue: true,
 };
 
 function AddVenueModal({
@@ -183,6 +185,9 @@ function AddVenueModal({
       next.dailyRate = "Enter a valid daily rate";
     if (fields.capacity && Number(fields.capacity) <= 0)
       next.capacity = "Capacity must be a positive number";
+    const pct = Number(fields.advancePercent);
+    if (!pct || pct < 1 || pct > 100)
+      next.advancePercent = "Advance must be between 1 and 100";
     const policyError = validateCancellationPolicyFields(
       parsePolicyDays(fields.refund50Days),
       parsePolicyDays(fields.refund25Days),
@@ -223,6 +228,8 @@ const handleSubmit = async (e) => {
     description: fields.description.trim() || null,
     image_url: finalImageUrl,
     amenityIds: selectedAmenityIds,
+    advance_percent: Number(fields.advancePercent) || 30,
+    allow_pay_at_venue: Boolean(fields.allowPayAtVenue),
     ...policyPayloadFromFields(
       fields.refund50Days,
       fields.refund25Days,
@@ -482,6 +489,49 @@ const handleSubmit = async (e) => {
                   onChange={handleChange}
                   className="w-full rounded-xl px-3.5 py-2.5 text-sm border border-gray-200 bg-gray-50"
                 />
+              </div>
+            </div>
+
+            {/* Payment options */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Payment options
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Advance %</label>
+                  <input
+                    name="advancePercent"
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={fields.advancePercent}
+                    onChange={handleChange}
+                    className={`w-full rounded-xl px-3.5 py-2.5 text-sm border ${
+                      errors.advancePercent
+                        ? "border-red-400 bg-red-50"
+                        : "border-gray-200 bg-gray-50"
+                    }`}
+                  />
+                  {errors.advancePercent && (
+                    <p className="mt-1 text-xs text-red-500">⚠ {errors.advancePercent}</p>
+                  )}
+                </div>
+                <label className="flex items-center gap-2 mt-6 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    name="allowPayAtVenue"
+                    checked={Boolean(fields.allowPayAtVenue)}
+                    onChange={(e) =>
+                      setFields((prev) => ({
+                        ...prev,
+                        allowPayAtVenue: e.target.checked,
+                      }))
+                    }
+                    className="rounded border-gray-300 text-rose-900 focus:ring-rose-300"
+                  />
+                  Allow pay at venue
+                </label>
               </div>
             </div>
 

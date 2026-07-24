@@ -3,9 +3,9 @@ import { paymentService } from "./services/paymentService";
 
 export const initiatePaymentAsync = createAsyncThunk(
   "payments/initiate",
-  async (bookingId, { rejectWithValue }) => {
+  async ({ bookingId, paymentOption }, { rejectWithValue }) => {
     try {
-      return await paymentService.initiate(bookingId);
+      return await paymentService.initiate(bookingId, paymentOption);
     } catch (err) {
       return rejectWithValue(err.message);
     }
