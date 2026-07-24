@@ -20,8 +20,8 @@ export class UserBookingController {
 
     reserveBooking = asyncHandler(async (req, res) => {
 
-        const userId = req.user.userId;
-
+       // const userId = req.user.userId;
+        const userId='6a2452b206ce114bb639d372';
         const result =
             await this._userReserveBookingUsecase.execute(
                 userId,
@@ -87,7 +87,9 @@ export class UserBookingController {
     });
     getBookingById = asyncHandler(async (req, res) => {
 
-        const userId = req.user.userId;
+        //const userId = req.user.userId;
+                const userId='6a2452b206ce114bb639d372';
+
 
         const { bookingId } = req.params;
 
