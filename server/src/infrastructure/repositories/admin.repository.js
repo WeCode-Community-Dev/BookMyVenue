@@ -204,16 +204,7 @@ const revenueOverview = await PaymentModel.aggregate([
   {
     $match: {
       paymentStatus: PaymentStatus.SUCCESS,
-    $expr: {
-        $eq: [
-          {
-            $year: {
-              $toDate: "$createdAt",
-            },
-          },
-          currentYear,
-        ],
-      },
+
     },
   },
 
