@@ -1,16 +1,13 @@
 /* eslint-disable */
 
-import { format } from "date-fns";
-import PackageCard from "./PackageCard";
 import { AppText, getText } from "@/lib/language/LanguageHelper";
+
+import PackageCard from "./PackageCard";
 import { bookingPackagesStyle } from "@/features/booking/styles/BookingPackagesStyle";
+import { format } from "date-fns";
 
 export default function BookingPackages({ selectedDates }: { selectedDates?: Date[] }) {
-    const defaultDates = [
-        new Date(2026, 6, 15),
-        new Date(2026, 6, 16),
-        new Date(2026, 6, 17),
-    ];
+    const defaultDates: Date[] = [];
 
     const dates = selectedDates || defaultDates;
 

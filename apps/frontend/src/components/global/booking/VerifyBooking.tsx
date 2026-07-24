@@ -131,13 +131,6 @@ export default function VenueApprovalModal({
                     </div>
 
                     <div className={verifyBookingStyle.headerRight}>
-                        <span className={verifyBookingStyle.statusBadge}>
-                            <AppText
-                                textName="PENDING_APPROVAL"
-                                textModule="LABEL"
-                            />
-                        </span>
-
                         <Button
                             onClick={onClose}
                             variant="ghost"

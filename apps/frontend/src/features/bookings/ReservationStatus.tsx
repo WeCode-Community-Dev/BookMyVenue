@@ -2,30 +2,41 @@
 
 import { Check, Clock3 } from "lucide-react";
 
-const steps = [
-    {
-        title: "Venue Selected",
-        subtitle: "Grand Palace Convention Centre",
-        completed: true,
-    },
-    {
-        title: "Event Date Selected",
-        subtitle: "15 Jul, 16 Jul, 17 Jul 2026",
-        completed: true,
-    },
-    {
-        title: "Package Selected",
-        subtitle: "3 Packages",
-        completed: true,
-    },
-    {
-        title: "Payment Pending",
-        subtitle: "Almost there!",
-        completed: false,
-    },
-];
+import { format } from "date-fns";
 
-export default function ReservationStatus() {
+export default function ReservationStatus({
+    selectedDates = [],
+    venueName,
+}: {
+    selectedDates?: Date[];
+    venueName?: string;
+}) {
+    const steps = [
+        {
+            title: "Venue Selected",
+            subtitle: venueName || "Grand Palace Convention Centre",
+            completed: !!venueName,
+        },
+        {
+            title: "Event Date Selected",
+            subtitle: selectedDates.length > 0 
+                ? selectedDates.map(d => format(d, "dd MMM")).join(", ") 
+                : "No date selected",
+            completed: selectedDates.length > 0,
+        },
+        {
+            title: "Package Selected",
+            subtitle: selectedDates.length > 0 
+                ? `${selectedDates.length} Package${selectedDates.length > 1 ? "s" : ""}` 
+                : "Select packages",
+            completed: selectedDates.length > 0,
+        },
+        {
+            title: "Payment Pending",
+            subtitle: "Almost there!",
+            completed: false,
+        },
+    ];
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
