@@ -5,73 +5,82 @@ import {
     Users,
 } from "lucide-react";
 
+import { AppText } from "@/lib/language/LanguageHelper";
 import Image from "next/image";
+import { VenueCardProps } from "@/types/Venue";
+import { miniCardStyle } from "./MiniCardStyle";
 
-interface VenueCardProps {
-  image: string;
-  name: string;
-  location: string;
-  guests: number;
-  price: number;
-  status: string;
-}
+const getStatusStylesClass = (venueStatus: string) => {
+    switch (venueStatus?.toUpperCase()) {
+        case "APPROVED":
+            return miniCardStyle.statusApproved;
+        case "PENDING":
+            return miniCardStyle.statusPending;
+        case "REJECTED":
+            return miniCardStyle.statusRejected;
+        default:
+            return miniCardStyle.statusDefault;
+    }
+};
 
 export default function VenueCard({
-    image,
-    name,
-    location,
+    imageUrl,
+    venueName,
+    venueLocation,
     guests,
     price,
-    status,
+    venueStatus,
 }: VenueCardProps) {
     return (
-        <div className="overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm">
-            <div className="relative h-44 w-full">
+        <div className={miniCardStyle.card}>
+            <div className={miniCardStyle.imageWrapper}>
                 <Image
-                    src={image}
-                    alt={name}
+                    src={imageUrl}
+                    alt={venueName}
                     fill
-                    className="object-cover"
+                    className={miniCardStyle.image}
                 />
 
-                <span className="absolute right-3 top-3 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                    {status}
+                <span className={`${miniCardStyle.statusBadgeBase} ${getStatusStylesClass(venueStatus)}`}>
+                    {venueStatus}
                 </span>
             </div>
 
-            <div className="p-4">
-                <div className="mb-2 flex items-start justify-between">
-                    <h3 className="text-lg font-semibold">{name}</h3>
+            <div className={miniCardStyle.content}>
+                <div className={miniCardStyle.titleWrapper}>
+                    <h3 className={miniCardStyle.title}>{venueName}</h3>
 
                     <button>
                         <MoreVertical size={18} />
                     </button>
                 </div>
 
-                <div className="mb-4 flex items-center gap-2 text-sm text-slate-500">
+                <div className={miniCardStyle.locationWrapper}>
                     <MapPin size={14} />
-                    {location}
+                    {venueLocation}
                 </div>
 
-                <div className="mb-5 flex items-center gap-6 text-sm text-slate-600">
-                    <div className="flex items-center gap-2">
+                <div className={miniCardStyle.detailsWrapper}>
+                    <div className={miniCardStyle.detailItem}>
                         <Users size={16} />
-                        {guests} Guests
+                        <AppText textName="GUEST_COUNT" textModule="LABEL" 
+                            append={{ count: guests.toString() }} />
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className={miniCardStyle.detailItem}>
                         <CalendarDays size={16} />
-            ₹{price.toLocaleString()} / day
+                        <AppText textName="PRICE_PER_DAY" textModule="LABEL" 
+                            append={{ price: price.toLocaleString() }} />
                     </div>
                 </div>
 
-                <div className="flex gap-3">
-                    <button className="flex-1 text-[12px] rounded-lg border border-teal-600 py-2 font-medium text-teal-600">
-            Edit
+                <div className={miniCardStyle.buttonWrapper}>
+                    <button className={miniCardStyle.editBtn}>
+                        <AppText textName="EDIT" textModule="BUTTON" />
                     </button>
 
-                    <button className="flex-1 text-[12px] rounded-lg bg-teal-600 py-2 font-medium text-white">
-            View Bookings
+                    <button className={miniCardStyle.bookingsBtn}>
+                        <AppText textName="VIEW_BOOKINGS" textModule="BUTTON" />
                     </button>
                 </div>
             </div>

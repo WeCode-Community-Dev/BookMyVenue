@@ -13,10 +13,10 @@ import {
 import { LANGUAGE, SCREENS, THEME } from "@/lib/Constants";
 import { storeTheme, useConfigTheme, useLanguage } from "@/store/AppConfigReducer";
 import { useDispatch, useSelector } from "react-redux";
-import { useAuthService } from "@/features/auth/services/AuthService";
 
 import NxtImage from "next/image";
 import { profileDropdownStyle } from "./ProfileDropdownStyle";
+import { useAuthService } from "@/features/auth/services/AuthService";
 import { useRouter } from "next/navigation";
 
 interface ProfileDropdownProps {
@@ -46,15 +46,20 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
     };
 
     const menuItems = [
-        {
-            icon: User,
-            label: getText("PROFILE", "MENUS"),
-            onClick: handleProfile
-        },
-        {
-            icon: Settings,
-            label: getText("SETTINGS", "MENUS"),
-        },
+        ...(user?.role !== "ADMIN"
+            ? [
+                {
+                    icon: User,
+                    label: getText("PROFILE", "MENUS"),
+                    onClick: handleProfile
+                },
+                {
+                    icon: Settings,
+                    label: getText("SETTINGS", "MENUS"),
+                }
+            ]
+            : [
+            ]),
         {
             icon: Languages,
             label: getText("LANGUAGE", "MENUS"),
@@ -111,15 +116,19 @@ export default function ProfileDropdown({ isOpen }: ProfileDropdownProps) {
                 })}
             </div>
 
-            <div className={profileDropdownStyle.divider} />
+            {user?.role !== "ADMIN" && (
+                <>
+                    <div className={profileDropdownStyle.divider} />
 
-            {/* Support */}
-            <div className={profileDropdownStyle.supportContainer}>
-                <button className={profileDropdownStyle.menuItem}>
-                    <Headphones className={profileDropdownStyle.menuItemIcon} />
-                    <AppText textName="SUPPORT" textModule="MENUS" />
-                </button>
-            </div>
+                    {/* Support */}
+                    <div className={profileDropdownStyle.supportContainer}>
+                        <button className={profileDropdownStyle.menuItem}>
+                            <Headphones className={profileDropdownStyle.menuItemIcon} />
+                            <AppText textName="SUPPORT" textModule="MENUS" />
+                        </button>
+                    </div>
+                </>
+            )}
 
             <div className={profileDropdownStyle.divider} />
 

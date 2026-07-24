@@ -38,7 +38,11 @@
         "CLEAR_ALL": "सभी साफ़ करें",
         "ADD_ANOTHER_DATE": "+ दूसरी तिथि जोड़ें",
         "RETRY": "पुनः प्रयास करें",
-        "PROCESSING": "प्रक्रिया जारी है..."
+        "PROCESSING": "प्रक्रिया जारी है...",
+        "REJECT": "अस्वीकार करें",
+        "APPROVE": "स्वीकार करें",
+        "EDIT": "संपादित करें",
+        "VIEW_BOOKINGS": "बुकिंग देखें"
     },
     "LABEL": {
         "WELCOME_BACK": "वापसी पर स्वागत है",
@@ -137,7 +141,29 @@
         "STATUS_PENDING_PAYMENT": "भुगतान लंबित",
         "STATUS_EXPIRED": "समाप्त",
         "STATUS_REFUNDED": "वापस किया गया",
-        "STATUS_CANCELLED": "रद्द किया गया"
+        "STATUS_CANCELLED": "रद्द किया गया",
+        "OWNER_HAPPENING_TODAY": "यहाँ आज आपके स्थानों के साथ क्या हो रहा है।",
+        "VIEW_ALL_VENUES": "सभी स्थान देखें →",
+        "ADMIN_DASHBOARD": "एडमिन डैशबोर्ड",
+        "ADMIN_SUBTITLE": "स्वागत है, एडमिन! यहाँ आपके प्लेटफ़ॉर्म पर क्या हो रहा है।",
+        "PENDING_VENUE_APPROVALS": "लंबित स्थल स्वीकृतियाँ",
+        "VENUES_WAITING_APPROVAL": "आपकी स्वीकृति की प्रतीक्षा कर रहे स्थान",
+        "NO_PENDING_APPROVALS": "स्वीकृति के लिए कोई लंबित स्थान नहीं है।",
+        "LOADING_PENDING_VENUES": "लंबित स्थान लोड हो रहे हैं...",
+        "ADD_NEW_VENUE": "नया स्थान जोड़ें",
+        "ADD_VENUE_DESC": "एक और अद्भुत स्थान सूचीबद्ध करें और बुकिंग प्राप्त करना शुरू करें।",
+        "OWNER": "मालिक",
+        "SUBMITTED": "सबमिट किया गया",
+        "STATUS_PENDING": "लंबित",
+        "PRICE_PER_DAY": "₹{price}/दिन",
+        "TOTAL_USERS": "कुल उपयोगकर्ता",
+        "ALL_REGISTERED_USERS": "सभी पंजीकृत उपयोगकर्ता",
+        "TOTAL_OWNERS": "कुल मालिक",
+        "VENUE_OWNERS": "स्थल के मालिक",
+        "TOTAL_VENUES": "कुल स्थल",
+        "LISTED_VENUES": "सूचीबद्ध स्थल",
+        "TOTAL_BOOKINGS": "कुल बुकिंग",
+        "ALL_BOOKINGS": "सभी बुकिंग"
     },
     "FILTERS": {
         "FILTER": "फ़िल्टर्स",
@@ -291,6 +317,9 @@
         "UNEXPECTED_ERROR": "एक अप्रत्याशित त्रुटि हुई।",
         "NO_BOOKINGS_FOUND": "कोई बुकिंग नहीं मिली।",
         "START_EXPLORING_VENUES": "अपनी पहली बुकिंग करने के लिए स्थानों की खोज शुरू करें!",
-        "FAILED_TO_LOAD_BOOKINGS": "बुकिंग लोड करने में विफल"
+        "FAILED_TO_LOAD_BOOKINGS": "बुकिंग लोड करने में विफल",
+        "ENTER_REJECTION_REASON": "अस्वीकृति का कारण दर्ज करें (वैकल्पिक):",
+        "FAILED_APPROVE_VENUE": "स्थल को स्वीकृत करने में विफल",
+        "FAILED_REJECT_VENUE": "स्थल को अस्वीकार करने में विफल"
     }
 }

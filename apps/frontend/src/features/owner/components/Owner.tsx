@@ -1,18 +1,52 @@
 "use client";
 
 import { Building2, CalendarDays, Clock3, IndianRupee } from "lucide-react";
+import {
+    getVenueCapacity,
+    getVenueLocation,
+    getVenuePrice,
+    getVenuePrimaryImage,
+} from "@/features/venues/services/VenuService";
+import { useEffect, useState } from "react";
 
-import AddVenueCard from "@/components/global/addvenue";
+import AddVenueCard from "@/components/global/AddVenueCard";
+import { AppText } from "@/lib/language/LanguageHelper";
 import ProTipCard from "@/components/global/tipcard";
 import RecentBookings from "@/components/global/table";
 import StatsCard from "@/components/global/statcard";
 import TodayAtGlanceCard from "@/components/global/daystats";
-import VenueCard from "@/components/global/minicard";
+import VenueCard from "@/components/global/MiniCard";
 import dummyData from "../../../../DummyData.json";
 import { ownerStyle } from "../styles/OwnerStyle";
+import { useAuthService } from "@/features/auth/services/AuthService";
 
 export default function Owner() {
-    const venues = dummyData.venues;
+    const { apiFetch, user } = useAuthService();
+    const [
+        venues, setVenues
+    ] = useState<any[]>([
+    ]);
+
+    const [
+        loading, setLoading
+    ] = useState(true);
+
+    useEffect(() => {
+        const fetchOwnerVenues = async () => {
+            try {
+                const resData = await apiFetch("/venue/my-venues");
+                setVenues(resData || [
+                ]);
+            } catch (resErr) {
+                console.error("Error fetching my venues:", resErr);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOwnerVenues();
+    }, [
+        apiFetch
+    ]);
 
     const getIcon = (iconName: string) => {
         switch (iconName) {
@@ -41,11 +75,12 @@ export default function Owner() {
             {/* Welcome Section */}
             <div className={ownerStyle.welcomeSection}>
                 <h1 className={ownerStyle.welcomeHeading}>
-                    Welcome back, Vishnu! 👋
+                    <AppText textName="WELCOME_BACK_EMOJI" textModule="LABEL" />
+                    {user?.name ? `, ${user.name}` : ""}!
                 </h1>
 
                 <p className={ownerStyle.welcomeSubtitle}>
-                    Here&apos;s what&apos;s happening with your venues today.
+                    <AppText textName="OWNER_HAPPENING_TODAY" textModule="LABEL" />
                 </p>
             </div>
 
@@ -71,29 +106,43 @@ export default function Owner() {
                 <section className={ownerStyle.leftSection}>
                     <div className={ownerStyle.sectionHeaderWrapper}>
                         <h2 className={ownerStyle.sectionTitle}>
-                            My Venues
+                            <AppText textName="MY_VENUE" textModule="MENUS" />
                         </h2>
 
                         <button className={ownerStyle.viewAllButton}>
-                            View All Venues →
+                            <AppText textName="VIEW_ALL_VENUES" textModule="LABEL" />
                         </button>
                     </div>
 
                     {/* Venue Cards */}
                     <div className={ownerStyle.venueCardsGrid}>
-                        {venues.map((venue) => {
-                            return (
-                                <VenueCard
-                                    key={venue.id}
-                                    image={venue.image}
-                                    name={venue.name}
-                                    location={venue.location}
-                                    guests={venue.guests}
-                                    price={venue.price}
-                                    status={venue.status}
-                                />
-                            );
-                        })}
+                        {loading
+                            ? (
+                                <div className={ownerStyle.emptyState}>
+                                    <AppText textName="LOADING_VENUES" textModule="MESSAGES" />
+                                </div>
+                            )
+                            : venues.length === 0
+                                ? (
+                                    <div className={ownerStyle.emptyState}>
+                                        <AppText textName="NO_VENUES_FOUND" textModule="MESSAGES" />
+                                    </div>
+                                )
+                                : (
+                                    venues.map((venue) => {
+                                        return (
+                                            <VenueCard
+                                                key={venue.id}
+                                                imageUrl={getVenuePrimaryImage(venue)}
+                                                venueName={venue.name}
+                                                venueLocation={getVenueLocation(venue)}
+                                                guests={getVenueCapacity(venue)}
+                                                price={getVenuePrice(venue)}
+                                                venueStatus={venue.status}
+                                            />
+                                        );
+                                    })
+                                )}
                     </div>
 
                     {/* Recent Bookings */}

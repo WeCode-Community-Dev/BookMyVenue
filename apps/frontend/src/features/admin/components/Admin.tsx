@@ -7,14 +7,71 @@ import {
     UserCog,
     Users,
 } from "lucide-react";
-import { adminPendingVenues, adminStats } from "../services/AdminService";
+import { useState, useEffect, useCallback } from "react";
+import { adminStats } from "../services/AdminService";
 
 import AdminBottomSection from "@/components/global/admininfo";
-import PendingVenueCard from "@/components/global/approvalcard";
+import PendingVenueCard from "@/components/global/ApprovalCard";
 import StatsCard from "@/components/global/statcard";
 import { adminStyle } from "../styles/AdminStyle";
+import { useAuthService } from "@/features/auth/services/AuthService";
+import { AppText, getText } from "@/lib/language/LanguageHelper";
+import {
+    getVenuePrimaryImage,
+    getVenueLocation,
+    getVenuePrice,
+    getVenueCapacity,
+} from "@/features/venues/services/VenuService";
 
 export default function Admin() {
+    const { apiFetch } = useAuthService();
+    const [pendingVenues, setPendingVenues] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchPendingVenues = useCallback(async () => {
+        setLoading(true);
+        try {
+            const data = await apiFetch("/venue/pending");
+            setPendingVenues(data || []);
+        } catch (err) {
+            console.error("Error fetching pending venues:", err);
+        } finally {
+            setLoading(false);
+        }
+    }, [apiFetch]);
+
+    useEffect(() => {
+        fetchPendingVenues();
+    }, [fetchPendingVenues]);
+
+    const handleApprove = async (id: string) => {
+        try {
+            await apiFetch(`/venue/approve/${id}`, { method: "POST" });
+            fetchPendingVenues();
+        } catch (err) {
+            console.error("Error approving venue:", err);
+            alert(getText("FAILED_APPROVE_VENUE", "MESSAGES"));
+        }
+    };
+
+    const handleReject = async (id: string) => {
+        const reason = prompt(getText("ENTER_REJECTION_REASON", "MESSAGES"));
+        if (reason === null) return; // User cancelled
+        try {
+            await apiFetch(`/venue/reject/${id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ rejectionNote: reason }),
+            });
+            fetchPendingVenues();
+        } catch (err) {
+            console.error("Error rejecting venue:", err);
+            alert(getText("FAILED_REJECT_VENUE", "MESSAGES"));
+        }
+    };
+
     const getIcon = (iconName: string) => {
         switch (iconName) {
             case "Users":
@@ -37,16 +94,28 @@ export default function Admin() {
         };
     });
 
+    const formatSubmittedOn = (dateString: string) => {
+        try {
+            return new Date(dateString).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+            });
+        } catch (e) {
+            return dateString;
+        }
+    };
+
     return (
         <div className={adminStyle.pageWrapper}>
             {/* Page Header */}
             <div>
                 <h1 className={adminStyle.headerTitle}>
-                    Admin Dashboard
+                    <AppText textName="ADMIN_DASHBOARD" textModule="LABEL" />
                 </h1>
 
                 <p className={adminStyle.headerSubtitle}>
-                    Welcome back, Admin! Here&apos;s what&apos;s happening on your platform.
+                    <AppText textName="ADMIN_SUBTITLE" textModule="LABEL" />
                 </p>
             </div>
 
@@ -74,40 +143,53 @@ export default function Admin() {
                     <div>
                         <div className={adminStyle.sectionHeaderTitleWrapper}>
                             <h2 className={adminStyle.sectionTitle}>
-                                Pending Venue Approvals
+                                <AppText textName="PENDING_VENUE_APPROVALS" textModule="LABEL" />
                             </h2>
 
                             <span className={adminStyle.badge}>
-                                {adminPendingVenues.length}
+                                {pendingVenues.length}
                             </span>
                         </div>
 
                         <p className={adminStyle.sectionSubtitle}>
-                            Venues waiting for your approval
+                            <AppText textName="VENUES_WAITING_APPROVAL" textModule="LABEL" />
                         </p>
                     </div>
 
-                    <button className={adminStyle.refreshBtn}>
+                    <button onClick={fetchPendingVenues} className={adminStyle.refreshBtn}>
                         <RefreshCw className="h-4 w-4" />
-                        Refresh
+                        <AppText textName="REFRESH" textModule="BUTTON" />
                     </button>
                 </div>
 
                 <div className={adminStyle.approvalsGrid}>
-                    {adminPendingVenues.map((venue) => {
-                        return (
-                            <PendingVenueCard
-                                key={venue.id}
-                                image={venue.image}
-                                name={venue.name}
-                                location={venue.location}
-                                capacity={venue.capacity}
-                                price={venue.price}
-                                owner={venue.owner}
-                                submittedOn={venue.submittedOn}
-                            />
-                        );
-                    })}
+                    {loading ? (
+                        <div className={adminStyle.emptyState}>
+                            <AppText textName="LOADING_PENDING_VENUES" textModule="LABEL" />
+                        </div>
+                    ) : pendingVenues.length === 0 ? (
+                        <div className={adminStyle.emptyState}>
+                            <AppText textName="NO_PENDING_APPROVALS" textModule="LABEL" />
+                        </div>
+                    ) : (
+                        pendingVenues.map((venue) => {
+                            return (
+                                <PendingVenueCard
+                                    key={venue.id}
+                                    id={venue.id}
+                                    imageUrl={getVenuePrimaryImage(venue)}
+                                    venueName={venue.name}
+                                    venueLocation={getVenueLocation(venue)}
+                                    capacity={getVenueCapacity(venue)}
+                                    price={getVenuePrice(venue)}
+                                    owner={venue.owner?.name || "Unknown"}
+                                    submittedOn={formatSubmittedOn(venue.createdAt)}
+                                    onApprove={handleApprove}
+                                    onReject={handleReject}
+                                />
+                            );
+                        })
+                    )}
                 </div>
             </section>
             <AdminBottomSection />

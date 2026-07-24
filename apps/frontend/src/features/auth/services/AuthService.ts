@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { SCREENS } from "@/lib/Constants";
 import store from "@/store/Store";
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -83,7 +84,7 @@ export const useAuthService = () => {
     const isAuthenticated = useSelector(selectIsAuthenticated);
     const loading = useSelector(selectAuthLoading);
 
-    async function apiFetch(path: string, options: RequestInit = {}) {
+    const apiFetch = useCallback(async (path: string, options: RequestInit = {}) => {
         const url = `${BASE_URL}${path}`;
 
         const headers: HeadersInit = {
@@ -136,7 +137,9 @@ export const useAuthService = () => {
         } catch (error: any) {
             throw new Error(error.message || "Network error");
         }
-    }
+    }, [
+        dispatch
+    ]);
 
     const requestOtp = async (email: string) => {
         dispatch(setLoading(true));
@@ -172,7 +175,11 @@ export const useAuthService = () => {
 
             setTimeout(() => {
                 dispatch(setAuthSuccess(result.user));
-                router.push("/");
+                if (result.user?.role === "ADMIN") {
+                    router.push("/admin");
+                } else {
+                    router.push("/");
+                }
             }, 1000);
 
             return { success: true, user: result.user };

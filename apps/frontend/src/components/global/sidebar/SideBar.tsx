@@ -59,8 +59,8 @@ export default function Sidebar() {
         {
             icon: Building2,
             label: "MY_VENUE",
-            active: false,
-            path: ""
+            active: isItemActive(SCREENS.OWNER),
+            path: SCREENS.OWNER
         },
         {
             icon: CalendarDays,

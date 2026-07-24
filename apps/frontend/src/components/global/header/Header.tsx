@@ -60,16 +60,18 @@ export default function Header() {
 
                     {/* Left */}
                     <div className={headerStyle.leftSection}>
-                        <button
-                            onClick={() => {
-                                return setMobileMenuOpen(true);
-                            }}
-                            className={headerStyle.menuBtn}
-                        >
-                            <Menu className="h-5 w-5" />
-                        </button>
+                        {user?.role !== "ADMIN" && (
+                            <button
+                                onClick={() => {
+                                    return setMobileMenuOpen(true);
+                                }}
+                                className={headerStyle.menuBtn}
+                            >
+                                <Menu className="h-5 w-5" />
+                            </button>
+                        )}
 
-                        <div className={headerStyle.divider} />
+                        {user?.role !== "ADMIN" && <div className={headerStyle.divider} />}
 
                         <div className={headerStyle.logoContainer}>
                             <NxtImage
@@ -85,23 +87,25 @@ export default function Header() {
 
                     {/* Center Navigation */}
 
-                    <nav className={headerStyle.navBar}>
-                        <Button className={headerStyle.navBtnActive}>
-                            <AppText textName="EXPLORE" textModule="MENUS" />
-                        </Button>
-                        <Button className={headerStyle.navBtnActive}>
-                            <AppText textName="VENUE_NEAR_ME" textModule="MENUS" />
-                        </Button>
-                        <Button className={headerStyle.navBtnActive}>
-                            <AppText textName="OFFERS" textModule="MENUS" />
-                            <span
-                                className={headerStyle.offersBadge}
-                                style={{ backgroundColor: "#FF6B6B" }}
-                            >
-                                12
-                            </span>
-                        </Button>
-                    </nav>
+                    {user?.role !== "ADMIN" && (
+                        <nav className={headerStyle.navBar}>
+                            <Button className={headerStyle.navBtnActive}>
+                                <AppText textName="EXPLORE" textModule="MENUS" />
+                            </Button>
+                            <Button className={headerStyle.navBtnActive}>
+                                <AppText textName="VENUE_NEAR_ME" textModule="MENUS" />
+                            </Button>
+                            <Button className={headerStyle.navBtnActive}>
+                                <AppText textName="OFFERS" textModule="MENUS" />
+                                <span
+                                    className={headerStyle.offersBadge}
+                                    style={{ backgroundColor: "#FF6B6B" }}
+                                >
+                                    12
+                                </span>
+                            </Button>
+                        </nav>
+                    )}
 
                     {/* Right */}
                     <div className={headerStyle.rightSection}>
@@ -110,16 +114,18 @@ export default function Header() {
                             (
                                 <>
                                     {/* Notification */}
-                                    <button className={headerStyle.notificationBtn}>
-                                        <Bell className="h-5 w-5 text-slate-700" />
+                                    {user?.role !== "ADMIN" && (
+                                        <button className={headerStyle.notificationBtn}>
+                                            <Bell className="h-5 w-5 text-slate-700" />
 
-                                        <span
-                                            className={headerStyle.notificationBadge}
-                                            style={{ backgroundColor: "#FF6B6B" }}
-                                        >
-                                            3
-                                        </span>
-                                    </button>
+                                            <span
+                                                className={headerStyle.notificationBadge}
+                                                style={{ backgroundColor: "#FF6B6B" }}
+                                            >
+                                                3
+                                            </span>
+                                        </button>
+                                    )}
 
                                     {/* Profile */}
                                     <div

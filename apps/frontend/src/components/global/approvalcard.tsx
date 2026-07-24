@@ -3,122 +3,133 @@
 "use client";
 
 import {
-  MapPin,
-  Users,
-  IndianRupee,
-  User,
-  CalendarDays,
+    CalendarDays,
+    IndianRupee,
+    MapPin,
+    User,
+    Users,
 } from "lucide-react";
 
-interface PendingVenueCardProps {
-  image: string;
-  name: string;
-  location: string;
-  capacity: number;
-  price: number;
-  owner: string;
-  submittedOn: string;
-}
+import { AppText } from "@/lib/language/LanguageHelper";
+import Image from "next/image";
+import { PendingVenueCardProps } from "@/types/Venue";
+import { approvalCardStyle } from "./ApprovalCardStyle";
 
 export default function PendingVenueCard({
-  image,
-  name,
-  location,
-  capacity,
-  price,
-  owner,
-  submittedOn,
+    id,
+    imageUrl,
+    venueName,
+    venueLocation,
+    capacity,
+    price,
+    owner,
+    submittedOn,
+    onApprove,
+    onReject,
 }: PendingVenueCardProps) {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md">
+    return (
+        <div className={approvalCardStyle.card}>
 
-      {/* Image */}
-      <div className="relative">
-        <img
-          src={image}
-          alt={name}
-          className="h-48 w-full object-cover"
-        />
+            {/* Image */}
+            <div className={approvalCardStyle.imageWrapper}>
+                <Image
+                    src={imageUrl}
+                    alt={venueName}
+                    fill
+                    className={approvalCardStyle.image}
+                />
 
-        <span className="absolute right-3 top-3 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
-          Pending
-        </span>
-      </div>
+                <span className={approvalCardStyle.statusBadge}>
+                    <AppText textName="STATUS_PENDING" textModule="LABEL" />
+                </span>
+            </div>
 
-      {/* Content */}
-      <div className="p-4">
+            {/* Content */}
+            <div className={approvalCardStyle.content}>
 
-        <h3 className="text-lg font-semibold text-slate-900">
-          {name}
-        </h3>
+                <h3 className={approvalCardStyle.title}>
+                    {venueName}
+                </h3>
 
-        <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">
-          <MapPin className="h-4 w-4" />
-          {location}
+                <div className={approvalCardStyle.locationWrapper}>
+                    <MapPin className={approvalCardStyle.icon} />
+                    {venueLocation}
+                </div>
+
+                <div className={approvalCardStyle.infoWrapper}>
+
+                    <div className={approvalCardStyle.infoRow}>
+                        <span className={approvalCardStyle.infoLabelWrapper}>
+                            <Users className={approvalCardStyle.icon} />
+                            <AppText textName="CAPACITY" textModule="LABEL" />
+                        </span>
+
+                        <span className={approvalCardStyle.infoValue}>
+                            <AppText textName="GUEST_COUNT" textModule="LABEL" 
+                                append={{ count: capacity.toString() }} />
+                        </span>
+                    </div>
+
+                    <div className={approvalCardStyle.infoRow}>
+                        <span className={approvalCardStyle.infoLabelWrapper}>
+                            <IndianRupee className={approvalCardStyle.icon} />
+                            <AppText textName="PRICE" textModule="LABEL" />
+                        </span>
+
+                        <span className={approvalCardStyle.infoValue}>
+                            <AppText textName="PRICE_PER_DAY" textModule="LABEL" 
+                                append={{ price: price.toLocaleString() }} />
+                        </span>
+                    </div>
+
+                    <div className={approvalCardStyle.infoRow}>
+                        <span className={approvalCardStyle.infoLabelWrapper}>
+                            <User className={approvalCardStyle.icon} />
+                            <AppText textName="OWNER" textModule="LABEL" />
+                        </span>
+
+                        <span className={approvalCardStyle.infoValue}>
+                            {owner}
+                        </span>
+                    </div>
+
+                    <div className={approvalCardStyle.infoRow}>
+                        <span className={approvalCardStyle.infoLabelWrapper}>
+                            <CalendarDays className={approvalCardStyle.icon} />
+                            <AppText textName="SUBMITTED" textModule="LABEL" />
+                        </span>
+
+                        <span className={approvalCardStyle.infoValue}>
+                            {submittedOn}
+                        </span>
+                    </div>
+
+                </div>
+
+                {/* Actions */}
+                <div className={approvalCardStyle.actionsWrapper}>
+
+                    <button
+                        onClick={() => {
+                            return onReject(id); 
+                        }}
+                        className={approvalCardStyle.rejectBtn}
+                    >
+                        <AppText textName="REJECT" textModule="BUTTON" />
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            return onApprove(id); 
+                        }}
+                        className={approvalCardStyle.approveBtn}
+                    >
+                        <AppText textName="APPROVE" textModule="BUTTON" />
+                    </button>
+
+                </div>
+
+            </div>
         </div>
-
-        <div className="mt-4 space-y-3">
-
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-slate-500">
-              <Users className="h-4 w-4" />
-              Capacity
-            </span>
-
-            <span className="font-medium text-slate-800">
-              {capacity} Guests
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-slate-500">
-              <IndianRupee className="h-4 w-4" />
-              Price
-            </span>
-
-            <span className="font-medium text-slate-800">
-              ₹{price.toLocaleString()}/day
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-slate-500">
-              <User className="h-4 w-4" />
-              Owner
-            </span>
-
-            <span className="font-medium text-slate-800">
-              {owner}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-slate-500">
-              <CalendarDays className="h-4 w-4" />
-              Submitted
-            </span>
-
-            <span className="font-medium text-slate-800">
-              {submittedOn}
-            </span>
-          </div>
-
-        </div>
-
-        {/* Actions */}
-        <div className="mt-5 grid grid-cols-2 gap-3">
-
-          <button className="rounded-lg border border-teal-600 py-2 text-sm font-medium text-teal-600 transition hover:bg-teal-50">
-            View Details
-          </button>
-
-          <button className="rounded-lg bg-teal-600 py-2 text-sm font-medium text-white transition hover:bg-teal-700">
-            Approve
-          </button>
-
-        </div>
-
-      </div>
-    </div>
-  );
+    );
 }

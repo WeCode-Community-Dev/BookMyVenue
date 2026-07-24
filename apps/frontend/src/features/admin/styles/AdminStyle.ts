@@ -86,6 +86,7 @@ export const adminStyle = {
         "font-medium",
         "text-teal-600",
         "hover:bg-slate-50",
+        "cursor-pointer",
     ),
 
     approvalsGrid: clsx(
@@ -93,5 +94,12 @@ export const adminStyle = {
         "gap-6",
         "md:grid-cols-2",
         "xl:grid-cols-4",
+    ),
+
+    emptyState: clsx(
+        "col-span-full",
+        "py-8",
+        "text-center",
+        "text-slate-500",
     ),
 };

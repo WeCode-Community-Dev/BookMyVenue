@@ -77,4 +77,11 @@ export const ownerStyle = {
     rightSidebar: clsx(
         "space-y-6",
     ),
+
+    emptyState: clsx(
+        "col-span-full",
+        "py-8",
+        "text-center",
+        "text-slate-500",
+    ),
 };

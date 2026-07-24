@@ -38,7 +38,12 @@
         "CLEAR_ALL": "Clear All",
         "ADD_ANOTHER_DATE": "+ Add Another Date",
         "RETRY": "Retry",
-        "PROCESSING": "Processing..."
+        "PROCESSING": "Processing...",
+        "REJECT": "Reject",
+        "APPROVE": "Approve",
+        "EDIT": "Edit",
+        "VIEW_BOOKINGS": "View Bookings",
+        "REFRESH": "Refresh"
     },
     "LABEL": {
         "WELCOME_BACK": "Welcome Back",
@@ -137,7 +142,29 @@
         "STATUS_PENDING_PAYMENT": "Pending Payment",
         "STATUS_EXPIRED": "Expired",
         "STATUS_REFUNDED": "Refunded",
-        "STATUS_CANCELLED": "Cancelled"
+        "STATUS_CANCELLED": "Cancelled",
+        "OWNER_HAPPENING_TODAY": "Here's what's happening with your venues today.",
+        "VIEW_ALL_VENUES": "View All Venues →",
+        "ADMIN_DASHBOARD": "Admin Dashboard",
+        "ADMIN_SUBTITLE": "Welcome back, Admin! Here's what's happening on your platform.",
+        "PENDING_VENUE_APPROVALS": "Pending Venue Approvals",
+        "VENUES_WAITING_APPROVAL": "Venues waiting for your approval",
+        "NO_PENDING_APPROVALS": "No pending venues to approve.",
+        "LOADING_PENDING_VENUES": "Loading pending venues...",
+        "ADD_NEW_VENUE": "Add New Venue",
+        "ADD_VENUE_DESC": "List another amazing venue and start getting bookings.",
+        "OWNER": "Owner",
+        "SUBMITTED": "Submitted",
+        "STATUS_PENDING": "Pending",
+        "PRICE_PER_DAY": "₹{price}/day",
+        "TOTAL_USERS": "Total Users",
+        "ALL_REGISTERED_USERS": "All registered users",
+        "TOTAL_OWNERS": "Total Owners",
+        "VENUE_OWNERS": "Venue owners",
+        "TOTAL_VENUES": "Total Venues",
+        "LISTED_VENUES": "Listed venues",
+        "TOTAL_BOOKINGS": "Total Bookings",
+        "ALL_BOOKINGS": "All bookings"
     },
     "FILTERS": {
         "FILTER": "Filters",
@@ -291,6 +318,9 @@
         "UNEXPECTED_ERROR": "An unexpected error occurred.",
         "NO_BOOKINGS_FOUND": "No bookings found.",
         "START_EXPLORING_VENUES": "Start exploring venues to make your first booking!",
-        "FAILED_TO_LOAD_BOOKINGS": "Failed to load bookings"
+        "FAILED_TO_LOAD_BOOKINGS": "Failed to load bookings",
+        "ENTER_REJECTION_REASON": "Enter reason for rejection (optional):",
+        "FAILED_APPROVE_VENUE": "Failed to approve venue",
+        "FAILED_REJECT_VENUE": "Failed to reject venue"
     }
 }
