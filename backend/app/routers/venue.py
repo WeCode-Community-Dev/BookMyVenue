@@ -11,9 +11,12 @@ from app.services.venue_service import (
     check_availability,
     create_venue,
     delete_venue,
+    deactivate_venue,
     get_my_venues,
-    deactivate_venue
-
+    get_venue,
+    get_venues,
+    get_pending_venues,
+    update_venue,
 )
 
 router = APIRouter(prefix="/venues", tags=["Venues"])
@@ -27,11 +30,9 @@ def list_my_venues(
     return get_my_venues(db, current_user)
 
 
-
-
 @router.get("/pending", response_model=list[VenueOut])
 def list_pending_venues(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     return get_pending_venues(db)
 
@@ -61,13 +62,18 @@ def get_single_venue(
     venue_id: int,
     db: Session = Depends(get_db),
 ):
-    """Update a venue (owner only - can only update own venues)"""
-    return update_venue(
-        db,
-        venue_id,
-        venue,
-        owner_id=current_user.id
-    )
+    return get_venue(db, venue_id)
+
+
+@router.put("/{venue_id}", response_model=VenueOut)
+def update_existing_venue(
+    venue_id: int,
+    venue: VenueUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    return update_venue(db, venue_id, venue, owner_id=current_user.id)
+
 
 @router.delete("/{venue_id}")
 def delete_existing_venue(
@@ -85,12 +91,6 @@ def deactivate_existing_venue(
     current_user: User = Depends(get_current_venue_owner),
 ):
     return deactivate_venue(db, venue_id, current_user)
-    """Delete a venue (owner only - can only delete own venues)"""
-    return delete_venue(
-        db,
-        venue_id,
-        owner_id=current_user.id
-    )
 
 
 @router.get("/{venue_id}/availability")
@@ -117,22 +117,3 @@ def venue_availability(
         )
 
     return check_availability(db, venue_id, parsed_date, parsed_time)
-
-
-@router.put("/{venue_id}", response_model=VenueOut)
-def update_existing_venue(
-    venue_id: int,
-    venue: VenueUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_venue_owner),
-):
-    return update_venue(db, venue_id, venue, owner_id=current_user.id)
-
-
-@router.delete("/{venue_id}")
-def delete_existing_venue(
-    venue_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_venue_owner),
-):
-    return delete_venue(db, venue_id, owner_id=current_user.id)

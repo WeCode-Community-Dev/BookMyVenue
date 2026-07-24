@@ -42,7 +42,7 @@ def get_dashboard_summary(db: Session, owner_id: int) -> dict:
     booking_requests_pending = booking_requests_total - booking_requests_new
 
     upcoming_query = db.query(Booking).filter(
-        Booking.venue_id.in_(venue_ids), Booking.owner_status == "accepted",Booking.status != "cancelled", Booking.booking_date >= date.today(),
+        Booking.venue_id.in_(venue_ids), Booking.owner_status == "accepted", Booking.status != "cancelled", Booking.booking_date >= date.today(),
     )
     upcoming_events_count = upcoming_query.count()
     next_event = upcoming_query.order_by(Booking.booking_date.asc()).first()
@@ -120,27 +120,43 @@ def _get_owned_booking_or_404(db: Session, booking_id: int, owner_id: int) -> Bo
 def accept_booking_request(db: Session, booking_id: int, owner_id: int) -> Booking:
     booking = _get_owned_booking_or_404(db, booking_id, owner_id)
     booking.owner_status = "accepted"
+    
+    # Auto-reject all other pending requests for the same venue + date
+    db.query(Booking).filter(
+        Booking.venue_id == booking.venue_id,
+        Booking.booking_date == booking.booking_date,
+        Booking.owner_status == "pending",
+        Booking.id != booking.id,
+    ).update({
+        "owner_status": "rejected",
+        "status": "cancelled",
+        "cancellation_reason": "Another booking was accepted for this date",
+        "cancelled_at": datetime.now(timezone.utc),
+    })
+    
     db.commit()
     db.refresh(booking)
     return booking
 
 
-def reject_booking_request(db: Session, booking_id: int, owner_id: int) -> Booking:
+# ← CHANGED: now accepts an optional rejection_reason string
+def reject_booking_request(db: Session, booking_id: int, owner_id: int, rejection_reason: str | None = None) -> Booking:
     booking = _get_owned_booking_or_404(db, booking_id, owner_id)
     booking.owner_status = "rejected"
     booking.status = "cancelled"
-    booking.cancellation_reason = "Rejected by venue owner"
+    # Use the owner-supplied reason if provided, else a default
+    booking.cancellation_reason = rejection_reason or "Rejected by venue owner"
     booking.cancelled_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(booking)
     return booking
 
 
-def get_availability_calendar(db: Session, owner_id: int, month: str, venue_id: int | None = None, ) -> dict:
+def get_availability_calendar(db: Session, owner_id: int, month: str, venue_id: int | None = None) -> dict:
     venue_ids = _owner_venue_ids(db, owner_id)
     if not venue_ids:
         return {"month": month, "days": {}}
-    
+
     if venue_id is not None:
         if venue_id not in venue_ids:
             raise HTTPException(status_code=403, detail="You do not own this venue.")
@@ -158,10 +174,10 @@ def get_availability_calendar(db: Session, owner_id: int, month: str, venue_id: 
     for b in bookings:
         key = b.booking_date.isoformat()
         status_val = "booked" if b.owner_status == "accepted" else "pending"
-    
+
         if key in days and days[key]["status"] == "booked":
             continue
-        
+
         days[key] = {
             "status": status_val,
             "booking_id": b.id,

@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.deps import get_db
-from app.schemas.user import UserCreate, UserLogin, UserOut, TokenOut, TokenRefreshOut, GoogleAuthRequest
-from app.services.auth_service import create_user, authenticate_user, authenticate_google_user
+from app.schemas.user import UserCreate, UserLogin, UserOut, TokenOut, TokenRefreshOut, GoogleAuthRequest, UserProfileUpdate
+from app.services.auth_service import create_user, authenticate_user, authenticate_google_user, update_user_profile
 from app.core.security import create_access_token, create_refresh_token, get_current_user, get_current_user_from_refresh_token,verify_google_token, oauth2_scheme
 from app.models.user import User, TokenBlacklist
 

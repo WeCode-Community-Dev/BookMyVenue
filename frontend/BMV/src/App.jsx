@@ -5,7 +5,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import LandingPage from "./pages/LandingPage";
-import DashboardPage from "./pages/DashboardPage";
+// import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import OrderHistoryPage from "./pages/OrderHistoryPage";
 import BookingDetailPage from "./pages/BookingDetailPage";
@@ -22,6 +22,20 @@ import RequireAuth from "./components/RequireAuth";
 import RequireVenueOwner from "./components/RequireVenueOwner";
 import RequireAdmin from "./components/RequireAdmin";
 import AdminLayout from "./components/admin/AdminLayout";
+
+import AdminLoginPage from "./pages/admin/AdminLoginPage"
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage"
+import PendingVenuesPage from "./pages/admin/PendingVenuesPage"
+import VenueCreatePage from "./pages/admin/VenueCreatePage"
+import BookingsPage from "./pages/admin/BookingsPage"
+import UserCreatePage from "./pages/admin/UserCreatePage"
+import UserEditPage from "./pages/admin/UserEditPage"
+import VenuesPage from "./pages/VenuesPage";
+import VenueDetailPage from "./pages/VenuedetailPage";
+import BookingConfirmedPage from "./pages/BookingConfirmedPage";
+
+
+
 
 function ForgotPasswordPlaceholder() {
   return (
@@ -42,17 +56,18 @@ function App() {
           <Route path="/register-venue-owner" element={<VenueOwnerRegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPlaceholder />} />
 
-          <Route path="/venues" element={<VenueListPage />} />
+          <Route path="/venues" element={<VenuesPage />} />
           <Route path="/venues/:id" element={<VenueDetailPage />} />
 
           <Route path="/admin/login" element={<AdminLoginPage />} />
 
           <Route element={<RequireAuth />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
+            {/* <Route path="/dashboard" element={<DashboardPage />} /> */}
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/order-history" element={<OrderHistoryPage />} />
             <Route path="/my-bookings" element={<OrderHistoryPage />} />
             <Route path="/bookings/:id" element={<BookingDetailPage />} />
+            <Route path="/booking-confirmed/:id" element={<BookingConfirmedPage />} />
             <Route path="/checkout/:bookingId" element={<CheckoutPage />} />
           </Route>
 
@@ -69,11 +84,11 @@ function App() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboardPage />} />
               <Route path="pending" element={<PendingVenuesPage />} />
-              <Route path="venues" element={<AdminVenuesPage />} />
+              {/* <Route path="venues" element={<AdminVenuesPage />} /> */}
               <Route path="venues/new" element={<VenueCreatePage />} />
-              <Route path="venues/:id/edit" element={<AdminVenueEditPage />} />
-              <Route path="bookings" element={<AdminBookingsPage />} />
-              <Route path="users" element={<AdminUsersPage />} />
+              {/* <Route path="venues/:id/edit" element={<AdminVenueEditPage />} /> */}
+              <Route path="bookings" element={<BookingsPage />} />
+              {/* <Route path="users" element={<AdminUsersPage />} /> */}
               <Route path="users/new" element={<UserCreatePage />} />
               <Route path="users/:id/edit" element={<UserEditPage />} />
             </Route>

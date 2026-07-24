@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
 from typing import Optional
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, time
 from app.models.booking import Booking
 from app.models.payment import Payment
 from app.models.user import User
@@ -10,6 +10,7 @@ from app.models.venue import Venue
 from app.schemas.booking import BookingCreate
 from app.services.notification_service import create_notification
 from app.services.booking_lock import acquire_slot_lock
+
 
 def get_venue(db: Session, venue_id: int):
     return db.query(Venue).filter(Venue.id == venue_id).first()
@@ -34,7 +35,12 @@ def _can_access_booking(user: User, booking: Booking, venue: Venue | None) -> bo
     return False
 
 
-def _to_list_item(booking: Booking, venue_name: str | None, venue_location: str | None, payment_status: str | None) -> dict:
+def _to_list_item(
+    booking: Booking,
+    venue_name: str | None,
+    venue_location: str | None,
+    payment_status: str | None,
+) -> dict:
     return {
         "id": booking.id,
         "venue_id": booking.venue_id,
@@ -61,17 +67,20 @@ def _payload_matches(booking: Booking, data: BookingCreate) -> bool:
 
 
 def _slot_taken(db: Session, venue_id: int, booking_date: date, time_slot) -> bool:
-    return (
+    result = (
         db.query(Booking)
         .filter(
             Booking.venue_id == venue_id,
             Booking.booking_date == booking_date,
-            Booking.time_slot == time_slot,
             Booking.status != "cancelled",
+            Booking.owner_status == "accepted",
         )
         .first()
-        is not None
     )
+    print(f"DEBUG _slot_taken: venue_id={venue_id}, date={booking_date}, result={result}")
+    if result:
+        print(f"DEBUG blocking booking: id={result.id}, status={result.status}, owner_status={result.owner_status}, date={result.booking_date}")
+    return result is not None
 
 
 def create_booking(
@@ -86,6 +95,7 @@ def create_booking(
             detail="Idempotency-Key header is required (max 128 characters)",
         )
 
+    # ── Idempotency replay check ──────────────────────────────────────────────
     existing = (
         db.query(Booking)
         .filter(
@@ -102,15 +112,13 @@ def create_booking(
             )
         return existing, False
 
-    if current_user.role != "user":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only users can create bookings",
-        )
-
+    # ── Fetch venue first so we can use it in role checks ────────────────────
     venue = get_venue(db, data.venue_id)
     if venue is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venue not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venue not found",
+        )
     if venue.approval_status != "approved":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -121,12 +129,28 @@ def create_booking(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Venue is not available for booking",
         )
+
+    # ── Role guard ────────────────────────────────────────────────────────────
+    if current_user.role == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admins cannot create bookings",
+        )
+
+    if current_user.role == "venue_owner" and venue.owner_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You cannot book your own venue",
+        )
+
+    # ── Date validation ───────────────────────────────────────────────────────
     if data.booking_date < datetime.now(timezone.utc).date():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Booking date cannot be in the past",
         )
 
+    # ── Slot lock + conflict check ────────────────────────────────────────────
     acquire_slot_lock(db, data.venue_id, data.booking_date, data.time_slot)
 
     if _slot_taken(db, data.venue_id, data.booking_date, data.time_slot):
@@ -135,11 +159,17 @@ def create_booking(
             detail="This slot is already booked",
         )
 
+    # ── Create booking ────────────────────────────────────────────────────────
     booking = Booking(
         user_id=current_user.id,
         venue_id=data.venue_id,
         booking_date=data.booking_date,
         time_slot=data.time_slot,
+        check_in_date=data.booking_date,
+        check_in_time=data.time_slot,
+        check_out_date=data.booking_date,
+        check_out_time=time(23, 59, 59),
+        num_days=1,
         notes=data.notes,
         event_type=data.event_type,
         guest_count=data.guest_count,
@@ -153,8 +183,9 @@ def create_booking(
     try:
         db.commit()
         db.refresh(booking)
-    except IntegrityError:
+    except IntegrityError as e:
         db.rollback()
+        print(f"DEBUG IntegrityError orig: {e.orig}")
         replay = (
             db.query(Booking)
             .filter(
@@ -172,9 +203,10 @@ def create_booking(
             )
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="This slot is already booked",
+            detail="Booking could not be created",
         )
 
+    # ── Notify venue owner ────────────────────────────────────────────────────
     create_notification(
         db,
         user_id=venue.owner_id,
@@ -187,8 +219,12 @@ def create_booking(
     return booking, True
 
 
-
-def get_my_bookings(db: Session, current_user: User, page: int = 1, limit: int = 20) -> dict:
+def get_my_bookings(
+    db: Session,
+    current_user: User,
+    page: int = 1,
+    limit: int = 20,
+) -> dict:
     page = max(page, 1)
     limit = max(min(limit, 100), 1)
 
@@ -205,26 +241,45 @@ def get_my_bookings(db: Session, current_user: User, page: int = 1, limit: int =
     return {"items": items, "total": total, "page": page, "limit": limit}
 
 
-def _get_own_booking_or_404(db: Session, current_user: User, booking_id: int) -> Booking:
+def _get_own_booking_or_404(
+    db: Session,
+    current_user: User,
+    booking_id: int,
+) -> Booking:
     booking = (
         db.query(Booking)
         .filter(Booking.id == booking_id, Booking.user_id == current_user.id)
         .first()
     )
     if not booking:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booking not found",
+        )
     return booking
 
 
-def get_booking_detail(db: Session, current_user: User, booking_id: int) -> Booking:
+def get_booking_detail(
+    db: Session,
+    current_user: User,
+    booking_id: int,
+) -> Booking:
     return _get_own_booking_or_404(db, current_user, booking_id)
 
 
-def cancel_booking(db: Session, current_user: User, booking_id: int, cancellation_reason: str | None) -> Booking:
+def cancel_booking(
+    db: Session,
+    current_user: User,
+    booking_id: int,
+    cancellation_reason: str | None,
+) -> Booking:
     booking = _get_own_booking_or_404(db, current_user, booking_id)
 
     if booking.status == "cancelled":
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This booking is already cancelled")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This booking is already cancelled",
+        )
 
     booking.status = "cancelled"
     booking.cancellation_reason = cancellation_reason
@@ -235,29 +290,26 @@ def cancel_booking(db: Session, current_user: User, booking_id: int, cancellatio
     return booking
 
 
-
-
 def get_owner_bookings(
     db: Session,
     current_user: User,
-    tab: str = "all",      
+    tab: str = "all",
     page: int = 1,
     limit: int = 10,
     venue_id: Optional[int] = None,
 ) -> dict:
     today = date.today()
- 
-    # Base: only bookings for venues owned by this user
+
     base = (
         db.query(Booking)
         .join(Venue, Booking.venue_id == Venue.id)
         .options(joinedload(Booking.venue), joinedload(Booking.user))
         .filter(Venue.owner_id == current_user.id)
     )
-    
+
     if venue_id is not None:
         base = base.filter(Booking.venue_id == venue_id)
- 
+
     if tab == "upcoming":
         base = base.filter(
             Booking.booking_date >= today,
@@ -270,8 +322,7 @@ def get_owner_bookings(
         )
     elif tab == "cancelled":
         base = base.filter(Booking.status == "cancelled")
-    # "all" → no extra filter
- 
+
     total = base.count()
     items = (
         base.order_by(Booking.created_at.desc())
@@ -279,7 +330,5 @@ def get_owner_bookings(
         .limit(limit)
         .all()
     )
- 
+
     return {"items": items, "total": total, "page": page, "limit": limit}
- 
- 

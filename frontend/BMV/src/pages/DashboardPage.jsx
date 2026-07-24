@@ -18,7 +18,6 @@ function DashboardPage() {
   const [venuesError, setVenuesError] = useState("");
 
   useEffect(() => {
-    dispatch(fetchCurrentUserAsync());
     dispatch(fetchMyBookingsAsync({ limit: 3 }));
   }, [dispatch]);
 

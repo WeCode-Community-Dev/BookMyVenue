@@ -1,5 +1,6 @@
 from app.models.venue_owner import VenueOwner
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import Optional
 
@@ -28,6 +29,11 @@ from app.services.notification_service import get_notifications_for_user
 router = APIRouter(prefix="/venue-owners/dashboard", tags=["Venue Owner Dashboard"])
 
 
+# ── inline schema for reject body ────────────────────────────────────────────
+class BookingRejectBody(BaseModel):
+    rejection_reason: Optional[str] = None
+
+
 @router.get("/summary", response_model=DashboardSummaryOut)
 def dashboard_summary(
     db: Session = Depends(get_db),
@@ -46,6 +52,7 @@ def owner_all_bookings(
     current_user: User = Depends(get_current_venue_owner),
 ):
     return booking_service.get_owner_bookings(db, current_user, tab, page, limit, venue_id)
+
 
 @router.get("/bookings/requests", response_model=list[BookingRequestOut])
 def booking_requests(
@@ -74,13 +81,16 @@ def accept_booking(
     }
 
 
+
 @router.patch("/bookings/{booking_id}/reject", response_model=BookingRequestOut)
 def reject_booking(
     booking_id: int,
+    body: BookingRejectBody | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_venue_owner),
 ):
-    booking = dashboard_service.reject_booking_request(db, booking_id, current_user.id)
+    reason = body.rejection_reason if body else None
+    booking = dashboard_service.reject_booking_request(db, booking_id, current_user.id, reason)
     return {
         "id": booking.id,
         "venue_name": booking.venue.name if hasattr(booking, "venue") else None,

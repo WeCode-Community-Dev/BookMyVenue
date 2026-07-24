@@ -79,6 +79,43 @@ def create_review(db: Session, current_user: User, payload: ReviewCreate) -> dic
         "owner_reply": review.owner_reply,
         "replied_at": review.replied_at,
     }
+    
+    
+def get_public_reviews(db: Session, limit: int = 6) -> list:
+    """
+    Public endpoint — returns recent reviews from approved venues only.
+    No auth required. Used on the landing page testimonials section.
+    """
+    rows = (
+        db.query(Review, Venue, Booking)
+        .join(Venue, Review.venue_id == Venue.id)
+        .outerjoin(Booking, Review.booking_id == Booking.id)
+        .filter(
+            Venue.approval_status == "approved",
+            Venue.is_active.is_(True),
+            Review.comment.isnot(None),
+            Review.rating >= 4,
+        )
+        .order_by(Review.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+ 
+    results = []
+    for review, venue, booking in rows:
+        results.append({
+            "id": review.id,
+            "venue_id": review.venue_id,
+            "rating": review.rating,
+            "comment": review.comment,
+            "created_at": review.created_at,
+            "reviewer_name": review.reviewer.name or "Anonymous",
+            "venue_name": venue.name,
+            "event_type": booking.event_type if booking else None,
+            "owner_reply": review.owner_reply,
+            "replied_at": review.replied_at,
+        })
+    return results
 
 
 def get_recent_reviews_for_owner(db: Session, owner_id: int, limit: int = 50) -> list:

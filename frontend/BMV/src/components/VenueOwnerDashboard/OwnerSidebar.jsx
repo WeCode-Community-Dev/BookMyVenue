@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 
-const CUSTOMER_DASHBOARD_ROUTE = "/dashboard";
+const CUSTOMER_DASHBOARD_ROUTE = "/";
 
 function OwnerSidebar() {
   const navigate = useNavigate();
