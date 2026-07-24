@@ -31,7 +31,7 @@ def dashboard(
 @router.get("/pending-venues", response_model=list[VenueAdminOut])
 def pending_venues(
     skip: int = Query(default=0),
-    limit: int = Query(default=20),
+    limit: int = Query(default=100, le=200),
     db: Session = Depends(get_db),
     _: User = Depends(require_admin),
 ):
@@ -71,7 +71,7 @@ def create_venue(
 def all_venues(
     approval_status: str | None = Query(default=None),
     skip: int = Query(default=0),
-    limit: int = Query(default=20),
+    limit: int = Query(default=100, le=200),
     db: Session = Depends(get_db),
     _: User = Depends(require_admin),
 ):
@@ -120,7 +120,7 @@ def unblock_venue(
 @router.get("/bookings", response_model=list[BookingAdminOut])
 def all_bookings(
     skip: int = Query(default=0),
-    limit: int = Query(default=20),
+    limit: int = Query(default=100, le=200),
     db: Session = Depends(get_db),
     _: User = Depends(require_admin),
 ):
@@ -132,7 +132,7 @@ def all_users(
     role: str | None = Query(default=None),
     is_active: bool | None = Query(default=None),
     skip: int = Query(default=0),
-    limit: int = Query(default=20),
+    limit: int = Query(default=100, le=200),
     db: Session = Depends(get_db),
     _: User = Depends(require_admin),
 ):

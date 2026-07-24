@@ -281,13 +281,19 @@ def get_pending_venues(db: Session, skip: int = 0, limit: int = 20) -> list[dict
         .limit(limit)
         .all()
     )
-    return [_venue_to_admin_out(venue, owner_name) for venue, owner_name in rows]
+    results = []
+    for venue, owner_name in rows:
+        if venue.venue_type_id and venue.venue_type is None:
+            db.refresh(venue, attribute_names=["venue_type"])
+        results.append(_venue_to_admin_out(venue, owner_name))
+    return results
 
 
 def approve_venue(db: Session, venue_id: int) -> dict:
     venue = _get_venue_or_404(db, venue_id)
     venue.approval_status = "approved"
     venue.rejection_reason = None
+    venue.is_active = True
     venue.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(venue)
@@ -316,7 +322,12 @@ def get_all_venues(
     if approval_status:
         query = query.filter(Venue.approval_status == approval_status)
     rows = query.order_by(Venue.created_at.desc()).offset(skip).limit(limit).all()
-    return [_venue_to_admin_out(venue, owner_name) for venue, owner_name in rows]
+    results = []
+    for venue, owner_name in rows:
+        if venue.venue_type_id:
+            _ = venue.venue_type
+        results.append(_venue_to_admin_out(venue, owner_name))
+    return results
 
 
 def create_venue_admin(db: Session, data: VenueAdminCreate) -> dict:
@@ -326,33 +337,33 @@ def create_venue_admin(db: Session, data: VenueAdminCreate) -> dict:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Owner must be a host or owner account",
         )
+    venue_type = db.query(VenueType).filter(VenueType.id == data.venue_type_id).first()
+    if not venue_type:
+        raise HTTPException(status_code=400, detail="Invalid venue type")
+
     venue = Venue(
         owner_id=data.owner_id,
         name=data.name,
         location=data.location,
         price_per_day=data.price_per_day,
         venue_type_id=data.venue_type_id,
+        capacity=data.capacity,
+        image_url=data.image_url,
+        google_maps_url=data.google_maps_url,
         description=data.description,
         approval_status=data.approval_status,
         is_active=True,
     )
     db.add(venue)
     db.commit()
-    db.refresh(venue)
+    venue = _get_venue_or_404(db, venue.id)
     return _venue_to_admin_out(venue, owner.name)
 
 
 def get_venue_admin(db: Session, venue_id: int) -> dict:
-    row = (
-        db.query(Venue, User.name)
-        .join(User, Venue.owner_id == User.id)
-        .filter(Venue.id == venue_id)
-        .first()
-    )
-    if not row:
-        raise HTTPException(status_code=404, detail="Venue not found")
-    venue, owner_name = row
-    return _venue_to_admin_out(venue, owner_name)
+    venue = _get_venue_or_404(db, venue_id)
+    owner = db.query(User).filter(User.id == venue.owner_id).first()
+    return _venue_to_admin_out(venue, owner.name if owner else None)
 
 
 def update_venue_admin(db: Session, venue_id: int, data: VenueAdminUpdate) -> dict:
@@ -360,15 +371,38 @@ def update_venue_admin(db: Session, venue_id: int, data: VenueAdminUpdate) -> di
     venue.name = data.name
     venue.location = data.location
     venue.price_per_day = data.price_per_day
+
+    if data.venue_type_id is not None:
+        venue_type = db.query(VenueType).filter(VenueType.id == data.venue_type_id).first()
+        if not venue_type:
+            raise HTTPException(status_code=400, detail="Invalid venue type")
+        venue.venue_type_id = data.venue_type_id
+
+    if data.owner_id is not None and data.owner_id != venue.owner_id:
+        owner = _get_user_or_404(db, data.owner_id)
+        if owner.role not in ("owner", "host") and owner.venue_owner_profile is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Owner must be a host or owner account",
+            )
+        venue.owner_id = data.owner_id
+
+    if data.capacity is not None:
+        venue.capacity = data.capacity
+    if data.image_url is not None:
+        venue.image_url = data.image_url or None
+    if data.google_maps_url is not None:
+        venue.google_maps_url = data.google_maps_url or None
     if data.description is not None:
         venue.description = data.description
     if data.approval_status is not None:
         venue.approval_status = data.approval_status
     if data.is_active is not None:
         venue.is_active = data.is_active
+
     venue.updated_at = datetime.now(timezone.utc)
     db.commit()
-    db.refresh(venue)
+    venue = _get_venue_or_404(db, venue.id)
     owner = db.query(User).filter(User.id == venue.owner_id).first()
     return _venue_to_admin_out(venue, owner.name if owner else None)
 
@@ -440,33 +474,37 @@ def get_all_users(
     is_active: bool | None = None,
     skip: int = 0,
     limit: int = 20,
-) -> list[User]:
-    query = db.query(User)
+) -> list[dict]:
+    query = db.query(User).options(joinedload(User.venue_owner_profile))
     if role:
-        if role == "host":
-            query = query.filter(User.role.in_(["host", "owner"]))
+        if role in ("host", "owner"):
+            query = query.outerjoin(VenueOwner).filter(
+                or_(User.role.in_(["host", "owner"]), VenueOwner.id.isnot(None))
+            )
         else:
             query = query.filter(User.role == role)
     if is_active is not None:
         query = query.filter(User.is_active == is_active)
-    return query.order_by(User.created_at.desc()).offset(skip).limit(limit).all()
+    users = query.order_by(User.created_at.desc()).offset(skip).limit(limit).all()
+    return [_user_to_admin_out(user) for user in users]
 
 
-def get_user_admin(db: Session, user_id: int) -> User:
-    return _get_user_or_404(db, user_id)
+def get_user_admin(db: Session, user_id: int) -> dict:
+    return _user_to_admin_out(_get_user_or_404(db, user_id))
 
 
-def create_user_admin(db: Session, data: UserAdminCreate) -> User:
-    existing = db.query(User).filter(User.email == data.email).first()
+def create_user_admin(db: Session, data: UserAdminCreate) -> dict:
+    email = str(data.email).lower().strip()
+    existing = db.query(User).filter(User.email == email).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email is already registered",
         )
-    role = "owner" if data.role == "host" else data.role
+    role = _normalize_owner_role(data.role)
     user = User(
         name=data.name,
-        email=data.email,
+        email=email,
         phone_number=data.phone_number,
         hashed_password=hash_password(data.password),
         auth_provider="email",
@@ -474,42 +512,84 @@ def create_user_admin(db: Session, data: UserAdminCreate) -> User:
         is_active=True,
     )
     db.add(user)
+    db.flush()
+
+    if role == "owner":
+        _ensure_owner_profile(
+            db,
+            user,
+            business_name=data.business_name,
+            business_address=data.business_address,
+            business_type=data.business_type,
+            business_phone=data.business_phone,
+            business_email=data.business_email,
+            gst_number=data.gst_number,
+        )
+
     db.commit()
-    db.refresh(user)
-    return user
+    return _user_to_admin_out(_get_user_or_404(db, user.id))
 
 
-def update_user_admin(db: Session, user_id: int, data: UserAdminUpdate) -> User:
+def update_user_admin(db: Session, user_id: int, data: UserAdminUpdate) -> dict:
     user = _get_user_or_404(db, user_id)
     if user.role == "admin":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot modify admin account",
         )
-    if data.email and data.email != user.email:
-        existing = db.query(User).filter(User.email == data.email).first()
+    if data.email and str(data.email).lower().strip() != (user.email or "").lower():
+        normalized = str(data.email).lower().strip()
+        existing = db.query(User).filter(User.email == normalized).first()
         if existing:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email is already registered",
             )
-        user.email = data.email
+        user.email = normalized
     if data.name is not None:
         user.name = data.name
     if data.phone_number is not None:
         user.phone_number = data.phone_number
-    if data.role is not None:
-        user.role = "owner" if data.role == "host" else data.role
+
+    role = _normalize_owner_role(data.role) if data.role is not None else None
+    if role is not None:
+        user.role = role
+
     if data.password:
         user.hashed_password = hash_password(data.password)
     if data.is_active is not None:
         user.is_active = data.is_active
+
+    effective_role = role if role is not None else user.role
+    if effective_role == "owner" or user.venue_owner_profile is not None:
+        if effective_role == "owner":
+            _ensure_owner_profile(
+                db,
+                user,
+                business_name=data.business_name,
+                business_address=data.business_address,
+                business_type=data.business_type,
+                business_phone=data.business_phone,
+                business_email=data.business_email,
+                gst_number=data.gst_number,
+            )
+        elif user.venue_owner_profile is not None:
+            _ensure_owner_profile(
+                db,
+                user,
+                business_name=data.business_name,
+                business_address=data.business_address,
+                business_type=data.business_type,
+                business_phone=data.business_phone,
+                business_email=data.business_email,
+                gst_number=data.gst_number,
+            )
+
     db.commit()
-    db.refresh(user)
-    return user
+    return _user_to_admin_out(_get_user_or_404(db, user.id))
 
 
-def delete_user_admin(db: Session, user_id: int) -> User:
+def delete_user_admin(db: Session, user_id: int) -> dict:
     user = _get_user_or_404(db, user_id)
     if user.role == "admin":
         raise HTTPException(
@@ -518,11 +598,10 @@ def delete_user_admin(db: Session, user_id: int) -> User:
         )
     user.is_active = False
     db.commit()
-    db.refresh(user)
-    return user
+    return _user_to_admin_out(_get_user_or_404(db, user.id))
 
 
-def set_user_active(db: Session, user_id: int, active: bool) -> User:
+def set_user_active(db: Session, user_id: int, active: bool) -> dict:
     user = _get_user_or_404(db, user_id)
     if user.role == "admin":
         raise HTTPException(
@@ -531,5 +610,4 @@ def set_user_active(db: Session, user_id: int, active: bool) -> User:
         )
     user.is_active = active
     db.commit()
-    db.refresh(user)
-    return user
+    return _user_to_admin_out(_get_user_or_404(db, user.id))

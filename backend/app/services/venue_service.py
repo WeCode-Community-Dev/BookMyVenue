@@ -20,7 +20,11 @@ from app.services.booking_dates import (
 def _fetch_full(db: Session, venue_id: int) -> Venue:
     venue = (
         db.query(Venue)
-        .options(joinedload(Venue.venue_type), joinedload(Venue.amenities))
+        .options(
+            joinedload(Venue.venue_type),
+            joinedload(Venue.amenities),
+            selectinload(Venue.images),
+        )
         .filter(Venue.id == venue_id)
         .first()
     )
@@ -32,7 +36,11 @@ def _fetch_full(db: Session, venue_id: int) -> Venue:
 def _public_venue_query(db: Session):
     return (
         db.query(Venue)
-        .options(joinedload(Venue.venue_type), joinedload(Venue.amenities))
+        .options(
+            joinedload(Venue.venue_type),
+            joinedload(Venue.amenities),
+            selectinload(Venue.images),
+        )
         .filter(
             Venue.approval_status == "approved",
             Venue.is_active.is_(True),

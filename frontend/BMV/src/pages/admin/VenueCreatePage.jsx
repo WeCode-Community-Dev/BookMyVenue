@@ -12,11 +12,16 @@ import {
 function VenueCreatePage() {
   const navigate = useNavigate();
   const [owners, setOwners] = useState([]);
+  const [venueTypes, setVenueTypes] = useState([]);
   const [form, setForm] = useState({
     owner_id: "",
     name: "",
     location: "",
     price_per_day: "",
+    venue_type_id: "",
+    capacity: "",
+    image_url: "",
+    google_maps_url: "",
     description: "",
     approval_status: "pending",
   });
@@ -25,9 +30,17 @@ function VenueCreatePage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    adminService
-      .getUsers({ role: "host" })
-      .then(setOwners)
+    Promise.all([
+      adminService.getUsers({ role: "host", limit: 100 }),
+      adminService.getVenueTypes(),
+    ])
+      .then(([ownerList, types]) => {
+        setOwners(ownerList);
+        setVenueTypes(types);
+        if (types?.length) {
+          setForm((prev) => ({ ...prev, venue_type_id: String(types[0].id) }));
+        }
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -46,6 +59,10 @@ function VenueCreatePage() {
         name: form.name,
         location: form.location,
         price_per_day: Number(form.price_per_day),
+        venue_type_id: Number(form.venue_type_id),
+        capacity: form.capacity ? Number(form.capacity) : null,
+        image_url: form.image_url || null,
+        google_maps_url: form.google_maps_url || null,
         description: form.description || null,
         approval_status: form.approval_status,
       });
@@ -68,7 +85,7 @@ function VenueCreatePage() {
       error={error}
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        <FormField label="Owner (host)" hint="Only host accounts can own venues">
+        <FormField label="Owner (host)" hint="Only host/owner accounts can own venues">
           <select name="owner_id" value={form.owner_id} onChange={handleChange} className={inputCls} required>
             <option value="">Select owner</option>
             {owners.map((o) => (
@@ -100,6 +117,36 @@ function VenueCreatePage() {
               required
             />
           </FormField>
+          <FormField label="Venue type">
+            <select
+              name="venue_type_id"
+              value={form.venue_type_id}
+              onChange={handleChange}
+              className={inputCls}
+              required
+            >
+              <option value="">Select type</option>
+              {venueTypes.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </FormField>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <FormField label="Capacity">
+            <input
+              name="capacity"
+              type="number"
+              min="1"
+              value={form.capacity}
+              onChange={handleChange}
+              className={inputCls}
+              placeholder="Optional"
+            />
+          </FormField>
           <FormField label="Approval status">
             <select name="approval_status" value={form.approval_status} onChange={handleChange} className={inputCls}>
               <option value="pending">Pending</option>
@@ -108,6 +155,14 @@ function VenueCreatePage() {
             </select>
           </FormField>
         </div>
+
+        <FormField label="Image URL">
+          <input name="image_url" value={form.image_url} onChange={handleChange} className={inputCls} />
+        </FormField>
+
+        <FormField label="Google Maps URL">
+          <input name="google_maps_url" value={form.google_maps_url} onChange={handleChange} className={inputCls} />
+        </FormField>
 
         <FormField label="Description">
           <textarea name="description" value={form.description} onChange={handleChange} className={inputCls} rows={4} />

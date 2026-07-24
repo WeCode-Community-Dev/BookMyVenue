@@ -94,6 +94,13 @@ class Venue(Base):
 
     venue_type = relationship("VenueType", back_populates="venues")
 
+    images = relationship(
+        "VenueImage",
+        back_populates="venue",
+        cascade="all, delete-orphan",
+        order_by="VenueImage.sort_order",
+    )
+
     __table_args__ = (
         CheckConstraint(
             "price_per_day >= 0",

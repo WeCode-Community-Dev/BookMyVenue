@@ -7,7 +7,7 @@ export const adminService = {
   },
 
   async getPendingVenues() {
-    const res = await client.get("/admin/pending-venues");
+    const res = await client.get("/admin/pending-venues", { params: { limit: 100 } });
     return res.data;
   },
 
@@ -23,8 +23,9 @@ export const adminService = {
     return res.data;
   },
 
-  async getVenues(approval_status = "") {
-    const params = approval_status ? { approval_status } : {};
+  async getVenues({ approval_status = "", skip = 0, limit = 100 } = {}) {
+    const params = { skip, limit };
+    if (approval_status) params.approval_status = approval_status;
     const res = await client.get("/admin/venues", { params });
     return res.data;
   },
@@ -54,12 +55,20 @@ export const adminService = {
     return res.data;
   },
 
-  async getBookings() {
-    const res = await client.get("/admin/bookings");
+  async getVenueTypes() {
+    const res = await client.get("/venue-types/");
     return res.data;
   },
 
-  async getUsers(params = {}) {
+  async getBookings({ skip = 0, limit = 100 } = {}) {
+    const res = await client.get("/admin/bookings", { params: { skip, limit } });
+    return res.data;
+  },
+
+  async getUsers({ role = "", is_active, skip = 0, limit = 100 } = {}) {
+    const params = { skip, limit };
+    if (role) params.role = role;
+    if (is_active !== undefined && is_active !== "") params.is_active = is_active;
     const res = await client.get("/admin/users", { params });
     return res.data;
   },
