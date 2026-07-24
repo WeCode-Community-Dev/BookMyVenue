@@ -90,6 +90,7 @@ class BookingDetailOut(BookingOut):
     can_cancel: bool = False
     refund_percent_if_cancelled: int = 0
     refund_amount_if_cancelled: float = 0.0
+    refund_status: Optional[str] = None
     cancellation_policy: Optional[CancellationPolicyOut] = None
     cancellation_reason: Optional[str] = None
     cancelled_at: Optional[datetime] = None

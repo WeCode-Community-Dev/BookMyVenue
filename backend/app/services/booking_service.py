@@ -327,6 +327,17 @@ def _check_in_qr_fields(booking: Booking) -> dict:
     }
 
 
+def _latest_refund(db: Session, payment_id: int | None) -> Refund | None:
+    if not payment_id:
+        return None
+    return (
+        db.query(Refund)
+        .filter(Refund.payment_id == payment_id)
+        .order_by(Refund.created_at.desc())
+        .first()
+    )
+
+
 def _serialize_detail(db: Session, booking: Booking, venue: Venue | None, payment: Payment | None) -> dict:
     can_review, has_review = _review_flags(db, booking)
     policy = evaluate_policy(venue, booking)
@@ -337,6 +348,18 @@ def _serialize_detail(db: Session, booking: Booking, venue: Venue | None, paymen
             "refund_25_deadline": policy["refund_25_deadline"],
             "last_cancel_date": policy["last_cancel_date"],
         }
+
+    refund = _latest_refund(db, payment.id if payment else None)
+    refund_status = refund.status if refund else None
+    refund_percent = policy["refund_percent"]
+    refund_amount = policy["refund_amount"]
+    if booking.status == "cancelled" and refund:
+        refund_amount = float(refund.amount)
+        if booking.amount and float(booking.amount) > 0:
+            refund_percent = int(round(float(refund.amount) / float(booking.amount) * 100))
+        else:
+            refund_percent = 0
+
     return {
         "id": booking.id,
         "venue_id": booking.venue_id,
@@ -361,8 +384,9 @@ def _serialize_detail(db: Session, booking: Booking, venue: Venue | None, paymen
         "can_review": can_review,
         "has_review": has_review,
         "can_cancel": policy["can_cancel"],
-        "refund_percent_if_cancelled": policy["refund_percent"],
-        "refund_amount_if_cancelled": policy["refund_amount"],
+        "refund_percent_if_cancelled": refund_percent,
+        "refund_amount_if_cancelled": refund_amount,
+        "refund_status": refund_status,
         "cancellation_policy": cancellation_policy,
         "cancellation_reason": booking.cancellation_reason,
         "cancelled_at": booking.cancelled_at,
@@ -438,7 +462,7 @@ def cancel_booking(db: Session, current_user: User, booking_id: int, cancellatio
     if not policy["can_cancel"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This booking can no longer be cancelled",
+            detail="CANCELLATION_NOT_ALLOWED",
         )
 
     payment = _latest_payment(db, booking.id)
