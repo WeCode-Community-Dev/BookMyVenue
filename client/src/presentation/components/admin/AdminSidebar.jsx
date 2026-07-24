@@ -11,29 +11,27 @@ const AdminSidebar = () => {
 
             {/* Logo */}
 
-            <div className="p-6 border-b border-slate-700">
-<img
+ <div className="p-6 border-b border-slate-700">
+    <div className="flex items-center gap-3">
 
-    src={logo}
+        <img
+            src={logo}
+            alt="Book My Venue"
+            className="h-16 w-16 rounded-full object-cover"
+        />
 
-    alt="Book My Venue"
+        <div>
+            <h1 className="text-xl font-bold text-[#FE9A00] leading-tight">
+                Book My Venue
+            </h1>
 
-    className="h-18 w-20 object-contain"
+            <p className="text-sm text-gray-400 mt-1">
+                ADMIN PANEL
+            </p>
+        </div>
 
-  />
-                <h1 className="text-2xl font-bold text-amber-500">
-
-                    
-
-                </h1>
-
-                <p className="text-sm text-gray-400 mt-1">
-
-                    Admin Panel
-
-                </p>
-
-            </div>
+    </div>
+</div>
 
             {/* Navigation */}
 
