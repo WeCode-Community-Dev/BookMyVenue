@@ -29,7 +29,13 @@ AUTH:{
           REMOVE: (venueId) => `/user/wishlist/${venueId}`,
         },
         BOOKINGS: {
-          BOOKINGS: "user/bookings"
+          RESERVE: "/user/booking/reserve",
+          CONFIRM: "/user/booking/confirm",
+          GET_BY_ID: (bookingId) => `/user/booking/${bookingId}`,
+          GET_ALL: "/user/booking",
+          CANCEL: (bookingId) => `/user/booking/${bookingId}/cancel`,
+          AVAILABILITY: (venueId) => `/user/booking/${venueId}/availability`,
+
         }
     },
    ADMIN: {

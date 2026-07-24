@@ -9,7 +9,7 @@ import VenueGallery from "@/presentation/components/user/venueDetails/VenueGalle
 import VenueHeader from "@/presentation/components/user/venueDetails/VenueHeader";
 import VenueAbout from "@/presentation/components/user/venueDetails/VenueAbout";
 import { getVenueById } from "@/redux/slices/UserVenueSlice";
-import BookingCard from "@/presentation/components/user/booking/BookingCard";
+import BookingCard from "@/presentation/components/user/venueDetails/BookingCard";
 import SimilarVenues from "@/presentation/components/user/venueDetails/SimilarVenues";
 import VenueAvailability from "@/presentation/components/user/venueDetails/VenueAvailability";
 import HostedBy from "@/presentation/components/user/venueDetails/HostedBy";

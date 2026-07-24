@@ -8,79 +8,147 @@ export default function BookingCard({
   selectedPackage,
   availability,
 }) {
-  const [bookingType, setBookingType] = useState("fullDay");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [guestCount, setGuestCount] = useState("");
+  const [bookingType, setBookingType] =
+    useState("daily");
+
+  const [startTime, setStartTime] =
+    useState("");
+
+  const [endTime, setEndTime] =
+    useState("");
+
+  const [guestCount, setGuestCount] =
+    useState("");
 
   const navigate = useNavigate();
 
-  const maxGuestCount =
-    (venue.seatingCapacity || 0) +
-    (venue.standingCapacity || 0);
+  // ======================================
+  // MAXIMUM GUEST CAPACITY
+  // ======================================
 
-  const eventDate = availability?.eventDate || "";
+  const maxGuestCount = Math.max(
+    venue.seatingCapacity || 0,
+    venue.standingCapacity || 0
+  );
+
+  // ======================================
+  // SELECTED DATE
+  // ======================================
+
+  const bookingDate =
+    availability?.eventDate || "";
+
+  // ======================================
+  // BOOKING TYPE CHANGE
+  // ======================================
 
   const handleBookingTypeChange = (event) => {
     const type = event.target.value;
 
     setBookingType(type);
 
-    if (type === "fullDay") {
+    // Clear time when switching to daily booking
+    if (type === "daily") {
       setStartTime("");
       setEndTime("");
     }
   };
 
+  // ======================================
+  // CONTINUE TO BOOKING SUMMARY
+  // ======================================
+
   const handleContinue = () => {
-    navigate(ROUTES.USER.BOOKING_SUMMARY, {
-      state: {
-        venue,
-        selectedPackage,
-        bookingType,
-        bookingDate: eventDate,
-        startTime,
-        endTime,
-        guestCount,
-      },
-    });
+    navigate(
+      ROUTES.USER.BOOKING_SUMMARY,
+      {
+        state: {
+          venue,
+
+          selectedPackage,
+
+          bookingType,
+
+          bookingDate,
+
+          startTime:
+            bookingType === "hourly"
+              ? startTime
+              : null,
+
+          endTime:
+            bookingType === "hourly"
+              ? endTime
+              : null,
+
+          guestCount: Number(guestCount),
+        },
+      }
+    );
   };
 
-  const isHourWiseValid =
-    bookingType === "hourWise" &&
+  // ======================================
+  // HOURLY VALIDATION
+  // ======================================
+
+  const isHourlyValid =
+    bookingType === "hourly" &&
     startTime &&
     endTime &&
     startTime < endTime;
 
+  // ======================================
+  // FORM VALIDATION
+  // ======================================
+
   const isFormValid =
-    eventDate &&
-    guestCount &&
+    bookingDate &&
+    Number(guestCount) > 0 &&
     Number(guestCount) <= maxGuestCount &&
-    (bookingType === "fullDay" || isHourWiseValid);
+    (
+      bookingType === "daily" ||
+      isHourlyValid
+    );
 
   return (
     <aside className="sticky top-6 rounded-2xl border bg-white p-6 shadow-sm">
+
+      {/* ======================================
+          TITLE
+      ====================================== */}
+
       <h2 className="text-2xl font-bold">
         Book this venue
       </h2>
 
-      {/* Selected Date */}
+      {/* ======================================
+          EVENT DATE
+      ====================================== */}
+
       <div className="mt-6">
+
         <label className="mb-2 block text-sm font-medium">
           Event date
         </label>
 
         <div className="w-full rounded-xl border bg-gray-50 px-4 py-3">
-          {eventDate
-            ? new Date(`${eventDate}T00:00:00`).toLocaleDateString(
-                "en-GB"
-              )
+
+          {bookingDate
+            ? new Date(
+                `${bookingDate}T00:00:00`
+              ).toLocaleDateString("en-GB")
             : "Select a date from the calendar"}
+
         </div>
+
       </div>
 
-      {/* Booking Type */}
+      {/* ======================================
+          BOOKING TYPE
+      ====================================== */}
+
       <div className="mt-5">
+
         <label className="mb-2 block text-sm font-medium">
           Booking type
         </label>
@@ -90,20 +158,29 @@ export default function BookingCard({
           onChange={handleBookingTypeChange}
           className="w-full rounded-xl border bg-white px-4 py-3"
         >
-          <option value="fullDay">
+
+          <option value="daily">
             Full Day
           </option>
 
-          <option value="hourWise">
+          <option value="hourly">
             Hour Wise
           </option>
+
         </select>
+
       </div>
 
-      {/* Hour Wise Time Selection */}
-      {bookingType === "hourWise" && (
+      {/* ======================================
+          HOURLY TIME
+      ====================================== */}
+
+      {bookingType === "hourly" && (
+
         <div className="mt-5 grid grid-cols-2 gap-3">
+
           <div>
+
             <label className="mb-2 block text-sm font-medium">
               Start time
             </label>
@@ -112,13 +189,17 @@ export default function BookingCard({
               type="time"
               value={startTime}
               onChange={(event) =>
-                setStartTime(event.target.value)
+                setStartTime(
+                  event.target.value
+                )
               }
               className="w-full rounded-xl border px-3 py-3"
             />
+
           </div>
 
           <div>
+
             <label className="mb-2 block text-sm font-medium">
               End time
             </label>
@@ -127,22 +208,32 @@ export default function BookingCard({
               type="time"
               value={endTime}
               onChange={(event) =>
-                setEndTime(event.target.value)
+                setEndTime(
+                  event.target.value
+                )
               }
               className="w-full rounded-xl border px-3 py-3"
             />
+
           </div>
+
         </div>
+
       )}
 
-      {/* Guest Count */}
+      {/* ======================================
+          GUEST COUNT
+      ====================================== */}
+
       <div className="mt-5">
+
         <label className="mb-2 block text-sm font-medium">
           Number of guests
         </label>
 
         <p className="mb-2 text-sm text-gray-500">
-          Allowed guests: up to {maxGuestCount}
+          Allowed guests: up to{" "}
+          {maxGuestCount}
         </p>
 
         <input
@@ -151,20 +242,29 @@ export default function BookingCard({
           max={maxGuestCount}
           value={guestCount}
           onChange={(event) =>
-            setGuestCount(event.target.value)
+            setGuestCount(
+              event.target.value
+            )
           }
           placeholder={`Maximum ${maxGuestCount} guests`}
           className="w-full rounded-xl border px-4 py-3"
         />
 
         {Number(guestCount) > maxGuestCount && (
+
           <p className="mt-2 text-sm text-red-500">
-            Guest count cannot exceed {maxGuestCount}.
+            Guest count cannot exceed{" "}
+            {maxGuestCount}.
           </p>
+
         )}
+
       </div>
 
-      {/* Continue */}
+      {/* ======================================
+          CONTINUE
+      ====================================== */}
+
       <button
         type="button"
         onClick={handleContinue}
@@ -173,6 +273,7 @@ export default function BookingCard({
       >
         Continue
       </button>
+
     </aside>
   );
 }

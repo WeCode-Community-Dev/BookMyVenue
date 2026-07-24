@@ -19,6 +19,7 @@ export const ROUTES = {
         BOOKING_DETAIL: '/user/bookings/:bookingId',
         BOOKING_SUMMARY:`/user/booking-summary`,
         PAYMENT:`/user/payment`,
+        PAYMENT_GATEWAY:`/user/payment-gateway`,
         PAYMENT_SUCCESS:`/user/payment-success`,
         PAYMENT_FAILURE:`/user/payment-failure`
 

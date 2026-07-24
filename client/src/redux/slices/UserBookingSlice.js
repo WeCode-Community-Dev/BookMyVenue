@@ -1,68 +1,43 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSlice,
+} from "@reduxjs/toolkit";
 
 import api from "@/lib/axios";
 import { API_ROUTES } from "@/constants/apiRoutes";
 
+// ======================================
+// INITIAL STATE
+// ======================================
+
 const initialState = {
   loading: false,
-  availabilityLoading: false,
 
-  success: false,
-
-  availability: [],
   bookings: [],
+
   currentBooking: null,
 
+  reservation: null,
+
   error: null,
+
+  success: false,
 };
 
 // ======================================
-// CHECK VENUE AVAILABILITY
+// RESERVE BOOKING
 // ======================================
 
-export const checkVenueAvailability = createAsyncThunk(
-  "userBooking/checkVenueAvailability",
+export const reserveBooking = createAsyncThunk(
+  "userBooking/reserveBooking",
+
   async (
-    {
-      venueId,
-      startDate,
-      endDate,
-      bookingType,
-    },
+    bookingData,
     { rejectWithValue }
   ) => {
     try {
-      const response = await api.get(
-        API_ROUTES.USER.BOOKING.AVAILABILITY(venueId),
-        {
-          params: {
-            startDate,
-            endDate,
-            bookingType,
-          },
-        }
-      );
-
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to check venue availability"
-      );
-    }
-  }
-);
-
-// ======================================
-// CREATE BOOKING
-// ======================================
-
-export const createBooking = createAsyncThunk(
-  "userBooking/createBooking",
-  async (bookingData, { rejectWithValue }) => {
-    try {
       const response = await api.post(
-        API_ROUTES.USER.BOOKING.CREATE,
+        API_ROUTES.USER.BOOKINGS.RESERVE,
         bookingData
       );
 
@@ -70,7 +45,46 @@ export const createBooking = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message ||
-          "Failed to create booking"
+          "Failed to reserve booking"
+      );
+    }
+  }
+);
+
+// ======================================
+// CONFIRM BOOKING
+// ======================================
+
+export const confirmBooking = createAsyncThunk(
+  "userBooking/confirmBooking",
+
+  async (
+    {
+      reservationId,
+      venueId,
+      bookingDate,
+      paymentId,
+      paymentStatus,
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.post(
+        API_ROUTES.USER.BOOKINGS.CONFIRM,
+        {
+          reservationId,
+          venueId,
+          bookingDate,
+          paymentId,
+          paymentStatus,
+        }
+      );
+
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to confirm booking"
       );
     }
   }
@@ -82,12 +96,25 @@ export const createBooking = createAsyncThunk(
 
 export const fetchUserBookings = createAsyncThunk(
   "userBooking/fetchUserBookings",
-  async (params = {}, { rejectWithValue }) => {
+
+  async (
+    params = {},
+    { rejectWithValue }
+  ) => {
     try {
       const response = await api.get(
-        API_ROUTES.USER.BOOKING.BOOKINGS,
+        API_ROUTES.USER.BOOKINGS.GET_ALL,
         {
-          params,
+          params: {
+            page: params.page || 1,
+            limit: params.limit || 10,
+            status:
+              params.status || undefined,
+            search:
+              params.search || undefined,
+            sortBy:
+              params.sortBy || undefined,
+          },
         }
       );
 
@@ -107,10 +134,16 @@ export const fetchUserBookings = createAsyncThunk(
 
 export const fetchBookingById = createAsyncThunk(
   "userBooking/fetchBookingById",
-  async (bookingId, { rejectWithValue }) => {
+
+  async (
+    bookingId,
+    { rejectWithValue }
+  ) => {
     try {
       const response = await api.get(
-        API_ROUTES.USER.BOOKING.BY_ID(bookingId)
+        API_ROUTES.USER.BOOKINGS.GET_BY_ID(
+          bookingId
+        )
       );
 
       return response.data.data;
@@ -118,28 +151,6 @@ export const fetchBookingById = createAsyncThunk(
       return rejectWithValue(
         error.response?.data?.message ||
           "Failed to fetch booking details"
-      );
-    }
-  }
-);
-
-// ======================================
-// CANCEL BOOKING
-// ======================================
-
-export const cancelBooking = createAsyncThunk(
-  "userBooking/cancelBooking",
-  async (bookingId, { rejectWithValue }) => {
-    try {
-      const response = await api.patch(
-        API_ROUTES.USER.BOOKING.CANCEL(bookingId)
-      );
-
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to cancel booking"
       );
     }
   }
@@ -159,87 +170,114 @@ const userBookingSlice = createSlice({
       state.error = null;
     },
 
+    clearReservation: (state) => {
+      state.reservation = null;
+    },
+
     clearCurrentBooking: (state) => {
       state.currentBooking = null;
     },
 
-    clearAvailability: (state) => {
-      state.availability = [];
-    },
-
     resetBookingState: (state) => {
       state.loading = false;
-      state.availabilityLoading = false;
-      state.success = false;
-      state.availability = [];
+
+      state.bookings = [];
+
       state.currentBooking = null;
+
+      state.reservation = null;
+
       state.error = null;
+
+      state.success = false;
     },
   },
 
   extraReducers: (builder) => {
+
     // ==================================
-    // CHECK AVAILABILITY
+    // RESERVE BOOKING
     // ==================================
 
     builder
       .addCase(
-        checkVenueAvailability.pending,
+        reserveBooking.pending,
         (state) => {
-          state.availabilityLoading = true;
+          state.loading = true;
+
           state.error = null;
+
+          state.success = false;
         }
       )
 
       .addCase(
-        checkVenueAvailability.fulfilled,
+        reserveBooking.fulfilled,
         (state, action) => {
-          state.availabilityLoading = false;
-          state.availability = action.payload;
+          state.loading = false;
+
+          state.reservation =
+            action.payload;
+
+          state.success = true;
         }
       )
 
       .addCase(
-        checkVenueAvailability.rejected,
+        reserveBooking.rejected,
         (state, action) => {
-          state.availabilityLoading = false;
-          state.error = action.payload;
+          state.loading = false;
+
+          state.error =
+            action.payload;
+
+          state.success = false;
         }
       );
 
     // ==================================
-    // CREATE BOOKING
+    // CONFIRM BOOKING
     // ==================================
 
     builder
       .addCase(
-        createBooking.pending,
+        confirmBooking.pending,
         (state) => {
           state.loading = true;
-          state.success = false;
+
           state.error = null;
+
+          state.success = false;
         }
       )
 
       .addCase(
-        createBooking.fulfilled,
+        confirmBooking.fulfilled,
         (state, action) => {
           state.loading = false;
-          state.success = true;
-          state.currentBooking = action.payload;
+
+          state.currentBooking =
+            action.payload;
 
           state.bookings.unshift(
             action.payload
           );
+
+          state.reservation = null;
+
+          state.success = true;
         }
       )
 
       .addCase(
-        createBooking.rejected,
+        confirmBooking.rejected,
         (state, action) => {
           state.loading = false;
+
+          state.error =
+            action.payload;
+
           state.success = false;
-          state.error = action.payload;
         }
       );
 
@@ -252,6 +290,7 @@ const userBookingSlice = createSlice({
         fetchUserBookings.pending,
         (state) => {
           state.loading = true;
+
           state.error = null;
         }
       )
@@ -261,9 +300,13 @@ const userBookingSlice = createSlice({
         (state, action) => {
           state.loading = false;
 
+          const payload =
+            action.payload;
+
           state.bookings =
-            action.payload?.data ||
-            action.payload ||
+            payload?.bookings ||
+            payload?.data ||
+            payload ||
             [];
         }
       )
@@ -272,7 +315,9 @@ const userBookingSlice = createSlice({
         fetchUserBookings.rejected,
         (state, action) => {
           state.loading = false;
-          state.error = action.payload;
+
+          state.error =
+            action.payload;
         }
       );
 
@@ -285,6 +330,7 @@ const userBookingSlice = createSlice({
         fetchBookingById.pending,
         (state) => {
           state.loading = true;
+
           state.error = null;
         }
       )
@@ -293,7 +339,9 @@ const userBookingSlice = createSlice({
         fetchBookingById.fulfilled,
         (state, action) => {
           state.loading = false;
-          state.currentBooking = action.payload;
+
+          state.currentBooking =
+            action.payload;
         }
       )
 
@@ -301,58 +349,27 @@ const userBookingSlice = createSlice({
         fetchBookingById.rejected,
         (state, action) => {
           state.loading = false;
-          state.error = action.payload;
-        }
-      );
 
-    // ==================================
-    // CANCEL BOOKING
-    // ==================================
-
-    builder
-      .addCase(
-        cancelBooking.pending,
-        (state) => {
-          state.loading = true;
-          state.error = null;
-        }
-      )
-
-      .addCase(
-        cancelBooking.fulfilled,
-        (state, action) => {
-          state.loading = false;
-
-          state.currentBooking =
+          state.error =
             action.payload;
-
-          const updatedBooking =
-            action.payload;
-
-          state.bookings =
-            state.bookings.map((booking) =>
-              booking._id === updatedBooking._id
-                ? updatedBooking
-                : booking
-            );
-        }
-      )
-
-      .addCase(
-        cancelBooking.rejected,
-        (state, action) => {
-          state.loading = false;
-          state.error = action.payload;
         }
       );
   },
 });
 
+// ======================================
+// ACTIONS
+// ======================================
+
 export const {
   clearBookingError,
+  clearReservation,
   clearCurrentBooking,
-  clearAvailability,
   resetBookingState,
 } = userBookingSlice.actions;
+
+// ======================================
+// REDUCER
+// ======================================
 
 export default userBookingSlice.reducer;
