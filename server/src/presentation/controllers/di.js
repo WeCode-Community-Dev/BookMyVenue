@@ -94,6 +94,7 @@ import { AdminLogoutUseCase } from '../../application/admin/usecases/auth/admin.
 import { AdminRefreshTokenUseCase } from '../../application/admin/usecases/auth/admin.refreshToken.usecase.js'
 import { ChangeVendorPasswordUsecase } from '../../application/vendor/usecases/profile/changeVendorPassword.usecase.js'
 import { UserChangePasswordUsecase } from '../../application/user/usecases/profile/user.changePassword.usecase.js'
+import { UserGetSimilarVenuesUsecase } from '../../application/user/usecases/venue/user.getSimilarVenues.usecase.js'
 
 //repository
 const iVenueRepository = new VenueRepository();
@@ -282,6 +283,10 @@ const changeVendorPasswordUsecase = new ChangeVendorPasswordUsecase(iVendorRepos
 const iUserGetAllVenues = new UserGetAllVenuesUsecase(iVenueRepository)
 const iUserGetVenueById = new UserGetVenueByIdUsecase(iVenueRepository)
 const iUserGetTopeVenues = new UserGetTopVenuesUsecase(iVenueRepository)
+const iUserSimilarVenues = new UserGetSimilarVenuesUsecase (
+    iVenueRepository,
+    iUserRepository
+)
 
 const iUserAddToWishlist = new UserAddToWishlistUsecase(
     iUserRepository,
@@ -360,7 +365,8 @@ export const iAdminVenueController = new AdminVenueController(
 export const iUserVenueController = new UserVenueController (
     iUserGetAllVenues,
     iUserGetVenueById,
-    iUserGetTopeVenues
+    iUserGetTopeVenues,
+    iUserSimilarVenues
 )
 export const iVendorProfileController = new VendorProfileController(
     iGetVendorProfileUsecase,

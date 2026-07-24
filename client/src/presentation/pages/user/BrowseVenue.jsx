@@ -23,8 +23,6 @@ export default function BrowseVenues(){
     const [maxPrice, setMaxPrice] = useState("")
     const [appliedFilters, setAppliedFilters] = useState({
         amenities: [],
-        category: '',
-        rating: 0,
         capacityType: "",
         capacity: "",
         priceType: "",
@@ -39,8 +37,8 @@ export default function BrowseVenues(){
         dispatch(getVenues({
             search, 
             amenities: appliedFilters.amenities, 
-            category: appliedFilters.category, 
-            rating: appliedFilters.rating, 
+            category: selectedCategory, 
+            rating: selectedRating, 
             capacityType: appliedFilters.capacityType,
             capacity: appliedFilters.capacity,
             priceType: appliedFilters.priceType,
@@ -49,21 +47,48 @@ export default function BrowseVenues(){
             page, 
             limit: 12
         }))
-    }, [dispatch, search, appliedFilters, page])
+    }, [dispatch, search, appliedFilters, selectedCategory, selectedRating, page])
 
 return (
     <>
         <Header/>
             <div className="bg-gray-50 min-h-screen">
-                <div className="max-w-7xl mx-auto px-6 py-6 flex gap-5">
-                    <div className="bg-white border rounded-xl flex-1 p-4 flex gap-3">
-                        <Search/>
+                <div className="max-w-7xl mx-auto px-6 py-6 flex items-center gap-5">
+                    <div className="bg-white border border-slate-300 rounded-xl flex items-center gap-3 flex-1 max-w-3xl px-4 py-3">
+                        <Search className="text-slate-500" size={20} />
                         <input
-                            placeholder="Search venues by name, location, or type..."
-                            className="outline-none w-full"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search venues by name, location, or type..."
+                        className="outline-none w-full"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
                         />
+                    </div>
+                    <div className="flex items-center gap-4 ml-auto">
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="w-52 border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                        >
+                            <option value="">All Categories</option>
+                            {VenueCategory.map((category) => (
+                                <option key={category} value={category}>
+                                    {category}
+                                </option>
+                            ))}
+                        </select>
+
+                        <select
+                            value={selectedRating}
+                            onChange={(e) => setSelectedRating(Number(e.target.value))}
+                            className="w-48 border border-slate-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                        >
+                            <option value={0}>All Ratings</option>
+                            {Ratings.map((item) => (
+                                <option key={item.value} value={item.value}>
+                                    {item.label}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
             <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
@@ -157,22 +182,6 @@ return (
                         </option>
                     </select>
                     )}
-
-                    <h3 className="font-semibold mt-8 mb-3">
-                        Venue Type
-                    </h3>
-                    {VenueCategory.map((item)=>(
-                        <label key={item} className="flex gap-3 mt-3 text-gray-700">
-                            <input
-                                value={item}
-                                type="radio"
-                                name="category"
-                                checked={selectedCategory === item}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
-                            />
-                            {item}
-                        </label>
-                    ))}
                     <h3 className="font-semibold mt-8 mb-3">Amenities</h3>
                     {Amenities.map(item=>(
                         <label key={item} className="flex gap-3 mt-3">
@@ -191,35 +200,18 @@ return (
                             {item}
                         </label>
                     ))}
-                    <h3 className="font-semibold mt-8 mb-3">Minimum Rating</h3>
-                    {Ratings.map(item=>(
-                        <label key={item.value} className="flex gap-3 mt-3">
-                            <input
-                                value={item.value}
-                                checked={selectedRating === item.value}
-                                onChange={(e) => setSelectedRating(Number(e.target.value))}
-                                type="radio"
-                                name="rating"
-                            />
-                            {item.label}
-                        </label>
-                    ))}
                     <div className="flex gap-3 mt-10">
                         <button 
                             className="border px-6 py-3 rounded-xl"
                             onClick={() => {
-                                setSelectedCategory('')
                                 setSelectedAmenities([])
-                                setSelectedRating(0)
                                 setCapacityType("")
                                 setCapacity("")
                                 setPriceType("")
                                 setMaxPrice("")
                                 setMinPrice("")
                                 setAppliedFilters({
-                                    category: '',
                                     amenities: [],
-                                    rating: 0,
                                     capacityType: "",
                                     capacity: "",
                                     priceType: "",
@@ -236,9 +228,7 @@ return (
                             onClick={() => {
                                 setPage(1)
                                 setAppliedFilters({
-                                    category: selectedCategory,
                                     amenities: selectedAmenities,
-                                    rating: selectedRating,
                                     capacityType: capacityType,
                                     capacity: capacity,
                                     priceType: priceType,

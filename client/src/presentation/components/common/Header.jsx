@@ -1,4 +1,5 @@
 import { Heart, User } from 'lucide-react'
+import Logo from '@/assets/images/logo.jpeg'
 
 const Header = () => {
   return (
@@ -6,15 +7,16 @@ const Header = () => {
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-slate-900 text-white w-12 h-12 rounded-xl flex items-center justify-center">
-              🏛️
+            <div className="w-12 h-12 rounded-full bg-amber-500 p-1 flex items-center justify-center">
+              <img
+                src={Logo}
+                alt="Book My Venue Logo"
+                className="w-full h-full rounded-full object-cover"
+              />
             </div>
+
             <h1 className="text-2xl font-bold">Book My Venue</h1>
           </div>
-
-          {/* <nav className="hidden md:flex items-center gap-10 text-gray-600">
-            <a href={ROUTES.USER.BROWSE_VENUES} className='font-bold'>Explore Venues</a>
-          </nav> */}
 
           <div className="flex items-center gap-4">
             <Heart className="w-5 h-5" />
