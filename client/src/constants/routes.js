@@ -6,7 +6,7 @@ export const ROUTES = {
         REGISTER:'/register',
         VERIFY_OTP:'/verify-otp',
         
-        LOGIN:'/login'
+        
         
     },
     USER: {
@@ -35,7 +35,8 @@ export const ROUTES = {
     },
     ADMIN: {
         ROOT: "/admin", 
-        DASHBOARD: "dashboard",
+        LOGIN: "/admin/login",
+        DASHBOARD: "admin/dashboard",
         USERS: "users",
         VENDORS: "vendors",
         VENUES: "venues",

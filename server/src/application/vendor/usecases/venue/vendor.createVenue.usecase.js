@@ -46,6 +46,7 @@ export class VendorCreateVenueUsecase {
         if(!vendor){
             throw new UnauthorizedError(authMessages.error.OWNER_NOT_FOUND)
         }
+
         if(vendor.role !== UserRole.VENDOR){
             throw new UnauthorizedError(VenueMessages.error.CANNOT_ADD_VENUE)
         }

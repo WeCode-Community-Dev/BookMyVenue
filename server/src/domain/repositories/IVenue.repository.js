@@ -29,6 +29,9 @@ export class IVenueRepository {
     async updateBlockStatus(id, isBlocked){
         throw new Error('Method not implemented')
     }
+    async findSimilarVenues(venueId, category){
+        throw new Error("Method Not implmented")
+    }
 
 
     
