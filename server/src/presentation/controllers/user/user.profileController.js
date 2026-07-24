@@ -1,7 +1,7 @@
 import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 import { sendSuccess } from "../../../shared/utils/apiResponse.js";
 import { statusCode } from "../../../shared/constants/enums/statusCode.js";
-import { ValidationError } from "../../../domain/errors/ValidationError.js";
+// import { ValidationError } from "../../../domain/errors/ValidationError.js";
 import { UserMessage } from "../../../shared/constants/messages/userMessages.js";
 
 export class UserProfileController {
@@ -85,7 +85,7 @@ export class UserProfileController {
   resendEmailChangeOtp = asyncHandler(async (req, res) => {
     const userId = "6a5c82d2a4cb28be7d10521f";
 
-    const result = await this._resendEmailChangeOtpUsecase.execute(userId);
+    await this._resendEmailChangeOtpUsecase.execute(userId);
 
     return sendSuccess(
       res,

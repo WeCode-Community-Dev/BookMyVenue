@@ -94,6 +94,7 @@ export const ROUTES = {
             GET_ALL: "/venues",
             GET_BY_ID: "/venue/:venueId",
             TOP_VENUES: "/top-venues",
+            SIMILAR_VENUES: "/similar-venues",
         },
         PROFILE: {
             PROFILE: "/profile",

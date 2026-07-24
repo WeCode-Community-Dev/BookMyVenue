@@ -8,11 +8,13 @@ export class UserVenueController {
     constructor (
         userGetAllVenuesUsecase,
         userGetVnueByIdUsecase,
-        userGetTopVenuesUsecase
+        userGetTopVenuesUsecase,
+        userGetSimilarVenuesUsecase,
     ) {
         this._userGetAllVenues = userGetAllVenuesUsecase
         this._userGetVenueById = userGetVnueByIdUsecase
         this._userGetTopVenues = userGetTopVenuesUsecase
+        this._userGetSimilarVenues = userGetSimilarVenuesUsecase
     }
 
     getAllVenues = asyncHandler( async (req, res ) => {
@@ -31,5 +33,12 @@ export class UserVenueController {
         const venues = await this._userGetTopVenues.execute()
         console.log('venue: ', venues)
         return sendSuccess(res, statusCode.OK,'', venues)
+    })
+
+    getSimilarVenues = asyncHandler( async (req, res) => {
+        const userId = req.user.userId
+        const venueId = req.params.venueId
+        const venues = await this._userGetSimilarVenues.execute(userId, venueId)
+        return sendSuccess(res, statusCode.OK, '', venues)
     })
 }

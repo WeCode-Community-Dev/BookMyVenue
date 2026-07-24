@@ -92,10 +92,12 @@ import { AdminRepository } from '../../infrastructure/repositories/admin.reposit
 import { AdminAuthController } from './admin/admin.authController.js'
 import { AdminLogoutUseCase } from '../../application/admin/usecases/auth/admin.logOut.usecase.js'
 import { AdminRefreshTokenUseCase } from '../../application/admin/usecases/auth/admin.refreshToken.usecase.js'
+import { ChangeVendorPasswordUsecase } from '../../application/vendor/usecases/profile/changeVendorPassword.usecase.js'
+import { UserChangePasswordUsecase } from '../../application/user/usecases/profile/user.changePassword.usecase.js'
+import { UserGetSimilarVenuesUsecase } from '../../application/user/usecases/venue/user.getSimilarVenues.usecase.js'
+
 //
 import { ReservationService } from "../../infrastructure/services/reservationService.js";
-import { ChangeVendorPasswordUsecase } from "../../application/vendor/usecases/profile/changeVendorPassword.usecase.js";
-import { UserChangePasswordUsecase } from "../../application/user/usecases/profile/user.changePassword.usecase.js";
 import { UserReserveBookingUsecase } from "../../application/user/usecases/booking/user.reserveBooking.usecase.js";
 import { UserConfirmBookingUsecase } from "../../application/user/usecases/booking/user.confirmBooking.usecase.js";
 import { UserBookingController } from "../controllers/user/user.booking.controller.js";
@@ -291,6 +293,10 @@ const changeVendorPasswordUsecase = new ChangeVendorPasswordUsecase(iVendorRepos
 const iUserGetAllVenues = new UserGetAllVenuesUsecase(iVenueRepository)
 const iUserGetVenueById = new UserGetVenueByIdUsecase(iVenueRepository)
 const iUserGetTopeVenues = new UserGetTopVenuesUsecase(iVenueRepository)
+const iUserSimilarVenues = new UserGetSimilarVenuesUsecase (
+    iVenueRepository,
+    iUserRepository
+)
 
 const iUserAddToWishlist = new UserAddToWishlistUsecase(
     iUserRepository,
@@ -398,7 +404,8 @@ export const iAdminVenueController = new AdminVenueController(
 export const iUserVenueController = new UserVenueController (
     iUserGetAllVenues,
     iUserGetVenueById,
-    iUserGetTopeVenues
+    iUserGetTopeVenues,
+    iUserSimilarVenues
 )
 export const iVendorProfileController = new VendorProfileController(
     iGetVendorProfileUsecase,

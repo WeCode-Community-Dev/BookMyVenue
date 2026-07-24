@@ -73,7 +73,8 @@ export const createVenueSchema = z.object({
     pricePerHour: z
         .coerce
         .number()
-        .min(0, "Price per hour cannot be negative"),
+        .optional(),
+        // .min(0, "Price per hour cannot be negative"),
 
     pricePerDay: z
         .coerce
