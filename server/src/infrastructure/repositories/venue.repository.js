@@ -331,4 +331,15 @@ async findById(id) {
         .lean()
     return documents.map(d => VenueMapper.mapToEntity(d))
   }
+
+  async findSimilarVenues(venueId, category){
+    const documents = await VenueModel.find({
+        _id: { $ne: venueId },
+        category,
+        approvalStatus: VenueStatus.ACTIVE,
+        isDeleted: false,
+        isBlocked: false
+    })
+    return documents.map(doc => VenueMapper.mapToEntity(doc))
+  }
 }
