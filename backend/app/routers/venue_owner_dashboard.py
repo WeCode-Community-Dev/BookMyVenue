@@ -10,7 +10,8 @@ from app.models.user import User
 from app.schemas.venue import VenueOut
 from app.schemas.review import ReviewOut
 from app.schemas.booking import PaginatedOwnerBookingsOut, OwnerBookingOut
-from app.services import booking_service
+from app.schemas.payment import CollectBalanceOut
+from app.services import booking_service, payment_service
 from app.schemas.notification import NotificationOut
 from app.schemas.venue_owner_dashboard import (
     DashboardSummaryOut,
@@ -102,6 +103,15 @@ def verify_booking_check_in(
     current_user: User = Depends(get_current_venue_owner),
 ):
     return dashboard_service.verify_check_in(db, current_user.id, payload.check_in_token)
+
+
+@router.post("/bookings/{booking_id}/collect-balance", response_model=CollectBalanceOut)
+def collect_booking_balance(
+    booking_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    return payment_service.collect_balance(db, current_user.id, booking_id)
 
 
 @router.get("/availability", response_model=AvailabilityCalendarOut)

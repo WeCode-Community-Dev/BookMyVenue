@@ -69,6 +69,10 @@ class Venue(Base):
     refund_25_days_before = Column(Integer, nullable=True)
     cancel_cutoff_days_before = Column(Integer, nullable=True)
 
+    # Payment options: deposit % for advance, and whether pay-at-venue is allowed.
+    advance_percent = Column(Integer, nullable=False, default=30)
+    allow_pay_at_venue = Column(Boolean, nullable=False, default=True)
+
     is_active = Column(
         Boolean,
         nullable=False,
