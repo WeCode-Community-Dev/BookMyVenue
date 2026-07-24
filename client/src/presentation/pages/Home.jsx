@@ -8,17 +8,52 @@ import { useEffect } from "react";
 import { getTopVenues } from "@/redux/slices/UserVenueSlice";
 import VenueCard from "../components/common/VenueCard";
 import HeroImage from '@/assets/images/Hero.jpg'
+import {
+  getWishlist,
+  addToWishlist,
+  removeWishlist,
+} from "@/redux/slices/UserWishlistSlice";
+import { toast } from "react-hot-toast";
 
 export default function Home() {
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const { venues } = useSelector((state) => state.userVenue)
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { venues } = useSelector((state) => state.userVenue);
 
-  useEffect(()=> {
-    dispatch(getTopVenues())
-  }, [dispatch])
+  useEffect(() => {
+    dispatch(getTopVenues());
+  }, [dispatch]);
 
-  
+  const { wishlist } = useSelector((state) => state.userWishlist);
+
+  useEffect(() => {
+    dispatch(getWishlist());
+  }, [dispatch]);
+
+  const handleAddWishlist = async (venueId) => {
+    try {
+      await dispatch(addToWishlist(venueId)).unwrap();
+      dispatch(getWishlist());
+      toast.success("Added to wishlist");
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  const handleRemoveWishlist = async (venueId) => {
+    try {
+      await dispatch(removeWishlist(venueId)).unwrap();
+      dispatch(getWishlist());
+      toast.success("Removed from wishlist");
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  const isWishlisted = (venueId) => {
+    return wishlist?.some((item) => item.id === venueId);
+  };
+
   return (
     <div className="bg-white">
       <Header />
@@ -169,9 +204,76 @@ export default function Home() {
           <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8">
             {venues.map((venue) => (
               <VenueCard
-                key={venue.id}
-                venue={venue}
-              />
+              key={venue.id}
+              venue={venue}
+              isWishlisted={isWishlisted(venue.id)}
+              onWishlistToggle={() => {
+                if (isWishlisted(venue.id)) {
+                  handleRemoveWishlist(venue.id);
+                } else {
+                  handleAddWishlist(venue.id);
+                }
+              }}
+            />
+              // <div
+              //   key={venue.id}
+              //   onClick={() => navigate(`/user/venue/${venue._id}`)}
+              //   className=" cursor-pointer bg-white rounded-3xl overflow-hidden border hover:shadow-xl transition">
+              //   <div className="relative">
+              //     <img src={venue.images?.[0]?.url} alt={venue.name} className=" h-64 w-full object-cover"/>
+              //     <button className=" absolute right-4 top-4 bg-white rounded-full w-11 h-11 flex items-center justify-center shadow">
+              //       🤍
+              //     </button>
+              //     <span className=" absolute bottom-4 left-4 bg-amber-500 px-4 py-2 rounded-full text-sm font-semibold">
+              //       {venue.category}
+              //     </span>
+              //   </div>
+              //   <div className="p-6">
+              //     <div className="flex items-center gap-2 mb-4">
+              //       <span className="text-amber-500">
+              //         ⭐
+              //       </span>
+              //       <span className="font-semibold">
+              //         {venue.rating}
+              //       </span>
+              //       {/* <span className="text-gray-500">
+              //         ({venue.reviews})
+              //       </span> */}
+              //     </div>
+              //     <h3 className="text-xl font-bold text-slate-900 mb-3">{venue.name}</h3>
+              //     <p className="text-gray-500 border-b pb-4">
+              //       📍 {venue.address.city}, {venue.address.state}
+              //     </p>
+              //     <div className="flex justify-between mt-5">
+              //       <div>
+              //         <p className="text-gray-500 text-sm">
+              //           Starting from
+              //         </p>
+
+              //         <p className="font-bold text-xl">
+              //           ₹{venue.pricePerDay}
+              //           <span className="text-sm font-normal">/day</span>
+              //         </p>
+              //       </div>
+
+              //       <div className="text-right">
+              //         <p className="text-gray-500 text-sm">
+              //           Capacity
+              //         </p>
+
+              //         <p className="font-bold text-md">
+              //           {venue.seatingCapacity}
+              //           <span className="text-sm text-gray-400"> Seating</span>
+              //         </p>
+
+              //         <p className="font-bold text-md">
+              //           {venue.standingCapacity}
+              //           <span className="text-sm text-gray-400"> Standing</span>
+              //         </p>
+              //       </div>
+              //     </div>
+              //   </div>
+              // </div>
             ))}
           </div>
         </div>

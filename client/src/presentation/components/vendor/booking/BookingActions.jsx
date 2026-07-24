@@ -1,4 +1,3 @@
-import React from "react";
 import { Eye, Check, X } from "lucide-react";
 
 const BookingActions = ({
@@ -10,11 +9,11 @@ const BookingActions = ({
 }) => {
   return (
     <div className="flex items-center gap-2">
-
       {/* View */}
       <button
+        type="button"
         onClick={() => onView?.(bookingId)}
-        className="w-8 h-8 rounded-lg border flex items-center justify-center hover:bg-gray-50"
+        className="flex h-8 w-8 items-center justify-center rounded-lg border hover:bg-gray-50"
       >
         <Eye size={16} />
       </button>
@@ -23,15 +22,17 @@ const BookingActions = ({
       {status === "Pending" && (
         <>
           <button
+            type="button"
             onClick={() => onApprove?.(bookingId)}
-            className="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center hover:bg-green-200"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 text-green-600 hover:bg-green-200"
           >
             <Check size={16} />
           </button>
 
           <button
+            type="button"
             onClick={() => onReject?.(bookingId)}
-            className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 text-red-600 hover:bg-red-200"
           >
             <X size={16} />
           </button>

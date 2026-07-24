@@ -86,7 +86,7 @@ const UserWishlistSlice = createSlice({
 
       // Add Wishlist
       .addCase(addToWishlist.fulfilled, (state, action) => {
-        state.wishlist.push(action.payload);
+        state.loading = false;
       })
 
       // Remove Wishlist

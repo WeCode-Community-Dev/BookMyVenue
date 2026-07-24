@@ -1,11 +1,14 @@
 export const API_ROUTES = {
 AUTH:{
-  REGISTER:(role)=> `/auth/${role}/register`
+  REGISTER:(role)=> `/auth/${role}/register`,
+  VERIFY_OTP:(role)=>`/auth/${role}/verifyotp`,
+  RESEND_OTP:(role)=>`/auth/${role}/resendotp`
 },
 
     USER: {
         VENUE:{
           VENUES: '/user/venues',
+          GET_BY_ID:(venueId)=>`/user/venue/${venueId}`,
           TOP_VENUES: '/user/top-venues'
         },
         PROFILE: {
@@ -75,6 +78,8 @@ AUTH:{
 
     VENUES: "/vendor/venues",
     CREATE_VENUE: "/vendor/venue",
+    UPDATE_VENUE:(venueId)=>`/vendor/venue/${venueId}`,
+    DELETE_VENUE:(venueId)=>`/vendor/venue/${venueId}`,
     VENUE_BY_ID: (venueId) =>
               `/vendor/venues/${venueId}`,
     UPDATE_VENUE_STATUS: (venueId) =>

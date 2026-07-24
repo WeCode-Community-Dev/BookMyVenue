@@ -11,8 +11,8 @@ const PasswordStrength = ({ password }) => {
   
     const passed = Object.values(checks).filter(Boolean).length;
   
-    let strength = "";
-    let color = "";
+    let strength;
+    let color;
   
     if (passed <= 2) {
       strength = "Weak";

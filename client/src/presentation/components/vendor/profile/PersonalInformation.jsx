@@ -20,12 +20,12 @@ const PersonalInformation = ({
       </h2>
 
       {!isEditing ? (
-        <div className="grid grid-cols-2 gap-6">
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <p className="text-sm text-gray-500">
               Full Name
             </p>
+
             <p className="font-medium">
               {profile.fullName || "-"}
             </p>
@@ -35,6 +35,7 @@ const PersonalInformation = ({
             <p className="text-sm text-gray-500">
               Email Address
             </p>
+
             <p className="font-medium">
               {profile.email || "-"}
             </p>
@@ -44,37 +45,53 @@ const PersonalInformation = ({
             <p className="text-sm text-gray-500">
               Phone Number
             </p>
+
             <p className="font-medium">
               {profile.phone || "-"}
             </p>
           </div>
-
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Full Name
+            </label>
 
-          <Input
-            placeholder="Full Name"
-            value={profile.fullName || ""}
-            onChange={(e) =>
-              updateField("fullName", e.target.value)
-            }
-          />
+            <Input
+              placeholder="Full Name"
+              value={profile.fullName || ""}
+              onChange={(e) =>
+                updateField("fullName", e.target.value)
+              }
+            />
+          </div>
 
-          <Input
-            placeholder="Email Address"
-            value={profile.email || ""}
-            disabled
-          />
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Email Address
+            </label>
 
-          <Input
-            placeholder="Phone Number"
-            value={profile.phone || ""}
-            onChange={(e) =>
-              updateField("phone", e.target.value)
-            }
-          />
+            <Input
+              type="email"
+              value={profile.email || ""}
+              disabled
+            />
+          </div>
 
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Phone Number
+            </label>
+
+            <Input
+              placeholder="Phone Number"
+              value={profile.phone || ""}
+              onChange={(e) =>
+                updateField("phone", e.target.value)
+              }
+            />
+          </div>
         </div>
       )}
     </div>

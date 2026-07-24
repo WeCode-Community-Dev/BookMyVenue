@@ -1,15 +1,19 @@
-import Header from "@/presentation/components/common/Header"
+import Header from "@/presentation/components/common/Header";
 import Footer from "@/presentation/components/common/Footer";
-import VenueCard from "@/presentation/components/common/VenueCard"
-import {Search} from "lucide-react";
+import VenueCard from "@/presentation/components/common/VenueCard";
+import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getVenues } from "@/redux/slices/UserVenueSlice";
 import { Amenities, Ratings, VenueCategory } from "@/constants/Venue";
+import {
+  getWishlist,
+  addToWishlist,
+  removeWishlist,
+} from "@/redux/slices/UserWishlistSlice";
+import { toast } from "react-hot-toast";
 
-
-export default function BrowseVenues(){
-
+export default function BrowseVenues() {
     const dispatch = useDispatch()
     const [search, setSearch] = useState('')
     const [page, setPage] = useState(1)
@@ -30,8 +34,8 @@ export default function BrowseVenues(){
         maxPrice: ""
     })
 
-    const { venues, pagination } = useSelector((state) => state.userVenue)
-   
+  const { venues, pagination } = useSelector((state) => state.userVenue);
+  const { wishlist } = useSelector((state) => state.userWishlist);
 
     useEffect(() => {
         dispatch(getVenues({
@@ -48,8 +52,36 @@ export default function BrowseVenues(){
             limit: 12
         }))
     }, [dispatch, search, appliedFilters, selectedCategory, selectedRating, page])
+    
+    useEffect(() => {
+        dispatch(getWishlist());
+    }, [dispatch]);
 
-return (
+  const handleAddWishlist = async (venueId) => {
+    try {
+      await dispatch(addToWishlist(venueId)).unwrap();
+      dispatch(getWishlist());
+      toast.success("Added to wishlist");
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  const handleRemoveWishlist = async (venueId) => {
+    try {
+      await dispatch(removeWishlist(venueId)).unwrap();
+      dispatch(getWishlist());
+      toast.success("Removed from wishlist");
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  const isWishlisted = (venueId) => {
+    return wishlist?.some((item) => item.id === venueId);
+  };
+
+  return (
     <>
         <Header/>
             <div className="bg-gray-50 min-h-screen">
@@ -242,11 +274,19 @@ return (
                     </div>
                 </div>
                 <div className="md:col-span-3 grid md:grid-cols-3 gap-x-8 gap-y-5">
-                    {venues.map((venue)=>(
-                        <VenueCard 
-                            key={venue.id}
-                            venue={venue}
-                        />
+                    {venues.map((venue) => (
+                    <VenueCard
+                        key={venue.id}
+                        venue={venue}
+                        isWishlisted={isWishlisted(venue.id)}
+                        onWishlistToggle={() => {
+                        if (isWishlisted(venue.id)) {
+                            handleRemoveWishlist(venue.id);
+                        } else {
+                            handleAddWishlist(venue.id);
+                        }
+                        }}
+                    />
                     ))}
                 </div>
                 <div className="md:col-span-3 flex justify-center gap-3 mt-10">
@@ -266,6 +306,7 @@ return (
                 </div>
             </div>
         </div>
-    <Footer/>
-</>
+        <Footer />
+    </>
 )}
+
