@@ -86,6 +86,7 @@ export const adminStyle = {
         "font-medium",
         "text-teal-600",
         "hover:bg-slate-50",
+        "cursor-pointer",
     ),
 
     approvalsGrid: clsx(

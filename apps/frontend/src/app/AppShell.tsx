@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { selectAuthLoading, selectUser } from "@/features/auth/AuthSlice";
+import { usePathname, useRouter } from "next/navigation";
+
 import Header from "@/components/global/header/Header";
 import PerformanceMonitor from "@/components/global/performancemonitor/PerformanceMonitor";
 import SidebarWrapper from "@/components/global/SideBarWrapper";
-import { useDevMode } from "@/store/AppConfigReducer";
-import { useSelector } from "react-redux";
 import { useAuthService } from "@/features/auth/services/AuthService";
+import { useDevMode } from "@/store/AppConfigReducer";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
 
 export default function AppShell({
     children,
@@ -14,6 +17,10 @@ export default function AppShell({
     children: React.ReactNode;
 }) {
     const devMode = useSelector(useDevMode);
+    const user = useSelector(selectUser);
+    const authLoading = useSelector(selectAuthLoading);
+    const pathname = usePathname();
+    const router = useRouter();
     const { fetchProfile } = useAuthService();
 
     useEffect(() => {
@@ -21,13 +28,31 @@ export default function AppShell({
     }, [
     ]);
 
+    useEffect(() => {
+        if (authLoading) return;
+
+        if (user?.role === "ADMIN") {
+            if (pathname !== "/admin") {
+                router.replace("/admin");
+            }
+        } else if (pathname === "/admin") {
+            router.replace("/");
+        }
+    }, [
+        user, authLoading, pathname, router
+    ]);
+
+    const isRedirecting =
+        (!authLoading && user?.role === "ADMIN" && pathname !== "/admin") ||
+        (!authLoading && pathname === "/admin" && user?.role !== "ADMIN");
+
     return (
         <>
             <Header />
             <div className="flex">
                 <SidebarWrapper />
                 <main className="flex-1">
-                    {children}
+                    {isRedirecting ? null : children}
                 </main>
             </div>
             {devMode && <PerformanceMonitor />}

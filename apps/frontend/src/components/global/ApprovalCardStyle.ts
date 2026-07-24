@@ -65,7 +65,8 @@ export const approvalCardStyle = {
         "font-medium",
         "text-red-600",
         "transition",
-        "hover:bg-red-50"
+        "hover:bg-red-50",
+        "cursor-pointer"
     ),
     approveBtn: clsx(
         "rounded-lg",
@@ -75,6 +76,7 @@ export const approvalCardStyle = {
         "font-medium",
         "text-white",
         "transition",
-        "hover:bg-teal-700"
+        "hover:bg-teal-700",
+        "cursor-pointer"
     )
 };
