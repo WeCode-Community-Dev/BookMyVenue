@@ -14,7 +14,6 @@ import {
 import AccountFieldSection from "../components/AccountFieldSection";
 import Field from "../components/Field";
 
-// Validation for account fields
 const validateAccountFields = (fields) => {
   const errors = {};
 
@@ -38,7 +37,6 @@ const validateAccountFields = (fields) => {
   return errors;
 };
 
-// Validation for business fields
 const validateBusinessFields = (fields) => {
   const errors = {};
 
@@ -69,14 +67,12 @@ const validateBusinessFields = (fields) => {
 };
 
 const INITIAL_FIELDS = {
-  // Account fields
   name: "",
   email: "",
   phone: "",
   password: "",
   confirmPassword: "",
 
-  // Business fields
   business_name: "",
   business_address: "",
   business_type: "",
@@ -116,11 +112,9 @@ function VenueOwnerRegisterPage() {
     }
   }, [isAuthenticated, currentStep]);
 
-  // Handle successful registration
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => {
-        // Redirect to owner dashboard — we'll check is_venue_owner there
         navigate("/owner/dashboard", { replace: true });
         dispatch(resetAuthStatus());
       }, 1400);
@@ -144,7 +138,6 @@ function VenueOwnerRegisterPage() {
   const handleContinueToBusinessStep = (e) => {
     e.preventDefault();
 
-    // Only validate account fields if not already logged in
     if (!isAuthenticated) {
       const validationErrors = validateAccountFields(fields);
       if (Object.keys(validationErrors).length) {
@@ -166,7 +159,6 @@ function VenueOwnerRegisterPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validate business fields
     const businessErrors = validateBusinessFields(fields);
     if (Object.keys(businessErrors).length) {
       setErrors(businessErrors);
@@ -175,7 +167,6 @@ function VenueOwnerRegisterPage() {
 
     setErrors({});
 
-    // Prepare payload based on whether user is logged in
     const payload = {
       business_name: fields.business_name,
       business_address: fields.business_address,
@@ -188,7 +179,6 @@ function VenueOwnerRegisterPage() {
       pan_number: fields.pan_number || null,
     };
 
-    // If NOT logged in, add account fields
     if (!isAuthenticated) {
       payload.name = fields.name;
       payload.email = fields.email;

@@ -81,10 +81,12 @@ def main() -> int:
 
     state: dict[str, Any] = {}
     booking_date = (date.today() + timedelta(days=30)).isoformat()
+    check_out_date = (date.today() + timedelta(days=33)).isoformat()
     time_hour = 10 + (RUN_ID % 8)
-    time_slot = f"{time_hour:02d}:30:00"
+    check_in_time = f"{time_hour:02d}:30:00"
+    check_out_time = "16:30:00"
+    time_slot = check_in_time
 
-    # --- A. Health ---
     print("A. Health")
     r = requests.get(f"{BASE_URL}/health", timeout=10)
     check("GET /health", r.status_code == 200, f"status={r.status_code}")
@@ -92,7 +94,6 @@ def main() -> int:
     r = requests.get(f"{BASE_URL}/", timeout=10)
     check("GET /", r.status_code == 200, f"status={r.status_code}")
 
-    # --- B. Reference data ---
     print("\nB. Reference data")
     r = requests.get(f"{BASE_URL}/amenities/", timeout=10)
     amenities_ok = r.status_code == 200 and isinstance(r.json(), list)
@@ -115,6 +116,19 @@ def main() -> int:
         check(f"GET /venues/{vid}", r.status_code == 200, snippet(r))
 
         r = requests.get(
+            f"{BASE_URL}/venues/{vid}/availability/range",
+            params={
+                "check_in_date": booking_date,
+                "check_in_time": check_in_time,
+                "check_out_date": check_out_date,
+                "check_out_time": check_out_time,
+            },
+            timeout=10,
+        )
+        range_avail_ok = r.status_code == 200 and r.json().get("available") is True
+        check(f"GET /venues/{vid}/availability/range", range_avail_ok, snippet(r))
+
+        r = requests.get(
             f"{BASE_URL}/venues/{vid}/availability",
             params={"booking_date": booking_date, "time_slot": time_slot},
             timeout=10,
@@ -122,7 +136,6 @@ def main() -> int:
         avail_ok = r.status_code == 200 and r.json().get("available") is True
         check(f"GET /venues/{vid}/availability", avail_ok, snippet(r))
 
-    # --- Owner prep (profile + approved venue for booking) ---
     print("\nD-pre. Venue owner setup")
     owner_token = login(OWNER_EMAIL, OWNER_PASSWORD)
     check("POST /auth/login (owner)", owner_token is not None, "Could not login owner@test.com")
@@ -162,7 +175,6 @@ def main() -> int:
 
         state["owner_token"] = owner_token
 
-    # --- C. Customer workflow ---
     print("\nC. Customer workflow")
     r = requests.post(
         f"{BASE_URL}/auth/register",
@@ -198,9 +210,11 @@ def main() -> int:
         }
         booking_body = {
             "venue_id": venue_id,
-            "booking_date": booking_date,
-            "time_slot": time_slot,
-            "notes": "Smoke test booking",
+            "check_in_date": booking_date,
+            "check_in_time": check_in_time,
+            "check_out_date": check_out_date,
+            "check_out_time": check_out_time,
+            "notes": "Smoke test multi-day booking",
         }
         r = requests.post(
             f"{BASE_URL}/bookings",
@@ -209,9 +223,11 @@ def main() -> int:
             timeout=10,
         )
         booking_ok = r.status_code == 201
-        check("POST /bookings", booking_ok, snippet(r))
+        check("POST /bookings (multi-day)", booking_ok, snippet(r))
         if booking_ok:
             state["booking_id"] = r.json()["id"]
+            num_days_ok = r.json().get("num_days") == 4
+            check("POST /bookings num_days=4", num_days_ok, snippet(r))
 
         r = requests.post(
             f"{BASE_URL}/bookings",
@@ -249,30 +265,28 @@ def main() -> int:
             json={"booking_id": bid},
             timeout=10,
         )
-        pay_ok = r.status_code == 200 and "payment_id" in r.json()
+        pay_ok = (
+            r.status_code == 200
+            and "payment_id" in r.json()
+            and r.json().get("gateway_order_id")
+            and r.json().get("key_id")
+        )
         check("POST /payments/initiate", pay_ok, snippet(r))
         if pay_ok:
             state["payment_id"] = r.json()["payment_id"]
+            state["gateway_order_id"] = r.json()["gateway_order_id"]
+            print("        Note: complete payment manually in checkout with Razorpay test card 4111 1111 1111 1111")
 
     if customer_token and state.get("payment_id"):
         pid = state["payment_id"]
-        r = requests.post(
-            f"{BASE_URL}/payments/confirm",
-            headers=auth_headers(customer_token),
-            json={"payment_id": pid, "success": True},
-            timeout=10,
-        )
-        confirm_ok = r.status_code == 200 and r.json().get("status") == "paid"
-        check("POST /payments/confirm", confirm_ok, snippet(r))
-
         r = requests.get(
             f"{BASE_URL}/payments/{pid}/status",
             headers=auth_headers(customer_token),
             timeout=10,
         )
-        check(f"GET /payments/{pid}/status", r.status_code == 200, snippet(r))
+        status_ok = r.status_code == 200 and r.json().get("status") in ("created", "paid")
+        check(f"GET /payments/{pid}/status", status_ok, snippet(r))
 
-    # --- D. Venue owner workflow ---
     print("\nD. Venue owner workflow")
     owner_token = state.get("owner_token")
     if owner_token:
@@ -325,7 +339,6 @@ def main() -> int:
             if create_ok:
                 state["pending_venue_id"] = r.json()["id"]
 
-    # --- E. Superadmin workflow ---
     print("\nE. Superadmin workflow")
     admin_token = login(ADMIN_EMAIL, ADMIN_PASSWORD)
     check("POST /auth/login (admin)", admin_token is not None, "Run scripts/seed_admin.py first")
@@ -375,7 +388,6 @@ def main() -> int:
         )
         check("GET /admin/venues", r.status_code == 200, snippet(r))
 
-    # --- F. Negative checks ---
     print("\nF. Negative checks")
     r = requests.get(f"{BASE_URL}/admin/dashboard", timeout=10)
     check(
@@ -393,8 +405,10 @@ def main() -> int:
             },
             json={
                 "venue_id": venue_id,
-                "booking_date": booking_date,
-                "time_slot": f"{(time_hour + 1) % 24:02d}:30:00",
+                "check_in_date": booking_date,
+                "check_in_time": f"{(time_hour + 1) % 24:02d}:30:00",
+                "check_out_date": check_out_date,
+                "check_out_time": check_out_time,
                 "notes": "Owner should not book",
             },
             timeout=10,
@@ -411,7 +425,6 @@ def main() -> int:
         )
         check(f"PATCH /bookings/{bid}/cancel", r.status_code == 200, snippet(r))
 
-    # --- Summary ---
     total = passed + failed
     print(f"\n{'=' * 50}")
     print(f"Results: {passed}/{total} passed")

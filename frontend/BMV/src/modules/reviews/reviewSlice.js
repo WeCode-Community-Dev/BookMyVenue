@@ -52,7 +52,6 @@ const reviewSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // ── fetchOwnerReviews ──
     builder
       .addCase(fetchOwnerReviewsAsync.pending, (state) => {
         state.isLoading = true;

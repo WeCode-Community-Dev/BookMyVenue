@@ -7,19 +7,23 @@ export const paymentService = {
       const res = await client.post("/payments/initiate", { booking_id });
       return res.data;
     } catch (err) {
-      throw new Error(getFriendlyError(err.code));
+      const detail = err.message || err.code;
+      throw new Error(getFriendlyError(detail) || detail || "Payment failed");
     }
   },
 
-  async confirm(payment_id, success = true) {
+  async confirm({ payment_id, gateway_order_id, gateway_payment_id, gateway_signature }) {
     try {
       const res = await client.post("/payments/confirm", {
         payment_id,
-        success,
+        gateway_order_id,
+        gateway_payment_id,
+        gateway_signature,
       });
       return res.data;
     } catch (err) {
-      throw new Error(getFriendlyError(err.code));
+      const detail = err.message || err.code;
+      throw new Error(getFriendlyError(detail) || detail || "Payment failed");
     }
   },
 
@@ -28,7 +32,8 @@ export const paymentService = {
       const res = await client.get(`/payments/${payment_id}/status`);
       return res.data;
     } catch (err) {
-      throw new Error(getFriendlyError(err.code));
+      const detail = err.message || err.code;
+      throw new Error(getFriendlyError(detail) || detail || "Payment failed");
     }
   },
 };

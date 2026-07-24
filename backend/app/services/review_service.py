@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 
-from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException, status
 
 from app.models.review import Review
 from app.models.venue import Venue
@@ -9,6 +10,7 @@ from app.models.booking import Booking
 from app.models.user import User
 from app.schemas.review import ReviewCreate
 from app.services.notification_service import create_notification
+from app.services.booking_service import maybe_complete_booking
 
 
 def create_review(db: Session, current_user: User, payload: ReviewCreate) -> dict:
@@ -29,7 +31,6 @@ def create_review(db: Session, current_user: User, payload: ReviewCreate) -> dic
             Booking.id == payload.booking_id,
             Booking.venue_id == payload.venue_id,
             Booking.user_id == current_user.id,
-            Booking.status == "booked",
         )
         .first()
     )
@@ -40,6 +41,25 @@ def create_review(db: Session, current_user: User, payload: ReviewCreate) -> dic
             detail="You can only review a venue after a completed booking",
         )
 
+    maybe_complete_booking(db, booking)
+
+    if booking.status != "completed":
+        raise HTTPException(
+            status_code=403,
+            detail="You can only review a venue after a completed booking",
+        )
+
+    existing_review = (
+        db.query(Review)
+        .filter(Review.booking_id == payload.booking_id)
+        .first()
+    )
+    if existing_review:
+        raise HTTPException(
+            status_code=409,
+            detail="You have already reviewed this booking",
+        )
+
     review = Review(
         venue_id=payload.venue_id,
         reviewer_id=current_user.id,
@@ -48,7 +68,14 @@ def create_review(db: Session, current_user: User, payload: ReviewCreate) -> dic
         comment=payload.comment,
     )
     db.add(review)
-    db.flush()
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="You have already reviewed this booking",
+        )
 
     all_ratings = db.query(Review.rating).filter(Review.venue_id == venue.id).all()
     ratings = [r[0] for r in all_ratings]
@@ -78,6 +105,61 @@ def create_review(db: Session, current_user: User, payload: ReviewCreate) -> dic
         "event_type": booking.event_type,
         "owner_reply": review.owner_reply,
         "replied_at": review.replied_at,
+    }
+
+
+def get_reviews_for_venue(db: Session, venue_id: int) -> dict:
+    venue = (
+        db.query(Venue)
+        .filter(
+            Venue.id == venue_id,
+            Venue.approval_status == "approved",
+            Venue.is_active.is_(True),
+        )
+        .first()
+    )
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+
+    review_rows = (
+        db.query(Review)
+        .options(joinedload(Review.reviewer))
+        .filter(Review.venue_id == venue_id)
+        .order_by(Review.created_at.desc())
+        .all()
+    )
+
+    booking_ids = [r.booking_id for r in review_rows if r.booking_id]
+    bookings_by_id = {}
+    if booking_ids:
+        bookings = db.query(Booking).filter(Booking.id.in_(booking_ids)).all()
+        bookings_by_id = {b.id: b for b in bookings}
+
+    reviews = []
+    for review in review_rows:
+        booking = bookings_by_id.get(review.booking_id) if review.booking_id else None
+        reviews.append({
+            "id": review.id,
+            "rating": review.rating,
+            "comment": review.comment,
+            "created_at": review.created_at,
+            "reviewer_name": review.reviewer.name or "Anonymous",
+            "event_type": booking.event_type if booking else None,
+            "owner_reply": review.owner_reply,
+            "replied_at": review.replied_at,
+        })
+
+    distribution = {str(star): 0 for star in range(1, 6)}
+    for review in reviews:
+        distribution[str(review["rating"])] += 1
+
+    reviews.sort(key=lambda r: (r["rating"], r["created_at"]), reverse=True)
+
+    return {
+        "reviews": reviews,
+        "total_reviews": venue.total_reviews or len(reviews),
+        "average_rating": float(venue.average_rating or 0),
+        "rating_distribution": distribution,
     }
 
 
@@ -117,7 +199,6 @@ def get_review_dashboard_data(db: Session, owner_id: int) -> dict:
     """
     reviews = get_recent_reviews_for_owner(db, owner_id, limit=50)
 
-    # Rating distribution across all owner's venues
     all_ratings = (
         db.query(Review.rating)
         .join(Venue, Review.venue_id == Venue.id)
@@ -132,13 +213,11 @@ def get_review_dashboard_data(db: Session, owner_id: int) -> dict:
     for r in rating_values:
         distribution[str(r)] += 1
 
-    # Convert counts to percentages
     distribution_pct = {
         star: round((count / total) * 100) if total else 0
         for star, count in distribution.items()
     }
 
-    # Review of the month: highest rating, then most recent if tie
     review_of_month = None
     if reviews:
         sorted_reviews = sorted(

@@ -17,6 +17,8 @@ from app.schemas.venue_owner_dashboard import (
     BookingRequestOut,
     AvailabilityCalendarOut,
     RevenueOverviewOut,
+    CheckInVerifyRequest,
+    CheckInVerifyOut,
 )
 
 from app.services import venue_owner_dashboard_service as dashboard_service
@@ -91,6 +93,15 @@ def reject_booking(
         "price": float(booking.amount),
         "owner_status": booking.owner_status,
     }
+
+
+@router.post("/bookings/check-in", response_model=CheckInVerifyOut)
+def verify_booking_check_in(
+    payload: CheckInVerifyRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_venue_owner),
+):
+    return dashboard_service.verify_check_in(db, current_user.id, payload.check_in_token)
 
 
 @router.get("/availability", response_model=AvailabilityCalendarOut)

@@ -20,16 +20,12 @@ export const authService = {
 
   async registerVenueOwner(data) {
     try {
-      // Check if payload has password field (means it's a new registration)
       if (data.password) {
-        // Brand new venue owner — POST to /venue-owners/register
         const res = await client.post("/venue-owners/register", data);
         const { access_token, refresh_token } = res.data;
-        saveTokens(access_token, refresh_token, true); // Auto-save token
+        saveTokens(access_token, refresh_token, true);
         return res.data;
       } else {
-        // Existing customer adding host profile — POST to /venue-owners/upgrade
-        // Token already in headers via axios interceptor
         const res = await client.post("/venue-owners/upgrade", data);
         return res.data;
       }
@@ -86,9 +82,13 @@ export const authService = {
     }
   },
 
-  async getMe() {
-    const res = await client.get("/auth/me");
-    return res.data;
+  async updateProfile(data) {
+    try {
+      const res = await client.patch("/auth/me", data);
+      return res.data;
+    } catch (err) {
+      throw new Error(err.message);
+    }
   },
 
   // async refreshToken() {

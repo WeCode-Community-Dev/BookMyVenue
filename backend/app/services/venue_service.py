@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date, datetime, time, timezone
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
@@ -7,12 +7,14 @@ from app.models.booking import Booking
 from app.models.user import User
 from app.models.venue import Venue
 from app.schemas.venue import VenueCreate
-from fastapi import HTTPException
-from app.models.user import User
-from app.models.booking import Booking
-from datetime import date
 from app.services.notification_service import create_notification
-from datetime import datetime, timezone
+from app.services.cancellation_policy_service import validate_cancellation_policy_fields
+from app.services.booking_dates import (
+    booking_end_dt,
+    booking_start_dt,
+    combine_dt,
+    intervals_overlap,
+)
 
 
 def _fetch_full(db: Session, venue_id: int) -> Venue:
@@ -38,16 +40,77 @@ def _public_venue_query(db: Session):
     )
 
 
+def _get_bookable_venue(db: Session, venue_id: int) -> Venue:
+    venue = (
+        db.query(Venue)
+        .filter(
+            Venue.id == venue_id,
+            Venue.approval_status == "approved",
+            Venue.is_active.is_(True),
+        )
+        .first()
+    )
+    if not venue:
+        raise HTTPException(status_code=404, detail="Venue not found")
+    return venue
+
+
+def _find_overlap(
+    db: Session,
+    venue_id: int,
+    start_dt: datetime,
+    end_dt: datetime,
+) -> Booking | None:
+    bookings = (
+        db.query(Booking)
+        .filter(
+            Booking.venue_id == venue_id,
+            Booking.status != "cancelled",
+        )
+        .all()
+    )
+    for booking in bookings:
+        if intervals_overlap(
+            start_dt,
+            end_dt,
+            booking_start_dt(booking),
+            booking_end_dt(booking),
+        ):
+            return booking
+    return None
+
+
+def _validate_google_maps_url(url: str | None) -> None:
+    if not url or not url.strip():
+        return
+    allowed = ("google.com/maps", "maps.app.goo.gl", "goo.gl/maps")
+    if not any(part in url for part in allowed):
+        raise HTTPException(
+            status_code=400,
+            detail="Google Maps URL must be a valid Google Maps share link",
+        )
+
+
 def create_venue(db: Session, venue_data: VenueCreate, current_user: User) -> Venue:
+    _validate_google_maps_url(venue_data.google_maps_url)
+    validate_cancellation_policy_fields(
+        venue_data.refund_50_days_before,
+        venue_data.refund_25_days_before,
+        venue_data.cancel_cutoff_days_before,
+    )
     new_venue = Venue(
         owner_id=current_user.id,
         name=venue_data.name,
         location=venue_data.location,
+        google_maps_url=venue_data.google_maps_url,
         price_per_day=venue_data.price_per_day,
         venue_type_id=venue_data.venue_type_id,
         capacity=venue_data.capacity,
         image_url=venue_data.image_url,
         description=venue_data.description,
+        refund_50_days_before=venue_data.refund_50_days_before,
+        refund_25_days_before=venue_data.refund_25_days_before,
+        cancel_cutoff_days_before=venue_data.cancel_cutoff_days_before,
     )
 
     db.add(new_venue)
@@ -91,35 +154,54 @@ def check_availability(
     booking_date: date,
     time_slot: time,
 ) -> dict:
-    venue = (
-        db.query(Venue)
-        .filter(
-            Venue.id == venue_id,
-            Venue.approval_status == "approved",
-            Venue.is_active.is_(True),
-        )
-        .first()
-    )
-    if not venue:
-        raise HTTPException(status_code=404, detail="Venue not found")
-
-    clash = (
-        db.query(Booking)
-        .filter(
-            Booking.venue_id == venue_id,
-            Booking.booking_date == booking_date,
-            Booking.time_slot == time_slot,
-            Booking.status != "cancelled",
-        )
-        .first()
+    end_time = time(23, 59, 59)
+    return check_availability_range(
+        db,
+        venue_id,
+        booking_date,
+        time_slot,
+        booking_date,
+        end_time,
     )
 
-    return {
+
+def check_availability_range(
+    db: Session,
+    venue_id: int,
+    check_in_date: date,
+    check_in_time: time,
+    check_out_date: date,
+    check_out_time: time,
+) -> dict:
+    _get_bookable_venue(db, venue_id)
+
+    start_dt = combine_dt(check_in_date, check_in_time)
+    end_dt = combine_dt(check_out_date, check_out_time)
+
+    if end_dt <= start_dt:
+        return {
+            "venue_id": venue_id,
+            "check_in_date": str(check_in_date),
+            "check_in_time": str(check_in_time),
+            "check_out_date": str(check_out_date),
+            "check_out_time": str(check_out_time),
+            "available": False,
+            "reason": "Check-out must be after check-in",
+        }
+
+    conflict = _find_overlap(db, venue_id, start_dt, end_dt)
+    result = {
         "venue_id": venue_id,
-        "booking_date": str(booking_date),
-        "time_slot": str(time_slot),
-        "available": clash is None,
+        "check_in_date": str(check_in_date),
+        "check_in_time": str(check_in_time),
+        "check_out_date": str(check_out_date),
+        "check_out_time": str(check_out_time),
+        "available": conflict is None,
     }
+    if conflict:
+        result["conflict_date"] = str(conflict.check_in_date)
+        result["conflict_booking_id"] = conflict.id
+    return result
 
 
 def update_venue(db: Session, venue_id: int, venue_data, owner_id: int):
@@ -131,13 +213,24 @@ def update_venue(db: Session, venue_id: int, venue_data, owner_id: int):
     if venue.owner_id != owner_id:
         raise HTTPException(status_code=403, detail="You don't have permission to update this venue")
 
+    _validate_google_maps_url(venue_data.google_maps_url)
+    validate_cancellation_policy_fields(
+        venue_data.refund_50_days_before,
+        venue_data.refund_25_days_before,
+        venue_data.cancel_cutoff_days_before,
+    )
+
     venue.name = venue_data.name
     venue.location = venue_data.location
+    venue.google_maps_url = venue_data.google_maps_url
     venue.price_per_day = venue_data.price_per_day
     venue.venue_type_id = venue_data.venue_type_id
     venue.description = venue_data.description
     venue.capacity = venue_data.capacity
     venue.image_url = venue_data.image_url
+    venue.refund_50_days_before = venue_data.refund_50_days_before
+    venue.refund_25_days_before = venue_data.refund_25_days_before
+    venue.cancel_cutoff_days_before = venue_data.cancel_cutoff_days_before
 
     db.commit()
     return _fetch_full(db, venue_id)
@@ -182,12 +275,12 @@ def deactivate_venue(db: Session, venue_id: int, current_user: User):
     if not venue.is_active:
         raise HTTPException(status_code=400, detail="Venue is already deactivated")
 
-    # Cancel all upcoming bookings
+    today = date.today()
     upcoming_bookings = (
         db.query(Booking)
         .filter(
             Booking.venue_id == venue_id,
-            Booking.booking_date >= date.today(),
+            Booking.check_out_date >= today,
             Booking.status != "cancelled",
         )
         .all()
@@ -198,7 +291,6 @@ def deactivate_venue(db: Session, venue_id: int, current_user: User):
         booking.cancellation_reason = "Venue deactivated by owner"
         booking.cancelled_at = datetime.now(timezone.utc)
 
-        # Notify the customer
         create_notification(
             db,
             user_id=booking.user_id,
@@ -215,10 +307,6 @@ def deactivate_venue(db: Session, venue_id: int, current_user: User):
         "detail": "Venue deactivated successfully",
         "cancelled_bookings": len(upcoming_bookings),
     }
-
-
-
-
 
 
 def get_my_venues(db: Session, current_user: User):

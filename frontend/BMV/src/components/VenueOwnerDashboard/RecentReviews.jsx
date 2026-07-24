@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
+import EmptyState from "../shared/EmptyState";
 
 function initials(name) {
   return name
@@ -14,7 +16,9 @@ function RecentReviews({ reviews, loading }) {
     <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-rose-900">Recent Reviews</h3>
-        <button className="text-xs font-medium text-rose-700 hover:underline">All reviews</button>
+        <Link to="/owner/reviews" className="text-xs font-medium text-rose-700 hover:underline">
+          All reviews
+        </Link>
       </div>
 
       {loading ? (
@@ -23,6 +27,13 @@ function RecentReviews({ reviews, loading }) {
             <div key={i} className="h-16 bg-gray-50 rounded-xl animate-pulse" />
           ))}
         </div>
+      ) : reviews.length === 0 ? (
+        <EmptyState
+          title="No reviews yet"
+          description="Share your venue links to collect customer feedback."
+          actionLabel="View reviews page"
+          actionTo="/owner/reviews"
+        />
       ) : (
         <div className="space-y-4">
           {reviews.map((r) => (
@@ -38,20 +49,26 @@ function RecentReviews({ reviews, loading }) {
                       <Star
                         key={i}
                         size={12}
-                        className={i < r.rating ? "fill-amber-400 text-amber-400" : "text-gray-200"}
+                        className={
+                          i < r.rating ? "fill-amber-400 text-amber-400" : "text-gray-200"
+                        }
                       />
                     ))}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{r.comment}</p>
-                <p className="text-[11px] text-gray-400 mt-1">
-                  {r.event_type} on{" "}
-                  {new Date(r.date).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed line-clamp-2">
+                  {r.comment}
                 </p>
+                {r.date && (
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    {r.event_type} on{" "}
+                    {new Date(r.date).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </p>
+                )}
               </div>
             </div>
           ))}

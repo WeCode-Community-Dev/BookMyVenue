@@ -1,18 +1,40 @@
+import { Link } from "react-router-dom";
 import { AreaChart, Area, ResponsiveContainer, XAxis, Tooltip } from "recharts";
 import { TrendingUp } from "lucide-react";
 
-function RevenueOverview({ revenue, loading }) {
+const RANGE_OPTIONS = [
+  { value: "this_month", label: "This Month" },
+  { value: "last_month", label: "Last Month" },
+];
+
+function RevenueOverview({
+  revenue,
+  loading,
+  range = "this_month",
+  onRangeChange,
+  showFullReportLink = true,
+}) {
   return (
     <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-semibold text-rose-900">Revenue Overview</h3>
         <div className="flex items-center gap-3">
-          <select className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-500">
-            <option>This Month</option>
-            <option>Last Month</option>
-            <option>This Year</option>
+          <select
+            value={range}
+            onChange={(e) => onRangeChange?.(e.target.value)}
+            className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-500"
+          >
+            {RANGE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
           </select>
-          <button className="text-xs font-medium text-rose-700 hover:underline">Full Report</button>
+          {showFullReportLink && (
+            <Link to="/owner/revenue" className="text-xs font-medium text-rose-700 hover:underline">
+              Full Report
+            </Link>
+          )}
         </div>
       </div>
 

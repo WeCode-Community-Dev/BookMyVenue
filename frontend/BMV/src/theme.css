@@ -1,5 +1,3 @@
-/* BookMyVenue - Maroon/Burgundy Theme */
-
 :root {
   --primary-maroon: #8B1538;
   --primary-maroon-dark: #6B0F2A;
@@ -8,7 +6,6 @@
   --bg-pink: #FFE4E9;
 }
 
-/* Override default blue classes with maroon */
 .bg-blue-600 {
   background-color: var(--primary-maroon) !important;
 }
@@ -69,12 +66,10 @@
   --tw-ring-color: var(--primary-maroon-light) !important;
 }
 
-/* Gradient updates for venue cards */
 .bg-gradient-to-br.from-blue-500.to-purple-600 {
   background: linear-gradient(to bottom right, var(--primary-maroon), #6B0F2A) !important;
 }
 
-/* Body background */
 body {
   background-color: #FAFAFA;
 }
@@ -83,7 +78,6 @@ body {
   background-color: var(--bg-pink-light) !important;
 }
 
-/* Button styles */
 button.bg-blue-600,
 a.bg-blue-600 {
   background-color: var(--primary-maroon) !important;
@@ -95,8 +89,15 @@ a.bg-blue-600:hover {
   background-color: var(--primary-maroon-dark) !important;
 }
 
-/* Specific overrides for badges */
 .bg-blue-100.text-blue-800 {
   background-color: #FFE4E9 !important;
   color: var(--primary-maroon-dark) !important;
+}
+
+.hover\:border-blue-100:hover {
+  border-color: #fecdd3 !important;
+}
+
+.border-blue-600 {
+  border-color: var(--primary-maroon) !important;
 }

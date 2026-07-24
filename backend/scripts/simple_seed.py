@@ -18,17 +18,14 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def main():
     print("Creating test data...")
     
-    # Create tables
     Base.metadata.create_all(bind=engine)
     
     db = SessionLocal()
     
     try:
-        # Check if user exists
         user = db.query(User).filter(User.email == "owner@test.com").first()
         
         if not user:
-            # Create user
             user = User(
                 email="owner@test.com",
                 name="Test Owner",
@@ -44,11 +41,9 @@ def main():
         else:
             print(f"✅ User exists: {user.email}")
         
-        # Check if venues exist
         existing = db.query(Venue).filter(Venue.owner_id == user.id).count()
         
         if existing == 0:
-            # Create venues
             venues = [
                 Venue(
                     owner_id=user.id,

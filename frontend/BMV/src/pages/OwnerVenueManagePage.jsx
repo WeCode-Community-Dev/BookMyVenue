@@ -15,8 +15,8 @@ import {
   clearActiveVenue,
   clearVenueBookings,
 } from "../modules/venueOwner/venueOwnerSlice";
+import { formatBookingPeriod } from "../utils/bookingFormat";
 
-// ── Approval badge config ─────────────────────────────────────────────────────
 
 const APPROVAL_BADGE = {
   approved: "bg-emerald-100 text-emerald-700",
@@ -29,11 +29,11 @@ const APPROVAL_LABEL = {
   rejected: "Rejected",
 };
 
-// ── Booking display status ────────────────────────────────────────────────────
 
 function resolveDisplayStatus(booking) {
   if (booking.status === "cancelled") return "cancelled";
-  const isPast = new Date(booking.booking_date) < new Date(new Date().toDateString());
+  const endDate = booking.check_out_date ?? booking.booking_date;
+  const isPast = new Date(endDate) < new Date(new Date().toDateString());
   if (booking.owner_status === "accepted" && isPast) return "completed";
   if (booking.owner_status === "accepted") return "confirmed";
   if (booking.owner_status === "rejected") return "rejected";
@@ -48,7 +48,6 @@ const STATUS_CONFIG = {
   rejected:   { label: "Rejected",   classes: "bg-red-50 text-red-600 border border-red-200"             },
 };
 
-// ── Sub-components ────────────────────────────────────────────────────────────
 
 function Initials({ name }) {
   const parts = (name ?? "?").trim().split(" ");
@@ -105,14 +104,7 @@ function ActionButtons({ booking, actionBookingId, onAccept, onReject }) {
 
 // Desktop table row
 function BookingRow({ booking, actionBookingId, onAccept, onReject }) {
-  const dateStr = new Date(booking.booking_date).toLocaleDateString("en-GB", {
-    day: "2-digit", month: "short", year: "numeric",
-  });
-  const timeStr = booking.time_slot
-    ? new Date(`1970-01-01T${booking.time_slot}`).toLocaleTimeString("en-IN", {
-        hour: "2-digit", minute: "2-digit", hour12: true,
-      })
-    : "—";
+  const periodStr = formatBookingPeriod(booking);
 
   return (
     <tr className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
@@ -128,10 +120,7 @@ function BookingRow({ booking, actionBookingId, onAccept, onReject }) {
         </div>
       </td>
       <td className="py-3 px-4">
-        <p className="text-sm text-gray-700">{dateStr}</p>
-        <p className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
-          <Clock size={10} /> {timeStr}
-        </p>
+        <p className="text-sm text-gray-700">{periodStr}</p>
       </td>
       <td className="py-3 px-4">
         {booking.guest_count != null
@@ -168,14 +157,7 @@ function BookingRow({ booking, actionBookingId, onAccept, onReject }) {
 
 // Mobile card
 function BookingCard({ booking, actionBookingId, onAccept, onReject }) {
-  const dateStr = new Date(booking.booking_date).toLocaleDateString("en-GB", {
-    day: "2-digit", month: "short", year: "numeric",
-  });
-  const timeStr = booking.time_slot
-    ? new Date(`1970-01-01T${booking.time_slot}`).toLocaleTimeString("en-IN", {
-        hour: "2-digit", minute: "2-digit", hour12: true,
-      })
-    : "—";
+  const periodStr = formatBookingPeriod(booking);
 
   return (
     <div className="p-4 border-b border-gray-50 last:border-0">
@@ -193,8 +175,7 @@ function BookingCard({ booking, actionBookingId, onAccept, onReject }) {
       </div>
 
       <div className="flex flex-wrap gap-3 mt-2 text-[11px] text-gray-500">
-        <span className="flex items-center gap-1"><Calendar size={10} /> {dateStr}</span>
-        <span className="flex items-center gap-1"><Clock size={10} /> {timeStr}</span>
+        <span className="flex items-center gap-1"><Calendar size={10} /> {periodStr}</span>
         {booking.guest_count != null && (
           <span className="flex items-center gap-1"><Users size={10} /> {booking.guest_count} guests</span>
         )}
@@ -223,7 +204,6 @@ const TABS = [
   { key: "cancelled", label: "Cancelled" },
 ];
 
-// ── Bookings section ──────────────────────────────────────────────────────────
 
 function VenueBookingsSection({ venueId }) {
   const dispatch = useDispatch();
@@ -398,7 +378,6 @@ function VenueBookingsSection({ venueId }) {
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────────────────────
 
 function OwnerVenueManagePage() {
   const { id } = useParams();

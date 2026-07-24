@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import OwnerLayout from "../components/VenueOwnerDashboard/OwnerLayout";
@@ -8,20 +8,19 @@ import AvailabilityCalendar from "../components/VenueOwnerDashboard/Availability
 import MyVenuesGrid from "../components/VenueOwnerDashboard/MyVenuesGrid";
 import RevenueOverview from "../components/VenueOwnerDashboard/RevenueOverview";
 import RecentReviews from "../components/VenueOwnerDashboard/RecentReviews";
-import NotificationsPanel from "../components/VenueOwnerDashboard/NotificationsPanel";
+import NotificationsSummary from "../components/VenueOwnerDashboard/NotificationsSummary";
 
 import {
-  fetchDashboardSummaryAsync,
   fetchBookingRequestsAsync,
   fetchAvailabilityCalendarAsync,
   fetchMyVenuesAsync,
   fetchRevenueOverviewAsync,
   fetchRecentReviewsAsync,
-  fetchNotificationsAsync,
 } from "../modules/venueOwner/venueOwnerSlice";
 
 function OwnerDashboardPage() {
   const dispatch = useDispatch();
+  const [revenueRange, setRevenueRange] = useState("this_month");
 
   const {
     summary,
@@ -35,25 +34,22 @@ function OwnerDashboardPage() {
   } = useSelector((state) => state.venueOwner);
 
   useEffect(() => {
-
     const currentMonth = new Date().toISOString().slice(0, 7);
-
-    dispatch(fetchDashboardSummaryAsync());
     dispatch(fetchBookingRequestsAsync());
     dispatch(fetchAvailabilityCalendarAsync({ month: currentMonth }));
     dispatch(fetchMyVenuesAsync());
-    dispatch(fetchRevenueOverviewAsync("this_month"));
     dispatch(fetchRecentReviewsAsync());
-    dispatch(fetchNotificationsAsync());
   }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchRevenueOverviewAsync(revenueRange));
+  }, [dispatch, revenueRange]);
 
   return (
     <OwnerLayout>
       <div className="space-y-6">
-        {/* Stat cards */}
         <StatCardsRow summary={summary} loading={loading.summary} />
 
-        {/* Booking requests + calendar */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2">
             <RecentBookingRequests
@@ -64,17 +60,20 @@ function OwnerDashboardPage() {
           <AvailabilityCalendar days={calendar.days} loading={loading.calendar} />
         </div>
 
-        {/* My venues */}
         <MyVenuesGrid venues={venues} loading={loading.venues} />
 
-        {/* Revenue + reviews + notifications */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2">
-            <RevenueOverview revenue={revenue} loading={loading.revenue} />
+            <RevenueOverview
+              revenue={revenue}
+              loading={loading.revenue}
+              range={revenueRange}
+              onRangeChange={setRevenueRange}
+            />
           </div>
           <div className="space-y-5">
             <RecentReviews reviews={reviews} loading={loading.reviews} />
-            <NotificationsPanel notifications={notifications} loading={loading.notifications} />
+            <NotificationsSummary notifications={notifications} loading={loading.notifications} />
           </div>
         </div>
       </div>
