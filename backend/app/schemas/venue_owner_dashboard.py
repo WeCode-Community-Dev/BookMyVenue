@@ -61,4 +61,8 @@ class CheckInVerifyOut(BaseModel):
     check_in_date: date
     checked_in_at: datetime
     already_checked_in: bool = False
+    amount: Optional[float] = None
+    amount_paid: Optional[float] = None
+    balance_due: Optional[float] = None
+    payment_option: Optional[str] = None
     message: str

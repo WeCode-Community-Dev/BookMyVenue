@@ -24,6 +24,9 @@ class Booking(Base):
     num_days: Mapped[int] = mapped_column(Integer, nullable=False)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    payment_option: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    amount_paid: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
+    balance_due: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
     event_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
@@ -57,5 +60,9 @@ class Booking(Base):
         CheckConstraint(
             "owner_status IN ('pending', 'accepted', 'rejected')",
             name="ck_booking_owner_status",
+        ),
+        CheckConstraint(
+            "payment_option IS NULL OR payment_option IN ('full', 'advance', 'pay_at_venue')",
+            name="ck_booking_payment_option",
         ),
     )

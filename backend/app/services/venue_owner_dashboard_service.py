@@ -157,6 +157,15 @@ def verify_check_in(db: Session, owner_id: int, check_in_token: str) -> dict:
     if booking.status == "pending_payment":
         raise HTTPException(status_code=400, detail="Payment is not completed yet")
 
+    payment_fields = {
+        "amount": float(booking.amount),
+        "amount_paid": float(booking.amount_paid or 0),
+        "balance_due": float(
+            booking.balance_due if booking.balance_due is not None else booking.amount
+        ),
+        "payment_option": booking.payment_option,
+    }
+
     if booking.checked_in_at:
         return {
             "booking_id": booking.id,
@@ -168,6 +177,7 @@ def verify_check_in(db: Session, owner_id: int, check_in_token: str) -> dict:
             "checked_in_at": booking.checked_in_at,
             "already_checked_in": True,
             "message": "Guest was already checked in",
+            **payment_fields,
         }
 
     booking.checked_in_at = datetime.now(timezone.utc)
@@ -184,6 +194,7 @@ def verify_check_in(db: Session, owner_id: int, check_in_token: str) -> dict:
         "checked_in_at": booking.checked_in_at,
         "already_checked_in": False,
         "message": "Guest checked in successfully",
+        **payment_fields,
     }
 
 

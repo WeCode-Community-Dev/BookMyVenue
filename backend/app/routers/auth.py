@@ -24,6 +24,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
         auth_provider=new_user.auth_provider,
         created_at=new_user.created_at,
         is_venue_owner=False,
+        has_password=True,
     )
 
 
@@ -70,6 +71,7 @@ def get_me(current_user: User = Depends(get_current_user)):
         auth_provider=current_user.auth_provider,
         created_at=current_user.created_at,
         is_venue_owner=current_user.venue_owner_profile is not None,
+        has_password=current_user.hashed_password is not None,
     )
 
 
@@ -90,6 +92,7 @@ def update_me(
         auth_provider=user.auth_provider,
         created_at=user.created_at,
         is_venue_owner=user.venue_owner_profile is not None,
+        has_password=user.hashed_password is not None,
     )
 
 

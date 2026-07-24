@@ -78,8 +78,11 @@ def evaluate_policy(
     if days_remaining < 0:
         return base
 
-    amount = Decimal(str(booking.amount))
-    is_paid = booking.status == "booked"
+    amount = Decimal(str(getattr(booking, "amount_paid", None) or 0))
+    if amount <= 0 and booking.status == "booked":
+        # Legacy / fully unpaid pay-at-venue: no cash refund
+        amount = Decimal("0")
+    is_paid = booking.status == "booked" and amount > 0
 
     if not venue_has_policy(venue):
         base["can_cancel"] = True

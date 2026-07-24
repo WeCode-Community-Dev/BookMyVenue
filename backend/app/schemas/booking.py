@@ -30,6 +30,9 @@ class BookingOut(BaseModel):
     status: str
     owner_status: str
     amount: float
+    payment_option: Optional[str] = None
+    amount_paid: float = 0
+    balance_due: Optional[float] = None
     created_at: datetime
     model_config = {"from_attributes": True}
 
@@ -74,6 +77,9 @@ class BookingListItemOut(BaseModel):
     status: str
     owner_status: str
     amount: float
+    payment_option: Optional[str] = None
+    amount_paid: float = 0
+    balance_due: Optional[float] = None
     payment_status: Optional[str] = None
     can_review: bool = False
     has_review: bool = False
@@ -84,6 +90,8 @@ class BookingDetailOut(BookingOut):
     venue_name: Optional[str] = None
     venue_location: Optional[str] = None
     google_maps_url: Optional[str] = None
+    advance_percent: int = 30
+    allow_pay_at_venue: bool = True
     payment_status: Optional[str] = None
     can_review: bool = False
     has_review: bool = False
@@ -131,6 +139,9 @@ class OwnerBookingOut(BaseModel):
     status: str
     owner_status: str
     amount: float
+    payment_option: Optional[str] = None
+    amount_paid: float = 0
+    balance_due: Optional[float] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
