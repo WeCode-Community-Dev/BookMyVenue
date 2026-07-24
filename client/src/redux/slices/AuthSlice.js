@@ -74,6 +74,27 @@ export const resendOtp = createAsyncThunk(
   }
 );
 
+
+// Login User / Vendor 
+export const login = createAsyncThunk(
+  "auth/login",
+  async ({ role = ROLES.USER, data }, { dispatch, rejectWithValue }) => {
+    try {
+      dispatch(clearAuthError());
+
+      const response = await api.post(
+        API_ROUTES.AUTH.LOGIN(role),
+        data
+      );
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Login failed"
+      );
+    }
+  }
+);
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -131,6 +152,31 @@ const authSlice = createSlice({
   state.loading = false;
   state.error = action.payload;
 })
+
+// Login
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        
+        // Safely extract token and user
+        const responseData = action.payload.data || action.payload;
+        const accessToken = responseData.accessToken || responseData.token;
+        const user = responseData.user;
+
+        state.accessToken = accessToken;
+        state.user = user;
+        state.role = user?.role || action.meta.arg.role; // Track current user role
+        state.isAuthenticated = true;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.isAuthenticated = false;
+      })
+      
   },
 });
 
