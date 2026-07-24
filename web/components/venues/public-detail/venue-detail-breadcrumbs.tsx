@@ -34,14 +34,7 @@ export function VenueDetailBreadcrumbs({ venue }: VenueDetailBreadcrumbsProps) {
           Venues
         </Link>
         <ChevronRight className="size-4 shrink-0" />
-        <Link
-          href={`/venues?location=${encodeURIComponent(venue.city)}`}
-          className="hover:text-on-surface transition-colors"
-        >
-          {venue.city}
-        </Link>
-        <ChevronRight className="size-4 shrink-0" />
-        <span className="font-medium text-on-surface truncate max-w-[200px] sm:max-w-none">
+        <span className="font-medium text-on-surface truncate max-w-50 sm:max-w-none">
           {venue.name}
         </span>
       </nav>

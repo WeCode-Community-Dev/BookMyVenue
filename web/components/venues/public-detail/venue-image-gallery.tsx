@@ -33,7 +33,7 @@ export function VenueImageGallery({ venue }: VenueImageGalleryProps) {
   }
 
   return (
-    <div className="grid gap-2 sm:grid-cols-[2fr_1fr] sm:grid-rows-2 sm:h-[420px]">
+    <div className="grid gap-2 sm:grid-cols-[2fr_1fr] sm:grid-rows-2 sm:h-105">
       <div className="relative aspect-4/3 sm:aspect-auto sm:row-span-2 overflow-hidden rounded-xl">
         <Image
           src={getImageUrl(primary.image.url)}
@@ -50,7 +50,7 @@ export function VenueImageGallery({ venue }: VenueImageGalleryProps) {
           <div
             key={img.imageId}
             className={cn(
-              "relative aspect-4/3 overflow-hidden rounded-lg",
+              "relative overflow-hidden rounded-lg",
               index === thumbnails.length - 1 && thumbnails.length === 4 && "relative",
             )}
           >
@@ -73,15 +73,15 @@ export function VenueImageGallery({ venue }: VenueImageGalleryProps) {
                     View All Photos
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-3xl">
+                <DialogContent className="sm:max-w-4xl">
                   <DialogHeader>
                     <DialogTitle>All Photos</DialogTitle>
                   </DialogHeader>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3 sm:grid-cols-2 h-[80vh] overflow-scroll">
                     {images.map((item) => (
                       <div
                         key={item.imageId}
-                        className="relative aspect-4/3 overflow-hidden rounded-lg"
+                        className="relative  overflow-hidden rounded-lg"
                       >
                         <Image
                           src={getImageUrl(item.image.url)}

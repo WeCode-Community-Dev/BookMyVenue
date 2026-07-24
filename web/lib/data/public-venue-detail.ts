@@ -74,6 +74,8 @@ export function formatFullAddress(venue: VenueDetails): string {
   const parts = [
     venue.address,
     venue.city,
+    venue.state,
+    venue.country,
     venue.postalCode,
   ].filter(Boolean);
   return parts.join(", ");
