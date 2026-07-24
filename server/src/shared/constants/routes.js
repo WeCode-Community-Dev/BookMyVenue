@@ -110,6 +110,12 @@ export const ROUTES = {
         ACCOUNT: {
             UPDATE_STATUS: "/account/status",
         },
+       BOOKING: {
+        RESERVE: "/booking/reserve",
+        CONFIRM: "/booking/confirm",
+        GET_ALL: "/booking",
+        GET_BY_ID: "/booking/:bookingId"
+    }
 
     }
    
