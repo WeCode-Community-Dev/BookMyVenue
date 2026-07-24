@@ -7,6 +7,7 @@ import VendorModel from "../database/models/Vendor.model.js";
 import { BookingMapper } from "../../application/mapper/Booking.mapper.js";
 import { BookingStatus } from "../../domain/enums/Booking.enum.js";
 import { Types } from "mongoose";
+import { PaymentStatus } from "../../domain/enums/Payment.enum.js";
 
 
 
@@ -19,6 +20,7 @@ export class BookingRepositoryImpl extends BookingRepository {
             BookingMapper.mapToPersistence(entity)
 
         );
+        return BookingMapper.mapToEntity(doc);
     }
 
     async findById(id) {
@@ -395,5 +397,109 @@ export class BookingRepositoryImpl extends BookingRepository {
         };
 
     }
+    async hasOverlappingBooking(
+        venueId,
+            bookingDate,
+            startTime,
+            endTime
+        ) {
+        const booking=await BookingModel.findOne({
+            venueId,
+            bookingDate,
+            status:{
+                $ne:BookingStatus.CANCELLED
+            },
+            startTime:{
+                $lt:endTime
+            },
+            endTime:{
+                $gt:startTime
+            }
+        })
+        return Boolean(booking)
+     }
+
+     async getUserBookings(
+            userId,
+            {
+                page,
+                limit,
+                status,
+                search,
+                sortBy
+            }
+        ) {
+
+            const filter = { userId };
+
+            if (status) {
+                filter.status = status;
+            }
+
+            let docs = await BookingModel.find(filter)
+                .populate("venueId")
+                .sort({
+                    bookingDate: sortBy === "asc" ? 1 : -1
+                });
+
+            if (search) {
+
+                const keyword = search.trim().toLowerCase();
+
+                docs = docs.filter(
+                    (doc) =>
+                        doc.venueId?.name?.toLowerCase().includes(keyword) ||
+                        doc._id.toString().includes(keyword)
+                );
+
+            }
+
+            const total = docs.length;
+
+            const skip = (page - 1) * limit;
+
+            docs = docs.slice(skip, skip + Number(limit));
+
+            return {
+                bookings: docs.map((doc) =>
+                    BookingMapper.mapToEntity(doc)
+                ),
+                pagination: {
+                    total,
+                    page: Number(page),
+                    limit: Number(limit),
+                    totalPages: Math.ceil(total / limit)
+                }
+            };
+
+        }
+     async getUserBookingById(userId, bookingId) {
+
+            const booking = await BookingModel
+                .findOne({
+                    _id: bookingId,
+                    userId
+                })
+                .populate("venueId")
+                .populate("vendorId", "fullName companyName email phone");
+
+            if (!booking) {
+                return null;
+            }
+
+            return BookingMapper.mapToEntity(booking);
+
+        }
+    
+    async getBookingsForPaymentReminder(date) {
+
+        return await BookingModel.find({
+            bookingDate: date,
+            status: BookingStatus.CONFIRMED,
+            paymentStatus: PaymentStatus.PARTIAL
+        });
+
+    }
 
 }
+

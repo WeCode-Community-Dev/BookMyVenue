@@ -92,9 +92,16 @@ import { AdminRepository } from '../../infrastructure/repositories/admin.reposit
 import { AdminAuthController } from './admin/admin.authController.js'
 import { AdminLogoutUseCase } from '../../application/admin/usecases/auth/admin.logOut.usecase.js'
 import { AdminRefreshTokenUseCase } from '../../application/admin/usecases/auth/admin.refreshToken.usecase.js'
-import { ChangeVendorPasswordUsecase } from '../../application/vendor/usecases/profile/changeVendorPassword.usecase.js'
-import { UserChangePasswordUsecase } from '../../application/user/usecases/profile/user.changePassword.usecase.js'
-
+//
+import { ReservationService } from "../../infrastructure/services/reservationService.js";
+import { ChangeVendorPasswordUsecase } from "../../application/vendor/usecases/profile/changeVendorPassword.usecase.js";
+import { UserChangePasswordUsecase } from "../../application/user/usecases/profile/user.changePassword.usecase.js";
+import { UserReserveBookingUsecase } from "../../application/user/usecases/booking/user.reserveBooking.usecase.js";
+import { UserConfirmBookingUsecase } from "../../application/user/usecases/booking/user.confirmBooking.usecase.js";
+import { UserBookingController } from "../controllers/user/user.booking.controller.js";
+import { UserGetBookingsUsecase } from "../../application/user/usecases/booking/user.getBookings.usecase.js";
+import { UserGetBookingByIdUsecase } from "../../application/user/usecases/booking/user.getBookingById.usecase.js";
+import { UserPaymentReminderUsecase } from "../../application/user/usecases/booking/user.paymentReminder.usecase.js";
 //repository
 const iVenueRepository = new VenueRepository();
 const iUserRepository = new UserRepository();
@@ -110,6 +117,8 @@ const iHashService = new HashService()
 const iOtpService = new OtpService()
 const iOtpStoreService = new OtpStoreService(redisClient)
 export const iTokenService = new TokenService()
+export const iReservationService =
+    new ReservationService(redisClient);
 
 // --- admin auth usecase---
 const iAdminLoginUsecase = new LoginAdminUsecase (
@@ -328,6 +337,35 @@ const iUserRemoveProfileImage = new UserRemoveProfileImageUsecase(
     iUserRepository
 )
 const userChangePasswordUsecase = new UserChangePasswordUsecase(iUserRepository, iHashService)
+//userbooking usecase
+const iUserReserveBookingUsecase =
+    new UserReserveBookingUsecase(
+        bookingRepository,
+        iVenueRepository,
+     iReservationService
+    );
+
+const iUserConfirmBookingUsecase =
+    new UserConfirmBookingUsecase(
+        bookingRepository,
+      iReservationService ,
+        iUserRepository,
+        iVenueRepository,
+        iMailService
+    );
+const iUserGetBookingsUsecase =
+    new UserGetBookingsUsecase(bookingRepository);
+
+const iUserGetBookingByIdUsecase =
+    new UserGetBookingByIdUsecase(bookingRepository);
+
+const iUserPaymentReminderUsecase =
+    new UserPaymentReminderUsecase(
+        bookingRepository,
+        iUserRepository,
+        iVenueRepository,
+        iMailService
+    );
 
 // --- controllers ---
 export const iVendorVenueController = new VendorVenueController(
@@ -436,3 +474,13 @@ export const iAdminAuthController = new AdminAuthController (
     iAdminLogoutUsecase,
     iAdminRefreshToken,
 )
+
+export const iUserBookingController =
+    new UserBookingController(
+        iUserReserveBookingUsecase,
+        iUserConfirmBookingUsecase,
+        iUserGetBookingsUsecase,
+        iUserGetBookingByIdUsecase
+    );
+
+    export { iUserPaymentReminderUsecase };
