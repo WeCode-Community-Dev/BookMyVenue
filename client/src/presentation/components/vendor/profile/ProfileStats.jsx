@@ -3,8 +3,7 @@ import ProfileStatCard from "./ProfileStatCard";
 
 const ProfileStats = () => {
   return (
-    <div className="grid grid-cols-4 gap-4 mb-6">
-
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <ProfileStatCard
         title="Total Venues"
         value="12"
@@ -24,7 +23,6 @@ const ProfileStats = () => {
         title="Rating"
         value="4.7★"
       />
-
     </div>
   );
 };

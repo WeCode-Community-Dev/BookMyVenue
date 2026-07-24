@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "@/lib/axios";
 import { API_ROUTES } from "@/constants/apiRoutes";
 
@@ -7,9 +7,9 @@ import { API_ROUTES } from "@/constants/apiRoutes";
 // ==============================
 
 const initialState = {
-  loading: false,
-  profile: null,
-  error: null,
+loading: false,
+profile: null,
+error: null,
 };
 
 // ==============================
@@ -17,22 +17,21 @@ const initialState = {
 // ==============================
 
 export const fetchVendorProfile = createAsyncThunk(
-  "vendorProfile/fetchVendorProfile",
+"vendorProfile/fetchVendorProfile",
+async (_, { rejectWithValue }) => {
+try {
+const response = await api.get(API_ROUTES.VENDOR.PROFILE);
 
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.get(
-        API_ROUTES.VENDOR.PROFILE
-      );
 
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to fetch profile"
-      );
-    }
-  }
+  return response.data.data;
+} catch (error) {
+  return rejectWithValue(
+    error.response?.data?.message || "Failed to fetch profile"
+  );
+}
+
+
+}
 );
 
 // ==============================
@@ -40,23 +39,24 @@ export const fetchVendorProfile = createAsyncThunk(
 // ==============================
 
 export const updateVendorProfile = createAsyncThunk(
-  "vendorProfile/updateVendorProfile",
+"vendorProfile/updateVendorProfile",
+async (profileData, { rejectWithValue }) => {
+try {
+const response = await api.patch(
+API_ROUTES.VENDOR.PROFILE,
+profileData
+);
 
-  async (profileData, { rejectWithValue }) => {
-    try {
-      const response = await api.patch(
-        API_ROUTES.VENDOR.PROFILE,
-        profileData
-      );
 
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to update profile"
-      );
-    }
-  }
+  return response.data.data;
+} catch (error) {
+  return rejectWithValue(
+    error.response?.data?.message || "Failed to update profile"
+  );
+}
+
+
+}
 );
 
 // ==============================
@@ -64,57 +64,54 @@ export const updateVendorProfile = createAsyncThunk(
 // ==============================
 
 const vendorProfileSlice = createSlice({
-  name: "vendorProfile",
+name: "vendorProfile",
+initialState,
+reducers: {},
 
-  initialState,
+extraReducers: (builder) => {
+builder
 
-  reducers: {},
 
-  extraReducers: (builder) => {
-    builder
+  // ==========================
+  // FETCH PROFILE
+  // ==========================
 
-      // ==========================
-      // FETCH PROFILE
-      // ==========================
+  .addCase(fetchVendorProfile.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
 
-      .addCase(fetchVendorProfile.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+  .addCase(fetchVendorProfile.fulfilled, (state, action) => {
+    state.loading = false;
+    state.profile = action.payload;
+  })
 
-      .addCase(fetchVendorProfile.fulfilled, (state, action) => {
-        state.loading = false;
+  .addCase(fetchVendorProfile.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  })
 
-        state.profile =
-          action.payload;
-      })
+  // ==========================
+  // UPDATE PROFILE
+  // ==========================
 
-      .addCase(fetchVendorProfile.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+  .addCase(updateVendorProfile.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
 
-      // ==========================
-      // UPDATE PROFILE
-      // ==========================
+  .addCase(updateVendorProfile.fulfilled, (state, action) => {
+    state.loading = false;
+    state.profile = action.payload;
+  })
 
-      .addCase(updateVendorProfile.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+  .addCase(updateVendorProfile.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  });
 
-      .addCase(updateVendorProfile.fulfilled, (state, action) => {
-        state.loading = false;
 
-        state.profile =
-          action.payload;
-      })
-
-      .addCase(updateVendorProfile.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
-  },
+},
 });
 
 export default vendorProfileSlice.reducer;

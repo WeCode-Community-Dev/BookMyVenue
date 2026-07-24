@@ -7,16 +7,11 @@ import Header from "@/presentation/components/common/Header";
 import UserSidebar from "@/presentation/components/user/UserSidebar";
 import VenueCard from "@/presentation/components/common/VenueCard";
 
-import {
-  getWishlist,
-  removeWishlist,
-} from "@/redux/slices/UserWishlistSlice";
-
+import { getWishlist, removeWishlist } from "@/redux/slices/UserWishlistSlice";
 
 const Wishlist = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
 
   const { wishlist, loading, error } = useSelector(
     (state) => state.userWishlist
@@ -63,9 +58,7 @@ const Wishlist = () => {
           <UserSidebar />
 
           <main className="flex-1 flex items-center justify-center">
-            <h2 className="text-lg font-medium text-red-500">
-              {error}
-            </h2>
+            <h2 className="text-lg font-medium text-red-500">{error}</h2>
           </main>
         </div>
       </>
@@ -81,13 +74,10 @@ const Wishlist = () => {
 
         <main className="flex-1 bg-gray-50 p-10">
           <div className="bg-white rounded-3xl shadow-md p-8">
-
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-3xl font-bold">
-                  My Wishlist
-                </h1>
+                <h1 className="text-3xl font-bold">My Wishlist</h1>
 
                 <p className="text-gray-500 mt-2">
                   Venues you love and want to book later
@@ -113,12 +103,11 @@ const Wishlist = () => {
                 </p>
 
                 <button
-      onClick={() => navigate("/user/venues")}
-      className="mt-8 rounded-xl bg-amber-500 px-8 py-3 font-semibold text-white transition hover:bg-amber-600"
-    >
-      Browse Venues
-    </button>
-
+                  onClick={() => navigate("/user/venues")}
+                  className="mt-8 rounded-xl bg-amber-500 px-8 py-3 font-semibold text-white transition hover:bg-amber-600"
+                >
+                  Browse Venues
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
