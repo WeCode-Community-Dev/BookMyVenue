@@ -2,7 +2,8 @@ export const API_ROUTES = {
 AUTH:{
   REGISTER:(role)=> `/auth/${role}/register`,
   VERIFY_OTP:(role)=>`/auth/${role}/verifyotp`,
-  RESEND_OTP:(role)=>`/auth/${role}/resendotp`
+  RESEND_OTP:(role)=>`/auth/${role}/resendotp`,
+  LOGIN:(role)=>`/auth/${role}/login`
 },
 
     USER: {
