@@ -262,7 +262,7 @@ function App() {
             />
 
             <Route
-              path="categories"
+              path={ROUTES.ADMIN.CATEGORIES}
               element={<CategoryManagement />}
             />
           </Route>

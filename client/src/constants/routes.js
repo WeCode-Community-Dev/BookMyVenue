@@ -44,6 +44,6 @@ export const ROUTES = {
         BOOKING_DETAIL: "bookings/:bookingId",
         PAYMENTS: "payments",
         PAYMENT_DETAILS:"payments/:paymentId",
-        CATEGORIES: "/admin/categories",
+        CATEGORIES: "categories",
     }
 }
