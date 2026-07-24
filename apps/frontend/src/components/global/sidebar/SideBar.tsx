@@ -11,6 +11,7 @@ import {
     Settings,
     User,
 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 
 import { AppText } from "@/lib/language/LanguageHelper";
 import { Button } from "../../ui/button/Button";
@@ -18,26 +19,41 @@ import NxtImage from "next/image";
 import { SCREENS } from "@/lib/Constants";
 import { cn } from "@/lib/Utils";
 import { sideBarStyle } from "./SideBarStyle";
-import { useRouter } from "next/navigation";
 
 export default function Sidebar() {
     const router = useRouter();
+    const pathname = usePathname();
 
     const naviagateToScreen = (path: string) => {
-        router.push(path);
+        if (path) {
+            router.push(path);
+        }
+    };
+
+    const isItemActive = (itemPath: string) => {
+        if (!itemPath) return false;
+        if (pathname === itemPath) return true;
+        if (itemPath === SCREENS.BOOKINGS && (pathname === "/booking" || pathname.startsWith("/booking/"))) {
+            return true;
+        }
+
+        if (itemPath !== "/" && pathname.startsWith(`${itemPath }/`)) {
+            return true;
+        }
+        return false;
     };
 
     const menuItems = [
         {
             icon: LayoutDashboard,
             label: "DASHBOARD",
-            active: false,
+            active: isItemActive(SCREENS.VENUES),
             path: SCREENS.VENUES
         },
         {
             icon: CirclePlus,
             label: "ADD_VENUE",
-            active: false,
+            active: isItemActive(SCREENS.ADD_VENUE),
             path: SCREENS.ADD_VENUE
         },
         {
@@ -49,7 +65,7 @@ export default function Sidebar() {
         {
             icon: CalendarDays,
             label: "BOOKINGS",
-            active: false,
+            active: isItemActive(SCREENS.BOOKINGS),
             path: SCREENS.BOOKINGS
         },
         {
@@ -61,13 +77,13 @@ export default function Sidebar() {
         {
             icon: User,
             label: "PROFILE",
-            active: false,
+            active: isItemActive(SCREENS.PROFILE),
             path: SCREENS.PROFILE
         },
         {
             icon: Settings,
             label: "SETTINGS",
-            active: false,
+            active: isItemActive(SCREENS.SETTINGS),
             path: SCREENS.SETTINGS
         },
         {

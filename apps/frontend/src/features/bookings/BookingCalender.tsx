@@ -6,11 +6,11 @@ import "react-day-picker/dist/style.css";
 
 import { CalendarDays, X } from "lucide-react";
 
+import { AppText } from "@/lib/language/LanguageHelper";
 import { DayPicker } from "react-day-picker";
+import { bookingCalendarStyle } from "@/features/booking/styles/BookingCalendarStyle";
 import { format } from "date-fns";
 import { useState } from "react";
-import { AppText } from "@/lib/language/LanguageHelper";
-import { bookingCalendarStyle } from "@/features/booking/styles/BookingCalendarStyle";
 
 export default function BookingCalendar({
     selectedDates: propsSelectedDates,
@@ -19,14 +19,13 @@ export default function BookingCalendar({
     selectedDates?: Date[];
     setSelectedDates?: React.Dispatch<React.SetStateAction<Date[]>>;
 }) {
-    const [localSelectedDates, setLocalSelectedDates] = useState<Date[]>([
-        new Date(2026, 6, 15),
-        new Date(2026, 6, 16),
-        new Date(2026, 6, 17),
-    ]);
+    const [localSelectedDates, setLocalSelectedDates] = useState<Date[]>([]);
 
     const selectedDates = propsSelectedDates || localSelectedDates;
     const setSelectedDates = propsSetSelectedDates || setLocalSelectedDates;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const removeDate = (date: Date) => {
         setSelectedDates((prev) =>
@@ -75,8 +74,8 @@ export default function BookingCalendar({
                         onSelect={(dates) =>
                             setSelectedDates(dates ?? [])
                         }
-                        defaultMonth={new Date(2026, 6)}
-                        month={new Date(2026, 6)}
+                        defaultMonth={new Date()}
+                        disabled={{ before: today }}
                         showOutsideDays
                     />
 

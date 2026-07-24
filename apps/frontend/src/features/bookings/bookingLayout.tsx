@@ -3,6 +3,7 @@
 
 import { AppText, getText } from "@/lib/language/LanguageHelper";
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import BookingCalendar from "./BookingCalender";
 import BookingExtras from "./BookingExtras";
@@ -11,13 +12,31 @@ import BookingPackages from "./BookingPackages";
 import BookingSummary from "./BookingSummary";
 import BookingVenueCard from "./BookingVenueCard";
 import ReservationStatus from "./ReservationStatus";
+import { SCREENS } from "@/lib/Constants";
 import UserProfileForm from "./UserProfileForm";
 import { Venue } from "@/types/Venue";
 import { bookingLayoutStyle } from "@/features/booking/styles/BookingPageStyle";
-import { getVenueById } from "@/features/venues/services/VenuService";
-import { useSearchParams } from "next/navigation";
-
 import { format } from "date-fns";
+import { getVenueById } from "@/features/venues/services/VenuService";
+import { useAuthService } from "@/features/auth/services/AuthService";
+
+function loadRazorpayScript(): Promise<boolean> {
+    return new Promise((resolve) => {
+        if (typeof window === "undefined") {
+            resolve(false);
+            return;
+        }
+        if ((window as any).Razorpay) {
+            resolve(true);
+            return;
+        }
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+}
 
 export default function BookingLayout() {
     const searchParams = useSearchParams();
@@ -28,11 +47,25 @@ export default function BookingLayout() {
     const [error, setError] = useState<string | null>(null);
     const [isProfileConfirmed, setIsProfileConfirmed] = useState(false);
 
-    const [selectedDates, setSelectedDates] = useState<Date[]>([
-        new Date(2026, 6, 15),
-        new Date(2026, 6, 16),
-        new Date(2026, 6, 17),
-    ]);
+    const router = useRouter();
+    const { user, apiFetch } = useAuthService();
+
+    const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+
+    const [isPaying, setIsPaying] = useState(false);
+    const [paymentError, setPaymentError] = useState<string | null>(null);
+    const [idempotencyKey, setIdempotencyKey] = useState<string>("");
+
+    const generateUUID = () => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    };
+
+    useEffect(() => {
+        setIdempotencyKey(generateUUID());
+    }, [selectedDates, venueId]);
 
     useEffect(() => {
         if (!venueId) {
@@ -60,13 +93,114 @@ export default function BookingLayout() {
         setIsProfileConfirmed(confirmed);
     };
 
-    const handleProceedToPayment = () => {
-        if (!isProfileConfirmed) return;
-        alert(
-            getText("PROCEEDING_TO_PAYMENT", "MESSAGES", {
-                name: venue?.name || getText("SELECTED_VENUE", "MESSAGES"),
-            })
-        );
+    const handleProceedToPayment = async () => {
+        if (!isProfileConfirmed || !venue) return;
+
+        setIsPaying(true);
+        setPaymentError(null);
+
+        try {
+            // Load Razorpay script
+            const scriptLoaded = await loadRazorpayScript();
+            if (!scriptLoaded) {
+                throw new Error("Failed to load Razorpay payment SDK.");
+            }
+
+            // Map selected dates to slot pricing tiers
+            const slots = selectedDates.map((date, idx) => {
+                const slotsCount = venue?.slotTemplates?.length || 0;
+                const slot = slotsCount > 0 ? venue?.slotTemplates?.[idx % slotsCount] : null;
+                const pricingTierId = slot?.pricingTiers?.[0]?.id;
+
+                if (!pricingTierId) {
+                    throw new Error("No slot pricing tier found for a selected date.");
+                }
+
+                return {
+                    slotPricingTierId: pricingTierId,
+                    eventDate: format(date, "yyyy-MM-dd"),
+                };
+            });
+
+            // Create booking
+            const bookingResponse = await apiFetch("/booking", {
+                method: "POST",
+                headers: {
+                    "idempotency-key": idempotencyKey,
+                },
+                body: JSON.stringify({
+                    venueId: venue.id,
+                    slots,
+                }),
+            });
+
+            if (!bookingResponse || !bookingResponse.razorpayOrderId) {
+                throw new Error("Failed to initialize booking on the server.");
+            }
+
+            const { razorpayOrderId, amount, currency } = bookingResponse;
+            const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
+            // Trigger Razorpay payment popup
+            const options = {
+                key: keyId,
+                amount: amount * 100, // in paise
+                currency: currency || "INR",
+                name: "BookMyVenue",
+                description: `Booking payment for ${venue.name}`,
+                order_id: razorpayOrderId,
+                handler: async function (response: any) {
+                    try {
+                        setIsPaying(true);
+                        const verificationResponse = await apiFetch("/booking/verify-payment", {
+                            method: "POST",
+                            body: JSON.stringify({
+                                razorpayOrderId: response.razorpay_order_id || razorpayOrderId,
+                                razorpayPaymentId: response.razorpay_payment_id,
+                                razorpaySignature: response.razorpay_signature,
+                            }),
+                        });
+
+                        if (verificationResponse && verificationResponse.success) {
+                            router.push(SCREENS.BOOKINGS);
+                        } else {
+                            throw new Error("Payment verification failed.");
+                        }
+                    } catch (verifyErr: any) {
+                        console.error("Verification failed:", verifyErr);
+                        setPaymentError(verifyErr.message || "Payment verification failed.");
+                        setIsPaying(false);
+                    }
+                },
+                prefill: {
+                    name: user?.name || "",
+                    email: user?.email || "",
+                    contact: user?.phone || "",
+                },
+                theme: {
+                    color: "#0f766e",
+                },
+                modal: {
+                    ondismiss: function () {
+                        setIsPaying(false);
+                    },
+                },
+            };
+
+            const rzp = new (window as any).Razorpay(options);
+            
+            rzp.on("payment.failed", function (resp: any) {
+                console.error("Payment failed:", resp.error);
+                setPaymentError(resp.error.description || "Payment failed. Please try again.");
+                setIsPaying(false);
+            });
+
+            rzp.open();
+        } catch (err: any) {
+            console.error("Proceed to payment error:", err);
+            setPaymentError(err.message || "An unexpected error occurred during payment checkout.");
+            setIsPaying(false);
+        }
     };
 
     // Calculate dynamic bookings list
@@ -158,9 +292,11 @@ export default function BookingLayout() {
                             isProfileConfirmed={isProfileConfirmed} 
                             onProceedToPayment={handleProceedToPayment}
                             bookings={derivedBookings}
+                            isPaying={isPaying}
+                            paymentError={paymentError}
                         />
 
-                        <ReservationStatus />
+                        <ReservationStatus selectedDates={selectedDates} venueName={venue?.name} />
 
                     </div>
 

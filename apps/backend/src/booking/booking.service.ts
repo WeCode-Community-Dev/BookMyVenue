@@ -77,6 +77,7 @@ export class BookingService {
     // ----------------------------------------------------
 
     const slotPricingIds = dto.slots.map((slot) => slot.slotPricingTierId);
+    const uniqueSlotPricingIds = Array.from(new Set(slotPricingIds));
 
     // ----------------------------------------------------
     // STEP 5 : Fetch all pricing tiers
@@ -87,7 +88,7 @@ export class BookingService {
     const pricingTiers = await this.prismaService.venueSlotPricing.findMany({
       where: {
         id: {
-          in: slotPricingIds,
+          in: uniqueSlotPricingIds,
         },
       },
       include: {
@@ -97,12 +98,9 @@ export class BookingService {
 
     // ----------------------------------------------------
     // STEP 6 : Validate that every selected tier exists
-    //
-    // If user selected 3 slots,
-    // database should return 3 pricing tiers.
     // ----------------------------------------------------
 
-    if (pricingTiers.length !== dto.slots.length) {
+    if (pricingTiers.length !== uniqueSlotPricingIds.length) {
       throw new BadRequestException(
         'One or more selected slot pricing tiers are invalid.',
       );
@@ -255,7 +253,13 @@ export class BookingService {
 
     let totalPrice = 0;
 
-    for (const pricingTier of pricingTiers) {
+    for (const slot of dto.slots) {
+      const pricingTier = pricingTiers.find(
+        (tier) => tier.id === slot.slotPricingTierId,
+      );
+      if (!pricingTier) {
+        throw new BadRequestException('Invalid pricing tier.');
+      }
       totalPrice += Number(pricingTier.price);
     }
     // Start Prisma Transaction

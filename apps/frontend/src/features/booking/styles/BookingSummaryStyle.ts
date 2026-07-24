@@ -255,5 +255,30 @@ export const bookingSummaryStyle = {
         "ml-1",
         "font-semibold",
         "text-[#2563EB]"
+    ),
+    errorCard: clsx(
+        "mt-4",
+        "rounded-xl",
+        "border",
+        "border-red-200",
+        "bg-red-50",
+        "p-4",
+        "text-[13px]",
+        "leading-6",
+        "text-red-800"
+    ),
+    loadingWrapper: clsx(
+        "flex",
+        "items-center",
+        "gap-2"
+    ),
+    spinner: clsx(
+        "h-4",
+        "w-4",
+        "animate-spin",
+        "rounded-full",
+        "border-2",
+        "border-white",
+        "border-t-transparent"
     )
 };

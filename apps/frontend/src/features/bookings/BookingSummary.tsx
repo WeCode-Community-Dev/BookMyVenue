@@ -1,10 +1,10 @@
 /* eslint-disable */
 
+import { AppText, getText } from "@/lib/language/LanguageHelper";
 import {
     BadgeCheck,
     CalendarDays,
 } from "lucide-react";
-import { AppText, getText } from "@/lib/language/LanguageHelper";
 import { getVenuePrimaryImage, getVenueVerified } from "@/features/venues/services/VenuService";
 
 import Image from "next/image";
@@ -26,6 +26,8 @@ interface BookingSummaryProps {
     isProfileConfirmed?: boolean;
     onProceedToPayment?: () => void;
     bookings?: BookingItem[];
+    isPaying?: boolean;
+    paymentError?: string | null;
 }
 
 const mockBookings: BookingItem[] = [
@@ -63,6 +65,8 @@ export default function BookingSummary({
     isProfileConfirmed = false,
     onProceedToPayment,
     bookings,
+    isPaying = false,
+    paymentError = null,
 }: BookingSummaryProps) {
     const activeBookings = bookings || mockBookings;
     
@@ -306,15 +310,27 @@ export default function BookingSummary({
 
                 </div>
 
+                {/* Payment Error */}
+                {paymentError && (
+                    <div className={bookingSummaryStyle.errorCard}>
+                        {paymentError}
+                    </div>
+                )}
+
                 {/* Payment Button */}
 
                 <button
                     type="button"
                     onClick={onProceedToPayment}
-                    disabled={!isProfileConfirmed}
-                    className={isProfileConfirmed ? bookingSummaryStyle.payBtnActive : bookingSummaryStyle.payBtnDisabled}
+                    disabled={!isProfileConfirmed || isPaying}
+                    className={(isProfileConfirmed && !isPaying) ? bookingSummaryStyle.payBtnActive : bookingSummaryStyle.payBtnDisabled}
                 >
-                    {!isProfileConfirmed ? (
+                    {isPaying ? (
+                        <div className={bookingSummaryStyle.loadingWrapper}>
+                            <div className={bookingSummaryStyle.spinner} />
+                            <AppText textName="PROCESSING" textModule="BUTTON" />
+                        </div>
+                    ) : !isProfileConfirmed ? (
                         <AppText textName="CONFIRM_DETAILS_FIRST" textModule="BUTTON" />
                     ) : (
                         <AppText textName="PROCEED_SECURE_PAYMENT" textModule="BUTTON" />

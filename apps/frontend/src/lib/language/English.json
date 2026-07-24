@@ -37,7 +37,8 @@
         "EXPLORE_VENUES": "Explore Venues",
         "CLEAR_ALL": "Clear All",
         "ADD_ANOTHER_DATE": "+ Add Another Date",
-        "RETRY": "Retry"
+        "RETRY": "Retry",
+        "PROCESSING": "Processing..."
     },
     "LABEL": {
         "WELCOME_BACK": "Welcome Back",
