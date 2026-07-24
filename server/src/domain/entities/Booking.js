@@ -59,14 +59,14 @@ export class Booking {
     const eventDate = new Date(this.bookingDate);
     const deadline = new Date(eventDate);
 
-    deadline.setDate(deadline.getDate() - 2);
+    deadline.setDate(deadline.getDate() - 1);
 
     return today <= deadline;
   }
 
   payBalance(amount) {
     if (!this.canPayBalance()) {
-      throw new Error("Balance payment must be paid at least 2 days before the event");
+      throw new Error("Balance payment must be paid at least 1 day before the event");
     }
 
     if (amount !== this.remainingAmount) {
