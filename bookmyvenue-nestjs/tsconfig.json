@@ -14,7 +14,7 @@
     "incremental": false,
     "skipLibCheck": true,
     "strict": true,
-    "types": ["node"]
+    "types": ["node","multer"]
   },
   "include": ["src/**/*.ts", "src/prisma/prisma.service.ts"],
   "exclude": ["node_modules", "dist", "test"]

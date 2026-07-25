@@ -1,5 +1,4 @@
 package com.example.bookmyvenue.ui_layout
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -35,6 +34,8 @@ fun UserDashboardScreen(
     isLoggedIn: Boolean,
     userName: String,
     onVenueClick: (VenueItem) -> Unit,
+    onMyBookingsClick: () -> Unit,
+    onProfileClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onNavigateToLogin: () -> Unit,
     modifier: Modifier = Modifier
@@ -95,14 +96,27 @@ fun UserDashboardScreen(
                                             Text("Customer Account", fontSize = 11.sp, color = Color.Gray)
                                         }
                                     },
-                                    onClick = {},
-                                    enabled = false
+                                    onClick = {
+                                        menuExpanded = false
+                                        onProfileClick()
+                                    }
                                 )
                                 HorizontalDivider(color = Color(0xFFF1F5F9))
                                 DropdownMenuItem(
+                                    text = { Text("My Profile Summary", color = brandDarkText) },
+                                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Profile", tint = Color.Gray) },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onProfileClick()
+                                    }
+                                )
+                                DropdownMenuItem(
                                     text = { Text("My Bookings", color = brandDarkText) },
                                     leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = "Bookings", tint = Color.Gray) },
-                                    onClick = { menuExpanded = false }
+                                    onClick = {
+                                        menuExpanded = false
+                                        onMyBookingsClick()
+                                    }
                                 )
                                 HorizontalDivider(color = Color(0xFFF1F5F9))
                                 DropdownMenuItem(
@@ -118,11 +132,13 @@ fun UserDashboardScreen(
                                     text = {
                                         Column {
                                             Text("Welcome Guest", color = brandDarkText)
-                                            Text("Login to book spaces", fontSize = 11.sp, color = Color.Gray)
+                                            Text("Browse spaces freely", fontSize = 11.sp, color = Color.Gray)
                                         }
                                     },
-                                    onClick = {},
-                                    enabled = false
+                                    onClick = {
+                                        menuExpanded = false
+                                        onProfileClick()
+                                    }
                                 )
                                 HorizontalDivider(color = Color(0xFFF1F5F9))
                                 DropdownMenuItem(

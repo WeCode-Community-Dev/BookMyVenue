@@ -12,13 +12,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.bookmyvenue.ui_layout.OwnerVenueItem
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 
 sealed interface OwnerUiState {
     object Loading : OwnerUiState
     data class Success(
         val venues: List<OwnerVenueItem>,
+        val rawVenues: List<BackendVenueItem>,
         val categories: List<String>,
-        val userName: String
+        val userName: String,
+        val userEmail: String
     ) : OwnerUiState
     data class Error(val message: String) : OwnerUiState
 }
@@ -36,7 +40,14 @@ class OwnerDashboardViewModel(application: Application) : AndroidViewModel(appli
     var imageUploadError by mutableStateOf<String?>(null)
         private set
 
+    var ownerOverviewState by mutableStateOf<OwnerOverviewDataDto?>(null)
+        private set
+
+    var isOverviewLoading by mutableStateOf(false)
+        private set
+
     private var cachedVenues = listOf<OwnerVenueItem>()
+    private var rawBackendVenues = listOf<BackendVenueItem>()
     private var cachedCategories = listOf<String>()
     private var rawCategoriesList = listOf<CategoryItem>()
     private val tokenManager = TokenManager(application.applicationContext)
@@ -49,9 +60,12 @@ class OwnerDashboardViewModel(application: Application) : AndroidViewModel(appli
                 val authHeader = "Bearer $token"
 
                 var fetchedName = "Owner Panel"
+                var fetchedEmail = ""
                 val profileResponse = NetworkClient.authService.getUserProfile(authHeader)
                 if (profileResponse.isSuccessful) {
-                    fetchedName = profileResponse.body()?.data?.user?.name ?: "Owner"
+                    val userPayload = profileResponse.body()?.data?.user
+                    fetchedName = userPayload?.name ?: "Owner"
+                    fetchedEmail = userPayload?.email ?: ""
                 }
 
                 val categoriesResponse = NetworkClient.venueService.getCategories()
@@ -66,6 +80,7 @@ class OwnerDashboardViewModel(application: Application) : AndroidViewModel(appli
                 val venuesResponse = NetworkClient.venueService.getOwnerVenues(authHeader)
                 if (venuesResponse.isSuccessful) {
                     val backendVenues = venuesResponse.body()?.data ?: emptyList()
+                    rawBackendVenues = backendVenues
 
                     cachedVenues = backendVenues.map { backendVenue ->
                         val displayStatus = when (backendVenue.moderationStatus.uppercase()) {
@@ -88,8 +103,10 @@ class OwnerDashboardViewModel(application: Application) : AndroidViewModel(appli
 
                     ownerUiState = OwnerUiState.Success(
                         venues = cachedVenues,
+                        rawVenues = rawBackendVenues,
                         categories = cachedCategories,
-                        userName = fetchedName
+                        userName = fetchedName,
+                        userEmail = fetchedEmail
                     )
                 } else {
                     ownerUiState = OwnerUiState.Error("Failed to fetch owner details from database")
@@ -97,6 +114,158 @@ class OwnerDashboardViewModel(application: Application) : AndroidViewModel(appli
             } catch (e: Exception) {
                 ownerUiState = OwnerUiState.Error("Network Error: ${e.localizedMessage}")
             }
+        }
+    }
+
+    fun fetchOwnerOverview() {
+        viewModelScope.launch {
+            isOverviewLoading = true
+            try {
+                val token = tokenManager.token.first()
+                val authHeader = "Bearer $token"
+
+                val response = NetworkClient.venueService.getOwnerOverview(authHeader)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    ownerOverviewState = response.body()?.data
+                }
+            } catch (_: Exception) {
+            } finally {
+                isOverviewLoading = false
+            }
+        }
+    }
+
+    fun updateOwnerVenueDetails(
+        venueId: String,
+        pricePerHour: Double,
+        capacity: Int,
+        description: String,
+        amenities: List<String>,
+        imageUrls: List<String>
+    ) {
+        viewModelScope.launch {
+            try {
+                val token = tokenManager.token.first()
+                val authHeader = "Bearer $token"
+
+                val request = UpdateVenueDto(
+                    pricePerHour = pricePerHour,
+                    capacity = capacity,
+                    description = description,
+                    amenities = amenities,
+                    imageUrls = imageUrls
+                )
+
+                val response = NetworkClient.venueService.updateOwnerVenue(authHeader, venueId, request)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    fetchOwnerDashboardData()
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun fetchSlotsForVenue(
+        venueId: String,
+        onResult: (List<VenueSlotDto>) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = NetworkClient.venueService.getPublicVenueSlots(venueId)
+                if (response.isSuccessful && response.body() != null) {
+                    val slotsResponse = response.body()!!
+                    if (slotsResponse.success) {
+                        onResult(slotsResponse.data)
+                    } else {
+                        onError("Failed to load listed slots.")
+                    }
+                } else {
+                    onError("Failed to retrieve operational slots from server.")
+                }
+            } catch (e: Exception) {
+                onError(e.localizedMessage ?: "An unexpected error occurred.")
+            }
+        }
+    }
+
+    fun createSlotForVenue(
+        venueId: String,
+        startTimeIso: String,
+        endTimeIso: String,
+        price: Double,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val token = tokenManager.token.first()
+                val authHeader = "Bearer $token"
+
+                val response = NetworkClient.venueService.createVenueSlot(
+                    token = authHeader,
+                    venueId = venueId,
+                    dto = CreateSlotDto(
+                        startTime = startTimeIso,
+                        endTime = endTimeIso,
+                        price = price
+                    )
+                )
+
+                if (response.isSuccessful && response.body()?.success == true) {
+                    onSuccess()
+                } else {
+                    val errorBodyString = response.errorBody()?.string()
+                    val parsedMsg = parseBackendErrorMessage(errorBodyString)
+                    onError(parsedMsg ?: response.body()?.message ?: "Failed to generate slot on backend.")
+                }
+            } catch (e: Exception) {
+                onError("Network Error: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    fun deactivateSlot(
+        slotId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val token = tokenManager.token.first()
+                val authHeader = "Bearer $token"
+
+                val response = NetworkClient.venueService.deactivateSlot(authHeader, slotId)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    onSuccess()
+                } else {
+                    val errorBodyString = response.errorBody()?.string()
+                    val parsedMsg = parseBackendErrorMessage(errorBodyString)
+                    onError(parsedMsg ?: "Failed to deactivate slot.")
+                }
+            } catch (e: Exception) {
+                onError("Network Error: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    private fun parseBackendErrorMessage(rawErrorBody: String?): String? {
+        if (rawErrorBody.isNullOrBlank()) return null
+        return try {
+            val json = JSONObject(rawErrorBody)
+            when {
+                json.has("message") -> {
+                    val messageElement = json.get("message")
+                    if (messageElement is JSONArray && messageElement.length() > 0) {
+                        messageElement.getString(0)
+                    } else {
+                        messageElement.toString()
+                    }
+                }
+                json.has("error") -> json.getString("error")
+                else -> null
+            }
+        } catch (_: Exception) {
+            null
         }
     }
 

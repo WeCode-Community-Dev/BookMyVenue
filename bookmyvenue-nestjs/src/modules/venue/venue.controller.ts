@@ -9,11 +9,11 @@ import {
     Req,
     UploadedFile,
     UseInterceptors,
+    BadRequestException,
+    InternalServerErrorException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { Role } from '@prisma/client';
 import { AuthenticatedRequest } from '../auth/types/authenticated-request.type';
 import { Public } from '../../shared/decorators/public.decorator';
@@ -22,29 +22,22 @@ import { CreateVenueDto } from './dto/create-venue.dto';
 import { RejectVenueDto } from './dto/reject-venue.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
 import { VenueService } from './venue.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @ApiTags('Venues')
 @Controller('venues')
 export class VenueController {
-    constructor(private readonly venueService: VenueService) { }
+    constructor(
+        private readonly venueService: VenueService,
+        private readonly cloudinaryService: CloudinaryService,
+    ) { }
 
     @ApiBearerAuth()
     @Roles(Role.OWNER)
     @Post('upload')
-    @UseInterceptors(
-        FileInterceptor('image', {
-            storage: diskStorage({
-                destination: './uploads',
-                filename: (req, file, callback) => {
-                    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-                    const ext = extname(file.originalname);
-                    callback(null, `venue-${uniqueSuffix}${ext}`);
-                },
-            }),
-        }),
-    )
+    @UseInterceptors(FileInterceptor('image'))
     @ApiConsumes('multipart/form-data')
-    @ApiOperation({ summary: 'Upload a venue image' })
+    @ApiOperation({ summary: 'Upload a venue image to Cloudinary' })
     @ApiBody({
         schema: {
             type: 'object',
@@ -53,15 +46,21 @@ export class VenueController {
             },
         },
     })
-    async uploadFile(
-        @UploadedFile() file: Express.Multer.File, 
-        @Req() req: AuthenticatedRequest & import('express').Request
-    ) {
-        const serverUrl = `${req.protocol}://${req.get('host')}`;
-        return {
-            success: true,
-            imageUrl: `${serverUrl}/uploads/${file.filename}`,
-        };
+    async uploadFile(@UploadedFile() file: Express.Multer.File) {
+        if (!file) {
+            throw new BadRequestException('No image file provided.');
+        }
+
+        try {
+            const secureUrl = await this.cloudinaryService.uploadImage(file);
+            return {
+                success: true,
+                imageUrl: secureUrl,
+            };
+        }  catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    throw new InternalServerErrorException(`Cloudinary Upload Failure: ${errorMessage}`);
+}
     }
 
     @ApiBearerAuth()

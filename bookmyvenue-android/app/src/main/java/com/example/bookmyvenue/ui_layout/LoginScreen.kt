@@ -73,7 +73,8 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true
+            singleLine = true,
+            enabled = uiState !is LoginUiState.Loading
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -86,7 +87,8 @@ fun LoginScreen(
             shape = RoundedCornerShape(8.dp),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true
+            singleLine = true,
+            enabled = uiState !is LoginUiState.Loading
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -95,7 +97,10 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.CenterEnd
         ) {
-            TextButton(onClick = onNavigateToForgotPassword) {
+            TextButton(
+                onClick = onNavigateToForgotPassword,
+                enabled = uiState !is LoginUiState.Loading
+            ) {
                 Text(
                     text = "Forgot Password?",
                     color = brandColorRed
@@ -111,7 +116,7 @@ fun LoginScreen(
             Button(
                 onClick = {
                     if (email.isNotBlank() && password.isNotBlank()) {
-                        onLoginClick(email, password)
+                        onLoginClick(email.trim(), password.trim())
                     } else {
                         Toast.makeText(context, "Please enter all fields", Toast.LENGTH_SHORT).show()
                     }
@@ -128,7 +133,10 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        TextButton(onClick = onNavigateToRegister) {
+        TextButton(
+            onClick = onNavigateToRegister,
+            enabled = uiState !is LoginUiState.Loading
+        ) {
             Text(
                 text = "Don't have an account? Register",
                 color = Color(0xFF64748B),

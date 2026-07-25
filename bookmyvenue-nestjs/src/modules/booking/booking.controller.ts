@@ -47,6 +47,17 @@ export class BookingController {
   }
 
   @ApiBearerAuth()
+  @Roles(Role.OWNER)
+  @Get('owner/overview')
+  @ApiOperation({ summary: 'Get dashboard metrics overview for owner' })
+  async getOwnerOverview(@Req() req: AuthenticatedRequest) {
+    return {
+      success: true,
+      data: await this.bookingService.getOwnerOverview(req.user.sub),
+    };
+  }
+
+  @ApiBearerAuth()
   @Roles(Role.USER)
   @Get('me/:id')
   @ApiOperation({ summary: 'Get current user booking details' })

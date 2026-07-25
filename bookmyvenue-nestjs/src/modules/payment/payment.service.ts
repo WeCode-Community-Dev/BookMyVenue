@@ -151,6 +151,10 @@ export class PaymentService {
             throw new BadRequestException('Payment is not captured yet.');
         }
 
+        const paymentMethod = typeof razorpayPayment.method === 'string'
+            ? razorpayPayment.method.toUpperCase()
+            : 'ONLINE';
+
         return this.prisma.$transaction(
             async (tx) => {
                 const currentPayment = await tx.payment.findUnique({
@@ -166,6 +170,7 @@ export class PaymentService {
                         status: PaymentStatus.CAPTURED,
                         razorpayPaymentId: dto.razorpay_payment_id,
                         razorpaySignature: dto.razorpay_signature,
+                        method: paymentMethod,
                     },
                 });
 

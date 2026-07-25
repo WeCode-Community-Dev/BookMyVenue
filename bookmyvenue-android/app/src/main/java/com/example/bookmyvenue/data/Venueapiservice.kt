@@ -10,6 +10,7 @@ import retrofit2.http.Path
 import okhttp3.MultipartBody
 import retrofit2.http.Multipart
 import retrofit2.http.Part
+import com.google.gson.annotations.SerializedName
 
 interface VenueApiService {
 
@@ -77,8 +78,92 @@ interface VenueApiService {
         @Header("Authorization") authHeader: String,
         @Part image: MultipartBody.Part
     ): Response<UploadImageResponse>
+
+    @GET("api/venues/{venueId}/slots")
+    suspend fun getPublicVenueSlots(
+        @Path("venueId") venueId: String
+    ): Response<SlotsResponse>
+
+    @POST("api/bookings")
+    suspend fun createBooking(
+        @Header("Authorization") token: String,
+        @Body dto: CreateBookingDto
+    ): Response<BookingResponse>
+
+    @POST("api/payments/bookings/{bookingId}/order")
+    suspend fun createPaymentOrder(
+        @Header("Authorization") token: String,
+        @Path("bookingId") bookingId: String
+    ): Response<RazorpayOrderResponse>
+
+    @POST("api/payments/verify")
+    suspend fun verifyPayment(
+        @Header("Authorization") token: String,
+        @Body dto: VerifyPaymentDto
+    ): Response<PaymentVerificationResponse>
+
+    @POST("api/venues/{venueId}/slots")
+    suspend fun createVenueSlot(
+        @Header("Authorization") token: String,
+        @Path("venueId") venueId: String,
+        @Body dto: CreateSlotDto
+    ): Response<StandardResponseWrapper>
+
+    @GET("api/bookings/me")
+    suspend fun getMyBookings(
+        @Header("Authorization") token: String
+    ): Response<UserHistoryResponse>
+
+    @GET("api/bookings/owner/overview")
+    suspend fun getOwnerOverview(
+        @Header("Authorization") token: String
+    ): Response<OwnerOverviewResponse>
+
+    @GET("api/bookings/owner/venues/{venueId}")
+    suspend fun getOwnerVenueBookings(
+        @Header("Authorization") token: String,
+        @Path("venueId") venueId: String
+    ): Response<UserHistoryResponse>
+
+    @PATCH("api/bookings/{id}/cancel")
+    suspend fun cancelBooking(
+        @Header("Authorization") token: String,
+        @Path("id") bookingId: String
+    ): Response<BookingResponse>
+
+    @GET("api/bookings/admin/all")
+    suspend fun getAllBookingsForAdmin(
+        @Header("Authorization") token: String
+    ): Response<UserHistoryResponse>
+
+    @PATCH("api/venues/{id}")
+    suspend fun updateOwnerVenue(
+        @Header("Authorization") token: String,
+        @Path("id") venueId: String,
+        @Body dto: UpdateVenueDto
+    ): Response<GenericResponseDto>
+
+    @PATCH("api/venue-slots/{slotId}/deactivate")
+    suspend fun deactivateSlot(
+        @Header("Authorization") token: String,
+        @Path("slotId") slotId: String
+    ): Response<GenericResponseDto>
 }
 
 data class RejectVenueRequest(
     val reason: String
+)
+
+data class CreateSlotDto(
+    @SerializedName("startTime")
+    val startTime: String,
+    @SerializedName("endTime")
+    val endTime: String,
+    @SerializedName("price")
+    val price: Double
+)
+
+data class StandardResponseWrapper(
+    val success: Boolean,
+    val message: String
 )

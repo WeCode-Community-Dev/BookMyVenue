@@ -13,6 +13,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,22 +25,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.bookmyvenue.data.AdminDashboardViewModel
+import com.example.bookmyvenue.data.AdminUiState
+import com.example.bookmyvenue.data.BookingViewModel
 import com.example.bookmyvenue.data.DashboardUiState
 import com.example.bookmyvenue.data.DashboardViewModel
 import com.example.bookmyvenue.data.LoginViewModel
 import com.example.bookmyvenue.data.OwnerDashboardViewModel
 import com.example.bookmyvenue.data.OwnerUiState
-import com.example.bookmyvenue.data.AdminDashboardViewModel
-import com.example.bookmyvenue.data.AdminUiState
+import com.example.bookmyvenue.data.RazorpayOrderDto
+import com.example.bookmyvenue.data.UserBookingsUiState
 
 @Composable
-fun AppNavigation(modifier: Modifier = Modifier) {
+fun AppNavigation(
+    bookingViewModel: BookingViewModel,
+    onLaunchPayment: (RazorpayOrderDto) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val navController = rememberNavController()
     val loginViewModel: LoginViewModel = viewModel()
     val dashboardViewModel: DashboardViewModel = viewModel()
@@ -61,23 +73,31 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                     when {
                         state.isLoggedIn && state.role == "ADMIN" -> {
                             navController.navigate("admin_dashboard") {
-                                popUpTo("splash_routing") { inclusive = true }
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
                             }
                         }
                         state.isLoggedIn && state.role == "OWNER" -> {
+                            bookingViewModel.fetchOwnerOverview()
                             navController.navigate("owner_dashboard") {
-                                popUpTo("splash_routing") { inclusive = true }
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
                             }
                         }
                         else -> {
+                            if (state.isLoggedIn) {
+                                bookingViewModel.fetchUserBookings()
+                            }
                             navController.navigate("user_dashboard") {
-                                popUpTo("splash_routing") { inclusive = true }
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
                             }
                         }
                     }
                 } else if (dashboardViewModel.dashboardState is DashboardUiState.Error) {
                     navController.navigate("user_dashboard") {
-                        popUpTo("splash_routing") { inclusive = true }
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             }
@@ -90,11 +110,13 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 if (state is DashboardUiState.Success && state.isLoggedIn) {
                     if (state.role == "ADMIN") {
                         navController.navigate("admin_dashboard") {
-                            popUpTo("user_dashboard") { inclusive = true }
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
                         }
                     } else if (state.role == "OWNER") {
                         navController.navigate("owner_dashboard") {
-                            popUpTo("user_dashboard") { inclusive = true }
+                            popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
                         }
                     }
                 }
@@ -120,6 +142,12 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                                 navController.navigate("venue_detail/${venue.id}")
                             }
                         },
+                        onMyBookingsClick = {
+                            navController.navigate("my_bookings")
+                        },
+                        onProfileClick = {
+                            navController.navigate("user_profile")
+                        },
                         onLogoutClick = {
                             dashboardViewModel.resetToGuestState()
                             dashboardViewModel.clearSession()
@@ -139,6 +167,112 @@ fun AppNavigation(modifier: Modifier = Modifier) {
             }
         }
 
+        composable(route = "user_profile") {
+            val state = dashboardViewModel.dashboardState
+            val currentUserName = (state as? DashboardUiState.Success)?.userName ?: "Customer"
+            val currentLoginState = (state as? DashboardUiState.Success)?.isLoggedIn ?: false
+            val currentUserEmail = (state as? DashboardUiState.Success)?.userEmail ?: ""
+            val currentUserRole = (state as? DashboardUiState.Success)?.role ?: "USER"
+
+            LaunchedEffect(Unit) {
+                if (currentLoginState && currentUserRole == "USER") {
+                    bookingViewModel.fetchUserBookings()
+                }
+            }
+
+            val bookingsState = bookingViewModel.userBookingsState.collectAsStateWithLifecycle().value
+
+            when (bookingsState) {
+                is UserBookingsUiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color(0xFFE51E26))
+                    }
+                }
+                is UserBookingsUiState.Success -> {
+                    val confirmedBookings = bookingsState.bookings.filter {
+                        it.status.equals("CONFIRMED", ignoreCase = true)
+                    }
+                    val dynamicBookingsCount = confirmedBookings.size
+                    val dynamicTotalSpent = confirmedBookings.sumOf { it.totalPrice ?: 0.0 }
+
+                    ExpandedProfileLayout(
+                        isLoggedIn = currentLoginState,
+                        userName = currentUserName,
+                        userEmail = currentUserEmail,
+                        role = currentUserRole,
+                        statCountOne = dynamicBookingsCount,
+                        statAmountTwo = dynamicTotalSpent,
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onLogoutClick = {
+                            dashboardViewModel.resetToGuestState()
+                            dashboardViewModel.clearSession()
+                            loginViewModel.resetState()
+                            navController.navigate("user_dashboard") {
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        },
+                        onNavigateToLogin = {
+                            navController.navigate("login")
+                        },
+                        onMyBookingsClick = {
+                            navController.navigate("my_bookings")
+                        },
+                        onPaymentHistoryClick = {
+                            navController.navigate("payment_history")
+                        }
+                    )
+                }
+                is UserBookingsUiState.Error -> {
+                    ExpandedProfileLayout(
+                        isLoggedIn = currentLoginState,
+                        userName = currentUserName,
+                        userEmail = currentUserEmail,
+                        role = currentUserRole,
+                        statCountOne = 0,
+                        statAmountTwo = 0.0,
+                        onBackClick = {
+                            navController.popBackStack()
+                        },
+                        onLogoutClick = {
+                            dashboardViewModel.resetToGuestState()
+                            dashboardViewModel.clearSession()
+                            loginViewModel.resetState()
+                            navController.navigate("user_dashboard") {
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        },
+                        onNavigateToLogin = {
+                            navController.navigate("login")
+                        },
+                        onMyBookingsClick = {
+                            navController.navigate("my_bookings")
+                        },
+                        onPaymentHistoryClick = {
+                            navController.navigate("payment_history")
+                        }
+                    )
+                }
+            }
+        }
+
+        composable(route = "my_bookings") {
+            MyBookingsScreen(
+                bookingViewModel = bookingViewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(route = "payment_history") {
+            PaymentHistoryScreen(
+                bookingViewModel = bookingViewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
         composable(route = "venue_detail/{venueId}") { backStackEntry ->
             val venueId = backStackEntry.arguments?.getString("venueId") ?: ""
             val state = dashboardViewModel.dashboardState
@@ -147,6 +281,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 val matchedVenue = state.venues.find { it.id == venueId }
                 if (matchedVenue != null) {
                     VenueDetailScreen(
+                        venueId = matchedVenue.id,
                         venueName = matchedVenue.name,
                         categoryName = matchedVenue.category.name,
                         pricePerHour = matchedVenue.pricePerHour,
@@ -154,10 +289,9 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                         description = matchedVenue.description ?: "",
                         imageUrls = matchedVenue.imageUrls,
                         amenities = matchedVenue.amenities ?: emptyList(),
+                        bookingViewModel = bookingViewModel,
                         onBackClick = { navController.popBackStack() },
-                        onBookNowClick = {
-                            Toast.makeText(context, "Slots feature coming next!", Toast.LENGTH_SHORT).show()
-                        }
+                        onNavigateToCheckout = onLaunchPayment
                     )
                 } else {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -177,24 +311,36 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 onLoginClick = { email, password ->
                     loginViewModel.login(email, password)
                 },
-                onNavigateToRegister = { navController.navigate("register") },
+                onNavigateToRegister = {
+                    navController.navigate("register") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
                 onNavigateToForgotPassword = { navController.navigate("forgot_password") },
                 onLoginSuccess = { role ->
                     dashboardViewModel.fetchDashboardData()
+                    if (role == "OWNER") {
+                        bookingViewModel.fetchOwnerOverview()
+                    } else if (role == "USER") {
+                        bookingViewModel.fetchUserBookings()
+                    }
                     when (role) {
                         "ADMIN" -> {
                             navController.navigate("admin_dashboard") {
-                                popUpTo("user_dashboard") { inclusive = true }
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
                             }
                         }
                         "OWNER" -> {
                             navController.navigate("owner_dashboard") {
-                                popUpTo("user_dashboard") { inclusive = true }
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
                             }
                         }
                         else -> {
                             navController.navigate("user_dashboard") {
-                                popUpTo("login") { inclusive = true }
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
                             }
                         }
                     }
@@ -204,8 +350,16 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
         composable(route = "register") {
             RegisterScreen(
-                onNavigateToLogin = { navController.navigate("login") },
-                onNavigateToOtp = { email -> navController.navigate("otp/$email") }
+                onNavigateToLogin = {
+                    navController.navigate("login") {
+                        popUpTo("register") { inclusive = true }
+                    }
+                },
+                onNavigateToOtp = { email ->
+                    navController.navigate("otp/$email") {
+                        popUpTo("register") { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -215,7 +369,8 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 email = email,
                 onVerificationSuccess = {
                     navController.navigate("login") {
-                        popUpTo("register") { inclusive = true }
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             )
@@ -232,18 +387,90 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 
             OwnerDashboardScreen(
                 viewModel = ownerViewModel,
+                bookingViewModel = bookingViewModel,
                 onToggleListing = { venueId, currentStatus ->
                     ownerViewModel.toggleVenueListing(venueId, currentStatus)
+                },
+                onVenueClick = { venueId ->
+                    navController.navigate("owner_venue_detail/$venueId")
                 },
                 onLogoutClick = {
                     dashboardViewModel.resetToGuestState()
                     dashboardViewModel.clearSession()
                     loginViewModel.resetState()
                     navController.navigate("user_dashboard") {
-                        popUpTo("owner_dashboard") { inclusive = true }
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
             )
+        }
+
+        composable(route = "owner_venue_detail/{venueId}") { backStackEntry ->
+            val venueId = backStackEntry.arguments?.getString("venueId") ?: ""
+            val ownerViewModel: OwnerDashboardViewModel = viewModel(
+                factory = ViewModelProvider.AndroidViewModelFactory.getInstance(context.applicationContext as Application)
+            )
+
+            var showSlotDialog by remember { mutableStateOf(false) }
+
+            LaunchedEffect(venueId) {
+                if (ownerViewModel.ownerUiState !is OwnerUiState.Success) {
+                    ownerViewModel.fetchOwnerDashboardData()
+                }
+            }
+
+            val state = ownerViewModel.ownerUiState
+            if (state is OwnerUiState.Success) {
+                val matchedVenue = state.rawVenues.find { it.id == venueId }
+                if (matchedVenue != null) {
+                    OwnerVenueDetailScreen(
+                        venue = matchedVenue,
+                        viewModel = ownerViewModel,
+                        onBackClick = { navController.popBackStack() },
+                        onManageSlotsClick = { id ->
+                            showSlotDialog = true
+                        },
+                        onUpdateVenueClick = { id, price, capacity, description, amenities, images ->
+                            ownerViewModel.updateOwnerVenueDetails(
+                                venueId = id,
+                                pricePerHour = price,
+                                capacity = capacity,
+                                description = description,
+                                amenities = amenities,
+                                imageUrls = images
+                            )
+                        }
+                    )
+
+                    if (showSlotDialog) {
+                        OwnerSlotsManagementDialog(
+                            venue = OwnerVenueItem(
+                                id = matchedVenue.id,
+                                name = matchedVenue.name,
+                                location = matchedVenue.location,
+                                pricePerHour = matchedVenue.pricePerHour,
+                                category = matchedVenue.category.name,
+                                status = matchedVenue.moderationStatus,
+                                rejectReason = matchedVenue.rejectReason,
+                                isListed = matchedVenue.isListed
+                            ),
+                            viewModel = ownerViewModel,
+                            brandRed = Color(0xFFE51E26),
+                            brandDarkText = Color(0xFF1A1A1A),
+                            onDismiss = { showSlotDialog = false }
+                        )
+                    }
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Venue details could not be found.")
+                    }
+                }
+            } else {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Color(0xFFE51E26))
+                }
+            }
         }
 
         composable(route = "admin_dashboard") {
@@ -263,19 +490,27 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 }
                 is AdminUiState.Success -> {
                     AdminDashboardScreen(
-                        adminName = "Admin System",
+                        adminName = state.userName,
+                        adminEmail = state.userEmail,
                         pendingVenuesList = state.pendingVenues,
                         allVenuesList = state.allVenues,
                         categoriesList = state.categories,
+                        allBookingsList = state.allBookings,
+                        totalRevenue = state.totalRevenue,
+                        totalBookingsCount = state.totalBookingsCount,
                         onApproveVenue = { venueId -> adminViewModel.approveVenue(venueId) },
                         onRejectVenue = { venueId, reason -> adminViewModel.rejectVenue(venueId, reason) },
                         onCreateCategory = { name, description -> adminViewModel.createCategory(name, description) },
+                        onVenueClick = { venueId ->
+                            navController.navigate("admin_venue_verify/$venueId")
+                        },
                         onLogoutClick = {
                             dashboardViewModel.resetToGuestState()
                             dashboardViewModel.clearSession()
                             loginViewModel.resetState()
                             navController.navigate("user_dashboard") {
-                                popUpTo("admin_dashboard") { inclusive = true }
+                                popUpTo(0) { inclusive = true }
+                                launchSingleTop = true
                             }
                         }
                     )
@@ -298,6 +533,44 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        composable(route = "admin_venue_verify/{venueId}") { backStackEntry ->
+            val venueId = backStackEntry.arguments?.getString("venueId") ?: ""
+            val adminViewModel: AdminDashboardViewModel = viewModel(
+                factory = ViewModelProvider.AndroidViewModelFactory.getInstance(context.applicationContext as Application)
+            )
+
+            LaunchedEffect(Unit) {
+                adminViewModel.fetchAdminDashboardData()
+            }
+
+            val state = adminViewModel.adminUiState
+
+            if (state is AdminUiState.Success) {
+                val matchedVenue = state.pendingVenues.find { it.id == venueId }
+                    ?: state.allVenues.find { it.id == venueId }
+
+                if (matchedVenue != null) {
+                    AdminVenueDetailScreen(
+                        venue = matchedVenue,
+                        onApprove = { id -> adminViewModel.approveVenue(id) },
+                        onReject = { id, reason -> adminViewModel.rejectVenue(id, reason) },
+                        onBackClick = {
+                            adminViewModel.fetchAdminDashboardData()
+                            navController.popBackStack()
+                        }
+                    )
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Property data verification sequence corrupted.")
+                    }
+                }
+            } else {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Color(0xFFE51E26))
                 }
             }
         }

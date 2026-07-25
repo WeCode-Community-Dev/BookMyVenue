@@ -56,6 +56,12 @@ export class SlotService {
       reason: string;
     }> = [];
 
+    const durationInHours = Math.max(
+      1,
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60)
+    );
+    const calculatedSlotPrice = dto.price * durationInHours;
+
     for (const occurrence of occurrences) {
       const hasOverlap = await this.hasOverlap(
         venue.id,
@@ -77,13 +83,19 @@ export class SlotService {
           venueId: venue.id,
           startTime: occurrence.startTime,
           endTime: occurrence.endTime,
-          price: dto.price,
+          price: calculatedSlotPrice,
           isActive: true,
         },
         include: this.slotInclude,
       });
 
       createdSlots.push(slot);
+    }
+
+    if (createdSlots.length === 0 && skippedSlots.length > 0) {
+      throw new BadRequestException(
+        `Failed to generate slots. Reason: Time block overlaps with an existing active slot.`,
+      );
     }
 
     return {
@@ -96,24 +108,36 @@ export class SlotService {
 
   async findPublicVenueSlots(venueId: string) {
     await this.ensurePublicVenue(venueId);
+    const now = new Date();
 
     return this.prisma.venueSlot.findMany({
       where: {
         venueId,
         isActive: true,
-        startTime: {
-          gt: new Date(),
+        endTime: {
+          gt: now,
         },
+      },
+      include: {
         bookings: {
-          none: {
-            status: {
-              in: [
-                BookingStatus.PENDING_PAYMENT,
-                BookingStatus.CONFIRMED,
-              ],
-            },
+          where: {
+            OR: [
+              { status: BookingStatus.CONFIRMED },
+              {
+                AND: [
+                  { status: BookingStatus.PENDING_PAYMENT },
+                  { expiresAt: { gte: now } }
+                ]
+              }
+            ]
           },
-        },
+          select: {
+            status: true
+          }
+        }
+      },
+      orderBy: {
+        startTime: 'asc',
       },
     });
   }
@@ -174,12 +198,18 @@ export class SlotService {
     this.validateSlotTimes(nextStart, nextEnd);
     await this.ensureNoOverlap(slot.venueId, nextStart, nextEnd, slot.id);
 
+    const durationInHours = Math.max(
+      1,
+      (nextEnd.getTime() - nextStart.getTime()) / (1000 * 60 * 60)
+    );
+    const updatedPrice = dto.price !== undefined ? dto.price * durationInHours : slot.price;
+
     return this.prisma.venueSlot.update({
       where: { id: slot.id },
       data: {
         startTime: nextStart,
         endTime: nextEnd,
-        price: dto.price ?? slot.price,
+        price: updatedPrice,
       },
       include: this.slotInclude,
     });

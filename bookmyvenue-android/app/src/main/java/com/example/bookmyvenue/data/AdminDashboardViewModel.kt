@@ -16,7 +16,12 @@ sealed class AdminUiState {
     data class Success(
         val pendingVenues: List<AdminVenueItem>,
         val allVenues: List<AdminVenueItem>,
-        val categories: List<CategoryItem>
+        val categories: List<CategoryItem>,
+        val allBookings: List<HistoryBookingItemDto>,
+        val userName: String,
+        val userEmail: String,
+        val totalRevenue: Double = 0.0,
+        val totalBookingsCount: Int = 0
     ) : AdminUiState()
     data class Error(val message: String) : AdminUiState()
 }
@@ -38,8 +43,20 @@ class AdminDashboardViewModel(application: Application) : AndroidViewModel(appli
                     return@launch
                 }
 
-                val venuesResponse = NetworkClient.venueService.getAllVenuesForAdmin("Bearer $token")
-                val categoriesResponse = NetworkClient.venueService.getAllCategoriesForAdmin("Bearer $token")
+                val authHeader = "Bearer $token"
+                var fetchedName = "Admin Account"
+                var fetchedEmail = ""
+
+                val profileResponse = NetworkClient.authService.getUserProfile(authHeader)
+                if (profileResponse.isSuccessful) {
+                    val userPayload = profileResponse.body()?.data?.user
+                    fetchedName = userPayload?.name ?: "Admin"
+                    fetchedEmail = userPayload?.email ?: ""
+                }
+
+                val venuesResponse = NetworkClient.venueService.getAllVenuesForAdmin(authHeader)
+                val categoriesResponse = NetworkClient.venueService.getAllCategoriesForAdmin(authHeader)
+                val bookingsResponse = NetworkClient.venueService.getAllBookingsForAdmin(authHeader)
 
                 if (venuesResponse.isSuccessful && categoriesResponse.isSuccessful) {
                     val rawVenues = venuesResponse.body()?.data ?: emptyList()
@@ -61,16 +78,35 @@ class AdminDashboardViewModel(application: Application) : AndroidViewModel(appli
                             description = backendItem.description ?: "",
                             category = backendItem.category.name,
                             status = calculatedStatus,
-                            ownerName = "Venue Owner"
+                            ownerName = backendItem.owner?.name ?: "",
+                            ownerEmail = backendItem.owner?.email ?: "",
+                            imageUrls = backendItem.imageUrls ?: emptyList(),
+                            amenities = backendItem.amenities ?: emptyList()
                         )
                     }
 
                     val pendingMapped = allMapped.filter { it.status == "PENDING" }
 
+                    var rawBookingsList = emptyList<HistoryBookingItemDto>()
+                    var platformRevenue = 0.0
+                    var confirmedCount = 0
+
+                    if (bookingsResponse.isSuccessful && bookingsResponse.body() != null) {
+                        rawBookingsList = bookingsResponse.body()!!.data
+                        val confirmedBookings = rawBookingsList.filter { it.status.equals("CONFIRMED", ignoreCase = true) }
+                        platformRevenue = confirmedBookings.sumOf { it.totalPrice }
+                        confirmedCount = confirmedBookings.size
+                    }
+
                     adminUiState = AdminUiState.Success(
                         pendingVenues = pendingMapped,
                         allVenues = allMapped,
-                        categories = rawCategories
+                        categories = rawCategories,
+                        allBookings = rawBookingsList,
+                        userName = fetchedName,
+                        userEmail = fetchedEmail,
+                        totalRevenue = platformRevenue,
+                        totalBookingsCount = confirmedCount
                     )
                 } else {
                     adminUiState = AdminUiState.Error("Failed to fetch admin metrics.")
