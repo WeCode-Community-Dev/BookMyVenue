@@ -11,6 +11,8 @@ const venueOwnerGetVenueForEdit = require("../controllers/venue/venueOwnerGetVen
 const venueOwnerReEditRejectedVenue = require("../controllers/venue/venueOwnerReEditRejectedVenue");
 const setVenueVisibility    = require("../controllers/venue/setVenueVisibility");
 const venueOwnerDeleteVenue = require("../controllers/venue/venueOwnerDeleteVenue");
+const venueOwnerCreateSlot  = require("../controllers/slotTemplate/venueOwnerCreateSlot");
+const venueOwnerListSlots   = require("../controllers/slotTemplate/venueOwnerListSlots");
 
 const router = express.Router();
 
@@ -26,5 +28,7 @@ router.post("/reEditRejectedVenue/:id",  venueOwnerReEditRejectedVenue);
 router.patch("/venues/update/:id",       venueOwnerUpdateVenue);
 router.patch("/venues/visibility/:id",   setVenueVisibility);
 router.delete("/venues/delete/:id",      venueOwnerDeleteVenue);
+router.post("/venues/:id/slots",         venueOwnerCreateSlot);
+router.get("/venues/:id/slots",          venueOwnerListSlots);
 
 module.exports = router;

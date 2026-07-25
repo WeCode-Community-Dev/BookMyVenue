@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Info, ChevronDown, ChevronRight } from 'lucide-react';
 
 function statusBadge(status) {
@@ -19,6 +20,7 @@ function statusBadge(status) {
 }
 
 function VenueRow({ venue, onAction }) {
+  const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [showReason, setShowReason] = useState(false);
 
@@ -50,6 +52,10 @@ function VenueRow({ venue, onAction }) {
 
   // Only rejected venues that carry an admin reason get the expandable panel.
   const hasReason = isRejected && !!venue.rejectionReason;
+
+  // Slots are configured on the original venue document, never on an edit copy
+  // (editOf set) — the owner manages slots from the original row instead.
+  const canManageSlots = venue.editOf === null || venue.editOf === undefined;
 
   return (
     <>
@@ -118,6 +124,15 @@ function VenueRow({ venue, onAction }) {
               className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-100 disabled:opacity-50 cursor-pointer"
             >
               {editLabel}
+            </button>
+          )}
+          {canManageSlots && (
+            <button
+              disabled={busy}
+              onClick={() => navigate(`/venue-owner/venues/${venue._id}/slots`)}
+              className="px-3 py-1 text-xs border border-gray-300 text-gray-600 rounded hover:bg-gray-100 disabled:opacity-50 cursor-pointer"
+            >
+              Manage Slots
             </button>
           )}
           {isApproved && (
