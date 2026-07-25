@@ -8,15 +8,12 @@ const initialState = {
   error: null,
   user: null,
   role: null,
-<<<<<<< Updated upstream
-  user: null,
-  accessToken: null
-=======
   accessToken: null,
   isAuthenticated: false,
   otpVerified: false,
->>>>>>> Stashed changes
 };
+
+// --- Async Thunks ---
 
 // Register User
 export const registerUser = createAsyncThunk(
@@ -62,7 +59,7 @@ export const verifyOtp = createAsyncThunk(
 // Resend OTP
 export const resendOtp = createAsyncThunk(
   "auth/resendOtp",
-  async ({ role, email }, thunkAPI) => {
+  async ({ role, email }, { rejectWithValue }) => {
     try {
       const response = await api.post(
         API_ROUTES.AUTH.RESEND_OTP(role),
@@ -71,14 +68,14 @@ export const resendOtp = createAsyncThunk(
 
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(
+      return rejectWithValue(
         error.response?.data?.message || "Failed to resend OTP"
       );
     }
   }
 );
 
-// Login User / Vendor 
+// Login User / Vendor
 export const login = createAsyncThunk(
   "auth/login",
   async ({ role = ROLES.USER, data }, { dispatch, rejectWithValue }) => {
@@ -90,7 +87,7 @@ export const login = createAsyncThunk(
         data
       );
 
-      console.log('response from login: ', response.data.data)
+      console.log("response from login: ", response.data.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(
@@ -100,23 +97,17 @@ export const login = createAsyncThunk(
   }
 );
 
-<<<<<<< Updated upstream
+// Logout User / Vendor
 export const logout = createAsyncThunk(
   "auth/logout",
-  async ({ role }, {rejectWithValue }) => {
+  async ({ role }, { rejectWithValue }) => {
     try {
-
       const response = await api.post(API_ROUTES.AUTH.LOGOUT(role));
-=======
-// Logout User
-export const logoutUser = createAsyncThunk(
-  "auth/logout",
-  async (role, { rejectWithValue }) => {
-    try {
-      await api.post(API_ROUTES.AUTH.LOGOUT(role));
-      return true;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Logout failed"
+      );
     }
   }
 );
@@ -124,47 +115,41 @@ export const logoutUser = createAsyncThunk(
 // Reset Password
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
-  async ({ role = ROLES.USER, token, password, confirmPassword }, { rejectWithValue }) => {
+  async (
+    { role = ROLES.USER, token, password, confirmPassword },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await api.post(
         API_ROUTES.AUTH.RESET_PASSWORD(role),
-        {
-          token,
-          password,
-          confirmPassword,
-        }
+        { token, password, confirmPassword }
       );
->>>>>>> Stashed changes
 
       return response.data;
     } catch (error) {
       return rejectWithValue(
-<<<<<<< Updated upstream
-        error.response?.data?.message || "Logoutfailed"
+        error.response?.data?.message || "Password reset failed"
       );
     }
   }
 );
 
-
+// Check Auth Status (Get Me)
 export const checkAuth = createAsyncThunk(
   "auth/checkAuth",
-  async ( __, {rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-
       const response = await api.get(API_ROUTES.AUTH.GETME);
-
       return response.data.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "checkauth failed"
-=======
-        error.response?.data?.message || "Password reset failed"
->>>>>>> Stashed changes
+        error.response?.data?.message || "Check auth failed"
       );
     }
   }
 );
+
+// --- Auth Slice ---
 
 const authSlice = createSlice({
   name: "auth",
@@ -195,11 +180,8 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-<<<<<<< Updated upstream
-=======
 
       // Verify OTP
->>>>>>> Stashed changes
       .addCase(verifyOtp.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -212,9 +194,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-<<<<<<< Updated upstream
-      .addCase(resendOtp.pending, (state) => {
-=======
 
       // Resend OTP
       .addCase(resendOtp.pending, (state) => {
@@ -231,90 +210,35 @@ const authSlice = createSlice({
 
       // Login
       .addCase(login.pending, (state) => {
->>>>>>> Stashed changes
         state.loading = true;
         state.error = null;
       })
-      .addCase(resendOtp.fulfilled, (state) => {
-        state.loading = false;
-<<<<<<< Updated upstream
-      })
-    .addCase(resendOtp.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    })
-    .addCase(login.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(login.fulfilled, (state, action) => {
-      state.loading = false;
-      state.accessToken = action.payload.accessToken;
-      state.user = action.payload.user;
-      state.role = action.payload.role; 
-      state.isAuthenticated = true;
-    })
-    .addCase(login.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-      state.isAuthenticated = false;
-    })
-    .addCase(logout.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(logout.fulfilled, (state) => {
-      state.loading = false;
-      state.user = null 
-      state.accessToken = null
-      state.role = null
-      state.isAuthenticated = false     
-    })
-    .addCase(logout.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    }) 
-    .addCase(checkAuth.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(checkAuth.fulfilled, (state, action) => {
-      state.loading = false;
-      state.accessToken = action.payload.accessToken;
-      state.user = action.payload.user;
-      state.role = action.payload.role; 
-      state.isAuthenticated = true;
-    })
-    .addCase(checkAuth.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-      state.isAuthenticated = false;
-    }) 
-=======
-        state.error = null;
-
-        const responseData = action.payload.data || action.payload;
+      .addCase(login.fulfilled, (state, action) => {
+        const responseData = action.payload?.data || action.payload || {};
         const accessToken = responseData.accessToken || responseData.token;
         const user = responseData.user || responseData.vendor;
 
+        state.loading = false;
         state.accessToken = accessToken;
         state.user = user;
-        state.role = user?.role || action.meta.arg.role;
+        state.role = user?.role || responseData.role || action.meta.arg.role;
         state.isAuthenticated = true;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.isAuthenticated = false;
       })
 
       // Logout
-      .addCase(logoutUser.pending, (state) => {
+      .addCase(logout.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-      .addCase(logoutUser.fulfilled, () => {
-        return initialState; // Reset complete state back to initial state
+      .addCase(logout.fulfilled, () => {
+        return initialState; // Reset store completely back to original clean state
       })
-      .addCase(logoutUser.rejected, (state, action) => {
+      .addCase(logout.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -330,8 +254,27 @@ const authSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // Check Auth
+      .addCase(checkAuth.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkAuth.fulfilled, (state, action) => {
+        const responseData = action.payload?.data || action.payload || {};
+
+        state.loading = false;
+        state.accessToken = responseData.accessToken || responseData.token;
+        state.user = responseData.user || responseData.vendor || responseData;
+        state.role = responseData.role || responseData.user?.role;
+        state.isAuthenticated = true;
+      })
+      .addCase(checkAuth.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.isAuthenticated = false;
       });
->>>>>>> Stashed changes
   },
 });
 
