@@ -1,5 +1,6 @@
 "use client";
 
+import { AppText, getText } from "@/lib/language/LanguageHelper";
 import {
     Building2,
     CalendarDays,
@@ -7,42 +8,52 @@ import {
     UserCog,
     Users,
 } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
-import { adminStats } from "../services/AdminService";
-
-import AdminBottomSection from "@/components/global/admininfo";
-import PendingVenueCard from "@/components/global/ApprovalCard";
-import StatsCard from "@/components/global/statcard";
-import { adminStyle } from "../styles/AdminStyle";
-import { useAuthService } from "@/features/auth/services/AuthService";
-import { AppText, getText } from "@/lib/language/LanguageHelper";
 import {
-    getVenuePrimaryImage,
+    getVenueCapacity,
     getVenueLocation,
     getVenuePrice,
-    getVenueCapacity,
+    getVenuePrimaryImage,
 } from "@/features/venues/services/VenuService";
+import { useCallback, useEffect, useState } from "react";
+
+import AdminBottomSection from "@/components/global/AdminInfo";
+import PendingVenueCard from "@/components/global/ApprovalCard";
+import StatsCard from "@/components/global/StatCard";
+import { adminStats } from "../services/AdminService";
+import { adminStyle } from "../styles/AdminStyle";
+import { useAuthService } from "@/features/auth/services/AuthService";
 
 export default function Admin() {
     const { apiFetch } = useAuthService();
-    const [pendingVenues, setPendingVenues] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [
+        pendingVenues, setPendingVenues
+    ] = useState<any[]>([
+    ]);
+
+    const [
+        loading, setLoading
+    ] = useState(true);
 
     const fetchPendingVenues = useCallback(async () => {
         setLoading(true);
         try {
             const data = await apiFetch("/venue/pending");
-            setPendingVenues(data || []);
+            setPendingVenues(data || [
+            ]);
         } catch (err) {
             console.error("Error fetching pending venues:", err);
         } finally {
             setLoading(false);
         }
-    }, [apiFetch]);
+    }, [
+        apiFetch
+    ]);
 
     useEffect(() => {
         fetchPendingVenues();
-    }, [fetchPendingVenues]);
+    }, [
+        fetchPendingVenues
+    ]);
 
     const handleApprove = async (id: string) => {
         try {
@@ -163,33 +174,37 @@ export default function Admin() {
                 </div>
 
                 <div className={adminStyle.approvalsGrid}>
-                    {loading ? (
-                        <div className={adminStyle.emptyState}>
-                            <AppText textName="LOADING_PENDING_VENUES" textModule="LABEL" />
-                        </div>
-                    ) : pendingVenues.length === 0 ? (
-                        <div className={adminStyle.emptyState}>
-                            <AppText textName="NO_PENDING_APPROVALS" textModule="LABEL" />
-                        </div>
-                    ) : (
-                        pendingVenues.map((venue) => {
-                            return (
-                                <PendingVenueCard
-                                    key={venue.id}
-                                    id={venue.id}
-                                    imageUrl={getVenuePrimaryImage(venue)}
-                                    venueName={venue.name}
-                                    venueLocation={getVenueLocation(venue)}
-                                    capacity={getVenueCapacity(venue)}
-                                    price={getVenuePrice(venue)}
-                                    owner={venue.owner?.name || "Unknown"}
-                                    submittedOn={formatSubmittedOn(venue.createdAt)}
-                                    onApprove={handleApprove}
-                                    onReject={handleReject}
-                                />
-                            );
-                        })
-                    )}
+                    {loading
+                        ? (
+                            <div className={adminStyle.emptyState}>
+                                <AppText textName="LOADING_PENDING_VENUES" textModule="LABEL" />
+                            </div>
+                        )
+                        : pendingVenues.length === 0
+                            ? (
+                                <div className={adminStyle.emptyState}>
+                                    <AppText textName="NO_PENDING_APPROVALS" textModule="LABEL" />
+                                </div>
+                            )
+                            : (
+                                pendingVenues.map((venue) => {
+                                    return (
+                                        <PendingVenueCard
+                                            key={venue.id}
+                                            id={venue.id}
+                                            imageUrl={getVenuePrimaryImage(venue)}
+                                            venueName={venue.name}
+                                            venueLocation={getVenueLocation(venue)}
+                                            capacity={getVenueCapacity(venue)}
+                                            price={getVenuePrice(venue)}
+                                            owner={venue.owner?.name || "Unknown"}
+                                            submittedOn={formatSubmittedOn(venue.createdAt)}
+                                            onApprove={handleApprove}
+                                            onReject={handleReject}
+                                        />
+                                    );
+                                })
+                            )}
                 </div>
             </section>
             <AdminBottomSection />

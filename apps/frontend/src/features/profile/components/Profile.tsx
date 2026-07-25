@@ -10,14 +10,14 @@ import {
     XCircle,
 } from "lucide-react";
 
-import BusinessInformationCard from "@/components/global/businessinfo";
-import MyVenuesCard from "@/components/global/publishedvenues";
-import ProfileActionCard from "@/components/global/actioncard";
-import ProfileHeroCard from "@/components/global/profilecard";
-import RevenueSummaryCard from "@/components/global/revenuesummary";
-import SavedVenueCard from "@/components/global/microcard";
-import StatsCard from "@/components/global/statcard";
-import VenueStatisticsCard from "@/components/global/venuestats";
+import BusinessInformationCard from "@/components/global/BusinessInfo";
+import MyVenuesCard from "@/components/global/PublishedVenues";
+import ProfileActionCard from "@/components/global/ActionCard";
+import ProfileHeroCard from "@/components/global/ProfileCard";
+import RevenueSummaryCard from "@/components/global/RevenueSummary";
+import SavedVenueCard from "@/components/global/MicroCard";
+import StatsCard from "@/components/global/StatCard";
+import VenueStatisticsCard from "@/components/global/VenueStats";
 import dummyData from "../../../../DummyData.json";
 import { profileStyle } from "../styles/ProfileStyle";
 

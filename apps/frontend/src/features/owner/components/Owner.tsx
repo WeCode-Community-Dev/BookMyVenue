@@ -11,10 +11,10 @@ import { useEffect, useState } from "react";
 
 import AddVenueCard from "@/components/global/AddVenueCard";
 import { AppText } from "@/lib/language/LanguageHelper";
-import ProTipCard from "@/components/global/tipcard";
-import RecentBookings from "@/components/global/table";
-import StatsCard from "@/components/global/statcard";
-import TodayAtGlanceCard from "@/components/global/daystats";
+import ProTipCard from "@/components/global/TipCard";
+import RecentBookings from "@/components/global/Table";
+import StatsCard from "@/components/global/StatCard";
+import TodayAtGlanceCard from "@/components/global/DayStats";
 import VenueCard from "@/components/global/MiniCard";
 import dummyData from "../../../../DummyData.json";
 import { ownerStyle } from "../styles/OwnerStyle";
