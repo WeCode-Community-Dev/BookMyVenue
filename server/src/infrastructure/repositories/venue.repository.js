@@ -1,0 +1,345 @@
+import { VenueMapper } from "../../application/mapper/Venue.mapper.js";
+import { IVenueRepository } from "../../domain/repositories/IVenue.repository.js";
+import { VenueModel } from '../database/models/Venue.model.js'
+import { VenueStatus } from "../../domain/enums/Venue.enum.js";
+
+export class VenueRepository extends IVenueRepository {
+
+async findById(id) {
+
+    const document =
+        await VenueModel.findById(id)
+            .populate(
+                "vendorId",
+                "fullName email phone companyName"
+            );
+
+    if (!document) return null;
+
+    return VenueMapper.mapToEntity(document);
+
+}
+
+    async create(venue) {
+        const data = VenueMapper.mapToPersistence(venue)
+        const document = await VenueModel.create(data)
+        return VenueMapper.mapToEntity(document)
+    }
+
+    async update(id, venue) {
+        const data = VenueMapper.mapToPersistence(venue)
+        const document = await VenueModel.findByIdAndUpdate(
+            id,
+            { $set: data },
+            { new: true }
+        )
+        if (!document) return null
+        return VenueMapper.mapToEntity(document)
+    }
+
+    async findByVendorAndName(vendorId, name) {
+        const document = await VenueModel.findOne({
+            vendorId,
+            name
+        })
+        if (!document) return null
+        return VenueMapper.mapToEntity(document)
+    }
+
+    async findAllFiltered(query = {}) {
+        console.log('query: ', query)
+
+        const filter = {
+            isDeleted: false
+        };
+
+        // Vendor - only own venues
+        if (query.vendorId) {
+            filter.vendorId = query.vendorId;
+        }
+
+        // User/Admin - approval status
+        if (query.approvalStatus) {
+            filter.approvalStatus = query.approvalStatus;
+        }
+
+        // Venue status (AVAILABLE, UNAVAILABLE, etc.)
+        if (query.status) {
+            filter.status = query.status;
+        }
+
+        // Blocked / Unblocked
+        if (query.isBlocked !== undefined) {
+            filter.isBlocked = query.isBlocked === "true";
+        }
+
+        // Category
+        if (query.category) {
+            filter.category = query.category;
+        }
+
+        // Price filter
+        if (query.price) {
+            filter.$or = [
+                { pricePerHour: { $lte: query.price } },
+                { pricePerDay: { $lte: query.price } }
+            ];
+        }
+
+        // Min / Max price
+        if (query.priceType) {
+
+            if(query.priceType === 'day'){
+                filter.pricePerDay = {};
+
+                if (query.minPrice) {
+                    filter.pricePerDay.$gte = query.minPrice;
+                }
+
+                if (query.maxPrice) {
+                    filter.pricePerDay.$lte = query.maxPrice;
+                }
+            }
+            if(query.priceType === 'hour'){
+                filter.pricePerHour = {};
+
+                if (query.minPrice) {
+                    filter.pricePerHour.$gte = query.minPrice;
+                }
+
+                if (query.maxPrice) {
+                    filter.pricePerHour.$lte = query.maxPrice;
+                }
+            }
+        }
+
+        // Rating
+        if (query.rating) {
+            filter.rating = {
+                $gte: query.rating
+            }
+        }
+
+        // Amenities
+        if (query.amenities) {
+            filter.amenities = {
+                $all: query.amenities
+            };
+        }
+
+        if(query.capacityType){
+            if(query.capacityType === 'seating'){
+                filter.seatingCapacity = {
+                    $gte: query.capacity
+                }
+            }
+            if(query.capacityType === 'standing'){
+                filter.standingCapacity = {
+                    $gte: query.capacity
+                }
+            }
+        }
+        // Search
+        if (query.search) {
+
+            filter.$or = [
+
+                {
+                    name: {
+                        $regex: query.search,
+                        $options: "i"
+                    }
+                },
+
+                {
+                    "address.addressLine1": {
+                        $regex: query.search,
+                        $options: "i"
+                    }
+                },
+
+                {
+                    "address.city": {
+                        $regex: query.search,
+                        $options: "i"
+                    }
+                },
+
+                {
+                    "address.state": {
+                        $regex: query.search,
+                        $options: "i"
+                    }
+                }
+
+            ];
+
+        }
+
+        const skip = query.limit * (query.page - 1);
+
+        const totalCount =
+            await VenueModel.countDocuments(filter);
+
+        const totalPages =
+            Math.ceil(totalCount / query.limit);
+
+        const documents =
+            await VenueModel.find(filter)
+                .populate(
+                    "vendorId",
+                    "fullName email phone"
+                )
+                .sort({
+                    createdAt: -1
+                })
+                .skip(skip)
+                .limit(query.limit);
+
+        return {
+
+            data: documents.map((d) => VenueMapper.mapToEntity(d)),
+
+            totalCount,
+
+            totalPages
+
+        };
+
+    }
+
+    async approveVenue(id) {
+
+        const venue =
+            await VenueModel.findByIdAndUpdate(
+
+                id,
+
+                {
+
+                    approvalStatus: VenueStatus.ACTIVE,
+
+                    rejectionReason: null
+
+                },
+
+                {
+
+                    new: true
+
+                }
+
+            ).populate(
+                "vendorId",
+                "fullName email"
+            );
+
+        if (!venue) return null;
+
+        return VenueMapper.mapToEntity(venue);
+
+    }
+
+    async rejectVenue(id, reason) {
+
+        const venue =
+            await VenueModel.findByIdAndUpdate(
+
+                id,
+
+                {
+
+                    approvalStatus: VenueStatus.REJECTED,
+
+                    rejectionReason: reason
+
+                },
+
+                {
+
+                    new: true
+
+                }
+
+            ).populate(
+                "vendorId",
+                "fullName email"
+            );
+
+        if (!venue) return null;
+
+        return VenueMapper.mapToEntity(venue);
+
+    }
+
+    async updateBlockStatus(
+        id,
+        isBlocked
+    ) {
+
+        const venue =
+            await VenueModel.findByIdAndUpdate(
+
+                id,
+
+                {
+                    isBlocked
+                },
+
+                {
+
+                    new: true
+
+                }
+
+            );
+
+        if (!venue) return null;
+
+        return VenueMapper.mapToEntity(venue);
+
+    }
+
+    async delete(id) {
+        return await VenueModel.findByIdAndUpdate(
+            id,
+            { isDeleted: true },
+            { new: true }
+        )
+    }
+
+  async countByOwnerId(ownerId) {
+    return await VenueModel.countDocuments({
+      ownerId,
+
+      isDeleted: false,
+    });
+  }
+
+  async findTopVenues() {
+    const documents = await VenueModel
+        .find({
+            isDeleted: false,
+            isBlocked: false,
+            approvalStatus: VenueStatus.ACTIVE
+        })
+        .sort({ 
+            rating: -1,
+            createdAt: -1
+        })
+        .limit(4)
+        .lean()
+    return documents.map(d => VenueMapper.mapToEntity(d))
+  }
+
+  async findSimilarVenues(venueId, category){
+    const documents = await VenueModel.find({
+        _id: { $ne: venueId },
+        category,
+        approvalStatus: VenueStatus.ACTIVE,
+        isDeleted: false,
+        isBlocked: false
+    })
+    return documents.map(doc => VenueMapper.mapToEntity(doc))
+  }
+}

@@ -1,0 +1,138 @@
+
+import { NavLink, useNavigate } from "react-router-dom";
+import SidebarProfileCard from "./SidebarProfileCard";
+import { ROUTES } from "@/constants/routes";
+import logo from "@/assets/images/logo.jpeg";
+
+
+
+import {
+  LayoutDashboard,
+  Building2,
+  PlusSquare,
+  CalendarDays,
+  User,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { logout } from "@/redux/slices/AuthSlice";
+import { ROLES } from "@/constants/Roles";
+
+const VendorSidebar = () => {
+  const menuItems = [
+    {
+      name: "Dashboard",
+      path: ROUTES.VENDOR.DASHBOARD,
+      icon: LayoutDashboard,
+    },
+    {
+      name: "My Venues",
+      path: ROUTES.VENDOR.VENUES,
+      icon: Building2,
+    },
+    {
+      name: "Add Venue",
+      path: ROUTES.VENDOR.ADD_VENUE,
+      icon: PlusSquare,
+    },
+    {
+      name: "Bookings",
+      path: ROUTES.VENDOR.BOOKINGS,
+      icon: CalendarDays,
+    },
+    {
+      name: "Profile",
+      path: ROUTES.VENDOR.PROFILE,
+      icon: User,
+    },
+    {
+      name: "Settings",
+      path: ROUTES.VENDOR.SETTINGS,
+      icon: Settings,
+    },
+  ];
+
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout({role: ROLES.VENDOR})).unwrap()
+      toast.success("Vendor logged out successfully")
+      navigate(ROUTES.PUBLIC.LOGIN)
+    } catch (error) {
+      toast.error(error)
+    }
+  }
+  return (
+    <aside className="w-64 min-h-screen bg-slate-900 text-white p-6 flex flex-col">
+
+      {/* Logo Section */}
+      <div className="flex items-center gap-3 mb-8">
+    <img
+        src={logo}
+        alt="Book My Venue"
+        className="h-18 w-20 object-contain"
+    
+    />
+    
+        <div>
+          <h1 className="font-bold text-lg">
+            BookMyVenue
+          </h1>
+
+          <p className="text-xs text-gray-400 uppercase tracking-wide">
+            Vendor Portal
+          </p>
+        </div>
+      </div>
+
+      {/* Profile Card */}
+      <SidebarProfileCard />
+
+      {/* Menu Label */}
+      <p className="text-xs uppercase text-gray-400 tracking-wider mt-6 mb-3">
+        Main Menu
+      </p>
+
+      {/* Navigation */}
+      <ul className="space-y-2">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <li key={item.path}>
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  isActive
+                    ? "flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-600 text-white font-medium"
+                    : "flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-slate-800 hover:text-white transition"
+                }
+              >
+                <Icon size={18} />
+                {item.name}
+              </NavLink>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* Logout */}
+      <div className="mt-auto pt-8 border-t border-slate-800">
+        <button 
+          className="flex items-center gap-3 text-gray-300 hover:text-red-400 transition"
+          onClick={handleLogout}
+        >
+          <LogOut size={18} />
+          Logout
+        </button>
+      </div>
+
+    </aside>
+  );
+};
+
+export default VendorSidebar;
