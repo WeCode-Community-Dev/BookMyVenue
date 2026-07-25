@@ -45,7 +45,7 @@ router.post(
   authHandler(iTokenService),
   uploadVenue.fields([
     { name: "images", maxCount: 10 },
-    { name: "license", maxCount: 5 },
+    { name: "license", maxCount: 1 },
   ]),
   validate(createVenueSchema, "body"),
   iVendorVenueController.createVenue
@@ -88,16 +88,24 @@ router.patch(
 );
 
 //vendor profile
-router.get(ROUTES.OWNER.PROFILE.GET, authHandler(iTokenService), iVendorProfileController.getProfile);
+router.get
+(ROUTES.OWNER.PROFILE.GET, 
+authHandler(iTokenService),
+ iVendorProfileController.getProfile);
 
 router.patch(
   ROUTES.OWNER.PROFILE.UPDATE,
+  authHandler(iTokenService),
+  cloudinaryUpload("profile-images").single("profileImage"),
+
   validate(UpdateVendorProfileSchema, "body"),
   iVendorProfileController.updateProfile
 );
 
+
 router.patch(
   ROUTES.OWNER.PROFILE.CHANGE_PASSWORD,
+  authHandler(iTokenService),
   validate(ChangeVendorPasswordSchema, "body"),
   iVendorProfileController.changePassword
 );
@@ -106,12 +114,14 @@ router.patch(
 
 router.get(
   ROUTES.OWNER.BOOKING.GET_ALL,
+  authHandler(iTokenService),
   validate(BookingQuerySchema, "query"),
   iVendorBookingController.getBookings
 );
 
 router.get(
   ROUTES.OWNER.BOOKING.GET_BY_ID,
+  authHandler(iTokenService),
   validate(BookingParamsSchema, "params"),
   iVendorBookingController.getBookingById
 );

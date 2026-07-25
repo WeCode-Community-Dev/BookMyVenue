@@ -32,10 +32,16 @@ export class VendorProfileController {
 
   updateProfile = asyncHandler(async (req, res) => {
     const vendorId = req.user.id;
+    let profileImage;
+    if(req.file){
+     profileImage = {
+      publicId: req.file.filename,
+      url: req.file.path,
+    };}
 
 
     const vendor = await this._updateVendorProfileUsecase.execute({
-      vendorId,
+      vendorId,profileImage,
 
       ...req.body,
     });
@@ -49,7 +55,7 @@ export class VendorProfileController {
   });
 
   changePassword = asyncHandler(async (req, res) => {
-    const vendorId = "req.user.id";
+    const vendorId = req.user.id;
 
     await this._changeVendorPasswordUsecase.execute({
       vendorId,
