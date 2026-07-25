@@ -25,15 +25,9 @@ export class LoginAdminUsecase {
             throw new UnauthorizedError(authMessages.error.INVALID_CREDENTIALS);
         }
 
-<<<<<<< HEAD
-        const payload = { id:admin.id, role:admin.role}
-        const accessToken = this._tokenService.generateAccessToken(payload );
-        const refreshToken = this._tokenService.generateRefreshToken( payload)
-=======
         const payload = { id: admin.id, role: admin.role };
         const accessToken = this._tokenService.generateAccessToken(payload);
         const refreshToken = this._tokenService.generateRefreshToken(payload)
->>>>>>> develop
         const hashedToken = await this._hashService.hashToken(refreshToken)
         await this._adminRepository.updateRefreshToken(admin.id, hashedToken)
 

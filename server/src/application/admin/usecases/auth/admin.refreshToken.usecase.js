@@ -21,11 +21,7 @@ export class AdminRefreshTokenUseCase {
             throw new UnauthorizedError(authMessages.error.REFRESH_TOKEN_REVOKED);
         }
 
-<<<<<<< HEAD
-        const payload = { id:admin.id, role:admin.role };
-=======
         const payload = { id: admin.id, role: role };
->>>>>>> develop
         const newAccessToken = this._tokenService.generateAccessToken(payload);
         const newRefreshToken = this._tokenService.generateRefreshToken(payload);
         const hashedRefreshToken = await this._hashService.hashToken(newRefreshToken)
