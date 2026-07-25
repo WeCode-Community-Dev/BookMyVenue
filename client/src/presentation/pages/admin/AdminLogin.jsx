@@ -14,7 +14,7 @@ const AdminLoginForm = () => {
     const [formData, setFormData] = useState({ email: "", password: "" })
     const [showPassword, setShowPassword] = useState(false)
     
-    const { loading, error } = useSelector((state) => state.auth)
+    const { loading } = useSelector((state) => state.auth)
 
     const handleChange = (e) => {
         setFormData({
@@ -38,7 +38,7 @@ const AdminLoginForm = () => {
 
         // 1. Check if 'admin' object exists in response data, or read role directly
         const loggedInRole = 
-            result?.admin?.role || 
+            result?.user?.role || 
             (result?.data?.admin ? ROLES.ADMIN : undefined) || 
             result?.data?.role || 
             result?.role;
@@ -64,13 +64,6 @@ const AdminLoginForm = () => {
         <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
             <h1 className="text-3xl font-bold text-slate-800 mb-1">Admin Login</h1>
             <p className="text-slate-500 mb-8">Sign in to access the admin dashboard</p>
-
-            {/* Error Banner */}
-            {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                    {error}
-                </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Email Field */}

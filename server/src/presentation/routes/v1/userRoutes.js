@@ -12,6 +12,7 @@ import { iUserAccountController } from "../../controllers/di.js";
 import cloudinaryUpload from "../../middlewares/cloudinaryUpload.js";
 import { iUserBookingController } from "../../controllers/di.js"
 import { authHandler } from '../../middlewares/auth.middleware.js'
+import {ReserveBookingSchema, CancelBookingSchema} from "../../validators/userBooking.validator.js";
 
 
 const router = Express.Router()
@@ -108,6 +109,11 @@ router.get(
 router.get(
     ROUTES.USER.BOOKING.GET_BY_ID,
     iUserBookingController.getBookingById
+);
+router.patch(
+    ROUTES.USER.BOOKING.CANCEL,
+    validate(CancelBookingSchema, "body"),
+    iUserBookingController.cancelBooking
 );
 
 export default router

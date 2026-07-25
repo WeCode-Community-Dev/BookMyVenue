@@ -9,6 +9,7 @@ import { VerifyRegisterotpTemplate } from "../emailTemplates/verifyRegisterOtpTe
 import { emailChangeOtpTemplate } from "../emailTemplates/user.emailChangeOtpTemplate.js";
 import { bookingConfirmationTemplate } from "../emailTemplates/user.bookingConfirmationTemplate.js"
 import { paymentReminderTemplate } from "../emailTemplates/user.paymentReminderTemplate.js";
+import { bookingCancellationTemplate } from "../emailTemplates/user.bookingCancellationTemplate.js";
 // General-purpose send function used by auth use cases
 // export const sendMail = async (to, subject, html) => {
 //     await transporter.sendMail({
@@ -182,5 +183,34 @@ export class MailServiceImpl extends MailService {
         console.log("Payment reminder mail sent.");
 
     }
+
+
+    async sendBookingCancellationMail(cancellationData) {
+
+    const { subject, html } = bookingCancellationTemplate({
+
+        customerName: cancellationData.customerName,
+        venueName: cancellationData.venueName,
+        bookingDate: cancellationData.bookingDate,
+        startTime: cancellationData.startTime,
+        endTime: cancellationData.endTime,
+        paidAmount: cancellationData.paidAmount,
+        refundAmount: cancellationData.refundAmount,
+        cancellationReason: cancellationData.cancellationReason
+
+    });
+
+    await transporter.sendMail({
+
+        from: process.env.EMAIL_USER,
+        to: cancellationData.email,
+        subject,
+        html
+
+    });
+
+    console.log("Booking cancellation mail sent.");
+
+}
 
 }

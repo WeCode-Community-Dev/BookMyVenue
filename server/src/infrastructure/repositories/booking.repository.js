@@ -500,6 +500,29 @@ export class BookingRepositoryImpl extends BookingRepository {
         });
 
     }
+    async cancelBooking(
+        bookingId,
+        status,
+        cancellationReason
+    ) {
+
+        const booking = await BookingModel.findByIdAndUpdate(
+            bookingId,
+            {
+                status,
+                cancellationReason
+            },
+            {
+                new: true
+            }
+        );
+
+        if (!booking) {
+            return null;
+        }
+
+        return BookingMapper.mapToEntity(booking);
+    }
 
 }
 
