@@ -19,7 +19,7 @@ const LoginForm = () => {
     const [formData, setFormData] = useState({ email: initialEmail, password: "" })
     const [showPassword, setShowPassword] = useState(false)
     
-    const { loading, error } = useSelector((state) => state.auth)
+    const { loading } = useSelector((state) => state.auth)
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -87,11 +87,7 @@ const LoginForm = () => {
             </div>
 
             {/* Error Message Banner */}
-            {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                    {error}
-                </div>
-            )}
+
 
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Email Field */}
@@ -143,6 +139,7 @@ const LoginForm = () => {
                 <div className="flex items-center justify-between">
                     <Link
                         to={ROUTES.PUBLIC.FORGOT_PASSWORD}
+                        state={{ role }}
                         className="text-sm text-amber-500 hover:underline"
                     >
                         Forgot password?

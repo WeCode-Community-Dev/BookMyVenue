@@ -1,7 +1,7 @@
 import Express from 'express'
 import { ROUTES } from '../../../shared/constants/routes.js'
 import { VenueParamsSchema, VenueQuerySchema } from '../../validators/VenderVenue.validator.js'
-import { iUserVenueController, iUserProfileController } from '../../controllers/di.js'
+import { iUserVenueController, iUserProfileController, iTokenService } from '../../controllers/di.js'
 import { validate } from '../../middlewares/validator.js'
 import { updateProfileSchema, userChangePasswordSchema  } from '../../validators/UserProfie.validator.js'
 import { RequestEmailChangeOtpSchema,verifyEmailOtpSchema } from '../../validators/UserProfie.validator.js'
@@ -11,6 +11,7 @@ import { UpdateAccountStatusSchema } from "../../validators/UserAccount.validato
 import { iUserAccountController } from "../../controllers/di.js";
 import cloudinaryUpload from "../../middlewares/cloudinaryUpload.js";
 import { iUserBookingController } from "../../controllers/di.js"
+import { authHandler } from '../../middlewares/auth.middleware.js'
 
 
 const router = Express.Router()
@@ -25,7 +26,7 @@ router.get(ROUTES.USER.VENUE.SIMILAR_VENUES, validate(VenueParamsSchema, 'params
 
 //profile
 router.get(
-    ROUTES.USER.PROFILE.PROFILE,
+    ROUTES.USER.PROFILE.PROFILE, authHandler(iTokenService),
     iUserProfileController.getProfile
 )
 

@@ -12,7 +12,9 @@ export default class UserResetPasswordUseCase {
 
     async execute(token, password) {
 
-        const user = await this._userRepository.findByResetToken(token);
+        const hashedResetToken = this._hashService.hashToken(token)
+        const user = await this._userRepository.findByResetToken(hashedResetToken);
+        console.log("from usecase: ", user)
 
         if (!user) {
             throw new NotFoundError(authMessages.error.USER_NOT_FOUND);

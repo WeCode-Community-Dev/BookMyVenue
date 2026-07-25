@@ -11,8 +11,9 @@ export class VendorResetPasswordUseCase {
     }
 
     async execute(token, password) {
+        const hashedResetToken = this._hashService.hashToken(token)
 
-        const vendor = await this._vendorRepository.findByResetToken(token);
+        const vendor = await this._vendorRepository.findByResetToken(hashedResetToken);
 
         if (!vendor) {
             throw new NotFoundError(authMessages.error.VENDOR_NOT_FOUND);

@@ -1,6 +1,5 @@
 import { UnauthorizedError } from "../../../../domain/errors/UnauthorizedError.js";
 import { authMessages } from "../../../../shared/constants/messages/authMessages.js";
-import { UserRole } from "../../../../domain/enums/UserRole.enum.js";
 
 export class LoginVendorUsecase {
     constructor(
@@ -30,8 +29,9 @@ export class LoginVendorUsecase {
             throw new UnauthorizedError(authMessages.error.OTP_VERIFICATION_REQUIRED)
         }
 
-        const accessToken = this._tokenService.generateAccessToken( vendor.id, vendor.email, UserRole.VENDOR );
-        const refreshToken = this._tokenService.generateRefreshToken(vendor.id, UserRole.VENDOR)
+        const payload = { id: vendor.id, role: vendor.role }
+        const accessToken = this._tokenService.generateAccessToken( payload );
+        const refreshToken = this._tokenService.generateRefreshToken(payload)
         const hashedToken = await this._hashService.hashToken(refreshToken)
         await this._vendorRepository.updateRefreshToken(vendor.id, hashedToken)
 

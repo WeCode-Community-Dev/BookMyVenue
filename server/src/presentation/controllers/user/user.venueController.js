@@ -31,7 +31,7 @@ export class UserVenueController {
 
     getTopVenues = asyncHandler( async (req, res) => {
         const venues = await this._userGetTopVenues.execute()
-        console.log('venue: ', venues)
+        // console.log('venue: ', venues)
         return sendSuccess(res, statusCode.OK,'', venues)
     })
 

@@ -25,7 +25,7 @@ export class VendorVenueController {
        // const vendorId = req.user.id
            const vendorId = '6a2d96f9bd24251e9e502c04';
 
-        console.log('files', req.files)
+        // console.log('files', req.files)
         const images = (req.files.images || []).map(file => ({
             publicId: file.filename,
             url: file.path
@@ -53,7 +53,7 @@ export class VendorVenueController {
             url: file.path
         }))
 
-        console.log("from controller: ", req.body)
+        // console.log("from controller: ", req.body)
         const venue = await this._vendorEditVenueUsecase.execute({vendorId, venueId, newImages, newLicense, ...req.body})
         return sendSuccess(res, statusCode.OK, '', venue)
     })

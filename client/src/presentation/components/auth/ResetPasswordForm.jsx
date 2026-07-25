@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-
-import { resetPassword } from "@/redux/slices/AuthSlice";
 import { ROUTES } from "@/constants/routes";
 import { ROLES } from "@/constants/Roles";
 import {useSearchParams } from "react-router-dom";
+import { resetPassword } from "@/redux/slices/AuthSlice";
 
 const ResetPasswordForm = () => {
   const dispatch = useDispatch();
@@ -15,8 +14,9 @@ const ResetPasswordForm = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const role = searchParams.get("role");
-  
-
+  console.timeLog("role", role)
+  const originalRole = role === "customer" ? ROLES.USER : ROLES.VENDOR
+  console.log("original role", originalRole)
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ const ResetPasswordForm = () => {
     e.preventDefault();
 
 
-    if (!token || !role) {
+    if (!token || !originalRole) {
   toast.error("Invalid reset password link.");
   navigate(ROUTES.PUBLIC.LOGIN);
   return;
@@ -43,9 +43,8 @@ const ResetPasswordForm = () => {
 
       await dispatch(
         resetPassword({
-        
+          role: originalRole,
           token,
-          role,
           password,
           confirmPassword,
           
@@ -57,7 +56,7 @@ const ResetPasswordForm = () => {
       if (role === ROLES.ADMIN) {
         navigate(ROUTES.ADMIN.LOGIN);
       } else if (role === ROLES.VENDOR) {
-        navigate(ROUTES.VENDOR.LOGIN);
+        navigate(ROUTES.PUBLIC.LOGIN);
       } else {
         navigate(ROUTES.PUBLIC.LOGIN);
       }

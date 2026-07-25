@@ -17,8 +17,8 @@ export class VendorProfileController {
   }
 
   getProfile = asyncHandler(async (req, res) => {
-    //const vendorId = req.user.id;
-        const vendorId = '6a2d96f9bd24251e9e502c04';
+    const vendorId = req.user.id;
+        // const vendorId = '6a2d96f9bd24251e9e502c04';
 
 
     const vendor = await this._getVendorProfileUsecase.execute(vendorId);
