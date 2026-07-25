@@ -2,116 +2,107 @@ import { Types } from "mongoose";
 import { Booking } from "../../domain/entities/Booking.js";
 
 export class BookingMapper {
+  static mapToEntity(doc) {
+    if (!doc) return null;
 
-    static mapToEntity(doc) {
+    return new Booking({
+      id: doc._id ? doc._id.toString() : null,
 
-        if (!doc) return null;
+      // userId: doc.userId ? doc.userId.toString() : null,
 
-        return new Booking({
+      //venueId: doc.venueId ? doc.venueId.toString() : null,
 
-            id: doc._id ? doc._id.toString() : null,
+      // vendorId: doc. vendorId? doc.vendorId.toString() : null,
+      userId: doc.userId
+        ? {
+            id: doc.userId._id?.toString(),
+            fullName: doc.userId.fullName,
+            email: doc.userId.email,
+            phone: doc.userId.phone,
+          }
+        : null,
+      vendorId: doc.vendorId
+        ? {
+            id: doc.vendorId._id?.toString(),
+            fullName: doc.vendorId.fullName,
+            email: doc.vendorId.email,
+            phone: doc.vendorId.phone,
+            companyName: doc.vendorId.companyName,
+          }
+        : null,
+      venueId: doc.venueId
+        ? {
+            id: doc.venueId._id?.toString(),
+            name: doc.venueId.name,
+            category: doc.venueId.category,
+            address: doc.venueId.address,
+            seatingCapacity: doc.venueId.seatingCapacity,
+            standingCapacity: doc.venueId.standingCapacity,
+            images: doc.venueId.images,
+          }
+        : null,
 
-            // userId: doc.userId ? doc.userId.toString() : null,
+      bookingDate: doc.bookingDate,
 
-            //venueId: doc.venueId ? doc.venueId.toString() : null,
+      startTime: doc.startTime,
 
-            // vendorId: doc. vendorId? doc.vendorId.toString() : null,
-            userId: doc.userId
-                ? {
-                    id: doc.userId._id?.toString(),
-                    fullName: doc.userId.fullName,
-                    email: doc.userId.email,
-                    phone: doc.userId.phone,
-                }
-                : null,
-            vendorId: doc.vendorId
-                ? {
-                    id: doc.vendorId._id?.toString(),
-                    fullName: doc.vendorId.fullName,
-                    email: doc.vendorId.email,
-                    phone: doc.vendorId.phone,
-                    companyName: doc.vendorId.companyName,
-                }
-                : null,
-            venueId: doc.venueId
-  ? {
-      id: doc.venueId._id?.toString(),
-      name: doc.venueId.name,
-      category: doc.venueId.category,
-      address: doc.venueId.address,
-      seatingCapacity: doc.venueId.seatingCapacity,
-      standingCapacity: doc.venueId.standingCapacity,
-    }
-  : null,
+      endTime: doc.endTime,
 
-            bookingDate: doc.bookingDate,
+      guestCount: doc.guestCount,
 
-            startTime: doc.startTime,
+      totalAmount: doc.totalAmount,
 
-            endTime: doc.endTime,
+      advanceAmount: doc.advanceAmount,
 
-            guestCount: doc.guestCount,
+      paidAmount: doc.paidAmount,
 
-            totalAmount: doc.totalAmount,
+      remainingAmount: doc.remainingAmount,
 
-            advanceAmount: doc.advanceAmount,
+      status: doc.status,
 
-            paidAmount: doc.paidAmount,
+      paymentStatus: doc.paymentStatus,
 
-            remainingAmount: doc.remainingAmount,
+      cancellationReason: doc.cancellationReason,
 
-            status: doc.status,
+      createdAt: doc.createdAt,
 
-            paymentStatus: doc.paymentStatus,
+      updatedAt: doc.updatedAt,
+    });
+  }
 
-            cancellationReason: doc.cancellationReason,
+  static mapToPersistence(entity) {
+    if (!entity) return null;
 
-            createdAt: doc.createdAt,
+    return {
+      userId: entity.userId ? new Types.ObjectId(entity.userId) : null,
 
-            updatedAt: doc.updatedAt
+      venueId: entity.venueId ? new Types.ObjectId(entity.venueId) : null,
 
-        });
+      vendorId: entity.vendorId ? new Types.ObjectId(entity.vendorId) : null,
 
-    }
+      bookingDate: entity.bookingDate,
 
-    static mapToPersistence(entity) {
+      startTime: entity.startTime,
 
-        if (!entity) return null;
+      endTime: entity.endTime,
 
-        return {
-            userId: entity.userId ? new Types.ObjectId(entity.userId) : null,
+      guestCount: entity.guestCount,
 
-            venueId: entity.venueId ? new Types.ObjectId(entity.venueId) : null,
+      totalAmount: entity.totalAmount,
 
-            vendorId: entity.vendorId ? new Types.ObjectId(entity.vendorId) : null,
+      advanceAmount: entity.advanceAmount,
 
-            bookingDate: entity.bookingDate,
+      paidAmount: entity.paidAmount,
 
-            startTime: entity.startTime,
+      remainingAmount: entity.remainingAmount,
 
-            endTime: entity.endTime,
+      status: entity.status,
 
-            guestCount: entity.guestCount,
+      paymentStatus: entity.paymentStatus,
 
-            totalAmount: entity.totalAmount,
-
-            advanceAmount: entity.advanceAmount,
-
-            paidAmount: entity.paidAmount,
-
-            remainingAmount: entity.remainingAmount,
-
-            status: entity.status,
-
-            paymentStatus: entity.paymentStatus,
-
-            cancellationReason: entity.cancellationReason,
-            createdAt:entity.createdAt,
-            updatedAt:entity.updatedAt
-
-        };
-
-
-    }
-
+      cancellationReason: entity.cancellationReason,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    };
+  }
 }

@@ -13,12 +13,15 @@ import adminBookingSlice from './slices/AdminBookingSlice'
 import adminPaymentSlice from './slices/AdminPaymentSlice'
 import adminDashboardSlice from './slices/AdminDashboardSlice'
 import authSlice from './slices/AuthSlice'
+import UserBookingSlice from "./slices/UserBookingSlice";
+
 export const store = configureStore({
     reducer: {
         userVenue: userVenueSlice,
         adminUser: adminUserSlice,
         userProfile: UserProfileSlice,
         userWishlist: UserWishlistSlice,
+        userBooking: UserBookingSlice,
         adminVendor: adminVendorSlice,
         vendorVenue: VendorVenueSlice,
         vendorDashboard: VendorDashboardSlice,

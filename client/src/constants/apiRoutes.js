@@ -28,8 +28,9 @@ AUTH:{
           ADD: (venueId) => `/user/wishlist/${venueId}`,
           REMOVE: (venueId) => `/user/wishlist/${venueId}`,
         },
-        BOOKINGS: {
-          BOOKINGS: "user/bookings"
+        BOOKING: {
+          GET_ALL: "/user/booking",
+          GET_BY_ID: (bookingId) => `/user/booking/${bookingId}`,
         }
     },
    ADMIN: {
