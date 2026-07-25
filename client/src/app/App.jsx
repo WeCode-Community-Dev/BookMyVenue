@@ -103,7 +103,7 @@ function App() {
           <Route path={ROUTES.ADMIN.LOGIN} element={<AdminLogin />} />
 
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
+<Route path="/admin" element={<AdminLayout />}>
             <Route
               path={ROUTES.ADMIN.DASHBOARD}
               element={<AdminDashboard />}

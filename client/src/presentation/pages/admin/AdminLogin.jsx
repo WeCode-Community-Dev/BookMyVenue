@@ -59,7 +59,9 @@ const AdminLoginForm = () => {
 }
 
     return (
-        <div className="flex flex-col justify-center px-8 md:px-16 py-16">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+
+        <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
             <h1 className="text-3xl font-bold text-slate-800 mb-1">Admin Login</h1>
             <p className="text-slate-500 mb-8">Sign in to access the admin dashboard</p>
 
@@ -125,6 +127,7 @@ const AdminLoginForm = () => {
                     {loading ? 'Signing in...' : 'Sign In as Admin'}
                 </button>
             </form>
+            </div>
         </div>
     )
 }
