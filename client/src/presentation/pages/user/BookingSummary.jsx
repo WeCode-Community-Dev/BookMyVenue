@@ -1,6 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
 import { ROUTES } from "@/constants/routes";
+import { reserveBooking } from "@/redux/slices/UserBookingSlice";
 
 import Header from "@/presentation/components/common/Header";
 import Footer from "@/presentation/components/common/Footer";
@@ -9,8 +11,12 @@ import { formatDateToDDMMYYYY } from "@/lib/utils";
 
 export default function BookingSummary() {
   const { state } = useLocation();
-
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { loading, error } = useSelector(
+    (state) => state.userBooking
+  );
 
   // ======================================
   // NO BOOKING DATA
@@ -22,11 +28,7 @@ export default function BookingSummary() {
         <Header />
 
         <main className="min-h-screen flex items-center justify-center">
-
-          <p>
-            Booking details not found.
-          </p>
-
+          <p>Booking details not found.</p>
         </main>
 
         <Footer />
@@ -36,7 +38,6 @@ export default function BookingSummary() {
 
   const {
     venue,
-    selectedPackage,
     bookingDate,
     bookingType,
     startTime,
@@ -45,26 +46,43 @@ export default function BookingSummary() {
   } = state;
 
   // ======================================
-  // BOOKING DATA FOR BACKEND
+  // VENUE ID
+  // ======================================
+
+  const venueId = venue?._id || venue?.id;
+
+  // ======================================
+  // NORMALIZED DATE
+  // ======================================
+
+  const normalizedDate = new Date(bookingDate)
+    .toISOString()
+    .split("T")[0];
+
+  // ======================================
+  // DAILY BOOKING TIME
+  // ======================================
+
+  const finalStartTime =
+    bookingType === "daily"
+      ? "00:00"
+      : startTime;
+
+  const finalEndTime =
+    bookingType === "daily"
+      ? "23:59"
+      : endTime;
+
+  // ======================================
+  // BOOKING DATA
   // ======================================
 
   const bookingData = {
-    venueId: venue._id || venue.id,
-
-    bookingDate,
-
+    venueId,
+    bookingDate: normalizedDate,
     bookingType,
-
-    startTime:
-      bookingType === "hourly"
-        ? startTime
-        : null,
-
-    endTime:
-      bookingType === "hourly"
-        ? endTime
-        : null,
-
+    startTime: finalStartTime,
+    endTime: finalEndTime,
     guestCount: Number(guestCount),
   };
 
@@ -72,18 +90,70 @@ export default function BookingSummary() {
   // PROCEED TO PAYMENT
   // ======================================
 
-  const handleProceedToPayment = () => {
-    navigate(
-      ROUTES.USER.PAYMENT,
-      {
-        state: {
-          venue,
-          guestCount,
+  const handleProceedToPayment = async () => {
+    if (
+      !venueId ||
+      !normalizedDate ||
+      !bookingType ||
+      !guestCount
+    ) {
+      alert(
+        "Missing booking details. Please go back and fill all fields."
+      );
+      return;
+    }
 
-          bookingData,
-        },
-      }
-    );
+    try {
+      const reservation = await dispatch(
+        reserveBooking(bookingData)
+      ).unwrap();
+
+      console.log(
+        "Reservation created:",
+        reservation
+      );
+
+      navigate(
+        ROUTES.USER.PAYMENT,
+        {
+          state: {
+            venue,
+
+            bookingDate: normalizedDate,
+
+            bookingType,
+
+            startTime: finalStartTime,
+
+            endTime: finalEndTime,
+
+            guestCount: Number(guestCount),
+
+            // Reservation ID
+            reservationId:
+              reservation.reservationId,
+
+            // Actual server-calculated amounts
+            totalAmount:
+              reservation.totalAmount,
+
+            advanceAmount:
+              reservation.advanceAmount,
+
+            remainingAmount:
+              reservation.remainingAmount,
+
+            expiresAt:
+              reservation.expiresAt,
+          },
+        }
+      );
+    } catch (error) {
+      console.error(
+        "Reservation failed:",
+        error
+      );
+    }
   };
 
   return (
@@ -91,7 +161,6 @@ export default function BookingSummary() {
       <Header />
 
       <main className="min-h-screen bg-gray-50 py-10">
-
         <div className="max-w-5xl mx-auto px-6">
 
           <h1 className="text-3xl font-bold">
@@ -100,9 +169,9 @@ export default function BookingSummary() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
 
-            {/* ======================================
-                BOOKING DETAILS
-            ====================================== */}
+            {/* ============================== */}
+            {/* BOOKING DETAILS */}
+            {/* ============================== */}
 
             <div className="lg:col-span-2 bg-white rounded-2xl p-6">
 
@@ -143,94 +212,74 @@ export default function BookingSummary() {
                 {/* DATE */}
 
                 <div>
-
                   <p className="text-gray-500 text-sm">
                     Event Date
                   </p>
 
                   <p className="font-semibold">
                     {formatDateToDDMMYYYY(
-                      bookingData.bookingDate
+                      normalizedDate
                     )}
                   </p>
-
                 </div>
 
                 {/* GUESTS */}
 
                 <div>
-
                   <p className="text-gray-500 text-sm">
                     Guests
                   </p>
 
                   <p className="font-semibold">
-                    {bookingData.guestCount}
+                    {guestCount}
                   </p>
-
                 </div>
 
                 {/* BOOKING TYPE */}
 
                 <div>
-
                   <p className="text-gray-500 text-sm">
                     Booking Type
                   </p>
 
                   <p className="font-semibold">
-
-                    {bookingData.bookingType === "daily"
+                    {bookingType === "daily"
                       ? "Full Day"
                       : "Hour Wise"}
-
                   </p>
-
                 </div>
 
                 {/* START TIME */}
 
-                {bookingData.bookingType === "hourly" && (
+                <div>
+                  <p className="text-gray-500 text-sm">
+                    Start Time
+                  </p>
 
-                  <div>
-
-                    <p className="text-gray-500 text-sm">
-                      Start Time
-                    </p>
-
-                    <p className="font-semibold">
-                      {bookingData.startTime}
-                    </p>
-
-                  </div>
-
-                )}
+                  <p className="font-semibold">
+                    {finalStartTime}
+                  </p>
+                </div>
 
                 {/* END TIME */}
 
-                {bookingData.bookingType === "hourly" && (
+                <div>
+                  <p className="text-gray-500 text-sm">
+                    End Time
+                  </p>
 
-                  <div>
-
-                    <p className="text-gray-500 text-sm">
-                      End Time
-                    </p>
-
-                    <p className="font-semibold">
-                      {bookingData.endTime}
-                    </p>
-
-                  </div>
-
-                )}
+                  <p className="font-semibold">
+                    {finalEndTime}
+                  </p>
+                </div>
 
               </div>
 
             </div>
 
-            {/* ======================================
-                PRICE SUMMARY
-            ====================================== */}
+            {/* ============================== */}
+            {/* PRICE SUMMARY */}
+            {/* ============================== */}
 
             <div className="bg-white rounded-2xl p-6 h-fit">
 
@@ -241,51 +290,56 @@ export default function BookingSummary() {
               <div className="mt-6 space-y-4">
 
                 <div className="flex justify-between">
-
                   <span>
                     Booking Type
                   </span>
 
                   <span className="font-medium">
-
-                    {bookingData.bookingType === "daily"
+                    {bookingType === "daily"
                       ? "Full Day"
                       : "Hourly"}
-
                   </span>
-
                 </div>
 
                 <div className="flex justify-between">
-
                   <span>
                     Guest Count
                   </span>
 
                   <span className="font-medium">
-                    {bookingData.guestCount}
+                    {guestCount}
                   </span>
-
                 </div>
 
               </div>
 
+              {error && (
+                <p className="mt-5 text-sm text-red-500">
+                  {error}
+                </p>
+              )}
+
               <div className="border-t mt-5 pt-5">
 
                 <p className="text-sm text-gray-500">
-                  Final price, weekend surcharge,
-                  security deposit, and advance payment
-                  will be calculated by the server.
+                  The final booking amount will be
+                  calculated by the server after
+                  checking the venue pricing and charges.
                 </p>
 
               </div>
 
               <button
                 type="button"
-                onClick={handleProceedToPayment}
-                className="w-full mt-6 bg-black text-white py-3 rounded-xl font-semibold"
+                onClick={
+                  handleProceedToPayment
+                }
+                disabled={loading}
+                className="w-full mt-6 bg-black text-white py-3 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Proceed to Payment
+                {loading
+                  ? "Reserving..."
+                  : "Proceed to Payment"}
               </button>
 
             </div>
@@ -293,12 +347,9 @@ export default function BookingSummary() {
           </div>
 
         </div>
-
       </main>
 
       <Footer />
-
     </>
   );
 }
-

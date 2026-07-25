@@ -17,10 +17,10 @@ const ProfileHeader = ({
       .toUpperCase() || "--";
 
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white mb-6">
+    <div className="bg-gradient-to-r from-amber-600 to-indigo-600 rounded-2xl p-6 text-white mb-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-white text-blue-600 flex items-center justify-center text-3xl font-bold">
+          <div className="w-20 h-20 rounded-full bg-white text-amber-600 flex items-center justify-center text-3xl font-bold">
             {initials}
           </div>
 
@@ -29,11 +29,11 @@ const ProfileHeader = ({
               {profile?.fullName || "-"}
             </h2>
 
-            <p className="text-blue-100">
+            <p className="text-amber-100">
               Venue Owner
             </p>
 
-            <p className="text-blue-100 text-sm">
+            <p className="text-amber-100 text-sm">
               {profile?.email || "-"}
             </p>
           </div>

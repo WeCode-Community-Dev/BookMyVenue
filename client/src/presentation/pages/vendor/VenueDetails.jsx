@@ -127,7 +127,7 @@ const VenueDetails = () => {
             <div className="flex gap-3">
               <button
                 onClick={handleEdit}
-                className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
+                className="rounded-lg bg-amber-600 px-5 py-2 text-white hover:bg-amber-700"
               >
                 Edit
               </button>
@@ -252,7 +252,7 @@ const VenueDetails = () => {
               {venue.amenities?.map((amenity) => (
                 <span
                   key={amenity}
-                  className="rounded-full bg-blue-100 px-4 py-2 text-sm text-blue-700"
+                  className="rounded-full bg-amber-100 px-4 py-2 text-sm text-amber-700"
                 >
                   {amenity}
                 </span>

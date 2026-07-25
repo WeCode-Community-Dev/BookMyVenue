@@ -19,6 +19,12 @@ const initialState = {
 
   reservation: null,
 
+  totalPages: 1,
+
+  totalCount: 0,
+
+  currentPage: 1,
+
   error: null,
 
   success: false,
@@ -31,10 +37,7 @@ const initialState = {
 export const reserveBooking = createAsyncThunk(
   "userBooking/reserveBooking",
 
-  async (
-    bookingData,
-    { rejectWithValue }
-  ) => {
+  async (bookingData, { rejectWithValue }) => {
     try {
       const response = await api.post(
         API_ROUTES.USER.BOOKINGS.RESERVE,
@@ -63,8 +66,8 @@ export const confirmBooking = createAsyncThunk(
       reservationId,
       venueId,
       bookingDate,
-      paymentId,
-      paymentStatus,
+      paymentOption,
+      paymentMethod,
     },
     { rejectWithValue }
   ) => {
@@ -75,21 +78,21 @@ export const confirmBooking = createAsyncThunk(
           reservationId,
           venueId,
           bookingDate,
-          paymentId,
-          paymentStatus,
+          paymentOption,
+          paymentMethod,
         }
       );
 
       return response.data.data;
+
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message ||
-          "Failed to confirm booking"
+        "Failed to confirm booking"
       );
     }
   }
 );
-
 // ======================================
 // FETCH USER BOOKINGS
 // ======================================
@@ -98,7 +101,13 @@ export const fetchUserBookings = createAsyncThunk(
   "userBooking/fetchUserBookings",
 
   async (
-    params = {},
+    {
+      page = 1,
+      limit = 10,
+      status,
+      search,
+      sortBy,
+    } = {},
     { rejectWithValue }
   ) => {
     try {
@@ -106,14 +115,11 @@ export const fetchUserBookings = createAsyncThunk(
         API_ROUTES.USER.BOOKINGS.GET_ALL,
         {
           params: {
-            page: params.page || 1,
-            limit: params.limit || 10,
-            status:
-              params.status || undefined,
-            search:
-              params.search || undefined,
-            sortBy:
-              params.sortBy || undefined,
+            page,
+            limit,
+            status: status || undefined,
+            search: search || undefined,
+            sortBy: sortBy || undefined,
           },
         }
       );
@@ -135,10 +141,7 @@ export const fetchUserBookings = createAsyncThunk(
 export const fetchBookingById = createAsyncThunk(
   "userBooking/fetchBookingById",
 
-  async (
-    bookingId,
-    { rejectWithValue }
-  ) => {
+  async (bookingId, { rejectWithValue }) => {
     try {
       const response = await api.get(
         API_ROUTES.USER.BOOKINGS.GET_BY_ID(
@@ -166,17 +169,33 @@ const userBookingSlice = createSlice({
   initialState,
 
   reducers: {
+    // ==============================
+    // CLEAR BOOKING ERROR
+    // ==============================
+
     clearBookingError: (state) => {
       state.error = null;
     },
+
+    // ==============================
+    // CLEAR RESERVATION
+    // ==============================
 
     clearReservation: (state) => {
       state.reservation = null;
     },
 
+    // ==============================
+    // CLEAR CURRENT BOOKING
+    // ==============================
+
     clearCurrentBooking: (state) => {
       state.currentBooking = null;
     },
+
+    // ==============================
+    // RESET BOOKING STATE
+    // ==============================
 
     resetBookingState: (state) => {
       state.loading = false;
@@ -187,6 +206,12 @@ const userBookingSlice = createSlice({
 
       state.reservation = null;
 
+      state.totalPages = 1;
+
+      state.totalCount = 0;
+
+      state.currentPage = 1;
+
       state.error = null;
 
       state.success = false;
@@ -194,7 +219,6 @@ const userBookingSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-
     // ==================================
     // RESERVE BOOKING
     // ==================================
@@ -292,6 +316,8 @@ const userBookingSlice = createSlice({
           state.loading = true;
 
           state.error = null;
+
+          state.success = false;
         }
       )
 
@@ -303,11 +329,28 @@ const userBookingSlice = createSlice({
           const payload =
             action.payload;
 
+          /*
+           * Expected backend response:
+           *
+           * {
+           *   bookings: [],
+           *   totalPages: 1,
+           *   totalCount: 10,
+           *   currentPage: 1
+           * }
+           */
+
           state.bookings =
-            payload?.bookings ||
-            payload?.data ||
-            payload ||
-            [];
+            payload?.bookings || [];
+
+          state.totalPages =
+            payload?.totalPages || 1;
+
+          state.totalCount =
+            payload?.totalCount || 0;
+
+          state.currentPage =
+            payload?.currentPage || 1;
         }
       )
 
@@ -318,6 +361,8 @@ const userBookingSlice = createSlice({
 
           state.error =
             action.payload;
+
+          state.success = false;
         }
       );
 
@@ -332,6 +377,8 @@ const userBookingSlice = createSlice({
           state.loading = true;
 
           state.error = null;
+
+          state.success = false;
         }
       )
 
