@@ -26,8 +26,8 @@ export class UserProfileController {
   }
 
   getProfile = asyncHandler(async (req, res) => {
-    // const userId = req.user.userId;
-    const userId = "6a5c82d2a4cb28be7d10521f";
+    const userId = req.user.id;
+    // const userId = "6a5c82d2a4cb28be7d10521f";
 
     const user = await this._userGetProfileUsecase.execute(userId);
 

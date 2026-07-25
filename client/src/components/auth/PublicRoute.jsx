@@ -1,17 +1,18 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+// import { useAuth } from "@/hooks/useAuth";
 import { ROLES } from "@/constants/Roles";
+import { useSelector } from "react-redux";
 
 const PublicRoute = ({ children }) => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading } = useSelector((state) => state.auth)
 
   console.log("PublicRoute:", { loading, isAuthenticated, user });
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-         <p className="text-lg font-semibold">Loading...</p>
-      </div>
+        <div className='flex h-screen items-center justify-content'>
+          <div className='h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-amber-600'></div>
+        </div>
     );
   }
 
@@ -25,7 +26,7 @@ const PublicRoute = ({ children }) => {
       return <Navigate to="/vendor/dashboard" replace />;
     }
 
-    if (user.role === ROLES.USER) {
+    if (user.role === "customer") {
       return <Navigate to="/" replace />;
       
     }

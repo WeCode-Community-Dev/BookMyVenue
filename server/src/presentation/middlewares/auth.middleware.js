@@ -7,6 +7,8 @@ export const authHandler = (tokenService) => {
         
         const token = req.headers?.authorization?.split(" ")[1];
 
+        console.log("header:",req.headers.authorization)
+
         if (!token) {
             throw new UnauthorizedError(authMessages.error.UNAUTHORIZED);
         }

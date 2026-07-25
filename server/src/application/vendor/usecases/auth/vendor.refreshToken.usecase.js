@@ -21,7 +21,7 @@ export class VendorRefreshTokenUseCase {
             throw new UnauthorizedError(authMessages.error.REFRESH_TOKEN_REVOKED);
         }
 
-        const payload = { vendorId: vendor.id, role: role };
+        const payload = { id: vendor.id, role: role };
         const newAccessToken = this._tokenService.generateAccessToken(payload);
         const newRefreshToken = this._tokenService.generateRefreshToken(payload);
         const hashedRefreshToken = await this._hashService.hashToken(newRefreshToken)

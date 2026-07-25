@@ -47,7 +47,7 @@ async findById(id) {
     }
 
     async findAllFiltered(query = {}) {
-        console.log('query: ', query)
+        // console.log('query: ', query)
 
         const filter = {
             isDeleted: false

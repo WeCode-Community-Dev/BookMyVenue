@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "@/lib/axios";
 import { API_ROUTES } from "@/constants/apiRoutes";
-import { ROLES } from "@/constants/Roles";
+
 
 const initialState = {
   loading: false,
@@ -10,15 +10,12 @@ const initialState = {
   role: null,
   accessToken: null,
   isAuthenticated: false,
-  otpVerified: false,
 };
 
-// --- Async Thunks ---
 
-// Register User
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
-  async ({ role = ROLES.USER, userData }, { rejectWithValue }) => {
+  async ({ role, userData }, { rejectWithValue }) => {
     try {
       const response = await api.post(
         API_ROUTES.AUTH.REGISTER(role),
@@ -37,10 +34,9 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Verify OTP
 export const verifyOtp = createAsyncThunk(
   "auth/verifyOtp",
-  async ({ role = ROLES.USER, email, otpCode }, { rejectWithValue }) => {
+  async ({ role, email, otpCode }, { rejectWithValue }) => {
     try {
       const response = await api.post(
         API_ROUTES.AUTH.VERIFY_OTP(role),
@@ -56,7 +52,7 @@ export const verifyOtp = createAsyncThunk(
   }
 );
 
-// Resend OTP
+
 export const resendOtp = createAsyncThunk(
   "auth/resendOtp",
   async ({ role, email }, { rejectWithValue }) => {
@@ -75,13 +71,10 @@ export const resendOtp = createAsyncThunk(
   }
 );
 
-// Login User / Vendor
 export const login = createAsyncThunk(
   "auth/login",
-  async ({ role = ROLES.USER, data }, { dispatch, rejectWithValue }) => {
+  async ({ role, data }, { rejectWithValue }) => {
     try {
-      dispatch(clearAuthError());
-
       const response = await api.post(
         API_ROUTES.AUTH.LOGIN(role),
         data
@@ -97,7 +90,6 @@ export const login = createAsyncThunk(
   }
 );
 
-// Logout User / Vendor
 export const logout = createAsyncThunk(
   "auth/logout",
   async ({ role }, { rejectWithValue }) => {
@@ -112,11 +104,11 @@ export const logout = createAsyncThunk(
   }
 );
 
-// Reset Password
+
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (
-    { role = ROLES.USER, token, password, confirmPassword },
+    { role, token, password, confirmPassword },
     { rejectWithValue }
   ) => {
     try {
@@ -134,7 +126,7 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
-// Check Auth Status (Get Me)
+
 export const checkAuth = createAsyncThunk(
   "auth/checkAuth",
   async (_, { rejectWithValue }) => {
@@ -149,24 +141,20 @@ export const checkAuth = createAsyncThunk(
   }
 );
 
-// --- Auth Slice ---
+
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
 
   reducers: {
-    clearAuthError: (state) => {
-      state.error = null;
-    },
-    resetOtpStatus: (state) => {
-      state.otpVerified = false;
+    setAccessToken: (state, action) => {
+      state.accessToken = action.payload
     },
   },
 
   extraReducers: (builder) => {
     builder
-      // Register
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -174,28 +162,22 @@ const authSlice = createSlice({
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
         state.role = action.payload.role;
-        state.otpVerified = false;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Verify OTP
       .addCase(verifyOtp.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(verifyOtp.fulfilled, (state) => {
         state.loading = false;
-        state.otpVerified = true;
       })
       .addCase(verifyOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Resend OTP
       .addCase(resendOtp.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -207,21 +189,15 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Login
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(login.fulfilled, (state, action) => {
-        const responseData = action.payload?.data || action.payload || {};
-        const accessToken = responseData.accessToken || responseData.token;
-        const user = responseData.user || responseData.vendor;
-
         state.loading = false;
-        state.accessToken = accessToken;
-        state.user = user;
-        state.role = user?.role || responseData.role || action.meta.arg.role;
+        state.accessToken = action.payload.accessToken
+        state.user = action.payload.user
+        state.role = action.payload.role
         state.isAuthenticated = true;
       })
       .addCase(login.rejected, (state, action) => {
@@ -229,21 +205,20 @@ const authSlice = createSlice({
         state.error = action.payload;
         state.isAuthenticated = false;
       })
-
-      // Logout
       .addCase(logout.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(logout.fulfilled, () => {
-        return initialState; // Reset store completely back to original clean state
+      .addCase(logout.fulfilled, (state) => {
+        state.loading = false
+        state.user = null
+        state.accessToken = null
+        state.isAuthenticated = false
       })
       .addCase(logout.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Reset Password
       .addCase(resetPassword.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -255,19 +230,14 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Check Auth
       .addCase(checkAuth.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
-        const responseData = action.payload?.data || action.payload || {};
-
         state.loading = false;
-        state.accessToken = responseData.accessToken || responseData.token;
-        state.user = responseData.user || responseData.vendor || responseData;
-        state.role = responseData.role || responseData.user?.role;
+        state.accessToken = action.payload.accessToken
+        state.user = action.payload.user
         state.isAuthenticated = true;
       })
       .addCase(checkAuth.rejected, (state, action) => {
@@ -278,6 +248,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearAuthError, resetOtpStatus } = authSlice.actions;
+export const { setAccessToken } = authSlice.actions;
 
 export default authSlice.reducer;
