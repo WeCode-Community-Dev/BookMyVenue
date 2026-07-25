@@ -10,12 +10,14 @@ export class UserBookingController {
         userReserveBookingUsecase,
         userConfirmBookingUsecase,
         userGetBookingsUsecase,
-        userGetBookingByIdUsecase
+        userGetBookingByIdUsecase,
+         userCancelBookingUsecase
     ) {
         this._userReserveBookingUsecase = userReserveBookingUsecase;
         this._userConfirmBookingUsecase = userConfirmBookingUsecase;
          this._userGetBookingsUsecase = userGetBookingsUsecase;
         this._userGetBookingByIdUsecase = userGetBookingByIdUsecase;
+         this._userCancelBookingUsecase = userCancelBookingUsecase;
     }
 
     reserveBooking = asyncHandler(async (req, res) => {
@@ -103,6 +105,30 @@ export class UserBookingController {
             res,
             statusCode.OK,
             "Booking fetched successfully.",
+            result
+        );
+
+    });
+   
+    cancelBooking = asyncHandler(async (req, res) => {
+
+        const userId = req.user.userId;
+
+        const { bookingId } = req.params;
+
+        const { cancellationReason } = req.body;
+
+        const result =
+            await this._userCancelBookingUsecase.execute(
+                userId,
+                bookingId,
+                cancellationReason
+            );
+
+        return sendSuccess(
+            res,
+            statusCode.OK,
+            "Booking cancelled successfully.",
             result
         );
 

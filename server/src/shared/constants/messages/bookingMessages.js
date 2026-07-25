@@ -93,7 +93,12 @@ export const BookingMessages = {
         BOOKING_REJECT_FAILED:
             "Failed to reject booking",
         RESERVATION_NOT_FOUND:
-         "Reservation not found or expired."
+         "Reservation not found or expired.",
+         BOOKING_CANNOT_BE_CANCELLED:
+            "Booking cannot be cancelled within 3 days of the booking date",
+
+        USER_NOT_FOUND:
+            "User not found"
 
     }
 

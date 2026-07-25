@@ -92,13 +92,12 @@ router.get
 (ROUTES.OWNER.PROFILE.GET, 
 authHandler(iTokenService),
  iVendorProfileController.getProfile);
-
+s
 router.patch(
   ROUTES.OWNER.PROFILE.UPDATE,
   authHandler(iTokenService),
   cloudinaryUpload("profile-images").single("profileImage"),
-
-  validate(UpdateVendorProfileSchema, "body"),
+ validate(UpdateVendorProfileSchema, "body"),
   iVendorProfileController.updateProfile
 );
 
