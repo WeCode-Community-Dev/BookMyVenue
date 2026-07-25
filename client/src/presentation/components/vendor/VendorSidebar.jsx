@@ -1,8 +1,6 @@
-
 import { NavLink, useNavigate } from "react-router-dom";
-import SidebarProfileCard from "./SidebarProfileCard";
-import { ROUTES } from "@/constants/routes";
-import logo from "@/assets/images/logo.jpeg";
+import { useDispatch } from "react-redux";
+import toast from "react-hot-toast";
 
 import {
   LayoutDashboard,
@@ -11,13 +9,21 @@ import {
   CalendarDays,
   User,
   Settings,
+  LogOut,
 } from "lucide-react";
-import toast from "react-hot-toast";
-import { useDispatch } from "react-redux";
-import { logout } from "@/redux/slices/AuthSlice";
+
+import SidebarProfileCard from "./SidebarProfileCard";
+
+import { ROUTES } from "@/constants/routes";
 import { ROLES } from "@/constants/Roles";
+import { logout } from "@/redux/slices/AuthSlice";
+
+import logo from "@/assets/images/logo.jpeg";
 
 const VendorSidebar = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const menuItems = [
     {
       name: "Dashboard",
@@ -51,24 +57,28 @@ const VendorSidebar = () => {
     },
   ];
 
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-
   const handleLogout = async () => {
     try {
-      await dispatch(logout({role: ROLES.VENDOR})).unwrap()
-      toast.success("Vendor logged out successfully")
-      navigate(ROUTES.PUBLIC.LOGIN)
+      await dispatch(
+        logout({
+          role: ROLES.VENDOR,
+        })
+      ).unwrap();
+
+      toast.success("Vendor logged out successfully");
+
+      navigate(ROUTES.PUBLIC.LOGIN);
     } catch (error) {
-      toast.error(error)
+      toast.error(
+        error?.message || "Logout failed. Please try again."
+      );
     }
-  }
+  };
+
   return (
     <aside className="w-70 min-h-screen bg-slate-900 text-white flex flex-col">
-
       {/* Logo Section */}
       <div className="p-6 border-b border-slate-700">
-
         <div className="flex items-center gap-3">
           <img
             src={logo}
@@ -86,7 +96,6 @@ const VendorSidebar = () => {
             </p>
           </div>
         </div>
-
       </div>
 
       {/* Profile Card */}
@@ -101,7 +110,6 @@ const VendorSidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 px-4 space-y-2">
-
         {menuItems.map((item) => {
           const Icon = item.icon;
 
@@ -117,27 +125,24 @@ const VendorSidebar = () => {
             >
               <Icon size={20} />
 
-              {item.name}
+              <span>{item.name}</span>
             </NavLink>
           );
         })}
-
       </nav>
 
       {/* Logout */}
       <div className="p-4 border-t border-slate-700">
-
         <button
           type="button"
+          onClick={handleLogout}
           className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-300 hover:bg-amber-600 hover:text-white transition-all"
         >
           <LogOut size={20} />
 
-          Logout
+          <span>Logout</span>
         </button>
-
       </div>
-
     </aside>
   );
 };

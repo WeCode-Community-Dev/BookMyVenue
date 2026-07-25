@@ -1,50 +1,105 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+const BookingPagination = ({
+  currentPage,
+  setCurrentPage,
+  totalPages,
+  totalCount,
+}) => {
 
-const BookingPagination = () => {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+
+  const handlePrevious = () => {
+
+    if (currentPage > 1) {
+
+      setCurrentPage(
+        currentPage - 1
+      );
+
+    }
+
+  };
+
+
+  const handleNext = () => {
+
+    if (currentPage < totalPages) {
+
+      setCurrentPage(
+        currentPage + 1
+      );
+
+    }
+
+  };
+
+
   return (
+
     <div className="mt-6 flex items-center justify-between">
+
       <p className="text-sm text-gray-500">
-        Showing 8 of 8 bookings
+
+        Showing page {currentPage} of {totalPages}
+
+        {" "}({totalCount} bookings)
+
       </p>
 
+
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-lg border hover:bg-gray-50"
-        >
-          <ChevronLeft size={16} />
-        </button>
 
         <button
+
           type="button"
-          className="h-10 w-10 rounded-lg bg-blue-600 font-medium text-white"
+
+          onClick={handlePrevious}
+
+          disabled={currentPage === 1}
+
+          className="rounded-lg border bg-white px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+
         >
-          1
+
+          Previous
+
         </button>
 
-        <button
-          type="button"
-          className="h-10 w-10 rounded-lg border hover:bg-gray-50"
-        >
-          2
-        </button>
+
+        <span className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white">
+
+          {currentPage}
+
+        </span>
+
 
         <button
+
           type="button"
-          className="h-10 w-10 rounded-lg border hover:bg-gray-50"
+
+          onClick={handleNext}
+
+          disabled={
+            currentPage === totalPages
+          }
+
+          className="rounded-lg border bg-white px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+
         >
-          3
+
+          Next
+
         </button>
 
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-lg border hover:bg-gray-50"
-        >
-          <ChevronRight size={16} />
-        </button>
       </div>
+
     </div>
+
   );
+
 };
+
 
 export default BookingPagination;
