@@ -36,7 +36,7 @@ export const ROUTES = {
     ADMIN: {
         ROOT: "/admin", 
         LOGIN: "/admin/login",
-        DASHBOARD: "admin/dashboard",
+        DASHBOARD: "dashboard",
         USERS: "users",
         VENDORS: "vendors",
         VENUES: "venues",
