@@ -1,0 +1,750 @@
+"use client";
+
+import React, { useRef, useState } from "react";
+import Image from "next/image";
+import { Check, ShieldCheck, DollarSign, CalendarRange, ArrowRight, ArrowLeft, UploadCloud } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import * as venueService from "@/services/venue.service";
+import { toAbsoluteAssetUrl } from "@/lib/backend-mappers";
+
+const CATEGORIES = ["Wedding", "Conference", "Sports", "Cafe", "Resort", "Auditorium", "Birthday", "Party"];
+const CITIES = ["Kochi", "Bangalore", "Mumbai", "Delhi"];
+const AMENITIES_LIST = ["WiFi", "Air Conditioning", "Catering", "Parking", "Sound System", "Projector", "Stage", "Restrooms"];
+
+const COVER_PRESETS = [
+  "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80",
+  "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80",
+];
+
+interface BecomeOwnerTabProps {
+  onSuccessRedirect: (tabName: string) => void;
+}
+
+export default function BecomeOwnerTab({ onSuccessRedirect }: BecomeOwnerTabProps) {
+  const { updateUser, addVenue } = useAuth();
+  const [step, setStep] = useState(1);
+
+  // Business profile states
+  const [businessName, setBusinessName] = useState("");
+  const [businessBio, setBusinessBio] = useState("");
+  const [businessPhone, setBusinessPhone] = useState("");
+  const [businessCity, setBusinessCity] = useState("Kochi");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  // File states
+  const [governmentIdUploaded, setGovernmentIdUploaded] = useState(false);
+  const [propertyTitleUploaded, setPropertyTitleUploaded] = useState(false);
+  const [customCoverPreviewUrl, setCustomCoverPreviewUrl] = useState("");
+  const [governmentIdFileName, setGovernmentIdFileName] = useState("");
+  const [governmentIdDocumentUrl, setGovernmentIdDocumentUrl] = useState("");
+  const [propertyTitleFileName, setPropertyTitleFileName] = useState("");
+  const [propertyTitleDocumentUrl, setPropertyTitleDocumentUrl] = useState("");
+  const [customCoverFileName, setCustomCoverFileName] = useState("");
+  const [customCoverStorageUrl, setCustomCoverStorageUrl] = useState("");
+  const [isUploadingGovId, setIsUploadingGovId] = useState(false);
+  const [isUploadingPropTitle, setIsUploadingPropTitle] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isSubmittingApplication, setIsSubmittingApplication] = useState(false);
+
+  // Venue states
+  const [venueAddress, setVenueAddress] = useState("");
+  const [venueCapacity, setVenueCapacity] = useState("");
+  const [venuePrice, setVenuePrice] = useState("");
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [venueCoverUrl, setVenueCoverUrl] = useState(COVER_PRESETS[0]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["Wedding"]);
+
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const govIdInputRef = useRef<HTMLInputElement>(null);
+  const propTitleInputRef = useRef<HTMLInputElement>(null);
+
+  const toggleCategory = (categoryName: string) => {
+    setSelectedCategories((prev) => {
+      const next = prev.includes(categoryName)
+        ? prev.filter((c) => c !== categoryName)
+        : [...prev, categoryName];
+      return next.length > 0 ? next : ["Wedding"];
+    });
+  };
+
+  const handleNextStep = () => {
+    if (step < 5) setStep(step + 1);
+  };
+
+  const handlePrevStep = () => {
+    if (step > 1) setStep(step - 1);
+  };
+
+  const toggleAmenity = (amenity: string) => {
+    setSelectedAmenities((prev) =>
+      prev.includes(amenity) ? prev.filter((a) => a !== amenity) : [...prev, amenity]
+    );
+  };
+
+  const handleSelectPreset = (url: string) => {
+    setVenueCoverUrl(url);
+    setCustomCoverPreviewUrl("");
+    setCustomCoverFileName("");
+  };
+
+  const handleGovIdClick = () => govIdInputRef.current?.click();
+  const handlePropTitleClick = () => propTitleInputRef.current?.click();
+  const handleCustomCoverClick = () => imageInputRef.current?.click();
+
+  const handleGovIdFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingGovId(true);
+    try {
+      const formData = new FormData();
+      formData.append("documents", file);
+      const result = await venueService.uploadVenueDocuments(formData);
+      const uploadedDocumentUrl = result.documents?.[0]?.documentUrl;
+      if (!uploadedDocumentUrl) {
+        throw new Error("Document upload did not return a document URL.");
+      }
+      setGovernmentIdUploaded(true);
+      setGovernmentIdFileName(file.name);
+      setGovernmentIdDocumentUrl(uploadedDocumentUrl);
+    } catch (error: any) {
+      console.error("Failed to upload government ID:", error);
+      alert(error.response?.data?.message || "Failed to upload document. Please try again.");
+      setGovernmentIdUploaded(false);
+      setGovernmentIdFileName("");
+      setGovernmentIdDocumentUrl("");
+    } finally {
+      setIsUploadingGovId(false);
+      e.target.value = "";
+    }
+  };
+
+  const handlePropTitleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingPropTitle(true);
+    try {
+      const formData = new FormData();
+      formData.append("documents", file);
+      const result = await venueService.uploadVenueDocuments(formData);
+      const uploadedDocumentUrl = result.documents?.[0]?.documentUrl;
+      if (!uploadedDocumentUrl) {
+        throw new Error("Document upload did not return a document URL.");
+      }
+      setPropertyTitleUploaded(true);
+      setPropertyTitleFileName(file.name);
+      setPropertyTitleDocumentUrl(uploadedDocumentUrl);
+    } catch (error: any) {
+      console.error("Failed to upload property document:", error);
+      alert(error.response?.data?.message || "Failed to upload document. Please try again.");
+      setPropertyTitleUploaded(false);
+      setPropertyTitleFileName("");
+      setPropertyTitleDocumentUrl("");
+    } finally {
+      setIsUploadingPropTitle(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleCustomCoverFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Only image files are allowed.");
+      return;
+    }
+
+    setIsUploadingCover(true);
+    try {
+      const formData = new FormData();
+      formData.append("images", file);
+      const result = await venueService.uploadVenueImage(formData);
+      const uploadedImageUrl = result.images?.[0]?.imageUrl;
+      if (!uploadedImageUrl) {
+        throw new Error("Image upload did not return an image URL.");
+      }
+      setCustomCoverStorageUrl(uploadedImageUrl);
+      setCustomCoverPreviewUrl(toAbsoluteAssetUrl(uploadedImageUrl));
+      setCustomCoverFileName(file.name);
+    } catch (error: any) {
+      console.error("Failed to upload cover image:", error);
+      alert(error.response?.data?.message || "Failed to upload image. Please try again.");
+      setCustomCoverPreviewUrl("");
+      setCustomCoverFileName("");
+      setCustomCoverStorageUrl("");
+    } finally {
+      setIsUploadingCover(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleSubmitApplication = async () => {
+    if (!agreedToTerms || isSubmittingApplication) {
+      return;
+    }
+
+    setIsSubmittingApplication(true);
+    try {
+      await updateUser({
+        role: "Venue Owner",
+        phone: businessPhone || undefined,
+        city: businessCity || undefined,
+      });
+
+      const finalCoverPreview = customCoverPreviewUrl || venueCoverUrl;
+      const imageUrls = [customCoverStorageUrl].filter(Boolean);
+      const documents = [
+        governmentIdDocumentUrl ? { type: "GOVERNMENT_ID" as const, documentUrl: governmentIdDocumentUrl } : null,
+        propertyTitleDocumentUrl ? { type: "PROPERTY_DOCUMENT" as const, documentUrl: propertyTitleDocumentUrl } : null,
+      ].filter((document): document is { type: "GOVERNMENT_ID" | "PROPERTY_DOCUMENT"; documentUrl: string } => Boolean(document));
+
+      await addVenue({
+        name: businessName.trim(),
+        category: selectedCategories[0] || "Wedding",
+        categories: selectedCategories,
+        city: businessCity,
+        address: venueAddress.trim(),
+        capacity: parseInt(venueCapacity, 10),
+        startingPrice: parseInt(venuePrice, 10),
+        description: businessBio.trim(),
+        amenities: selectedAmenities,
+        thumbnail: finalCoverPreview,
+        images: imageUrls.length > 0 ? imageUrls : [venueCoverUrl],
+        documents,
+      });
+
+      alert("Venue owner application submitted successfully.");
+      onSuccessRedirect("my-venues");
+    } catch (error: any) {
+      console.error("Failed to submit venue owner application:", error);
+      alert(error.response?.data?.message || error?.message || "Failed to submit venue owner application.");
+    } finally {
+      setIsSubmittingApplication(false);
+    }
+  };
+
+  const isStep2Valid = businessName.trim() && businessPhone.trim() && businessBio.trim();
+  const isStep3Valid = governmentIdUploaded && propertyTitleUploaded;
+  const isStep4Valid = venueAddress.trim() && venueCapacity.trim() && venuePrice.trim() && selectedCategories.length > 0;
+
+  return (
+    <div className="bg-white border border-slate-200/60 shadow-xs rounded-3xl p-6 sm:p-8 space-y-8 select-none text-left">
+      
+      {/* Wizard Header Progress */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-905 tracking-tight">
+            Register as a Venue Owner
+          </h2>
+          <p className="text-xs sm:text-sm font-semibold text-slate-450 mt-1">
+            Host your spaces on BookMyVenue and start receiving premium bookings.
+          </p>
+        </div>
+
+        {/* Node Indicators */}
+        <div className="flex items-center justify-between max-w-md mx-auto pt-2 pb-4">
+          {[1, 2, 3, 4, 5].map((nodeNum) => {
+            const isCompleted = step > nodeNum;
+            const isActive = step === nodeNum;
+            return (
+              <React.Fragment key={nodeNum}>
+                <div
+                  className={`size-8 rounded-full flex items-center justify-center text-xs font-extrabold transition-all border ${
+                    isCompleted
+                      ? "bg-emerald-600 border-emerald-600 text-white"
+                      : isActive
+                      ? "bg-rose-50 border-rose-600 text-rose-700 ring-4 ring-rose-500/10"
+                      : "bg-slate-50 border-slate-200 text-slate-400"
+                  }`}
+                >
+                  {isCompleted ? <Check className="size-4 stroke-[3]" /> : nodeNum}
+                </div>
+                {nodeNum < 5 && (
+                  <div
+                    className={`flex-grow h-0.5 mx-2 transition-all ${
+                      step > nodeNum ? "bg-emerald-500" : "bg-slate-100"
+                    }`}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="border-t border-slate-100/80 pt-6">
+        {/* Step 1: Benefits Overview */}
+        {step === 1 && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <h3 className="text-lg font-black text-slate-905">Step 1: Why host on BookMyVenue?</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              
+              <div className="border border-slate-200/50 rounded-2xl p-5 space-y-3 bg-slate-50/20">
+                <div className="size-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100/50">
+                  <DollarSign className="size-5" />
+                </div>
+                <h4 className="text-sm font-extrabold text-slate-800">Earn Extra Income</h4>
+                <p className="text-[11px] font-semibold text-slate-450 leading-relaxed">
+                  Set your own prices and make money renting out banquet halls, cafes, villas, or turfs.
+                </p>
+              </div>
+
+              <div className="border border-slate-200/50 rounded-2xl p-5 space-y-3 bg-slate-50/20">
+                <div className="size-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100/50">
+                  <CalendarRange className="size-5" />
+                </div>
+                <h4 className="text-sm font-extrabold text-slate-800">Complete Control</h4>
+                <p className="text-[11px] font-semibold text-slate-450 leading-relaxed">
+                  Accept/decline requests, set reservation dates, timeslots, and venue policies easily.
+                </p>
+              </div>
+
+              <div className="border border-slate-200/50 rounded-2xl p-5 space-y-3 bg-slate-50/20">
+                <div className="size-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100/50">
+                  <ShieldCheck className="size-5" />
+                </div>
+                <h4 className="text-sm font-extrabold text-slate-800">Verified Bookings</h4>
+                <p className="text-[11px] font-semibold text-slate-450 leading-relaxed">
+                  All guests undergo identity checks. We offer secure online payouts and support.
+                </p>
+              </div>
+
+            </div>
+
+            <div className="pt-4 flex justify-end">
+              <Button
+                onClick={handleNextStep}
+                className="bg-rose-600 hover:bg-rose-700 text-white font-extrabold h-11 px-6 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs active:translate-y-px border-none"
+              >
+                <span>Get Started</span>
+                <ArrowRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Business Info */}
+        {step === 2 && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <h3 className="text-lg font-black text-slate-905">Step 2: Tell us about your hosting business</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                <label htmlFor="businessName" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  Business / Host Name
+                </label>
+                <Input
+                  id="businessName"
+                  placeholder="e.g. Grand Palace Hospitality"
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  className="h-10"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="businessPhone" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  Primary Contact Phone
+                </label>
+                <Input
+                  id="businessPhone"
+                  type="tel"
+                  placeholder="e.g. +91 98765 43210"
+                  value={businessPhone}
+                  onChange={(e) => setBusinessPhone(e.target.value)}
+                  className="h-10"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="businessCity" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  Operating City
+                </label>
+                <select
+                  id="businessCity"
+                  value={businessCity}
+                  onChange={(e) => setBusinessCity(e.target.value)}
+                  className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-800 placeholder-slate-400 outline-none transition-all focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 cursor-pointer"
+                >
+                  <option value="Kochi">Kochi</option>
+                  <option value="Bangalore">Bangalore</option>
+                  <option value="Mumbai">Mumbai</option>
+                  <option value="Delhi">Delhi</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5 md:col-span-2">
+                <label htmlFor="businessBio" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  Short Business Description
+                </label>
+                <textarea
+                  id="businessBio"
+                  rows={3}
+                  placeholder="Write a brief overview of your venues and hospitality guidelines..."
+                  value={businessBio}
+                  onChange={(e) => setBusinessBio(e.target.value)}
+                  className="flex w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 outline-none transition-all focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 min-h-[80px]"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 flex justify-between">
+              <Button
+                onClick={handlePrevStep}
+                variant="outline"
+                className="border-slate-200 hover:bg-slate-100 text-slate-500 font-bold h-11 px-5 rounded-xl flex items-center gap-1.5 cursor-pointer"
+              >
+                <ArrowLeft className="size-4" />
+                <span>Back</span>
+              </Button>
+              <Button
+                onClick={handleNextStep}
+                disabled={!isStep2Valid}
+                className="bg-rose-600 hover:bg-rose-700 text-white font-extrabold h-11 px-6 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs active:translate-y-px border-none"
+              >
+                <span>Continue</span>
+                <ArrowRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Property Documents Verification */}
+        {step === 3 && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <h3 className="text-lg font-black text-slate-905">Step 3: Document Verification</h3>
+            <p className="text-xs text-slate-450 font-semibold leading-relaxed">
+              Upload the required verification documents for your venue owner application.
+            </p>
+
+            <input ref={govIdInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden" onChange={handleGovIdFileChange} />
+            <input ref={propTitleInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg" className="hidden" onChange={handlePropTitleFileChange} />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <button
+                type="button"
+                onClick={handleGovIdClick}
+                disabled={isUploadingGovId}
+                className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 transition active:scale-99 w-full bg-transparent flex flex-col items-center justify-center ${
+                  governmentIdUploaded
+                    ? "border-emerald-500 bg-emerald-50/10"
+                    : "border-slate-200 hover:border-slate-350"
+                } ${isUploadingGovId ? "cursor-wait opacity-80" : "cursor-pointer"}`}
+              >
+                <UploadCloud className={`size-8 ${governmentIdUploaded ? "text-emerald-600" : "text-slate-400"}`} />
+                <div>
+                  <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider block">1. Government Photo ID</h4>
+                  <p className="text-[10px] text-slate-400 font-medium">Aadhar Card, Passport, or License</p>
+                </div>
+                {governmentIdUploaded ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100/50 px-2 py-0.5 rounded-full select-none">
+                    <Check className="size-3 stroke-[3]" />
+                    <span>Uploaded: {governmentIdFileName || "Government ID"}</span>
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold text-rose-600 hover:text-rose-700">{isUploadingGovId ? "Uploading..." : "Click to select document file"}</span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePropTitleClick}
+                disabled={isUploadingPropTitle}
+                className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 transition active:scale-99 w-full bg-transparent flex flex-col items-center justify-center ${
+                  propertyTitleUploaded
+                    ? "border-emerald-500 bg-emerald-50/10"
+                    : "border-slate-200 hover:border-slate-350"
+                } ${isUploadingPropTitle ? "cursor-wait opacity-80" : "cursor-pointer"}`}
+              >
+                <UploadCloud className={`size-8 ${propertyTitleUploaded ? "text-emerald-600" : "text-slate-400"}`} />
+                <div>
+                  <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider block">2. Property Title/Reg Doc</h4>
+                  <p className="text-[10px] text-slate-400 font-medium">Utility bill, license, or deed registration</p>
+                </div>
+                {propertyTitleUploaded ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100/50 px-2 py-0.5 rounded-full select-none">
+                    <Check className="size-3 stroke-[3]" />
+                    <span>Uploaded: {propertyTitleFileName || "Property Document"}</span>
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold text-rose-600 hover:text-rose-700">{isUploadingPropTitle ? "Uploading..." : "Click to select document file"}</span>
+                )}
+              </button>
+            </div>
+
+            <div className="pt-4 flex justify-between">
+              <Button
+                onClick={handlePrevStep}
+                variant="outline"
+                className="border-slate-200 hover:bg-slate-100 text-slate-500 font-bold h-11 px-5 rounded-xl flex items-center gap-1.5 cursor-pointer"
+              >
+                <ArrowLeft className="size-4" />
+                <span>Back</span>
+              </Button>
+              <Button
+                onClick={handleNextStep}
+                disabled={!isStep3Valid}
+                className="bg-rose-600 hover:bg-rose-700 text-white font-extrabold h-11 px-6 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs active:translate-y-px border-none"
+              >
+                <span>Continue</span>
+                <ArrowRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Add First Venue details */}
+        {step === 4 && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <div>
+              <h3 className="text-lg font-black text-slate-905">Step 4: Add your first venue</h3>
+              <p className="text-xs text-slate-400 font-semibold mt-1">Provide details to publish your first venue listing immediately.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1.5 md:col-span-2">
+                <label htmlFor="venueAddress" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  Full Physical Address
+                </label>
+                <Input
+                  id="venueAddress"
+                  placeholder="e.g. 12/2 Riverside Lane, MG Road"
+                  value={venueAddress}
+                  onChange={(e) => setVenueAddress(e.target.value)}
+                  className="h-10"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="venueCapacity" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  Maximum Guests Capacity
+                </label>
+                <Input
+                  id="venueCapacity"
+                  type="number"
+                  placeholder="e.g. 350"
+                  value={venueCapacity}
+                  onChange={(e) => setVenueCapacity(e.target.value)}
+                  className="h-10"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="venuePrice" className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  Starting Price (Ã¢â€šÂ¹ / event)
+                </label>
+                <Input
+                  id="venuePrice"
+                  type="number"
+                  placeholder="e.g. 25000"
+                  value={venuePrice}
+                  onChange={(e) => setVenuePrice(e.target.value)}
+                  className="h-10"
+                />
+              </div>
+
+              {/* Categories Checklist */}
+              <div className="space-y-2 md:col-span-2 select-none border-t border-slate-100 pt-4">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                  Categories (Select multiple if applicable)
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {CATEGORIES.map((cat) => {
+                    const isChecked = selectedCategories.includes(cat);
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => toggleCategory(cat)}
+                        className={`flex items-center gap-2 px-3 py-2 border rounded-xl cursor-pointer text-xs font-extrabold transition text-left bg-white ${
+                          isChecked
+                            ? "bg-rose-50 border-rose-200 text-rose-700"
+                            : "bg-white border-slate-200 text-slate-650 hover:border-slate-350"
+                        }`}
+                      >
+                        <div className={`size-4 rounded-sm border flex items-center justify-center transition ${
+                          isChecked ? "bg-rose-600 border-rose-600 text-white" : "border-slate-300"
+                        }`}>
+                          {isChecked && <Check className="size-3 stroke-[3]" />}
+                        </div>
+                        <span>{cat}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Amenities Checklist */}
+              <div className="space-y-2 md:col-span-2 select-none border-t border-slate-100 pt-4">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Amenities Offered</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {AMENITIES_LIST.map((amenity) => {
+                    const isChecked = selectedAmenities.includes(amenity);
+                    return (
+                      <button
+                        key={amenity}
+                        type="button"
+                        onClick={() => toggleAmenity(amenity)}
+                        className={`flex items-center gap-2 px-3 py-2 border rounded-xl cursor-pointer text-xs font-extrabold transition text-left bg-white ${
+                          isChecked
+                            ? "bg-rose-50 border-rose-200 text-rose-700"
+                            : "bg-white border-slate-200 text-slate-650 hover:border-slate-350"
+                        }`}
+                      >
+                        <div className={`size-4 rounded-md border flex items-center justify-center shrink-0 ${
+                          isChecked ? "bg-rose-600 border-rose-600 text-white" : "border-slate-300"
+                        }`}>
+                          {isChecked && <Check className="size-2.5 stroke-[3.5]" />}
+                        </div>
+                        <span>{amenity}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Cover photo presets */}
+              <div className="space-y-3.5 md:col-span-2 select-none border-t border-slate-100 pt-4">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Cover Photo</label>
+                <div className="grid grid-cols-5 gap-3 mb-4">
+                  {COVER_PRESETS.map((url, idx) => {
+                    const isSelected = venueCoverUrl === url && !customCoverPreviewUrl;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          setVenueCoverUrl(url);
+                          setCustomCoverPreviewUrl("");
+                        }}
+                        className={`relative aspect-video w-full rounded-lg overflow-hidden cursor-pointer active:scale-95 transition border-2 ${
+                          isSelected ? "border-rose-600 ring-2 ring-rose-500/10" : "border-transparent hover:border-slate-300"
+                        }`}
+                      >
+                        <Image src={url} alt={`Cover Preset ${idx + 1}`} fill className="object-cover" />
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-rose-600/20 flex items-center justify-center">
+                            <Check className="size-4 text-white stroke-[3.5]" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold text-slate-400 block uppercase">Or upload a custom cover photo</span>
+                  <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleCustomCoverFileChange} />
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={handleCustomCoverClick}
+                      disabled={isUploadingCover}
+                      className="flex items-center gap-2 px-4 py-2 border rounded-xl cursor-pointer text-xs font-bold hover:bg-slate-50 transition bg-white disabled:opacity-60 disabled:cursor-wait"
+                    >
+                      <UploadCloud className="size-4" />
+                      <span>{isUploadingCover ? "Uploading..." : customCoverPreviewUrl ? "Change Custom Photo" : "Upload Custom Photo"}</span>
+                    </button>
+                    {customCoverPreviewUrl && (
+                      <span className="text-xs text-slate-500 font-semibold truncate max-w-xs">
+                        {customCoverFileName || "custom-cover"} (Uploaded)
+                      </span>
+                    )}
+                  </div>
+                  {customCoverPreviewUrl && (
+                    <div className="mt-3 relative w-full max-w-sm aspect-video rounded-xl overflow-hidden border border-slate-200">
+                      <Image src={customCoverPreviewUrl} alt="Cover Preview" fill className="object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 flex justify-between">
+              <Button
+                onClick={handlePrevStep}
+                variant="outline"
+                className="border-slate-200 hover:bg-slate-100 text-slate-500 font-bold h-11 px-5 rounded-xl flex items-center gap-1.5 cursor-pointer"
+              >
+                <ArrowLeft className="size-4" />
+                <span>Back</span>
+              </Button>
+              <Button
+                onClick={handleNextStep}
+                disabled={!isStep4Valid}
+                className="bg-rose-600 hover:bg-rose-700 text-white font-extrabold h-11 px-6 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs active:translate-y-px border-none"
+              >
+                <span>Continue</span>
+                <ArrowRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 5: Agreements and Submit */}
+        {step === 5 && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <h3 className="text-lg font-black text-slate-905">Step 5: Authorizations & Agreements</h3>
+            
+            <div className="bg-slate-50 border border-slate-200/40 rounded-2xl p-5 space-y-4 text-xs font-medium text-slate-650 leading-relaxed max-h-[220px] overflow-y-auto">
+              <p className="font-extrabold text-slate-800">By submitting this onboarding request, you verify that:</p>
+              <ul className="list-disc pl-4 space-y-2">
+                <li>You are the legitimate owner, lessee, or manager of the properties you list on this service.</li>
+                <li>All details, capacities, starting prices, and photographs provided during venue listings are accurate and true.</li>
+                <li>You will adhere to local safety, zone registration, taxation, and business codes for hosting events.</li>
+                <li>You authorize BookMyVenue to collect deposits and online booking payments on your behalf.</li>
+              </ul>
+            </div>
+
+            <div className="flex items-center gap-3 select-none">
+              <input
+                id="terms"
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="size-4 border border-slate-300 rounded text-rose-600 focus:ring-rose-500/20 cursor-pointer"
+              />
+              <label htmlFor="terms" className="text-xs font-extrabold text-slate-700 cursor-pointer">
+                I agree to the BookMyVenue Host Guidelines and Hosting Agreement.
+              </label>
+            </div>
+
+            <div className="pt-4 flex justify-between">
+              <Button
+                onClick={handlePrevStep}
+                variant="outline"
+                className="border-slate-200 hover:bg-slate-100 text-slate-500 font-bold h-11 px-5 rounded-xl flex items-center gap-1.5 cursor-pointer"
+              >
+                <ArrowLeft className="size-4" />
+                <span>Back</span>
+              </Button>
+              <Button
+                onClick={handleSubmitApplication}
+                disabled={!agreedToTerms || isSubmittingApplication}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold h-11 px-6 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs active:translate-y-px border-none"
+              >
+                <span>{isSubmittingApplication ? "Submitting..." : "Complete Registration"}</span>
+                <Check className="size-4 stroke-[3]" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+
+
+
+
+
+
