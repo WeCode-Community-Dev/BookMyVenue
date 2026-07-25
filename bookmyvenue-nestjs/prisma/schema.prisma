@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  OWNER
+  ADMIN
+}
+
+enum VenueModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  CANCELLED
+  EXPIRED
+  FAILED
+}
+
+enum PaymentProvider {
+  RAZORPAY
+}
+
+enum PaymentStatus {
+  CREATED
+  CAPTURED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  venues    Venue[]
+  bookings  Booking[]
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  isListed    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  venues      Venue[]
+}
+
+model Venue {
+  id               String                 @id @default(uuid())
+  name             String
+  description      String?
+  location         String
+  address          String?
+  pricePerHour     Float
+  capacity         Int
+  imageUrls        String[]
+  amenities        String[]              
+  isListed         Boolean                @default(false)
+  moderationStatus VenueModerationStatus @default(PENDING)
+  rejectionReason  String?
+  ownerId          String
+  categoryId       String
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  owner            User                   @relation(fields: [ownerId], references: [id])
+  category         Category               @relation(fields: [categoryId], references: [id])
+  slots            VenueSlot[]
+  bookings         Booking[]
+
+  @@index([ownerId])
+  @@index([categoryId])
+  @@index([moderationStatus, isListed])
+}
+
+model VenueSlot {
+  id        String    @id @default(uuid())
+  venueId   String
+  startTime DateTime
+  endTime   DateTime
+  price     Float
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  venue     Venue     @relation(fields: [venueId], references: [id])
+  bookings  Booking[]
+
+  @@index([venueId, startTime, endTime])
+  @@index([venueId, isActive])
+}
+
+model Booking {
+  id                 String        @id @default(uuid())
+  status             BookingStatus @default(PENDING_PAYMENT)
+  totalPrice         Float
+  bookedStartTime    DateTime
+  bookedEndTime      DateTime
+  expiresAt          DateTime?
+  confirmedAt        DateTime?
+  cancellationReason String?
+  cancelledAt        DateTime?
+  userId             String
+  venueId            String
+  slotId             String
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue              Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  slot               VenueSlot     @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  payments           Payment[]
+
+  @@index([userId, createdAt])
+  @@index([venueId, createdAt])
+  @@index([slotId])
+  @@index([status])
+}
+
+model Payment {
+  id                String          @id @default(uuid())
+  bookingId         String
+  provider          PaymentProvider @default(RAZORPAY)
+  status            PaymentStatus   @default(CREATED)
+  amount            Int
+  currency          String          @default("INR")
+  receipt           String          @unique
+  razorpayOrderId   String          @unique
+  razorpayPaymentId String?         @unique
+  razorpaySignature String?
+  method            String?
+  failureReason     String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  booking           Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId, createdAt])
+  @@index([status])
+}
+
+model PaymentWebhookEvent {
+  id        String          @id @default(uuid())
+  provider  PaymentProvider @default(RAZORPAY)
+  eventId   String          @unique
+  eventType String
+  payload   Json
+  createdAt DateTime        @default(now())
+}
