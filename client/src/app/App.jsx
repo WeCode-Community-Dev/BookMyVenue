@@ -6,6 +6,7 @@ import { checkAuth } from "@/redux/slices/AuthSlice";
 import PublicRoute from "@/components/auth/PublicRoute";
 import RoleRoute from "@/components/auth/RoleRoute";
 import { ROLES } from "@/constants/Roles";
+import HomeRoute from "@/components/auth/HomeRoute";
 
 // Auth Pages
 const Register = lazy(() => import("@/presentation/pages/auth/Register"));
@@ -68,7 +69,7 @@ function App() {
        }>
         <Routes>
           {/* Public / Auth Routes */}
-          <Route path={ROUTES.PUBLIC.HOME} element={ <Home />} />
+          <Route path={ROUTES.PUBLIC.HOME} element={<HomeRoute><Home /></HomeRoute>} />
           <Route path={ROUTES.PUBLIC.REGISTER} element={<PublicRoute><Register /></PublicRoute>} />
           <Route path={ROUTES.PUBLIC.VERIFY_OTP} element={<VerifyOtp />} />
           <Route path={ROUTES.PUBLIC.LOGIN} element={<PublicRoute><Login /></PublicRoute>} />
@@ -100,10 +101,10 @@ function App() {
           <Route path={ROUTES.VENDOR.EDIT_VENUE} element={<EditVenue />} />
 
           {/* Standalone Admin Login (No Layout) */}
-          <Route path={ROUTES.ADMIN.LOGIN} element={<AdminLogin />} />
+          <Route path={ROUTES.ADMIN.LOGIN} element={<PublicRoute><AdminLogin /></PublicRoute>} />
 
           {/* Admin Protected Routes with Layout */}
-          <Route element={<AdminLayout />}>
+          <Route element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminLayout /></RoleRoute>}>
             <Route path={ROUTES.ADMIN.DASHBOARD} element={<AdminDashboard />} />
             <Route path={ROUTES.ADMIN.USERS} element={<UserManagement />} />
             <Route path={ROUTES.ADMIN.VENDORS} element={<VendorManagement />} />
