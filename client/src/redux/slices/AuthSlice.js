@@ -1,19 +1,21 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "@/lib/axios";
 import { API_ROUTES } from "@/constants/apiRoutes";
-import { ROLES } from "@/constants/Roles";
+
 
 const initialState = {
   loading: false,
   error: null,
-  role: null,
   user: null,
-  accessToken: null
+  role: null,
+  accessToken: null,
+  isAuthenticated: false,
 };
+
 
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
-  async ({ role = ROLES.USER, userData }, { rejectWithValue }) => {
+  async ({ role, userData }, { rejectWithValue }) => {
     try {
       const response = await api.post(
         API_ROUTES.AUTH.REGISTER(role),
@@ -32,18 +34,13 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-//verify OTP
-
 export const verifyOtp = createAsyncThunk(
   "auth/verifyOtp",
-  async ({ role = ROLES.USER, email, otpCode }, { rejectWithValue }) => {
+  async ({ role, email, otpCode }, { rejectWithValue }) => {
     try {
       const response = await api.post(
         API_ROUTES.AUTH.VERIFY_OTP(role),
-        {
-          email,
-          otpCode,
-        }
+        { email, otpCode }
       );
 
       return response.data;
@@ -55,11 +52,10 @@ export const verifyOtp = createAsyncThunk(
   }
 );
 
-//Resend OTP
 
 export const resendOtp = createAsyncThunk(
   "auth/resendOtp",
-  async ({ role, email }, thunkAPI) => {
+  async ({ role, email }, { rejectWithValue }) => {
     try {
       const response = await api.post(
         API_ROUTES.AUTH.RESEND_OTP(role),
@@ -68,27 +64,23 @@ export const resendOtp = createAsyncThunk(
 
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(
+      return rejectWithValue(
         error.response?.data?.message || "Failed to resend OTP"
       );
     }
   }
 );
 
-
-// Login User / Vendor 
 export const login = createAsyncThunk(
   "auth/login",
-  async ({ role = ROLES.USER, data }, { dispatch, rejectWithValue }) => {
+  async ({ role, data }, { rejectWithValue }) => {
     try {
-      dispatch(clearAuthError());
-
       const response = await api.post(
         API_ROUTES.AUTH.LOGIN(role),
         data
       );
 
-      console.log('response from login: ', response.data.data)
+      console.log("response from login: ", response.data.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(
@@ -100,15 +92,35 @@ export const login = createAsyncThunk(
 
 export const logout = createAsyncThunk(
   "auth/logout",
-  async ({ role }, {rejectWithValue }) => {
+  async ({ role }, { rejectWithValue }) => {
     try {
-
       const response = await api.post(API_ROUTES.AUTH.LOGOUT(role));
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Logout failed"
+      );
+    }
+  }
+);
+
+
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async (
+    { role, token, password, confirmPassword },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await api.post(
+        API_ROUTES.AUTH.RESET_PASSWORD(role),
+        { token, password, confirmPassword }
+      );
 
       return response.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Logoutfailed"
+        error.response?.data?.message || "Password reset failed"
       );
     }
   }
@@ -117,27 +129,27 @@ export const logout = createAsyncThunk(
 
 export const checkAuth = createAsyncThunk(
   "auth/checkAuth",
-  async ( __, {rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-
       const response = await api.get(API_ROUTES.AUTH.GETME);
-
       return response.data.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "checkauth failed"
+        error.response?.data?.message || "Check auth failed"
       );
     }
   }
 );
+
+
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
 
   reducers: {
-    clearAuthError: (state) => {
-      state.error = null;
+    setAccessToken: (state, action) => {
+      state.accessToken = action.payload
     },
   },
 
@@ -147,12 +159,10 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
         state.role = action.payload.role;
       })
-
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
@@ -163,7 +173,6 @@ const authSlice = createSlice({
       })
       .addCase(verifyOtp.fulfilled, (state) => {
         state.loading = false;
-        state.otpVerified = true;
       })
       .addCase(verifyOtp.rejected, (state, action) => {
         state.loading = false;
@@ -176,60 +185,69 @@ const authSlice = createSlice({
       .addCase(resendOtp.fulfilled, (state) => {
         state.loading = false;
       })
-    .addCase(resendOtp.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    })
-    .addCase(login.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(login.fulfilled, (state, action) => {
-      state.loading = false;
-      state.accessToken = action.payload.accessToken;
-      state.user = action.payload.user;
-      state.role = action.payload.role; 
-      state.isAuthenticated = true;
-    })
-    .addCase(login.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-      state.isAuthenticated = false;
-    })
-    .addCase(logout.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(logout.fulfilled, (state) => {
-      state.loading = false;
-      state.user = null 
-      state.accessToken = null
-      state.role = null
-      state.isAuthenticated = false     
-    })
-    .addCase(logout.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    }) 
-    .addCase(checkAuth.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(checkAuth.fulfilled, (state, action) => {
-      state.loading = false;
-      state.accessToken = action.payload.accessToken;
-      state.user = action.payload.user;
-      state.role = action.payload.role; 
-      state.isAuthenticated = true;
-    })
-    .addCase(checkAuth.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-      state.isAuthenticated = false;
-    }) 
+      .addCase(resendOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.accessToken = action.payload.accessToken
+        state.user = action.payload.user
+        state.role = action.payload.role
+        state.isAuthenticated = true;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.isAuthenticated = false;
+      })
+      .addCase(logout.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logout.fulfilled, (state) => {
+        state.loading = false
+        state.user = null
+        state.accessToken = null
+        state.isAuthenticated = false
+      })
+      .addCase(logout.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(resetPassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(resetPassword.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(checkAuth.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkAuth.fulfilled, (state, action) => {
+        state.loading = false;
+        state.accessToken = action.payload.accessToken
+        state.user = action.payload.user
+        state.isAuthenticated = true;
+      })
+      .addCase(checkAuth.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.isAuthenticated = false;
+      });
   },
 });
 
-export const { clearAuthError } = authSlice.actions;
+export const { setAccessToken } = authSlice.actions;
 
 export default authSlice.reducer;

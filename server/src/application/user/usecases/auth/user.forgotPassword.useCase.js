@@ -29,8 +29,7 @@ export default class UserForgotPasswordUseCase {
         user.resetTokenExpiry = resetTokenExpiry
         const updated = await this._userRepository.update(user.id, user);
         
-console.log('updated user', updated)
-        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?role=${updated.role}&token=${resetToken}`;
         console.log("link", resetLink)
         await this._mailService.sendForgotPasswordMail(user, resetLink);
 

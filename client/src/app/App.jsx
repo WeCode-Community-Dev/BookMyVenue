@@ -3,11 +3,16 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import { useDispatch } from "react-redux";
 import { checkAuth } from "@/redux/slices/AuthSlice";
+import PublicRoute from "@/components/auth/PublicRoute";
+import RoleRoute from "@/components/auth/RoleRoute";
+import { ROLES } from "@/constants/Roles";
 
 // Auth Pages
 const Register = lazy(() => import("@/presentation/pages/auth/Register"));
 const VerifyOtp = lazy(() => import("@/presentation/pages/auth/VerifyOtp"));
 const Login = lazy(() => import("@/presentation/pages/auth/Login"));
+const ForgotPassword = lazy(() => import("@/presentation/pages/auth/ForgotPassword"))
+const ResetPassword = lazy(() => import("@/presentation/pages/auth/ResetPassword"))
 
 // Public/User Pages
 const Home = lazy(() => import("@/presentation/pages/Home"));
@@ -56,17 +61,24 @@ function App() {
   
   return (
     <BrowserRouter>
-      <Suspense fallback={<h1>Loading...</h1>}>
+      <Suspense fallback={
+        <div className='flex h-screen items-center justify-content'>
+          <div className='h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-amber-600'></div>
+        </div>
+       }>
         <Routes>
           {/* Public / Auth Routes */}
-          <Route path={ROUTES.PUBLIC.HOME} element={<Home />} />
-          <Route path={ROUTES.PUBLIC.REGISTER} element={<Register />} />
+          <Route path={ROUTES.PUBLIC.HOME} element={ <Home />} />
+          <Route path={ROUTES.PUBLIC.REGISTER} element={<PublicRoute><Register /></PublicRoute>} />
           <Route path={ROUTES.PUBLIC.VERIFY_OTP} element={<VerifyOtp />} />
-          <Route path={ROUTES.PUBLIC.LOGIN} element={<Login />} />
+          <Route path={ROUTES.PUBLIC.LOGIN} element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path={ROUTES.PUBLIC.FORGOT_PASSWORD} element={<ForgotPassword />} />
+          <Route path={ROUTES.PUBLIC.RESET_PASSWORD} element={<ResetPassword />} />
+
 
           {/* User Routes */}
-          <Route path={ROUTES.USER.BROWSE_VENUES} element={<BrowseVenues />} />
-          <Route path={ROUTES.USER.PROFILE} element={<UserProfile />} />
+          <Route path={ROUTES.USER.BROWSE_VENUES} element={ <RoleRoute allowedRoles={["customer"]}><BrowseVenues /></RoleRoute>} />
+          <Route path={ROUTES.USER.PROFILE} element={<RoleRoute allowedRoles={["customer"]}><UserProfile /></RoleRoute>} />
           <Route path={ROUTES.USER.CHANGE_PASSWORD} element={<UserChangePassword />} />
           <Route path={ROUTES.USER.WISHLIST} element={<Wishlist />} />
           <Route path={ROUTES.USER.BOOKINGS} element={<UserBookings />} />
@@ -78,8 +90,8 @@ function App() {
           <Route path={ROUTES.USER.PAYMENT_FAILURE} element={<UserPaymentFailure />} />
 
           {/* Vendor Routes */}
-          <Route path={ROUTES.VENDOR.DASHBOARD} element={<Dashboard />} />
-          <Route path={ROUTES.VENDOR.VENUES} element={<VenueList />} />
+          <Route path={ROUTES.VENDOR.DASHBOARD} element={<RoleRoute allowedRoles={[ROLES.VENDOR]}><Dashboard /></RoleRoute>} />
+          <Route path={ROUTES.VENDOR.VENUES} element={<RoleRoute allowedRoles={[ROLES.VENDOR]}><VenueList /></RoleRoute>} />
           <Route path={ROUTES.VENDOR.BOOKINGS} element={<Bookings />} />
           <Route path={ROUTES.VENDOR.ADD_VENUE} element={<AddVenue />} />
           <Route path={ROUTES.VENDOR.PROFILE} element={<Profile />} />

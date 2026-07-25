@@ -54,7 +54,9 @@ export class VendorAuthController {
 
     refreshToken = asyncHandler(async (req, res) => {
         const token = req.cookies?.refreshToken;
-        const { accessToken, refreshToken, vendor } = await this._refreshTokenUseCase.execute(token);
+
+        
+        const { accessToken, refreshToken, vendor } = await this._refreshTokenUsecase.execute(token);
         res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
         return sendSuccess(res, statusCode.OK, authMessages.success.TOKEN_REFRESHED, { accessToken, vendor });
     });
