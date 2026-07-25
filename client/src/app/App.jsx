@@ -8,6 +8,8 @@ import { checkAuth } from "@/redux/slices/AuthSlice";
 const Register = lazy(() => import("@/presentation/pages/auth/Register"));
 const VerifyOtp = lazy(() => import("@/presentation/pages/auth/VerifyOtp"));
 const Login = lazy(() => import("@/presentation/pages/auth/Login"));
+const ForgotPassword = lazy(() => import("@/presentation/pages/auth/ForgotPassword"))
+const ResetPassword = lazy(() => import("@/presentation/pages/auth/ResetPassword"))
 
 // Public/User Pages
 const Home = lazy(() => import("@/presentation/pages/Home"));
@@ -63,6 +65,9 @@ function App() {
           <Route path={ROUTES.PUBLIC.REGISTER} element={<Register />} />
           <Route path={ROUTES.PUBLIC.VERIFY_OTP} element={<VerifyOtp />} />
           <Route path={ROUTES.PUBLIC.LOGIN} element={<Login />} />
+          <Route path={ROUTES.PUBLIC.FORGOT_PASSWORD} element={<ForgotPassword />} />
+          <Route path={ROUTES.PUBLIC.RESET_PASSWORD} element={<ResetPassword />} />
+
 
           {/* User Routes */}
           <Route path={ROUTES.USER.BROWSE_VENUES} element={<BrowseVenues />} />
