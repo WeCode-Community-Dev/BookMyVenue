@@ -24,7 +24,8 @@ export class UnifiedGetMeUsecase  {
             throw new NotFoundError(authMessages.error.USER_NOT_FOUND)
         }
 
-        const accessToken = this._tokenService.generateAccessToken( user.id, user.email, role);
+        const payload = { id: user.id, role: user.role };
+        const accessToken = this._tokenService.generateAccessToken(payload);
 
         return  {
             accessToken,
@@ -34,6 +35,7 @@ export class UnifiedGetMeUsecase  {
                 email: user.email,
                 role: user.role,
                 isVerified: user.isVerified,
+                approvalStatus: user.approvalStatus,
                 profileImage: user.profileImage.url
             }
         }

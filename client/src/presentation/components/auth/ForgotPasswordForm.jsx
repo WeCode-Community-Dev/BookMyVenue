@@ -1,17 +1,20 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Mail, ArrowLeft } from 'lucide-react'
 import api from '@/lib/axios'
-import { ROLES } from "@/constants/Roles";
+// import { ROLES } from "@/constants/Roles";
 import { API_ROUTES } from "@/constants/apiRoutes"
 
 import { ROUTES } from '@/constants/routes'
 
-const ForgotPasswordForm = ({role}) => {
+const ForgotPasswordForm = () => {
+    const location = useLocation()
     const [email, setEmail] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
     const [success, setSuccess] = useState(false)
+    const role = location.state?.role
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault()

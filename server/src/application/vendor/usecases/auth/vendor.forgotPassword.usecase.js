@@ -30,9 +30,9 @@ export default class VendorForgotPasswordUseCase {
         const updated = await this._vendorRepository.update(vendor.id, vendor);
         
         console.log('updated user', updated)
-        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?role=${updated.role}&token=${resetToken}`;
         console.log("link", resetLink)
-        await this._mailService.sendForgotPasswordMail(vendor, resetLink);
+        // await this._mailService.sendForgotPasswordMail(vendor, resetLink);
 
         return { 
             success: true

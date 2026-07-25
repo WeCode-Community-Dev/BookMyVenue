@@ -7,17 +7,17 @@ import { authMessages } from "../../shared/constants/messages/authMessages.js";
 import { redisClient } from '../config/redis.config.js'
 
 export class TokenService extends ITokenService{
-    generateAccessToken(id, email, role) {
+    generateAccessToken(payload) {
         const accessTokenSecret = jwtConfig.accessToken.secret
-        const token = jwt.sign({id, email, role}, accessTokenSecret, { expiresIn: jwtConfig.accessToken.expiresIn });
+        const token = jwt.sign(payload, accessTokenSecret, { expiresIn: jwtConfig.accessToken.expiresIn });
         console.log("Generated Access Token:");
-    console.log(jwt.decode(token));
-    return token
+        console.log(jwt.decode(token));
+        return token
     }
 
-    generateRefreshToken(id, role) {
+    generateRefreshToken(payload) {
         const refreshTokenSecret = jwtConfig.refreshToken.secret
-        return jwt.sign({id, role}, refreshTokenSecret, { expiresIn: jwtConfig.refreshToken.expiresIn });
+        return jwt.sign(payload, refreshTokenSecret, { expiresIn: jwtConfig.refreshToken.expiresIn });
     }
 
     generateResetToken() {

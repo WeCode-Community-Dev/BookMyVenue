@@ -13,7 +13,7 @@ import UserLogoutUseCase from '../../application/user/usecases/auth/user.logout.
 import UserRefreshTokenUseCase from '../../application/user/usecases/auth/user.refreshToken.useCase.js'
 import UserVerifyOtpUseCase from '../../application/user/usecases/auth/user.verifyOtp.useCase.js'
 import UserResendOtpUseCase from '../../application/user/usecases/auth/user.resendOtp.useCase.js'
-import UserForgotPasswordUseCase from '../../application/user/usecases/auth/uer.forgotPassword.useCase.js'
+import UserForgotPasswordUseCase from '../../application/user/usecases/auth/user.forgotPassword.useCase.js'
 import UserResetPasswordUseCase from '../../application/user/usecases/auth/user.resetPassword.useCase.js'
 
 import { AdminGetAllUsersUsecase } from '../../application/admin/usecases/user/admin.getAllUsers.usecase.js'

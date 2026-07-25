@@ -82,7 +82,7 @@ router.patch(
 );
 
 //vendor profile
-router.get(ROUTES.OWNER.PROFILE.GET, iVendorProfileController.getProfile);
+router.get(ROUTES.OWNER.PROFILE.GET, authHandler(iTokenService), iVendorProfileController.getProfile);
 
 router.patch(
   ROUTES.OWNER.PROFILE.UPDATE,
