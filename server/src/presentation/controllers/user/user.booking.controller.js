@@ -107,30 +107,7 @@ export class UserBookingController {
         );
 
     });
-    async cancelBooking(req, res, next) {
-
-        try {
-
-            const result =
-                await this._userCancelBookingUsecase.execute(
-
-                    req.user.id,
-
-                    req.params.bookingId,
-
-                    req.body.cancellationReason
-
-                );
-
-            return res.status(200).json(result);
-
-        } catch (error) {
-
-            next(error);
-
-        }
-
-    }
+   
     cancelBooking = asyncHandler(async (req, res) => {
 
         const userId = req.user.userId;
