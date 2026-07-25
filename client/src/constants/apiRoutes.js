@@ -3,7 +3,18 @@ AUTH:{
   REGISTER:(role)=> `/auth/${role}/register`,
   VERIFY_OTP:(role)=>`/auth/${role}/verifyotp`,
   RESEND_OTP:(role)=>`/auth/${role}/resendotp`,
-  LOGIN:(role)=>`/auth/${role}/login`
+  LOGIN:(role)=>`/auth/${role}/login`,
+  FORGOT_PASSWORD: (role) => `/auth/${role}/forgotpassword`,
+  RESET_PASSWORD: (role) => `/auth/${role}/resetpassword`,
+    
+
+  LOGOUT: (role) => `/auth/${role}/logout`,
+  REFRESH:(role)=>`/auth/${role}/refresh`,
+  GETME: '/auth/getme'
+
+  
+  
+
 },
 
     USER: {

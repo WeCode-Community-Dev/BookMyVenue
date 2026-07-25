@@ -31,12 +31,12 @@ export class UserVenueController {
 
     getTopVenues = asyncHandler( async (req, res) => {
         const venues = await this._userGetTopVenues.execute()
-        console.log('venue: ', venues)
+        // console.log('venue: ', venues)
         return sendSuccess(res, statusCode.OK,'', venues)
     })
 
     getSimilarVenues = asyncHandler( async (req, res) => {
-        const userId = req.user.userId
+        const userId = "6a5c82d2a4cb28be7d10521f";
         const venueId = req.params.venueId
         const venues = await this._userGetSimilarVenues.execute(userId, venueId)
         return sendSuccess(res, statusCode.OK, '', venues)

@@ -28,8 +28,9 @@ export default class LoginUserUseCase {
             throw new UnauthorizedError(authMessages.error.OTP_VERIFICATION_REQUIRED);
         }
 
-        const accessToken = this._tokenService.generateAccessToken( user.id, user.email, UserRole.CUSTOMER);
-        const refreshToken = this._tokenService.generateRefreshToken( user.id, UserRole.CUSTOMER);
+        const payload = { id: user.id, role: user.role };
+        const accessToken = this._tokenService.generateAccessToken(payload);
+        const refreshToken = this._tokenService.generateRefreshToken(payload);
         const hashedToken = await this._hashService.hashToken(refreshToken)
         await this._userRepository.updateRefreshToken(user.id, hashedToken);
 

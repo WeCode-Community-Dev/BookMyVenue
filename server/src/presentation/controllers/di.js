@@ -13,7 +13,7 @@ import UserLogoutUseCase from '../../application/user/usecases/auth/user.logout.
 import UserRefreshTokenUseCase from '../../application/user/usecases/auth/user.refreshToken.useCase.js'
 import UserVerifyOtpUseCase from '../../application/user/usecases/auth/user.verifyOtp.useCase.js'
 import UserResendOtpUseCase from '../../application/user/usecases/auth/user.resendOtp.useCase.js'
-import UserForgotPasswordUseCase from '../../application/user/usecases/auth/uer.forgotPassword.useCase.js'
+import UserForgotPasswordUseCase from '../../application/user/usecases/auth/user.forgotPassword.useCase.js'
 import UserResetPasswordUseCase from '../../application/user/usecases/auth/user.resetPassword.useCase.js'
 
 import { AdminGetAllUsersUsecase } from '../../application/admin/usecases/user/admin.getAllUsers.usecase.js'
@@ -104,6 +104,8 @@ import { UserBookingController } from "../controllers/user/user.booking.controll
 import { UserGetBookingsUsecase } from "../../application/user/usecases/booking/user.getBookings.usecase.js";
 import { UserGetBookingByIdUsecase } from "../../application/user/usecases/booking/user.getBookingById.usecase.js";
 import { UserPaymentReminderUsecase } from "../../application/user/usecases/booking/user.paymentReminder.usecase.js";
+import { UnifiedGetMeUsecase } from '../../application/common/unified.getMe.usecase.js'
+import { UnifiedAuthController } from './common/common.authController.js'
 //repository
 const iVenueRepository = new VenueRepository();
 const iUserRepository = new UserRepository();
@@ -111,6 +113,12 @@ const iVendorRepository = new VendorRepository();
 const iPaymentRepository = new PaymentRepository();
 const bookingRepository = new BookingRepositoryImpl();
 const iAdminRepository = new AdminRepository()
+
+const repositories = {
+    customer: iUserRepository,
+    vendor: iVendorRepository,
+    admin: iAdminRepository
+}
 
 // --- services ---
 const iCloudinaryService = new CloudinaryService()
@@ -122,6 +130,12 @@ export const iTokenService = new TokenService()
 export const iReservationService =
     new ReservationService(redisClient);
 
+
+
+const iGetMeUsecase = new UnifiedGetMeUsecase(
+    iTokenService,
+    repositories
+)
 // --- admin auth usecase---
 const iAdminLoginUsecase = new LoginAdminUsecase (
     iAdminRepository,
@@ -490,4 +504,8 @@ export const iUserBookingController =
         iUserGetBookingByIdUsecase
     );
 
-    export { iUserPaymentReminderUsecase };
+export { iUserPaymentReminderUsecase };
+
+export const iUnifiedAuthController = new UnifiedAuthController (
+    iGetMeUsecase
+)

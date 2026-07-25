@@ -10,9 +10,10 @@ export class VendorResetPasswordUseCase {
         this._hashService = hashService;
     }
 
-    async execute(email, resetToken, newPassword) {
-        console.log("email, password: ", email)
-        const vendor = await this._vendorRepository.findByEmail(email);
+    async execute(token, password) {
+        const hashedResetToken = this._hashService.hashToken(token)
+
+        const vendor = await this._vendorRepository.findByResetToken(hashedResetToken);
 
         if (!vendor) {
             throw new NotFoundError(authMessages.error.VENDOR_NOT_FOUND);
@@ -22,7 +23,7 @@ export class VendorResetPasswordUseCase {
             throw new UnauthorizedError(authMessages.error.NO_RESET_REQUEST);
         }
 
-        const hashedIncomingToken = this._hashService.hashToken(resetToken)
+        const hashedIncomingToken = this._hashService.hashToken(token)
         if (vendor.resetToken !== hashedIncomingToken) {
             throw new UnauthorizedError(authMessages.error.INVALID_RESET_TOKEN);
         }
@@ -31,7 +32,7 @@ export class VendorResetPasswordUseCase {
             throw new UnauthorizedError(authMessages.error.RESET_TOKEN_EXPIRED);
         }
 
-        const hashedPassword = await this._hashService.hash(newPassword);
+        const hashedPassword = await this._hashService.hash(password);
 
         const updatedVendor = await this._vendorRepository.update(vendor.id, {
             password: hashedPassword,

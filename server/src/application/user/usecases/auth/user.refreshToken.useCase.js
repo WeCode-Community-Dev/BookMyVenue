@@ -21,12 +21,12 @@ export default class UserRefreshTokenUseCase {
             throw new UnauthorizedError(authMessages.error.REFRESH_TOKEN_REVOKED);
         }
 
-        const payload = { userId: user.id, role: role };
+        const payload = { id: user.id, role: role };
         const newAccessToken = this._tokenService.generateAccessToken(payload);
         const newRefreshToken = this._tokenService.generateRefreshToken(payload);
         const hashedRefreshToken = await this._hashService.hashToken(newRefreshToken)
         await this._userRepository.updateRefreshToken(user.id, hashedRefreshToken);
 
-        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+        return { accessToken: newAccessToken, refreshToken: newRefreshToken, user };
     }
 }

@@ -11,6 +11,7 @@ import {
 import { validate } from "../../middlewares/validator.js";
 import {
   createVenueSchema,
+  editVenueSchema,
   VenueParamsSchema,
   VenueQuerySchema,
   VenueUpdateStatusSchema,
@@ -50,7 +51,7 @@ router.patch(
     { name: "images", maxCount: 10 },
     { name: "license", maxCount: 5 },
   ]),
-  validate(createVenueSchema, "body"),
+  validate(editVenueSchema, "body"),
   validate(VenueParamsSchema, "params"),
   iVendorVenueController.updateVenue
 );
@@ -81,7 +82,7 @@ router.patch(
 );
 
 //vendor profile
-router.get(ROUTES.OWNER.PROFILE.GET, iVendorProfileController.getProfile);
+router.get(ROUTES.OWNER.PROFILE.GET, authHandler(iTokenService), iVendorProfileController.getProfile);
 
 router.patch(
   ROUTES.OWNER.PROFILE.UPDATE,

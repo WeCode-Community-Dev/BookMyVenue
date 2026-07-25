@@ -14,6 +14,7 @@ import adminPaymentSlice from './slices/AdminPaymentSlice'
 import adminDashboardSlice from './slices/AdminDashboardSlice'
 import authSlice from './slices/AuthSlice'
 import UserBookingSlice from "./slices/UserBookingSlice";
+import { injectStore } from "@/lib/axios";
 
 export const store = configureStore({
     reducer: {
@@ -35,5 +36,5 @@ export const store = configureStore({
     }
 })
 
-
+injectStore(store)
 

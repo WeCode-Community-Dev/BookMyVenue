@@ -23,7 +23,6 @@ export class UserGetSimilarVenuesUsecase {
         }
 
         const similarVenues = await this._venueRepository.findSimilarVenues(venue.id, venue.category)
-        console.log("similar venues: ", similarVenues)
         return {
             similarVenues
         }

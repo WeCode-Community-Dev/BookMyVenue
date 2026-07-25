@@ -27,6 +27,6 @@ export class AdminRefreshTokenUseCase {
         const hashedRefreshToken = await this._hashService.hashToken(newRefreshToken)
         await this._adminRepository.updateRefreshToken(admin.id, hashedRefreshToken);
 
-        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+        return { accessToken: newAccessToken, refreshToken: newRefreshToken, admin };
     }
 }

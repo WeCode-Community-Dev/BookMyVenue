@@ -1,11 +1,12 @@
 import Express from 'express'
-import { iAdminAuthController, iUserAuthController, iVendorAuthController } from '../../controllers/di.js'
+import { iAdminAuthController, iUnifiedAuthController, iUserAuthController, iVendorAuthController } from '../../controllers/di.js'
 import { validate } from '../../middlewares/validator.js'
 import { registerSchema, verifyOtpSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, resendOtpSchema} from '../../validators/auth.validator.js'
 import { ROUTES } from '../../../shared/constants/routes.js'
 const router = Express.Router()
 
 
+router.get(ROUTES.AUTH.GETME, iUnifiedAuthController.getMe)
 //user
 router.post(ROUTES.USER.AUTH.REGISTER, validate(registerSchema, 'body'), iUserAuthController.register)
 router.post(ROUTES.USER.AUTH.VERIFY_OTP, validate(verifyOtpSchema, 'body'), iUserAuthController.verifyOtp)

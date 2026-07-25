@@ -4,6 +4,10 @@ export class IUserRepository {
         throw new Error("Method not implemented");
     }
 
+    async findByResetToken(token) {
+        throw new Error("Method not implemented");
+    }
+
     async findAllFiltered(query = {}) {
         throw new Error("Method not implemented");
     }
