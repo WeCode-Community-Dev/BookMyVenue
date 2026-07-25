@@ -57,16 +57,16 @@ export const forgotPasswordSchema = z.object({
 })
 
 export const resetPasswordSchema = z.object({
-    email: z
-        .string()
-        .trim()
-        .email("Valid email is required"),
+    // email: z
+    //     .string()
+    //     .trim()
+    //     .email("Valid email is required"),
 
-    resetToken: z
+    token: z
         .string()
         .min(1, "Reset token is required"),
 
-    newPassword: z
+    password: z
         .string()
         .min(8, "Password must be at least 8 characters")
         .regex(

@@ -38,7 +38,7 @@ export class LoginVendorUsecase {
         return { 
             accessToken, 
             refreshToken,
-            vendor:{
+            user:{
                 id: vendor.id,
                 name: vendor.fullName,
                 email: vendor.email,

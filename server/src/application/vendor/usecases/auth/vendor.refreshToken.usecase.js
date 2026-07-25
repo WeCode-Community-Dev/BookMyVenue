@@ -27,6 +27,6 @@ export class VendorRefreshTokenUseCase {
         const hashedRefreshToken = await this._hashService.hashToken(newRefreshToken)
         await this._vendorRepository.updateRefreshToken(vendor.id, hashedRefreshToken);
 
-        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+        return { accessToken: newAccessToken, refreshToken: newRefreshToken, vendor };
     }
 }

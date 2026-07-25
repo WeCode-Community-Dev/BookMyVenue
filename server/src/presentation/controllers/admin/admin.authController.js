@@ -32,15 +32,15 @@ export class AdminAuthController {
 
     refreshToken = asyncHandler(async (req, res) => {
         const token = req.cookies?.refreshToken;
-        const { accessToken, refreshToken } = await this._refreshTokenUseCase.execute(token);
+        const { accessToken, refreshToken, admin } = await this._refreshTokenUseCase.execute(token);
         res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
-        return sendSuccess(res, statusCode.OK, authMessages.success.TOKEN_REFRESHED, { accessToken });
+        return sendSuccess(res, statusCode.OK, authMessages.success.TOKEN_REFRESHED, { accessToken, admin });
     });
 
     logout = asyncHandler(async (req, res) => {
         const accessToken = req.headers.authorization?.split(' ')[1]
         const refreshToken = req.cookies?.refreshToken;
-        await this._logoutUseCase.execute(refreshToken, accessToken);
+        await this._logoutUsecase.execute(refreshToken, accessToken);
         res.clearCookie("refreshToken", REFRESH_COOKIE_OPTIONS);
         return sendSuccess(res, statusCode.OK, authMessages.success.LOGOUT);
     });

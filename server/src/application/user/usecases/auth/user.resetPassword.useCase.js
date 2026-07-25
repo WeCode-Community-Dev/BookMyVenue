@@ -10,9 +10,9 @@ export default class UserResetPasswordUseCase {
         this._hashService = hashService;
     }
 
-    async execute(email, resetToken, newPassword) {
-        console.log("email, password: ", email)
-        const user = await this._userRepository.findByEmail(email);
+    async execute(token, password) {
+
+        const user = await this._userRepository.findByResetToken(token);
 
         if (!user) {
             throw new NotFoundError(authMessages.error.USER_NOT_FOUND);
@@ -22,7 +22,7 @@ export default class UserResetPasswordUseCase {
             throw new UnauthorizedError(authMessages.error.NO_RESET_REQUEST);
         }
 
-        const hashedIncomingToken = this._hashService.hashToken(resetToken)
+        const hashedIncomingToken = this._hashService.hashToken(token)
         if (user.resetToken !== hashedIncomingToken) {
             throw new UnauthorizedError(authMessages.error.INVALID_RESET_TOKEN);
         }
@@ -31,7 +31,7 @@ export default class UserResetPasswordUseCase {
             throw new UnauthorizedError(authMessages.error.RESET_TOKEN_EXPIRED);
         }
 
-        const hashedPassword = await this._hashService.hash(newPassword);
+        const hashedPassword = await this._hashService.hash(password);
 
         const updatedUser = await this._userRepository.update(user.id, {
             password: hashedPassword,

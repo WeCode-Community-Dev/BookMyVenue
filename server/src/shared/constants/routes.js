@@ -1,6 +1,7 @@
 export const ROUTES = {
     AUTH: {
-        LOGOUT: '/logout'
+        LOGOUT: '/logout',
+        GETME: '/getme'
     },
     ADMIN: {
         DASHBOARD:{
@@ -94,7 +95,7 @@ export const ROUTES = {
             GET_ALL: "/venues",
             GET_BY_ID: "/venue/:venueId",
             TOP_VENUES: "/top-venues",
-            SIMILAR_VENUES: "/similar-venues",
+            SIMILAR_VENUES: "/similar-venues/:venueId",
         },
         PROFILE: {
             PROFILE: "/profile",

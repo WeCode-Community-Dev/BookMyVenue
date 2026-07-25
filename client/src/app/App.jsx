@@ -1,6 +1,8 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { useDispatch } from "react-redux";
+import { checkAuth } from "@/redux/slices/AuthSlice";
 
 // Auth Pages
 const Register = lazy(() => import("@/presentation/pages/auth/Register"));
@@ -46,6 +48,12 @@ const PaymentDetails = lazy(() => import("@/presentation/pages/admin/PaymentDeta
 const CategoryManagement = lazy(() => import("@/presentation/pages/admin/CategoryManagement"));
 
 function App() {
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(checkAuth())
+  }, [dispatch])
+  
   return (
     <BrowserRouter>
       <Suspense fallback={<h1>Loading...</h1>}>

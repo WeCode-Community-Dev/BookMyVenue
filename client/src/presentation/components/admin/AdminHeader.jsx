@@ -1,9 +1,26 @@
 import { useState } from "react";
 import { ChevronDown, User, LogOut } from "lucide-react";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { logout } from "@/redux/slices/AuthSlice";
+import { ROLES } from "@/constants/Roles";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
 
 const AdminHeader = () => {
-
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
     const [showDropdown, setShowDropdown] = useState(false);
+
+    const handleLogout = async () => {
+        try {
+            await dispatch(logout({role: ROLES.ADMIN})).unwrap()
+            toast('Admin logged out successfully')
+            navigate(ROUTES.ADMIN.LOGIN)
+        } catch (error) {
+            toast.error(error)
+        }
+    }
 
     return (
 
@@ -36,6 +53,7 @@ const AdminHeader = () => {
 
                             <button
                                 className="w-full flex items-center gap-2 px-4 py-3 hover:bg-red-50 text-red-600"
+                                onClick={handleLogout}
                             >
 
                                 <LogOut size={18} />
