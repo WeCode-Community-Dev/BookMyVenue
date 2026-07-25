@@ -44,9 +44,9 @@ export class UserAuthController {
 
     refreshToken = asyncHandler(async (req, res) => {
         const token = req.cookies?.refreshToken;
-        const { accessToken, refreshToken } = await this._refreshTokenUseCase.execute(token);
+        const { accessToken, refreshToken, user } = await this._refreshTokenUseCase.execute(token);
         res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
-        return sendSuccess(res, statusCode.OK, authMessages.success.TOKEN_REFRESHED, { accessToken });
+        return sendSuccess(res, statusCode.OK, authMessages.success.TOKEN_REFRESHED, { accessToken, user });
     });
 
     forgotPassword = asyncHandler(async (req, res) => {
@@ -55,8 +55,8 @@ export class UserAuthController {
     });
 
     resetPassword = asyncHandler(async (req, res) => {
-        const { email, resetToken, newPassword } = req.body;
-        await this._resetPasswordUseCase.execute(email, resetToken, newPassword);
+        const { token, password } = req.body;
+        await this._resetPasswordUseCase.execute(token, password);
         return sendSuccess(res, statusCode.OK, authMessages.success.RESET_PASSWORD);
     });
 

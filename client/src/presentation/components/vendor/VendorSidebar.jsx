@@ -1,6 +1,5 @@
-import { NavLink } from "react-router-dom";
-import { LogOut } from "lucide-react";
 
+import { NavLink, useNavigate } from "react-router-dom";
 import SidebarProfileCard from "./SidebarProfileCard";
 import { ROUTES } from "@/constants/routes";
 import logo from "@/assets/images/logo.jpeg";
@@ -13,6 +12,10 @@ import {
   User,
   Settings,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { logout } from "@/redux/slices/AuthSlice";
+import { ROLES } from "@/constants/Roles";
 
 const VendorSidebar = () => {
   const menuItems = [
@@ -48,6 +51,18 @@ const VendorSidebar = () => {
     },
   ];
 
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout({role: ROLES.VENDOR})).unwrap()
+      toast.success("Vendor logged out successfully")
+      navigate(ROUTES.PUBLIC.LOGIN)
+    } catch (error) {
+      toast.error(error)
+    }
+  }
   return (
     <aside className="w-70 min-h-screen bg-slate-900 text-white flex flex-col">
 

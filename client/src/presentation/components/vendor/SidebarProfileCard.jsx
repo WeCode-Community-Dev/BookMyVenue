@@ -1,11 +1,11 @@
-import React from "react";
 import { useSelector } from "react-redux";
 
 const SidebarProfileCard = () => {
   const { profile } = useSelector((state) => state.vendorProfile);
+  const { user } = useSelector((state) => state.auth)
 
   const initials =
-    profile?.fullName
+    user?.name
       ?.split(" ")
       .map((word) => word[0])
       .join("")
@@ -18,7 +18,7 @@ const SidebarProfileCard = () => {
         {profile?.profileImage?.url ? (
           <img
             src={profile.profileImage.url}
-            alt={profile.fullName}
+            alt={user?.name}
             className="w-12 h-12 rounded-full object-cover"
           />
         ) : (
@@ -29,7 +29,7 @@ const SidebarProfileCard = () => {
 
         <div>
           <h3 className="font-semibold text-white">
-            {profile?.fullName || "Vendor"}
+            {user?.name || "Vendor"}
           </h3>
 
           <p className="text-sm text-gray-400">

@@ -27,6 +27,6 @@ export default class UserRefreshTokenUseCase {
         const hashedRefreshToken = await this._hashService.hashToken(newRefreshToken)
         await this._userRepository.updateRefreshToken(user.id, hashedRefreshToken);
 
-        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+        return { accessToken: newAccessToken, refreshToken: newRefreshToken, user };
     }
 }

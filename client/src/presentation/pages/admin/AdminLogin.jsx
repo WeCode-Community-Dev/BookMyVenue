@@ -38,7 +38,7 @@ const AdminLoginForm = () => {
 
         // 1. Check if 'admin' object exists in response data, or read role directly
         const loggedInRole = 
-            result?.data?.admin?.role || 
+            result?.admin?.role || 
             (result?.data?.admin ? ROLES.ADMIN : undefined) || 
             result?.data?.role || 
             result?.role;

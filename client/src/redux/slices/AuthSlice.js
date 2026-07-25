@@ -7,7 +7,8 @@ const initialState = {
   loading: false,
   error: null,
   role: null,
-  
+  user: null,
+  accessToken: null
 };
 
 export const registerUser = createAsyncThunk(
@@ -87,7 +88,8 @@ export const login = createAsyncThunk(
         data
       );
 
-      return response.data;
+      console.log('response from login: ', response.data.data)
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Login failed"
@@ -95,6 +97,40 @@ export const login = createAsyncThunk(
     }
   }
 );
+
+export const logout = createAsyncThunk(
+  "auth/logout",
+  async ({ role }, {rejectWithValue }) => {
+    try {
+
+      const response = await api.post(API_ROUTES.AUTH.LOGOUT(role));
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Logoutfailed"
+      );
+    }
+  }
+);
+
+
+export const checkAuth = createAsyncThunk(
+  "auth/checkAuth",
+  async ( __, {rejectWithValue }) => {
+    try {
+
+      const response = await api.get(API_ROUTES.AUTH.GETME);
+
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "checkauth failed"
+      );
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -121,9 +157,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-
-      // Verify OTP
       .addCase(verifyOtp.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -136,47 +169,64 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      //Resend OTP
-
       .addCase(resendOtp.pending, (state) => {
-  state.loading = true;
-  state.error = null;
-})
-
-.addCase(resendOtp.fulfilled, (state) => {
-  state.loading = false;
-})
-
-.addCase(resendOtp.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload;
-})
-
-// Login
-      .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(login.fulfilled, (state, action) => {
+      .addCase(resendOtp.fulfilled, (state) => {
         state.loading = false;
-        
-        // Safely extract token and user
-        const responseData = action.payload.data || action.payload;
-        const accessToken = responseData.accessToken || responseData.token;
-        const user = responseData.user;
-
-        state.accessToken = accessToken;
-        state.user = user;
-        state.role = user?.role || action.meta.arg.role; // Track current user role
-        state.isAuthenticated = true;
       })
-      .addCase(login.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.isAuthenticated = false;
-      })
-      
+    .addCase(resendOtp.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+    .addCase(login.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(login.fulfilled, (state, action) => {
+      state.loading = false;
+      state.accessToken = action.payload.accessToken;
+      state.user = action.payload.user;
+      state.role = action.payload.role; 
+      state.isAuthenticated = true;
+    })
+    .addCase(login.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.isAuthenticated = false;
+    })
+    .addCase(logout.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(logout.fulfilled, (state) => {
+      state.loading = false;
+      state.user = null 
+      state.accessToken = null
+      state.role = null
+      state.isAuthenticated = false     
+    })
+    .addCase(logout.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    }) 
+    .addCase(checkAuth.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(checkAuth.fulfilled, (state, action) => {
+      state.loading = false;
+      state.accessToken = action.payload.accessToken;
+      state.user = action.payload.user;
+      state.role = action.payload.role; 
+      state.isAuthenticated = true;
+    })
+    .addCase(checkAuth.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.isAuthenticated = false;
+    }) 
   },
 });
 

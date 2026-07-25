@@ -48,7 +48,7 @@ export class RegisterVendorUsecase {
 
         const hashedOtp = await this._otpService.hash(otp)
         await this._otpStoreService.saveOtp(savedVendor.id, hashedOtp, 120)
-        await this._mailService.sendVerifiyRegisterOtp(savedVendor.email, savedVendor.fullName, otp)
+        // await this._mailService.sendVerifiyRegisterOtp(savedVendor.email, savedVendor.fullName, otp)
 
         return {
             success: true

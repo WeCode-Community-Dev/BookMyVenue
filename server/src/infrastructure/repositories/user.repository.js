@@ -11,6 +11,12 @@ export class UserRepository extends IUserRepository {
     return UserMapper.mapToEntity(document);
   }
 
+  async findByResetToken(token){
+    const document = await UserModel.findOne({resetToken: token})
+    if(!document) return null
+    return UserMapper.mapToEntity(document)
+  }
+
   async findAllFiltered(query = {}) {
     const filter = {};
 
