@@ -102,16 +102,16 @@ router.post(
     iUserBookingController.confirmBooking
 );
 router.get(
-    ROUTES.USER.BOOKING.GET_ALL,authHandler(iTokenService),
+    ROUTES.USER.BOOKING.GET_ALL, authHandler(iTokenService),
     iUserBookingController.getBookings
 );
 
 router.get(
-    ROUTES.USER.BOOKING.GET_BY_ID,authHandler(iTokenService),
+    ROUTES.USER.BOOKING.GET_BY_ID, authHandler(iTokenService),
     iUserBookingController.getBookingById
 );
 router.patch(
-    ROUTES.USER.BOOKING.CANCEL,
+    ROUTES.USER.BOOKING.CANCEL, authHandler(iTokenService),
     validate(CancelBookingSchema, "body"),
     iUserBookingController.cancelBooking
 );

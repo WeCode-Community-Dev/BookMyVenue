@@ -22,7 +22,7 @@ const initialState = {
 
 export const getBookings = createAsyncThunk(
   "userBooking/getBookings",
-  async ({ page = 1, limit = 5, status, }, { rejectWithValue }) => {
+  async ({ page = 1, limit = 5, status }, { rejectWithValue }) => {
     console.log(page, limit, status);
     try {
       const response = await api.get(API_ROUTES.USER.BOOKING.GET_ALL, {
@@ -58,6 +58,29 @@ export const getBookingById = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch booking"
+      );
+    }
+  }
+);
+
+// =========================
+// Cancel Booking
+// =========================
+export const cancelBooking = createAsyncThunk(
+  "userBooking/cancelBooking",
+  async ({ bookingId, cancellationReason }, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(
+        API_ROUTES.USER.BOOKING.CANCEL(bookingId),
+        {
+          cancellationReason,
+        }
+      );
+
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to cancel booking"
       );
     }
   }
@@ -108,6 +131,29 @@ const UserBookingSlice = createSlice({
       })
 
       .addCase(getBookingById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // =========================
+      // Cancel Booking
+      // =========================
+
+      .addCase(cancelBooking.pending, (state) => {
+        state.loading = true;
+      })
+
+      .addCase(cancelBooking.fulfilled, (state, action) => {
+        state.loading = false;
+      
+        state.bookings = state.bookings.map((booking) =>
+          booking.id === action.payload.id
+            ? { ...booking, status: action.payload.status }
+            : booking
+        );
+      })
+
+      .addCase(cancelBooking.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

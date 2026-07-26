@@ -4,9 +4,14 @@ import { ArrowLeft, Calendar, Users, CreditCard, MapPin } from "lucide-react";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getBookingById } from "@/redux/slices/UserBookingSlice";
+import { getBookingById, cancelBooking } from "@/redux/slices/UserBookingSlice";
+import Swal from "sweetalert2";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { XCircle } from "lucide-react";
 
 const BookingDetails = () => {
+  const navigate = useNavigate();
   const { bookingId } = useParams();
 
   const dispatch = useDispatch();
@@ -16,6 +21,62 @@ const BookingDetails = () => {
   useEffect(() => {
     dispatch(getBookingById(bookingId));
   }, [dispatch, bookingId]);
+
+  const handleCancelBooking = async () => {
+    const result = await Swal.fire({
+      title: "Cancel Booking",
+      text: "Are you sure you want to cancel this booking?",
+      input: "textarea",
+      inputLabel: "Cancellation Reason",
+      inputPlaceholder: "Enter the reason for cancellation...",
+      inputAttributes: {
+        "aria-label": "Cancellation reason",
+      },
+      showCancelButton: true,
+      confirmButtonText: "Cancel Booking",
+      cancelButtonText: "Keep Booking",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      reverseButtons: true,
+
+      inputValidator: (value) => {
+        if (!value) {
+          return "Cancellation reason is required";
+        }
+
+        if (value.trim().length < 10) {
+          return "Please enter at least 10 characters";
+        }
+
+        return null;
+      },
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await dispatch(
+        cancelBooking({
+          bookingId,
+          cancellationReason: result.value,
+        })
+      ).unwrap();
+
+      toast.success(
+        "Your booking has been cancelled successfully. The refund amount will be credited to your account within 24 hours."
+      );
+
+      dispatch(getBookingById(bookingId));
+    } catch (error) {
+      console.log(error);
+
+      toast.error(
+        typeof error === "string"
+          ? error
+          : error.message || "Failed to cancel booking"
+      );
+    }
+  };
 
   if (loading) {
     return (
@@ -97,7 +158,9 @@ const BookingDetails = () => {
                   <InfoRow
                     icon={<CreditCard size={18} />}
                     label="Booking ID"
-                    value={booking?.id}
+                    value={`BMV-${booking.id
+                      .slice(0, 6)
+                      .toUpperCase()}-${booking.id.slice(-4).toUpperCase()}`}
                   />
 
                   <InfoRow
@@ -123,9 +186,18 @@ const BookingDetails = () => {
                   />
 
                   <InfoRow
-                    icon={<CreditCard size={18} />}
-                    label="Amount Paid"
-                    value={`₹${booking?.totalAmount.toLocaleString()}`}
+                    label="Total Amount"
+                    value={`₹${booking.totalAmount.toLocaleString()}`}
+                  />
+
+                  <InfoRow
+                    label="Paid Amount"
+                    value={`₹${booking.paidAmount.toLocaleString()}`}
+                  />
+
+                  <InfoRow
+                    label="Remaining Amount"
+                    value={`₹${booking.remainingAmount.toLocaleString()}`}
                   />
 
                   <InfoRow
@@ -170,14 +242,71 @@ const BookingDetails = () => {
 
             {/* Buttons */}
 
-            <div className="flex justify-between mt-8">
-              <button className="border rounded-xl px-10 py-3 font-semibold hover:bg-gray-50">
-                Download Invoice
-              </button>
+            <div className="mt-8">
+              {booking.status?.toLowerCase() === "cancelled" ? (
+                <div className="border border-red-200 bg-red-50 rounded-2xl p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+                      <XCircle className="w-8 h-8 text-red-600" />
+                    </div>
 
-              <button className="border border-red-500 text-red-500 rounded-xl px-10 py-3 font-semibold hover:bg-red-50">
-                Cancel Booking
-              </button>
+                    <div className="flex-1">
+                      <h2 className="text-xl font-bold text-red-700">
+                        Booking Cancelled
+                      </h2>
+
+                      <p className="text-gray-600 mt-2">
+                        This booking has been cancelled successfully.
+                      </p>
+
+                      {booking.cancellationReason && (
+                        <div className="mt-5 bg-white border rounded-xl p-4">
+                          <p className="text-sm text-gray-500 font-medium mb-1">
+                            Cancellation Reason
+                          </p>
+
+                          <p className="text-gray-700">
+                            "{booking.cancellationReason}"
+                          </p>
+                        </div>
+                      )}
+
+                      <p className="text-sm text-gray-500 mt-5">
+                        If you'd like to reserve this venue again, you can
+                        create a new booking anytime.
+                      </p>
+
+                      <button
+                        className="mt-5 bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-xl font-semibold"
+                      >
+                        Book Again
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-between">
+                  <button className="border rounded-xl px-10 py-3 font-semibold hover:bg-gray-50">
+                    Download Invoice
+                  </button>
+
+                  <div className="flex gap-4">
+                    {booking.paymentStatus?.toLowerCase() === "partial" && (
+                      <button className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl px-8 py-3 font-semibold">
+                        Pay Remaining ₹
+                        {booking.remainingAmount.toLocaleString()}
+                      </button>
+                    )}
+
+                    <button
+                      onClick={handleCancelBooking}
+                      className="border border-red-500 text-red-500 rounded-xl px-10 py-3 font-semibold hover:bg-red-50"
+                    >
+                      Cancel Booking
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </main>

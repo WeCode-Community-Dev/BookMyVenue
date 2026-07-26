@@ -42,6 +42,7 @@ AUTH:{
         BOOKING: {
           GET_ALL: "/user/booking",
           GET_BY_ID: (bookingId) => `/user/booking/${bookingId}`,
+          CANCEL: (bookingId) => `/user/bookings/${bookingId}/cancel`,
         }
     },
    ADMIN: {

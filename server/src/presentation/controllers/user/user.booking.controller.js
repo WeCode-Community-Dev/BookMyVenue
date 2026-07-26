@@ -90,7 +90,6 @@ export class UserBookingController {
     getBookingById = asyncHandler(async (req, res) => {
 
         const userId = req.user.id;
-
         const { bookingId } = req.params;
 
         const result =
@@ -110,8 +109,7 @@ export class UserBookingController {
    
     cancelBooking = asyncHandler(async (req, res) => {
 
-        const userId = req.user.userId;
-
+        const userId = req.user.id;
         const { bookingId } = req.params;
 
         const { cancellationReason } = req.body;
