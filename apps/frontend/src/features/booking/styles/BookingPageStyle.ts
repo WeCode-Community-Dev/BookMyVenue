@@ -99,6 +99,7 @@ export const bookingLayoutStyle = {
     ),
     contentContainer: clsx(
         "mx-auto",
+        "w-full",
         "max-w-[1480px]",
         "px-6",
         "pb-10"
@@ -106,12 +107,16 @@ export const bookingLayoutStyle = {
     layoutGrid: clsx(
         "mt-6",
         "flex",
+        "w-full",
+        "max-w-full",
         "items-start",
         "gap-6"
     ),
     leftSection: clsx(
         "flex-1",
         "min-w-0",
+        "max-w-full",
+        "overflow-hidden",
         "space-y-6"
     ),
     rightSection: clsx(

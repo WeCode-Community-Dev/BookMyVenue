@@ -41,6 +41,8 @@ export const bookingPackagesStyle = {
     ),
     packagesList: clsx(
         "flex",
+        "flex-row",
+        "flex-nowrap",
         "w-full",
         "max-w-full",
         "overflow-x-auto",

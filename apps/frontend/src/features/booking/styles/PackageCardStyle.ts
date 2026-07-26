@@ -2,7 +2,7 @@ import clsx from "clsx";
 
 export const packageCardStyle = {
     cardBase: clsx(
-        "w-[calc(50%-10px)]",
+        "w-[330px]",
         "shrink-0",
         "rounded-2xl",
         "border",
