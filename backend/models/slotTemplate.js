@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const slotTemplateSchema = new mongoose.Schema(
    {
-      venue: { type: mongoose.Schema.Types.ObjectId, ref: "Venue", required: true, index: true },
+      venue: { type: mongoose.Schema.Types.ObjectId, ref: "Venue", required: true },
 
       // Owner-facing name, e.g. "Morning", "Evening", "Full Day"
       label: { type: String, required: true, trim: true },

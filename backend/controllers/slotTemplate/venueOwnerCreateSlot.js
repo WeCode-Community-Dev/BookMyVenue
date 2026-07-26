@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Venues = require("../../models/venue");
 const SlotTemplates = require("../../models/slotTemplate");
+const { materializeVenueAvailability } = require("../../services/materializeVenueAvailability");
 
 const MINUTES_IN_DAY = 1440;
 
@@ -73,13 +74,20 @@ async function venueOwnerCreateSlot(req, res) {
          });
       }
 
-      const slot = await SlotTemplates.create({
-         venue: id,
-         label: trimmedLabel,
-         startTime,
-         endTime,
-         price,
-      });
+      const session = await mongoose.startSession();
+      let slot;
+      try {
+         await session.withTransaction(async () => {
+            const created = await SlotTemplates.create(
+               [{ venue: id, label: trimmedLabel, startTime, endTime, price }],
+               { session }
+            );
+            slot = created[0];
+            await materializeVenueAvailability(id, session);
+         });
+      } finally {
+         await session.endSession();
+      }
 
       return res.status(201).json({ data: slot });
    } catch (err) {

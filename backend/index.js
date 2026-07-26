@@ -9,6 +9,7 @@ const categoryRoutes = require("./routes/category");
 const amenityRoutes = require("./routes/amenity");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
+const { scheduleMaterializationJob } = require("./jobs/scheduleMaterializationJob");
 
 const PORT = process.env.PORT || 8000;
 
@@ -28,6 +29,7 @@ app.use("/api/admin", adminRoutes);
 connectDB()
    .then(() => {
       console.log("Connected to database successfully!");
+      scheduleMaterializationJob();
       app.listen(PORT, () => {
          console.log(`Server started and listening on port ${PORT}`);
       });
