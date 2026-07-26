@@ -42,7 +42,8 @@
         "REJECT": "अस्वीकार करें",
         "APPROVE": "स्वीकार करें",
         "EDIT": "संपादित करें",
-        "VIEW_BOOKINGS": "बुकिंग देखें"
+        "VIEW_BOOKINGS": "बुकिंग देखें",
+        "REFRESH": "ताज़ा करें"
     },
     "LABEL": {
         "WELCOME_BACK": "वापसी पर स्वागत है",
