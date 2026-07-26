@@ -1,4 +1,4 @@
-import { Controller, Get, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Request, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import type { AuthRequest } from 'src/types/auth.request.interface';
@@ -11,5 +11,11 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   getMyBookings(@Request() req: AuthRequest) {
     return this.userService.getUserBookings(req.user.id);
+  }
+
+  @Patch('upgrade-to-owner')
+  @UseGuards(JwtAuthGuard)
+  upgradeToVenueOwner(@Request() req: AuthRequest) {
+    return this.userService.upgradeToVenueOwner(req.user.id);
   }
 }
