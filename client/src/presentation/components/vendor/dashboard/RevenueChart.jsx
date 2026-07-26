@@ -1,58 +1,51 @@
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
+Card,
+CardHeader,
+CardTitle,
+CardContent,
 } from "@/components/ui/card";
+
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
+BarChart,
+Bar,
+XAxis,
+YAxis,
+CartesianGrid,
+Tooltip,
+ResponsiveContainer,
 } from "recharts";
 
-const revenueData = [
-  { month: "Jan", revenue: 12000 },
-  { month: "Feb", revenue: 15000 },
-  { month: "Mar", revenue: 18000 },
-  { month: "Apr", revenue: 20000 },
-  { month: "May", revenue: 22000 },
-  { month: "Jun", revenue: 25000 },
-];
+const RevenueChart = ({ data = [] }) => {
+return ( 
+<Card> 
+  <CardHeader>
+     <CardTitle>Revenue (₹)</CardTitle> 
+    </CardHeader>
 
-const RevenueChart = () => {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Revenue (₹)</CardTitle>
-      </CardHeader>
+  <CardContent>
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
 
-      <CardContent>
-        <ResponsiveContainer
-          width="100%"
-          height={300}
-        >
-          <BarChart data={revenueData}>
-            <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="month" />
 
-            <XAxis dataKey="month" />
+        <YAxis />
 
-            <YAxis />
+        <Tooltip
+          formatter={(value) => [`₹${value}`, "Revenue"]}
+        />
 
-            <Tooltip />
+        <Bar
+          dataKey="revenue"
+          fill="#db9e42"
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  </CardContent>
+</Card>
 
-            <Bar
-              dataKey="revenue"
-              fill="#db9e42"
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
-  );
+
+);
 };
 
 export default RevenueChart;

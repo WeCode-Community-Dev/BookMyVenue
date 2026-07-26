@@ -1,7 +1,6 @@
 import axios from "axios";
 import { setAccessToken } from '@/redux/slices/AuthSlice'
 
-
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ? `${import.meta.env.VITE_BACKEND_URL}/api/v1` : "http://localhost:4000/api/v1";
 
 const api = axios.create({
