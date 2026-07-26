@@ -1,102 +1,189 @@
 /* eslint-disable */
 
+import { AppText, getText } from "@/lib/language/LanguageHelper";
 import {
+    BadgeCheck,
     Building2,
-    Car,
-    ChefHat,
     MapPin,
-    ShieldCheck,
-    Snowflake,
     Star,
     UsersRound,
-    Wifi,
 } from "lucide-react";
+import {
+    getVenueAmenities,
+    getVenueLocation,
+    getVenuePrimaryImage,
+    getVenueVerified,
+} from "@/features/venues/services/VenuService";
 
 import Image from "next/image";
+import { Venue } from "@/types/Venue";
+import { bookingVenueCardStyle } from "@/features/booking/styles/BookingVenueCardStyle";
 
-const amenities = [
-    { label: "Parking", icon: Car },
-    { label: "AC", icon: Snowflake },
-    { label: "WiFi", icon: Wifi },
-    { label: "Catering", icon: ChefHat },
-    { label: "Stage", icon: Building2 },
-    { label: "Security", icon: ShieldCheck },
-];
+export default function BookingVenueCard({ venue }: { venue?: Venue | null }) {
+    if (!venue) {
+        return (
+            <section className={bookingVenueCardStyle.skeletonCard}>
+                <div className={bookingVenueCardStyle.skeletonFlex}>
+                    <div className={bookingVenueCardStyle.skeletonImage} />
+                    <div className={bookingVenueCardStyle.skeletonContent}>
+                        <div className={bookingVenueCardStyle.skeletonTitle} />
+                        <div className={bookingVenueCardStyle.skeletonSub1} />
+                        <div className={bookingVenueCardStyle.skeletonSub2} />
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
-export default function BookingVenueCard() {
+    const primaryImage = getVenuePrimaryImage(venue);
+    const isVerified = getVenueVerified(venue);
+    const locationStr = getVenueLocation(venue);
+    const venueAmenities = getVenueAmenities(venue);
+
     return (
-        <section className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-            <div className="grid gap-5 lg:grid-cols-[420px_1fr]">
-                <div className="relative h-[210px] overflow-hidden rounded-lg">
+        <section className={bookingVenueCardStyle.card}>
+
+            <div className={bookingVenueCardStyle.cardFlex}>
+
+                {/* Image */}
+
+                <div className={bookingVenueCardStyle.imageWrapper}>
+
                     <Image
-                        src="/images/grand-palace-convention-centre.jpg"
-                        alt="Grand Palace Convention Centre"
-                        fill
-                        sizes="(min-width: 1024px) 420px, 100vw"
-                        className="object-cover"
+                        src={primaryImage}
+                        alt={venue.name}
+                        width={430}
+                        height={210}
                         priority
+                        className={bookingVenueCardStyle.image}
                     />
+
                 </div>
 
-                <div className="flex min-w-0 flex-col justify-center py-2 pr-2">
-                    <h2 className="text-2xl font-bold leading-tight text-slate-950">
-            Grand Palace Convention Centre
+                {/* Right Content */}
+
+                <div className={bookingVenueCardStyle.contentFlex}>
+
+                    {/* Venue Name */}
+
+                    <h2 className={bookingVenueCardStyle.title}>
+                        {venue.name}
                     </h2>
 
-                    <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
-                        <span className="inline-flex items-center gap-1.5 font-medium text-slate-900">
-                            <Star className="size-4 fill-amber-400 text-amber-400" />
-              4.8 (128 Reviews)
-                        </span>
+                    {/* Rating */}
 
-                        <span className="hidden h-5 w-px bg-slate-200 sm:block" />
+                    <div className={bookingVenueCardStyle.ratingRow}>
 
-                        <span className="inline-flex items-center gap-1.5 font-semibold text-teal-700">
-                            <ShieldCheck className="size-4" />
-              Verified Venue
-                        </span>
+                        <div className={bookingVenueCardStyle.ratingGroup}>
+
+                            <Star className={bookingVenueCardStyle.starIcon} />
+
+                            <span className={bookingVenueCardStyle.ratingValue}>
+                                4.8
+                            </span>
+
+                            <span className={bookingVenueCardStyle.reviewsCount}>
+                                <AppText textName="REVIEWS_COUNT" textModule="LABEL" append={{ count: 128 }} />
+                            </span>
+
+                        </div>
+
+                        {isVerified && (
+                            <>
+                                <div className={bookingVenueCardStyle.divider} />
+
+                                <div className={bookingVenueCardStyle.verifiedGroup}>
+
+                                    <BadgeCheck className={bookingVenueCardStyle.verifiedIcon} />
+
+                                    <span className={bookingVenueCardStyle.verifiedText}>
+                                        <AppText textName="VERIFIED_VENUE" textModule="LABEL" />
+                                    </span>
+
+                                </div>
+                            </>
+                        )}
+
                     </div>
 
-                    <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium text-slate-800">
-                        <span className="inline-flex items-center gap-2">
-                            <MapPin className="size-4 text-slate-600" />
-              Kochi, Kerala
-                        </span>
+                    {/* Venue Details */}
 
-                        <span className="hidden h-5 w-px bg-slate-200 sm:block" />
+                    <div className={bookingVenueCardStyle.detailsRow}>
 
-                        <span className="inline-flex items-center gap-2">
-                            <Building2 className="size-4 text-slate-600" />
-              Banquet Hall
-                        </span>
+                        <div className={bookingVenueCardStyle.detailGroup}>
 
-                        <span className="hidden h-5 w-px bg-slate-200 sm:block" />
+                            <MapPin className={bookingVenueCardStyle.detailIcon} />
 
-                        <span className="inline-flex items-center gap-2">
-                            <UsersRound className="size-4 text-slate-600" />
-              50 - 1000 Guests
-                        </span>
+                            <span className={bookingVenueCardStyle.detailText}>
+                                {locationStr}
+                            </span>
+
+                        </div>
+
+                        <div className={bookingVenueCardStyle.divider} />
+
+                        <div className={bookingVenueCardStyle.detailGroup}>
+
+                            <Building2 className={bookingVenueCardStyle.detailIcon} />
+
+                            <span className={bookingVenueCardStyle.detailText}>
+                                {getText("TYPE_" + venue.venueType.toUpperCase(), "BASIC_INFO")}
+                            </span>
+
+                        </div>
+
+                        <div className={bookingVenueCardStyle.divider} />
+
+                        <div className={bookingVenueCardStyle.detailGroup}>
+
+                            <UsersRound className={bookingVenueCardStyle.detailIcon} />
+
+                            <span className={bookingVenueCardStyle.capacityText}>
+                                <AppText textName="GUESTS_RANGE" textModule="LABEL" append={{ min: venue.capacityMin, max: venue.capacityMax }} />
+                            </span>
+
+                        </div>
+
                     </div>
 
-                    <div className="mt-6 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-3">
-                        {amenities.map(({ label, icon: Icon }) => {
-                            return (
-                                <span
-                                    key={label}
-                                    className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-slate-800"
-                                >
-                                    <Icon className="size-4 text-slate-600" />
-                                    {label}
-                                </span>
-                            ); 
-                        })}
+                    {/* Amenities */}
 
-                        <span className="inline-flex items-center rounded-md px-2 py-1 text-sm font-semibold text-slate-900">
-              +5 More
-                        </span>
-                    </div>
+                    {venueAmenities.length > 0 && (
+                        <div className={bookingVenueCardStyle.amenitiesBox}>
+
+                            <div className={bookingVenueCardStyle.amenitiesFlex}>
+
+                                {venueAmenities.slice(0, 5).map((amenity) => (
+
+                                    <div
+                                        key={amenity}
+                                        className={bookingVenueCardStyle.amenityGroup}
+                                    >
+                                        <Building2 className={bookingVenueCardStyle.amenityIcon} />
+
+                                        <span className={bookingVenueCardStyle.amenityText}>
+                                            {amenity}
+                                        </span>
+
+                                    </div>
+
+                                ))}
+
+                                {venueAmenities.length > 5 && (
+                                    <span className={bookingVenueCardStyle.moreAmenities}>
+                                        <AppText textName="MORE" textModule="LABEL" append={{ count: venueAmenities.length - 5 }} />
+                                    </span>
+                                )}
+
+                            </div>
+
+                        </div>
+                    )}
+
                 </div>
+
             </div>
+
         </section>
     );
 }
