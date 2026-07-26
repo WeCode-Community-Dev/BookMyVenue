@@ -16,6 +16,19 @@ import {
 } from "@/components/ui/card";
 
 const BookingOverviewChart = ({ data }) => {
+    const getMonthName = (monthNumber) => {
+        return new Date(
+            2000,
+            monthNumber - 1
+        ).toLocaleString("en-US", {
+            month: "short",
+        });
+    };
+
+    const chartData = data.map((item) => ({
+        ...item,
+        month: getMonthName(item.month),
+    }));
 
     return (
 
@@ -41,7 +54,7 @@ const BookingOverviewChart = ({ data }) => {
                     >
 
                         <BarChart
-                            data={data}
+                            data={chartData}
                         >
 
                             <CartesianGrid

@@ -39,7 +39,7 @@ export const ROUTES = {
     ADMIN: {
         ROOT: "/admin", 
         LOGIN: "/admin/login",
-        DASHBOARD: "admin/dashboard",
+        DASHBOARD: "dashboard",
         USERS: "users",
         VENDORS: "vendors",
         VENUES: "venues",
@@ -48,6 +48,6 @@ export const ROUTES = {
         BOOKING_DETAIL: "bookings/:bookingId",
         PAYMENTS: "payments",
         PAYMENT_DETAILS:"payments/:paymentId",
-        CATEGORIES: "/admin/categories",
+        CATEGORIES: "categories",
     }
 }
