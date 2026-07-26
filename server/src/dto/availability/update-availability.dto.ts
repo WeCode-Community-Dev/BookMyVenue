@@ -9,6 +9,15 @@ export const updateAvailabilitySchema = z
     maxBookingDuration: z.number().positive().nullable().optional(),
     pricePerHour: z.number().positive('Price must be greater than 0'),
     bufferTime: z.number().min(0, 'Buffer time cannot be negative').optional(),
+    blackoutDates: z
+      .array(
+        z.object({
+          startDate: z.string().or(z.date()),
+          endDate: z.string().or(z.date()),
+          reason: z.string().optional(),
+        })
+      )
+      .optional(),
   })
   .refine(
     (data) => {

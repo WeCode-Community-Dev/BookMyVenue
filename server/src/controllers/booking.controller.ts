@@ -17,9 +17,62 @@ import {
   getOwnerBookingByIdService,
   updateOwnerBookingStatusService,
   getAdminBookingsService,
+  payBookingWithWalletService,
+  getCancellationQuoteService,
+  adminForceCancelBookingService,
 } from '@/services/booking.service';
 import { createOrder as createRazorpayOrder } from '@/services/razorpay.service';
 import { CreateBookingPayload } from '@/types/booking.types';
+
+// POST /admin/bookings/:bookingId/force-cancel
+export const adminForceCancelBooking = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const adminId = req.user?.id;
+    if (!adminId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
+    const bookingId = req.params.bookingId as string;
+    const { reason, refundPercentage } = req.body;
+
+    const booking = await adminForceCancelBookingService(
+      adminId,
+      bookingId,
+      reason,
+      refundPercentage !== undefined ? Number(refundPercentage) : 100
+    );
+
+    success(res, HTTP_STATUS.OK, booking, 'Booking force-cancelled and refund processed successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /bookings/pay-wallet
+export const payWithWallet = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
+    const { bookingId } = req.body;
+    if (!bookingId) throw new AppError('bookingId is required', HTTP_STATUS.BAD_REQUEST);
+
+    const booking = await payBookingWithWalletService(userId, bookingId);
+    success(res, HTTP_STATUS.OK, booking, 'Payment processed successfully using Wallet balance');
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /bookings/:bookingId/cancellation-quote
+export const getCancellationQuote = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) throw new AppError(MESSAGES.UNAUTHORIZED, HTTP_STATUS.UNAUTHORIZED);
+    const bookingId = req.params.bookingId as string;
+
+    const quote = await getCancellationQuoteService(userId, bookingId);
+    success(res, HTTP_STATUS.OK, quote, 'Cancellation refund quote calculated successfully');
+  } catch (error) {
+    next(error);
+  }
+};
 
 // POST /bookings/quote
 export const getBookingQuote = async (req: Request, res: Response, next: NextFunction) => {

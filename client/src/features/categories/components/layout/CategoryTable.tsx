@@ -46,7 +46,7 @@ const CategoryTable: React.FC<Props> = ({
   const columns: Column<Category>[] = [
     {
       header: 'Image',
-      accessor: (cat) => <CategoryAvatar imageUrl={cat.imageUrl} name={cat.name} />,
+      accessor: (cat) => <CategoryAvatar imageUrl={cat.imageUrl || undefined} name={cat.name} />,
       className: 'w-20',
     },
     {

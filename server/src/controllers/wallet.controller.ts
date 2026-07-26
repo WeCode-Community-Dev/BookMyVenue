@@ -21,3 +21,19 @@ export const getUserWallet = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
+export const requestWithdrawal = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new AppError('Unauthorized access', HTTP_STATUS.UNAUTHORIZED);
+    }
+
+    const { amount, bankDetails } = req.body;
+    const result = await walletService.requestWithdrawalService(userId, Number(amount), bankDetails);
+
+    return success(res, HTTP_STATUS.OK, result, 'Withdrawal request submitted successfully');
+  } catch (error) {
+    next(error);
+  }
+};

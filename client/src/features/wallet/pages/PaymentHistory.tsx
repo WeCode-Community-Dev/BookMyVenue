@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { TransactionTable } from '@/shared/components/table/TransactionTable';
 import { type TableFilterConfig } from '@/shared/components/table/TableFilters';
 import apiClient from '@/services/apiClient';

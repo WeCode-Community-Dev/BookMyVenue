@@ -7,6 +7,7 @@ export interface ISettlement extends Document {
   ownerId: mongoose.Types.ObjectId;
   totalBookingAmount: number;
   platformFee: number;
+  tdsAmount: number;
   ownerEarnings: number;
   status: SettlementStatus;
   settledAt: Date | null;
@@ -45,6 +46,11 @@ const settlementSchema = new Schema<ISettlement>(
     platformFee: {
       type: Number,
       required: true,
+      min: 0,
+    },
+    tdsAmount: {
+      type: Number,
+      default: 0,
       min: 0,
     },
     ownerEarnings: {

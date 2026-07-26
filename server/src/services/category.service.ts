@@ -44,12 +44,22 @@ export const updateCategory = async (data: UpdateCategoryDto): Return => {
   return await repo.updateCategory(data);
 };
 
+import Venue from '@/models/venue.model';
+
 export const deleteCategory = async (id: string): Return => {
   if (typeof id !== 'string') throw new AppError('Invalid Category ID', HTTP_STATUS.BAD_REQUEST);
   const category = await repo.getCategory(id);
 
   if (!category) {
     throw new AppError('Category not found', HTTP_STATUS.NOT_FOUND);
+  }
+
+  const activeVenuesCount = await Venue.countDocuments({ categoryId: id, isDeleted: { $ne: true } });
+  if (activeVenuesCount > 0) {
+    throw new AppError(
+      `Cannot delete category with ${activeVenuesCount} active venue(s) assigned. Please reassign the venues to another category first.`,
+      HTTP_STATUS.BAD_REQUEST
+    );
   }
 
   return await repo.deleteCategory(id);

@@ -3,6 +3,7 @@ import {
   BookingScenario,
   BookingStatus,
   PaymentStatus,
+  PaymentMethod,
   RESERVATION_POLICY,
   CancellationType,
   RefundStatus,
@@ -14,12 +15,15 @@ import { getAvailabilityByVenueId } from '@/repositories/availability.repository
 import { IAvailability } from '@/types/availability.types';
 import * as bookingRepo from '@/repositories/booking.repository';
 import * as availabilityRepo from '@/repositories/availability.repository';
+import { walletRepository } from '@/repositories/wallet.repository';
+import { WalletTransaction } from '@/models/walletTransaction.model';
 import { verifyPaymentSignature } from './razorpay.service';
 import { processRefund } from './refund.service';
 import logger from '@/libs/logger';
 import mongoose from 'mongoose';
 import Venue from '@/models/venue.model';
 import Booking from '@/models/booking.model';
+import { logAdminAction } from '@/utils/auditLogger';
 
 // ── Helpers ───────────────────────────────────────────────────
 
@@ -38,17 +42,7 @@ const determineScenario = (eventStart: Date): BookingScenario => {
   return BookingScenario.IMMEDIATE;
 };
 
-/**
- * Calculates the remaining payment due date based on booking lead time.
- * Uses UTC-based calculations.
- * Core rule:
- *   leadTimeDays = (eventDate - bookingDate) in days
- *   If leadTimeDays >= 7 (Normal Booking):
- *     remainingPaymentDueDate = eventDate - (leadTimeDays * cancellationFactor)
- *   If leadTimeDays < 7 (Short Notice Booking):
- *     remainingPaymentDueDate = bookingDate
- *     isImmediatePaymentRequired = true
- */
+
 export const calculateRemainingDueDate = (
   bookingDate: Date,
   eventDate: Date,
@@ -125,10 +119,28 @@ export const calculateQuoteService = async (
     throw new AppError('Past dates are not allowed', HTTP_STATUS.BAD_REQUEST);
   }
 
+  const now = new Date();
+  const minLeadTimeMs = 2 * 60 * 60 * 1000; // 2 hours lead time
+  if (start.getTime() - now.getTime() < minLeadTimeMs) {
+    throw new AppError('Bookings must be placed at least 2 hours in advance', HTTP_STATUS.BAD_REQUEST);
+  }
+
   // Fetch venue pricing
   const availability: IAvailability | null = await getAvailabilityByVenueId(venueId);
   if (!availability) {
     throw new AppError('Venue not available to book', HTTP_STATUS.NOT_FOUND);
+  }
+
+  // Check blackout dates
+  if (availability.blackoutDates && availability.blackoutDates.length > 0) {
+    const isBlackedOut = availability.blackoutDates.some((b: any) => {
+      const bStart = new Date(b.startDate).getTime();
+      const bEnd = new Date(b.endDate).getTime();
+      return start.getTime() < bEnd && end.getTime() > bStart;
+    });
+    if (isBlackedOut) {
+      throw new AppError('Venue is unavailable on the selected dates due to a scheduled blackout period', HTTP_STATUS.BAD_REQUEST);
+    }
   }
 
   // Calculate total amount (base + GST + platform fee)
@@ -150,7 +162,6 @@ export const calculateQuoteService = async (
   const remainingBalance = totalAmount - reservationDeposit;
 
   // Calculate due date details
-  const now = new Date();
   const deadlineDetails = calculateRemainingDueDate(now, start, 0.5);
 
   return {
@@ -357,22 +368,12 @@ export const getUserBookingsService = async (
 
     if (
       (booking.bookingStatus === BookingStatus.RESERVED || booking.bookingStatus === BookingStatus.CONFIRMED) &&
-      booking.startDateTime && booking.createdAt
+      booking.startDateTime
     ) {
       const eventStartTime = new Date(booking.startDateTime);
-      if (now.getTime() < eventStartTime.getTime()) {
-        const bookingCreatedAt = new Date(booking.createdAt);
-        const diffMs = eventStartTime.getTime() - bookingCreatedAt.getTime();
-        const diffDays = diffMs / (1000 * 60 * 60 * 24);
-
-        const windowHours = diffDays > 2 ? 48 : 2;
-        const windowDeadline = new Date(bookingCreatedAt.getTime() + windowHours * 60 * 60 * 1000);
-
-        const effectiveDeadline = windowDeadline.getTime() < eventStartTime.getTime() ? windowDeadline : eventStartTime;
-
-        if (now.getTime() <= effectiveDeadline.getTime()) {
-          isCancellable = true;
-        }
+      const daysUntilEvent = (eventStartTime.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysUntilEvent >= 7) {
+        isCancellable = true;
       }
     }
 
@@ -413,9 +414,10 @@ export const getUserBookingsService = async (
 /**
  * Cancels a user's booking.
  *
- * Rules:
- * - If the booking is made more than 2 days before the event, cancellation is allowed within 48 hours of booking.
- * - If the booking is made 2 days or less before the event, cancellation is allowed within 2 hours of booking.
+ * Event-Date Relative Policy:
+ * - > 14 days before event: 100% refund of amount paid
+ * - 7 to 14 days before event: 50% refund of amount paid
+ * - < 7 days before event: Cancellation not permitted
  *
  * @param userId User ID
  * @param bookingId Booking ID
@@ -441,12 +443,12 @@ export const cancelBookingService = async (userId: string, bookingId: string, ca
     throw new AppError(`Cannot cancel booking in ${booking.bookingStatus} state`, HTTP_STATUS.BAD_REQUEST);
   }
 
-  //Slot Validation 
+  // Slot Validation 
   if (!booking.startDateTime || !booking.endDateTime) {
     throw new AppError('Invalid booking slot. Cancellation aborted to prevent data corruption.', HTTP_STATUS.SERVER_ERROR);
   }
 
-  //Event Already Started 
+  // Event Already Started 
   const now = new Date();
   const eventStartTime = new Date(booking.startDateTime);
 
@@ -454,18 +456,16 @@ export const cancelBookingService = async (userId: string, bookingId: string, ca
     throw new AppError('Cannot cancel a booking after the event has started', HTTP_STATUS.BAD_REQUEST);
   }
 
-  //Cancellation Window Validation
-  const bookingCreatedAt = new Date(booking.createdAt);
-  const diffMs = eventStartTime.getTime() - bookingCreatedAt.getTime();
-  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  // Event-Date Relative Cancellation Window Validation
+  const daysUntilEvent = (eventStartTime.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
 
-  const windowHours = diffDays > 2 ? 48 : 2;
-  const windowDeadline = new Date(bookingCreatedAt.getTime() + windowHours * 60 * 60 * 1000);
-
-  const effectiveDeadline = windowDeadline.getTime() < eventStartTime.getTime() ? windowDeadline : eventStartTime;
-
-  if (now.getTime() > effectiveDeadline.getTime()) {
-    throw new AppError('Cancellation window has expired for this booking', HTTP_STATUS.BAD_REQUEST);
+  let refundFactor = 0;
+  if (daysUntilEvent >= 14) {
+    refundFactor = 1.0;
+  } else if (daysUntilEvent >= 7) {
+    refundFactor = 0.5;
+  } else {
+    throw new AppError('Cancellations are not permitted less than 7 days prior to event', HTTP_STATUS.BAD_REQUEST);
   }
 
   const session = await mongoose.startSession();
@@ -473,7 +473,8 @@ export const cancelBookingService = async (userId: string, bookingId: string, ca
     session.startTransaction();
 
     // Calculate refund
-    const refundAmount = booking.amountPaid || 0;
+    const amountPaid = booking.amountPaid || 0;
+    const refundAmount = Math.round(amountPaid * refundFactor);
     const isRefundEligible = refundAmount > 0;
 
     const cancellationDetails = {
@@ -487,7 +488,7 @@ export const cancelBookingService = async (userId: string, bookingId: string, ca
 
     await session.commitTransaction();
 
-    //Refund Processing
+    // Refund Processing
     if (isRefundEligible) {
       try {
         await processRefund(bookingId, RefundStatus.PENDING);
@@ -614,11 +615,8 @@ export const updateOwnerBookingStatusService = async (
   const updates: Record<string, any> = {};
   const now = new Date();
 
-  console.log('the booking status from frontend :',bookingStatus);
-
   if (bookingStatus) {
     const validBookingStatuses = Object.values(BookingStatus);
-    console.log("the valid booking status in backend ",validBookingStatuses)
     if (!validBookingStatuses.includes(bookingStatus.toUpperCase() as any)) {
       throw new AppError('Invalid booking status value', HTTP_STATUS.BAD_REQUEST);
     }
@@ -629,7 +627,6 @@ export const updateOwnerBookingStatusService = async (
         throw new AppError('Only reserved bookings can be manually confirmed', HTTP_STATUS.BAD_REQUEST);
       }
       updates.bookingStatus = BookingStatus.CONFIRMED;
-      // Auto-set paymentStatus to partial if it is still pending
       if (booking.paymentStatus === PaymentStatus.PENDING) {
         updates.paymentStatus = PaymentStatus.PARTIAL;
       }
@@ -649,9 +646,20 @@ export const updateOwnerBookingStatusService = async (
       updates.settlementStatus = SettlementStatus.PENDING;
     }
 
-    // 3. Transition to cancelled (Disabled for Owners)
+    // 3. Transition to cancelled by Owner (with 100% user refund trigger)
     if (bookingStatus.toUpperCase() === BookingStatus.CANCELLED) {
-      throw new AppError('Owners are not permitted to cancel bookings', HTTP_STATUS.BAD_REQUEST);
+      updates.bookingStatus = BookingStatus.CANCELLED;
+      updates.cancellationType = CancellationType.OWNER;
+      updates.cancelledAt = new Date();
+      updates.cancellationReason = 'Cancelled by venue owner';
+      
+      const amountPaid = booking.amountPaid || 0;
+      if (amountPaid > 0) {
+        updates.refundAmount = amountPaid;
+        updates.refundStatus = RefundStatus.PENDING;
+      } else {
+        updates.refundStatus = RefundStatus.NOT_ELIGIBLE;
+      }
     }
   }
 
@@ -660,6 +668,14 @@ export const updateOwnerBookingStatusService = async (
     { $set: updates },
     { new: true }
   ).populate('venue');
+
+  if (updates.refundStatus === RefundStatus.PENDING) {
+    try {
+      await processRefund(bookingId, RefundStatus.PENDING);
+    } catch (err) {
+      logger.error(`Owner cancellation refund failed for booking ${bookingId}`);
+    }
+  }
 
   return updatedBooking;
 };
@@ -675,4 +691,170 @@ export const getAdminBookingsService = async (
   sort?: string
 ) => {
   return bookingRepo.getAdminBookings(page, limit, search, status, categoryId, sort);
+};
+
+/**
+ * Enables instant booking payment using internal User Wallet balance.
+ */
+export const payBookingWithWalletService = async (userId: string, bookingId: string) => {
+  const booking = await bookingRepo.findBookingById(bookingId);
+  if (!booking) {
+    throw new AppError('Booking not found', HTTP_STATUS.NOT_FOUND);
+  }
+  if (booking.user._id.toString() !== userId) {
+    throw new AppError('Unauthorized access to booking', HTTP_STATUS.UNAUTHORIZED);
+  }
+  if (booking.paymentStatus === PaymentStatus.PAID) {
+    throw new AppError('Booking is already fully paid', HTTP_STATUS.BAD_REQUEST);
+  }
+
+  const chargeAmount =
+    booking.bookingScenario === BookingScenario.IMMEDIATE || booking.paymentStatus === PaymentStatus.DEPOSIT_PAID
+      ? booking.remainingBalance || booking.totalAmount
+      : booking.reservationDeposit;
+
+  const wallet = await walletRepository.getOrCreateByUserId(userId);
+  if (wallet.balance < chargeAmount) {
+    throw new AppError(
+      `Insufficient wallet balance. Required: ₹${chargeAmount}, Available: ₹${wallet.balance}`,
+      HTTP_STATUS.BAD_REQUEST
+    );
+  }
+
+  const balanceBefore = wallet.balance;
+  const balanceAfter = balanceBefore - chargeAmount;
+
+  // Deduct wallet balance
+  await walletRepository.creditRefundToWallet(userId, -chargeAmount);
+
+  // Record wallet DEBIT transaction
+  await WalletTransaction.create({
+    walletId: wallet._id,
+    userId: booking.user,
+    type: 'DEBIT',
+    amount: chargeAmount,
+    balanceBefore,
+    balanceAfter,
+    status: 'SUCCESS',
+    source: 'BOOKING_PAYMENT',
+    bookingId: booking._id,
+    description: `Payment for booking ${booking.bookingId || booking._id} via Wallet`,
+  });
+
+  // Update booking state
+  booking.paymentMethod = PaymentMethod.WALLET;
+  if (booking.bookingScenario === BookingScenario.IMMEDIATE || booking.paymentStatus === PaymentStatus.DEPOSIT_PAID) {
+    booking.bookingStatus = BookingStatus.CONFIRMED;
+    booking.paymentStatus = PaymentStatus.PAID;
+    booking.amountPaid = booking.totalAmount;
+    booking.remainingBalance = 0;
+  } else {
+    booking.bookingStatus = BookingStatus.RESERVED;
+    booking.paymentStatus = PaymentStatus.DEPOSIT_PAID;
+    booking.amountPaid = chargeAmount;
+    booking.remainingBalance = booking.totalAmount - chargeAmount;
+  }
+
+  await booking.save();
+  return booking;
+};
+
+/**
+ * Returns a cancellation refund quote preview before confirming cancellation.
+ */
+export const getCancellationQuoteService = async (userId: string, bookingId: string) => {
+  const booking = await bookingRepo.findBookingById(bookingId);
+  if (!booking) {
+    throw new AppError('Booking not found', HTTP_STATUS.NOT_FOUND);
+  }
+  if (booking.user._id.toString() !== userId) {
+    throw new AppError('Unauthorized access to booking', HTTP_STATUS.FORBIDDEN);
+  }
+
+  const now = new Date();
+  const eventStartTime = new Date(booking.startDateTime);
+  const daysUntilEvent = (eventStartTime.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+
+  let refundFactor = 0;
+  let isCancellable = false;
+  if (daysUntilEvent >= 14) {
+    refundFactor = 1.0;
+    isCancellable = true;
+  } else if (daysUntilEvent >= 7) {
+    refundFactor = 0.5;
+    isCancellable = true;
+  }
+
+  const amountPaid = booking.amountPaid || 0;
+  const estimatedRefundAmount = Math.round(amountPaid * refundFactor);
+
+  return {
+    bookingId: booking._id,
+    daysUntilEvent: Math.round(daysUntilEvent * 10) / 10,
+    refundFactor,
+    refundPercentage: refundFactor * 100,
+    amountPaid,
+    estimatedRefundAmount,
+    isCancellable,
+  };
+};
+
+/**
+ * Empowers Admin to force-cancel any booking during guest disputes or venue emergencies,
+ * with mandatory audit logging and custom wallet refund capabilities.
+ */
+export const adminForceCancelBookingService = async (
+  adminId: string,
+  bookingId: string,
+  reason: string,
+  refundPercentage: number = 100
+) => {
+  const booking = await bookingRepo.findBookingById(bookingId);
+  if (!booking) {
+    throw new AppError('Booking not found', HTTP_STATUS.NOT_FOUND);
+  }
+  if (booking.bookingStatus === BookingStatus.CANCELLED) {
+    throw new AppError('Booking is already cancelled', HTTP_STATUS.BAD_REQUEST);
+  }
+
+  const factor = Math.max(0, Math.min(100, refundPercentage)) / 100;
+  const amountPaid = booking.amountPaid || 0;
+  const refundAmount = Math.round(amountPaid * factor);
+
+  booking.bookingStatus = BookingStatus.CANCELLED;
+  (booking as any).cancellationType = CancellationType.ADMIN;
+  (booking as any).cancellationReason = reason || 'Admin forced cancellation';
+  (booking as any).refundAmount = refundAmount;
+
+  if (refundAmount > 0) {
+    (booking as any).refundStatus = RefundStatus.COMPLETED;
+    // Credit refund to user's wallet
+    await walletRepository.creditRefundToWallet(booking.user._id.toString(), refundAmount);
+
+    const wallet = await walletRepository.getOrCreateByUserId(booking.user._id.toString());
+    await WalletTransaction.create({
+      walletId: wallet._id,
+      userId: booking.user._id,
+      type: 'CREDIT',
+      amount: refundAmount,
+      balanceBefore: wallet.balance - refundAmount,
+      balanceAfter: wallet.balance,
+      status: 'SUCCESS',
+      source: 'REFUND',
+      bookingId: booking._id,
+      description: `Admin forced refund for booking ${booking.bookingId || booking._id} (${refundPercentage}%)`,
+    });
+  } else {
+    (booking as any).refundStatus = RefundStatus.NOT_ELIGIBLE;
+  }
+
+  await booking.save();
+
+  // Log action in AdminAuditLog
+  await logAdminAction(adminId, 'FORCE_CANCEL_BOOKING', 'BOOKING', bookingId, reason, {
+    refundPercentage,
+    refundAmount,
+  });
+
+  return booking;
 };

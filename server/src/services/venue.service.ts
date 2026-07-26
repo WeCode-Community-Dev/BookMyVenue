@@ -65,6 +65,9 @@ export const updateVenue = async (
   return updatedVenue;
 };
 
+import Booking from '@/models/booking.model';
+import { BookingStatus } from '@/constants/booking';
+
 export const softDeleteVenue = async (ownerId: string, venueId: string): Return => {
   const venue = await venueRepository.findVenueById(venueId);
 
@@ -74,6 +77,20 @@ export const softDeleteVenue = async (ownerId: string, venueId: string): Return 
 
   if (venue.ownerId.toString() !== ownerId) {
     throw new AppError(MESSAGES.FORBIDDEN_VENUE_ACCESS, HTTP_STATUS.FORBIDDEN);
+  }
+
+  // Check for active upcoming bookings
+  const activeBookingsCount = await Booking.countDocuments({
+    venue: venueId,
+    bookingStatus: { $in: [BookingStatus.RESERVED, BookingStatus.CONFIRMED] },
+    startDateTime: { $gte: new Date() },
+  });
+
+  if (activeBookingsCount > 0) {
+    throw new AppError(
+      `Cannot delete venue with ${activeBookingsCount} active upcoming booking(s). Please fulfill or cancel existing bookings first.`,
+      HTTP_STATUS.BAD_REQUEST
+    );
   }
 
   const deletedVenue = await venueRepository.softDeleteVenue(venueId);
@@ -154,5 +171,25 @@ export const getPublicVenueById = async (venueId: string): Return => {
     throw new AppError(MESSAGES.VENUE_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
   }
 
+  return venue;
+};
+
+export const toggleVenueFeaturedService = async (venueId: string, isFeatured: boolean): Return => {
+  const venue = await venueRepository.findVenueById(venueId);
+  if (!venue) {
+    throw new AppError(MESSAGES.VENUE_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+  venue.isFeatured = isFeatured;
+  await venue.save();
+  return venue;
+};
+
+export const toggleVenueEliteService = async (venueId: string, isElite: boolean): Return => {
+  const venue = await venueRepository.findVenueById(venueId);
+  if (!venue) {
+    throw new AppError(MESSAGES.VENUE_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
+  venue.isElite = isElite;
+  await venue.save();
   return venue;
 };

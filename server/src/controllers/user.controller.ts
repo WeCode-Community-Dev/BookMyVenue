@@ -142,7 +142,13 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
     const { fullName, phoneNumber } = req.body;
     const userUpdate: any = {};
     if (fullName) userUpdate.fullName = fullName;
-    if (phoneNumber) userUpdate.phoneNumber = phoneNumber;
+    if (phoneNumber) {
+      const phoneRegex = /^(\+?\d{1,4}[\s-]?)?\(?\d{1,4}\)?[\s-]?\d{1,4}[\s-]?\d{1,9}$/;
+      if (!phoneRegex.test(phoneNumber.trim())) {
+        throw new AppError('Invalid phone number format. Please provide a valid phone number.', HTTP_STATUS.BAD_REQUEST);
+      }
+      userUpdate.phoneNumber = phoneNumber.trim();
+    }
 
     // Handle avatar upload if provided
     if (files?.avatar?.[0]) {
@@ -158,6 +164,13 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
 
     let updatedOwner = null;
     if (user.role === 'owner') {
+      if (req.body.ifscCode) {
+        const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+        if (!ifscRegex.test(req.body.ifscCode.toUpperCase().trim())) {
+          throw new AppError('Invalid Indian IFSC Code format (e.g. SBIN0001234)', HTTP_STATUS.BAD_REQUEST);
+        }
+      }
+
       const ownerUpdate: any = {
         address: {
           street: req.body.street || '',
@@ -168,7 +181,7 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
         bankDetails: {
           accountHolderName: req.body.accountHolderName || '',
           accountNumber: req.body.accountNumber || '',
-          ifscCode: req.body.ifscCode || '',
+          ifscCode: req.body.ifscCode ? req.body.ifscCode.toUpperCase().trim() : '',
         },
       };
 

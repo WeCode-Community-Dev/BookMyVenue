@@ -47,6 +47,13 @@ const availabilitySchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    blackoutDates: [
+      {
+        startDate: { type: Date, required: true },
+        endDate: { type: Date, required: true },
+        reason: { type: String, default: 'Maintenance / Private Event' },
+      },
+    ],
   },
   {
     timestamps: true,

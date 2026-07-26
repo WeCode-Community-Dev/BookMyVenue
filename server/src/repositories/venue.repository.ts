@@ -1,5 +1,8 @@
 import Venue from '@/models/venue.model';
 import User from '@/models/user.model';
+import Booking from '@/models/booking.model';
+import { BookingStatus } from '@/constants/booking';
+import { escapeRegex } from '@/utils/escapeRegex';
 import { VenueDocument } from '@/types/venue.types';
 import { CreateVenueDTO } from '@/dto/venue/create-venue.dto';
 import { UpdateVenueDTO } from '@/dto/venue/update-venue.dto';
@@ -211,10 +214,26 @@ export const findPublicVenues = async (query: GetPublicVenuesQueryDTO) => {
   }
 
   if (search) {
+    const escaped = escapeRegex(search);
     filter.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { description: { $regex: search, $options: 'i' } },
+      { name: { $regex: escaped, $options: 'i' } },
+      { description: { $regex: escaped, $options: 'i' } },
     ];
+  }
+
+  // Filter out venues with overlapping active bookings for target date range
+  if (query.startDateTime && query.endDateTime) {
+    const start = new Date(query.startDateTime);
+    const end = new Date(query.endDateTime);
+    if (!isNaN(start.getTime()) && !isNaN(end.getTime()) && start < end) {
+      const bookedBookings = await Booking.find({
+        bookingStatus: { $in: [BookingStatus.RESERVED, BookingStatus.CONFIRMED] },
+        startDateTime: { $lt: end },
+        endDateTime: { $gt: start },
+      }).select('venue');
+      const unavailableVenueIds = bookedBookings.map((b) => b.venue);
+      filter._id = { $nin: unavailableVenueIds };
+    }
   }
 
   // Dynamic sort

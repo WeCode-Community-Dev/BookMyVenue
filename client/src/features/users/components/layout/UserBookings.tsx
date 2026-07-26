@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Loader2, Calendar } from 'lucide-react';
 import { useAsyncFetch } from '@/shared/hooks/useAsyncFetch';

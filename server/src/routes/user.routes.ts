@@ -3,12 +3,14 @@ import { Router } from 'express';
 import { authMiddleware } from '@/middlewares/auth.middleware';
 import { authorizeRoles } from '@/middlewares/role.middleware';
 import { getProfile, updateProfile, getUserBookings } from '@/controllers/user.controller';
-import { getUserWallet } from '@/controllers/wallet.controller';
+import { getUserWallet, requestWithdrawal } from '@/controllers/wallet.controller';
 import { getPaymentHistory } from '@/controllers/paymentHistory.controller';
 import { upload } from '@/middlewares/upload.middleware';
 import { getSuggestions } from '@/controllers/search.controller';
 import { getWishlist, toggleWishlist } from '@/controllers/wishlist.controller';
 import { requestPasswordChangeOtp, verifyAndChangePassword } from '@/controllers/password.controller';
+
+import { resubmitOwner } from '@/controllers/owner.controller';
 
 const router = Router();
 
@@ -28,10 +30,12 @@ router.put(
   ]),
   updateProfile
 );
+router.put('/owner/re-apply', resubmitOwner);
 router.post('/profile/password/request-otp', requestPasswordChangeOtp);
 router.patch('/profile/password/change', verifyAndChangePassword);
 router.get('/bookings', getUserBookings);
 router.get('/wallet', getUserWallet);
+router.post('/wallet/withdraw', requestWithdrawal);
 router.get('/payment-history', getPaymentHistory);
 
 router.get('/wishlist', getWishlist);

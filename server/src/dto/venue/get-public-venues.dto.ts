@@ -41,6 +41,9 @@ export const getPublicVenuesQuerySchema = z.object({
     .enum(['newest', 'oldest', 'price_asc', 'price_desc', 'capacity_asc', 'capacity_desc'])
     .optional()
     .default('newest'),
+
+  startDateTime: z.string().optional(),
+  endDateTime: z.string().optional(),
 });
 
 export type GetPublicVenuesQueryDTO = z.infer<typeof getPublicVenuesQuerySchema>;

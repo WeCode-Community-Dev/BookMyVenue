@@ -24,6 +24,8 @@ export const getUserById = async (id: string): Promise<IUser> => {
   return user;
 };
 
+import Venue from '@/models/venue.model';
+
 /**
  * Block (disable) a user
  */
@@ -32,7 +34,18 @@ export const blockUser = async (id: string): Promise<IUser | null> => {
   if (!user) {
     throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
   }
-  return await userRepository.update(id, { isBlocked: true });
+
+  const updatedUser = await userRepository.update(id, { isBlocked: true });
+
+  // If the user is an owner, deactivate all their venue listings
+  if (user.role === 'owner') {
+    await Venue.updateMany(
+      { ownerId: id },
+      { $set: { isActive: false, verificationStatus: 'rejected' } }
+    );
+  }
+
+  return updatedUser;
 };
 
 /**

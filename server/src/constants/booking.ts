@@ -33,6 +33,7 @@ export enum CancellationType {
   SYSTEM = 'SYSTEM',
   USER = 'USER',
   OWNER = 'OWNER',
+  ADMIN = 'ADMIN',
 }
 
 export enum RefundStatus {

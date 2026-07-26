@@ -69,6 +69,11 @@ const ownerSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+
+    isPayoutFrozen: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

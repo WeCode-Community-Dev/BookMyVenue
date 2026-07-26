@@ -1,8 +1,10 @@
 import mongoose from 'mongoose';
 import Booking from '@/models/booking.model';
+import Owner from '@/models/owner.model';
 import { BookingStatus, PaymentStatus } from '@/constants/booking';
 import { SettlementStatus, PLATFORM_FEE_PERCENTAGE } from '@/constants/settlement';
 import * as settlementRepo from '@/repositories/settlement.repository';
+import { walletRepository } from '@/repositories/wallet.repository';
 import { AppError } from '@/utils/AppError';
 import { HTTP_STATUS } from '@/constants/http';
 import logger from '@/libs/logger';
@@ -47,15 +49,24 @@ export const processSettlement = async (
       throw new AppError('Settlement already exists for this booking', HTTP_STATUS.CONFLICT);
     }
 
-    // 3. Calculate amounts
+    // 3. Calculate amounts (12% platform fee + 1% statutory TDS tax deduction)
     const totalAmount = booking.totalAmount;
     const platformFee = Math.round(totalAmount * PLATFORM_FEE_PERCENTAGE * 100) / 100;
-    const ownerEarnings = Math.round((totalAmount - platformFee) * 100) / 100;
+    const tdsAmount = Math.round(totalAmount * 0.01 * 100) / 100; // 1% statutory TDS
+    const ownerEarnings = Math.round((totalAmount - platformFee - tdsAmount) * 100) / 100;
 
     const venue = booking.venue as any;
     const ownerId = venue?.ownerId;
     if (!ownerId) {
       throw new AppError('Cannot determine venue owner for settlement', HTTP_STATUS.SERVER_ERROR);
+    }
+
+    const ownerDoc = await Owner.findOne({ userId: ownerId });
+    if (ownerDoc && ownerDoc.isPayoutFrozen) {
+      throw new AppError(
+        'Settlement cannot be processed because owner payouts are currently frozen under investigation',
+        HTTP_STATUS.BAD_REQUEST
+      );
     }
 
     // 4. Create settlement record (PROCESSING)
@@ -66,6 +77,7 @@ export const processSettlement = async (
         ownerId,
         totalBookingAmount: totalAmount,
         platformFee,
+        tdsAmount,
         ownerEarnings,
         status: SettlementStatus.PROCESSING,
         settledBy,
@@ -82,13 +94,28 @@ export const processSettlement = async (
 
     await session.commitTransaction();
 
-    // 6. Finalize to SETTLED (outside transaction for safety)
+    // 6. Finalize to SETTLED and credit Owner Wallet (outside transaction for safety)
     try {
       await settlementRepo.updateSettlementStatus(settlement._id.toString(), SettlementStatus.SETTLED);
       await Booking.findByIdAndUpdate(bookingId, { settlementStatus: SettlementStatus.SETTLED });
 
+      // Execute actual wallet credit to owner
+      const ownerWallet = await walletRepository.getOrCreateByUserId(ownerId.toString());
+      const balanceBefore = ownerWallet.balance;
+      const balanceAfter = balanceBefore + ownerEarnings;
+      await walletRepository.creditToWallet(ownerId.toString(), ownerEarnings);
+      await walletRepository.createPayoutTransaction({
+        walletId: ownerWallet._id as any,
+        userId: ownerId as any,
+        amount: ownerEarnings,
+        balanceBefore,
+        balanceAfter,
+        bookingId: booking._id as any,
+        description: `Settlement payout for booking ${booking.bookingId || booking._id}`,
+      });
+
       logger.info(
-        `[Settlement] Booking ${bookingId} settled by ${settledBy}. Owner: ₹${ownerEarnings}, Platform: ₹${platformFee}`
+        `[Settlement] Booking ${bookingId} settled by ${settledBy}. Owner wallet credited ₹${ownerEarnings}, Platform Fee: ₹${platformFee}`
       );
 
       return settlement;
