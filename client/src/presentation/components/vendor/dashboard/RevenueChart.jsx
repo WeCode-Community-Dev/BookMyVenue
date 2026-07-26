@@ -46,7 +46,7 @@ const RevenueChart = () => {
 
             <Bar
               dataKey="revenue"
-              fill="#4F46E5"
+              fill="#db9e42"
             />
           </BarChart>
         </ResponsiveContainer>

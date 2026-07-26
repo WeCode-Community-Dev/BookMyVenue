@@ -11,7 +11,6 @@ import VenueAbout from "@/presentation/components/user/venueDetails/VenueAbout";
 import { getVenueById } from "@/redux/slices/UserVenueSlice";
 import BookingCard from "@/presentation/components/user/venueDetails/BookingCard";
 import SimilarVenues from "@/presentation/components/user/venueDetails/SimilarVenues";
-import VenuePricingPackages from "@/presentation/components/user/venueDetails/VenuePricingPackages";
 import VenueAvailability from "@/presentation/components/user/venueDetails/VenueAvailability";
 import HostedBy from "@/presentation/components/user/venueDetails/HostedBy";
 import { similarVenues } from "@/constants/mockVenues";
@@ -77,7 +76,6 @@ export default function VenueDetails() {
                 <div className="lg:col-span-2">
                   <VenueAbout description={selectedVenue.description} />
                   <VenueAmenities amenities={selectedVenue.amenities} />
-                  <VenuePricingPackages selectedPackage={selectedPackage?.id} onPackageSelect={setSelectedPackage} />
                   <VenueAvailability venue={selectedVenue} onAvailabilityChange={setAvailability} />
                   <VenueReviews rating={selectedVenue.rating} 
                     reviews={selectedVenue.reviews} />

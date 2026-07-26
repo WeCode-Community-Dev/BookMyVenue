@@ -7,9 +7,10 @@ import { API_ROUTES } from "@/constants/apiRoutes";
 // ==============================
 
 const initialState = {
-loading: false,
-profile: null,
-error: null,
+  loading: false,
+  updating: false,
+  profile: null,
+  error: null,
 };
 
 // ==============================
@@ -17,21 +18,26 @@ error: null,
 // ==============================
 
 export const fetchVendorProfile = createAsyncThunk(
-"vendorProfile/fetchVendorProfile",
-async (_, { rejectWithValue }) => {
-try {
-const response = await api.get(API_ROUTES.VENDOR.PROFILE);
+  "vendorProfile/fetchVendorProfile",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get(
+        API_ROUTES.VENDOR.PROFILE
+      );
 
+      console.log(
+        "PROFILE RAW RESPONSE:",
+        response.data
+      );
 
-  return response.data.data;
-} catch (error) {
-  return rejectWithValue(
-    error.response?.data?.message || "Failed to fetch profile"
-  );
-}
-
-
-}
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to fetch profile"
+      );
+    }
+  }
 );
 
 // ==============================
@@ -39,24 +45,22 @@ const response = await api.get(API_ROUTES.VENDOR.PROFILE);
 // ==============================
 
 export const updateVendorProfile = createAsyncThunk(
-"vendorProfile/updateVendorProfile",
-async (profileData, { rejectWithValue }) => {
-try {
-const response = await api.patch(
-API_ROUTES.VENDOR.PROFILE,
-profileData
-);
+  "vendorProfile/updateVendorProfile",
+  async (profileData, { rejectWithValue }) => {
+    try {
+      const response = await api.patch(
+        API_ROUTES.VENDOR.PROFILE,
+        profileData
+      );
 
-
-  return response.data.data;
-} catch (error) {
-  return rejectWithValue(
-    error.response?.data?.message || "Failed to update profile"
-  );
-}
-
-
-}
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          "Failed to update profile"
+      );
+    }
+  }
 );
 
 // ==============================
@@ -64,54 +68,71 @@ profileData
 // ==============================
 
 const vendorProfileSlice = createSlice({
-name: "vendorProfile",
-initialState,
-reducers: {},
+  name: "vendorProfile",
 
-extraReducers: (builder) => {
-builder
+  initialState,
 
+  reducers: {},
 
-  // ==========================
-  // FETCH PROFILE
-  // ==========================
+  extraReducers: (builder) => {
+    builder
 
-  .addCase(fetchVendorProfile.pending, (state) => {
-    state.loading = true;
-    state.error = null;
-  })
+      // ==========================
+      // FETCH PROFILE
+      // ==========================
 
-  .addCase(fetchVendorProfile.fulfilled, (state, action) => {
-    state.loading = false;
-    state.profile = action.payload;
-  })
+      .addCase(
+        fetchVendorProfile.pending,
+        (state) => {
+          state.loading = true;
+          state.error = null;
+        }
+      )
 
-  .addCase(fetchVendorProfile.rejected, (state, action) => {
-    state.loading = false;
-    state.error = action.payload;
-  })
+      .addCase(
+        fetchVendorProfile.fulfilled,
+        (state, action) => {
+          state.loading = false;
+          state.profile = action.payload;
+        }
+      )
 
-  // ==========================
-  // UPDATE PROFILE
-  // ==========================
+      .addCase(
+        fetchVendorProfile.rejected,
+        (state, action) => {
+          state.loading = false;
+          state.error = action.payload;
+        }
+      )
 
-  .addCase(updateVendorProfile.pending, (state) => {
-    state.loading = true;
-    state.error = null;
-  })
+      // ==========================
+      // UPDATE PROFILE
+      // ==========================
 
-  .addCase(updateVendorProfile.fulfilled, (state, action) => {
-    state.loading = false;
-    state.profile = action.payload;
-  })
+      .addCase(
+        updateVendorProfile.pending,
+        (state) => {
+          state.updating = true;
+          state.error = null;
+        }
+      )
 
-  .addCase(updateVendorProfile.rejected, (state, action) => {
-    state.loading = false;
-    state.error = action.payload;
-  });
+      .addCase(
+        updateVendorProfile.fulfilled,
+        (state, action) => {
+          state.updating = false;
+          state.profile = action.payload;
+        }
+      )
 
-
-},
+      .addCase(
+        updateVendorProfile.rejected,
+        (state, action) => {
+          state.updating = false;
+          state.error = action.payload;
+        }
+      );
+  },
 });
 
 export default vendorProfileSlice.reducer;

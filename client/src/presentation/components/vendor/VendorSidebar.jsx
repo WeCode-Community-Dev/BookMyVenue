@@ -1,10 +1,6 @@
-
 import { NavLink, useNavigate } from "react-router-dom";
-import SidebarProfileCard from "./SidebarProfileCard";
-import { ROUTES } from "@/constants/routes";
-import logo from "@/assets/images/logo.jpeg";
-
-
+import { useDispatch } from "react-redux";
+import toast from "react-hot-toast";
 
 import {
   LayoutDashboard,
@@ -15,12 +11,19 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
-import toast from "react-hot-toast";
-import { useDispatch } from "react-redux";
-import { logout } from "@/redux/slices/AuthSlice";
+
+import SidebarProfileCard from "./SidebarProfileCard";
+
+import { ROUTES } from "@/constants/routes";
 import { ROLES } from "@/constants/Roles";
+import { logout } from "@/redux/slices/AuthSlice";
+
+import logo from "@/assets/images/logo.jpeg";
 
 const VendorSidebar = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const menuItems = [
     {
       name: "Dashboard",
@@ -54,83 +57,92 @@ const VendorSidebar = () => {
     },
   ];
 
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-
   const handleLogout = async () => {
     try {
-      await dispatch(logout({role: ROLES.VENDOR})).unwrap()
-      toast.success("Vendor logged out successfully")
-      navigate(ROUTES.PUBLIC.LOGIN)
+      await dispatch(
+        logout({
+          role: ROLES.VENDOR,
+        })
+      ).unwrap();
+
+      toast.success("Vendor logged out successfully");
+
+      navigate(ROUTES.PUBLIC.LOGIN);
     } catch (error) {
-      toast.error(error)
+      toast.error(
+        error?.message || "Logout failed. Please try again."
+      );
     }
-  }
+  };
+
   return (
-    <aside className="w-64 min-h-screen bg-slate-900 text-white p-6 flex flex-col">
-
+    <aside className="w-70 min-h-screen bg-slate-900 text-white flex flex-col">
       {/* Logo Section */}
-      <div className="flex items-center gap-3 mb-8">
-    <img
-        src={logo}
-        alt="Book My Venue"
-        className="h-18 w-20 object-contain"
-    
-    />
-    
-        <div>
-          <h1 className="font-bold text-lg">
-            BookMyVenue
-          </h1>
+      <div className="p-6 border-b border-slate-700">
+        <div className="flex items-center gap-3">
+          <img
+            src={logo}
+            alt="Book My Venue"
+            className="h-18 w-20 object-contain"
+          />
 
-          <p className="text-xs text-gray-400 uppercase tracking-wide">
-            Vendor Portal
-          </p>
+          <div>
+            <h1 className="text-lg font-bold">
+              BookMyVenue
+            </h1>
+
+            <p className="text-xs text-gray-400 uppercase tracking-wide">
+              Vendor Portal
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Profile Card */}
-      <SidebarProfileCard />
+      <div className="px-4 pt-4">
+        <SidebarProfileCard />
+      </div>
 
       {/* Menu Label */}
-      <p className="text-xs uppercase text-gray-400 tracking-wider mt-6 mb-3">
+      <p className="px-6 mt-6 mb-3 text-xs uppercase text-gray-400 tracking-wider">
         Main Menu
       </p>
 
       {/* Navigation */}
-      <ul className="space-y-2">
+      <nav className="flex-1 px-4 space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
 
           return (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  isActive
-                    ? "flex items-center gap-3 px-4 py-3 rounded-xl bg-indigo-600 text-white font-medium"
-                    : "flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-slate-800 hover:text-white transition"
-                }
-              >
-                <Icon size={18} />
-                {item.name}
-              </NavLink>
-            </li>
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                isActive
+                  ? "flex items-center gap-3 w-full px-4 py-3 rounded-lg bg-amber-600 text-white font-medium transition-all"
+                  : "flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white transition-all"
+              }
+            >
+              <Icon size={20} />
+
+              <span>{item.name}</span>
+            </NavLink>
           );
         })}
-      </ul>
+      </nav>
 
       {/* Logout */}
-      <div className="mt-auto pt-8 border-t border-slate-800">
-        <button 
-          className="flex items-center gap-3 text-gray-300 hover:text-red-400 transition"
+      <div className="p-4 border-t border-slate-700">
+        <button
+          type="button"
           onClick={handleLogout}
+          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-300 hover:bg-amber-600 hover:text-white transition-all"
         >
-          <LogOut size={18} />
-          Logout
+          <LogOut size={20} />
+
+          <span>Logout</span>
         </button>
       </div>
-
     </aside>
   );
 };

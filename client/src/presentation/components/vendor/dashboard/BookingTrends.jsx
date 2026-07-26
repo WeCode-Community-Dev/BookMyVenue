@@ -49,7 +49,7 @@ const BookingTrends = () => {
             <Line
               type="monotone"
               dataKey="bookings"
-              stroke="#4F46E5"
+              stroke="#e59346"
               strokeWidth={2}
             />
 

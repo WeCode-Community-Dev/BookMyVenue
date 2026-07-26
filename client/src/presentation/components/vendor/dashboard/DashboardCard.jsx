@@ -1,19 +1,31 @@
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
-const DashboardCard = ({ title, value }) => {
+const DashboardCard = ({
+  title,
+  value,
+  icon: Icon,
+  color = "text-amber-600",
+}) => {
   return (
     <Card>
-      <CardContent className="rounded-lg bg-white p-6 shadow">
-        <h2 className="text-sm font-medium text-gray-500">
-          {title}
-        </h2>
+      <CardContent className="flex items-center justify-between p-5">
 
-        <p className="text-2xl font-bold text-gray-900">
-          {value}
-        </p>
+        <div>
+          <p className="text-sm text-muted-foreground">
+            {title}
+          </p>
+
+          <h2 className="text-3xl font-bold">
+            {value}
+          </h2>
+        </div>
+
+        {Icon && (
+          <Icon
+            className={`h-9 w-9 ${color}`}
+          />
+        )}
+
       </CardContent>
     </Card>
   );

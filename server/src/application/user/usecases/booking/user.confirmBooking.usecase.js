@@ -24,9 +24,8 @@ export class UserConfirmBookingUsecase {
         venueId,
         bookingDate
     }) {
-
-        const reservationKey = `reservation:${venueId}:${bookingDate}`;
-
+const reservationKey = `reservation:${venueId}:${bookingDate}`;
+console.log("Looking up reservation with key:", reservationKey);
         const reservations =
             await this._reservationService.getReservation(reservationKey);
 
