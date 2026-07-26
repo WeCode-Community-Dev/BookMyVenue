@@ -15,6 +15,7 @@ import adminPaymentSlice from './slices/AdminPaymentSlice'
 import adminDashboardSlice from './slices/AdminDashboardSlice'
 import authSlice from './slices/AuthSlice'
 import { injectStore } from "@/lib/axios";
+
 export const store = configureStore({
     reducer: {
         auth:authSlice,

@@ -40,7 +40,7 @@ export class UserProfileController {
   });
 
   updateProfile = asyncHandler(async (req, res) => {
-    const userId = "6a5c82d2a4cb28be7d10521f";
+    const userId = req.user.id;
     const { fullName, phone } = req.body;
     const updatedUser = await this._userUpdateProfileUsecase.execute(
       userId,
@@ -57,7 +57,7 @@ export class UserProfileController {
   });
 
   requestEmailChangeOtp = asyncHandler(async (req, res) => {
-    const userId = "6a5c82d2a4cb28be7d10521f";
+    const userId = req.user.id;
     const { newEmail } = req.body;
     const result = await this._requestEmailChangeOtpUsecase.execute(
       userId,
@@ -67,7 +67,7 @@ export class UserProfileController {
   });
 
   verifyEmailChangeOtp = asyncHandler(async (req, res) => {
-    const userId = "6a5c82d2a4cb28be7d10521f";
+    const userId = req.user.id;
     const { otp } = req.body;
     const updatedUser = await this._verifyEmailChangeOtpUsecase.execute(
       userId,
@@ -83,7 +83,7 @@ export class UserProfileController {
   });
   
   resendEmailChangeOtp = asyncHandler(async (req, res) => {
-    const userId = "6a5c82d2a4cb28be7d10521f";
+    const userId = req.user.id;
 
     await this._resendEmailChangeOtpUsecase.execute(userId);
 
@@ -97,7 +97,7 @@ export class UserProfileController {
   
   
   updateProfileImage = asyncHandler(async (req, res) => {
-    const userId = "6a5c82d2a4cb28be7d10521f";
+    const userId = req.user.id;
 
     const profileImage = {
       publicId: req.file.filename,
@@ -117,7 +117,7 @@ export class UserProfileController {
   });
 
   removeProfileImage = asyncHandler(async (req, res) => {
-    const userId = "6a5c82d2a4cb28be7d10521f"
+    const userId = req.user.id;
 
     const updatedUser = await this._userRemoveProfileImageUsecase.execute(
       userId
@@ -132,7 +132,7 @@ export class UserProfileController {
   });
 
   changePassword = asyncHandler(async (req, res) => {
-    const userId = "6a5c82d2a4cb28be7d10521f";
+    const userId = req.user.id;
     await this._userChangePasswordUsecase.execute({ userId, ...req.body });
     return sendSuccess(
       res,

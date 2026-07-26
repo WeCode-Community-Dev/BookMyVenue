@@ -2,8 +2,6 @@ import { asyncHandler } from "../../../shared/utils/asyncHandler.js";
 import { sendSuccess } from "../../../shared/utils/apiResponse.js";
 import { statusCode } from "../../../shared/constants/enums/statusCode.js";
 
-
-
 export class UserBookingController {
 
     constructor(
@@ -22,7 +20,8 @@ export class UserBookingController {
 
     reserveBooking = asyncHandler(async (req, res) => {
 
-       const userId = req.user.id;
+        const userId = req.user.id;
+
         const result =
             await this._userReserveBookingUsecase.execute(
                 userId,
@@ -89,7 +88,6 @@ export class UserBookingController {
     getBookingById = asyncHandler(async (req, res) => {
 
         const userId = req.user.id;
-
 
         const { bookingId } = req.params;
 

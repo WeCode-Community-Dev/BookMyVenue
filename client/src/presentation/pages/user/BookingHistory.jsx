@@ -1,44 +1,35 @@
 import Header from "@/presentation/components/common/Header";
 import UserSidebar from "@/presentation/components/user/UserSidebar";
 import BookingHistoryCard from "@/presentation/components/user/BookingHistoryCard";
-
-const bookings = [
-  {
-    id: 1,
-    venueName: "Royal Garden Palace",
-    image:
-      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3",
-    location: "Kozhikode, Kerala",
-    bookingDate: "20 May 2024",
-    guests: 200,
-    amount: 125000,
-    status: "Upcoming",
-  },
-  {
-    id: 2,
-    venueName: "Green Valley Resort",
-    image:
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750",
-    location: "Kozhikode, Kerala",
-    bookingDate: "10 Mar 2024",
-    guests: 150,
-    amount: 85000,
-    status: "Completed",
-  },
-  {
-    id: 3,
-    venueName: "Sunrise Convention Center",
-    image:
-      "https://images.unsplash.com/photo-1511578314322-379afb476865",
-    location: "Kozhikode, Kerala",
-    bookingDate: "05 Jan 2024",
-    guests: 100,
-    amount: 75000,
-    status: "Cancelled",
-  },
-];
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { getBookings } from "@/redux/slices/UserBookingSlice";
 
 const BookingHistory = () => {
+  const dispatch = useDispatch();
+  const [status, setStatus] = useState("");
+  const [page, setPage] = useState(1);
+
+  const { bookings, loading, pagination } = useSelector(
+    (state) => state.userBooking
+  );
+
+  useEffect(() => {
+    dispatch(
+      getBookings({
+        page,
+        limit: 5,
+        status,
+      })
+    );
+  }, [dispatch, page, status]);
+
+  const start = pagination ? (pagination.page - 1) * pagination.limit + 1 : 0;
+
+  const end = pagination
+    ? Math.min(pagination.page * pagination.limit, pagination.total)
+    : 0;
+
   return (
     <>
       <Header />
@@ -48,41 +39,77 @@ const BookingHistory = () => {
 
         <main className="flex-1 bg-gray-50 p-10">
           <div className="bg-white rounded-3xl shadow-md p-8">
-
             <div className="flex justify-between items-start mb-8">
-
               <div>
-                <h1 className="text-3xl font-bold">
-                  Booking History
-                </h1>
+                <h1 className="text-3xl font-bold">Booking History</h1>
 
                 <p className="text-gray-500 mt-2">
                   View your past and upcoming bookings
                 </p>
               </div>
 
-              <select className="border rounded-xl px-4 py-2">
-                <option>All Bookings</option>
-                <option>Upcoming</option>
-                <option>Completed</option>
-                <option>Cancelled</option>
+              <select
+                value={status}
+                onChange={(e) => {
+                  setStatus(e.target.value);
+                  setPage(1); // Go back to first page when filter changes
+                }}
+                className="border rounded-xl px-4 py-2"
+              >
+                <option value="">All Bookings</option>
+                <option value="confirmed">Upcoming</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
               </select>
-
             </div>
+            
+            {bookings.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="text-7xl">📅</div>
 
-            <div className="space-y-5">
-              {bookings.map((booking) => (
-                <BookingHistoryCard
-                  key={booking.id}
-                  booking={booking}
-                />
-              ))}
-            </div>
+                <h2 className="text-2xl font-bold mt-5">No bookings yet</h2>
 
-            <p className="mt-8 text-gray-500">
-              Showing 1 to {bookings.length} of {bookings.length} bookings
-            </p>
+                <p className="text-gray-500 mt-3">
+                  Book your first venue to see it here.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {bookings.map((booking) => (
+                  <BookingHistoryCard key={booking.id} booking={booking} />
+                ))}
+              </div>
+            )}
 
+            {bookings.length > 0 && (
+              <>
+                <div className="flex justify-between items-center mt-8">
+                  <button
+                    disabled={pagination.page === 1}
+                    onClick={() => setPage(page - 1)}
+                    className="border px-4 py-2 rounded disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+
+                  <span>
+                    Page {pagination.page} of {pagination.totalPages}
+                  </span>
+
+                  <button
+                    disabled={pagination.page === pagination.totalPages}
+                    onClick={() => setPage(page + 1)}
+                    className="border px-4 py-2 rounded disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+
+                <p className="text-gray-500 mt-6">
+                  Showing {start} to {end} of {pagination.total} bookings
+                </p>
+              </>
+            )}
           </div>
         </main>
       </div>

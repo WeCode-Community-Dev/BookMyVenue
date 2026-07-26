@@ -1,31 +1,31 @@
-import { Heart, User, ChevronDown, LogOut } from 'lucide-react'
-import { useState } from 'react'
-import Logo from '@/assets/images/logo.jpeg'
-import { useNavigate } from 'react-router-dom'
-import { ROUTES } from '@/constants/routes'
-import { useSelector, useDispatch } from 'react-redux'
-import { logout } from '@/redux/slices/AuthSlice'
-import { ROLES } from '@/constants/Roles'
-import toast from 'react-hot-toast'
+import { Heart, User, ChevronDown, LogOut } from "lucide-react";
+import { useState } from "react";
+import Logo from "@/assets/images/logo.jpeg";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/routes";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "@/redux/slices/AuthSlice";
+import { ROLES } from "@/constants/Roles";
+import toast from "react-hot-toast";
 // import { logout } from '@/redux/slices/authSlice'
 
 const Header = () => {
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const { user } = useSelector((state) => state.auth)
+  const { user } = useSelector((state) => state.auth);
 
-  const [open, setOpen] = useState(false)
-  const role = user?.role === "customer" ? ROLES.USER : ROLES.VENDOR
+  const [open, setOpen] = useState(false);
+  const role = user?.role === "customer" ? ROLES.USER : ROLES.VENDOR;
 
-  const handleLogout = async() => {
+  const handleLogout = async () => {
     try {
-      await dispatch(logout({role})).unwrap()
-      toast.success(`${role} logged out successfully`)
+      await dispatch(logout({ role })).unwrap();
+      toast.success(`${role} logged out successfully`);
     } catch (error) {
-      toast.error(error)
+      toast.error(error);
     }
-  }
+  };
 
   return (
     <header className="bg-white border-b">
@@ -43,7 +43,14 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <Heart className="w-5 h-5 cursor-pointer" />
+          {user && (
+            <button
+              onClick={() => navigate(ROUTES.USER.WISHLIST)}
+              className="hover:text-red-500 transition-colors"
+            >
+              <Heart className="w-5 h-5 cursor-pointer" />
+            </button>
+          )}
 
           {!user ? (
             <>
@@ -76,9 +83,7 @@ const Header = () => {
 
                 <ChevronDown
                   size={18}
-                  className={`transition-transform ${
-                    open ? 'rotate-180' : ''
-                  }`}
+                  className={`transition-transform ${open ? "rotate-180" : ""}`}
                 />
               </button>
 
@@ -86,8 +91,8 @@ const Header = () => {
                 <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border overflow-hidden z-50">
                   <button
                     onClick={() => {
-                      setOpen(false)
-                      navigate(ROUTES.USER.PROFILE)
+                      setOpen(false);
+                      navigate(ROUTES.USER.PROFILE);
                     }}
                     className="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center gap-2"
                   >
@@ -109,7 +114,7 @@ const Header = () => {
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

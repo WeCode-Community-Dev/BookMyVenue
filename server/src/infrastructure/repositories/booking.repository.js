@@ -536,4 +536,3 @@ async hasOverlappingBooking(
     }
 
 }
-
