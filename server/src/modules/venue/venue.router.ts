@@ -17,7 +17,7 @@ const router: Router = Router();
 
 const uploadSignatureLimiter = rateLimit({
   windowMs: 30 * 60 * 1000,
-  max: 10,
+  max: 20,
   message: 'Too many upload requests, please try again later',
 });
 

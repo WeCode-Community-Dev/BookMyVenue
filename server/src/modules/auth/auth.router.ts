@@ -9,7 +9,7 @@ const router: Router = Router();
 
 const secondaryRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 10,
   message: 'Too many requests from this IP. Please try again after 15 minutes.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -17,7 +17,7 @@ const secondaryRateLimiter = rateLimit({
 
 const loginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 20,
   message: 'Too many login attempts from this IP. Please try again after 15 minutes.',
   standardHeaders: true,
   legacyHeaders: false,
