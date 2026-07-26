@@ -20,7 +20,7 @@ export const fetchDashboard = createAsyncThunk(
     try {
       const response = await api.get(API_ROUTES.VENDOR.DASHBOARD);
 
-
+      const data = response.data.data;
       const normalized = {
         recentBookings: data.recentBookings || [],
         topVenues: data.topVenues || [],
