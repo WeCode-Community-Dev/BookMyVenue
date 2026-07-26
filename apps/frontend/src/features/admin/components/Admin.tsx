@@ -19,12 +19,20 @@ import { useCallback, useEffect, useState } from "react";
 import AdminBottomSection from "@/components/global/AdminInfo";
 import PendingVenueCard from "@/components/global/ApprovalCard";
 import StatsCard from "@/components/global/StatCard";
-import { adminStats } from "../services/AdminService";
 import { adminStyle } from "../styles/AdminStyle";
 import { useAuthService } from "@/features/auth/services/AuthService";
 
 export default function Admin() {
     const { apiFetch } = useAuthService();
+    const [
+        counts, setCounts
+    ] = useState({
+        totalUsers: 0,
+        totalOwners: 0,
+        totalVenues: 0,
+        totalBookings: 0,
+    });
+
     const [
         pendingVenues, setPendingVenues
     ] = useState<any[]>([
@@ -34,14 +42,32 @@ export default function Admin() {
         loading, setLoading
     ] = useState(true);
 
+    const fetchDashboardStats = useCallback(async () => {
+        try {
+            const resData = await apiFetch("/admin/dashboard");
+            if (resData) {
+                setCounts({
+                    totalUsers: resData.totalUsers ?? 0,
+                    totalOwners: resData.totalOwners ?? 0,
+                    totalVenues: resData.totalVenues ?? 0,
+                    totalBookings: resData.totalBookings ?? 0,
+                });
+            }
+        } catch (resErr) {
+            console.error("Error fetching dashboard stats:", resErr);
+        }
+    }, [
+        apiFetch
+    ]);
+
     const fetchPendingVenues = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await apiFetch("/venue/pending");
-            setPendingVenues(data || [
+            const resData = await apiFetch("/admin/venues/pending");
+            setPendingVenues(resData || [
             ]);
-        } catch (err) {
-            console.error("Error fetching pending venues:", err);
+        } catch (resErr) {
+            console.error("Error fetching pending venues:", resErr);
         } finally {
             setLoading(false);
         }
@@ -49,19 +75,26 @@ export default function Admin() {
         apiFetch
     ]);
 
-    useEffect(() => {
-        fetchPendingVenues();
+    const loadAdminData = useCallback(async () => {
+        await Promise.all([
+            fetchDashboardStats(), fetchPendingVenues()
+        ]);
     }, [
-        fetchPendingVenues
+        fetchDashboardStats, fetchPendingVenues
+    ]);
+
+    useEffect(() => {
+        loadAdminData();
+    }, [
+        loadAdminData
     ]);
 
     const handleApprove = async (id: string) => {
         try {
-            await apiFetch(`/venue/approve/${id}`, { method: "POST" });
-            fetchPendingVenues();
-        } catch (err) {
-            console.error("Error approving venue:", err);
-            alert(getText("FAILED_APPROVE_VENUE", "MESSAGES"));
+            await apiFetch(`/admin/venues/${id}/approve`, { method: "PATCH" });
+            loadAdminData();
+        } catch (resErr) {
+            console.error("Error approving venue:", resErr);
         }
     };
 
@@ -69,17 +102,16 @@ export default function Admin() {
         const reason = prompt(getText("ENTER_REJECTION_REASON", "MESSAGES"));
         if (reason === null) return; // User cancelled
         try {
-            await apiFetch(`/venue/reject/${id}`, {
-                method: "POST",
+            await apiFetch(`/admin/venues/${id}/reject`, {
+                method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ rejectionNote: reason }),
             });
-            fetchPendingVenues();
-        } catch (err) {
-            console.error("Error rejecting venue:", err);
-            alert(getText("FAILED_REJECT_VENUE", "MESSAGES"));
+            loadAdminData();
+        } catch (resErr) {
+            console.error("Error rejecting venue:", resErr);
         }
     };
 
@@ -98,12 +130,36 @@ export default function Admin() {
         }
     };
 
-    const stats = adminStats.map((stat) => {
-        return {
-            ...stat,
-            icon: getIcon(stat.icon),
-        };
-    });
+    const stats = [
+        {
+            title: "Total Users",
+            value: counts.totalUsers,
+            subText: "All registered users",
+            icon: getIcon("Users"),
+            color: "text-teal-600",
+        },
+        {
+            title: "Total Owners",
+            value: counts.totalOwners,
+            subText: "Venue owners",
+            icon: getIcon("UserCog"),
+            color: "text-orange-600",
+        },
+        {
+            title: "Total Venues",
+            value: counts.totalVenues,
+            subText: "Listed venues",
+            icon: getIcon("Building2"),
+            color: "text-violet-600",
+        },
+        {
+            title: "Total Bookings",
+            value: counts.totalBookings,
+            subText: "All bookings",
+            icon: getIcon("CalendarDays"),
+            color: "text-green-600",
+        },
+    ];
 
     const formatSubmittedOn = (dateString: string) => {
         try {
@@ -112,7 +168,8 @@ export default function Admin() {
                 month: "short",
                 year: "numeric",
             });
-        } catch (e) {
+        } catch (error) {
+            console.error("Error formatting date:", error);
             return dateString;
         }
     };
@@ -167,7 +224,7 @@ export default function Admin() {
                         </p>
                     </div>
 
-                    <button onClick={fetchPendingVenues} className={adminStyle.refreshBtn}>
+                    <button onClick={loadAdminData} className={adminStyle.refreshBtn}>
                         <RefreshCw className="h-4 w-4" />
                         <AppText textName="REFRESH" textModule="BUTTON" />
                     </button>

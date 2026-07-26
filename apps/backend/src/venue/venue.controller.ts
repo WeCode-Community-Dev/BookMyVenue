@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
   Get,
   Param,
   Post,
@@ -65,39 +64,6 @@ export class VenueController {
   @UseGuards(JwtAuthGuard)
   getMyVenues(@Request() req: AuthRequest) {
     return this.venueService.getMyVenues(req.user.id);
-  }
-
-  @Get('pending')
-  @UseGuards(JwtAuthGuard)
-  getPendingVenues(@Request() req: AuthRequest) {
-    if (req.user.role !== 'ADMIN') {
-      throw new ForbiddenException(
-        'Only administrators can access pending venues.',
-      );
-    }
-    return this.venueService.getPendingVenues();
-  }
-
-  @Post('approve/:id')
-  @UseGuards(JwtAuthGuard)
-  approveVenue(@Param('id') id: string, @Request() req: AuthRequest) {
-    if (req.user.role !== 'ADMIN') {
-      throw new ForbiddenException('Only administrators can approve venues.');
-    }
-    return this.venueService.approveVenue(id);
-  }
-
-  @Post('reject/:id')
-  @UseGuards(JwtAuthGuard)
-  rejectVenue(
-    @Param('id') id: string,
-    @Body('rejectionNote') rejectionNote: string,
-    @Request() req: AuthRequest,
-  ) {
-    if (req.user.role !== 'ADMIN') {
-      throw new ForbiddenException('Only administrators can reject venues.');
-    }
-    return this.venueService.rejectVenue(id, rejectionNote);
   }
 
   @Get('all')
