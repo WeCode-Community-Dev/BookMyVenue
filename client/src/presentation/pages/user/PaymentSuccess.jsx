@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
 import Header from "@/presentation/components/common/Header";
 import Footer from "@/presentation/components/common/Footer";
+import { formatDateToDDMMYYYY } from "@/lib/utils";
 
 export default function PaymentSuccess() {
   const { state } = useLocation();
@@ -75,7 +76,7 @@ export default function PaymentSuccess() {
                   </p>
 
                   <p className="font-semibold">
-                    {bookingDate}
+                    {formatDateToDDMMYYYY(bookingDate)}
                   </p>
                 </div>
 

@@ -23,6 +23,7 @@ export class VendorBookingController {
 
             const vendorId = req.user.id;
 
+
             const bookings =
                 await this._getVendorBookingsUsecase
                     .execute({vendorId, ...req.query})
@@ -42,6 +43,7 @@ export class VendorBookingController {
             const { bookingId } = req.params
 
             const vendorId = req.user.id;
+
 
                 const booking =
                 await this._getBookingByIdUsecase

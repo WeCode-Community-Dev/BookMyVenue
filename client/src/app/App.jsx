@@ -59,14 +59,14 @@ function App() {
   useEffect(() => {
     dispatch(checkAuth())
   }, [dispatch])
-  
+
   return (
     <BrowserRouter>
       <Suspense fallback={
         <div className='flex h-screen items-center justify-content'>
           <div className='h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-amber-600'></div>
         </div>
-       }>
+      }>
         <Routes>
           {/* Public / Auth Routes */}
           <Route path={ROUTES.PUBLIC.HOME} element={<HomeRoute><Home /></HomeRoute>} />
@@ -78,7 +78,7 @@ function App() {
 
 
           {/* User Routes */}
-          <Route path={ROUTES.USER.BROWSE_VENUES} element={ <RoleRoute allowedRoles={["customer"]}><BrowseVenues /></RoleRoute>} />
+          <Route path={ROUTES.USER.BROWSE_VENUES} element={<RoleRoute allowedRoles={["customer"]}><BrowseVenues /></RoleRoute>} />
           <Route path={ROUTES.USER.PROFILE} element={<RoleRoute allowedRoles={["customer"]}><UserProfile /></RoleRoute>} />
           <Route path={ROUTES.USER.CHANGE_PASSWORD} element={<UserChangePassword />} />
           <Route path={ROUTES.USER.WISHLIST} element={<Wishlist />} />
@@ -103,18 +103,57 @@ function App() {
           {/* Standalone Admin Login (No Layout) */}
           <Route path={ROUTES.ADMIN.LOGIN} element={<PublicRoute><AdminLogin /></PublicRoute>} />
 
-          {/* Admin Protected Routes with Layout */}
-          <Route element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminLayout /></RoleRoute>}>
-            <Route path={ROUTES.ADMIN.DASHBOARD} element={<AdminDashboard />} />
-            <Route path={ROUTES.ADMIN.USERS} element={<UserManagement />} />
-            <Route path={ROUTES.ADMIN.VENDORS} element={<VendorManagement />} />
-            <Route path={ROUTES.ADMIN.VENUES} element={<VenueManagement />} />
-            <Route path={ROUTES.ADMIN.VENUE_DETAILS} element={<VenueDetails />} />
-            <Route path={ROUTES.ADMIN.BOOKINGS} element={<BookingManagement />} />
-            <Route path={ROUTES.ADMIN.BOOKING_DETAIL} element={<BookingDetails />} />
-            <Route path={ROUTES.ADMIN.PAYMENTS} element={<PaymentManagement />} />
-            <Route path={ROUTES.ADMIN.PAYMENT_DETAILS} element={<PaymentDetails />} />
-            <Route path="categories" element={<CategoryManagement />} />
+          {/* Admin Routes */}
+          <Route path="/admin" element={<RoleRoute allowedRoles={[ROLES.ADMIN]}><AdminLayout /></RoleRoute>}>
+            <Route
+              path={ROUTES.ADMIN.DASHBOARD}
+              element={<AdminDashboard />}
+            />
+
+            <Route
+              path={ROUTES.ADMIN.USERS}
+              element={<UserManagement />}
+            />
+
+            <Route
+              path={ROUTES.ADMIN.VENDORS}
+              element={<VendorManagement />}
+            />
+
+            <Route
+              path={ROUTES.ADMIN.VENUES}
+              element={<VenueManagement />}
+            />
+
+            <Route
+              path={ROUTES.ADMIN.VENUE_DETAILS}
+              element={<VenueDetails />}
+            />
+
+            <Route
+              path={ROUTES.ADMIN.BOOKINGS}
+              element={<BookingManagement />}
+            />
+
+            <Route
+              path={ROUTES.ADMIN.BOOKING_DETAIL}
+              element={<BookingDetails />}
+            />
+
+            <Route
+              path={ROUTES.ADMIN.PAYMENTS}
+              element={<PaymentManagement />}
+            />
+
+            <Route
+              path={ROUTES.ADMIN.PAYMENT_DETAILS}
+              element={<PaymentDetails />}
+            />
+
+            <Route
+              path={ROUTES.ADMIN.CATEGORIES}
+              element={<CategoryManagement />}
+            />
           </Route>
         </Routes>
       </Suspense>

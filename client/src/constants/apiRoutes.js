@@ -12,9 +12,6 @@ AUTH:{
   REFRESH:(role)=>`/auth/${role}/refresh`,
   GETME: '/auth/getme'
 
-  
-  
-
 },
 
     USER: {
@@ -39,10 +36,14 @@ AUTH:{
           ADD: (venueId) => `/user/wishlist/${venueId}`,
           REMOVE: (venueId) => `/user/wishlist/${venueId}`,
         },
-        BOOKING: {
-          GET_ALL: "/user/booking",
+
+        BOOKINGS: {
+          RESERVE: "/user/booking/reserve",
+          CONFIRM: "/user/booking/confirm",
           GET_BY_ID: (bookingId) => `/user/booking/${bookingId}`,
+          GET_ALL: "/user/booking",
           CANCEL: (bookingId) => `/user/bookings/${bookingId}/cancel`,
+          AVAILABILITY: (venueId) => `/user/booking/${venueId}/availability`,
         }
     },
    ADMIN: {

@@ -6,10 +6,10 @@ import toast from "react-hot-toast";
 
 import VendorSidebar from "@/presentation/components/vendor/VendorSidebar";
 import VendorNavbar from "@/presentation/components/vendor/VendorNavbar";
-import VenueHeader from "@/presentation/components/vendor/VenueHeader";
-import VenueFilters from "@/presentation/components/vendor/VenueFilters";
-import VenueGrid from "@/presentation/components/vendor/VenueGrid";
-import DeleteVenueDialog from "@/presentation/components/vendor/DeleteVenueDialog";
+import VenueHeader from "@/presentation/components/vendor/venues/VenueHeader";
+import VenueFilters from "@/presentation/components/vendor/venues/VenueFilters";
+import VenueGrid from "@/presentation/components/vendor/venues/VenueGrid";
+import DeleteVenueDialog from "@/presentation/components/vendor/venues/DeleteVenueDialog";
 
 import { ROUTES } from "@/constants/routes";
 

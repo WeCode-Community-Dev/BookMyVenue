@@ -21,6 +21,7 @@ export const ROUTES = {
         BOOKING_DETAIL: '/user/bookings/:bookingId',
         BOOKING_SUMMARY:`/user/booking-summary`,
         PAYMENT:`/user/payment`,
+        PAYMENT_GATEWAY:`/user/payment-gateway`,
         PAYMENT_SUCCESS:`/user/payment-success`,
         PAYMENT_FAILURE:`/user/payment-failure`
 
@@ -38,7 +39,7 @@ export const ROUTES = {
     ADMIN: {
         ROOT: "/admin", 
         LOGIN: "/admin/login",
-        DASHBOARD: "admin/dashboard",
+        DASHBOARD: "dashboard",
         USERS: "users",
         VENDORS: "vendors",
         VENUES: "venues",
@@ -47,6 +48,6 @@ export const ROUTES = {
         BOOKING_DETAIL: "bookings/:bookingId",
         PAYMENTS: "payments",
         PAYMENT_DETAILS:"payments/:paymentId",
-        CATEGORIES: "/admin/categories",
+        CATEGORIES: "categories",
     }
 }

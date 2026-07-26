@@ -22,7 +22,7 @@ const SidebarProfileCard = () => {
             className="w-12 h-12 rounded-full object-cover"
           />
         ) : (
-          <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white">
+          <div className="w-12 h-12 rounded-full bg-amber-600 flex items-center justify-center font-bold text-white">
             {initials}
           </div>
         )}

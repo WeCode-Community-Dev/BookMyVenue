@@ -123,7 +123,7 @@ const VenueFilters = ({ filters, onChange, onAddVenue, onToggleView, viewMode })
 
       <ViewToggle viewMode={viewMode} onToggle={onToggleView} />
 
-      <Button onClick={onAddVenue} className="bg-blue-600 hover:bg-blue-700 rounded-xl">
+      <Button onClick={onAddVenue} className="bg-amber-600 hover:bg-amber-700 rounded-xl">
         <Plus className="mr-2 h-4 w-4" />
         Add Venue
       </Button>

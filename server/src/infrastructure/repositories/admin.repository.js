@@ -176,7 +176,7 @@ export class AdminRepository extends IAdminRepository {
     },
   },
 ]);
-const months = [
+/*const months = [
   "Jan",
   "Feb",
   "Mar",
@@ -194,14 +194,20 @@ const months = [
 const formattedBookingOverview = bookingOverview.map((item) => ({
   month: months[item._id.month - 1],
   bookings: item.bookings,
+}));*/
+const formattedBookingOverview = bookingOverview.map((item) => ({
+  month: item._id.month,
+  bookings: item.bookings,
 }));
 
 const revenueOverview = await PaymentModel.aggregate([
   {
     $match: {
       paymentStatus: PaymentStatus.SUCCESS,
+
     },
   },
+
   {
   $group: {
     _id: {
@@ -223,8 +229,13 @@ const revenueOverview = await PaymentModel.aggregate([
   },
 ]);
 
-const formattedRevenueOverview = revenueOverview.map((item) => ({
+/*const formattedRevenueOverview = revenueOverview.map((item) => ({
   month: months[item._id.month - 1],
+  revenue: item.revenue,
+}));*/
+
+const formattedRevenueOverview = revenueOverview.map((item) => ({
+  month: item._id.month,
   revenue: item.revenue,
 }));
 

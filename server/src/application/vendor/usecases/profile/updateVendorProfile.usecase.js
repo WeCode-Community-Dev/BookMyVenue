@@ -39,12 +39,22 @@ export class VendorUpdateProfileUsecase {
             }
         }
 
-        vendor.fullName = fullName
-        vendor.phone = phone
-        vendor.profileImage = profileImage;
-        vendor.companyName = companyName;
-        vendor.address = address;
-        vendor.bio = bio;
+        vendor.fullName = fullName??vendor.fullName
+        vendor.phone = phone??vendor
+        if (profileImage) {
+        vendor.profileImage = {
+            publicId:profileImage.publicId ?? vendor.profileImage.publicId,
+            url: profileImage ?? vendor.profileImage.url}};
+        vendor.companyName = companyName ?? vendor.companyName;
+        if(address){
+        vendor.address = {
+              addressLine1: address?.addressLine1 || vendor.address.addressLine1,
+            city: address?.city || vendor.address.city,
+            state: address?.state || vendor.address.state,
+            pincode: address?.pincode || vendor.address.pincode,
+
+        };}
+        vendor.bio = bio ?? vendor.bio;
 
         const updatedVendor =
             await this._vendorRepository.update(
