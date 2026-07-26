@@ -41,3 +41,25 @@ export async function upgradeToVenueOwner(): Promise<void> {
         throw error;
     }
 }
+
+export async function getUserVenues(): Promise<any[]> {
+    const url = `${BASE_URL}/user/my-venues`;
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch user venues: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error in getUserVenues:", error);
+        throw error;
+    }
+}

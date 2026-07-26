@@ -60,12 +60,6 @@ export class VenueController {
     return this.venueService.createVenue(dto, files, req.user.id);
   }
 
-  @Get('my-venues')
-  @UseGuards(JwtAuthGuard)
-  getMyVenues(@Request() req: AuthRequest) {
-    return this.venueService.getMyVenues(req.user.id);
-  }
-
   @Get('all')
   getAllVenues() {
     return this.venueService.getAllVenues();

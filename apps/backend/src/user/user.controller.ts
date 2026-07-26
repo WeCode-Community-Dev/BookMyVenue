@@ -18,4 +18,10 @@ export class UserController {
   upgradeToVenueOwner(@Request() req: AuthRequest) {
     return this.userService.upgradeToVenueOwner(req.user.id);
   }
+
+  @Get('my-venues')
+  @UseGuards(JwtAuthGuard)
+  getMyVenues(@Request() req: AuthRequest) {
+    return this.userService.getMyVenues(req.user.id);
+  }
 }
