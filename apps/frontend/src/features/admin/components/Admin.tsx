@@ -9,6 +9,13 @@ import {
     Users,
 } from "lucide-react";
 import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog/Dialog";
+import {
     getVenueCapacity,
     getVenueLocation,
     getVenuePrice,
@@ -17,6 +24,8 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 import AdminBottomSection from "@/components/global/AdminInfo";
+import { Button } from "@/components/ui/button/Button";
+import { Input } from "@/components/ui/input";
 import PendingVenueCard from "@/components/global/ApprovalCard";
 import StatsCard from "@/components/global/StatCard";
 import { adminStyle } from "../styles/AdminStyle";
@@ -24,6 +33,13 @@ import { useAuthService } from "@/features/auth/services/AuthService";
 
 export default function Admin() {
     const { apiFetch } = useAuthService();
+    const [
+        rejectionState, setRejectionState
+    ] = useState<{ id: string | null; reason: string }>({
+        id: null,
+        reason: "",
+    });
+
     const [
         counts, setCounts
     ] = useState({
@@ -98,17 +114,21 @@ export default function Admin() {
         }
     };
 
-    const handleReject = async (id: string) => {
-        const reason = prompt(getText("ENTER_REJECTION_REASON", "MESSAGES"));
-        if (reason === null) return; // User cancelled
+    const handleReject = (id: string) => {
+        setRejectionState({ id, reason: "" });
+    };
+
+    const handleRejectSubmit = async () => {
+        if (!rejectionState.id) return;
         try {
-            await apiFetch(`/admin/venues/${id}/reject`, {
+            await apiFetch(`/admin/venues/${rejectionState.id}/reject`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ rejectionNote: reason }),
+                body: JSON.stringify({ rejectionNote: rejectionState.reason }),
             });
+            setRejectionState({ id: null, reason: "" });
             loadAdminData();
         } catch (resErr) {
             console.error("Error rejecting venue:", resErr);
@@ -264,6 +284,41 @@ export default function Admin() {
                             )}
                 </div>
             </section>
+
+            <Dialog open={rejectionState.id !== null} onOpenChange={(isOpen) => {
+                if (!isOpen) setRejectionState({ id: null, reason: "" }); 
+            }}>
+                <DialogContent className={adminStyle.modalContent}>
+                    <DialogHeader>
+                        <DialogTitle>
+                            <AppText textName="ENTER_REJECTION_REASON" textModule="MESSAGES" />
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className={adminStyle.modalBody}>
+                        <Input
+                            placeholder={getText("REJECTION_REASON_PLACEHOLDER", "MESSAGES")}
+                            value={rejectionState.reason}
+                            onChange={(evt) => {
+                                return setRejectionState((prev) => {
+                                    return { ...prev, reason: evt.target.value }; 
+                                }); 
+                            }}
+                            className={adminStyle.modalInput}
+                        />
+                    </div>
+                    <DialogFooter className={adminStyle.modalFooter}>
+                        <Button variant="outline" onClick={() => {
+                            return setRejectionState({ id: null, reason: "" }); 
+                        }}>
+                            <AppText textName="CANCEL" textModule="BUTTON" />
+                        </Button>
+                        <Button variant="destructive" onClick={handleRejectSubmit}>
+                            <AppText textName="REJECT" textModule="BUTTON" />
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <AdminBottomSection />
         </div>
     );

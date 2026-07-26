@@ -320,6 +320,7 @@
         "START_EXPLORING_VENUES": "अपनी पहली बुकिंग करने के लिए स्थानों की खोज शुरू करें!",
         "FAILED_TO_LOAD_BOOKINGS": "बुकिंग लोड करने में विफल",
         "ENTER_REJECTION_REASON": "अस्वीकृति का कारण दर्ज करें (वैकल्पिक):",
+        "REJECTION_REASON_PLACEHOLDER": "अस्वीकृति का नोट/कारण...",
         "FAILED_APPROVE_VENUE": "स्थल को स्वीकृत करने में विफल",
         "FAILED_REJECT_VENUE": "स्थल को अस्वीकार करने में विफल"
     }

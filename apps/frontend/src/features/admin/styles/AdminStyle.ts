@@ -102,4 +102,22 @@ export const adminStyle = {
         "text-center",
         "text-slate-500",
     ),
+
+    modalContent: clsx(
+        "sm:max-w-[425px]",
+    ),
+
+    modalBody: clsx(
+        "py-4",
+    ),
+
+    modalFooter: clsx(
+        "flex",
+        "justify-end",
+        "gap-2",
+    ),
+
+    modalInput: clsx(
+        "w-full",
+    ),
 };
