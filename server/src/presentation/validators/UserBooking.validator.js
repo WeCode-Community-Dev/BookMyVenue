@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BookingType } from "../../domain/enums/BookingType.enum.js";
+import { BookingType } from "../../domain/enums/Booking.enum.js";
 
 export const ReserveBookingSchema = z.object({
 
@@ -29,5 +29,14 @@ export const ReserveBookingSchema = z.object({
         BookingType.FULL_DAY
     ]),
     
+
+});
+export const CancelBookingSchema = z.object({
+
+    cancellationReason: z
+        .string()
+        .trim()
+        .min(1, "Cancellation reason is required")
+        .max(500, "Cancellation reason is too long")
 
 });

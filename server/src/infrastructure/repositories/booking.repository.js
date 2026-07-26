@@ -400,6 +400,29 @@ export class BookingRepositoryImpl extends BookingRepository {
     if (status) {
       filter.status = status;
     }
+    async cancelBooking(
+        bookingId,
+        status,
+        cancellationReason
+    ) {
+
+        const booking = await BookingModel.findByIdAndUpdate(
+            bookingId,
+            {
+                status,
+                cancellationReason
+            },
+            {
+                new: true
+            }
+        );
+
+        if (!booking) {
+            return null;
+        }
+
+        return BookingMapper.mapToEntity(booking);
+    }
 
     let docs = await BookingModel.find(filter)
       .populate("venueId")

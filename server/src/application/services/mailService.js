@@ -37,4 +37,7 @@ export class MailService {
     async sendPaymentReminderMail(reminderData) {
         throw new Error("Method not implemented");
     }
+    async sendBookingCancellationMail(cancellationData) {
+    throw new Error("Method not implemented");
+}
 }

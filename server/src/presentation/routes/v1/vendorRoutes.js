@@ -85,7 +85,7 @@ router.patch(
 router.get(ROUTES.OWNER.PROFILE.GET, authHandler(iTokenService), iVendorProfileController.getProfile);
 
 router.patch(
-  ROUTES.OWNER.PROFILE.UPDATE,
+  ROUTES.OWNER.PROFILE.UPDATE, authHandler(iTokenService),
   validate(UpdateVendorProfileSchema, "body"),
   iVendorProfileController.updateProfile
 );

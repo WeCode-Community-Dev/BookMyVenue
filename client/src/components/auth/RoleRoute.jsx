@@ -19,9 +19,9 @@ const RoleRoute = ({ children, allowedRoles = [] }) => {
     );
   }
 
-  // 2. Unauthenticated check
+
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.PUBLIC.LOGIN} replace />;
+    return <Navigate to={ROUTES.PUBLIC.HOME} replace />;
   }
 
   // 3. Role authorization check

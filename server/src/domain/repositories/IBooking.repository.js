@@ -63,4 +63,11 @@ export class BookingRepository {
       async getBookingsForPaymentReminder(date) {
         throw new Error("Method not implemented");
       }
+      async cancelBooking(
+          bookingId,
+          status,
+          cancellationReason
+      ) {
+          throw new Error("Method not implemented");
+      }
   }

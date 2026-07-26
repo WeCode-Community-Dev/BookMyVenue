@@ -26,10 +26,9 @@ const PublicRoute = ({ children }) => {
       return <Navigate to="/vendor/dashboard" replace />;
     }
 
-    if (user.role === "customer") {
-      return <Navigate to="/" replace />;
+    if(user.role === "customer")
+       return <Navigate to="/" replace />;
       
-    }
   }
 
   return <>{children}</>;
