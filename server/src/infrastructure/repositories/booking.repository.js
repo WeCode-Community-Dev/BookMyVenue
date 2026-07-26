@@ -397,28 +397,39 @@ export class BookingRepositoryImpl extends BookingRepository {
         };
 
     }
-    async hasOverlappingBooking(
+async hasOverlappingBooking(
+    venueId,
+    bookingDate,
+    startTime,
+    endTime
+) {
+    console.log("=== Repository Input ===");
+    console.log({
         venueId,
-            bookingDate,
-            startTime,
-            endTime
-        ) {
-        const booking=await BookingModel.findOne({
-            venueId,
-            bookingDate,
-            status:{
-                $ne:BookingStatus.CANCELLED
-            },
-            startTime:{
-                $lt:endTime
-            },
-            endTime:{
-                $gt:startTime
-            }
-        })
-        return Boolean(booking)
-     }
+        bookingDate,
+        startTime,
+        endTime,
+    });
 
+    const booking = await BookingModel.findOne({
+        venueId,
+        bookingDate,
+        status: {
+            $ne: BookingStatus.CANCELLED,
+        },
+        startTime: {
+            $lt: endTime,
+        },
+        endTime: {
+            $gt: startTime,
+        },
+    });
+
+    console.log("=== Booking Found ===");
+    console.log(booking);
+
+    return Boolean(booking);
+}
      async getUserBookings(
             userId,
             {
