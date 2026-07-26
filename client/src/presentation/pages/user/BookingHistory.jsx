@@ -62,6 +62,7 @@ const BookingHistory = () => {
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>
+            
             {bookings.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-7xl">📅</div>

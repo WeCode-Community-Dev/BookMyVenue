@@ -111,7 +111,7 @@ router.get(
     iUserBookingController.getBookingById
 );
 router.patch(
-    ROUTES.USER.BOOKING.CANCEL, authHandler(iTokenService),
+    ROUTES.USER.BOOKING.CANCEL,authHandler(iTokenService),
     validate(CancelBookingSchema, "body"),
     iUserBookingController.cancelBooking
 );
