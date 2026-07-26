@@ -243,9 +243,7 @@ export default function BookingSummary() {
                     className="
                     mt-5 flex h-14 w-full items-center justify-center
                     gap-2 rounded-xl
-                    bg-gradient-to-r
-                    from-red-500
-                    to-red-400
+                    bg-[#FF6B6B]
                     text-lg
                     font-semibold
                     text-white
