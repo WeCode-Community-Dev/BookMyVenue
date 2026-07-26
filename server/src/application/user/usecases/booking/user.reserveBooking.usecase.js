@@ -125,8 +125,7 @@ if (selectedDate < todayUTC) {
     if (guestCount > maxCapacity) {
       throw new ValidationError(BookingMessages.error.CAPACITY_EXCEEDED);
     }
-
-    // ===== Overlap check =====
+// ===== Overlap check =====
 console.log("=== Checking DB Overlap ===");
 console.log({
   venueId,
