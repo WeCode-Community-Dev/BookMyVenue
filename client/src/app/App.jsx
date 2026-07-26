@@ -71,34 +71,34 @@ function App() {
           {/* Public / Auth Routes */}
           <Route path={ROUTES.PUBLIC.HOME} element={<HomeRoute><Home /></HomeRoute>} />
           <Route path={ROUTES.PUBLIC.REGISTER} element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path={ROUTES.PUBLIC.VERIFY_OTP} element={<VerifyOtp />} />
+          <Route path={ROUTES.PUBLIC.VERIFY_OTP} element={<PublicRoute><VerifyOtp /></PublicRoute>} />
           <Route path={ROUTES.PUBLIC.LOGIN} element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path={ROUTES.PUBLIC.FORGOT_PASSWORD} element={<ForgotPassword />} />
-          <Route path={ROUTES.PUBLIC.RESET_PASSWORD} element={<ResetPassword />} />
+          <Route path={ROUTES.PUBLIC.FORGOT_PASSWORD} element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+          <Route path={ROUTES.PUBLIC.RESET_PASSWORD} element={<PublicRoute><ResetPassword /></PublicRoute>} />
 
 
           {/* User Routes */}
           <Route path={ROUTES.USER.BROWSE_VENUES} element={<RoleRoute allowedRoles={["customer"]}><BrowseVenues /></RoleRoute>} />
           <Route path={ROUTES.USER.PROFILE} element={<RoleRoute allowedRoles={["customer"]}><UserProfile /></RoleRoute>} />
-          <Route path={ROUTES.USER.CHANGE_PASSWORD} element={<UserChangePassword />} />
-          <Route path={ROUTES.USER.WISHLIST} element={<Wishlist />} />
-          <Route path={ROUTES.USER.BOOKINGS} element={<UserBookings />} />
-          <Route path={ROUTES.USER.BOOKING_DETAIL} element={<UserBookingsDetail />} />
-          <Route path={ROUTES.USER.VENUE_DETAILS} element={<UserVenueDetails />} />
-          <Route path={ROUTES.USER.BOOKING_SUMMARY} element={<BookingSummary />} />
-          <Route path={ROUTES.USER.PAYMENT} element={<UserPayment />} />
-          <Route path={ROUTES.USER.PAYMENT_SUCCESS} element={<UserPaymentSuccess />} />
-          <Route path={ROUTES.USER.PAYMENT_FAILURE} element={<UserPaymentFailure />} />
+          <Route path={ROUTES.USER.CHANGE_PASSWORD} element={<RoleRoute allowedRoles={["customer"]}><UserChangePassword /></RoleRoute>} />
+          <Route path={ROUTES.USER.WISHLIST} element={<RoleRoute allowedRoles={["customer"]}><Wishlist /></RoleRoute>} />
+          <Route path={ROUTES.USER.BOOKINGS} element={<RoleRoute allowedRoles={["customer"]}><UserBookings /></RoleRoute>} />
+          <Route path={ROUTES.USER.BOOKING_DETAIL} element={<RoleRoute allowedRoles={["customer"]}><UserBookingsDetail /></RoleRoute>} />
+          <Route path={ROUTES.USER.VENUE_DETAILS} element={<RoleRoute allowedRoles={["customer"]}><UserVenueDetails /></RoleRoute>} />
+          <Route path={ROUTES.USER.BOOKING_SUMMARY} element={<RoleRoute allowedRoles={["customer"]}><BookingSummary /></RoleRoute>} />
+          <Route path={ROUTES.USER.PAYMENT} element={<RoleRoute allowedRoles={["customer"]}><UserPayment /></RoleRoute>} />
+          <Route path={ROUTES.USER.PAYMENT_SUCCESS} element={<RoleRoute allowedRoles={["customer"]}><UserPaymentSuccess /></RoleRoute>} />
+          <Route path={ROUTES.USER.PAYMENT_FAILURE} element={<RoleRoute allowedRoles={["customer"]}><UserPaymentFailure /></RoleRoute>} />
 
           {/* Vendor Routes */}
           <Route path={ROUTES.VENDOR.DASHBOARD} element={<RoleRoute allowedRoles={[ROLES.VENDOR]}><Dashboard /></RoleRoute>} />
           <Route path={ROUTES.VENDOR.VENUES} element={<RoleRoute allowedRoles={[ROLES.VENDOR]}><VenueList /></RoleRoute>} />
-          <Route path={ROUTES.VENDOR.BOOKINGS} element={<Bookings />} />
-          <Route path={ROUTES.VENDOR.ADD_VENUE} element={<AddVenue />} />
-          <Route path={ROUTES.VENDOR.PROFILE} element={<Profile />} />
-          <Route path={ROUTES.VENDOR.SETTINGS} element={<Settings />} />
-          <Route path={ROUTES.VENDOR.VENUE_DETAILS} element={<VendorVenueDetails />} />
-          <Route path={ROUTES.VENDOR.EDIT_VENUE} element={<EditVenue />} />
+          <Route path={ROUTES.VENDOR.BOOKINGS} element={<RoleRoute allowedRoles={[ROLES.VENDOR]}><Bookings /></RoleRoute>} />
+          <Route path={ROUTES.VENDOR.ADD_VENUE} element={<RoleRoute allowedRoles={[ROLES.VENDOR]}><AddVenue /></RoleRoute>} />
+          <Route path={ROUTES.VENDOR.PROFILE} element={<RoleRoute allowedRoles={[ROLES.VENDOR]}><Profile /></RoleRoute>} />
+          <Route path={ROUTES.VENDOR.SETTINGS} element={<RoleRoute allowedRoles={[ROLES.VENDOR]}><Settings /></RoleRoute>} />
+          <Route path={ROUTES.VENDOR.VENUE_DETAILS} element={<RoleRoute allowedRoles={[ROLES.VENDOR]}><VendorVenueDetails /></RoleRoute>} />
+          <Route path={ROUTES.VENDOR.EDIT_VENUE} element={<RoleRoute allowedRoles={[ROLES.VENDOR]}><EditVenue /></RoleRoute>} />
 
           {/* Standalone Admin Login (No Layout) */}
           <Route path={ROUTES.ADMIN.LOGIN} element={<PublicRoute><AdminLogin /></PublicRoute>} />

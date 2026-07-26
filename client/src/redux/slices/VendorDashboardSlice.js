@@ -19,7 +19,6 @@ export const fetchDashboard = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get(API_ROUTES.VENDOR.DASHBOARD);
-
       const data = response.data.data;
       const normalized = {
         recentBookings: data.recentBookings || [],
