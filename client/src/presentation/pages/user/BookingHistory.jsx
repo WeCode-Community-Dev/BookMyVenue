@@ -79,31 +79,36 @@ const BookingHistory = () => {
                 ))}
               </div>
             )}
-            <div className="flex justify-between items-center mt-8">
-              <button
-                disabled={pagination.page === 1}
-                onClick={() => setPage(page - 1)}
-                className="border px-4 py-2 rounded disabled:opacity-50"
-              >
-                Previous
-              </button>
 
-              <span>
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
+            {bookings.length > 0 && (
+              <>
+                <div className="flex justify-between items-center mt-8">
+                  <button
+                    disabled={pagination.page === 1}
+                    onClick={() => setPage(page - 1)}
+                    className="border px-4 py-2 rounded disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
 
-              <button
-                disabled={pagination.page === pagination.totalPages}
-                onClick={() => setPage(page + 1)}
-                className="border px-4 py-2 rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
+                  <span>
+                    Page {pagination.page} of {pagination.totalPages}
+                  </span>
 
-            <p className="text-gray-500 mt-6">
-              Showing {start} to {end} of {pagination.total} bookings
-            </p>
+                  <button
+                    disabled={pagination.page === pagination.totalPages}
+                    onClick={() => setPage(page + 1)}
+                    className="border px-4 py-2 rounded disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+
+                <p className="text-gray-500 mt-6">
+                  Showing {start} to {end} of {pagination.total} bookings
+                </p>
+              </>
+            )}
           </div>
         </main>
       </div>
