@@ -14,9 +14,12 @@ export default function BookingSummary() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+
   const { loading, error } = useSelector(
     (state) => state.userBooking
   );
+
+  
 
   // ======================================
   // NO BOOKING DATA

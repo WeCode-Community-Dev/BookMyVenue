@@ -4,6 +4,7 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
+
 import {
   LineChart,
   Line,
@@ -14,30 +15,16 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const bookingData = [
-  { month: "Jan", bookings: 15, revenue: 12000 },
-  { month: "Feb", bookings: 20, revenue: 15000 },
-  { month: "Mar", bookings: 25, revenue: 18000 },
-  { month: "Apr", bookings: 30, revenue: 20000 },
-  { month: "May", bookings: 28, revenue: 22000 },
-  { month: "Jun", bookings: 35, revenue: 25000 },
-];
-
-const BookingTrends = () => {
+const BookingTrends = ({ data = [] }) => {
   return (
     <Card className="mt-8">
       <CardHeader>
-        <CardTitle>
-          Booking Trends
-        </CardTitle>
+        <CardTitle>Booking Trends</CardTitle>
       </CardHeader>
 
       <CardContent>
-        <ResponsiveContainer
-          width="100%"
-          height={300}
-        >
-          <LineChart data={bookingData}>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
 
             <XAxis dataKey="month" />
@@ -50,13 +37,6 @@ const BookingTrends = () => {
               type="monotone"
               dataKey="bookings"
               stroke="#e59346"
-              strokeWidth={2}
-            />
-
-            <Line
-              type="monotone"
-              dataKey="revenue"
-              stroke="#10B981"
               strokeWidth={2}
             />
           </LineChart>

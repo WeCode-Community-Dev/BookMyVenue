@@ -1,10 +1,15 @@
 import { ROUTES } from "@/constants/routes";
-import { CalendarDays, Heart, Key, Settings, User } from "lucide-react";
+import { CalendarDays, Heart, Key, MapPin, Settings, User  } from "lucide-react";
 import React from "react";
 import { NavLink } from "react-router-dom";
 
 const UserSidebar = () => {
   const menuItems = [
+    {
+      name: "Explore Venues",
+      path: ROUTES.USER.BROWSE_VENUES,
+      icon: MapPin ,
+    },
     {
       name: "Profile",
       path: ROUTES.USER.PROFILE,
