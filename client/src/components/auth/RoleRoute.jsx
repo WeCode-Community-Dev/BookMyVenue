@@ -32,7 +32,7 @@ const RoleRoute = ({ children, allowedRoles = [] }) => {
   }
 
   if (user.role === ROLES.VENDOR) {
-    if (user.approvalStatus !== "ACTIVE" && location.pathname !== '/vendor/profile') {
+    if (user.approvalStatus !== "APPROVED" && location.pathname !== '/vendor/profile') {
       toast.error('Please update your profile or wait for admin approval');
       return <Navigate to="/vendor/profile" replace />;
     }

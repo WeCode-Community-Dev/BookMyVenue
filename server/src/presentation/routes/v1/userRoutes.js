@@ -31,53 +31,53 @@ router.get(
 )
 
 router.patch(
-    ROUTES.USER.PROFILE.PROFILE,
+    ROUTES.USER.PROFILE.PROFILE,authHandler(iTokenService),
     validate(updateProfileSchema),
     iUserProfileController.updateProfile
 )
 router.post(
-    ROUTES.USER.PROFILE.REQUEST_EMAIL_CHANGE_OTP,
+    ROUTES.USER.PROFILE.REQUEST_EMAIL_CHANGE_OTP,authHandler(iTokenService),
     validate(RequestEmailChangeOtpSchema,'body'),
     iUserProfileController.requestEmailChangeOtp
 )
 router.post(
-    ROUTES.USER.PROFILE.VERIFY_EMAIL_CHANGE_OTP,
+    ROUTES.USER.PROFILE.VERIFY_EMAIL_CHANGE_OTP,authHandler(iTokenService),
    
     validate(verifyEmailOtpSchema,'body'),
     iUserProfileController.verifyEmailChangeOtp
 )
 router.post(
-    ROUTES.USER.PROFILE.RESEND_EMAIL_CHANGE_OTP,
+    ROUTES.USER.PROFILE.RESEND_EMAIL_CHANGE_OTP,authHandler(iTokenService),
     
     iUserProfileController.resendEmailChangeOtp
 )
 router.patch(
-    ROUTES.USER.PROFILE.PROFILE_IMAGE,
+    ROUTES.USER.PROFILE.PROFILE_IMAGE,authHandler(iTokenService),
     cloudinaryUpload("profile-images").single("profileImage"),
     iUserProfileController.updateProfileImage
 )
 router.delete(
-    ROUTES.USER.PROFILE.PROFILE_IMAGE,
+    ROUTES.USER.PROFILE.PROFILE_IMAGE,authHandler(iTokenService),
     iUserProfileController.removeProfileImage
 )
 router.patch(
-    ROUTES.USER.PROFILE.CHANGE_PASSWORD,
+    ROUTES.USER.PROFILE.CHANGE_PASSWORD,authHandler(iTokenService),
     validate(userChangePasswordSchema, "body"),
     iUserProfileController.changePassword
 )
 
 //wishlist
 router.post(
-    ROUTES.USER.WISHLIST.WISHLIST,
+    ROUTES.USER.WISHLIST.WISHLIST,authHandler(iTokenService),
     validate(WishlistParamsSchema,"params"),
     iUserWishlistController.addToWishlist
 )
 router.get(
-    ROUTES.USER.WISHLIST.GET,
+    ROUTES.USER.WISHLIST.GET,authHandler(iTokenService),
     iUserWishlistController.getWishlist
 )
 router.delete(
-    ROUTES.USER.WISHLIST.WISHLIST,
+    ROUTES.USER.WISHLIST.WISHLIST,authHandler(iTokenService),
     validate(WishlistParamsSchema,'params'),
     iUserWishlistController.removeWishlist
 )
@@ -92,21 +92,21 @@ router.patch(
 
 // Booking
 router.post(
-    ROUTES.USER.BOOKING.RESERVE,
+    ROUTES.USER.BOOKING.RESERVE,authHandler(iTokenService),
     iUserBookingController.reserveBooking
 );
 
 router.post(
-    ROUTES.USER.BOOKING.CONFIRM,
+    ROUTES.USER.BOOKING.CONFIRM,authHandler(iTokenService),
     iUserBookingController.confirmBooking
 );
 router.get(
-    ROUTES.USER.BOOKING.GET_ALL,
+    ROUTES.USER.BOOKING.GET_ALL,authHandler(iTokenService),
     iUserBookingController.getBookings
 );
 
 router.get(
-    ROUTES.USER.BOOKING.GET_BY_ID,
+    ROUTES.USER.BOOKING.GET_BY_ID,authHandler(iTokenService),
     iUserBookingController.getBookingById
 );
 
