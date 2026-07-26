@@ -34,7 +34,7 @@ export default function Owner() {
     useEffect(() => {
         const fetchOwnerVenues = async () => {
             try {
-                const resData = await apiFetch("/venue/my-venues");
+                const resData = await apiFetch("/user/my-venues");
                 setVenues(resData || [
                 ]);
             } catch (resErr) {

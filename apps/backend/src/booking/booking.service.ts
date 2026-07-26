@@ -553,36 +553,4 @@ export class BookingService {
       status: updatedBooking.status,
     };
   }
-
-  async getUserBookings(userId: string) {
-    return this.prismaService.booking.findMany({
-      where: {
-        userId,
-      },
-      include: {
-        venue: {
-          select: {
-            id: true,
-            name: true,
-            addressLine: true,
-            city: true,
-            images: {
-              where: {
-                isPrimary: true,
-              },
-              take: 1,
-            },
-          },
-        },
-        slots: {
-          include: {
-            slotTemplate: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-  }
 }

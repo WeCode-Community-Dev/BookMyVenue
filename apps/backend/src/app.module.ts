@@ -1,3 +1,4 @@
+import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -6,6 +7,7 @@ import { MailModule } from './providers/mail/mail.module';
 import { Module } from '@nestjs/common';
 import { PrismaModule } from './providers/prisma/prisma.module';
 import { RedisModule } from './providers/redis/redis.module';
+import { UserModule } from './user/user.module';
 import { VenueModule } from './venue/venue.module';
 
 @Module({
@@ -16,6 +18,8 @@ import { VenueModule } from './venue/venue.module';
     AuthModule,
     VenueModule,
     BookingModule,
+    UserModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

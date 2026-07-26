@@ -9,7 +9,7 @@ import Link from "next/link";
 import { UserBooking } from "@/types/Booking";
 import { bookingsListStyle } from "@/features/booking/styles/BookingsListStyle";
 import { format } from "date-fns";
-import { getUserBookings } from "./services/BookingService";
+import { getUserBookings } from "@/features/user/services/UserService";
 
 export default function BookingsList() {
     const [bookings, setBookings] = useState<UserBooking[]>([]);

@@ -320,6 +320,7 @@
         "START_EXPLORING_VENUES": "Start exploring venues to make your first booking!",
         "FAILED_TO_LOAD_BOOKINGS": "Failed to load bookings",
         "ENTER_REJECTION_REASON": "Enter reason for rejection (optional):",
+        "REJECTION_REASON_PLACEHOLDER": "Rejection note/reason...",
         "FAILED_APPROVE_VENUE": "Failed to approve venue",
         "FAILED_REJECT_VENUE": "Failed to reject venue"
     }
