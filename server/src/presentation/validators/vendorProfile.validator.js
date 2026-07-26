@@ -10,17 +10,10 @@ export const UpdateVendorProfileSchema = z.object({
 
     companyName: z.string().trim().min(2).optional(),
 
-<<<<<<< HEAD
-   // profileImage: z.object({
-     //   publicId: z.string(),
-     //   url: z.string().url()
-    //}).optional(),
-=======
     // profileImage: z.object({
     //     publicId: z.string(),
     //     url: z.string().url().optional()
     // }).optional(),
->>>>>>> f8e4f69ab54c66651d8fe5e434042bc1dc8dc603
 
     address: z.object({
         addressLine1: z.string(),

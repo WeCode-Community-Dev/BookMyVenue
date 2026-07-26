@@ -310,7 +310,7 @@ async findById(id) {
 
   async countByOwnerId(ownerId) {
     return await VenueModel.countDocuments({
-      ownerId,
+      vendorId: ownerId,
 
       isDeleted: false,
     });
