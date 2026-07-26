@@ -40,10 +40,4 @@ export class BookingController {
   cancelBooking(@Body() dto: CancelBookingDto, @Request() req: AuthRequest) {
     return this.bookingService.cancelBooking(dto, req.user.id);
   }
-
-  @Get('my-bookings')
-  @UseGuards(JwtAuthGuard)
-  getMyBookings(@Request() req: AuthRequest) {
-    return this.bookingService.getUserBookings(req.user.id);
-  }
 }

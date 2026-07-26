@@ -1,7 +1,7 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getUserBookings(): Promise<any[]> {
-    const url = `${BASE_URL}/booking/my-bookings`;
+    const url = `${BASE_URL}/user/my-bookings`;
     try {
         const response = await fetch(url, {
             method: "GET",
