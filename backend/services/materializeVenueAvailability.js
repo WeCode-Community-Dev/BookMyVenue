@@ -1,15 +1,9 @@
 const mongoose = require("mongoose");
 const SlotTemplates = require("../models/slotTemplate");
 const BookableUnits = require("../models/bookableUnit");
+const toDateKey = require("../utils/dateKey");
 
 const MATERIALIZATION_WINDOW_DAYS = 90;
-
-function toDateKey(date) {
-   const y = date.getFullYear();
-   const m = String(date.getMonth() + 1).padStart(2, "0");
-   const d = String(date.getDate()).padStart(2, "0");
-   return `${y}-${m}-${d}`;
-}
 
 function resolveInstant(date, minutesSinceMidnight) {
    const instant = new Date(date);

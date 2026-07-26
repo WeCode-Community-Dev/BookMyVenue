@@ -12,7 +12,7 @@ const DEFAULT_LIMIT = 20;
 
 const PUBLIC_VENUE_FILTER = {
    status: VENUE_STATUSES.APPROVED,
-   // isActive: true, keep commented for now
+   isActive: true,
    deletedAt: null,
 };
 
