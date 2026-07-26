@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import Booking from '../models/booking.model';
-import { BookingStatus, PaymentStatus } from '../constants/booking';
+import { BookingStatus, PaymentStatus, validateBookingStateTransition } from '../constants/booking';
 import { SettlementStatus } from '../constants/settlement';
 import logger from '../libs/logger';
 
@@ -27,6 +27,7 @@ export const startAutoCompletionJob = () => {
 
       for (const booking of eligibleBookings) {
         try {
+          validateBookingStateTransition(booking.bookingStatus, BookingStatus.COMPLETED);
           booking.bookingStatus = BookingStatus.COMPLETED;
           booking.paymentStatus = PaymentStatus.PAID;
           booking.amountPaid = booking.totalAmount;

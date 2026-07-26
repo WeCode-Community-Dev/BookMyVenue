@@ -7,6 +7,7 @@ import {
   RESERVATION_POLICY,
   CancellationType,
   RefundStatus,
+  validateBookingStateTransition,
 } from '@/constants/booking';
 import { SettlementStatus } from '@/constants/settlement';
 import { CreateBookingPayload } from '@/types/booking.types';
@@ -23,9 +24,26 @@ import logger from '@/libs/logger';
 import mongoose from 'mongoose';
 import Venue from '@/models/venue.model';
 import Booking from '@/models/booking.model';
+import User from '@/models/user.model';
 import { logAdminAction } from '@/utils/auditLogger';
+import { validateVenueAvailability } from '@/utils/availabilityValidator';
 
 // ── Helpers ───────────────────────────────────────────────────
+
+/**
+ * Re-verifies that the venue is active, approved, not deleted, and the host is not blocked
+ * before committing any payment.
+ */
+const verifyVenueAndHostActive = async (venueId: any) => {
+  const venue = await Venue.findById(venueId);
+  if (!venue || venue.isDeleted || !venue.isActive || venue.verificationStatus !== 'approved') {
+    throw new AppError('Venue is no longer active or available for payment processing', HTTP_STATUS.BAD_REQUEST);
+  }
+  const hostUser = await User.findById(venue.ownerId);
+  if (hostUser && hostUser.isBlocked) {
+    throw new AppError('Venue host account is currently suspended', HTTP_STATUS.BAD_REQUEST);
+  }
+};
 
 /**
  * Determines the booking scenario based on how many days
@@ -111,37 +129,10 @@ export const calculateQuoteService = async (
 ) => {
   const start = new Date(startDateTime);
   const end = new Date(endDateTime);
-
-  if (start >= end) {
-    throw new AppError('End date must be after the start date', HTTP_STATUS.BAD_REQUEST);
-  }
-  if (start < new Date()) {
-    throw new AppError('Past dates are not allowed', HTTP_STATUS.BAD_REQUEST);
-  }
-
   const now = new Date();
-  const minLeadTimeMs = 2 * 60 * 60 * 1000; // 2 hours lead time
-  if (start.getTime() - now.getTime() < minLeadTimeMs) {
-    throw new AppError('Bookings must be placed at least 2 hours in advance', HTTP_STATUS.BAD_REQUEST);
-  }
 
-  // Fetch venue pricing
-  const availability: IAvailability | null = await getAvailabilityByVenueId(venueId);
-  if (!availability) {
-    throw new AppError('Venue not available to book', HTTP_STATUS.NOT_FOUND);
-  }
-
-  // Check blackout dates
-  if (availability.blackoutDates && availability.blackoutDates.length > 0) {
-    const isBlackedOut = availability.blackoutDates.some((b: any) => {
-      const bStart = new Date(b.startDate).getTime();
-      const bEnd = new Date(b.endDate).getTime();
-      return start.getTime() < bEnd && end.getTime() > bStart;
-    });
-    if (isBlackedOut) {
-      throw new AppError('Venue is unavailable on the selected dates due to a scheduled blackout period', HTTP_STATUS.BAD_REQUEST);
-    }
-  }
+  // Run comprehensive availability validation
+  const availability = await validateVenueAvailability(venueId, start, end);
 
   // Calculate total amount (base + GST + platform fee)
   const durationInHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
@@ -170,12 +161,12 @@ export const calculateQuoteService = async (
     gst,
     platformFee,
     totalAmount,
-    bookingScenario: scenario,
     reservationDeposit,
     remainingBalance,
+    bookingScenario: scenario,
     remainingPaymentDueDate: deadlineDetails.remainingPaymentDueDate,
     autoCancellationDate: deadlineDetails.autoCancellationDate,
-    isImmediatePaymentRequired: deadlineDetails.isImmediatePaymentRequired,
+    isImmediatePaymentRequired: scenario === BookingScenario.IMMEDIATE,
   };
 };
 
@@ -189,27 +180,54 @@ export const createBookingService = async (userId: string, payload: CreateBookin
   const start = new Date(payload.startDateTime);
   const end = new Date(payload.endDateTime);
 
-  // Overlap check
-  const hasOverlapping = await bookingRepo.hasOverlappingBooking(payload.venueId, start, end);
-  if (hasOverlapping) {
-    throw new AppError('Venue unavailable at the selected time', HTTP_STATUS.CONFLICT);
-  }
-
-  // Get pricing details from backend-owned quote service
-  const quote = await calculateQuoteService(payload.venueId, start, end);
-
-  // Save booking to database
-  const booking = await bookingRepo.createBooking(userId, payload, {
-    totalAmount: quote.totalAmount,
-    reservationDeposit: quote.reservationDeposit,
-    remainingBalance: quote.remainingBalance,
-    bookingScenario: quote.bookingScenario,
-    remainingPaymentDueDate: quote.remainingPaymentDueDate,
-    autoCancellationDate: quote.autoCancellationDate,
-    isImmediatePaymentRequired: quote.isImmediatePaymentRequired,
+  // 1. Double-click idempotency check (created within last 10 seconds for same slot)
+  const tenSecondsAgo = new Date(Date.now() - 10 * 1000);
+  const recentDuplicate = await Booking.findOne({
+    user: userId,
+    venue: payload.venueId,
+    startDateTime: start,
+    endDateTime: end,
+    bookingStatus: BookingStatus.PENDING,
+    createdAt: { $gte: tenSecondsAgo },
   });
 
-  return { booking, razorpayChargeAmount: quote.reservationDeposit };
+  if (recentDuplicate) {
+    return { booking: recentDuplicate, razorpayChargeAmount: recentDuplicate.reservationDeposit };
+  }
+
+  // 2. Execute availability validation and booking creation in a Mongo transaction session
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    await validateVenueAvailability(payload.venueId, start, end, session);
+    const quote = await calculateQuoteService(payload.venueId, start, end);
+
+    const booking = await bookingRepo.createBooking(
+      userId,
+      payload,
+      {
+        totalAmount: quote.totalAmount,
+        reservationDeposit: quote.reservationDeposit,
+        remainingBalance: quote.remainingBalance,
+        bookingScenario: quote.bookingScenario,
+        remainingPaymentDueDate: quote.remainingPaymentDueDate,
+        autoCancellationDate: quote.autoCancellationDate,
+        isImmediatePaymentRequired: quote.isImmediatePaymentRequired,
+      },
+      session
+    );
+
+    await session.commitTransaction();
+    return { booking, razorpayChargeAmount: quote.reservationDeposit };
+  } catch (error) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    throw error;
+  } finally {
+    session.endSession();
+  }
 };
 
 /**
@@ -240,6 +258,9 @@ export const verifyAndConfirmDepositService = async (
     throw new AppError('Unauthorized access to booking', HTTP_STATUS.UNAUTHORIZED);
   }
 
+  // ── Live Venue & Host Status Re-Verification ───────────
+  await verifyVenueAndHostActive(booking.venue);
+
   // ── 4. Update booking based on scenario ────────────────
   if (booking.bookingScenario === BookingScenario.IMMEDIATE) {
     // Full payment — mark as CONFIRMED + PAID
@@ -265,6 +286,9 @@ export const payBalanceService = async (userId: string, bookingId: string) => {
   if (booking.user._id.toString() !== userId) {
     throw new AppError('Unauthorized access to booking', HTTP_STATUS.UNAUTHORIZED);
   }
+
+  // ── Live Venue & Host Status Re-Verification ───────────
+  await verifyVenueAndHostActive(booking.venue);
 
   // ── 3. Status check ────────────────────────────────────
   if (booking.bookingStatus !== BookingStatus.RESERVED) {
@@ -708,6 +732,9 @@ export const payBookingWithWalletService = async (userId: string, bookingId: str
     throw new AppError('Booking is already fully paid', HTTP_STATUS.BAD_REQUEST);
   }
 
+  // Live venue and host status re-verification
+  await verifyVenueAndHostActive(booking.venue);
+
   const chargeAmount =
     booking.bookingScenario === BookingScenario.IMMEDIATE || booking.paymentStatus === PaymentStatus.DEPOSIT_PAID
       ? booking.remainingBalance || booking.totalAmount
@@ -742,8 +769,15 @@ export const payBookingWithWalletService = async (userId: string, bookingId: str
   });
 
   // Update booking state
+  const targetStatus =
+    booking.bookingScenario === BookingScenario.IMMEDIATE || booking.paymentStatus === PaymentStatus.DEPOSIT_PAID
+      ? BookingStatus.CONFIRMED
+      : BookingStatus.RESERVED;
+
+  validateBookingStateTransition(booking.bookingStatus, targetStatus);
+
   booking.paymentMethod = PaymentMethod.WALLET;
-  if (booking.bookingScenario === BookingScenario.IMMEDIATE || booking.paymentStatus === PaymentStatus.DEPOSIT_PAID) {
+  if (targetStatus === BookingStatus.CONFIRMED) {
     booking.bookingStatus = BookingStatus.CONFIRMED;
     booking.paymentStatus = PaymentStatus.PAID;
     booking.amountPaid = booking.totalAmount;
@@ -813,9 +847,8 @@ export const adminForceCancelBookingService = async (
   if (!booking) {
     throw new AppError('Booking not found', HTTP_STATUS.NOT_FOUND);
   }
-  if (booking.bookingStatus === BookingStatus.CANCELLED) {
-    throw new AppError('Booking is already cancelled', HTTP_STATUS.BAD_REQUEST);
-  }
+  
+  validateBookingStateTransition(booking.bookingStatus, BookingStatus.CANCELLED);
 
   const factor = Math.max(0, Math.min(100, refundPercentage)) / 100;
   const amountPaid = booking.amountPaid || 0;
