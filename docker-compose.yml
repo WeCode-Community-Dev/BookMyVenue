@@ -1,0 +1,22 @@
+# =============================================================================
+# BookMyVenue — Docker Compose (local dev/testing only)
+#
+# This file is for local development and smoke-testing the containerised
+# server.  It runs the server service in isolation — no MongoDB, no frontend.
+#
+# Production deployments should use a proper container registry + orchestrator
+# (ECS, Cloud Run, Kubernetes, etc.) and inject secrets via the platform's
+# native secrets manager, not an .env file.
+# =============================================================================
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3003"
+    env_file: ./server/.env
+    volumes:
+      # Persist Winston daily-rotate-file logs outside the container
+      - ./server/logs:/app/logs

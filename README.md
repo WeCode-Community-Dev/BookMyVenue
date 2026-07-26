@@ -44,4 +44,16 @@ To maintain a high standard of code, all Pull Requests must use our [standard te
 4. **Sign the AI Disclosure** (Confirming you have reviewed any AI-generated code).
 5. **Attach Screenshots** (If your PR includes UI changes).
 
+## 📚 Documentation
+
+| Document | Description |
+|---|---|
+| [Setup Guide](SETUP.md) | Development environment setup, environment variables, and running the project |
+| [Architecture](docs/architecture.md) | System architecture, module patterns, middleware stack, and RBAC |
+| [API Overview](docs/api-overview.md) | Authentication flow, response format, pagination, webhooks, and route map |
+| [Server Modules](docs/modules.md) | Catalog of all 14 server feature modules |
+| [Pagination](.agents/PAGINATION.md) | Detailed pagination middleware and utilities reference |
+| [Security Policy](SECURITY.md) | How to report vulnerabilities and security measures |
+| [Contribution Guidelines](CONTRIBUTING.md) | How to contribute, branch naming, and PR workflow |
+
 **BookMyVenue belongs to all of us. Join WeCode today and let's build something amazing together!**

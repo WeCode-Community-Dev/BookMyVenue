@@ -1,0 +1,14 @@
+packages:
+  - server
+  - client
+  - admin
+
+allowBuilds:
+  bcrypt: true
+  esbuild: true
+
+onlyBuiltDependencies:
+  - '@scarf/scarf'
+  - bcrypt
+  - esbuild
+  - mongodb-memory-server

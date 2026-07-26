@@ -1,0 +1,67 @@
+name: Enforce PR Source Branches
+
+on:
+  pull_request:
+    branches: [qa, main]
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  check-qa-source:
+    name: Check PRs targeting `qa`
+    if: github.base_ref == 'qa'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify source branch is `dev`
+        run: |
+          if [[ "${{ github.head_ref }}" != "dev" ]]; then
+            echo "❌ ERROR: PRs to 'qa' must come from 'dev'!"
+            echo ""
+            echo "Valid path to qa:"
+            echo "  dev → qa"
+            echo ""
+            echo "Your PR is from: ${{ github.head_ref }}"
+            echo "Expected source: dev"
+            echo ""
+            echo "Please:"
+            echo "1. Close this PR"
+            echo "2. Merge your changes into 'dev' branch first"
+            echo "3. Create a new PR from 'dev' to 'qa'"
+            exit 1
+          fi
+
+      - name: Optional – Suggest release preparation
+        run: |
+          echo "✅ PR from dev to qa is valid. Continue with QA testing."
+
+  check-main-source:
+    name: Check PRs targeting `main`
+    if: github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify source branch is `qa`
+        run: |
+          if [[ "${{ github.head_ref }}" != "qa" ]]; then
+            echo "❌ ERROR: Direct PR to 'main' is not allowed!"
+            echo ""
+            echo "Valid path to main:"
+            echo "  dev → qa → main"
+            echo ""
+            echo "Your PR is from: ${{ github.head_ref }}"
+            echo "Expected source: qa"
+            echo ""
+            echo "Please:"
+            echo "1. Close this PR"
+            echo "2. Merge your changes into 'qa' branch first"
+            echo "3. Create a new PR from 'qa' to 'main'"
+            exit 1
+          fi
+
+      - name: Enforce release version naming (optional)
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          if [[ ! "$TITLE" =~ ^Release\ version\ [0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            echo "⚠️ Suggestion: PR title should follow 'Release version X.Y.Z'"
+            # Change to "exit 1" if you want to enforce the naming strictly
+          else
+            echo "✅ Valid release title format."
+          fi
