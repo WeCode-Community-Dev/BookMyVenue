@@ -1,6 +1,5 @@
 import Express from 'express'
-import { iAdminBookingController, iAdminUserController,iAdminPaymentController, iAdminDashboardController } from '../../controllers/di.js'
-import { iAdminVendorController } from '../../controllers/di.js'
+import { iAdminBookingController, iAdminUserController,iAdminPaymentController, iAdminDashboardController,iTokenService ,iAdminVendorController} from '../../controllers/di.js'
 import { ROUTES } from '../../../shared/constants/routes.js'
 import { getAllUsersQuerySchema, updateUserStatusSchema } from '../../validators/adminUser.validator.js'
 import { validate } from '../../middlewares/validator.js'
@@ -14,38 +13,39 @@ import {
 import { iAdminVenueController } from '../../controllers/di.js'
 import { adminGetAllBookingsSchema, adminGetBookingByIdSchema } from '../../validators/adminBooking.validator.js'
 import { adminGetAllPaymentsSchema, adminGetPaymentByIdSchema} from '../../validators/adminPayment.validator.js'
+import { authHandler } from '../../middlewares/auth.middleware.js'
 
 const router = Express.Router()
-
+router.use(authHandler(iTokenService))
 //Dashboard
-router.get(ROUTES.ADMIN.DASHBOARD.GET_STATISTICS,iAdminDashboardController.getDashboardStatistics)
+router.get(ROUTES.ADMIN.DASHBOARD.GET_STATISTICS,authHandler(iTokenService),iAdminDashboardController.getDashboardStatistics)
 //User
 router.get(
-    ROUTES.ADMIN.USER.GET_ALL, validate(getAllUsersQuerySchema, 'query'),
+    ROUTES.ADMIN.USER.GET_ALL,authHandler(iTokenService), validate(getAllUsersQuerySchema, 'query'),
     iAdminUserController.getAllUsers
 )
 
 router.patch(
-    ROUTES.ADMIN.USER.UPDATE_STATUS, validate(updateUserStatusSchema, 'body'),
+    ROUTES.ADMIN.USER.UPDATE_STATUS,authHandler(iTokenService), validate(updateUserStatusSchema, 'body'),
     iAdminUserController.updateUserStatus
 )
 //vendor
-router.get(ROUTES.ADMIN.VENDOR.GET_ALL, validate(getAllVendorsQuerySchema, 'query'), iAdminVendorController.getAllVendors)
-router.get(ROUTES.ADMIN.VENDOR.GET_BY_ID, iAdminVendorController.getVendorById)
-router.patch(ROUTES.ADMIN.VENDOR.APPROVE_VENDOR, iAdminVendorController.approveVendor)
-router.patch(ROUTES.ADMIN.VENDOR.REJECT_VENDOR, validate(rejectVendorBodySchema, 'body'), iAdminVendorController.rejectVendor)
-router.patch(ROUTES.ADMIN.VENDOR.UPDATE_STATUS, validate(updateVendorStatusSchema, 'body'), iAdminVendorController.updateVendorStatus)
+router.get(ROUTES.ADMIN.VENDOR.GET_ALL, authHandler(iTokenService),validate(getAllVendorsQuerySchema, 'query'), iAdminVendorController.getAllVendors)
+router.get(ROUTES.ADMIN.VENDOR.GET_BY_ID,authHandler(iTokenService), iAdminVendorController.getVendorById)
+router.patch(ROUTES.ADMIN.VENDOR.APPROVE_VENDOR,authHandler(iTokenService), iAdminVendorController.approveVendor)
+router.patch(ROUTES.ADMIN.VENDOR.REJECT_VENDOR,authHandler(iTokenService), validate(rejectVendorBodySchema, 'body'), iAdminVendorController.rejectVendor)
+router.patch(ROUTES.ADMIN.VENDOR.UPDATE_STATUS,authHandler(iTokenService), validate(updateVendorStatusSchema, 'body'), iAdminVendorController.updateVendorStatus)
 
 //venue
 
 router.get(
-    ROUTES.ADMIN.VENUE.GET_ALL,
+    ROUTES.ADMIN.VENUE.GET_ALL,authHandler(iTokenService),
     validate(getAllVenuesQuerySchema, 'query'),
     iAdminVenueController.getAllVenues
 );
 
 router.get(
-    ROUTES.ADMIN.VENUE.GET_BY_ID,
+    ROUTES.ADMIN.VENUE.GET_BY_ID,authHandler(iTokenService),
     validate(venueIdParamSchema, 'params'),
     iAdminVenueController.getVenueById
 );
