@@ -9,7 +9,7 @@ import CapacityAndPricing from "./CapacityAndPricing";
 import LocationForm from "@/components/global/LocationForm";
 import PhotoUpload from "@/components/global/PhotoUpload";
 import { SCREENS } from "@/lib/Constants";
-import VenueHeader from "@/components/global/venueheader";
+import VenueHeader from "@/components/global/VenueHeader";
 import VerifyBooking from "@/components/global/booking/VerifyBooking";
 import { getText } from "@/lib/language/LanguageHelper";
 import { useAuthService } from "@/features/auth/services/AuthService";
