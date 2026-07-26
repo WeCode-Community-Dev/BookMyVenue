@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import BookingCalendar from "./BookingCalender";
 import BookingExtras from "./BookingExtras";
 import BookingHeader from "./BookingHeader";
+import { BookingItem } from "@/types/Booking";
 import BookingPackages from "./BookingPackages";
 import BookingSummary from "./BookingSummary";
 import BookingVenueCard from "./BookingVenueCard";
@@ -51,6 +52,39 @@ export default function BookingLayout() {
     const { user, apiFetch } = useAuthService();
 
     const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+    const [selectedSlots, setSelectedSlots] = useState<{ [dateStr: string]: string[] }>({});
+
+    const handleSelectSlot = (dateStr: string, slotId: string) => {
+        setSelectedSlots((prev) => {
+            const currentSelected = prev[dateStr] || [];
+            const isSelected = currentSelected.includes(slotId);
+            
+            let newSelected;
+            if (isSelected) {
+                newSelected = currentSelected.filter((id) => id !== slotId);
+            } else {
+                newSelected = [...currentSelected, slotId];
+            }
+            
+            return {
+                ...prev,
+                [dateStr]: newSelected,
+            };
+        });
+    };
+
+    useEffect(() => {
+        setSelectedSlots((prev) => {
+            const updated: { [dateStr: string]: string[] } = {};
+            selectedDates.forEach((date) => {
+                const dateStr = format(date, "yyyy-MM-dd");
+                if (prev[dateStr]) {
+                    updated[dateStr] = prev[dateStr];
+                }
+            });
+            return updated;
+        });
+    }, [selectedDates]);
 
     const [isPaying, setIsPaying] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -107,20 +141,26 @@ export default function BookingLayout() {
             }
 
             // Map selected dates to slot pricing tiers
-            const slots = selectedDates.map((date, idx) => {
-                const slotsCount = venue?.slotTemplates?.length || 0;
-                const slot = slotsCount > 0 ? venue?.slotTemplates?.[idx % slotsCount] : null;
-                const pricingTierId = slot?.pricingTiers?.[0]?.id;
-
-                if (!pricingTierId) {
-                    throw new Error("No slot pricing tier found for a selected date.");
-                }
-
-                return {
-                    slotPricingTierId: pricingTierId,
-                    eventDate: format(date, "yyyy-MM-dd"),
-                };
+            const slots: Array<{ slotPricingTierId: string; eventDate: string }> = [];
+            
+            selectedDates.forEach((date) => {
+                const dateStr = format(date, "yyyy-MM-dd");
+                const selectedIds = selectedSlots[dateStr] || [];
+                selectedIds.forEach((slotId) => {
+                    const slot = venue.slotTemplates?.find((s) => s.id === slotId);
+                    const pricingTierId = slot?.pricingTiers?.[0]?.id;
+                    if (pricingTierId) {
+                        slots.push({
+                            slotPricingTierId: pricingTierId,
+                            eventDate: dateStr,
+                        });
+                    }
+                });
             });
+
+            if (slots.length === 0) {
+                throw new Error("Please select at least one booking package.");
+            }
 
             // Create booking
             const bookingResponse = await apiFetch("/booking", {
@@ -203,26 +243,32 @@ export default function BookingLayout() {
         }
     };
 
-    // Calculate dynamic bookings list
-    const derivedBookings = selectedDates.map((date, idx) => {
-        const slotsCount = venue?.slotTemplates?.length || 0;
-        const slot = slotsCount > 0 ? venue?.slotTemplates?.[idx % slotsCount] : null;
-        
-        const slotLabel = slot?.label || (idx % 2 === 0 ? "Morning Wedding Package" : "Evening Reception Package");
-        const slotTime = slot ? `${slot.startTime} - ${slot.endTime}` : (idx % 2 === 0 ? "09:00 AM - 01:00 PM" : "04:00 PM - 10:00 PM");
-        const priceVal = slot?.pricingTiers?.[0]?.price 
-            ? Number(slot.pricingTiers[0].price) 
-            : (idx % 2 === 0 ? 18000 : 30000);
+    // Calculate dynamic bookings list based on selected slots
+    const derivedBookings: BookingItem[] = [];
 
-        return {
-            id: date.toISOString() + idx,
-            day: format(date, "dd"),
-            month: format(date, "MMM").toUpperCase(),
-            title: slotLabel,
-            time: slotTime,
-            guests: `${venue?.capacityMin || 50}-${venue?.capacityMax || 150} Guests`,
-            price: priceVal,
-        };
+    selectedDates.forEach((date) => {
+        const dateStr = format(date, "yyyy-MM-dd");
+        const selectedIds = selectedSlots[dateStr] || [];
+        selectedIds.forEach((slotId) => {
+            const slot = venue?.slotTemplates?.find((s) => s.id === slotId);
+            if (slot) {
+                const slotLabel = slot.label;
+                const slotTime = `${slot.startTime} - ${slot.endTime}`;
+                const priceVal = slot.pricingTiers?.[0]?.price 
+                    ? Number(slot.pricingTiers[0].price) 
+                    : 0;
+
+                derivedBookings.push({
+                    id: `${dateStr}-${slotId}`,
+                    day: format(date, "dd"),
+                    month: format(date, "MMM").toUpperCase(),
+                    title: slotLabel,
+                    time: slotTime,
+                    guests: `${venue?.capacityMin || 50}-${venue?.capacityMax || 150} Guests`,
+                    price: priceVal,
+                });
+            }
+        });
     });
 
     if (loading) {
@@ -277,7 +323,12 @@ export default function BookingLayout() {
 
                         <BookingCalendar selectedDates={selectedDates} setSelectedDates={setSelectedDates} />
 
-                        <BookingPackages selectedDates={selectedDates} />
+                        <BookingPackages
+                            venue={venue}
+                            selectedDates={selectedDates}
+                            selectedSlots={selectedSlots}
+                            onSelectSlot={handleSelectSlot}
+                        />
 
                         <BookingExtras />
 

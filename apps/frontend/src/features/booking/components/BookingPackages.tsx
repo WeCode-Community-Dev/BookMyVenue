@@ -3,12 +3,78 @@
 import { AppText, getText } from "@/lib/language/LanguageHelper";
 
 import PackageCard from "./PackageCard";
+import { Venue } from "@/types/Venue";
 import { bookingPackagesStyle } from "@/features/booking/styles/BookingPackagesStyle";
 import { format } from "date-fns";
 
-export default function BookingPackages({ selectedDates }: { selectedDates?: Date[] }) {
-    const defaultDates: Date[] = [];
+type BookingPackagesProps = {
+    venue: Venue | null;
+    selectedDates?: Date[];
+    selectedSlots: { [dateStr: string]: string[] };
+    onSelectSlot: (dateStr: string, slotId: string) => void;
+};
 
+const parseTimeToMinutes = (timeStr: string, dayOffset: number = 0): number => {
+    if (!timeStr) return 0;
+    const clean = timeStr.trim().toUpperCase();
+    
+    let hours = 0;
+    let minutes = 0;
+    
+    const ampmMatch = clean.match(/(\d+):(\d+)\s*(AM|PM)/);
+    if (ampmMatch) {
+        hours = parseInt(ampmMatch[1], 10);
+        minutes = parseInt(ampmMatch[2], 10);
+        const ampm = ampmMatch[3];
+        if (ampm === "PM" && hours !== 12) {
+            hours += 12;
+        } else if (ampm === "AM" && hours === 12) {
+            hours = 0;
+        }
+    } else {
+        const parts = clean.split(":");
+        if (parts.length >= 2) {
+            hours = parseInt(parts[0], 10) || 0;
+            minutes = parseInt(parts[1], 10) || 0;
+        }
+    }
+    
+    return dayOffset * 24 * 60 + hours * 60 + minutes;
+};
+
+const slotsOverlap = (slotA: any, slotB: any): boolean => {
+    const isFullA = slotA.label?.toLowerCase().includes("full") || slotA.label?.toLowerCase().includes("fullday");
+    const isFullB = slotB.label?.toLowerCase().includes("full") || slotB.label?.toLowerCase().includes("fullday");
+    if (isFullA || isFullB) {
+        return true;
+    }
+    
+    const startA = parseTimeToMinutes(slotA.startTime, slotA.startDayOffset || 0);
+    const endA = parseTimeToMinutes(slotA.endTime, slotA.endDayOffset || 0);
+    
+    const startB = parseTimeToMinutes(slotB.startTime, slotB.startDayOffset || 0);
+    const endB = parseTimeToMinutes(slotB.endTime, slotB.endDayOffset || 0);
+    
+    return startA < endB && startB < endA;
+};
+
+const sortSlots = (slots: any[]) => {
+    return [...slots].sort((a, b) => {
+        const isFullA = a.label?.toLowerCase().includes("full") || a.label?.toLowerCase().includes("fullday");
+        const isFullB = b.label?.toLowerCase().includes("full") || b.label?.toLowerCase().includes("fullday");
+        if (isFullA && !isFullB) return -1;
+        if (!isFullA && isFullB) return 1;
+        return 0;
+    });
+};
+
+export default function BookingPackages({
+    venue,
+    selectedDates,
+    selectedSlots,
+    onSelectSlot,
+}: BookingPackagesProps) {
+    const defaultDates: Date[] = [];
     const dates = selectedDates || defaultDates;
 
     if (dates.length === 0) {
@@ -30,6 +96,19 @@ export default function BookingPackages({ selectedDates }: { selectedDates?: Dat
             </section>
         );
     }
+
+    const slotTemplates = venue?.slotTemplates ? sortSlots(venue.slotTemplates) : [];
+
+    const isSlotDisabled = (dateStr: string, slot: any, allSlots: any[]) => {
+        const selectedIds = selectedSlots[dateStr] || [];
+        if (selectedIds.length === 0) return false;
+        if (selectedIds.includes(slot.id)) return false;
+        
+        return allSlots.some(otherSlot => {
+            if (!selectedIds.includes(otherSlot.id)) return false;
+            return slotsOverlap(slot, otherSlot);
+        });
+    };
 
     return (
         <section className={bookingPackagesStyle.card}>
@@ -56,28 +135,39 @@ export default function BookingPackages({ selectedDates }: { selectedDates?: Dat
 
             <div className={bookingPackagesStyle.packagesList}>
 
-                {dates.map((date, idx) => {
-                    const isEvening = idx % 2 !== 0;
+                {dates.map((date) => {
+                    const dateStr = format(date, "yyyy-MM-dd");
                     const formattedDate = format(date, "dd MMM yyyy");
-                    const title = isEvening 
-                        ? getText("EVENING_RECEPTION_PACKAGE", "LABEL") 
-                        : getText("MORNING_WEDDING_PACKAGE", "LABEL");
-                    const time = isEvening ? "04:00 PM - 10:00 PM" : "09:00 AM - 01:00 PM";
-                    const price = isEvening ? "₹30,000" : "₹18,000";
+                    const selectedIds = selectedSlots[dateStr] || [];
 
-                    return (
-                        <PackageCard
-                            key={date.toISOString() + idx}
-                            date={formattedDate}
-                            title={title}
-                            time={time}
-                            guests={getText("GUESTS_RANGE", "LABEL", { min: 50, max: 150 })}
-                            price={price}
-                            available={getText("AVAILABLE", "LABEL")}
-                            selected={true}
-                            evening={isEvening}
-                        />
-                    );
+                    return slotTemplates.map((slot) => {
+                        const isSelected = selectedIds.includes(slot.id);
+                        const disabled = isSlotDisabled(dateStr, slot, slotTemplates);
+
+                        const isEvening = slot.label?.toLowerCase().includes("evening") || 
+                                          slot.label?.toLowerCase().includes("night") ||
+                                          (slot.startTime && (parseInt(slot.startTime) >= 12 || slot.startTime.toUpperCase().includes("PM")));
+
+                        const price = slot.pricingTiers?.[0]?.price 
+                            ? `₹${Number(slot.pricingTiers[0].price).toLocaleString("en-IN")}`
+                            : "₹0";
+
+                        return (
+                            <PackageCard
+                                key={`${dateStr}-${slot.id}`}
+                                date={formattedDate}
+                                title={slot.label}
+                                time={`${slot.startTime} - ${slot.endTime}`}
+                                guests={getText("GUESTS_RANGE", "LABEL", { min: slot.pricingTiers?.[0]?.minGuests || 50, max: slot.pricingTiers?.[0]?.maxGuests || 150 })}
+                                price={price}
+                                available={getText("AVAILABLE", "LABEL")}
+                                selected={isSelected}
+                                evening={isEvening}
+                                disabled={disabled}
+                                onClick={() => onSelectSlot(dateStr, slot.id)}
+                            />
+                        );
+                    });
                 })}
 
             </div>

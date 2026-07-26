@@ -111,6 +111,7 @@ export const bookingLayoutStyle = {
     ),
     leftSection: clsx(
         "flex-1",
+        "min-w-0",
         "space-y-6"
     ),
     rightSection: clsx(

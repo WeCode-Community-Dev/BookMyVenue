@@ -5,60 +5,12 @@ import {
     BadgeCheck,
     CalendarDays,
 } from "lucide-react";
+import { BookingItem, BookingSummaryProps } from "@/types/Booking";
 import { getVenuePrimaryImage, getVenueVerified } from "@/features/venues/services/VenuService";
 
 import Image from "next/image";
 import { Venue } from "@/types/Venue";
 import { bookingSummaryStyle } from "@/features/booking/styles/BookingSummaryStyle";
-
-export interface BookingItem {
-    id: number | string;
-    day: string;
-    month: string;
-    title: string;
-    time: string;
-    guests: string;
-    price: number | string;
-}
-
-interface BookingSummaryProps {
-    venue?: Venue | null;
-    isProfileConfirmed?: boolean;
-    onProceedToPayment?: () => void;
-    bookings?: BookingItem[];
-    isPaying?: boolean;
-    paymentError?: string | null;
-}
-
-const mockBookings: BookingItem[] = [
-    {
-        id: 1,
-        day: "15",
-        month: "JUL",
-        title: "Morning Wedding Package",
-        time: "09:00 AM - 01:00 PM",
-        guests: "50-150 Guests",
-        price: 18000,
-    },
-    {
-        id: 2,
-        day: "16",
-        month: "JUL",
-        title: "Morning Wedding Package",
-        time: "09:00 AM - 01:00 PM",
-        guests: "50-150 Guests",
-        price: 18000,
-    },
-    {
-        id: 3,
-        day: "17",
-        month: "JUL",
-        title: "Evening Reception Package",
-        time: "04:00 PM - 10:00 PM",
-        guests: "150-400 Guests",
-        price: 30000,
-    },
-];
 
 export default function BookingSummary({
     venue,
@@ -68,7 +20,7 @@ export default function BookingSummary({
     isPaying = false,
     paymentError = null,
 }: BookingSummaryProps) {
-    const activeBookings = bookings || mockBookings;
+    const activeBookings = bookings || [];
     
     // Calculate subtotal and grand total dynamically
     const subtotal = activeBookings.reduce((sum, item) => sum + Number(item.price), 0);
@@ -322,8 +274,9 @@ export default function BookingSummary({
                 <button
                     type="button"
                     onClick={onProceedToPayment}
-                    disabled={!isProfileConfirmed || isPaying}
-                    className={(isProfileConfirmed && !isPaying) ? bookingSummaryStyle.payBtnActive : bookingSummaryStyle.payBtnDisabled}
+                    disabled={!isProfileConfirmed || isPaying || activeBookings.length === 0}
+                    className={(isProfileConfirmed && !isPaying && activeBookings.length > 0) ? 
+                        bookingSummaryStyle.payBtnActive : bookingSummaryStyle.payBtnDisabled}
                 >
                     {isPaying ? (
                         <div className={bookingSummaryStyle.loadingWrapper}>
@@ -332,6 +285,8 @@ export default function BookingSummary({
                         </div>
                     ) : !isProfileConfirmed ? (
                         <AppText textName="CONFIRM_DETAILS_FIRST" textModule="BUTTON" />
+                    ) : activeBookings.length === 0 ? (
+                        <AppText textName="SELECT_PACKAGE_FIRST" textModule="BUTTON" />
                     ) : (
                         <AppText textName="PROCEED_SECURE_PAYMENT" textModule="BUTTON" />
                     )}

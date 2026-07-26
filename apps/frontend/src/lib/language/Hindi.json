@@ -43,7 +43,11 @@
         "APPROVE": "स्वीकार करें",
         "EDIT": "संपादित करें",
         "VIEW_BOOKINGS": "बुकिंग देखें",
-        "REFRESH": "ताज़ा करें"
+        "REFRESH": "ताज़ा करें",
+        "SELECT_PACKAGE_FIRST": "पहले एक पैकेज चुनें",
+        "SELECTED": "चयनित",
+        "SELECT_PACKAGE": "पैकेज चुनें",
+        "UNAVAILABLE": "अनुपलब्ध"
     },
     "LABEL": {
         "WELCOME_BACK": "वापसी पर स्वागत है",

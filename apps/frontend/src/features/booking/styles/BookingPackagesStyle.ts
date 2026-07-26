@@ -7,7 +7,10 @@ export const bookingPackagesStyle = {
         "border-slate-200",
         "bg-white",
         "p-6",
-        "shadow-sm"
+        "shadow-sm",
+        "w-full",
+        "max-w-full",
+        "overflow-hidden"
     ),
     header: clsx(
         "mb-6",
@@ -38,7 +41,11 @@ export const bookingPackagesStyle = {
     ),
     packagesList: clsx(
         "flex",
-        "flex-wrap",
-        "gap-5"
+        "w-full",
+        "max-w-full",
+        "overflow-x-auto",
+        "gap-5",
+        "pb-2",
+        "scrollbar-thin"
     )
 };
