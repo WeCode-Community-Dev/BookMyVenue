@@ -58,16 +58,16 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 
 interface AdminRevenueOverviewProps {
   data?: {
-    period: string;
-    revenue: number;
-    commission: number;
-  }[];
+    weekly: { period: string; revenue: number; commission: number }[];
+    monthly: { period: string; revenue: number; commission: number }[];
+    yearly: { period: string; revenue: number; commission: number }[];
+  };
 }
 
-export default function AdminRevenueOverview({ data = [] }: AdminRevenueOverviewProps) {
+export default function AdminRevenueOverview({ data }: AdminRevenueOverviewProps) {
   const [filter, setFilter] = useState<'weekly' | 'monthly' | 'yearly'>('monthly');
 
-  const chartData = data;
+  const chartData = data?.[filter] || [];
 
   const totalRevenue = chartData.reduce((sum, item) => sum + item.revenue, 0);
   const totalCommission = chartData.reduce((sum, item) => sum + item.commission, 0);

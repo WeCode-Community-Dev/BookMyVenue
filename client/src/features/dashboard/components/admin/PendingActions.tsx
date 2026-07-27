@@ -1,4 +1,5 @@
 import { UserCheck, Building2, RefreshCcw, Flag, IndianRupee, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface PendingActionsProps {
   data?: {
@@ -11,6 +12,8 @@ interface PendingActionsProps {
 }
 
 export default function PendingActions({ data }: PendingActionsProps) {
+  const navigate = useNavigate();
+
   const actions = [
     {
       title: 'Pending Owner Verifications',
@@ -18,6 +21,7 @@ export default function PendingActions({ data }: PendingActionsProps) {
       icon: UserCheck,
       colorClass: 'text-blue-500 bg-blue-500/10 dark:bg-blue-500/20',
       borderColor: 'hover:border-blue-500/25 dark:hover:border-blue-500/35',
+      path: '/admin/users',
     },
     {
       title: 'Pending Venue Approvals',
@@ -25,6 +29,7 @@ export default function PendingActions({ data }: PendingActionsProps) {
       icon: Building2,
       colorClass: 'text-amber-500 bg-amber-500/10 dark:bg-amber-500/20',
       borderColor: 'hover:border-amber-500/25 dark:hover:border-amber-500/35',
+      path: '/admin/venues',
     },
     {
       title: 'Pending Venue Updates',
@@ -32,6 +37,7 @@ export default function PendingActions({ data }: PendingActionsProps) {
       icon: RefreshCcw,
       colorClass: 'text-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20',
       borderColor: 'hover:border-indigo-500/25 dark:hover:border-indigo-500/35',
+      path: '/admin/venues',
     },
     {
       title: 'Reported Venues',
@@ -39,6 +45,7 @@ export default function PendingActions({ data }: PendingActionsProps) {
       icon: Flag,
       colorClass: 'text-rose-500 bg-rose-500/10 dark:bg-rose-500/20',
       borderColor: 'hover:border-rose-500/25 dark:hover:border-rose-500/35',
+      path: '/admin/venues',
     },
     {
       title: 'Refund Requests',
@@ -46,6 +53,7 @@ export default function PendingActions({ data }: PendingActionsProps) {
       icon: IndianRupee,
       colorClass: 'text-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20',
       borderColor: 'hover:border-emerald-500/25 dark:hover:border-emerald-500/35',
+      path: '/admin/settlements',
     },
   ];
 
@@ -87,10 +95,15 @@ export default function PendingActions({ data }: PendingActionsProps) {
                   </div>
                 </div>
 
-                <button className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-bold uppercase tracking-wider text-black dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:border-[#e21a47]/30 transition-all duration-200 group/btn cursor-pointer">
-                  Review
-                  <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
-                </button>
+                {action.count > 0 && (
+                  <button
+                    onClick={() => navigate(action.path)}
+                    className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-bold uppercase tracking-wider text-black dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:border-[#e21a47]/30 transition-all duration-200 group/btn cursor-pointer"
+                  >
+                    Review
+                    <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
+                  </button>
+                )}
               </div>
             );
           })}

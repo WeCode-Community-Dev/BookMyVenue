@@ -25,8 +25,8 @@ export default function AdminDashboard() {
 
         {/* SECTION 3 — ANALYTICS (Side-by-side charts) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <AdminRevenueOverview data={data?.revenueChart || []} />
-          <BookingOverview data={data?.bookingChart || []} />
+          <AdminRevenueOverview data={data?.revenueChart} />
+          <BookingOverview data={data?.bookingChart} />
         </div>
 
         {/* SECTION 4 — PLATFORM PERFORMANCE (Leaderboard) */}

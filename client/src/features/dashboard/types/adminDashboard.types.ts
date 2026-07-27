@@ -59,9 +59,17 @@ export interface AdminDashboardData {
     refundRequests: number;
   };
 
-  revenueChart: RevenuePoint[];
+  revenueChart: {
+    weekly: RevenuePoint[];
+    monthly: RevenuePoint[];
+    yearly: RevenuePoint[];
+  };
 
-  bookingChart: BookingPoint[];
+  bookingChart: {
+    weekly: BookingPoint[];
+    monthly: BookingPoint[];
+    yearly: BookingPoint[];
+  };
 
   categoryPerformance: CategoryPerformance[];
 

@@ -10,11 +10,10 @@ import {
   getVenueBookingsInLast30Days,
   getAdminStats,
   getAdminPendingActions,
-  getAdminRevenueChart,
-  getAdminBookingChart,
   getAdminCategoryPerformance,
   getAdminPlatformLeaders,
   getAdminAlerts,
+  getAdminChartData,
 } from '@/repositories/dashboard.repository';
 import type { OwnerDashboard } from '@/types/dashbboard.types';
 import Category from '@/models/category.model';
@@ -221,35 +220,86 @@ export async function adminDashboardService() {
   const stats = await getAdminStats();
   const pendingActions = await getAdminPendingActions();
 
-  // 1. Monthly revenue and platform commission chart
-  const currentYear = new Date().getFullYear();
-  const startOfYear = new Date(currentYear, 0, 1);
-  const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59);
+  // 1. Weekly, Monthly, & Yearly Revenue and Booking Trend Charts
+  const chartDataRaw = await getAdminChartData();
 
-  const { settlementsAgg, bookingsAgg } = await getAdminRevenueChart(startOfYear, endOfYear);
-
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const revenueChart = months.map((month, index) => {
-    const revItem = bookingsAgg.find(item => item._id === index + 1);
-    const commItem = settlementsAgg.find(item => item._id === index + 1);
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const weeklyRevenue = weekDays.map((dayName, index) => {
+    const revItem = chartDataRaw.weekly.bookingsAgg.find((item: any) => item._id === index + 1);
+    const commItem = chartDataRaw.weekly.settlementsAgg.find((item: any) => item._id === index + 1);
     return {
-      period: month,
+      period: dayName,
       revenue: revItem?.revenue || 0,
-      commission: commItem?.commission || 0
+      commission: commItem?.commission || 0,
     };
   });
 
-  // 2. Booking trend chart (bookings, confirmed, cancelled)
-  const bookingAgg = await getAdminBookingChart(startOfYear, endOfYear);
-  const bookingChart = months.map((month, index) => {
-    const aggItem = bookingAgg.find(item => item._id === index + 1);
+  const weeklyBookings = weekDays.map((dayName, index) => {
+    const aggItem = chartDataRaw.weekly.bookingsTrendAgg.find((item: any) => item._id === index + 1);
     return {
-      period: month,
+      period: dayName,
       bookings: aggItem?.bookings || 0,
       confirmed: aggItem?.confirmed || 0,
-      cancelled: aggItem?.cancelled || 0
+      cancelled: aggItem?.cancelled || 0,
     };
   });
+
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const monthlyRevenue = Array.from({ length: daysInMonth }, (_, index) => {
+    const dayNum = index + 1;
+    const revItem = chartDataRaw.monthly.bookingsAgg.find((item: any) => item._id === dayNum);
+    const commItem = chartDataRaw.monthly.settlementsAgg.find((item: any) => item._id === dayNum);
+    return {
+      period: dayNum.toString(),
+      revenue: revItem?.revenue || 0,
+      commission: commItem?.commission || 0,
+    };
+  });
+
+  const monthlyBookings = Array.from({ length: daysInMonth }, (_, index) => {
+    const dayNum = index + 1;
+    const aggItem = chartDataRaw.monthly.bookingsTrendAgg.find((item: any) => item._id === dayNum);
+    return {
+      period: dayNum.toString(),
+      bookings: aggItem?.bookings || 0,
+      confirmed: aggItem?.confirmed || 0,
+      cancelled: aggItem?.cancelled || 0,
+    };
+  });
+
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const yearlyRevenue = months.map((monthName, index) => {
+    const revItem = chartDataRaw.yearly.bookingsAgg.find((item: any) => item._id === index + 1);
+    const commItem = chartDataRaw.yearly.settlementsAgg.find((item: any) => item._id === index + 1);
+    return {
+      period: monthName,
+      revenue: revItem?.revenue || 0,
+      commission: commItem?.commission || 0,
+    };
+  });
+
+  const yearlyBookings = months.map((monthName, index) => {
+    const aggItem = chartDataRaw.yearly.bookingsTrendAgg.find((item: any) => item._id === index + 1);
+    return {
+      period: monthName,
+      bookings: aggItem?.bookings || 0,
+      confirmed: aggItem?.confirmed || 0,
+      cancelled: aggItem?.cancelled || 0,
+    };
+  });
+
+  const revenueChart = {
+    weekly: weeklyRevenue,
+    monthly: monthlyRevenue,
+    yearly: yearlyRevenue,
+  };
+
+  const bookingChart = {
+    weekly: weeklyBookings,
+    monthly: monthlyBookings,
+    yearly: yearlyBookings,
+  };
 
   // 3. Category performance (venues count per category)
   const dbCategoryPerf = await getAdminCategoryPerformance();
@@ -272,7 +322,7 @@ export async function adminDashboardService() {
   const alerts: any[] = [];
   pendingO.forEach((o) => {
     alerts.push({
-      id: `owner-${o._id}`,
+      id: `owner-${(o.userId as any)?._id || o._id}`,
       title: 'Owner verification pending',
       description: `Owner ${(o.userId as any)?.fullName || 'account'} registration requires review`,
       severity: 'urgent',
@@ -295,7 +345,7 @@ export async function adminDashboardService() {
       id: 'default',
       title: 'System status optimal',
       description: 'No critical operational issues detected',
-      severity: 'warning',
+      severity: 'info',
       time: 'Just now',
     });
   }
